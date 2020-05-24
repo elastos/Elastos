@@ -1,9 +1,8 @@
-import React from 'react'
+import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Popover, Modal } from 'antd'
+import { Popover } from 'antd'
 import moment from 'moment'
 import linkifyStr from 'linkifyjs/string'
-import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import Signature from './Signature'
@@ -17,7 +16,7 @@ const {
   WAITING_FOR_WITHDRAWAL
 } = MILESTONE_STATUS
 
-class PaymentList extends BaseComponent {
+class PaymentList extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -84,39 +83,35 @@ class PaymentList extends BaseComponent {
     if (status === WAITING_FOR_REQUEST) {
       return (
         !user.is_secretary && (
-          <td>
-            <div
-              className="action"
-              onClick={() => {
-                this.showModal(item.milestoneKey)
-              }}
-            >
-              Apply
-            </div>
-          </td>
+          <div
+            className="action"
+            onClick={() => {
+              this.showModal(item.milestoneKey)
+            }}
+          >
+            Apply
+          </div>
         )
       )
     }
     if (status === REJECTED) {
       return (
         !user.is_secretary && (
-          <td>
-            <div
-              className="action"
-              onClick={() => {
-                this.showModal(item.milestoneKey)
-              }}
-            >
-              Reapply
-            </div>
-          </td>
+          <div
+            className="action"
+            onClick={() => {
+              this.showModal(item.milestoneKey)
+            }}
+          >
+            Reapply
+          </div>
         )
       )
     }
     if (status === WAITING_FOR_APPROVAL) {
       return (
         user.is_secretary && (
-          <td>
+          <div>
             <div
               className="action approve"
               onClick={() => {
@@ -133,21 +128,19 @@ class PaymentList extends BaseComponent {
             >
               Reject
             </div>
-          </td>
+          </div>
         )
       )
     }
     if (status === WAITING_FOR_WITHDRAWAL) {
       return (
         !user.is_secretary && (
-          <td>
-            <div
-              className="action"
-              onClick={() => this.showWithdrawalModal(item.milestoneKey)}
-            >
-              Withdraw
-            </div>
-          </td>
+          <div
+            className="action"
+            onClick={() => this.showWithdrawalModal(item.milestoneKey)}
+          >
+            Withdraw
+          </div>
         )
       )
     }
@@ -201,7 +194,7 @@ class PaymentList extends BaseComponent {
     return rs && rs.length > 0 && rs[rs.length - 1]
   }
 
-  ord_render() {
+  render() {
     const { list, proposalId, actions, user } = this.props
     const visible = this.isVisible()
     return (
@@ -225,27 +218,21 @@ class PaymentList extends BaseComponent {
           {list &&
             list.map((item, index) => this.renderPaymentItem(item, index))}
         </tbody>
-        <Modal
-          maskClosable={false}
-          visible={this.state.toggle}
-          onCancel={this.hideModal}
-          footer={null}
-        >
-          {this.state.toggle === true ? (
-            <Signature
-              stage={this.state.stage}
-              proposalId={proposalId}
-              applyPayment={actions.applyPayment}
-              getPaymentSignature={actions.getPaymentSignature}
-              hideModal={this.hideModal}
-              isSecretary={user.is_secretary}
-              opinion={this.state.opinion}
-              reviewApplication={actions.reviewApplication}
-              application={this.getApplication()}
-              getReviewTxid={actions.getReviewTxid}
-            />
-          ) : null}
-        </Modal>
+        {this.state.toggle === true ? (
+          <Signature
+            toggle={this.state.toggle}
+            stage={this.state.stage}
+            proposalId={proposalId}
+            applyPayment={actions.applyPayment}
+            getPaymentSignature={actions.getPaymentSignature}
+            hideModal={this.hideModal}
+            isSecretary={user.is_secretary}
+            opinion={this.state.opinion}
+            reviewApplication={actions.reviewApplication}
+            application={this.getApplication()}
+            getReviewTxid={actions.getReviewTxid}
+          />
+        ) : null}
         {this.state.withdrawal ? (
           <WithdrawMoney
             withdrawal={this.state.withdrawal}

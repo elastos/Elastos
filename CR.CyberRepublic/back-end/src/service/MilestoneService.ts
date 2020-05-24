@@ -11,7 +11,6 @@ import {
   getPemPublicKey,
   getUtxosByAmount
 } from '../utility'
-import * as moment from 'moment'
 const Big = require('big.js')
 const {
   WAITING_FOR_REQUEST,
@@ -53,8 +52,8 @@ export default class extends Base {
       if (_.isEmpty(budget)) {
         return { success: false }
       }
-      if (budget.status !== WAITING_FOR_REQUEST) {
-        return { success: false }
+      if (![WAITING_FOR_REQUEST, REJECTED].includes(budget.status)) {
+        return { success: false, message: 'Milestone status is invalid.' }
       }
 
       const currDate = Date.now()
@@ -66,7 +65,7 @@ export default class extends Base {
         message,
         milestoneKey,
         messageHash,
-        createdAt: moment(currDate)
+        createdAt: currDate
       }
       await this.model.update(
         { _id: id },
@@ -272,7 +271,7 @@ export default class extends Base {
               reason,
               reasonHash,
               opinion,
-              createdAt: moment(currTime)
+              createdAt: currTime
             }
           }
         }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Form, Button, Input, message } from 'antd'
+import { Form, Button, Input, message, Modal, Spin } from 'antd'
 import QRCode from 'qrcode.react'
 
 const { TextArea } = Input
@@ -26,7 +26,9 @@ class Signature extends Component {
     const { form, applyPayment, proposalId, stage } = this.props
     form.validateFields(async (err, values) => {
       if (!err) {
-        const rs = await applyPayment(proposalId, stage, values)
+        const rs = await applyPayment(proposalId, stage, {
+          message: values.message.trim()
+        })
         if (rs.success && rs.url) {
           this.setState({ url: rs.url, messageHash: rs.messageHash })
           this.pollingSignature()
@@ -47,7 +49,7 @@ class Signature extends Component {
     form.validateFields(async (err, values) => {
       if (!err) {
         const data = {
-          reason: values.message,
+          reason: values.message.trim(),
           opinion,
           applicationId: application._id
         }
@@ -115,7 +117,7 @@ class Signature extends Component {
 
   renderTextare = () => {
     const { getFieldDecorator } = this.props.form
-    const { isSecretary, application } = this.props
+    const { isSecretary, application, opinion } = this.props
     return (
       <Form onSubmit={this.handleSubmit}>
         {isSecretary && <Msg>{application.message}</Msg>}
@@ -144,17 +146,27 @@ class Signature extends Component {
 
   render() {
     const { url } = this.state
-    const { stage, isSecretary } = this.props
+    const { stage, isSecretary, hideModal, toggle, opinion } = this.props
+    const flag = opinion && opinion.toLowerCase() === 'rejected'
     return (
-      <Wrapper>
-        {isSecretary ? (
-          <Title>Review Payment #{parseInt(stage) + 1}</Title>
-        ) : (
-          <Title>Apply Payment #{parseInt(stage) + 1}</Title>
-        )}
+      <Modal
+        maskClosable={false}
+        visible={toggle}
+        onCancel={hideModal}
+        footer={null}
+      >
+        <Wrapper>
+          {isSecretary ? (
+            <Title>
+              {flag ? 'Reject' : 'Approve'} Payment #{parseInt(stage) + 1}
+            </Title>
+          ) : (
+            <Title>Apply Payment #{parseInt(stage) + 1}</Title>
+          )}
 
-        {url ? this.signatureQrCode() : this.renderTextare()}
-      </Wrapper>
+          {url ? this.signatureQrCode() : this.renderTextare()}
+        </Wrapper>
+      </Modal>
     )
   }
 }

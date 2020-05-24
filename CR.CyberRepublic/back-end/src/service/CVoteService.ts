@@ -123,13 +123,13 @@ export default class extends Base {
                 if (cvote) {
                     return {success: true, id: cvote._id}
                 }
-                const rs: any = await getProposalState(draftHash)
-                if (rs && rs.success && rs.status === 'Registered') {
+                // const rs: any = await getProposalState(draftHash)
+                // if (rs && rs.success && rs.status === 'Registered') {
                     const proposal = await this.proposeSuggestion({
                         suggestionId: id
                     })
                     return {success: true, id: proposal._id}
-                }
+                // }
             }
         } else {
             return {success: false, message: 'no this suggestion'}
@@ -833,13 +833,13 @@ export default class extends Base {
     }
 
     private async updateProposalBudget(query: any) {
-        const { WITHDRAWN } = constant.MILESTONE_STATUS
+        const {WITHDRAWN} = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel('CVote')
         const proposal = await db_cvote.findOne(query)
         if (proposal.status === 'ACTIVE' || proposal.status === 'FINAL') {
             const result = await getProposalData(proposal.proposalHash)
             const status = _.get(result, 'status')
-            if ( status && status.toLowerCase() === 'finished') {
+            if (status && status.toLowerCase() === 'finished') {
                 proposal.status = constant.CVOTE_STATUS.FINAL
             }
             const budgets = _.get(result, 'data.proposal.budgets')
@@ -847,7 +847,7 @@ export default class extends Base {
                 const temp = _.sortBy(proposal.budget, 'milestoneKey')
                 const budget = temp.map((item, index) => {
                     if (budgets[index].status.toLowerCase() === 'withdrawn') {
-                        return { ...item, status: WITHDRAWN }
+                        return {...item, status: WITHDRAWN}
                     }
                     return item
                 })
@@ -937,7 +937,7 @@ export default class extends Base {
         if (!cur) {
             throw 'invalid proposal id'
         }
-
+        const currentVoteResult = _.find(cur._doc.voteResult, ['votedBy', votedBy])
         await db_cvote.update(
             {
                 _id,
@@ -946,13 +946,14 @@ export default class extends Base {
             {
                 $set: {
                     'voteResult.$.value': value,
-                    'voteResult.$.reason': reason || ''
+                    'voteResult.$.reason': reason || '',
+                    'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.UNCHAIN,
+                    'voteResult.$.txid': '',
+                    'voteResult.$.signature': null,
                 },
                 $push: {
                     voteHistory: {
-                        value,
-                        reason,
-                        votedBy
+                        ..._.omit(currentVoteResult, '_id')
                     }
                 }
             }
@@ -1306,7 +1307,7 @@ export default class extends Base {
     }
 
     public async updateProposalOnNotification(data: any) {
-        const { WAITING_FOR_WITHDRAWAL, WAITING_FOR_REQUEST } = constant.MILESTONE_STATUS
+        const {WAITING_FOR_WITHDRAWAL, WAITING_FOR_REQUEST} = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel("CVote")
         const {rs, _id} = data
         const {
@@ -1320,11 +1321,11 @@ export default class extends Base {
         if (proposalStatus === constant.CVOTE_STATUS.ACTIVE) {
             rejectThroughAmount = (await ela.currentCirculatingSupply()) * 0.1
             const proposal = await db_cvote.findById(_id)
-            const budget = proposal.budget.map((item:any) => {
+            const budget = proposal.budget.map((item: any) => {
                 if (item.type === 'ADVANCE') {
-                    return { ...item, status: WAITING_FOR_WITHDRAWAL }
+                    return {...item, status: WAITING_FOR_WITHDRAWAL}
                 } else {
-                    return { ...item, status: WAITING_FOR_REQUEST }
+                    return {...item, status: WAITING_FOR_REQUEST}
                 }
             })
             await db_cvote.update({
@@ -1578,6 +1579,7 @@ export default class extends Base {
             'status',
             'abstract',
             'voteResult',
+            'voteHistory',
             'createdAt',
             'proposalHash',
             'rejectAmount',
@@ -1587,6 +1589,7 @@ export default class extends Base {
             .getDBInstance()
             .findOne({vid: id}, fields.join(' '))
             .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+            .populate('voteHistory.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
         if (!proposal) {
             return {
@@ -1602,31 +1605,36 @@ export default class extends Base {
         const proposalId = proposal._id
 
         const voteResultFields = ['value', 'reason', 'votedBy', 'avatar']
-        // filter undecided vote result
-        const filterVoteResult = _.filter(
-            proposal._doc.voteResult,
-            (o: any) => (o.value !== constant.CVOTE_RESULT.UNDECIDED
-                && [constant.CVOTE_CHAIN_STATUS.CHAINED]
-                    .includes(o.status))
-        )
-        // update vote result data
-        const voteResult = _.map(filterVoteResult, (o: any) =>
-            _.pick(
-                {
-                    ...o._doc,
-                    votedBy: _.get(o, 'votedBy.did.didName'),
-                    avatar: _.get(o, 'votedBy.did.avatar')
-                },
-                voteResultFields
-            )
-        )
+        const voteHistoryList = _.groupBy(proposal._doc.voteHistory, 'votedBy._id')
+        const voteResultWithNull = _.map(proposal._doc.voteResult, (o: any) => {
+            let result
+            if (o.status === constant.CVOTE_CHAIN_STATUS.CHAINED) {
+                result = o._doc
+            } else {
+                const historyList = _.filter(voteHistoryList[o.votedBy._id], (e: any) => e.status === constant.CVOTE_CHAIN_STATUS.CHAINED)
+                if (!_.isEmpty(historyList)) {
+                    const history = _.sortBy(historyList, 'createdAt')
+                    result = history[history.length - 1]._doc
+                }
+            }
+            if (!_.isEmpty(result)) {
+                return _.pick(
+                    {
+                        ...result,
+                        votedBy: _.get(result, 'votedBy.did.didName'),
+                        avatar: _.get(result, 'votedBy.did.avatar')
+                    },
+                    voteResultFields
+                )
+            }
+        })
+        const voteResult = _.filter(voteResultWithNull, (o: any) => !_.isEmpty(o))
 
         const tracking = await this.getTracking(proposalId)
 
         // const summary = await this.getSummary(proposalId)
         const summary = []
 
-        const votingResult = {}
         const notificationResult = {}
 
         // duration
@@ -1655,8 +1663,7 @@ export default class extends Base {
                 status: CVOTE_STATUS_TO_WALLET_STATUS[proposal.status],
                 abs: proposal.abstract,
                 address,
-                ..._.omit(proposal._doc, ['vid', 'abstract', 'rejectAmount', 'rejectThroughAmount', 'status']),
-                ...votingResult,
+                ..._.omit(proposal._doc, ['vid', 'abstract', 'rejectAmount', 'rejectThroughAmount', 'status', 'voteHistory']),
                 ...notificationResult,
                 createdAt: timestamp.second(proposal.createdAt),
                 voteResult,
@@ -1670,28 +1677,31 @@ export default class extends Base {
     public async getTracking(id) {
         const db_cvote = this.getDBModel('CVote')
         const db_user = this.getDBModel('User')
-        const secretary = await db_user.getDBInstance().findOne({role: constant.USER_ROLE.SECRETARY, 'did.id': 'did:elastos:igCSy8ht7yDwV5qqcRzf5SGioMX8H9RXcj'}, constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+        const secretary = await db_user.getDBInstance().findOne({
+            role: constant.USER_ROLE.SECRETARY,
+            'did.id': 'did:elastos:igCSy8ht7yDwV5qqcRzf5SGioMX8H9RXcj'
+        }, constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
         const propoal = await db_cvote.getDBInstance().findOne({_id: id}).populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
         if (!propoal) {
             return
         }
-        
+
         try {
             const didName = _.get(secretary, 'did.didName')
             const avatar = _.get(secretary, 'did.avatar')
             const ownerDidName = _.get(propoal, 'proposer.did.didName')
             const ownerAvatar = _.get(propoal, 'proposer.did.avatar') || _.get(propoal, 'proposer.profile.avatar')
-            const { withdrawalHistory } = propoal
+            const {withdrawalHistory} = propoal
             const withdrawalList = _.filter(withdrawalHistory, (o: any) => o.milestoneKey !== '0')
             const withdrawalListByStage = _.groupBy(withdrawalList, 'milestoneKey')
             const keys = _.keys(withdrawalListByStage).sort().reverse()
             const result = _.map(keys, (k: any) => {
                 const withdrawals = _.sortBy(withdrawalListByStage[`${k}`], 'createdAt')
                 const withdrawal = withdrawals[withdrawals.length - 1]
-    
+
                 const comment = {}
-                    
+
                 if (_.get(withdrawal, 'review.createdAt')) {
                     comment['content'] = _.get(withdrawal, 'review.reason')
                     comment['opinion'] = _.get(withdrawal, 'review.opinion')
@@ -1699,8 +1709,8 @@ export default class extends Base {
                     comment['createdBy'] = didName
                     comment['createdAt'] = moment(_.get(withdrawal, 'review.createdAt')).unix()
                 }
-                
-                
+
+
                 return {
                     stage: parseInt(k),
                     didName: ownerDidName,
@@ -1712,10 +1722,10 @@ export default class extends Base {
             })
 
             return result
-        } catch(err) {
+        } catch (err) {
             logger.error(err)
         }
-        
+
     }
 
     public async getSummary(id) {
@@ -1745,9 +1755,9 @@ export default class extends Base {
             const comment = o._doc.comment
             const contents = (JSON.parse(o.content))
             let content = ""
-            _.each(contents.blocks,function(v: any,k: any){
+            _.each(contents.blocks, function (v: any, k: any) {
                 content += v.text
-                if(k !== (contents.blocks.length)-1){
+                if (k !== (contents.blocks.length) - 1) {
                     content += "\n"
                 }
             })
