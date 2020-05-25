@@ -570,6 +570,9 @@ export default class extends Base {
     try {
       const { id, milestoneKey } = param
       const proposal = await this.model.findById(id)
+      if (!proposal) {
+        return { success: false, message: 'No this proposal.'}
+      }
       // check if current user is the proposal's owner
       if (!proposal.proposer.equals(this.currentUser._id)) {
         return { success: false, message: 'You are not the proposal owner.' }
@@ -577,6 +580,12 @@ export default class extends Base {
       if (![ACTIVE, FINAL].includes(proposal.status)) {
         return { success: false, message: 'The proposal is not active.' }
       }
+      
+      const last: any = _.last(proposal.budget)
+      if (proposal.status === FINAL && last.status === WITHDRAWN) {
+        return { success: false, message: 'The proposal is final.'}
+      }
+
       // check if milestoneKey is valid
       const budget = proposal.budget.filter(
         (item: any) => item.milestoneKey === milestoneKey
@@ -590,6 +599,7 @@ export default class extends Base {
           message: 'This milestone is not withdrawable.'
         }
       }
+
       let sum: string
       try {
         sum = proposal.budget

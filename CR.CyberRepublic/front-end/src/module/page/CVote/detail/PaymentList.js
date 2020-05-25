@@ -13,7 +13,8 @@ const {
   WAITING_FOR_REQUEST,
   REJECTED,
   WAITING_FOR_APPROVAL,
-  WAITING_FOR_WITHDRAWAL
+  WAITING_FOR_WITHDRAWAL,
+  WITHDRAWN
 } = MILESTONE_STATUS
 
 const { COMPLETION } = SUGGESTION_BUDGET_TYPE
@@ -88,6 +89,10 @@ class PaymentList extends Component {
   renderActions(item) {
     const { user } = this.props
     const status = item.status
+    const isFinal = this.isFinal()
+    if (isFinal) {
+      return null
+    }
     if (status === WAITING_FOR_REQUEST) {
       return (
         !user.is_secretary && (
@@ -200,6 +205,12 @@ class PaymentList extends Component {
       return item.signature && stage === item.milestoneKey
     })
     return rs && rs.length > 0 && rs[rs.length - 1]
+  }
+
+  isFinal() {
+    const { list } = this.props
+    const completion = list && list.filter(item => item.type === COMPLETION)[0]
+    return completion && completion.status === WITHDRAWN
   }
 
   render() {
