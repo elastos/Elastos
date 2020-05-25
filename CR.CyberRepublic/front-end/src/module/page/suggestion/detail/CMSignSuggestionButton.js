@@ -44,7 +44,7 @@ class SignSuggestionButton extends Component {
         }
         this.setState({ visible: false })
       }
-    }, 9000)
+    }, 5000)
   }
 
   handleSign = async () => {

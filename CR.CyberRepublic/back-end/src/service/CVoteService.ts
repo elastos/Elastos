@@ -117,13 +117,13 @@ export default class extends Base {
         const suggestion = await db_suggestion.findById(id)
         const db_cvote = this.getDBModel('CVote')
         if (suggestion) {
-            const draftHash = _.get(suggestion, 'draftHash')
-            if (draftHash) {
-                const cvote = await db_cvote.findOne({draftHash})
+            const proposalHash = _.get(suggestion, 'proposalHash')
+            if (proposalHash) {
+                const cvote = await db_cvote.findOne({proposalHash})
                 if (cvote) {
                     return {success: true, id: cvote._id}
                 }
-                const rs: any = await getProposalState(draftHash)
+                const rs: any = await getProposalState({proposalHash})
                 if (rs && rs.success && rs.status === 'Registered') {
                     const proposal = await this.proposeSuggestion({
                         suggestionId: id
