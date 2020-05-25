@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -51,7 +51,7 @@ func (f *naFilter) Filter(na *p2p.NetAddress) bool {
 // newPeerMsg represent a new connected peer.
 type newPeerMsg struct {
 	svr.IPeer
-	reply chan struct{}
+	reply chan bool
 }
 
 // donePeerMsg represent a disconnected peer.
@@ -538,7 +538,7 @@ func (sp *serverPeer) OnTxFilterLoad(_ *peer.Peer, tf *msg.TxFilterLoad) {
 // OnReject is invoked when a peer receives a reject message.
 func (sp *serverPeer) OnReject(_ *peer.Peer, msg *msg.Reject) {
 	log.Infof("%s sent a reject message Code: %s, Hash %s, Reason: %s",
-		sp, msg.Code.String(), msg.Hash.String(), msg.Reason)
+		sp, msg.RejectCode.String(), msg.Hash.String(), msg.Reason)
 }
 
 // pushTxMsg sends a tx message for the provided transaction hash to the
@@ -852,11 +852,40 @@ cleanup:
 	}
 }
 
+func (s *server) isOverMaxNodePerHost(peers map[svr.IPeer]*serverPeer,
+	orgPeer svr.IPeer) bool {
+	sp := orgPeer.ToPeer()
+	hostNodeCount := uint32(1)
+	for _, peer := range peers {
+		var peerNa, spNa *p2p.NetAddress
+		if peerNa = peer.NA(); peerNa == nil {
+			continue
+		}
+		if spNa = sp.NA(); spNa == nil {
+			return true
+		}
+		if peer.NA().IP.String() == sp.NA().IP.String() {
+			hostNodeCount++
+		}
+	}
+	if hostNodeCount > s.chainParams.MaxNodePerHost {
+		log.Infof("New peer %s ignored, "+
+			"hostNodeCount %d is more than  MaxNodePerHost %d ",
+			sp, hostNodeCount, s.chainParams.MaxNodePerHost)
+		return true
+	}
+	return false
+}
+
 // handlePeerMsg deals with adding and removing peers.
 func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 	switch p := p.(type) {
 	case newPeerMsg:
 		sp := newServerPeer(s)
+		if s.isOverMaxNodePerHost(peers, p) {
+			p.reply <- false
+			return
+		}
 		sp.Peer = peer.New(p, &peer.Listeners{
 			OnVersion:      sp.OnVersion,
 			OnMemPool:      sp.OnMemPool,
@@ -873,10 +902,8 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 			OnReject:       sp.OnReject,
 			OnDAddr:        s.routes.QueueDAddr,
 		})
-
 		peers[p.IPeer] = sp
-		p.reply <- struct{}{}
-
+		p.reply <- true
 	case donePeerMsg:
 		delete(peers, p.IPeer)
 		p.reply <- struct{}{}
@@ -898,10 +925,10 @@ func (s *server) Services() pact.ServiceFlag {
 }
 
 // NewPeer adds a new peer that has already been connected to the server.
-func (s *server) NewPeer(p svr.IPeer) {
-	reply := make(chan struct{})
+func (s *server) NewPeer(p svr.IPeer) bool {
+	reply := make(chan bool)
 	s.peerQueue <- newPeerMsg{p, reply}
-	<-reply
+	return <-reply
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.

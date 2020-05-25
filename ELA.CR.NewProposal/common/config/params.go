@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -30,7 +30,7 @@ var (
 		Payload: &payload.RegisterAsset{
 			Asset: payload.Asset{
 				Name:      "ELA",
-				Precision: 0x08,
+				Precision: ELAPrecision,
 				AssetType: 0x00,
 			},
 			Amount:     0 * 100000000,
@@ -50,11 +50,11 @@ var (
 	// genesisTime indicates the time when ELA genesis block created.
 	genesisTime, _ = time.Parse(time.RFC3339, "2017-12-22T10:00:00Z")
 
-	// originIssuanceAmount is the origin issuance ELA amount.
-	originIssuanceAmount = 3300 * 10000 * 100000000
+	// OriginIssuanceAmount is the origin issuance ELA amount.
+	OriginIssuanceAmount = 3300 * 10000 * 100000000
 
 	// inflationPerYear is the inflation amount per year.
-	inflationPerYear = originIssuanceAmount * 4 / 100
+	inflationPerYear = OriginIssuanceAmount * 4 / 100
 
 	// bigOne is 1 represented as a big.Int.  It is defined here to avoid
 	// the overhead of creating it multiple times.
@@ -92,15 +92,33 @@ var (
 		0xac, 0x10, 0xcd, 0x77, 0x29, 0x41, 0x22,
 	}
 
-	// ELAAssetID represents the asset ID of ELA coin.
-	ELAAssetID = elaAsset.Hash()
-
-	// DestructionAddress indicates the "ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr"
-	// destruction address.
-	DestructionAddress = common.Uint168{
+	// "ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr"
+	DestroyELAAddress = common.Uint168{
 		0x21, 0x20, 0xfe, 0xe5, 0xd7, 0xeb, 0x3e,
 		0x5c, 0x7d, 0x31, 0x97, 0xfe, 0xcf, 0x6c,
 		0x0d, 0xe3, 0x0f, 0x88, 0x9a, 0xce, 0xf7,
+	}
+
+	// ELAAssetID represents the asset ID of ELA coin.
+	ELAAssetID = elaAsset.Hash()
+
+	// ELAPrecision represents the precision of ELA coin.
+	ELAPrecision = byte(0x08)
+
+	// CRCAssetsAddress indicates the "CRASSETSXXXXXXXXXXXXXXXXXXXX2qDX5J"
+	// CRC assets address.
+	CRCAssetsAddress = common.Uint168{
+		0x1c, 0x5f, 0x6c, 0x3e, 0x9f, 0x0c, 0x9a,
+		0x71, 0x10, 0xb8, 0xeb, 0x6e, 0x37, 0x02,
+		0x63, 0x0f, 0x71, 0x27, 0x4d, 0xf1, 0xc0,
+	}
+
+	// CRCExpensesAddress indicates the "CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b"
+	// CRC council expenses address.
+	CRCExpensesAddress = common.Uint168{
+		0x1c, 0x60, 0x32, 0x09, 0xff, 0x5d, 0x86,
+		0x54, 0x2d, 0x26, 0x1a, 0x8d, 0x22, 0x7f,
+		0xe0, 0xf5, 0xee, 0x2c, 0x4e, 0xd2, 0xd3,
 	}
 )
 
@@ -117,9 +135,12 @@ var DefaultParams = Params{
 		"node-mainnet-025.elastos.org:20338",
 	},
 
-	Foundation:   mainNetFoundation,
-	CRCAddress:   mainNetCRCAddress,
-	GenesisBlock: GenesisBlock(&mainNetFoundation),
+	Foundation:          mainNetFoundation,
+	CRCAddress:          mainNetCRCAddress,
+	CRCFoundation:       CRCAssetsAddress,
+	CRCCommitteeAddress: CRCExpensesAddress,
+	DestroyELAAddress:   DestroyELAAddress,
+	GenesisBlock:        GenesisBlock(&mainNetFoundation),
 
 	DPoSMagic:       2019000,
 	DPoSDefaultPort: 20339,
@@ -144,6 +165,8 @@ var DefaultParams = Params{
 		"02b95b000f087a97e988c24331bf6769b4a75e4b7d5d2a38105092a3aa841be33b",
 		"02a0aa9eac0e168f3474c2a0d04e50130833905740a5270e8a44d6c6e85cf6d98c",
 	},
+	SecretaryGeneral:            "02712da531804d1c38d159a901313239d2100dfb5b693d71a2f76b15dec3f8fc32",
+	MaxProposalTrackingCount:    128,
 	PowLimit:                    powLimit,
 	PowLimitBits:                0x1f0008ff,
 	TargetTimespan:              24 * time.Hour,  // 24 hours
@@ -159,7 +182,7 @@ var DefaultParams = Params{
 	PublicDPOSHeight:            402680,
 	EnableActivateIllegalHeight: 439000,
 	CRVotingStartHeight:         537670,
-	CRCommitteeStartHeight:      2000000, // todo correct me when height has been confirmed
+	CRCommitteeStartHeight:      658930,
 	CheckRewardHeight:           436812,
 	VoteStatisticsHeight:        512881,
 	RegisterCRByDIDHeight:       598000,
@@ -173,11 +196,25 @@ var DefaultParams = Params{
 	CRMemberCount:               12,
 	CRVotingPeriod:              30 * 720,
 	CRDutyPeriod:                365 * 720,
+	CRDepositLockupBlocks:       2160,
+	ProposalCRVotingPeriod:      7 * 720,
+	ProposalPublicVotingPeriod:  7 * 720,
+	CRAgreementCount:            8,
+	VoterRejectPercentage:       10,
+	CRCAppropriatePercentage:    10,
+	MaxCommitteeProposalCount:   128,
 	EnableUtxoDB:                true,
+	WalletPath:                  "keystore.dat",
+	RPCServiceLevel:             ConfigurationPermitted.String(),
+	NodeProfileStrategy:         Balanced.String(),
+	MaxNodePerHost:              10,
 	CkpManager: checkpoint.NewManager(&checkpoint.Config{
 		EnableHistory:      false,
 		HistoryStartHeight: uint32(0),
+		NeedSave:           false,
 	}),
+	TxCacheVolume:          100000,
+	CheckVoteCRCountHeight: 658930,
 }
 
 // TestNet returns the network parameters for the test network.
@@ -194,6 +231,9 @@ func (p *Params) TestNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
+	copy.CRCFoundation = CRCAssetsAddress
+	copy.CRCCommitteeAddress = CRCExpensesAddress
+	copy.DestroyELAAddress = DestroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019100
 	copy.DPoSDefaultPort = 21339
@@ -218,17 +258,25 @@ func (p *Params) TestNet() *Params {
 		"02bf9e37b3db0cbe86acf76a76578c6b17b4146df101ec934a00045f7d201f06dd",
 		"03111f1247c66755d369a8c8b3a736dfd5cf464ca6735b659533cbe1268cd102a9",
 	}
+	copy.SecretaryGeneral = "0349cb77a69aa35be0bcb044ffd41a616b8367136d3b339d515b1023cc0f302f87"
+	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 200000
 	copy.CRCOnlyDPOSHeight = 246700
 	copy.PublicDPOSHeight = 300000
 	copy.CRVotingStartHeight = 436900
-	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
-	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
+	copy.CRCommitteeStartHeight = 546500
+	copy.EnableActivateIllegalHeight = 546500
 	copy.CheckRewardHeight = 100
 	copy.VoteStatisticsHeight = 0
 	copy.RegisterCRByDIDHeight = 483500
 	copy.EnableUtxoDB = true
+	copy.VoterRejectPercentage = 10
+	copy.CRCAppropriatePercentage = 10
+	copy.MaxCommitteeProposalCount = 128
+	copy.MaxNodePerHost = 10
+	copy.CheckVoteCRCountHeight = 546500
+
 	return &copy
 }
 
@@ -246,6 +294,9 @@ func (p *Params) RegNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
+	copy.CRCFoundation = CRCAssetsAddress
+	copy.CRCCommitteeAddress = CRCExpensesAddress
+	copy.DestroyELAAddress = DestroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019200
 	copy.DPoSDefaultPort = 22339
@@ -270,18 +321,25 @@ func (p *Params) RegNet() *Params {
 		"03c559769d5f7bb64c28f11760cb36a2933596ca8a966bc36a09d50c24c48cc3e8",
 		"03b5d90257ad24caf22fa8a11ce270ea57f3c2597e52322b453d4919ebec4e6300",
 	}
-
+	copy.SecretaryGeneral = "0349cb77a69aa35be0bcb044ffd41a616b8367136d3b339d515b1023cc0f302f87"
+	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 170000
 	copy.CRCOnlyDPOSHeight = 211000
-	copy.PublicDPOSHeight = 234000
+	copy.PublicDPOSHeight = 231500
 	copy.CRVotingStartHeight = 292000
-	copy.CRCommitteeStartHeight = 1000000 // todo correct me when height has been confirmed
+	copy.CRCommitteeStartHeight = 442000
 	copy.EnableActivateIllegalHeight = 256000
 	copy.CheckRewardHeight = 280000
 	copy.VoteStatisticsHeight = 0
 	copy.RegisterCRByDIDHeight = 393000
 	copy.EnableUtxoDB = true
+	copy.VoterRejectPercentage = 10
+	copy.CRCAppropriatePercentage = 10
+	copy.MaxCommitteeProposalCount = 128
+	copy.MaxNodePerHost = 10
+	copy.CheckVoteCRCountHeight = 435000
+
 	return &copy
 }
 
@@ -301,6 +359,9 @@ type Params struct {
 	// DefaultPort defines the default peer-to-peer port for the network.
 	DefaultPort uint16
 
+	// PrintLevel defines the level to print log.
+	PrintLevel uint32
+
 	// DNSSeeds defines a list of DNS seeds for the network to discover peers.
 	DNSSeeds []string
 
@@ -316,6 +377,16 @@ type Params struct {
 
 	// CRCAddress defines the CRC address which receiving mining rewards.
 	CRCAddress common.Uint168
+
+	// CRCFoundation defines the CRC foundation address.
+	CRCFoundation common.Uint168
+
+	// CRCCommitteeAddress defines the CR committee address which receiving
+	// appropriation from CRC foundation address.
+	CRCCommitteeAddress common.Uint168
+
+	// DestroyELAAddress defines address which receiving destroyed ELA.
+	DestroyELAAddress common.Uint168
 
 	// GenesisBlock defines the first block of the chain.
 	GenesisBlock *types.Block
@@ -389,6 +460,7 @@ type Params struct {
 	EnableActivateIllegalHeight uint32
 
 	// CheckRewardHeight defines the height to check reward in coin base
+
 	// with new check function.
 	CheckRewardHeight uint32
 
@@ -397,7 +469,7 @@ type Params struct {
 	VoteStatisticsHeight uint32
 
 	// RegisterCRByDIDHeight defines the height to support register and update
-	// CR by CID and DID.
+	// CR by CID and CID.
 	RegisterCRByDIDHeight uint32
 
 	// CRCArbiters defines the fixed CRC arbiters producing the block.
@@ -447,11 +519,59 @@ type Params struct {
 	// measured by block height
 	CRDutyPeriod uint32
 
+	// DepositLockupBlocks indicates how many blocks need to wait when cancel
+	// producer or CRC was triggered, and can submit return deposit coin request
+	CRDepositLockupBlocks uint32
+
+	// ProposalCRVotingPeriod defines the duration of CR voting about a proposal
+	ProposalCRVotingPeriod uint32
+
+	// ProposalPublicVotingPeriod defines the duration of all voters send
+	// reject vote about a proposal
+	ProposalPublicVotingPeriod uint32
+
+	// CRAgreementCount defines minimum count to let a registered proposal
+	// transfer to CRAgreed state.
+	CRAgreementCount uint32
+
+	// VoterRejectPercentage defines percentage about voters reject a proposal.
+	VoterRejectPercentage float64
+
+	// CRCAppropriatePercentage defines percentage about CRC appropriation.
+	CRCAppropriatePercentage float64
+
+	//MaxCommitteeProposalCount defines per committee max proposal count
+	MaxCommitteeProposalCount uint32
+
+	// SecretaryGeneral defines the secretary general of CR by public key.
+	SecretaryGeneral string
+
+	// MaxProposalTrackingCount defines the max count of CRC proposal tracking
+	// transaction.
+	MaxProposalTrackingCount uint8
+
 	// CkpManager holds checkpoints save automatically.
 	CkpManager *checkpoint.Manager
 
 	// EnableUtxoDB indicate whether to enable utxo database.
 	EnableUtxoDB bool
+
+	// WalletPath defines the wallet path used by DPoS arbiters and CR members.
+	WalletPath string
+
+	// RPCServiceLevel defines level of service provide to client.
+	RPCServiceLevel string
+
+	// NodeProfileStrategy defines strategy about node profiling.
+	NodeProfileStrategy string
+
+	// TxCacheVolume defines the default volume of the transaction cache.
+	TxCacheVolume uint32
+	//MaxNodePerHost defines max nodes that one host can establish
+	MaxNodePerHost uint32
+
+	// CheckVoteCRCountHeight defines the height to check count of vote CR
+	CheckVoteCRCountHeight uint32
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time

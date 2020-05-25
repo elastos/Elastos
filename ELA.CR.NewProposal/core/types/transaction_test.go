@@ -1,12 +1,15 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package types
 
 import (
 	"bytes"
+	crand "crypto/rand"
+	"encoding/binary"
+	"fmt"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -540,6 +543,159 @@ func (s *transactionSuite) TestInactiveArbitrators_SerializeDeserialize() {
 	}
 }
 
+func (s *transactionSuite) TestCRInfo_SerializeDeserialize() {
+	buf := new(bytes.Buffer)
+
+	crPayload1 := randomCRInfoPayload()
+	crPayload1.DID = common.Uint168{}
+	crPayload1.Serialize(buf, payload.CRInfoVersion)
+
+	crPayload2 := &payload.CRInfo{}
+	crPayload2.Deserialize(buf, payload.CRInfoVersion)
+
+	s.True(crInfoPayloadEqual(crPayload1, crPayload2))
+
+	buf = new(bytes.Buffer)
+	crPayload1.Serialize(buf, payload.CRInfoDIDVersion)
+
+	crPayload2 = &payload.CRInfo{}
+	crPayload2.Deserialize(buf, payload.CRInfoDIDVersion)
+
+	s.True(crInfoPayloadEqual(crPayload1, crPayload2))
+}
+
+func crInfoPayloadEqual(crPayload1 *payload.CRInfo, crPayload2 *payload.CRInfo) bool {
+	if !bytes.Equal(crPayload1.Code, crPayload2.Code) ||
+		!crPayload1.CID.IsEqual(crPayload2.CID) ||
+		!crPayload1.DID.IsEqual(crPayload2.DID) ||
+		crPayload1.NickName != crPayload2.NickName ||
+		crPayload1.Url != crPayload2.Url ||
+		crPayload1.Location != crPayload2.Location ||
+		!bytes.Equal(crPayload1.Signature, crPayload2.Signature) {
+		return false
+	}
+
+	return true
+}
+
+func (s *transactionSuite) TestUnregisterCR_Deserialize() {
+	unregisterCRPayload1 := randomUnregisterCRPayload()
+
+	buf := new(bytes.Buffer)
+	unregisterCRPayload1.Serialize(buf, payload.UnregisterCRVersion)
+
+	unregisterCRPayload2 := &payload.UnregisterCR{}
+	unregisterCRPayload2.Deserialize(buf, payload.UnregisterCRVersion)
+
+	s.True(unregisterCRPayloadEqual(unregisterCRPayload1, unregisterCRPayload2))
+}
+
+func unregisterCRPayloadEqual(payload1 *payload.UnregisterCR, payload2 *payload.UnregisterCR) bool {
+	if !payload1.CID.IsEqual(payload2.CID) ||
+		!bytes.Equal(payload1.Signature, payload2.Signature) {
+		return false
+	}
+
+	return true
+}
+
+func (s *transactionSuite) TestCRCProposal_Deserialize() {
+
+	crpPayload1 := randomCRCProposalPayload()
+
+	buf := new(bytes.Buffer)
+	crpPayload1.Serialize(buf, payload.CRCProposalVersion)
+
+	crpPayload2 := &payload.CRCProposal{}
+	crpPayload2.Deserialize(buf, payload.CRCProposalVersion)
+
+	s.True(crpPayloadEqual(crpPayload1, crpPayload2))
+}
+
+func crpPayloadEqual(payload1 *payload.CRCProposal, payload2 *payload.CRCProposal) bool {
+	return payload1.ProposalType == payload2.ProposalType &&
+		bytes.Equal(payload1.OwnerPublicKey, payload2.OwnerPublicKey) &&
+		payload1.CRCouncilMemberDID.IsEqual(payload2.CRCouncilMemberDID) &&
+		payload1.DraftHash.IsEqual(payload2.DraftHash) &&
+		bytes.Equal(payload1.Signature, payload2.Signature) &&
+		bytes.Equal(payload1.CRCouncilMemberSignature, payload2.CRCouncilMemberSignature)
+}
+
+func budgetsEqual(budgets1 []common.Fixed64, budgets2 []common.Fixed64) bool {
+	if len(budgets1) != len(budgets2) {
+		return false
+	}
+	for i, v := range budgets1 {
+		if v != budgets2[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (s *transactionSuite) TestCRCProposalReview_Deserialize() {
+	proposalReview1 := randomCRCProposalReviewPayload()
+
+	buf := new(bytes.Buffer)
+	proposalReview1.Serialize(buf, payload.CRCProposalReviewVersion)
+
+	proposalReview2 := &payload.CRCProposalReview{}
+	proposalReview2.Deserialize(buf, payload.CRCProposalReviewVersion)
+
+	s.True(crcProposalReviewPayloadEqual(proposalReview1, proposalReview2))
+}
+
+func crcProposalReviewPayloadEqual(payload1 *payload.CRCProposalReview,
+	payload2 *payload.CRCProposalReview) bool {
+	if !payload1.ProposalHash.IsEqual(payload2.ProposalHash) ||
+		payload1.VoteResult != payload2.VoteResult ||
+		!payload1.OpinionHash.IsEqual(payload2.OpinionHash) ||
+		!payload1.DID.IsEqual(payload2.DID) ||
+		!bytes.Equal(payload1.Signature, payload2.Signature) {
+		return false
+	}
+
+	return true
+}
+
+func randomCRCProposalReviewPayload() *payload.CRCProposalReview {
+	return &payload.CRCProposalReview{
+		ProposalHash: *randomUint256(),
+		VoteResult:   payload.VoteResult(rand.Int() % 3),
+		OpinionHash:  *randomUint256(),
+		DID:          *randomUint168(),
+		Signature:    randomBytes(65),
+	}
+}
+
+func (s *transactionSuite) TestCRCProposalTracking_Deserialize() {
+
+	ctpPayload1 := randomCRCProposalTrackingPayload()
+
+	buf := new(bytes.Buffer)
+	err := ctpPayload1.Serialize(buf, payload.CRCProposalTrackingVersion)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	ctpPayload2 := &payload.CRCProposalTracking{}
+	err = ctpPayload2.Deserialize(buf, payload.CRCProposalTrackingVersion)
+	s.True(ctpPayloadEqual(ctpPayload1, ctpPayload2))
+}
+
+func ctpPayloadEqual(payload1 *payload.CRCProposalTracking, payload2 *payload.CRCProposalTracking) bool {
+	return payload1.ProposalTrackingType == payload2.ProposalTrackingType &&
+		payload1.ProposalHash.IsEqual(payload2.ProposalHash) &&
+		payload1.MessageHash.IsEqual(payload2.MessageHash) &&
+		payload1.SecretaryGeneralOpinionHash.IsEqual(payload2.SecretaryGeneralOpinionHash) &&
+		payload1.Stage == payload2.Stage &&
+		bytes.Equal(payload1.OwnerPublicKey, payload2.OwnerPublicKey) &&
+		bytes.Equal(payload1.NewOwnerPublicKey, payload2.NewOwnerPublicKey) &&
+		bytes.Equal(payload1.OwnerSignature, payload2.OwnerSignature) &&
+		bytes.Equal(payload1.NewOwnerSignature, payload2.NewOwnerSignature) &&
+		bytes.Equal(payload1.SecretaryGeneralSignature, payload2.SecretaryGeneralSignature)
+}
+
 func (s *transactionSuite) TestTransaction_SpecificSample() {
 	// update producer transaction deserialize sample
 	byteReader := new(bytes.Buffer)
@@ -659,6 +815,72 @@ func randomOldVersionTransaction(oldVersion bool, txType byte, inputNum, outputN
 	return txn
 }
 
+func randomCRInfoPayload() *payload.CRInfo {
+	return &payload.CRInfo{
+		Code:      randomBytes(34),
+		CID:       *randomUint168(),
+		DID:       *randomUint168(),
+		NickName:  randomString(),
+		Url:       randomString(),
+		Location:  rand.Uint64(),
+		Signature: randomBytes(65),
+	}
+}
+
+func randomUnregisterCRPayload() *payload.UnregisterCR {
+	return &payload.UnregisterCR{
+		CID:       *randomUint168(),
+		Signature: randomBytes(65),
+	}
+}
+
+func randomCRCProposalPayload() *payload.CRCProposal {
+	return &payload.CRCProposal{
+		ProposalType:             payload.CRCProposalType(randomBytes(1)[0]),
+		OwnerPublicKey:           randomBytes(33),
+		CRCouncilMemberDID:       *randomUint168(),
+		DraftHash:                *randomUint256(),
+		Budgets:                  randomBudgets(3),
+		Signature:                randomBytes(64),
+		CRCouncilMemberSignature: randomBytes(64),
+	}
+}
+
+func randomCRCProposalTrackingPayload() *payload.CRCProposalTracking {
+	return &payload.CRCProposalTracking{
+		ProposalTrackingType:        payload.CRCProposalTrackingType(rand.Uint32()),
+		ProposalHash:                *randomUint256(),
+		MessageHash:                 *randomUint256(),
+		Stage:                       randomUint8(),
+		OwnerPublicKey:              randomBytes(33),
+		NewOwnerPublicKey:           randomBytes(35),
+		OwnerSignature:              randomBytes(64),
+		NewOwnerSignature:           randomBytes(64),
+		SecretaryGeneralSignature:   randomBytes(64),
+		SecretaryGeneralOpinionHash: *randomUint256(),
+	}
+}
+
+func randomBudgets(n int) []payload.Budget {
+	budgets := make([]payload.Budget, 0)
+	for i := 0; i < n; i++ {
+		var budgetType = payload.NormalPayment
+		if i == 0 {
+			budgetType = payload.Imprest
+		}
+		if i == len(budgets)-1 {
+			budgetType = payload.FinalPayment
+		}
+		budget := &payload.Budget{
+			Stage:  byte(i),
+			Type:   budgetType,
+			Amount: randomFix64(),
+		}
+		budgets = append(budgets, *budget)
+	}
+	return budgets
+}
+
 func randomBlockHeaderBytes() []byte {
 	buf := new(bytes.Buffer)
 	header := randomBlockHeader()
@@ -748,6 +970,13 @@ func randomUint168() *common.Uint168 {
 	return result
 }
 
+func randomUint8() uint8 {
+	randBytes := make([]byte, 1)
+	rand.Read(randBytes)
+
+	return uint8(randBytes[0])
+}
+
 func randomSignature() []byte {
 	randBytes := make([]byte, 64)
 	rand.Read(randBytes)
@@ -759,4 +988,22 @@ func randomPublicKey() []byte {
 	randBytes := make([]byte, 33)
 	rand.Read(randBytes)
 	return randBytes
+}
+
+func randomFix64() common.Fixed64 {
+	var randNum int64
+	binary.Read(crand.Reader, binary.BigEndian, &randNum)
+	return common.Fixed64(randNum)
+}
+
+func randomString() string {
+	a := make([]byte, 20)
+	rand.Read(a)
+	return common.BytesToHexString(a)
+}
+
+func randomBytes(len int) []byte {
+	a := make([]byte, len)
+	rand.Read(a)
+	return a
 }

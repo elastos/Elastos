@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package peer
 
@@ -375,7 +375,8 @@ func (p *Peer) makeEmptyMessage(cmd string) (p2p.Message, error) {
 }
 
 func (p *Peer) readMessage() (p2p.Message, error) {
-	msg, err := p2p.ReadMessage(p.conn, p.cfg.Magic, p.makeEmptyMessage)
+	msg, err := p2p.ReadMessage(
+		p.conn, p.cfg.Magic, p2p.ReadMessageTimeOut, p.makeEmptyMessage)
 	// Use closures to log expensive operations so they are only run when
 	// the logging level requires it.
 	log.Debugf("%v", newLogClosure(func() string {
@@ -412,7 +413,7 @@ func (p *Peer) writeMessage(msg p2p.Message) error {
 	}))
 
 	// Write the message to the peer.
-	return p2p.WriteMessage(p.conn, p.cfg.Magic, msg,
+	return p2p.WriteMessage(p.conn, p.cfg.Magic, msg, p2p.WriteMessageTimeOut,
 		func(m p2p.Message) (*types.DposBlock, bool) {
 			msgBlock, ok := m.(*pmsg.Block)
 			if !ok {

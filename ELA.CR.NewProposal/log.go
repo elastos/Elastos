@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package main
 
@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/common/config/settings"
 	"github.com/elastos/Elastos.ELA/common/log"
 	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos/state"
@@ -169,22 +170,22 @@ var (
 )
 
 // The default amount of logging is none.
-func setupLog(c *cli.Context, s *settings) {
+func setupLog(c *cli.Context, s *settings.Settings) {
 	flagDataDir := c.String("datadir")
 	path := filepath.Join(flagDataDir, nodeLogPath)
 
-	logger = log.NewDefault(path, uint8(s.Config().PrintLevel),
+	logger = log.NewDefault(path, uint8(s.Params().PrintLevel),
 		s.Config().MaxPerLogSize, s.Config().MaxLogsSize)
 	pgBar = newProgress(logger.Writer())
 
 	admrlog := wrap(logger, elalog.LevelOff)
 	cmgrlog := wrap(logger, elalog.LevelOff)
-	synclog := wrap(logger, s.Config().PrintLevel)
-	peerlog := wrap(logger, s.Config().PrintLevel)
-	routlog := wrap(logger, s.Config().PrintLevel)
-	elanlog := wrap(logger, s.Config().PrintLevel)
-	statlog := wrap(logger, s.Config().PrintLevel)
-	crstatlog := wrap(logger, s.Config().PrintLevel)
+	synclog := wrap(logger, elalog.Level(s.Params().PrintLevel))
+	peerlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
+	routlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
+	elanlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
+	statlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
+	crstatlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
 
 	addrmgr.UseLogger(admrlog)
 	connmgr.UseLogger(cmgrlog)
