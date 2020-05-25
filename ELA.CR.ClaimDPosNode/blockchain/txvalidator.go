@@ -278,6 +278,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			log.Warn("[checkCRAssetsRectifyTransaction],", err)
 			return elaerr.Simple(elaerr.ErrTxAssetsRectify, err)
 		}
+		return nil
 	}
 
 	if err := b.checkTransactionFee(txn, references); err != nil {
@@ -945,7 +946,7 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 			}
 			return nil
 		}
-	case CRCAppropriation:
+	case CRCAppropriation, CRAssetsRectify:
 		if len(tx.Programs) != 0 {
 			return errors.New("CRCAppropriation txs should have no programs")
 		}
@@ -1046,6 +1047,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.CRCProposalWithdraw:
 	case *payload.CRCProposalTracking:
 	case *payload.CRCAppropriation:
+	case *payload.CRAssetsRectify:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -1930,7 +1932,7 @@ func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
 func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 	references map[*Input]Output) error {
 	// Inputs count should be greater than or equal to MaxCRAssetsAddressUTXOCount
-	if len(txn.Inputs) <= int(b.chainParams.MaxCRAssetsAddressUTXOCount) {
+	if len(txn.Inputs) < int(b.chainParams.MaxCRAssetsAddressUTXOCount) {
 		return errors.New("inputs count should be greater than or " +
 			"equal to MaxCRAssetsAddressUTXOCount")
 	}
