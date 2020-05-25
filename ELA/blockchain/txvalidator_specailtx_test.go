@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -15,6 +15,7 @@ import (
 	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -35,6 +36,10 @@ type txValidatorSpecialTxTestSuite struct {
 	Chain              *BlockChain
 }
 
+func init() {
+	testing.Init()
+}
+
 func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 	arbitratorsStr := []string{
 		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
@@ -51,16 +56,19 @@ func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 		"0c11ebca60af2a09ac13dd84fd29c03b99cd086a08a69a9e5b87255fd9cf2eee",
 		"ad44a6d5a5d1f7cafa2fa82c719108e9814ff5c71078e1cafa9f734343a2f806",
 	}
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 
 	s.arbitrators = &state.ArbitratorsMock{
-		CurrentArbitrators: make([][]byte, 0),
+		CurrentArbitrators: make([]state.ArbiterMember, 0),
 		MajorityCount:      3,
 	}
 	for _, v := range arbitratorsStr {
 		a, _ := common.HexStringToBytes(v)
-		s.arbitrators.CurrentArbitrators = append(s.arbitrators.CurrentArbitrators, a)
+		ar, _ := state.NewOriginArbiter(state.Origin, a)
+		s.arbitrators.CurrentArbitrators = append(
+			s.arbitrators.CurrentArbitrators, ar)
 	}
-	s.arbitrators.Snapshot = []*state.KeyFrame{
+	s.arbitrators.Snapshot = []*state.CheckPoint{
 		{
 			CurrentArbitrators: s.arbitrators.CurrentArbitrators,
 		},
@@ -71,13 +79,13 @@ func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 		s.arbitratorsPriKeys = append(s.arbitratorsPriKeys, a)
 	}
 
-	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "special"),
-		config.DefaultParams.GenesisBlock)
+	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "special"), &config.DefaultParams)
 	if err != nil {
 		s.Error(err)
 	}
 	s.Chain, err = New(chainStore, &config.DefaultParams,
-		state.NewState(&config.DefaultParams, nil, nil), nil)
+		state.NewState(&config.DefaultParams, nil,
+			nil), nil)
 	if err != nil {
 		s.Error(err)
 	}
@@ -112,7 +120,8 @@ func (s *txValidatorSpecialTxTestSuite) TestValidateProposalEvidence() {
 	s.NoError(validateProposalEvidence(evidence))
 
 	// let proposal sanity and context check pass
-	evidence.Proposal.Sponsor = s.arbitrators.CurrentArbitrators[0]
+	evidence.Proposal.Sponsor =
+		s.arbitrators.CurrentArbitrators[0].GetNodePublicKey()
 	evidence.Proposal.ViewOffset = rand.Uint32()
 	evidence.Proposal.Sign, _ = crypto.Sign(s.arbitratorsPriKeys[0],
 		evidence.Proposal.Data())
@@ -127,7 +136,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalProposals() {
 		BlockHeight: header.Height, //different from header.Height
 		BlockHeader: buf.Bytes(),
 		Proposal: payload.DPOSProposal{
-			Sponsor:    s.arbitrators.CurrentArbitrators[0],
+			Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 			BlockHash:  header.Hash(),
 			ViewOffset: rand.Uint32(),
 		},
@@ -151,7 +160,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalProposals() {
 		BlockHeader: buf.Bytes(),
 		BlockHeight: header2.Height,
 		Proposal: payload.DPOSProposal{
-			Sponsor:    s.arbitrators.CurrentArbitrators[0],
+			Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 			BlockHash:  header2.Hash(),
 			ViewOffset: rand.Uint32(),
 		},
@@ -215,7 +224,7 @@ func (s *txValidatorSpecialTxTestSuite) TestValidateVoteEvidence() {
 			BlockHeader: buf.Bytes(),
 			Proposal: payload.DPOSProposal{
 				BlockHash:  header.Hash(),
-				Sponsor:    s.arbitrators.CurrentArbitrators[0],
+				Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 				ViewOffset: rand.Uint32(),
 			},
 		},
@@ -230,7 +239,8 @@ func (s *txValidatorSpecialTxTestSuite) TestValidateVoteEvidence() {
 	evidence.Vote.ProposalHash = evidence.Proposal.Hash()
 	s.NoError(validateVoteEvidence(evidence), "vote verify error")
 
-	evidence.Vote.Signer = s.arbitrators.CurrentArbitrators[1]
+	evidence.Vote.Signer =
+		s.arbitrators.CurrentArbitrators[1].GetNodePublicKey()
 	evidence.Vote.Accept = true
 	evidence.Vote.Sign, _ = crypto.Sign(s.arbitratorsPriKeys[1],
 		evidence.Vote.Data())
@@ -247,12 +257,12 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_SameProposal()
 			BlockHeader: buf.Bytes(),
 			Proposal: payload.DPOSProposal{
 				BlockHash:  header.Hash(),
-				Sponsor:    s.arbitrators.CurrentArbitrators[0],
+				Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 				ViewOffset: rand.Uint32(),
 			},
 		},
 		Vote: payload.DPOSProposalVote{
-			Signer: s.arbitrators.CurrentArbitrators[1],
+			Signer: s.arbitrators.CurrentArbitrators[1].GetNodePublicKey(),
 			Accept: true,
 		},
 	}
@@ -273,7 +283,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_SameProposal()
 	cmpEvidence := &payload.VoteEvidence{
 		ProposalEvidence: evidence.ProposalEvidence,
 		Vote: payload.DPOSProposalVote{
-			Signer:       s.arbitrators.CurrentArbitrators[1],
+			Signer:       s.arbitrators.CurrentArbitrators[1].GetNodePublicKey(),
 			Accept:       false,
 			ProposalHash: evidence.Proposal.Hash(),
 		},
@@ -312,12 +322,12 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 			BlockHeader: buf.Bytes(),
 			Proposal: payload.DPOSProposal{
 				BlockHash:  header.Hash(),
-				Sponsor:    s.arbitrators.CurrentArbitrators[0],
+				Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 				ViewOffset: rand.Uint32(),
 			},
 		},
 		Vote: payload.DPOSProposalVote{
-			Signer: s.arbitrators.CurrentArbitrators[1],
+			Signer: s.arbitrators.CurrentArbitrators[1].GetNodePublicKey(),
 			Accept: true,
 		},
 	}
@@ -334,12 +344,12 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 			BlockHeader: buf.Bytes(),
 			Proposal: payload.DPOSProposal{
 				BlockHash:  header2.Hash(),
-				Sponsor:    s.arbitrators.CurrentArbitrators[0],
+				Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 				ViewOffset: rand.Uint32(),
 			},
 		},
 		Vote: payload.DPOSProposalVote{
-			Signer:       s.arbitrators.CurrentArbitrators[1],
+			Signer:       s.arbitrators.CurrentArbitrators[1].GetNodePublicKey(),
 			Accept:       false,
 			ProposalHash: evidence.Proposal.Hash(),
 		},
@@ -361,7 +371,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 	cmpEvidence.BlockHeader = buf.Bytes()
 	cmpEvidence.Proposal.BlockHash = header2.Hash()
 	cmpEvidence.Proposal.Sponsor = //set different sponsor
-		s.arbitrators.CurrentArbitrators[2]
+		s.arbitrators.CurrentArbitrators[2].GetNodePublicKey()
 	s.updateEvidenceSigns(cmpEvidence, s.arbitratorsPriKeys[2],
 		s.arbitratorsPriKeys[1])
 	if evidence.Vote.Hash().Compare(cmpEvidence.Vote.Hash()) < 0 {
@@ -375,7 +385,8 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 		"should be same sponsor")
 
 	// set different view offset
-	cmpEvidence.Proposal.Sponsor = s.arbitrators.CurrentArbitrators[0]
+	cmpEvidence.Proposal.Sponsor =
+		s.arbitrators.CurrentArbitrators[0].GetNodePublicKey()
 	cmpEvidence.Proposal.ViewOffset = evidence.Proposal.ViewOffset + 1
 	s.updateEvidenceSigns(cmpEvidence, s.arbitratorsPriKeys[0],
 		s.arbitratorsPriKeys[1])
@@ -481,7 +492,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalBlocks() {
 	// fill confirms of evidences
 	confirm := &payload.Confirm{
 		Proposal: payload.DPOSProposal{
-			Sponsor:    s.arbitrators.CurrentArbitrators[0],
+			Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 			BlockHash:  header.Hash(),
 			ViewOffset: rand.Uint32(),
 		},
@@ -489,7 +500,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalBlocks() {
 	}
 	cmpConfirm := &payload.Confirm{
 		Proposal: payload.DPOSProposal{
-			Sponsor:    s.arbitrators.CurrentArbitrators[0],
+			Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 			BlockHash:  header2.Hash(),
 			ViewOffset: rand.Uint32(),
 		},
@@ -508,7 +519,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalBlocks() {
 	for i := 0; i < 4; i++ {
 		vote := payload.DPOSProposalVote{
 			ProposalHash: confirm.Proposal.Hash(),
-			Signer:       s.arbitrators.CurrentArbitrators[i],
+			Signer:       s.arbitrators.CurrentArbitrators[i].GetNodePublicKey(),
 			Accept:       true,
 		}
 		vote.Sign, _ = crypto.Sign(s.arbitratorsPriKeys[i], vote.Data())
@@ -517,7 +528,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalBlocks() {
 	for i := 1; i < 5; i++ {
 		vote := payload.DPOSProposalVote{
 			ProposalHash: cmpConfirm.Proposal.Hash(),
-			Signer:       s.arbitrators.CurrentArbitrators[i],
+			Signer:       s.arbitrators.CurrentArbitrators[i].GetNodePublicKey(),
 			Accept:       true,
 		}
 		vote.Sign, _ = crypto.Sign(s.arbitratorsPriKeys[i], vote.Data())
@@ -530,7 +541,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalBlocks() {
 
 	// correct view offset
 	proposal := payload.DPOSProposal{
-		Sponsor:    s.arbitrators.CurrentArbitrators[0],
+		Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 		BlockHash:  *randomUint256(),
 		ViewOffset: confirm.Proposal.ViewOffset,
 	}
@@ -540,7 +551,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalBlocks() {
 	for i := 1; i < 5; i++ {
 		vote := payload.DPOSProposalVote{
 			ProposalHash: cmpConfirm.Proposal.Hash(),
-			Signer:       s.arbitrators.CurrentArbitrators[i],
+			Signer:       s.arbitrators.CurrentArbitrators[i].GetNodePublicKey(),
 			Accept:       true,
 		}
 		vote.Sign, _ = crypto.Sign(s.arbitratorsPriKeys[i], vote.Data())
@@ -553,7 +564,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalBlocks() {
 
 	// correct block hash corresponding to header hash
 	proposal = payload.DPOSProposal{
-		Sponsor:    s.arbitrators.CurrentArbitrators[0],
+		Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 		BlockHash:  header2.Hash(),
 		ViewOffset: confirm.Proposal.ViewOffset,
 	}
@@ -563,7 +574,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalBlocks() {
 	for i := 1; i < 5; i++ {
 		vote := payload.DPOSProposalVote{
 			ProposalHash: cmpConfirm.Proposal.Hash(),
-			Signer:       s.arbitrators.CurrentArbitrators[i],
+			Signer:       s.arbitrators.CurrentArbitrators[i].GetNodePublicKey(),
 			Accept:       true,
 		}
 		vote.Sign, _ = crypto.Sign(s.arbitratorsPriKeys[i], vote.Data())
@@ -606,7 +617,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckSidechainIllegalEvidence() {
 	s.EqualError(CheckSidechainIllegalEvidence(illegalData),
 		"the encodeData cann't be nil")
 
-	illegalData.IllegalSigner = randomPublicKey()
+	illegalData.IllegalSigner = randomBytes(33)
 	s.EqualError(CheckSidechainIllegalEvidence(illegalData),
 		"the encodeData format is error")
 
@@ -615,7 +626,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckSidechainIllegalEvidence() {
 	s.EqualError(CheckSidechainIllegalEvidence(illegalData),
 		"illegal signer is not one of current arbitrators")
 
-	illegalData.IllegalSigner = s.arbitrators.CurrentArbitrators[0]
+	illegalData.IllegalSigner = s.arbitrators.CurrentArbitrators[0].GetNodePublicKey()
 	s.EqualError(CheckSidechainIllegalEvidence(illegalData),
 		"[Uint168FromAddress] error, len != 34")
 
@@ -624,7 +635,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckSidechainIllegalEvidence() {
 		"insufficient signs count")
 
 	for i := 0; i < 4; i++ {
-		s, _ := crypto.Sign(s.arbitrators.CurrentArbitrators[0],
+		s, _ := crypto.Sign(s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 			illegalData.Data(payload.SidechainIllegalDataVersion))
 		illegalData.Signs = append(illegalData.Signs, s)
 	}
@@ -682,11 +693,11 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 		"sponsor is not belong to arbitrators")
 
 	// correct sponsor
-	s.arbitrators.CRCArbitrators = [][]byte{
-		p.Sponsor,
-	}
+	ar, _ := state.NewOriginArbiter(state.Origin, p.Sponsor)
+	s.arbitrators.CRCArbitrators = []state.ArbiterMember{ar}
 	for i := 0; i < 3; i++ { // add more than InactiveEliminateCount arbiters
-		p.Arbitrators = append(p.Arbitrators, s.arbitrators.CurrentArbitrators[i])
+		p.Arbitrators = append(p.Arbitrators,
+			s.arbitrators.CurrentArbitrators[i].GetNodePublicKey())
 	}
 
 	// correct number of Arbitrators
@@ -698,38 +709,43 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 	// correct "Arbitrators" to be current arbitrators
 	p.Arbitrators = make([][]byte, 0)
 	for i := 4; i < 5; i++ {
-		p.Arbitrators = append(p.Arbitrators, s.arbitrators.CurrentArbitrators[i])
+		p.Arbitrators = append(p.Arbitrators,
+			s.arbitrators.CurrentArbitrators[i].GetNodePublicKey())
 	}
 	s.EqualError(CheckInactiveArbitrators(tx),
 		"invalid multi sign script code")
 
 	// let "Arbitrators" has CRC arbitrators
-	s.arbitrators.CRCArbitrators = [][]byte{
-		p.Sponsor,
+	ar, _ = state.NewOriginArbiter(state.Origin, p.Sponsor)
+	s.arbitrators.CRCArbitrators = []state.ArbiterMember{
+		ar,
 		s.arbitrators.CurrentArbitrators[4],
 	}
 	s.EqualError(CheckInactiveArbitrators(tx),
 		"inactive arbiters should not include CRC")
 
 	// set invalid redeem script
-	s.arbitrators.CRCArbitrators = [][]byte{}
+	s.arbitrators.CRCArbitrators = []state.ArbiterMember{}
 	for i := 0; i < 5; i++ {
 		_, pk, _ := crypto.GenerateKeyPair()
 		pkBuf, _ := pk.EncodePoint(true)
-		s.arbitrators.CRCArbitrators = append(s.arbitrators.CRCArbitrators, pkBuf)
+		ar, _ = state.NewOriginArbiter(state.Origin, pkBuf)
+		s.arbitrators.CRCArbitrators = append(s.arbitrators.CRCArbitrators, ar)
 	}
 	s.arbitrators.CRCArbitratorsMap = map[string]*state.Producer{}
 	for _, v := range s.arbitrators.CRCArbitrators {
-		s.arbitrators.CRCArbitratorsMap[common.BytesToHexString(v)] = nil
+		s.arbitrators.CRCArbitratorsMap[common.BytesToHexString(
+			v.GetNodePublicKey())] = nil
 	}
-	p.Sponsor = s.arbitrators.CRCArbitrators[0]
-	var arbitrators [][]byte
+	p.Sponsor = s.arbitrators.CRCArbitrators[0].GetNodePublicKey()
+	var arbitrators []state.ArbiterMember
 	for i := 0; i < 4; i++ {
 		arbitrators = append(arbitrators, s.arbitrators.CurrentArbitrators[i])
 	}
 	_, pk, _ := crypto.GenerateKeyPair()
 	pkBuf, _ := pk.EncodePoint(true)
-	arbitrators = append(arbitrators, pkBuf)
+	ar, _ = state.NewOriginArbiter(state.Origin, pkBuf)
+	arbitrators = append(arbitrators, ar)
 	tx.Programs[0].Code = s.createArbitratorsRedeemScript(arbitrators)
 	s.EqualError(CheckInactiveArbitrators(tx),
 		"invalid multi sign public key")
@@ -769,23 +785,26 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckUpdateVersion() {
 
 	// set invalid redeem script
 	p.EndHeight = p.StartHeight + 5
-	s.arbitrators.CRCArbitrators = [][]byte{}
+	s.arbitrators.CRCArbitrators = []state.ArbiterMember{}
 	for i := 0; i < 5; i++ {
 		_, pk, _ := crypto.GenerateKeyPair()
 		pkBuf, _ := pk.EncodePoint(true)
-		s.arbitrators.CRCArbitrators = append(s.arbitrators.CRCArbitrators, pkBuf)
+		ar, _ := state.NewOriginArbiter(state.Origin, pkBuf)
+		s.arbitrators.CRCArbitrators = append(s.arbitrators.CRCArbitrators, ar)
 	}
 	s.arbitrators.CRCArbitratorsMap = map[string]*state.Producer{}
 	for _, v := range s.arbitrators.CRCArbitrators {
-		s.arbitrators.CRCArbitratorsMap[common.BytesToHexString(v)] = nil
+		s.arbitrators.CRCArbitratorsMap[common.BytesToHexString(
+			v.GetNodePublicKey())] = nil
 	}
-	var arbitrators [][]byte
+	var arbitrators []state.ArbiterMember
 	for i := 0; i < 4; i++ {
 		arbitrators = append(arbitrators, s.arbitrators.CurrentArbitrators[i])
 	}
 	_, pk, _ := crypto.GenerateKeyPair()
 	pkBuf, _ := pk.EncodePoint(true)
-	arbitrators = append(arbitrators, pkBuf)
+	ar, _ := state.NewOriginArbiter(state.Origin, pkBuf)
+	arbitrators = append(arbitrators, ar)
 	tx.Programs[0].Code = s.createArbitratorsRedeemScript(arbitrators)
 	s.EqualError(s.Chain.checkUpdateVersionTransaction(tx),
 		"invalid multi sign public key")
@@ -809,11 +828,11 @@ func (s *txValidatorSpecialTxTestSuite) updateEvidenceSigns(
 }
 
 func (s *txValidatorSpecialTxTestSuite) createArbitratorsRedeemScript(
-	arbitrators [][]byte) []byte {
+	arbitrators []state.ArbiterMember) []byte {
 
 	var pks []*crypto.PublicKey
 	for _, v := range arbitrators {
-		pk, err := crypto.DecodePoint(v)
+		pk, err := crypto.DecodePoint(v.GetNodePublicKey())
 		if err != nil {
 			return nil
 		}

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -25,15 +25,14 @@ import (
 
 var pow *Service
 var arbitratorsMock *state.ArbitratorsMock
-var arbitrators [][]byte
+var arbitrators []state.ArbiterMember
 var originLedger *blockchain.Ledger
 
 func TestService_Init(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 
 	params := &config.DefaultParams
-	chainStore, err := blockchain.NewChainStore(filepath.Join(
-		test.DataPath, "service"), config.DefaultParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(filepath.Join(test.DataPath, "service"), params)
 	if err != nil {
 		t.Error(err)
 	}
@@ -53,10 +52,11 @@ func TestService_Init(t *testing.T) {
 		"0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0",
 	}
 
-	arbitrators = make([][]byte, 0)
+	arbitrators = make([]state.ArbiterMember, 0)
 	for _, v := range arbitratorsStr {
 		a, _ := common.HexStringToBytes(v)
-		arbitrators = append(arbitrators, a)
+		ar, _ := state.NewOriginArbiter(state.Origin, a)
+		arbitrators = append(arbitrators, ar)
 	}
 	arbitratorsMock = &state.ArbitratorsMock{
 		CurrentArbitrators: arbitrators,
@@ -99,7 +99,7 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	}
 
 	arbitrators := make([][]byte, 0)
-	candidates := make([][]byte, 0)
+	candidates := make([]state.ArbiterMember, 0)
 	arbitratorHashes := make([]*common.Uint168, 0)
 	candidateHashes := make([]*common.Uint168, 0)
 	arbitratorHashMap := make(map[common.Uint168]interface{})
@@ -121,7 +121,8 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	for i, v := range candidatesStr {
 		vote := i + 1
 		a, _ := common.HexStringToBytes(v)
-		candidates = append(candidates, a)
+		ar, _ := state.NewOriginArbiter(state.Origin, a)
+		candidates = append(candidates, ar)
 		hash, _ := contract.PublicKeyToStandardProgramHash(a)
 		candidateHashes = append(candidateHashes, hash)
 		candidateHashMap[*hash] = nil

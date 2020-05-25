@@ -1,12 +1,21 @@
--- Copyright (c) 2017-2019 The Elastos Foundation
+-- Copyright (c) 2017-2020 The Elastos Foundation
 -- Use of this source code is governed by an MIT
 -- license that can be found in the LICENSE file.
 -- 
 
 local m = require("api")
 
--- client: path, password, if create
-local wallet = client.new("keystore.dat", "123", false)
+local keystore = getWallet()
+local password = getPassword()
+
+if keystore == "" then
+    keystore = "keystore.dat"
+end
+if password == "" then
+    password = "123"
+end
+
+local wallet = client.new(keystore, password, false)
 
 -- account
 local addr = wallet:get_address()
@@ -81,7 +90,7 @@ print("charge", charge)
 
 if vote_candidates_num == vote_candidate_votes_num then
 -- votecontent: vote_type, vote_candidates, vote_candidate_votes
-    local vote_content = votecontent.new(vote_type, vote_candidates, vote_candidate_votes)
+    local vote_content = votecontent.newcr(vote_type, vote_candidates, vote_candidate_votes)
     print("vote_content", vote_content:get())
 
     -- outputpayload

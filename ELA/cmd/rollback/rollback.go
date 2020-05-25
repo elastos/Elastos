@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package rollback
 
@@ -11,11 +11,18 @@ import (
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/common/config/settings"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/database"
 
 	"github.com/urfave/cli"
+)
+
+var (
+	appSettings = settings.NewSettings()
+	dataDir     = "elastos/data"
 )
 
 func NewCommand() *cli.Command {
@@ -29,12 +36,21 @@ func NewCommand() *cli.Command {
 				Name:  "height",
 				Usage: "the final height after rollback",
 			},
+			cmdcom.ConfigFileFlag,
+			cmdcom.DataDirFlag,
+			cmdcom.TestNetFlag,
+			cmdcom.RegTestFlag,
+			cmdcom.InstantBlockFlag,
 		},
 		Action: rollbackAction,
 	}
 }
 
 func rollbackAction(c *cli.Context) error {
+	appSettings.SetContext(c)
+	appSettings.SetupConfig()
+	appSettings.InitParamsValue()
+
 	if c.NumFlags() == 0 {
 		cli.ShowSubcommandHelp(c)
 		return nil
@@ -45,116 +61,59 @@ func rollbackAction(c *cli.Context) error {
 		fmt.Println("get height error:", err)
 		return err
 	}
+	if targetHeight < 0 {
+		fmt.Println("get height error: height must be positive")
+		return nil
+	}
 
 	log.NewDefault("logs/node", 0, 0, 0)
-	fdb, err := blockchain.NewChainStoreFFLDB("elastos/data")
+	chainStore, err := blockchain.NewChainStore(dataDir, appSettings.Params())
 	if err != nil {
+		fmt.Println("create chain store failed, ", err)
 		return err
 	}
-	defer fdb.Close()
-	nodes := getBlockNodes(fdb)
+	defer chainStore.Close()
 
-	store, err := blockchain.NewLevelDB("elastos/data/chain")
+	chain, err := blockchain.New(chainStore, appSettings.Params(), nil, nil)
 	if err != nil {
-		fmt.Println("connect leveldb failed! Please check whether there "+
-			"is already a ela process running.", err)
+		fmt.Println("create blockchain failed, ", err)
+		return err
 	}
-	defer store.Close()
+	nodes := chain.Nodes
 
-	chain := blockchain.ChainStore{IStore: store}
 	currentHeight := len(nodes) - 1
-	if targetHeight >= int(currentHeight) {
+	if targetHeight >= currentHeight {
 		errorStr := fmt.Sprintf("Current height of blockchain is %d,"+
 			" you can't do this, man.", currentHeight)
 		fmt.Println(errorStr)
 		return errors.New(errorStr)
 	}
 
-	for i := currentHeight; int(i) > targetHeight; i-- {
+	for i := currentHeight; i > targetHeight; i-- {
 		fmt.Println("current height is", i)
-		block := new(types.Block)
-		block, _ = fdb.GetBlock(*nodes[i].Hash)
-		if block != nil {
-			rollBackFFLDBBlock(fdb, &block.Header)
+		block, err := chainStore.GetFFLDB().GetBlock(*nodes[i].Hash)
+		if err != nil {
+			return err
 		}
-		fmt.Println("blockhash before rollback:", block.Hash())
-		chain.NewBatch()
-		chain.RollbackTrimmedBlock(block)
-		chain.RollbackBlockHash(block)
-		chain.RollbackTransactions(block)
-		chain.RollbackUnspendUTXOs(block)
-		chain.RollbackUnspend(block)
-		chain.RollbackCurrentBlock(block)
-		chain.RollbackConfirm(block)
-		chain.BatchCommit()
+		if err = removeBlockNode(chainStore.GetFFLDB(), &block.Header); err != nil {
+			return err
+		}
+		fmt.Println("block hash before rollback:", block.Hash())
+		err = chainStore.RollbackBlock(block.Block, nodes[i], nil, blockchain.CalcPastMedianTime(nodes[i-1]))
+		if err != nil {
+			fmt.Println("rollback block failed, ", block.Height, err)
+			return err
+		}
 
 		blockHashAfter := *nodes[i-1].Hash
-		fmt.Println("blockhash after rollback:", blockHashAfter)
+		fmt.Println("block hash after rollback:", blockHashAfter)
 	}
 
 	return nil
 }
 
-func rollBackFFLDBBlock(fflDB blockchain.IFFLDBChainStore, header *types.Header) error {
-	err := fflDB.Update(func(dbTx database.Tx) error {
-		err := blockchain.DBRemoveBlockNode(dbTx, header)
-		if err != nil {
-			return err
-		}
-
-		// Remove the block hash and height from the block index which
-		// tracks the main chain.
-		blockHash := header.Hash()
-		err = blockchain.DBRemoveBlockIndex(dbTx, &blockHash, header.Height)
-		if err != nil {
-			return err
-		}
-
-		return nil
+func removeBlockNode(fflDB blockchain.IFFLDBChainStore, header *types.Header) error {
+	return fflDB.Update(func(dbTx database.Tx) error {
+		return blockchain.DBRemoveBlockNode(dbTx, header)
 	})
-	return err
-}
-
-func getBlockNodes(fdb blockchain.IFFLDBChainStore) []*blockchain.BlockNode {
-	blockNodes := make([]*blockchain.BlockNode, 0)
-	err := fdb.View(func(dbTx database.Tx) error {
-		// Load all of the headers from the data for the known best
-		// chain and construct the block index accordingly.  Since the
-		// number of nodes are already known, perform a single alloc
-		// for them versus a whole bunch of little ones to reduce
-		// pressure on the GC.
-		log.Infof("Loading block index...")
-
-		blockIndexBucket := dbTx.Metadata().Bucket([]byte("blockheaderidx"))
-
-		// Determine how many blocks will be loaded into the index so we can
-		// allocate the right amount.
-		var blockCount int32
-		cursor := blockIndexBucket.Cursor()
-		for ok := cursor.First(); ok; ok = cursor.Next() {
-			blockCount++
-		}
-		log.Info("block count:", blockCount)
-
-		var i int32
-		cursor = blockIndexBucket.Cursor()
-		for ok := cursor.First(); ok; ok = cursor.Next() {
-			header, status, err := blockchain.DeserializeBlockRow(cursor.Value())
-			if err != nil {
-				return err
-			}
-
-			curHash := header.Hash()
-			node := blockchain.NewBlockNode(header, &curHash)
-			node.Status = status
-			blockNodes = append(blockNodes, node)
-			i++
-		}
-
-		return nil
-	})
-	if err != nil {
-		return nil
-	}
-	return blockNodes
 }

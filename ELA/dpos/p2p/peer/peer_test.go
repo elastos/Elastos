@@ -302,6 +302,7 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 			msg, err := p2p.ReadMessage(
 				remoteConn,
 				peerCfg.Magic,
+				p2p.ReadMessageTimeOut,
 				makeEmptyMessage,
 			)
 			if err == io.EOF {
@@ -337,6 +338,7 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 		remoteConn,
 		peerCfg.Magic,
 		invalidVersionMsg,
+		p2p.WriteMessageTimeOut,
 		func(m p2p.Message) (*types.DposBlock, bool) {
 			msgBlock, ok := m.(*pmsg.Block)
 			if !ok {

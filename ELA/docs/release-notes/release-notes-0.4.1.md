@@ -12,7 +12,7 @@ How to Upgrade
 ==============
 
 If you are running version release_v0.4.0 and before, you should shut it down and wait until
- it has completely closed, then just copy over `ela` (on Linux).
+it has completely closed, then just copy over `ela` (on Linux).
 
 However, as usual, config, keystore and chaindata files are compatible.
 

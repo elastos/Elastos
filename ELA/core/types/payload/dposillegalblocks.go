@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package payload
 
@@ -86,7 +86,7 @@ func (b *BlockEvidence) DeserializeUnsigned(r io.Reader) error {
 }
 
 func (b *BlockEvidence) DeserializeOthers(r io.Reader) (err error) {
-	if b.BlockConfirm, err = common.ReadVarBytes(r, pact.MaxBlockContextSize,
+	if b.BlockConfirm, err = common.ReadVarBytes(r, pact.MaxBlockHeaderSize,
 		"confirm data"); err != nil {
 		return err
 	}
@@ -125,7 +125,7 @@ func (b *BlockEvidence) BlockHash() common.Uint256 {
 	if b.hash == nil {
 		buf := new(bytes.Buffer)
 		b.Serialize(buf)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		b.hash = &hash
 	}
 	return *b.hash
@@ -218,7 +218,7 @@ func (d *DPOSIllegalBlocks) Hash() common.Uint256 {
 	if d.hash == nil {
 		buf := new(bytes.Buffer)
 		d.SerializeUnsigned(buf, IllegalBlockVersion)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		d.hash = &hash
 	}
 	return *d.hash

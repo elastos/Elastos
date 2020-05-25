@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -77,7 +77,7 @@ func (p *DPOSProposal) Hash() common.Uint256 {
 	if p.hash == nil {
 		buf := new(bytes.Buffer)
 		p.SerializeUnsigned(buf)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		p.hash = &hash
 	}
 	return *p.hash

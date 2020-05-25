@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -18,8 +18,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/servers"
+	. "github.com/elastos/Elastos.ELA/servers/errors"
 )
 
 const (
@@ -279,7 +279,7 @@ func (rt *restServer) write(w http.ResponseWriter, data []byte) {
 }
 
 func (rt *restServer) response(w http.ResponseWriter, resp map[string]interface{}) {
-	resp["Desc"] = ErrMap[resp["Error"].(ErrCode)]
+	resp["Desc"] = ErrMap[resp["Error"].(ServerErrCode)]
 	data, err := json.Marshal(resp)
 	if err != nil {
 		log.Fatal("HTTP Handle - json.Marshal: %v", err)
