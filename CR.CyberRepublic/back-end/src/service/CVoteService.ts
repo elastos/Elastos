@@ -1014,7 +1014,6 @@ export default class extends Base {
             // await this.pollCouncilVoteStatus()
             // member vote status in agreed
             // await this.pollVotersRejectAmount()
-
         }, 1000 * 60 * 2)
     }
 
