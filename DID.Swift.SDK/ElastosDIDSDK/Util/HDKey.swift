@@ -1,5 +1,10 @@
 import Foundation
 
+public struct KeyPair {
+    var publicKey: Data?
+    var privatekey: Data?
+}
+
 class HDKey: NSObject {
     static let PUBLICKEY_BYTES : Int = CHDKey.PUBLICKEY_BYTES
     static let PRIVATEKEY_BYTES: Int = CHDKey.PRIVATEKEY_BYTES
@@ -72,8 +77,36 @@ class HDKey: NSObject {
             return getPrivateKeyData()
         }
         
-//        class func deserialize(_ data: Data) -> DerivedKey? {
-//        }
+        class func PEM_ReadPublicKey(_ publicKey: Data) -> String {
+            let cpub: UnsafePointer<UInt8> = publicKey.withUnsafeBytes { (bytes) -> UnsafePointer<UInt8> in
+                return bytes
+            }
+            let cprivateKey: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 512)
+            var size: Int32 = 512
+            let re = PEM_WritePublicKey(cpub, cprivateKey, &size)
+            if re < 0 {
+                //TODO: throws
+            }
+            let cstr = String(cString: cprivateKey)
+            return cstr
+        }
+
+        class func PEM_ReadPrivateKey(_ publicKey: Data, _ privatekey: Data) throws -> String {
+            let cpub: UnsafePointer<UInt8> = publicKey.withUnsafeBytes { bytes -> UnsafePointer<UInt8> in
+                return bytes
+            }
+            let cpri: UnsafePointer<UInt8> = privatekey.withUnsafeBytes { bytes -> UnsafePointer<UInt8> in
+                return bytes
+            }
+            let cPEM_privateKey: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 512)
+            var count = 512
+            let re = PEM_WritePrivateKey(cpub, cpri, cPEM_privateKey, &count)
+            if re < 0 {
+                //TODO: throws
+            }
+            let cstr = String(cString: cPEM_privateKey)
+            return cstr
+        }
 
         func wipe() {
             DerivedKey_Wipe(self.cderivedKey)

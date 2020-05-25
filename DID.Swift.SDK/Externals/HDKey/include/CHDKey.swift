@@ -83,3 +83,10 @@ internal func DerivedKey_GetAddress(_ derivedkey: UnsafePointer<CDerivedKey>) ->
 @_silgen_name("DerivedKey_Wipe")
 internal func DerivedKey_Wipe(_ hdkey: UnsafePointer<CDerivedKey>)
 
+
+@_silgen_name("PEM_WritePublicKey")
+internal func PEM_WritePublicKey(_ publicKey: UnsafePointer<UInt8>, _ buffer: UnsafePointer<Int8>, _ size: UnsafeMutablePointer<Int32>) -> Int32
+
+@_silgen_name("PEM_WritePrivateKey")
+internal func PEM_WritePrivateKey(_ publickey: UnsafePointer<UInt8>, _ privatekey: UnsafePointer<UInt8>, _ buffer: UnsafeMutablePointer<UInt8>, _ size: UnsafeMutablePointer<Int>!) -> Int32
+

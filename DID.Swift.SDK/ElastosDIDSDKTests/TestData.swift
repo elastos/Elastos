@@ -416,9 +416,10 @@ extension String {
     var asciiArray: [UInt32] {
         return unicodeScalars.filter{$0.isASCII}.map{$0.value}
     }
-    
+
+    /*
     func toUnsafePointerUInt8() -> UnsafePointer<UInt8>? {
-        guard let data = self.data(using: .utf8) else {
+        guard let data: Data = self.data(using: .utf8) else {
             return nil
         }
         
@@ -436,6 +437,7 @@ extension String {
         
         return UnsafePointer<UInt8>(buffer)
     }
+    */
     
     func toUnsafePointerInt8() -> UnsafePointer<Int8>? {
         let str: NSString = self as NSString
