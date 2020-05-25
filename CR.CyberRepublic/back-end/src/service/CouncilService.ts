@@ -464,10 +464,20 @@ export default class extends Base {
         const listcds = await ela.currentCandidates()
         const height = await ela.height()
 
-        const currentCrs = await this.model.getDBInstance().find({status: constant.TERM_COUNCIL_STATUS.CURRENT})
-        const votingCds = await this.model.getDBInstance().find({status: constant.TERM_COUNCIL_STATUS.VOTING})
+        const crrelatedStageStatus = await ela.getCrrelatedStage()
+
+        const currentCrs = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.CURRENT})
+        const votingCds = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.VOTING})
         const historyCrs = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.HISTORY},{sort: -1})
-        const index = currentCrs.index ? currentCrs.index : historyCrs.index ? historyCrs.index : 1
+
+        let index: any
+        if(currentCrs){
+            index = currentCrs.index
+        }else if( !currentCrs && historyCrs) {
+            index = historyCrs.index
+        } else {
+            index = 1
+        }
 
         const fields = [
             'code',
@@ -493,6 +503,7 @@ export default class extends Base {
             const userByDID = _.keyBy(userList, (o: any) => o.did.id.replace(DID_PREFIX, ''))
 
             // TODO: need to optimizing (multiple update)
+            // TODO: add didName
             // add avatar nickname into user's did
             await Promise.all(_.map(userList, async (o: any) => {
                 if (o && o.did && !o.did.id) {
@@ -552,7 +563,7 @@ export default class extends Base {
             await this.model.getDBInstance().update({_id: data._id}, {councilMembers})
         }
 
-        if(listcrs && listcds){
+        if(listcrs.crmembersinfo && listcds.crcandidatesinfo){
             // update currentCrs and VotingCds
             if(currentCrs && votingCds){
                 await updateCrsInformation(listcrs, currentCrs)
@@ -564,31 +575,32 @@ export default class extends Base {
                 await updateCrsInformation(listcrs, currentCrs)
                 
                 // add
+                const startTime = await ela.getBlockByHeight(crrelatedStageStatus.votingstartheight)
                 const doc: any = {
                     index: index+1,
                     height: height || 0,
-                    startDate: new Date(),
+                    startDate: new Date(startTime*1000),
+                    endDate: null,
                     status: constant.TERM_COUNCIL_STATUS.VOTING,
                     councilMembers: _.map(listcds.crcandidatesinfo, (o) => dataToCouncil(o))
                 }
-                await this.model.getDBInstance().save(doc)
-                
+                await this.model.getDBInstance().create(doc)
             }
         }
         
-        if(listcrs && !listcds){
+        if(listcrs.crmembersinfo && !listcds.crcandidatesinfo){
             if(currentCrs && votingCds){
                 // votingCds status -> CURRENT, currentCrs status -> HISTORY
                 if(votingCds){
-                    const date = new Date()
+                    const time = await ela.getBlockByHeight(crrelatedStageStatus.ondutystartheight)
                     await this.model.getDBInstance().update(
                         {
                             _id: currentCrs._id
                         },
                         {
                             $set:{
-                                ...currentCrs,
-                                endDate: date,
+                                // ...currentCrs,
+                                endDate: new Date(time*1000),
                                 status: constant.TERM_COUNCIL_STATUS.HISTORY
                             }
                         }
@@ -599,9 +611,9 @@ export default class extends Base {
                         },
                         {
                             $set:{
-                                ...votingCds,
-                                status: constant.TERM_COUNCIL_STATUS.CURRENT,
-                                startDate: date
+                                // ...votingCds,
+                                startDate: new Date(time*1000),
+                                status: constant.TERM_COUNCIL_STATUS.CURRENT
                             }
                         }
                     )
@@ -613,36 +625,54 @@ export default class extends Base {
             }
             // votingCds status -> CURRENT
             else if(!currentCrs && votingCds){
-                // calculation first startTime
-                // const startTime = (800*CTS)/CLT
+                const startTime = await ela.getBlockByHeight(crrelatedStageStatus.ondutystartheight)
                 await this.model.getDBInstance().update(
                     {
                         _id: votingCds._id
                     },
                     {
                         $set: {
-                            ...votingCds,
-                            // startTime,
+                            // ...votingCds,
+                            startDate: new Date(startTime*1000),
                             status: constant.TERM_COUNCIL_STATUS.CURRENT
                         }
                     }
                 )
             }
+            // if appear directly first current
+            if(!currentCrs && !votingCds && !historyCrs){
+                 // add
+                const startTime = await ela.getBlockByHeight(crrelatedStageStatus.ondutystartheight)
+
+                const doc: any = {
+                    index: 1,
+                    height: height || 0,
+                    startDate: new Date(startTime*1000),
+                    endDate: null,
+                    status: constant.TERM_COUNCIL_STATUS.CURRENT,
+                    councilMembers: _.map(listcrs.crmembersinfo, (o) => dataToCouncil(o))
+                }
+                await this.model.getDBInstance().create(doc);
+            }
         }
 
-        if(!listcrs && listcds){
+        if(!listcrs.crmembersinfo && listcds.crcandidatesinfo){
             if(currentCrs){
                 // currentCrs status -> HISTORY
                 await updateCrsInformation(listcrs,currentCrs)
-                this.model.update(
+                // if temporary change, endTime is votingstartheight time 
+                let endTime = await ela.getBlockByHeight(crrelatedStageStatus.votingstartheight)
+                if(!endTime){
+                    endTime = new Date().getTime()/1000
+                }
+                await this.model.getDBInstance().update(
                     {
-                        _id: currentCrs._id
+                        _id:currentCrs._id
                     },
                     {
                         $set: {
-                            ...currentCrs,
-                            status: "HISTORY",
-                            endDate: new Date()
+                            status: constant.TERM_COUNCIL_STATUS.HISTORY,
+                            endDate: new Date(endTime*1000)
                         }
                     }
                 )
@@ -653,36 +683,39 @@ export default class extends Base {
                 }
                 // add listcds -> database, status VOTING
                 if(!votingCds){
+                    const startTime = await ela.getBlockByHeight(crrelatedStageStatus.ondutystartheight)
                     const doc: any = {
                         index: index+1,
-                        startDate: new Date(),
+                        startDate: new Date(startTime*1000),
                         status: constant.TERM_COUNCIL_STATUS.VOTING,
                         height: height || 0,
                         councilMembers: _.map(listcds.crcandidatesinfo, (o) => dataToCouncil(o))
                     }
-                    await this.model.getDBInstance().save(doc)
+                    await this.model.getDBInstance().create(doc)
                 }
             }
-            if(!currentCrs && votingCds){
+            if(!currentCrs){
                 // update votingCds data
                 if(votingCds){
                     await updateCdsInformation(listcds, votingCds)
                 }
                 // add votingCds -> database , status VOTING
                 if(!votingCds){
+                    const startTime = await ela.getBlockByHeight(crrelatedStageStatus.ondutystartheight)
                     const doc: any = {
                         index,
-                        startDate: new Date(),
+                        startDate: new Date(startTime*1000),
+                        endDate: null,
                         status: constant.TERM_COUNCIL_STATUS.VOTING,
                         height: height || 0,
                         councilMembers: _.map(listcds.crcandidatesinfo, (o) => dataToCouncil(o))
                     }
-                    await this.model.getDBInstance().save(doc);
+                    await this.model.getDBInstance().create(doc);
                 }
             }
         }
 
-        if(!listcrs && !listcds){
+        if(!listcrs.crmembersinfo && !listcds.crcandidatesinfo){
             if(currentCrs){
                 await this.model.getDBInstance().update(
                     {
@@ -690,7 +723,6 @@ export default class extends Base {
                     },
                     {
                         $set:{
-                            ...currentCrs,
                             status: constant.TERM_COUNCIL_STATUS.HISTORY,
                             endDate: new Date()
                         }
