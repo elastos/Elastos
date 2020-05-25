@@ -6,7 +6,7 @@ import linkifyStr from 'linkifyjs/string'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import Signature from './Signature'
-import { MILESTONE_STATUS } from '@/constant'
+import { MILESTONE_STATUS, SUGGESTION_BUDGET_TYPE } from '@/constant'
 import WithdrawMoney from './WithdrawMoney'
 
 const {
@@ -16,6 +16,8 @@ const {
   WAITING_FOR_WITHDRAWAL
 } = MILESTONE_STATUS
 
+const { COMPLETION } = SUGGESTION_BUDGET_TYPE
+
 class PaymentList extends Component {
   constructor(props) {
     super(props)
@@ -24,7 +26,8 @@ class PaymentList extends Component {
       stage: '',
       opinion: '',
       withdrawal: false,
-      withdrawalStage: ''
+      withdrawalStage: '',
+      isCompletion: false
     }
   }
 
@@ -32,8 +35,13 @@ class PaymentList extends Component {
     this.setState({ toggle: false, stage: '', opinion: '' })
   }
 
-  showModal = (stage, opinion) => {
-    this.setState({ toggle: true, stage, opinion })
+  showModal = (item, opinion) => {
+    this.setState({
+      toggle: true,
+      stage: item.milestoneKey,
+      opinion,
+      isCompletion: item.type === COMPLETION
+    })
   }
 
   showWithdrawalModal = (stage) => {
@@ -86,7 +94,7 @@ class PaymentList extends Component {
           <div
             className="action"
             onClick={() => {
-              this.showModal(item.milestoneKey)
+              this.showModal(item)
             }}
           >
             Apply
@@ -100,7 +108,7 @@ class PaymentList extends Component {
           <div
             className="action"
             onClick={() => {
-              this.showModal(item.milestoneKey)
+              this.showModal(item)
             }}
           >
             Reapply
@@ -115,7 +123,7 @@ class PaymentList extends Component {
             <div
               className="action approve"
               onClick={() => {
-                this.showModal(item.milestoneKey, 'APPROVED')
+                this.showModal(item, 'APPROVED')
               }}
             >
               Approve
@@ -123,7 +131,7 @@ class PaymentList extends Component {
             <div
               className="action reject"
               onClick={() => {
-                this.showModal(item.milestoneKey, 'REJECTED')
+                this.showModal(item, 'REJECTED')
               }}
             >
               Reject
@@ -197,6 +205,14 @@ class PaymentList extends Component {
   render() {
     const { list, proposalId, actions, user } = this.props
     const visible = this.isVisible()
+    const {
+      toggle,
+      stage,
+      opinion,
+      isCompletion,
+      withdrawal,
+      withdrawalStage
+    } = this.state
     return (
       <StyledTable>
         <StyledHead>
@@ -218,27 +234,28 @@ class PaymentList extends Component {
           {list &&
             list.map((item, index) => this.renderPaymentItem(item, index))}
         </tbody>
-        {this.state.toggle === true ? (
+        {toggle === true ? (
           <Signature
-            toggle={this.state.toggle}
-            stage={this.state.stage}
+            toggle={toggle}
+            stage={stage}
+            isCompletion={isCompletion}
             proposalId={proposalId}
             applyPayment={actions.applyPayment}
             getPaymentSignature={actions.getPaymentSignature}
             hideModal={this.hideModal}
             isSecretary={user.is_secretary}
-            opinion={this.state.opinion}
+            opinion={opinion}
             reviewApplication={actions.reviewApplication}
             application={this.getApplication()}
             getReviewTxid={actions.getReviewTxid}
           />
         ) : null}
-        {this.state.withdrawal ? (
+        {withdrawal ? (
           <WithdrawMoney
-            withdrawal={this.state.withdrawal}
+            withdrawal={withdrawal}
             proposalId={proposalId}
             withdraw={actions.withdraw}
-            stage={this.state.withdrawalStage}
+            stage={withdrawalStage}
             hideModal={this.hideWithdrawalModal}
           />
         ) : null}

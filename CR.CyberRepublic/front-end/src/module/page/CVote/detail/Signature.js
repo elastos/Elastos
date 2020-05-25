@@ -117,13 +117,13 @@ class Signature extends Component {
 
   renderTextare = () => {
     const { getFieldDecorator } = this.props.form
-    const { isSecretary, application, opinion } = this.props
+    const { isSecretary, application, isCompletion } = this.props
     return (
       <Form onSubmit={this.handleSubmit}>
         {isSecretary && <Msg>{application.message}</Msg>}
         <Label>
           <span>*</span>
-          Reason
+          {isCompletion ? 'Summary' : 'Reason'}
         </Label>
         <FormItem>
           {getFieldDecorator('message', {
