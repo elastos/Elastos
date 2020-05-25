@@ -68,6 +68,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctmanager));
         presenter = new CtManagePresenter();
+        presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
     }
 
     String status;
@@ -105,7 +106,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
             case R.id.refresh_ct_info:
                 //TODO 待确认
                 bundle.putParcelable("crStatusBean", crStatusBean);
-                start(UpdateCtInformationFragment.class, getArguments());
+                start(UpdateCtInformationFragment.class, bundle);
 //                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid().replace("did:elastos:", ""), this, "2");
                 break;
             case R.id.refresh_ct_did:
@@ -115,8 +116,9 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
                 break;
             case R.id.deposit:
 //                presenter.getCRDepositcoin(did, this);
-                if(!AppUtlis.isNullOrEmpty(depositAmount))
-                    presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
+                String ownerPublicKey = crStatusBean.getInfo().getCROwnerPublicKey();
+                presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey,
+                        Arith.mulRemoveZero(depositAmount, MyWallet.RATE_S).toPlainString(), "", this);
                 break;
             case R.id.tv_close:
                 popBackFragment();
@@ -194,9 +196,6 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
 
             case "getRegisteredCRInfo":
                 crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
-                String ownerPublicKey = crStatusBean.getInfo().getCROwnerPublicKey();
-                presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey,
-                        Arith.mulRemoveZero(depositAmount, MyWallet.RATE_S).toPlainString(), "", this);
                 break;
         }
     }

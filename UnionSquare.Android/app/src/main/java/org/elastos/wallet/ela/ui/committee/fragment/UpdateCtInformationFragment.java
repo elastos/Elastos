@@ -23,6 +23,7 @@ import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
+import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -76,6 +77,10 @@ public class UpdateCtInformationFragment extends BaseFragment implements NewBase
         CrStatusBean.InfoBean bean=crStatusBean.getInfo();
         ownerPublicKey = bean.getCROwnerPublicKey();
         CID = bean.getCID();
+        code = bean.getLocation();
+        nickname.setText(bean.getNickName());
+        website.setText(bean.getURL());
+        areaTv.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
     }
 
     long code;

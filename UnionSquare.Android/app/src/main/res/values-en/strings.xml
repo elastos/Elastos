@@ -692,7 +692,7 @@
     <string name="ctdetail">Council Member Profile</string>
     <string name="impeachprogress">Impeachment Progress</string>
     <string name="currentvotes">Current Votes</string>
-    <string name="impeachpastvotes">Minimum votes required for successful  impeachment</string>
+    <string name="impeachpastvotes">Votes required to impeach</string>
     <string name="ctname">Council Member Profile</string>
     <string name="ctinfo">Council Member Profile</string>
     <string name="ctdid">Council Member DID</string>
