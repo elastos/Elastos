@@ -2,7 +2,7 @@ import Base from './Base'
 import {Document} from 'mongoose'
 import * as _ from 'lodash'
 import {constant} from '../constant'
-import {permissions, getDidPublicKey, getProposalState, getProposalData, getDidName, ela} from '../utility'
+import {permissions, getDidPublicKey, getProposalState, getProposalData, getDidName, ela, getVoteResultByTxid} from '../utility'
 import * as moment from 'moment'
 import * as jwt from 'jsonwebtoken'
 import {
@@ -832,6 +832,31 @@ export default class extends Base {
         return rs
     }
 
+    private async updateProposalBudget(query: any) {
+        const {WITHDRAWN} = constant.MILESTONE_STATUS
+        const db_cvote = this.getDBModel('CVote')
+        const proposal = await db_cvote.findOne(query)
+        if (proposal.status === 'ACTIVE' || proposal.status === 'FINAL') {
+            const result = await getProposalData(proposal.proposalHash)
+            const status = _.get(result, 'status')
+            if (status && status.toLowerCase() === 'finished') {
+                proposal.status = constant.CVOTE_STATUS.FINAL
+            }
+            const budgets = _.get(result, 'data.proposal.budgets')
+            if (budgets) {
+                const temp = _.sortBy(proposal.budget, 'milestoneKey')
+                const budget = temp.map((item, index) => {
+                    if (budgets[index].status.toLowerCase() === 'withdrawn') {
+                        return {...item, status: WITHDRAWN}
+                    }
+                    return item
+                })
+                proposal.budget = budget
+            }
+            await proposal.save()
+        }
+    }
+
     public async getById(id): Promise<any> {
         const db_cvote = this.getDBModel('CVote')
         // access proposal by reference number
@@ -842,6 +867,7 @@ export default class extends Base {
         } else {
             query = {_id: id}
         }
+        await this.updateProposalBudget(query)
         const rs = await db_cvote
             .getDBInstance()
             .findOne(query)
@@ -911,7 +937,7 @@ export default class extends Base {
         if (!cur) {
             throw 'invalid proposal id'
         }
-
+        const currentVoteResult = _.find(cur._doc.voteResult, ['votedBy', votedBy])
         await db_cvote.update(
             {
                 _id,
@@ -920,13 +946,14 @@ export default class extends Base {
             {
                 $set: {
                     'voteResult.$.value': value,
-                    'voteResult.$.reason': reason || ''
+                    'voteResult.$.reason': reason || '',
+                    'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.UNCHAIN,
+                    'voteResult.$.txid': '',
+                    'voteResult.$.signature': null,
                 },
                 $push: {
                     voteHistory: {
-                        value,
-                        reason,
-                        votedBy
+                        ..._.omit(currentVoteResult, '_id')
                     }
                 }
             }
@@ -977,7 +1004,7 @@ export default class extends Base {
             // member vote status in agreed
             // await this.pollVotersRejectAmount()
 
-        }, 1000 * 60 * 10)
+        }, 1000 * 60 * 2)
     }
 
     private canManageProposal() {
@@ -1225,7 +1252,6 @@ export default class extends Base {
             if (!rs || rs.success === false) {
                 return
             }
-
             switch (status) {
                 case constant.CVOTE_STATUS.PROPOSED:
                     await this.updateProposalOnProposed({
@@ -1247,27 +1273,28 @@ export default class extends Base {
     public async updateProposalOnProposed(data: any) {
         const {rs, _id, voteResult} = data
         const db_cvote = this.getDBModel('CVote')
-        const {data: {crvotes: crVotes}, status: chainStatus} = rs
+        const {status: chainStatus} = rs
         const newVoteHistory = []
-        const newVoteResult = _.map(voteResult, (e: any) => {
+        const newVoteResult = await Promise.all(_.map(voteResult, async (e: any) => {
             const newE = {
                 ..._.omit(e._doc, ['votedBy']),
                 votedBy: e.votedBy._id
             }
-            const did = _.get(e, 'votedBy.did.id')
-            if (!did) {
+            if (e.status !== constant.CVOTE_CHAIN_STATUS.CHAINING || _.isEmpty(e.txid)) {
                 return newE
             }
-            const existFlag = crVotes[did.replace('did:elastos:', '')]
-            if (!existFlag) return newE
+            const voteResultflag = await getVoteResultByTxid(e.txid)
+            if (!voteResultflag) {
+                return newE
+            }
             const newElement = {
                 ...newE,
                 status: constant.CVOTE_CHAIN_STATUS.CHAINED
             }
             newVoteHistory.push(_.omit(newElement, '_id'))
             return newElement
-        });
-
+        }));
+        
         await db_cvote.update({
             _id
         }, {
@@ -1280,6 +1307,7 @@ export default class extends Base {
     }
 
     public async updateProposalOnNotification(data: any) {
+        const {WAITING_FOR_WITHDRAWAL, WAITING_FOR_REQUEST} = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel("CVote")
         const {rs, _id} = data
         const {
@@ -1288,14 +1316,34 @@ export default class extends Base {
             },
             status: chainStatus
         } = rs
-
         let rejectThroughAmount: any
         const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
+        if (proposalStatus === constant.CVOTE_STATUS.ACTIVE) {
+            rejectThroughAmount = (await ela.currentCirculatingSupply()) * 0.1
+            const proposal = await db_cvote.findById(_id)
+            const budget = proposal.budget.map((item: any) => {
+                if (item.type === 'ADVANCE') {
+                    return {...item, status: WAITING_FOR_WITHDRAWAL}
+                } else {
+                    return {...item, status: WAITING_FOR_REQUEST}
+                }
+            })
+            await db_cvote.update({
+                _id
+            }, {
+                $set: {
+                    budget,
+                    status: proposalStatus,
+                    rejectAmount,
+                    rejectThroughAmount
+                }
+            })
+            return
+        }
         switch (proposalStatus) {
             case constant.CVOTE_STATUS.VETOED:
                 rejectThroughAmount = rejectAmount
                 break;
-            case constant.CVOTE_STATUS.ACTIVE:
             case constant.CVOTE_STATUS.NOTIFICATION:
                 rejectThroughAmount = (await ela.currentCirculatingSupply()) * 0.1
                 break;
@@ -1531,6 +1579,7 @@ export default class extends Base {
             'status',
             'abstract',
             'voteResult',
+            'voteHistory',
             'createdAt',
             'proposalHash',
             'rejectAmount',
@@ -1540,6 +1589,7 @@ export default class extends Base {
             .getDBInstance()
             .findOne({vid: id}, fields.join(' '))
             .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+            .populate('voteHistory.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
         if (!proposal) {
             return {
@@ -1555,30 +1605,36 @@ export default class extends Base {
         const proposalId = proposal._id
 
         const voteResultFields = ['value', 'reason', 'votedBy', 'avatar']
-        // filter undecided vote result
-        const filterVoteResult = _.filter(
-            proposal._doc.voteResult,
-            (o: any) => (o.value !== constant.CVOTE_RESULT.UNDECIDED
-                && [constant.CVOTE_CHAIN_STATUS.CHAINED]
-                    .includes(o.status))
-        )
-        // update vote result data
-        const voteResult = _.map(filterVoteResult, (o: any) =>
-            _.pick(
-                {
-                    ...o._doc,
-                    votedBy: _.get(o, 'votedBy.did.didName'),
-                    avatar: _.get(o, 'votedBy.did.avatar')
-                },
-                voteResultFields
-            )
-        )
+        const voteHistoryList = _.groupBy(proposal._doc.voteHistory, 'votedBy._id')
+        const voteResultWithNull = _.map(proposal._doc.voteResult, (o: any) => {
+            let result
+            if (o.status === constant.CVOTE_CHAIN_STATUS.CHAINED) {
+                result = o._doc
+            } else {
+                const historyList = _.filter(voteHistoryList[o.votedBy._id], (e: any) => e.status === constant.CVOTE_CHAIN_STATUS.CHAINED)
+                if (!_.isEmpty(historyList)) {
+                    const history = _.sortBy(historyList, 'createdAt')
+                    result = history[history.length - 1]._doc
+                }
+            }
+            if (!_.isEmpty(result)) {
+                return _.pick(
+                    {
+                        ...result,
+                        votedBy: _.get(result, 'votedBy.did.didName'),
+                        avatar: _.get(result, 'votedBy.did.avatar')
+                    },
+                    voteResultFields
+                )
+            }
+        })
+        const voteResult = _.filter(voteResultWithNull, (o: any) => !_.isEmpty(o))
 
         const tracking = await this.getTracking(proposalId)
 
-        const summary = await this.getSummary(proposalId)
+        // const summary = await this.getSummary(proposalId)
+        const summary = []
 
-        const votingResult = {}
         const notificationResult = {}
 
         // duration
@@ -1604,10 +1660,10 @@ export default class extends Base {
         return _.omit(
             {
                 id: proposal.vid,
+                status: CVOTE_STATUS_TO_WALLET_STATUS[proposal.status],
                 abs: proposal.abstract,
                 address,
-                ..._.omit(proposal._doc, ['vid', 'abstract', 'rejectAmount', 'rejectThroughAmount', 'status']),
-                ...votingResult,
+                ..._.omit(proposal._doc, ['vid', 'abstract', 'rejectAmount', 'rejectThroughAmount', 'status', 'voteHistory']),
                 ...notificationResult,
                 createdAt: timestamp.second(proposal.createdAt),
                 voteResult,
@@ -1619,53 +1675,57 @@ export default class extends Base {
     }
 
     public async getTracking(id) {
-        const db_tracking = this.getDBModel('CVote_Tracking')
-        const proposalId = id
-        const queryTrack: any = {
-            proposalId
+        const db_cvote = this.getDBModel('CVote')
+        const db_user = this.getDBModel('User')
+        const secretary = await db_user.getDBInstance().findOne({
+            role: constant.USER_ROLE.SECRETARY,
+            'did.id': 'did:elastos:igCSy8ht7yDwV5qqcRzf5SGioMX8H9RXcj'
+        }, constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+        const propoal = await db_cvote.getDBInstance().findOne({_id: id}).populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+
+        if (!propoal) {
+            return
         }
-        const fieldsTrack = [
-            'comment',
-            'content',
-            'status',
-            'createdAt',
-            'updatedAt'
-        ]
-        const cursorTrack = db_tracking
-            .getDBInstance()
-            .find(queryTrack, fieldsTrack.join(' '))
-            .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-            .sort({createdAt: -1})
-        // const totalCursorTrack = db_tracking.getDBInstance().find(queryTrack).count()
 
-        const tracking = await cursorTrack
-        // const totalTrack = await totalCursorTrack
+        try {
+            const didName = _.get(secretary, 'did.didName')
+            const avatar = _.get(secretary, 'did.avatar')
+            const ownerDidName = _.get(propoal, 'proposer.did.didName')
+            const ownerAvatar = _.get(propoal, 'proposer.did.avatar') || _.get(propoal, 'proposer.profile.avatar')
+            const {withdrawalHistory} = propoal
+            const withdrawalList = _.filter(withdrawalHistory, (o: any) => o.milestoneKey !== '0')
+            const withdrawalListByStage = _.groupBy(withdrawalList, 'milestoneKey')
+            const keys = _.keys(withdrawalListByStage).sort().reverse()
+            const result = _.map(keys, (k: any) => {
+                const withdrawals = _.sortBy(withdrawalListByStage[`${k}`], 'createdAt')
+                const withdrawal = withdrawals[withdrawals.length - 1]
 
-        const list = _.map(tracking, function (o) {
-            const comment = o._doc.comment
-            const contents = (JSON.parse(o.content))
-            let content = ""
-            _.each(contents.blocks,function(v: any,k: any){
-                content += v.text
-                if(k !== (contents.blocks.length)-1){
-                    content += "\n"
+                const comment = {}
+
+                if (_.get(withdrawal, 'review.createdAt')) {
+                    comment['content'] = _.get(withdrawal, 'review.reason')
+                    comment['opinion'] = _.get(withdrawal, 'review.opinion')
+                    comment['avatar'] = avatar
+                    comment['createdBy'] = didName
+                    comment['createdAt'] = moment(_.get(withdrawal, 'review.createdAt')).unix()
+                }
+
+
+                return {
+                    stage: parseInt(k),
+                    didName: ownerDidName,
+                    avatar: ownerAvatar,
+                    content: withdrawal.message,
+                    createdAt: moment(withdrawal.createdAt).unix(),
+                    comment
                 }
             })
-            const commentObj = {
-                content: comment.content ? comment.content : null,
-                createdBy: _.get(o, 'comment.createdBy.did.didName'),
-                avatar: _.get(o, 'comment.createdBy.did.avatar')
-            }
-            const obj = {
-                ...o._doc,
-                comment: commentObj,
-                content,
-                createdAt: timestamp.second(o.createdAt),
-                updatedAt: timestamp.second(o.updatedAt)
-            }
-            return _.pick(obj, fieldsTrack)
-        })
-        return list
+
+            return result
+        } catch (err) {
+            logger.error(err)
+        }
+
     }
 
     public async getSummary(id) {
@@ -1695,9 +1755,9 @@ export default class extends Base {
             const comment = o._doc.comment
             const contents = (JSON.parse(o.content))
             let content = ""
-            _.each(contents.blocks,function(v: any,k: any){
+            _.each(contents.blocks, function (v: any, k: any) {
                 content += v.text
-                if(k !== (contents.blocks.length)-1){
+                if (k !== (contents.blocks.length) - 1) {
                     content += "\n"
                 }
             })

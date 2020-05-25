@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Popover, Spin, message, Tooltip } from 'antd'
+import { Popover, Spin, message } from 'antd'
 import QRCode from 'qrcode.react'
-import I18N from '@/I18N'
 import { StyledButton } from './style'
 
 class SignSuggestionButton extends Component {

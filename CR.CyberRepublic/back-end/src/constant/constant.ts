@@ -310,7 +310,7 @@ export const DB_SELECTED_FIELDS = {
     NAME: 'profile.firstName profile.lastName username',
     NAME_EMAIL: 'profile.firstName profile.lastName username email',
     NAME_AVATAR: 'profile.avatar profile.firstName profile.lastName username did.didName',
-    NAME_EMAIL_DID: 'profile.firstName profile.lastName username email did'
+    NAME_EMAIL_DID: 'profile.avatar profile.firstName profile.lastName username email did'
   },
   SUGGESTION: {
     ID: 'displayId'
@@ -340,7 +340,7 @@ export const MILESTONE_STATUS = create([
   'WAITING_FOR_REQUEST',
   'REJECTED',
   'WAITING_FOR_APPROVAL',
-  'WAITING_FOR_WITHDRAW',
+  'WAITING_FOR_WITHDRAWAL',
   'WITHDRAWN'
 ])
 export const REVIEW_OPINION = create(['REJECTED', 'APPROVED'])

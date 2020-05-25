@@ -101,7 +101,7 @@ const Wrapper = styled.div`
 `
 const Text = styled.div`
   font-size: 14px;
-  color: #031E28;
+  color: #031e28;
   opacity: 0.5;
 `
 const Button = styled.span`

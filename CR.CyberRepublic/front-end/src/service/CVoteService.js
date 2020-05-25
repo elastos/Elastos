@@ -201,11 +201,58 @@ export default class extends BaseService {
     return rs
   }
 
-  async updateMilestone(proposalId, stage, data) {
+  async applyPayment(proposalId, stage, data) {
     const rs = await api_request({
       path: `/api/proposals/${proposalId}/milestones/${stage}`,
       method: 'post',
       data
+    })
+    return rs
+  }
+
+  async getPaymentSignature(data) {
+    const rs = await api_request({
+      path: `/api/proposals/milestones/signature`,
+      method: 'post',
+      data: {
+        id: data.proposalId,
+        messageHash: data.messageHash
+      }
+    })
+    if (rs && rs.success && rs.detail) {
+      this.dispatch(this.selfRedux.actions.data_update(rs.detail))
+    }
+    return rs
+  }
+
+  async reviewApplication(proposalId, stage, data) {
+    const rs = await api_request({
+      path: `/api/proposals/${proposalId}/milestones/${stage}/review`,
+      method: 'post',
+      data
+    })
+    return rs
+  }
+
+  async getReviewTxid(data) {
+    const rs = await api_request({
+      path: `/api/proposals/milestones/review/txid`,
+      method: 'post',
+      data: {
+        id: data.proposalId,
+        messageHash: data.messageHash
+      }
+    })
+    if (rs && rs.success && rs.detail) {
+      this.dispatch(this.selfRedux.actions.data_update(rs.detail))
+    }
+    return rs
+  }
+
+  async withdraw(proposalId, stage) {
+    const rs = await api_request({
+      path: `/api/proposals/${proposalId}/milestones/${stage}/withdraw`,
+      method: 'get'
     })
     return rs
   }

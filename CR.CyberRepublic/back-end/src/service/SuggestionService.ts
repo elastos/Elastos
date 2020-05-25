@@ -14,6 +14,7 @@ import {
   getDidPublicKey,
   utilCrypto
 } from '../utility'
+const Big = require('big.js')
 
 const ObjectId = Types.ObjectId
 const BASE_FIELDS = [
@@ -1199,7 +1200,7 @@ export default class extends Base {
     const budgets = sortedBudget.map((item: BudgetItem) => ({
       type: chainBudgetType[item.type],
       stage: parseInt(item.milestoneKey),
-      amount: (parseFloat(item.amount) * Math.pow(10, 8)).toString()
+      amount: Big(`${item.amount}e+8`).toString()
     }))
     return budgets
   }

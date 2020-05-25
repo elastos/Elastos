@@ -44,23 +44,14 @@ const withdrawalHistorySchema = {
   messageHash: String,
   milestoneKey: String,
   signature: String,
-  createdAt: {
-    type: Date,
-    required: true,
-    default: Date.now
-  },
+  createdAt: Date,
   review: {
     reason: String,
     reasonHash: String,
     opinion: String,
-    opinionHash: String,
     signature: String,
     txid: String,
-    createdAt: {
-      type: Date,
-      required: true,
-      default: Date.now
-    }
+    createdAt: Date
   }
 }
 
