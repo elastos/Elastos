@@ -116,6 +116,7 @@ namespace Elastos {
 
 			ChainConfigPtr GetChainConfig(const std::string &chainID) const;
 
+			std::string GetDataPath() const;
 		protected:
 
 			friend class MasterWalletManager;
@@ -206,7 +207,6 @@ namespace Elastos {
 											  const ChainConfigPtr &config,
 											  MasterWallet *parent,
 											  const std::string &netType);
-			std::string GetDataPath() const;
 
 			virtual void startPeerManager(SubWallet *wallet);
 

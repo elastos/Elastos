@@ -26,8 +26,6 @@
 #include "IEthSidechainSubWallet.h"
 #include "SubWallet.h"
 
-#include <Ethereum/EthereumEWM.h>
-
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem/path.hpp>
 #include <nlohmann/json.hpp>
@@ -38,13 +36,86 @@ namespace Elastos {
 		class MasterWallet;
 		class ChainConfig;
 		class CoinInfo;
+		class EthereumClient;
 
 		typedef boost::shared_ptr<ChainConfig> ChainConfigPtr;
 		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
+		typedef boost::shared_ptr<EthereumClient> ClientPtr;
 
 		class EthSidechainSubWallet : public IEthSidechainSubWallet, public SubWallet {
 		public: // implement IEthSidechainSubWallet
 			virtual ~EthSidechainSubWallet();
+
+
+			// implement ISubWallet
+		public:
+			virtual std::string GetChainID() const;
+
+			virtual nlohmann::json GetBasicInfo() const;
+
+			virtual nlohmann::json GetBalanceInfo() const;
+
+			virtual std::string GetBalance() const;
+
+			virtual std::string GetBalanceWithAddress(const std::string &address) const;
+
+			virtual std::string CreateAddress();
+
+			virtual nlohmann::json GetAllAddress(
+				uint32_t start,
+				uint32_t count,
+				bool internal = false) const;
+
+			virtual nlohmann::json GetAllPublicKeys(
+				uint32_t start,
+				uint32_t count) const;
+
+			virtual void AddCallback(ISubWalletCallback *subCallback);
+
+			virtual void RemoveCallback();
+
+			virtual nlohmann::json CreateTransaction(
+				const std::string &fromAddress,
+				const std::string &toAddress,
+				const std::string &amount,
+				const std::string &memo);
+
+			virtual nlohmann::json GetAllUTXOs(
+				uint32_t start,
+				uint32_t count,
+				const std::string &address) const;
+
+			virtual nlohmann::json CreateConsolidateTransaction(
+				const std::string &memo);
+
+			virtual nlohmann::json SignTransaction(
+				const nlohmann::json &createdTx,
+				const std::string &payPassword) const;
+
+			virtual nlohmann::json GetTransactionSignedInfo(
+				const nlohmann::json &tx) const;
+
+			virtual nlohmann::json PublishTransaction(
+				const nlohmann::json &signedTx);
+
+			virtual nlohmann::json GetAllTransaction(
+				uint32_t start,
+				uint32_t count,
+				const std::string &txid) const;
+
+			virtual nlohmann::json GetAllCoinBaseTransaction(
+				uint32_t start,
+				uint32_t count,
+				const std::string &txID) const;
+
+			virtual nlohmann::json GetAssetInfo(
+				const std::string &assetID) const;
+
+			virtual bool SetFixedPeer(const std::string &address, uint16_t port);
+
+			virtual void SyncStart();
+
+			virtual void SyncStop();
 
 		protected:
 			friend class MasterWallet;
@@ -56,7 +127,7 @@ namespace Elastos {
 
 
 		protected:
-			EthereumEWMPtr _ewm;
+			ClientPtr _client;
 		};
 
 	}

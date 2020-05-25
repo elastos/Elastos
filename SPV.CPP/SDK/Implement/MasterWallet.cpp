@@ -36,6 +36,8 @@
 
 #include <vector>
 #include <boost/filesystem.hpp>
+#include <ethereum/base/BREthereumLogic.h>
+#include <ethereum/base/BREthereumAddress.h>
 
 namespace fs = boost::filesystem;
 

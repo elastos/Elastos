@@ -253,9 +253,6 @@ namespace Elastos {
 												 const std::string &errorDescription) = 0;
 			};
 
-			typedef boost::shared_ptr<Client> ClientPtr;
-			typedef boost::weak_ptr<Client> ClientWeakPtr;
-
 		public:
 			// Client Announcers
 			void announceBalance(BREthereumWallet wid, const std::string &balance, int rid);
@@ -373,21 +370,21 @@ namespace Elastos {
 
 			// Constructor
 		public:
-			EthereumEWM(const ClientPtr &client, Mode mode, const EthereumNetworkPtr &network,
-						const std::string &storagePath, std::string &paperKey,
+			EthereumEWM(Client *client, Mode mode, const EthereumNetworkPtr &network,
+						const std::string &storagePath, const std::string &paperKey,
 						const std::vector<std::string> &wordList);
 
-			EthereumEWM(const ClientPtr &client, Mode mode, const EthereumNetworkPtr &network,
+			EthereumEWM(Client *client, Mode mode, const EthereumNetworkPtr &network,
 						const std::string &storagePath, const bytes_t &publicKey);
 
 		private:
-			EthereumEWM(BREthereumEWM identifier, const ClientPtr &client, const EthereumNetworkPtr &network);
+			EthereumEWM(BREthereumEWM identifier, Client *client, const EthereumNetworkPtr &network);
 
-			BREthereumEWM createRawEWM(const ClientPtr &client, Mode mode, BREthereumNetwork network,
+			BREthereumEWM createRawEWM(Client *client, Mode mode, BREthereumNetwork network,
 									   const std::string &storagePath, const std::string &paperKey,
 									   const std::vector<std::string> &wordList);
 
-			BREthereumEWM createRawEWMPublicKey(const ClientPtr &client, Mode mode, BREthereumNetwork network,
+			BREthereumEWM createRawEWMPublicKey(Client *client, Mode mode, BREthereumNetwork network,
 												const std::string &storagePath, const bytes_t &pubkey);
 
 			// Connect / Disconnect
@@ -462,7 +459,7 @@ namespace Elastos {
 		private:
 			BackgroundExecutor _executor;
 			BREthereumEWM _ewm;
-			ClientWeakPtr _client;
+			Client *_client;
 			EthereumNetworkPtr _network;
 			EthereumAccountPtr _account;
 		};

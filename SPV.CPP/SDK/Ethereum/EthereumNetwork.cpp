@@ -25,12 +25,27 @@
  */
 
 #include "EthereumNetwork.h"
+#include <string>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		EthereumNetwork::EthereumNetwork(BREthereumNetwork network) :
 			_network(network) {
+		}
+
+		EthereumNetwork::EthereumNetwork(const std::string &netType) {
+			if (netType == "MainNet") {
+				_network = ethereumMainnet;
+			} else if (netType == "TestNet") {
+				_network = ethereumTestnet;
+			} else if (netType == "RegTest") {
+				_network = ethereumRinkeby;
+			} else if (netType == "PrvNet") {
+				_network = ethereumTestnet;
+			} else {
+				_network = NULL;
+			}
 		}
 
 		EthereumNetwork::~EthereumNetwork() {

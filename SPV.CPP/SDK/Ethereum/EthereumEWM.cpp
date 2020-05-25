@@ -374,21 +374,19 @@ namespace Elastos {
 			ewmUpdateTokens(_ewm);
 		}
 
-		EthereumEWM::EthereumEWM(const EthereumEWM::ClientPtr &client, EthereumEWM::Mode mode,
+		EthereumEWM::EthereumEWM(EthereumEWM::Client *client, EthereumEWM::Mode mode,
 								 const EthereumNetworkPtr &network, const std::string &storagePath,
-								 std::string &paperKey, const std::vector<std::string> &wordList) {
-			BREthereumEWM ewm = createRawEWM(client, mode, network->getRaw(), storagePath, paperKey, wordList);
-			EthereumEWM(ewm, client, network);
+								 const std::string &paperKey, const std::vector<std::string> &wordList) :
+			EthereumEWM(createRawEWM(client, mode, network->getRaw(), storagePath, paperKey, wordList), client, network) {
 		}
 
-		EthereumEWM::EthereumEWM(const EthereumEWM::ClientPtr &client, EthereumEWM::Mode mode,
+		EthereumEWM::EthereumEWM(EthereumEWM::Client *client, EthereumEWM::Mode mode,
 								 const EthereumNetworkPtr &network, const std::string &storagePath,
-								 const bytes_t &publicKey) {
-			BREthereumEWM ewm = createRawEWMPublicKey(client, mode, network->getRaw(), storagePath, publicKey);
-			EthereumEWM(ewm, client, network);
+								 const bytes_t &publicKey) :
+			EthereumEWM(createRawEWMPublicKey(client, mode, network->getRaw(), storagePath, publicKey), client, network){
 		}
 
-		EthereumEWM::EthereumEWM(BREthereumEWM ewm, const EthereumEWM::ClientPtr &client,
+		EthereumEWM::EthereumEWM(BREthereumEWM ewm, EthereumEWM::Client *client,
 								 const EthereumNetworkPtr &network) :
 			_ewm(ewm),
 			_client(client),
@@ -396,16 +394,16 @@ namespace Elastos {
 			_account(EthereumAccountPtr(new EthereumAccount(this, ewmGetAccount(ewm)))) {
 		}
 
-		BREthereumEWM EthereumEWM::createRawEWM(const ClientPtr &client, Mode mode, BREthereumNetwork network,
+		BREthereumEWM EthereumEWM::createRawEWM(Client *client, Mode mode, BREthereumNetwork network,
 												const std::string &storagePath, const std::string &paperKey,
 												const std::vector<std::string> &wordList) {
 			int wordsCount = wordList.size();
 			assert (BIP39_WORDLIST_COUNT == wordsCount);
-			char *wordListPtr[wordsCount];
+			static const char *wordListPtr[BIP39_WORDLIST_COUNT];
 
-			for (int i = 0; i < wordsCount; i++) {
-				wordListPtr[i] = strdup(wordList[i].data());
-			}
+			for (int i = 0; i < wordsCount; i++)
+				wordListPtr[i] = wordList[i].c_str();
+
 			installSharedWordList((const char **) wordListPtr, BIP39_WORDLIST_COUNT);
 			BREthereumClient brClient = {
 				this,
@@ -431,7 +429,7 @@ namespace Elastos {
 										 (BREthereumMode) mode, brClient, storagePath.data());
 		}
 
-		BREthereumEWM EthereumEWM::createRawEWMPublicKey(const ClientPtr &client, Mode mode, BREthereumNetwork network,
+		BREthereumEWM EthereumEWM::createRawEWMPublicKey(Client *client, Mode mode, BREthereumNetwork network,
 														 const std::string &storagePath, const bytes_t &pubkey) {
 			assert (65 == pubkey.size());
 
@@ -487,8 +485,7 @@ namespace Elastos {
 
 		void EthereumEWM::trampolineGetGasPrice(BREthereumEWM eid, BREthereumWallet wid, int rid) {
 			_executor.Execute(Runnable([this, wid, rid]() -> void {
-				if (!_client.expired())
-					_client.lock()->getGasPrice(wid, rid);
+				_client->getGasPrice(wid, rid);
 			}));
 		}
 
@@ -496,24 +493,21 @@ namespace Elastos {
 												   const std::string &from, const std::string &to,
 												   const std::string &amount, const std::string &data, int rid) {
 			_executor.Execute(Runnable([this, wid, tid, from, to, amount, data, rid]() -> void {
-				if (!_client.expired())
-					_client.lock()->getGasEstimate(wid, tid, from, to, amount, data, rid);
+				_client->getGasEstimate(wid, tid, from, to, amount, data, rid);
 			}));
 		}
 
 		void EthereumEWM::trampolineGetBalance(BREthereumEWM eid, BREthereumWallet wid, const std::string &address,
 											   int rid) {
 			_executor.Execute(Runnable([this, wid, address, rid]() -> void {
-				if (!_client.expired())
-					_client.lock()->getBalance(wid, address, rid);
+				_client->getBalance(wid, address, rid);
 			}));
 		}
 
 		void EthereumEWM::trampolineSubmitTransaction(BREthereumEWM eid, BREthereumWallet wid, BREthereumTransfer tid,
 													  const std::string &rawTransaction, int rid) {
 			_executor.Execute(Runnable([this, wid, tid, rawTransaction, rid]() -> void {
-				if (!_client.expired())
-					_client.lock()->submitTransaction(wid, tid, rawTransaction, rid);
+				_client->submitTransaction(wid, tid, rawTransaction, rid);
 			}));
 		}
 
@@ -521,8 +515,7 @@ namespace Elastos {
 		EthereumEWM::trampolineGetTransactions(BREthereumEWM eid, const std::string &address, uint64_t begBlockNumber,
 											   uint64_t endBlockNumber, int rid) {
 			_executor.Execute(Runnable([this, address, begBlockNumber, endBlockNumber, rid]() -> void {
-				if (!_client.expired())
-					_client.lock()->getTransactions(address, begBlockNumber, endBlockNumber, rid);
+				_client->getTransactions(address, begBlockNumber, endBlockNumber, rid);
 			}));
 		}
 
@@ -530,53 +523,46 @@ namespace Elastos {
 											const std::string &event, uint64_t begBlockNumber, uint64_t endBlockNumber,
 											int rid) {
 			_executor.Execute(Runnable([this, contract, address, event, begBlockNumber, endBlockNumber, rid]() -> void {
-				if (!_client.expired())
-					_client.lock()->getLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
+				_client->getLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
 			}));
 		}
 
 		void EthereumEWM::trampolineGetBlocks(BREthereumEWM eid, const std::string &address, int interests,
 											  uint64_t blockNumberStart, uint64_t blockNumberStop, int rid) {
 			_executor.Execute(Runnable([this, address, interests, blockNumberStart, blockNumberStop, rid]() -> void {
-				if (!_client.expired())
-					_client.lock()->getBlocks(address, interests, blockNumberStart, blockNumberStop, rid);
+				_client->getBlocks(address, interests, blockNumberStart, blockNumberStop, rid);
 			}));
 		}
 
 		void EthereumEWM::trampolineGetTokens(BREthereumEWM eid, int rid) {
 			_executor.Execute(Runnable([this, rid]() -> void {
-				if (!_client.expired())
-					_client.lock()->getTokens(rid);
+				_client->getTokens(rid);
 			}));
 		}
 
 		void EthereumEWM::trampolineGetBlockNumber(BREthereumEWM eid, int rid) {
 			_executor.Execute(Runnable([this, rid]() -> void {
-				if (!_client.expired())
-					_client.lock()->getBlockNumber(rid);
+				_client->getBlockNumber(rid);
 			}));
 		}
 
 		void EthereumEWM::trampolineGetNonce(BREthereumEWM eid, const std::string &address, int rid) {
 			_executor.Execute(Runnable([this, address, rid]() -> void {
-				if (!_client.expired())
-					_client.lock()->getNonce(address, rid);
+				_client->getNonce(address, rid);
 			}));
 		}
 
 		void EthereumEWM::trampolineEWMEvent(BREthereumEWM eid, int event, int status,
 											 const std::string &errorDescription) {
 			_executor.Execute(Runnable([this, event, status, errorDescription]() -> void {
-				if (!_client.expired())
-					_client.lock()->handleEWMEvent(EWMEvent(event), Status(status), errorDescription);
+				_client->handleEWMEvent(EWMEvent(event), Status(status), errorDescription);
 			}));
 		}
 
 		void EthereumEWM::trampolinePeerEvent(BREthereumEWM eid, int event, int status,
 											  const std::string &errorDescription) {
 			_executor.Execute(Runnable([this, event, status, errorDescription]() -> void {
-				if (!_client.expired())
-					_client.lock()->handlePeerEvent(PeerEvent(event), Status(status), errorDescription);
+				_client->handlePeerEvent(PeerEvent(event), Status(status), errorDescription);
 			}));
 		}
 
@@ -584,16 +570,14 @@ namespace Elastos {
 												const std::string &errorDescription) {
 			EthereumWalletPtr wallet = walletLookupOrCreate(wid, nullptr);
 			_executor.Execute(Runnable([this, wallet, event, status, errorDescription]() -> void {
-				if (!_client.expired())
-					_client.lock()->handleWalletEvent(wallet, WalletEvent(event), Status(status), errorDescription);
+				_client->handleWalletEvent(wallet, WalletEvent(event), Status(status), errorDescription);
 			}));
 		}
 
 		void EthereumEWM::trampolineTokenEvent(BREthereumEWM eid, BREthereumToken tokenId, int event) {
 			EthereumTokenPtr token = addTokenByReference(tokenId);
 			_executor.Execute(Runnable([this, token, event]() -> void {
-				if (!_client.expired())
-					_client.lock()->handleTokenEvent(token, TokenEvent(event));
+				_client->handleTokenEvent(token, TokenEvent(event));
 			}));
 		}
 
@@ -602,9 +586,7 @@ namespace Elastos {
 			EthereumWalletPtr wallet = walletLookupOrCreate(wid, nullptr);
 			EthereumTransferPtr transaction = transactionLookupOrCreate(tid);
 			_executor.Execute(Runnable([this, wallet, transaction, event, status, errorDescription]() -> void {
-				if (!_client.expired())
-					_client.lock()->handleTransferEvent(wallet, transaction, TransactionEvent(event), Status(status),
-														errorDescription);
+				_client->handleTransferEvent(wallet, transaction, TransactionEvent(event), Status(status), errorDescription);
 			}));
 		}
 
