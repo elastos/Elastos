@@ -110,6 +110,9 @@ void getPubKeyFromPrivKey(void *brecPoint, const UInt256 *k);
 int getPubKeyCoordinate(const void *pubKey, size_t pubKeyLen, uint8_t *xbuf, size_t *xlen,
         uint8_t *ybuf, size_t *ylen);
 
+ssize_t getKeyPem(const void *pubkey, size_t pubKeyLen, const void *privKey, size_t privKeyLen,
+        char *buffer, size_t len);
+
 ssize_t ECDSA65Sign_sha256(const void *privKey, size_t privKeyLen,
         const UInt256 *md, void *signedData, size_t signedDataSize);
 

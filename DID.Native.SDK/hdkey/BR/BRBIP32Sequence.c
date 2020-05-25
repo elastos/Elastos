@@ -31,6 +31,8 @@
 #include <openssl/obj_mac.h>
 #include <openssl/ecdsa.h>
 #include <openssl/bn.h>
+#include <openssl/bio.h>
+#include <openssl/pem.h>
 
 #define BIP32_SEED_KEY "Bitcoin seed"
 #define BIP32_XPRV     "\x04\x88\xAD\xE4"
@@ -95,6 +97,7 @@ int getPubKeyCoordinate(const void *pubKey, size_t pubKeyLen, uint8_t *xbuf, siz
         uint8_t *ybuf, size_t *ylen)
 {
     BIGNUM *_pubkey, *x = NULL, *y = NULL;
+    EC_KEY *key = NULL;
     uint8_t arrBN[256] = {0};
     int rc = -1, len;
     EC_POINT *ec_p = NULL;
@@ -103,35 +106,39 @@ int getPubKeyCoordinate(const void *pubKey, size_t pubKeyLen, uint8_t *xbuf, siz
         return rc;
 
     _pubkey = BN_bin2bn((const unsigned char *)pubKey, (int)pubKeyLen, NULL);
-    EC_KEY *key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
-    if (NULL != _pubkey && NULL != key) {
-        const EC_GROUP *curve = EC_KEY_get0_group(key);
-        ec_p = EC_POINT_bn2point(curve, _pubkey, NULL, NULL);
-        if (!ec_p)
-            goto errorExit;
+    if (!_pubkey)
+        return -1;
 
-        x = BN_new();
-        y = BN_new();
-        if (EC_POINT_get_affine_coordinates_GFp(curve, ec_p, x, y, NULL) == 0)
-            goto errorExit;
+    key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+    if (!key)
+        goto errorExit;
 
-        len = BN_bn2bin(x, arrBN);
-        if (len > *xlen)
-            goto errorExit;
+    const EC_GROUP *curve = EC_KEY_get0_group(key);
+    ec_p = EC_POINT_bn2point(curve, _pubkey, NULL, NULL);
+    if (!ec_p)
+        goto errorExit;
 
-        memcpy(xbuf, arrBN, len);
-        *xlen = len;
+    x = BN_new();
+    y = BN_new();
+    if (EC_POINT_get_affine_coordinates_GFp(curve, ec_p, x, y, NULL) == 0)
+        goto errorExit;
 
-        memset(arrBN, 0, sizeof(arrBN));
-        len = BN_bn2bin(y, arrBN);
-        if (len > *ylen)
-            goto errorExit;
+    len = BN_bn2bin(x, arrBN);
+    if (len > *xlen)
+        goto errorExit;
 
-        memcpy(ybuf, arrBN, len);
-        *ylen = len;
+    memcpy(xbuf, arrBN, len);
+    *xlen = len;
 
-        rc = 0;
-    }
+    memset(arrBN, 0, sizeof(arrBN));
+    len = BN_bn2bin(y, arrBN);
+    if (len > *ylen)
+        goto errorExit;
+
+    memcpy(ybuf, arrBN, len);
+    *ylen = len;
+
+    rc = 0;
 
 errorExit:
     if (ec_p)
@@ -141,9 +148,101 @@ errorExit:
     if (y)
         BN_free(y);
 
-    EC_KEY_free(key);
-    BN_free(_pubkey);
+    if (key)
+        EC_KEY_free(key);
+    if (_pubkey)
+        BN_free(_pubkey);
     return rc;
+}
+
+ssize_t getKeyPem(const void *pubkey, size_t pubKeyLen, const void *privKey, size_t privKeyLen,
+        char *buffer, size_t len)
+{
+    BIGNUM *_privkey = NULL, *_pubkey = NULL;
+    EC_KEY *key = NULL;
+    EC_POINT *ec_p = NULL;
+    BIO *bio = NULL;
+    BUF_MEM *bufferPtr = NULL;
+    ssize_t buf_len = -1;
+
+    if (!pubkey || 33 != pubKeyLen)
+        return -1;
+
+    // new EC_KEY
+    key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+    if (NULL == key)
+        goto errorExit;
+
+    EC_KEY_set_asn1_flag(key, OPENSSL_EC_NAMED_CURVE);
+
+    //set public key
+    _pubkey = BN_bin2bn((const unsigned char *)pubkey, (int)pubKeyLen, NULL);
+    if (NULL == _pubkey)
+        goto errorExit;
+
+    const EC_GROUP *curve = EC_KEY_get0_group(key);
+    ec_p = EC_POINT_bn2point(curve, _pubkey, NULL, NULL);
+    if (NULL == ec_p)
+        goto errorExit;
+
+    if (0 == EC_KEY_set_public_key(key, ec_p))
+        goto errorExit;
+
+    //set private key
+    if (privKey) {
+        if (32 != privKeyLen)
+            goto errorExit;
+
+        _privkey = BN_bin2bn((const unsigned char *)privKey, (int)privKeyLen, NULL);
+        if (NULL == _privkey)
+            goto errorExit;
+
+        if (0 == EC_KEY_set_private_key(key, _privkey))
+            goto errorExit;
+    }
+
+    //pem EC_KEY
+    bio = BIO_new(BIO_s_mem());
+    if (!bio)
+        goto errorExit;
+
+    BIO_set_flags(bio, BIO_FLAGS_WRITE);
+
+    if (!privKey && 0 == PEM_write_bio_EC_PUBKEY(bio, key))
+        goto errorExit;
+    if (privKey && 0 == PEM_write_bio_ECPrivateKey(bio, key, NULL, NULL, 0, NULL, NULL))
+        goto errorExit;
+
+    BIO_flush(bio);
+    BIO_get_mem_ptr(bio, &bufferPtr);
+    BIO_set_close(bio, BIO_NOCLOSE);
+
+    buf_len = bufferPtr->length;
+    if (buffer) {
+        if (buf_len >= len) {
+            buf_len = -1;
+        } else {
+            memcpy(buffer, bufferPtr->data, buf_len);
+            buffer[buf_len] = 0;
+        }
+    }
+
+    BUF_MEM_free(bufferPtr);
+
+errorExit:
+    if (ec_p)
+        EC_POINT_free(ec_p);
+    if (bio)
+        BIO_free_all(bio);
+
+    if (key)
+        EC_KEY_free(key);
+    if (_privkey)
+        BN_free(_privkey);
+    if (_pubkey)
+        BN_free(_pubkey);
+
+    return buf_len;
 }
 
 ssize_t
