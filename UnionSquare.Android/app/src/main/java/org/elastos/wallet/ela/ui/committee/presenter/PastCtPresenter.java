@@ -12,7 +12,7 @@ public class PastCtPresenter extends NewPresenterAbstract {
     public void getCouncilTerm(BaseFragment baseFragment) {
         Observable observable = RetrofitManager.webApiCreate().getCouncilTerm();
         Observer observer = createObserver(baseFragment, "getCouncilTerm");
-        subscriberObservable(observer, observable, baseFragment);
+        subscriberObservable(observer, observable, baseFragment, true);
     }
 
 

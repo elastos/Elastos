@@ -51,9 +51,8 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
 
     protected Context context;
 
-    @Deprecated
     protected void subscriberObservable(Observer subscriber,
-                                        Observable observable) {
+                                        Observable observable, boolean needRetry) {
         observable.unsubscribeOn(Schedulers.io()).subscribeOn(Schedulers.io())
                 .throttleFirst(2, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -62,11 +61,28 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     }
 
     protected void subscriberObservable(Observer subscriber,
-                                        Observable observable, BaseFragment baseFragment) {
+                                        Observable observable, BaseFragment baseFragment, boolean needRetry) {
         observable.compose(baseFragment.bindToLife()).unsubscribeOn(Schedulers.io())
                 .subscribeOn(Schedulers.io()).throttleFirst(1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .retry(3)
+                .subscribe(subscriber);
+    }
+
+    @Deprecated
+    protected void subscriberObservable(Observer subscriber,
+                                        Observable observable) {
+        observable.unsubscribeOn(Schedulers.io()).subscribeOn(Schedulers.io())
+                .throttleFirst(2, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(subscriber);
+    }
+
+    protected void subscriberObservable(Observer subscriber,
+                                        Observable observable, BaseFragment baseFragment) {
+        observable.compose(baseFragment.bindToLife()).unsubscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.io()).throttleFirst(1, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(subscriber);
     }
 
@@ -75,7 +91,6 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
         observable.compose(baseActivity.bindToLife()).unsubscribeOn(Schedulers.io())
                 .subscribeOn(Schedulers.io()).throttleFirst(1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .retry(3)
                 .subscribe(subscriber);
     }
 
@@ -88,7 +103,6 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
                 emitter.onComplete();
             }
         })
-        .retry(3)
         .onTerminateDetach();
     }
 
