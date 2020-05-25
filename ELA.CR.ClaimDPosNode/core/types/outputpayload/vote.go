@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -19,12 +19,23 @@ const (
 )
 
 const (
-	// Delegate indicates the vote content is for vote producer.
+	// Delegate indicates the vote content is for producer.
 	Delegate VoteType = 0x00
 
-	// CRC indicates the vote content is for vote CRC.
+	// CRC indicates the vote content is for CRC.
 	CRC VoteType = 0x01
 
+	// Proposal indicates the vote content is for reject proposal.
+	CRCProposal VoteType = 0x02
+
+	// Reject indicates the vote content is for impeachment.
+	CRCImpeachment VoteType = 0x03
+)
+
+// VoteType indicates the type of vote content.
+type VoteType byte
+
+const (
 	// VoteProducerVersion indicates the output version only support delegate
 	// vote type, and not support different votes for different candidates.
 	VoteProducerVersion = 0x00
@@ -33,9 +44,6 @@ const (
 	// and CRC vote type, and support different votes for different candidates.
 	VoteProducerAndCRVersion = 0x01
 )
-
-// VoteType indicates the type of vote content.
-type VoteType byte
 
 // CandidateVotes defines the voting information for individual candidates.
 type CandidateVotes struct {
@@ -204,13 +212,12 @@ func (o *VoteOutput) Validate() error {
 			return errors.New("duplicate vote type")
 		}
 		typeMap[content.VoteType] = struct{}{}
-
-		if len(content.CandidateVotes) == 0 || (content.VoteType == Delegate &&
+		if len(content.CandidateVotes) == 0 || (content.VoteType != CRC &&
 			len(content.CandidateVotes) > MaxVoteProducersPerTransaction) {
 			return errors.New("invalid public key count")
 		}
-		// only use Delegate and CRC as a vote type for now
-		if content.VoteType != Delegate && content.VoteType != CRC {
+		if content.VoteType != Delegate && content.VoteType != CRC &&
+			content.VoteType != CRCProposal && content.VoteType != CRCImpeachment {
 			return errors.New("invalid vote type")
 		}
 

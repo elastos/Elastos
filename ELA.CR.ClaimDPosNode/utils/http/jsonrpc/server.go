@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -7,16 +7,15 @@ package jsonrpc
 
 import (
 	"context"
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"sync"
-
-	"crypto/sha256"
-	"crypto/subtle"
-	"encoding/base64"
 
 	"github.com/elastos/Elastos.ELA/common/log"
 	htp "github.com/elastos/Elastos.ELA/utils/http"

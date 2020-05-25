@@ -51,7 +51,7 @@ func HashMerkleBranches(left *common.Uint256, right *common.Uint256) *common.Uin
 	copy(hash[:common.UINT256SIZE], left[:])
 	copy(hash[common.UINT256SIZE:], right[:])
 
-	newHash := common.Uint256(common.Sha256D(hash[:]))
+	newHash := common.Hash(hash[:])
 	return &newHash
 }
 

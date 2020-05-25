@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -21,7 +21,8 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
-	. "github.com/elastos/Elastos.ELA/errors"
+	elaerr "github.com/elastos/Elastos.ELA/errors"
+	. "github.com/elastos/Elastos.ELA/servers/errors"
 )
 
 const (
@@ -57,8 +58,9 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 	}
 
 	// A block must not have more transactions than the max block payload.
-	if numTx > pact.MaxTxPerBlock {
-		return errors.New("[PowCheckBlockSanity]  block contains too many transactions")
+	if uint32(numTx) > pact.MaxTxPerBlock {
+		return errors.New("[PowCheckBlockSanity]  block contains too many" +
+			" transactions, tx count: " + strconv.FormatInt(int64(numTx), 10))
 	}
 
 	// A block header must not exceed the maximum allowed block payload when
@@ -100,8 +102,9 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 		existingTxIDs[txID] = struct{}{}
 
 		// Check for transaction sanity
-		if errCode := b.CheckTransactionSanity(block.Height, txn); errCode != Success {
-			return errors.New("CheckTransactionSanity failed when verifiy block")
+		if err := b.CheckTransactionSanity(block.Height, txn); err != nil {
+			return elaerr.SimpleWithMessage(elaerr.ErrBlockValidation, err,
+				"CheckTransactionSanity failed when verifiy block")
 		}
 
 		// Check for duplicate UTXO inputs in a block
@@ -245,8 +248,9 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 		}
 
 		if errCode := b.CheckTransactionContext(block.Height,
-			block.Transactions[i], references); errCode != Success {
-			return errors.New("CheckTransactionContext failed when verify block")
+			block.Transactions[i], references, 0); errCode != nil {
+			return elaerr.SimpleWithMessage(elaerr.ErrBlockValidation, errCode,
+				"CheckTransactionContext failed when verify block")
 		}
 
 		// Calculate transaction fee
@@ -296,7 +300,7 @@ func (b *BlockChain) CheckBlockContext(block *Block, prevNode *BlockNode) error 
 	// Ensure the timestamp for the block header is after the
 	// median time of the last several blocks (medianTimeBlocks).
 	medianTime := CalcPastMedianTime(prevNode)
-	tempTime := time.Unix(int64(header.Timestamp), 0)
+	tempTime := time.Unix(int64(header.Timestamp), 1)
 
 	if !tempTime.After(medianTime) {
 		return errors.New("block timestamp is not after expected")
@@ -309,6 +313,10 @@ func (b *BlockChain) CheckBlockContext(block *Block, prevNode *BlockNode) error 
 	}
 
 	if err := DefaultLedger.Arbitrators.CheckDPOSIllegalTx(block); err != nil {
+		return err
+	}
+
+	if err := DefaultLedger.Arbitrators.CheckCRCAppropriationTx(block); err != nil {
 		return err
 	}
 
@@ -361,7 +369,7 @@ func IsFinalizedTransaction(msgTx *Transaction, blockHeight uint32) bool {
 	return true
 }
 
-func GetTxFee(tx *Transaction, assetId Uint256, references map[*Input]*Output) Fixed64 {
+func GetTxFee(tx *Transaction, assetId Uint256, references map[*Input]Output) Fixed64 {
 	feeMap, err := GetTxFeeMap(tx, references)
 	if err != nil {
 		return 0
@@ -370,7 +378,7 @@ func GetTxFee(tx *Transaction, assetId Uint256, references map[*Input]*Output) F
 	return feeMap[assetId]
 }
 
-func GetTxFeeMap(tx *Transaction, references map[*Input]*Output) (map[Uint256]Fixed64, error) {
+func GetTxFeeMap(tx *Transaction, references map[*Input]Output) (map[Uint256]Fixed64, error) {
 	feeMap := make(map[Uint256]Fixed64)
 	var inputs = make(map[Uint256]Fixed64)
 	var outputs = make(map[Uint256]Fixed64)
