@@ -394,7 +394,9 @@
     }
     ```
 
-* `/api/v1/asset/<hash>` : Returns information about the given asset `hash`
+* `/api/v1/asset/<hash>` : Always return ELA asset information.
+
+Deprecated: May be removed in the next version.
 
     Example:
 
@@ -440,7 +442,9 @@
 
 * `/api/v1/asset/balance/<addr>/<assetid>` : Returns the balance about the given address and AssetID
 
-    Example:
+Deprecated: May be removed in the next version.
+
+Example:
 
     ```bash
     curl http://localhost:20334/api/v1/asset/balance/EgHPRhodCsDKuDBPApCK3KLayiBomrJrbH/a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0
@@ -452,6 +456,8 @@
     ```
 
 * `/api/v1/asset/utxo/<addr>/<assetid>` : Returns the UTXO(s) according to the given address and AssetID
+
+Deprecated: May be removed in the next version.
 
     Example:
 

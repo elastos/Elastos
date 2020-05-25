@@ -395,7 +395,9 @@
     }
     ```
 
-* `/api/v1/asset/<hash>` : 资产查询
+* `/api/v1/asset/<hash>` : 返回 ELA 资产信息
+
+Deprecated: 可能在下一版本删除这个接口。
 
     示例：
 
@@ -441,7 +443,9 @@
 
 * `/api/v1/asset/balance/<addr>/<assetid>` : 根据地址和AssetID查询余额
 
-    示例：
+Deprecated: 可能在下一个版本删除这个接口。
+
+   示例：
 
     ```bash
     curl http://localhost:20334/api/v1/asset/balance/EgHPRhodCsDKuDBPApCK3KLayiBomrJrbH/a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0
@@ -454,7 +458,9 @@
 
 * `/api/v1/asset/utxo/<addr>/<assetid>` : 根据地址和AssetID查询UTXO
 
-    示例：
+Deprecated: 可能在下一个版本删除这个接口。
+
+   示例：
 
     ```bash
     curl http://localhost:20334/api/v1/asset/utxo/EgHPRhodCsDKuDBPApCK3KLayiBomrJrbH/a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0

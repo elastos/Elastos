@@ -1,17 +1,17 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package blockchain
 
 import (
-	"bytes"
+	"errors"
 	"fmt"
-	"path/filepath"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -21,8 +21,8 @@ import (
 )
 
 var (
-	testUTXOCacheDB *ChainStore
-	utxoCache       *UTXOCache
+	utxoCacheDB *UtxoCacheDB
+	utxoCache   *UTXOCache
 
 	// refer tx hash: 160da301e49617c037ae9b630919af52b8ac458202cd64558af7e0dcc753e307
 	referTx = &types.Transaction{
@@ -63,36 +63,45 @@ var (
 	}
 )
 
-func deleteTestDBTx(tx *types.Transaction) error {
-	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATATransaction))
-	hash := referTx.Hash()
-	err := hash.Serialize(key)
-	if err != nil {
-		return err
+type UtxoCacheDB struct {
+	transactions map[common.Uint256]*types.Transaction
+}
+
+func init() {
+	testing.Init()
+}
+
+func (s *UtxoCacheDB) GetTransaction(txID common.Uint256) (
+	*types.Transaction, uint32, error) {
+	txn, exist := s.transactions[txID]
+	if exist {
+		return txn, 0, nil
 	}
-	return testUTXOCacheDB.Delete(key.Bytes())
+	return nil, 0, errors.New("leveldb: not found")
+}
+
+func (s *UtxoCacheDB) SetTransaction(txn *types.Transaction) {
+	s.transactions[txn.Hash()] = txn
+}
+
+func (s *UtxoCacheDB) RemoveTransaction(txID common.Uint256) {
+	delete(s.transactions, txID)
+}
+
+func NewUtxoCacheDB() *UtxoCacheDB {
+	var db UtxoCacheDB
+	db.transactions = make(map[common.Uint256]*types.Transaction)
+	return &db
 }
 
 func TestUTXOCache_Init(t *testing.T) {
-	db, err := NewLevelDB(filepath.Join(test.DataPath, "test_utxo_cache_chain"))
-	assert.NoError(t, err)
-	testUTXOCacheDB = &ChainStore{
-		IStore:           db,
-		blockHashesCache: make([]common.Uint256, 0, BlocksCacheSize),
-		blocksCache:      make(map[common.Uint256]*types.Block),
-	}
-	testUTXOCacheDB.NewBatch()
-
+	utxoCacheDB = NewUtxoCacheDB()
 	fmt.Println("refer tx hash:", referTx.Hash().String())
-	err = testUTXOCacheDB.persistTransaction(referTx, 0)
-	assert.NoError(t, err)
-
-	testUTXOCacheDB.BatchCommit()
+	utxoCacheDB.SetTransaction(referTx)
 }
 
 func TestUTXOCache_GetTxReferenceInfo(t *testing.T) {
-	utxoCache = NewUTXOCache(testUTXOCacheDB)
+	utxoCache = NewUTXOCache(utxoCacheDB, &config.DefaultParams)
 
 	// get tx reference form db and cache it first time.
 	reference, err := utxoCache.GetTxReference(spendTx)
@@ -107,9 +116,8 @@ func TestUTXOCache_GetTxReferenceInfo(t *testing.T) {
 	}
 
 	// ensure above reference have been cached.
-	err = deleteTestDBTx(referTx)
-	assert.NoError(t, err)
-	_, _, err = testUTXOCacheDB.GetTransaction(referTx.Hash())
+	utxoCacheDB.RemoveTransaction(referTx.Hash())
+	_, _, err = utxoCacheDB.GetTransaction(referTx.Hash())
 	assert.Equal(t, "leveldb: not found", err.Error())
 
 	reference, err = utxoCache.GetTxReference(spendTx)
@@ -127,13 +135,11 @@ func TestUTXOCache_GetTxReferenceInfo(t *testing.T) {
 func TestUTXOCache_CleanSpent(t *testing.T) {
 	utxoCache.CleanTxCache()
 	_, err := utxoCache.GetTransaction(spendTx.Hash())
-	assert.Equal(t, "transaction not found", err.Error())
+	assert.Equal(t, "transaction not found, leveldb: not found", err.Error())
 }
 
 func TestUTXOCache_CleanCache(t *testing.T) {
-	err := testUTXOCacheDB.persistTransaction(referTx, 0)
-	assert.NoError(t, err)
-	testUTXOCacheDB.BatchCommit()
+	utxoCacheDB.SetTransaction(referTx)
 
 	reference, err := utxoCache.GetTxReference(spendTx)
 	assert.NoError(t, err)
@@ -146,14 +152,15 @@ func TestUTXOCache_CleanCache(t *testing.T) {
 		assert.Equal(t, types.OTVote, output.Type)
 	}
 
-	err = deleteTestDBTx(referTx)
-	assert.NoError(t, err)
-	_, _, err = testUTXOCacheDB.GetTransaction(referTx.Hash())
+	utxoCacheDB.RemoveTransaction(referTx.Hash())
+	_, _, err = utxoCacheDB.GetTransaction(referTx.Hash())
 	assert.Equal(t, "leveldb: not found", err.Error())
 
 	utxoCache.CleanCache()
 	_, err = utxoCache.GetTxReference(spendTx)
-	assert.Equal(t, "GetTxReference failed, transaction not found", err.Error())
+	assert.Equal(t,
+		"GetTxReference failed, transaction not found, leveldb: not found",
+		err.Error())
 }
 
 // Test for case that a map use pointer as a key
@@ -207,7 +214,7 @@ func Test_PointerKeyForMap(t *testing.T) {
 
 func TestUTXOCache_InsertReference(t *testing.T) {
 	// init reference
-	for i := uint32(0); i < maxReferenceSize; i++ {
+	for i := uint32(0); i < uint32(maxReferenceSize); i++ {
 		input := &types.Input{
 			Sequence: i,
 		}
@@ -218,12 +225,12 @@ func TestUTXOCache_InsertReference(t *testing.T) {
 	}
 	assert.Equal(t, maxReferenceSize, len(utxoCache.reference))
 	assert.Equal(t, maxReferenceSize, utxoCache.inputs.Len())
-	assert.Equal(t, uint32(0), utxoCache.inputs.Front().Value.(*types.Input).Sequence)
-	assert.Equal(t, uint32(maxReferenceSize-1), utxoCache.inputs.Back().Value.(*types.Input).Sequence)
-	assert.Equal(t, uint32(0), utxoCache.reference[utxoCache.inputs.Front().Value.(*types.Input)].OutputLock)
-	assert.Equal(t, uint32(maxReferenceSize-1), utxoCache.reference[utxoCache.inputs.Back().Value.(*types.Input)].OutputLock)
+	assert.Equal(t, uint32(0), utxoCache.inputs.Front().Value.(types.Input).Sequence)
+	assert.Equal(t, uint32(maxReferenceSize-1), utxoCache.inputs.Back().Value.(types.Input).Sequence)
+	assert.Equal(t, uint32(0), utxoCache.reference[utxoCache.inputs.Front().Value.(types.Input)].OutputLock)
+	assert.Equal(t, uint32(maxReferenceSize-1), utxoCache.reference[utxoCache.inputs.Back().Value.(types.Input)].OutputLock)
 
-	for i := uint32(maxReferenceSize); i < maxReferenceSize+500; i++ {
+	for i := uint32(maxReferenceSize); i < uint32(maxReferenceSize+500); i++ {
 		input := &types.Input{
 			Sequence: i,
 		}
@@ -234,9 +241,9 @@ func TestUTXOCache_InsertReference(t *testing.T) {
 	}
 	assert.Equal(t, maxReferenceSize, len(utxoCache.reference))
 	assert.Equal(t, maxReferenceSize, utxoCache.inputs.Len())
-	assert.Equal(t, uint32(500), utxoCache.inputs.Front().Value.(*types.Input).Sequence)
-	assert.Equal(t, uint32(maxReferenceSize+499), utxoCache.inputs.Back().Value.(*types.Input).Sequence)
-	assert.Equal(t, uint32(500), utxoCache.reference[utxoCache.inputs.Front().Value.(*types.Input)].OutputLock)
-	assert.Equal(t, uint32(maxReferenceSize+499), utxoCache.reference[utxoCache.inputs.Back().Value.(*types.Input)].
+	assert.Equal(t, uint32(500), utxoCache.inputs.Front().Value.(types.Input).Sequence)
+	assert.Equal(t, uint32(maxReferenceSize+499), utxoCache.inputs.Back().Value.(types.Input).Sequence)
+	assert.Equal(t, uint32(500), utxoCache.reference[utxoCache.inputs.Front().Value.(types.Input)].OutputLock)
+	assert.Equal(t, uint32(maxReferenceSize+499), utxoCache.reference[utxoCache.inputs.Back().Value.(types.Input)].
 		OutputLock)
 }

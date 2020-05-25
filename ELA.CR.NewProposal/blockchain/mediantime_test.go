@@ -15,6 +15,10 @@ import (
 	"github.com/elastos/Elastos.ELA/utils/test"
 )
 
+func init() {
+	testing.Init()
+}
+
 // TestMedianTime tests the medianTime implementation.
 func TestMedianTime(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 5, 0, 0)

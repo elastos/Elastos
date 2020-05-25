@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -222,11 +222,11 @@ func GetMerkleRoot(hash common.Uint256, merkleBranch []common.Uint256, index int
 		if (index & 1) == 1 {
 			copy(sha[:32], it[:])
 			copy(sha[32:], hash[:])
-			hash = common.Uint256(common.Sha256D(sha[:]))
+			hash = common.Hash(sha[:])
 		} else {
 			copy(sha[:32], hash[:])
 			copy(sha[32:], it[:])
-			hash = common.Uint256(common.Sha256D(sha[:]))
+			hash = common.Hash(sha[:])
 		}
 		index >>= 1
 	}

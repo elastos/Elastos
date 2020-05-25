@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -6,6 +6,7 @@
 package test
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -23,6 +24,11 @@ var (
 	// DPoSLogPath indicates the path storing the DPoS log in test
 	DPoSLogPath = filepath.Join(DataDir, "logs/dpos")
 )
+
+func init() {
+	testing.Init()
+	os.RemoveAll(DataPath)
+}
 
 // SkipShort is used to skip the following testing in short mode
 func SkipShort(t *testing.T) {
