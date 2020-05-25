@@ -333,7 +333,7 @@ type OutputInfo struct {
 	Amount    *Fixed64
 }
 
-func (b *BlockChain) createTransaction(payload Payload,
+func (b *BlockChain) createTransaction(pd Payload,
 	fromAddress Uint168, fee Fixed64, lockedUntil uint32,
 	utxos []*UTXO, outputs ...*OutputInfo) (*Transaction, error) {
 	// check output
@@ -352,10 +352,19 @@ func (b *BlockChain) createTransaction(payload Payload,
 		return nil, err
 	}
 	txOutputs = append(txOutputs, changeOutputs...)
+	var txType TxType
+	switch pd.(type) {
+	case *payload.CRAssetsRectify:
+		txType = CRAssetsRectify
+	case *payload.CRCAppropriation:
+		txType = CRCAppropriation
+	default:
+		return nil, errors.New("Invalid payload type")
+	}
 	return &Transaction{
 		Version:    TxVersion09,
-		TxType:     CRCAppropriation,
-		Payload:    payload,
+		TxType:     txType,
+		Payload:    pd,
 		Attributes: []*Attribute{},
 		Inputs:     txInputs,
 		Outputs:    txOutputs,
@@ -486,7 +495,10 @@ func (b *BlockChain) CreateCRAssetsRectifyTransaction() (*Transaction, error) {
 		return nil, err
 	}
 	var crcFoundationBalance Fixed64
-	for _, u := range utxos {
+	for i, u := range utxos {
+		if i >= int(b.chainParams.MaxCRAssetsAddressUTXOCount) {
+			break
+		}
 		crcFoundationBalance += u.Value
 	}
 	rectifyAmount := crcFoundationBalance

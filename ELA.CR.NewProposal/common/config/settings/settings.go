@@ -850,6 +850,18 @@ func NewSettings() *Settings {
 		ParamName:    "RegisterCRByDIDHeight",
 	})
 
+	result.Add(&settingItem{
+		Flag:         cmdcom.MaxCRAssetsAddressUTXOCount,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.MaxCRAssetsAddressUTXOCount",
+		ParamName:    "MaxCRAssetsAddressUTXOCount"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.CRAssetsRectifyTransactionHeight,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.CRAssetsRectifyTransactionHeight",
+		ParamName:    "CRAssetsRectifyTransactionHeight"})
+
 	return result
 }
 
