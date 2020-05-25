@@ -131,7 +131,9 @@ export default class extends Base {
                 if (cvote) {
                     return {success: true, id: cvote._id}
                 }
-                const rs: any = await getProposalState({proposalHash})
+                const rs: any = await getProposalState({
+                    proposalhash: proposalHash
+                })
                 if (rs && rs.success && rs.status === 'Registered') {
                     const proposal = await this.proposeSuggestion({
                         suggestionId: id

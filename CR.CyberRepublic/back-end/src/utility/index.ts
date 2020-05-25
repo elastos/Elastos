@@ -134,8 +134,8 @@ export const getUtxosByAmount = async (amount: string) => {
 }
 
 export const getProposalState = async (query: {
-  draftHash?: string
-  proposalHash?: string
+  drafthash?: string
+  proposalhash?: string
 }) => {
   const headers = {
     'Content-Type': 'application/json'
