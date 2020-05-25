@@ -2,7 +2,15 @@ import Base from './Base'
 import {Document} from 'mongoose'
 import * as _ from 'lodash'
 import {constant} from '../constant'
-import {permissions, getDidPublicKey, getProposalState, getProposalData, getDidName, ela, getVoteResultByTxid} from '../utility'
+import {
+    permissions,
+    getDidPublicKey,
+    getProposalState,
+    getProposalData,
+    getDidName,
+    ela,
+    getVoteResultByTxid
+} from '../utility'
 import * as moment from 'moment'
 import * as jwt from 'jsonwebtoken'
 import {
@@ -955,6 +963,9 @@ export default class extends Base {
                     voteHistory: {
                         ..._.omit(currentVoteResult, '_id')
                     }
+                },
+                $inc: {
+                    __v: 1
                 }
             }
         )
@@ -1258,6 +1269,7 @@ export default class extends Base {
                         rs,
                         _id: o._id,
                         voteResult,
+                        version: o.__v,
                     })
                     break;
                 case constant.CVOTE_STATUS.NOTIFICATION:
@@ -1271,7 +1283,7 @@ export default class extends Base {
     }
 
     public async updateProposalOnProposed(data: any) {
-        const {rs, _id, voteResult} = data
+        const {rs, _id, voteResult, version} = data
         const db_cvote = this.getDBModel('CVote')
         const {status: chainStatus} = rs
         const newVoteHistory = []
@@ -1294,14 +1306,18 @@ export default class extends Base {
             newVoteHistory.push(_.omit(newElement, '_id'))
             return newElement
         }));
-        
+
         await db_cvote.update({
-            _id
+            _id,
+            __v: version
         }, {
             status: CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus],
             voteResult: newVoteResult,
             $push: {
                 voteHistory: newVoteHistory
+            },
+            $inc: {
+                __v: 1
             }
         })
     }

@@ -458,4 +458,245 @@ export default class extends Base {
     private filterNullField(obj: object) {
         return _.pickBy(obj, _.identity)
     }
+
+    public async scheduledTasks() {
+        const listcrs = await ela.currentCouncil()
+        const listcds = await ela.currentCandidates()
+        const height = await ela.height()
+
+        const currentCrs = await this.model.getDBInstance().find({status: constant.TERM_COUNCIL_STATUS.CURRENT})
+        const votingCds = await this.model.getDBInstance().find({status: constant.TERM_COUNCIL_STATUS.VOTING})
+        const historyCrs = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.HISTORY},{sort: -1})
+        const index = currentCrs.index ? currentCrs.index : historyCrs.index ? historyCrs.index : 1
+
+        const fields = [
+            'code',
+            'cid',
+            'did',
+            'location',
+            'penalty',
+            'index'
+        ]
+
+        const dataToCouncil = (data: any) => ({
+            ..._.pick(data, fields),
+            address: data.url,
+            impeachmentVotes: data.impeachmentvotes,
+            depositAmount: data.depositamout,
+            depositAddress: data.depositaddress,
+            status: data.state,
+        });
+
+        const updateUserInformation = async (councilMembers: any) => {
+            const didList = _.map(councilMembers, (o: any) => DID_PREFIX + o.did)
+            const userList = await this.userMode.getDBInstance().find({'did.id': {$in: didList}}, ['_id', 'did.id'])
+            const userByDID = _.keyBy(userList, (o: any) => o.did.id.replace(DID_PREFIX, ''))
+
+            // TODO: need to optimizing (multiple update)
+            // add avatar nickname into user's did
+            await Promise.all(_.map(userList, async (o: any) => {
+                if (o && o.did && !o.did.id) {
+                    return
+                }
+                const information: any = await getInformationByDid(o.did.id)
+                const didName = await getDidName(o.did.id)
+                const did = this.filterNullField({
+                    'did.avatar': _.get(information, 'avatar'),
+                    'did.didName': didName,
+                })
+                if (_.isEmpty(did)) {
+                    return
+                }
+                await this.userMode.getDBInstance().update({_id: o._id}, {
+                    $set: did
+                })
+            }))
+
+            return _.map(councilMembers, (o: any) => ({
+                ...o,
+                user: userByDID[o.did]
+            }))
+        }
+
+        const updateCrsInformation = async (list: any, data: any) => {
+            const newCouncilMembers = _.map(list.crmembersinfo, (o: any) => dataToCouncil(o))
+            const newCouncilsByDID = _.keyBy(newCouncilMembers, 'did')
+            const oldCouncilsByDID = _.keyBy(data.councilMembers, 'did')
+    
+            const councils = _.map(oldCouncilsByDID, (v: any, k: any) => (_.merge(v._doc, newCouncilsByDID[k])))
+            const councilMembers = await updateUserInformation(councils)
+    
+            await this.model.getDBInstance().update({_id: data._id}, {councilMembers})
+        }
+
+        const updateCdsInformation = async (list: any, data: any) => {
+            // update data
+            const newCouncilMembers = _.map(list.crcandidatesinfo, async (o: any) => {
+                const obj = dataToCouncil(o)
+                const depositObj = await ela.depositCoin(o.did)
+                if (!depositObj) {
+                    return obj
+                }
+                return {
+                    ...o,
+                    depositAmount: depositObj && depositObj.available || '0'
+                }
+            })
+
+            const newCouncilsByDID = _.keyBy(newCouncilMembers, 'did')
+            const oldCouncilsByDID = _.keyBy(data.councilMembers, 'did')
+
+            const councils = _.map(oldCouncilsByDID, (v: any, k: any) => (_.merge(v._doc, newCouncilsByDID[k])))
+            const councilMembers = await updateUserInformation(councils)
+
+            await this.model.getDBInstance().update({_id: data._id}, {councilMembers})
+        }
+
+        if(listcrs && listcds){
+            // update currentCrs and VotingCds
+            if(currentCrs && votingCds){
+                await updateCrsInformation(listcrs, currentCrs)
+                await updateCdsInformation(listcds, votingCds)
+            } 
+            // update currentCrs , add listcds -> database status VOTING
+            else if(currentCrs && !votingCds){
+                // update
+                await updateCrsInformation(listcrs, currentCrs)
+                
+                // add
+                const doc: any = {
+                    index: index+1,
+                    height: height || 0,
+                    startDate: new Date(),
+                    status: constant.TERM_COUNCIL_STATUS.VOTING,
+                    councilMembers: _.map(listcds.crcandidatesinfo, (o) => dataToCouncil(o))
+                }
+                await this.model.getDBInstance().save(doc)
+                
+            }
+        }
+        
+        if(listcrs && !listcds){
+            if(currentCrs && votingCds){
+                // votingCds status -> CURRENT, currentCrs status -> HISTORY
+                if(votingCds){
+                    const date = new Date()
+                    await this.model.getDBInstance().update(
+                        {
+                            _id: currentCrs._id
+                        },
+                        {
+                            $set:{
+                                ...currentCrs,
+                                endDate: date,
+                                status: constant.TERM_COUNCIL_STATUS.HISTORY
+                            }
+                        }
+                    )
+                    await this.model.getDBInstance().update(
+                        {
+                            _id: votingCds._id
+                        },
+                        {
+                            $set:{
+                                ...votingCds,
+                                status: constant.TERM_COUNCIL_STATUS.CURRENT,
+                                startDate: date
+                            }
+                        }
+                    )
+                }
+                // update CurrentCrs data
+                if(!votingCds){
+                    await updateCrsInformation(listcrs,currentCrs)
+                }
+            }
+            // votingCds status -> CURRENT
+            else if(!currentCrs && votingCds){
+                // calculation first startTime
+                // const startTime = (800*CTS)/CLT
+                await this.model.getDBInstance().update(
+                    {
+                        _id: votingCds._id
+                    },
+                    {
+                        $set: {
+                            ...votingCds,
+                            // startTime,
+                            status: constant.TERM_COUNCIL_STATUS.CURRENT
+                        }
+                    }
+                )
+            }
+        }
+
+        if(!listcrs && listcds){
+            if(currentCrs){
+                // currentCrs status -> HISTORY
+                await updateCrsInformation(listcrs,currentCrs)
+                this.model.update(
+                    {
+                        _id: currentCrs._id
+                    },
+                    {
+                        $set: {
+                            ...currentCrs,
+                            status: "HISTORY",
+                            endDate: new Date()
+                        }
+                    }
+                )
+
+                // update votingCds data
+                if(votingCds){
+                    await updateCdsInformation(listcds, votingCds)
+                }
+                // add listcds -> database, status VOTING
+                if(!votingCds){
+                    const doc: any = {
+                        index: index+1,
+                        startDate: new Date(),
+                        status: constant.TERM_COUNCIL_STATUS.VOTING,
+                        height: height || 0,
+                        councilMembers: _.map(listcds.crcandidatesinfo, (o) => dataToCouncil(o))
+                    }
+                    await this.model.getDBInstance().save(doc)
+                }
+            }
+            if(!currentCrs && votingCds){
+                // update votingCds data
+                if(votingCds){
+                    await updateCdsInformation(listcds, votingCds)
+                }
+                // add votingCds -> database , status VOTING
+                if(!votingCds){
+                    const doc: any = {
+                        index,
+                        startDate: new Date(),
+                        status: constant.TERM_COUNCIL_STATUS.VOTING,
+                        height: height || 0,
+                        councilMembers: _.map(listcds.crcandidatesinfo, (o) => dataToCouncil(o))
+                    }
+                    await this.model.getDBInstance().save(doc);
+                }
+            }
+        }
+
+        if(!listcrs && !listcds){
+            if(currentCrs){
+                await this.model.getDBInstance().update(
+                    {
+                        _id: currentCrs._id
+                    },
+                    {
+                        $set:{
+                            ...currentCrs,
+                            status: constant.TERM_COUNCIL_STATUS.HISTORY,
+                            endDate: new Date()
+                        }
+                    }
+                )
+            }
+        }
+    }
 }
