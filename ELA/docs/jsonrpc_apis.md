@@ -1558,6 +1558,7 @@ if not set utxotype will use "mixed" as default value
 if set utxotype to "mixed" or not set will get all utxos ignore the type
 if set utxotype to "vote" will get vote utxos
 if set utxotype to "normal" will get normal utxos without vote
+if set utxotype to "unused" will get all utxos that are not in tx pool
 
 #### Example
 
@@ -1683,7 +1684,7 @@ Request:
 {
   "method":"getblockbyheight",
   "params":{
-    "height":"5"
+    "height":5
   }
 }
 ```
@@ -1806,7 +1807,7 @@ Request:
 {
   "method":"getarbitratorgroupbyheight",
   "params":{
-    "height":"310"
+    "height":310
   }
 }
 ```
@@ -1888,6 +1889,7 @@ Response:
 Show cr candidates information
 
 #### Parameter
+
 | name  | type    | description                                                  |
 | ----- | ------- | ------------------------------------------------------------ |
 | start | integer | the start index of cr candidates                                 |
@@ -1956,6 +1958,30 @@ Response:
 }
 ```
 
+### getsecretarygeneral
+
+get secretary general public key
+
+#### Example
+
+Request:
+```json
+{
+"method": "getsecretarygeneral"
+}
+```
+
+Response:
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "secretarygeneral": "033279a88abf504192f36d0a8f06d66ab1fff80d2715cf3ecbd243b4db8ff2e77e"
+    }
+}
+```
 
 ### listcurrentcrs
 
@@ -1977,7 +2003,7 @@ Show current cr members information
 | location        | uint64 | the location number of the cr member      |
 | impeachmentvotes| int64  | impeachment votes of the cr member        |
 | depositamount   | string | the deposite amout of the cr member       |
-| deposithash     | string | the deposite address of the cr member     |
+| depositaddress  | string | the deposite address of the cr member     |
 | penalty         | int64  | the penalty of the cr member              |
 | index           | uint64 | the index of the cr member                |
 | totalcounts     | uint64 | the total counts of current cr member     |
@@ -2011,9 +2037,10 @@ Response:
                 "url": "ela_cr2.org",
                 "location": 112211, "impeachmentvotes": 0,
                 "depositamout": "5000",
-                "deposithash": "1f56b347f27954f1061883cfe469839f8465cc7340",
+                "deposithash": "De87Qiekzpx7Xqf8RphdwNX5Z84iGgHLKMF5b",
                 "penalty": 0,
-                "index": 0
+                "index": 0,
+                "State": "Elected"
             },
             {
                 "code": "2103c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95ac",
@@ -2024,9 +2051,10 @@ Response:
                 "location": 112211,
                 "impeachmentvotes": 0,
                 "depositamout": "5000",
-                "deposithash": "1f0f11c336563d31ed1cf81ac4a83f9df7306f9967",
+                "depositaddress": "DnemZpPgHLKMF5bMX3WbJYSGTpqJkBN7pe",
                 "penalty": 0,
-                "index": 1
+                "index": 1,
+                "State": "Elected"
             }
         ],
         "totalcounts": 2
@@ -2034,33 +2062,270 @@ Response:
 }
 ```
 
-### createrawtransaction
+### listcrproposalbasestate
 
-Create a transaction spending the given inputs and creating new outputs.
-Warning: you should calculate the change output and append it to transaction outputs, otherwise the change should
- be given to the miners.
+Show current cr proposal base state information
 
-#### Parameter 
+#### Parameter
 
-| name     | type          | description                        |
-| -------- | ------------- | ---------------------------------- |
-| inputs   | array[string] | inputs json array of json objects  |
-| outputs  | array[string] | outputs json array of json objects |
-| locktime | interger      | the transaction lock time number   |
+| name  | type    | description                          |
+| :---- | ------- | ------------------------------------ |
+| start | integer | the start index of cr proposal state |
+| limit | integer | the limit count of cr proposal state |
+| state | string  | the proposal state you want<br/>
+"all": get proposals in any state<br/>
+"registered": get proposals in the registered state<br/>
+"cragreed": get proposals in the cragreed state<br/>
+"voteragreed": get proposals in the voteragreed state<br/>
+"finished": get proposals in the finished state<br/>
+"crcanceled": get proposals in the crcanceled state<br/>
+"votercanceled": get proposals in the votercanceled state |
+"aborted": get proposals in the aborted state .
+
+#### Result
+
+| name               | type                  | description                                        |
+| ------------------ | --------------------- | -------------------------------------------------- |
+| status             | string                | the proposal status                                |
+| proposalhash       | string                | the cr proposal hash                               |
+| txhash             | string                | the transacion's hash which cr proposal located in |
+| crvotes            | map[string]VoteResult | per cr VoteResult                                  |
+| votersrejectamount | common.Fixed64        | voters reject amount                               |
+| registerheight     | uint32                | register height of proposal                        |
+| terminatedheight   | uint32                | terminated height of proposal                      |
+| trackingcounts     | uint32                | tracking counts of proposal                        |
+| proposalowner      | string                | owner of proposal                                  |
+| Index              | uint64                | the index of the cr proposal                       |
 
 #### Example
 
 Request:
 
-```
- {
-  "method": "createrawtransaction",
+```json
+{
+"method": "listcrproposalbasestate",
   "params":{
-    "inputs":"[{\"txid\":\"a704c4c04c70043a2cce34fa95e20f3d33b0a3dc95dd948dee573673b701c7e7\",\"vout\":1}]",
-    "outputs": "[{\"address\":\"EKn3UGyEoycACJxKu7F8R5U1Pe6NUpni1H\",\"amount\":1},{\"address\":\"EUmvbPnoC59DJWnEx5VkcJNhK6GnjkoHao\",\"amount\":98.9}]",
-    "locktime": 0
+    "state":"all",
+    "start": 0,
+    "limit": 10
   }
 }
+```
+
+Response:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "proposalbasestates": [
+            {
+                "status": "CRAgreed",
+                "proposalhash": "e6942385c899889d4afd4b093e44a29f7d374c25c21432347faf3f82af2e5a88",
+                "txhash": "a859222538901eb656ad293483bb361dc0ec2835ce804fb7dffc67241c0ee965",
+                "crvotes": {
+                    "intySungjAK3uyHeoajez3yRqX5x68NrNi": "approve",
+                    "iUBoqE5KnBA1zsd4EWeyj2mXMfUrm5rDmf": "approve",
+                    "iTgmaqaMpMj46MW3GCU2h7bPaytwuvQrV3": "approve",
+                    "inTc9GeWyNNKNwT1cDcvvEgQwnjszbtpZ5": "approve"
+                },
+                "votersrejectamount": "324.22213333",
+                "registerHeight": 1764,
+                "terminatedheight": 0,
+                "trackingcount": 0,
+                "proposalowner": "02de2bdd021fd17418d1696afb4709fb908401c81fa674f26e8ca0afa624a48727",
+                "index": 14
+            }
+        ],
+        "totalcounts": 1
+    }
+}
+```
+
+
+
+### getcrproposalstate
+
+Get one cr proposal detail state information by proposalhash or drafthash
+
+#### Parameter
+
+| name         | type   | description                                               |
+| ------------ | ------ | ----------------------------------------------------------|
+| proposalhash | string | hash of the proposal which you want get detail state      |
+| drafthash    | string | drafthash of the proposal which you want get detail state |
+
+#### Result
+
+| name               | type                  | description                                        |
+| ------------------ | --------------------- | -------------------------------------------------- |
+| Status             | string                | the proposal status                                |
+| Proposal           | CRCProposal           | the cr proposal                                    |
+| TxHash             | string                | hash of the transacion which cr proposal located in|
+| CRVotes            | map[string]VoteResult | per cr VoteResult                                  |
+| VotersRejectAmount | string                | voters reject amount                               |
+| RegisterHeight     | uint32                | the proposal register height                       |
+| ProposalType       | CRCProposalType       | the type of cr proposal                            |
+| OwnerPublicKey     | string                | the public key of proposal's owner                 |
+| CRCouncilMemberDID | string                | the did of CR Council Member                       |
+| DraftHash          | string                | the hash of draft proposal                         |
+| Budgets            | []Budget              | the budget of different stages                     |
+ProposalType value as follows:
+0x00:"Normal" Normal indicates the normal types of proposal.
+0x01:"Code" indicates the code upgrade types of proposals.
+0x02:"SideChain" indicates the side chain related types of proposals.
+0x03:"ChangeOwner" indicates the change proposal owner types of proposals.
+0x04:"CloseProposal" indicates the close proposal types of proposals.
+0x05:"SecretaryGeneral"indicates the vote secretary general types of proposals.
+
+#### Example
+
+Request by proposalhash:
+
+```json
+{
+"method": "getcrproposalstate",
+  "params":{
+    "proposalhash":"42de0adf2b3673d712fc3efdaf643889ef8442fe25987b25add8c0c961b13612"
+  }
+}
+```
+
+Response:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "proposalstate": {
+            "status": "Registered",
+            "proposal": {
+                "proposaltype": 0,
+                "ownerpublickey": "03c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95",
+                "crcouncilmemberdid": "iUBoqE5KnBA1zsd4EWeyj2mXMfUrm5rDmf",
+                "drafthash": "9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0",
+                "budgets": [
+                     {
+                        "type": "Imprest",
+                        "stage": 0,
+                        "amount": "1.1",
+                        "status": "Withdrawable"
+                     },
+                     {
+                        "type": "NormalPayment",
+                        "stage": 1,
+                        "amount": "2.2",
+                        "status": "Unfinished"
+                     },
+                     {
+                        "type": "FinalPayment",
+                        "stage": 2,
+                        "amount": "3.3",
+                        "status": "Unfinished"
+                     }
+                ]
+            },
+            "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
+            "crvotes": {
+                "iTgmaqaMpMj46MW3GCU2h7bPaytwuvQrV3": 0
+            },
+            "votersrejectamount": 0,
+            "registerheight": 1277
+        }
+    }
+}
+```
+
+Request by drafthash:
+
+```json
+{
+"method": "getcrproposalstate",
+  "params":{
+    "drafthash":"9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0"
+  }
+}
+```
+
+Response:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "proposalstate": {
+            "status": "Registered",
+            "proposal": {
+                "proposaltype": 0,
+                "ownerpublickey": "03c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95",
+                "crcouncilmemberdid": "iUBoqE5KnBA1zsd4EWeyj2mXMfUrm5rDmf",
+                "drafthash": "9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0",
+                "budgets": [
+                     {
+                        "type": "Imprest",
+                        "stage": 0,
+                        "amount": "1.1",
+                        "status": "Withdrawable"
+                     },
+                     {
+                        "type": "NormalPayment",
+                        "stage": 1,
+                        "amount": "2.2",
+                        "status": "Unfinished"
+                     },
+                     {
+                        "type": "FinalPayment",
+                        "stage": 2,
+                        "amount": "3.3",
+                         "status": "Unfinished"
+                    }
+                 ]
+             },
+             "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
+             "crvotes": {
+                 "iTgmaqaMpMj46MW3GCU2h7bPaytwuvQrV3": 0
+             },
+             "votersrejectamount": 0,
+             "registerheight": 1277,
+             "votestartheight": 0
+         }
+     }
+ }
+ ```
+ 
+ ### createrawtransaction
+ 
+ Create a transaction spending the given inputs and creating new outputs.
+ Warning: you should calculate the change output and append it to transaction outputs, otherwise the change should
+  be given to the miners.
+ 
+ #### Parameter 
+ 
+ | name     | type          | description                        |
+ | -------- | ------------- | ---------------------------------- |
+ | inputs   | array[string] | inputs json array of json objects  |
+ | outputs  | array[string] | outputs json array of json objects |
+ | locktime | interger      | the transaction lock time number   |
+ 
+ #### Example
+ 
+ Request:
+ 
+ ```
+  {
+   "method": "createrawtransaction",
+   "params":{
+     "inputs":"[{\"txid\":\"a704c4c04c70043a2cce34fa95e20f3d33b0a3dc95dd948dee573673b701c7e7\",\"vout\":1}]",
+     "outputs": "[{\"address\":\"EKn3UGyEoycACJxKu7F8R5U1Pe6NUpni1H\",\"amount\":1},{\"address\":\"EUmvbPnoC59DJWnEx5VkcJNhK6GnjkoHao\",\"amount\":98.9}]",
+     "locktime": 0
+   }
+ }
 ```
 
 Response:

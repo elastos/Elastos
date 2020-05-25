@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package wallet
 
@@ -78,6 +78,27 @@ var txCommand = []cli.Command{
 }
 
 var buildTxCommand = []cli.Command{
+	{
+		Name:  "withdraw",
+		Usage: "Build a tx to withdraw crc proposal",
+		Flags: []cli.Flag{
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
+			cmdcom.CRCProposalHashFlag,
+			cmdcom.CRCProposalStageFlag,
+			cmdcom.TransactionAmountFlag,
+			cmdcom.TransactionFeeFlag,
+			cmdcom.CRCCommiteeAddrFlag,
+			cmdcom.TransactionToFlag,
+		},
+		Action: func(c *cli.Context) error {
+			if err := CreateCRCProposalWithdrawTransaction(c); err != nil {
+				fmt.Println("error:", err)
+				os.Exit(1)
+			}
+			return nil
+		},
+	},
 	{
 		Name:  "activate",
 		Usage: "Build a tx to activate producer which have been inactivated",

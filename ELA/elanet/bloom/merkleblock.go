@@ -229,6 +229,6 @@ func MakeMerkleParent(left *common.Uint256, right *common.Uint256) (*common.Uint
 	copy(sha[:32], left[:])
 	copy(sha[32:], right[:])
 
-	parent := common.Uint256(common.Sha256D(sha[:]))
+	parent := common.Hash(sha[:])
 	return &parent, nil
 }

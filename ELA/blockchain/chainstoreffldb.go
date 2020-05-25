@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -13,7 +13,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -23,42 +25,45 @@ import (
 )
 
 const (
-	// blockDbNamePrefix is the prefix for the block database name.  The
-	// database type is appended to this value to form the full block
-	// database name.
-	blockDbNamePrefix = "blocks"
+	// blockDbName is the block database name.
+	blockDbName = "blocks"
+
+	// oldBlockDbName is the old block database name.
+	oldBlockDbName = "blocks_ffldb"
+
+	BlocksCacheSize = 2
 )
 
 type ChainStoreFFLDB struct {
 	db database.DB
 
+	indexManager indexers.IndexManager
+
 	mtx              sync.RWMutex
 	blockHashesCache []Uint256
-	blocksCache      map[Uint256]*Block
+	blocksCache      map[Uint256]*DposBlock
 }
 
-func NewChainStoreFFLDB(dataDir string) (IFFLDBChainStore, error) {
-	fflDB, err := LoadBlockDB(dataDir)
+func NewChainStoreFFLDB(dataDir string, params *config.Params) (IFFLDBChainStore, error) {
+	fflDB, err := LoadBlockDB(dataDir, blockDbName)
 	if err != nil {
 		return nil, err
 	}
+	indexManager := indexers.NewManager(fflDB, params)
 
 	s := &ChainStoreFFLDB{
 		db:               fflDB,
+		indexManager:     indexManager,
 		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
-		blocksCache:      make(map[Uint256]*Block),
+		blocksCache:      make(map[Uint256]*DposBlock),
 	}
 
 	return s, nil
 }
 
 // dbPath returns the path to the block database given a database type.
-func blockDbPath(dataPath, dbType string) string {
+func blockDbPath(dataPath, dbName string) string {
 	// The database name is based on the database type.
-	dbName := blockDbNamePrefix + "_" + dbType
-	if dbType == "sqlite" {
-		dbName = dbName + ".db"
-	}
 	dbPath := filepath.Join(dataPath, dbName)
 	return dbPath
 }
@@ -68,14 +73,14 @@ func blockDbPath(dataPath, dbType string) string {
 // contains additional logic such warning the user if there are multiple
 // databases which consume space on the file system and ensuring the regression
 // test database is clean when in regression test mode.
-func LoadBlockDB(dataPath string) (database.DB, error) {
+func LoadBlockDB(dataPath string, dbName string) (database.DB, error) {
 	// The memdb backend does not have a file path associated with it, so
 	// handle it uniquely.  We also don't want to worry about the multiple
 	// database type warnings when running with the memory database.
 
 	// The database name is based on the database type.
 	dbType := "ffldb"
-	dbPath := blockDbPath(dataPath, dbType)
+	dbPath := blockDbPath(dataPath, dbName)
 
 	log.Infof("Loading block database from '%s'", dbPath)
 	db, err := database.Open(dbType, dbPath, wire.MainNet)
@@ -126,27 +131,16 @@ func (c *ChainStoreFFLDB) Close() error {
 func (c *ChainStoreFFLDB) SaveBlock(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 
-	// Insert the block into the database if it's not already there.  Even
-	// though it is possible the block will ultimately fail to connect, it
-	// has already passed all proof-of-work and validity tests which means
-	// it would be prohibitively expensive for an attacker to fill up the
-	// disk with a bunch of blocks that fail to connect.  This is necessary
-	// since it allows block download to be decoupled from the much more
-	// expensive connection logic.  It also has some other nice properties
-	// such as making blocks that never become part of the main chain or
-	// blocks that fail to connect available for further analysis.
 	err := c.db.Update(func(dbTx database.Tx) error {
-		return dbStoreBlock(dbTx, b)
+		return dbStoreBlock(dbTx, &DposBlock{
+			Block:       b,
+			HaveConfirm: confirm != nil,
+			Confirm:     confirm,
+		})
 	})
 	if err != nil {
 		return err
 	}
-
-	//// Write any block Status changes to DB before updating best state.
-	//err := b.index.flushToDB()
-	//if err != nil {
-	//	return err
-	//}
 
 	// Generate a new best state snapshot that will be used to update the
 	// database and later memory if all database updates are successful.
@@ -171,24 +165,20 @@ func (c *ChainStoreFFLDB) SaveBlock(b *Block, node *BlockNode,
 			return err
 		}
 
-		//// Allow the index manager to call each of the currently active
-		//// optional indexes with the block being connected so they can
-		//// update themselves accordingly.
-		//if b.indexManager != nil {
-		//	err := b.indexManager.ConnectBlock(dbTx, block, stxos)
-		//	if err != nil {
-		//		return err
-		//	}
-		//}
+		// Allow the index manager to call each of the currently active
+		// optional indexes with the block being connected so they can
+		// update themselves accordingly.
+		if c.indexManager != nil {
+			err := c.indexManager.ConnectBlock(dbTx, b)
+			if err != nil {
+				return err
+			}
+		}
 
 		return nil
 	})
 
-	if err != nil {
-		return err
-	}
-
-	return c.persistConfirm(confirm)
+	return err
 }
 
 func (c *ChainStoreFFLDB) RollbackBlock(b *Block, node *BlockNode,
@@ -227,16 +217,43 @@ func (c *ChainStoreFFLDB) RollbackBlock(b *Block, node *BlockNode,
 			return err
 		}
 
+		// Allow the index manager to call each of the currently active
+		// optional indexes with the block being disconnected so they
+		// can update themselves accordingly.
+		if c.indexManager != nil {
+			err := c.indexManager.DisconnectBlock(dbTx, b)
+			if err != nil {
+				return err
+			}
+		}
+
 		return nil
 	})
-	if err != nil {
-		return err
-	}
 
-	return c.rollbackConfirm(confirm)
+	return err
 }
 
-func (c *ChainStoreFFLDB) GetBlock(hash Uint256) (*Block, error) {
+func (c *ChainStoreFFLDB) GetOldBlock(hash Uint256) (*Block, error) {
+	var blkBytes []byte
+	err := c.db.View(func(dbTx database.Tx) error {
+		var err error
+		blkBytes, err = dbTx.FetchBlock(&hash)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	b := new(Block)
+	err = b.Deserialize(bytes.NewReader(blkBytes))
+	if err != nil {
+		return nil, errors.New("failed to deserialize block")
+	}
+
+	return b, nil
+}
+
+func (c *ChainStoreFFLDB) GetBlock(hash Uint256) (*DposBlock, error) {
 	c.mtx.RLock()
 	if block, exist := c.blocksCache[hash]; exist {
 		c.mtx.RUnlock()
@@ -254,7 +271,7 @@ func (c *ChainStoreFFLDB) GetBlock(hash Uint256) (*Block, error) {
 		return nil, err
 	}
 
-	b := new(Block)
+	b := new(DposBlock)
 	err = b.Deserialize(bytes.NewReader(blkBytes))
 	if err != nil {
 		return nil, errors.New("failed to deserialize block")
@@ -295,22 +312,6 @@ func (c *ChainStoreFFLDB) GetHeader(hash Uint256) (*Header, error) {
 	}
 
 	return &header, nil
-}
-
-func (c *ChainStoreFFLDB) persistConfirm(confirm *payload.Confirm) error {
-	if confirm == nil {
-		return nil
-	}
-	// todo complete me
-	return nil
-}
-
-func (c *ChainStoreFFLDB) rollbackConfirm(confirm *payload.Confirm) error {
-	if confirm == nil {
-		return nil
-	}
-	// todo complete me
-	return nil
 }
 
 func (c *ChainStoreFFLDB) IsBlockInStore(hash *Uint256) bool {
@@ -359,4 +360,24 @@ func (c *ChainStoreFFLDB) BlockExists(hash *Uint256) (bool, uint32, error) {
 		return err
 	})
 	return exists, height, err
+}
+
+func (c *ChainStoreFFLDB) GetTransaction(txID Uint256) (*Transaction, uint32, error) {
+	return c.indexManager.FetchTx(txID)
+}
+
+func (c *ChainStoreFFLDB) InitIndex(chain indexers.IChain, interrupt <-chan struct{}) error {
+	return c.indexManager.Init(chain, interrupt)
+}
+
+func (c *ChainStoreFFLDB) GetUnspent(txID Uint256) ([]uint16, error) {
+	return c.indexManager.FetchUnspent(txID)
+}
+
+func (c *ChainStoreFFLDB) GetUTXO(programHash *Uint168) ([]*UTXO, error) {
+	return c.indexManager.FetchUTXO(programHash)
+}
+
+func (c *ChainStoreFFLDB) IsTx3Exist(txHash *Uint256) bool {
+	return c.indexManager.IsTx3Exist(txHash)
 }

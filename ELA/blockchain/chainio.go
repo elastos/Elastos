@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 // Copyright (c) 2013-2016 The btcsuite developers
 // Copyright (c) 2017-2019 Elastos Foundation
@@ -219,7 +219,7 @@ func deserializeBestChainState(serializedData []byte) (bestChainState, error) {
 
 // dbStoreBlock stores the provided block in the database if it is not already
 // there. The full block data is written to fflDB.
-func dbStoreBlock(dbTx database.Tx, block *types.Block) error {
+func dbStoreBlock(dbTx database.Tx, block *types.DposBlock) error {
 	blockHash := block.Hash()
 	hasBlock, err := dbTx.HasBlock(blockHash)
 	if err != nil {
@@ -357,7 +357,7 @@ func (b *BlockChain) createChainState() error {
 		}
 
 		// Store the genesis block into the database.
-		return dbStoreBlock(dbTx, genesisBlock)
+		return dbStoreBlock(dbTx, &types.DposBlock{Block: genesisBlock})
 	})
 	return err
 }
@@ -421,7 +421,6 @@ func (b *BlockChain) initChainState() error {
 			if err != nil {
 				return err
 			}
-
 			curHash := header.Hash()
 			if lastNode == nil && !curHash.IsEqual(b.chainParams.GenesisBlock.Hash()) {
 				return fmt.Errorf("initChainState: Expected "+
@@ -437,7 +436,6 @@ func (b *BlockChain) initChainState() error {
 					"not load block node for block %s", header.Hash())
 			}
 			node.Status = status
-			b.Nodes = append(b.Nodes, node)
 
 			lastNode = node
 			i++

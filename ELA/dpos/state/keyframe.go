@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package state
 
@@ -9,13 +9,7 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/core/types"
 )
-
-// KeyFrame holds necessary state about arbitrators
-type KeyFrame struct {
-	CurrentArbitrators [][]byte
-}
 
 // StateKeyFrame holds necessary state about State
 type StateKeyFrame struct {
@@ -26,8 +20,8 @@ type StateKeyFrame struct {
 	CanceledProducers        map[string]*Producer
 	IllegalProducers         map[string]*Producer
 	PendingCanceledProducers map[string]*Producer
-	Votes                    map[string]*types.Output
-	DepositOutputs           map[string]*types.Output
+	Votes                    map[string]struct{}
+	DepositOutputs           map[string]common.Fixed64
 	Nicknames                map[string]struct{}
 	SpecialTxHashes          map[common.Uint256]struct{}
 	PreBlockArbiters         map[string]struct{}
@@ -40,10 +34,8 @@ type StateKeyFrame struct {
 
 // RewardData defines variables to calculate reward of a round
 type RewardData struct {
-	OwnerProgramHashes          []*common.Uint168
-	CandidateOwnerProgramHashes []*common.Uint168
-	OwnerVotesInRound           map[common.Uint168]common.Fixed64
-	TotalVotesInRound           common.Fixed64
+	OwnerVotesInRound map[common.Uint168]common.Fixed64
+	TotalVotesInRound common.Fixed64
 }
 
 // snapshot takes a snapshot of current state and returns the copy.
@@ -56,8 +48,8 @@ func (s *StateKeyFrame) snapshot() *StateKeyFrame {
 		CanceledProducers:        make(map[string]*Producer),
 		IllegalProducers:         make(map[string]*Producer),
 		PendingCanceledProducers: make(map[string]*Producer),
-		Votes:                    make(map[string]*types.Output),
-		DepositOutputs:           make(map[string]*types.Output),
+		Votes:                    make(map[string]struct{}),
+		DepositOutputs:           make(map[string]common.Fixed64),
 		Nicknames:                make(map[string]struct{}),
 		SpecialTxHashes:          make(map[common.Uint256]struct{}),
 		PreBlockArbiters:         make(map[string]struct{}),
@@ -70,8 +62,8 @@ func (s *StateKeyFrame) snapshot() *StateKeyFrame {
 	state.CanceledProducers = copyProducerMap(s.CanceledProducers)
 	state.IllegalProducers = copyProducerMap(s.IllegalProducers)
 	state.PendingCanceledProducers = copyProducerMap(s.PendingCanceledProducers)
-	state.Votes = copyOutputsMap(s.Votes)
-	state.DepositOutputs = copyOutputsMap(s.DepositOutputs)
+	state.Votes = copyStringSet(s.Votes)
+	state.DepositOutputs = copyFixed64Map(s.DepositOutputs)
 	state.Nicknames = copyStringSet(s.Nicknames)
 	state.SpecialTxHashes = copyHashSet(s.SpecialTxHashes)
 	state.PreBlockArbiters = copyStringSet(s.PreBlockArbiters)
@@ -109,11 +101,11 @@ func (s *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = s.SerializeOutputsMap(s.Votes, w); err != nil {
+	if err = s.SerializeStringSet(s.Votes, w); err != nil {
 		return
 	}
 
-	if err = s.SerializeOutputsMap(s.DepositOutputs, w); err != nil {
+	if err = s.SerializeFixed64Map(s.DepositOutputs, w); err != nil {
 		return
 	}
 
@@ -173,11 +165,11 @@ func (s *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if s.Votes, err = s.DeserializeOutputsMap(r); err != nil {
+	if s.Votes, err = s.DeserializeStringSet(r); err != nil {
 		return
 	}
 
-	if s.DepositOutputs, err = s.DeserializeOutputsMap(r); err != nil {
+	if s.DepositOutputs, err = s.DeserializeFixed64Map(r); err != nil {
 		return
 	}
 
@@ -241,6 +233,43 @@ func (s *StateKeyFrame) DeserializeHashSet(
 	return
 }
 
+func (s *StateKeyFrame) SerializeFixed64Map(vmap map[string]common.Fixed64,
+	w io.Writer) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
+		return
+	}
+	for k, v := range vmap {
+		if err = common.WriteVarString(w, k); err != nil {
+			return
+		}
+		if err = v.Serialize(w); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (s *StateKeyFrame) DeserializeFixed64Map(
+	r io.Reader) (vmap map[string]common.Fixed64, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	vmap = make(map[string]common.Fixed64)
+	for i := uint64(0); i < count; i++ {
+		var k string
+		if k, err = common.ReadVarString(r); err != nil {
+			return
+		}
+		var v common.Fixed64
+		if err = v.Deserialize(r); err != nil {
+			return
+		}
+		vmap[k] = v
+	}
+	return
+}
+
 func (s *StateKeyFrame) SerializeStringSet(vmap map[string]struct{},
 	w io.Writer) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
@@ -297,64 +326,6 @@ func (s *StateKeyFrame) DeserializeDIDSet(
 			return
 		}
 		vmap[k] = struct{}{}
-	}
-	return
-}
-
-func (s *StateKeyFrame) SerializeOutputsMap(vmap map[string]*types.Output,
-	w io.Writer) (err error) {
-	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
-		return
-	}
-	for k, v := range vmap {
-		if err = common.WriteVarString(w, k); err != nil {
-			return
-		}
-
-		if v == nil {
-			if err = common.WriteUint8(w, 0); err != nil {
-				return
-			}
-		} else {
-			if err = common.WriteUint8(w, 1); err != nil {
-				return
-			}
-
-			if err = v.Serialize(w, types.TxVersion09); err != nil {
-				return
-			}
-		}
-	}
-	return
-}
-
-func (s *StateKeyFrame) DeserializeOutputsMap(
-	r io.Reader) (vmap map[string]*types.Output, err error) {
-	var count uint64
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	vmap = make(map[string]*types.Output)
-	for i := uint64(0); i < count; i++ {
-		var k string
-		if k, err = common.ReadVarString(r); err != nil {
-			return
-		}
-
-		var exist uint8
-		if exist, err = common.ReadUint8(r); err != nil {
-			return
-		}
-
-		if exist == 1 {
-			vote := &types.Output{}
-			if err = vote.Deserialize(r, types.TxVersion09); err != nil {
-				return
-			}
-			vmap[k] = vote
-		} else {
-			vmap[k] = nil
-		}
 	}
 	return
 }
@@ -444,8 +415,8 @@ func NewStateKeyFrame() *StateKeyFrame {
 		CanceledProducers:         make(map[string]*Producer),
 		IllegalProducers:          make(map[string]*Producer),
 		PendingCanceledProducers:  make(map[string]*Producer),
-		Votes:                     make(map[string]*types.Output),
-		DepositOutputs:            make(map[string]*types.Output),
+		Votes:                     make(map[string]struct{}),
+		DepositOutputs:            make(map[string]common.Fixed64),
 		Nicknames:                 make(map[string]struct{}),
 		SpecialTxHashes:           make(map[common.Uint256]struct{}),
 		PreBlockArbiters:          make(map[string]struct{}),
@@ -457,26 +428,6 @@ func NewStateKeyFrame() *StateKeyFrame {
 }
 
 func (d *RewardData) Serialize(w io.Writer) error {
-	if err := common.WriteVarUint(w,
-		uint64(len(d.OwnerProgramHashes))); err != nil {
-		return err
-	}
-	for _, v := range d.OwnerProgramHashes {
-		if err := v.Serialize(w); err != nil {
-			return err
-		}
-	}
-
-	if err := common.WriteVarUint(w,
-		uint64(len(d.CandidateOwnerProgramHashes))); err != nil {
-		return err
-	}
-	for _, v := range d.CandidateOwnerProgramHashes {
-		if err := v.Serialize(w); err != nil {
-			return err
-		}
-	}
-
 	if err := common.WriteUint64(w, uint64(d.TotalVotesInRound)); err != nil {
 		return err
 	}
@@ -497,36 +448,13 @@ func (d *RewardData) Serialize(w io.Writer) error {
 }
 
 func (d *RewardData) Deserialize(r io.Reader) (err error) {
-	var count uint64
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	for i := uint64(0); i < count; i++ {
-		hash := &common.Uint168{}
-		if err = hash.Deserialize(r); err != nil {
-			return
-		}
-		d.OwnerProgramHashes = append(d.OwnerProgramHashes, hash)
-	}
-
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	for i := uint64(0); i < count; i++ {
-		hash := &common.Uint168{}
-		if err = hash.Deserialize(r); err != nil {
-			return
-		}
-		d.CandidateOwnerProgramHashes = append(
-			d.CandidateOwnerProgramHashes, hash)
-	}
-
 	var votes uint64
 	if votes, err = common.ReadUint64(r); err != nil {
 		return
 	}
 	d.TotalVotesInRound = common.Fixed64(votes)
 
+	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
 		return
 	}
@@ -547,10 +475,8 @@ func (d *RewardData) Deserialize(r io.Reader) (err error) {
 
 func NewRewardData() *RewardData {
 	return &RewardData{
-		OwnerProgramHashes:          make([]*common.Uint168, 0),
-		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-		TotalVotesInRound:           0,
+		OwnerVotesInRound: make(map[common.Uint168]common.Fixed64),
+		TotalVotesInRound: 0,
 	}
 }
 
@@ -573,15 +499,11 @@ func copyStringMap(src map[string]string) (dst map[string]string) {
 	return
 }
 
-func copyOutputsMap(src map[string]*types.Output) (dst map[string]*types.Output) {
-	dst = map[string]*types.Output{}
+func copyFixed64Map(src map[string]common.Fixed64) (dst map[string]common.Fixed64) {
+	dst = map[string]common.Fixed64{}
 	for k, v := range src {
-		if v == nil {
-			dst[k] = nil
-		} else {
-			p := *v
-			dst[k] = &p
-		}
+		p := v
+		dst[k] = p
 	}
 	return
 }
@@ -612,9 +534,9 @@ func copyDIDSet(src map[common.Uint168]struct{}) (
 	return
 }
 
-func copyByteList(src [][]byte) (dst [][]byte) {
+func copyByteList(src []ArbiterMember) (dst []ArbiterMember) {
 	for _, v := range src {
-		dst = append(dst, v)
+		dst = append(dst, v.Clone())
 	}
 	return
 }
@@ -625,19 +547,18 @@ func copyReward(src *RewardData) (dst *RewardData) {
 	}
 	dst.TotalVotesInRound = src.TotalVotesInRound
 
-	for _, v := range src.OwnerProgramHashes {
-		p := *v
-		dst.OwnerProgramHashes = append(dst.OwnerProgramHashes, &p)
-	}
-
-	for _, v := range src.CandidateOwnerProgramHashes {
-		p := *v
-		dst.CandidateOwnerProgramHashes = append(
-			dst.CandidateOwnerProgramHashes, &p)
-	}
-
 	for k, v := range src.OwnerVotesInRound {
 		dst.OwnerVotesInRound[k] = v
 	}
 	return
+}
+
+func copyCRCArbitersMap(src map[common.Uint168]ArbiterMember) (dst map[common.Uint168]ArbiterMember) {
+	dst = make(map[common.Uint168]ArbiterMember)
+	for k, v := range src {
+		member := v.Clone()
+		dst[k] = member
+	}
+
+	return dst
 }
