@@ -2,12 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
+    android:descendantFocusability="blocksDescendants"
+    android:fillViewport="true"
     android:background="@color/blue1"
     android:orientation="vertical">
 
     <include layout="@layout/title" />
 
-    <ScrollView
+    <android.support.v4.widget.NestedScrollView
 
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -112,7 +115,7 @@
                             android:textSize="11sp" />
 
                         <TextView
-                            android:id="@+id/currentvote"
+                            android:id="@+id/tv_currentvote"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
@@ -141,7 +144,7 @@
                             android:textSize="11sp" />
 
                         <TextView
-                            android:id="@+id/needvote"
+                            android:id="@+id/tv_needvote"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
@@ -236,7 +239,7 @@
                 android:textSize="13sp" />
 
             <TextView
-                android:id="@+id/abstract1"
+                android:id="@+id/tv_abstract1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="9dp"
@@ -245,6 +248,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -274,7 +278,7 @@
             <TextView
                 android:id="@+id/tv_novote"
                 android:layout_width="match_parent"
-                android:layout_height="255dp"
+                android:layout_height="140dp"
                 android:gravity="center"
                 android:text="@string/novote"
                 android:textColor="@color/whiter50"
@@ -285,7 +289,8 @@
                 android:id="@+id/ll_vote"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -296,8 +301,11 @@
                         android:id="@+id/tv_agree"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
+                        android:layout_marginBottom="5dp"
                         android:layout_weight="1"
+                        android:alpha="0.5"
                         android:background="@drawable/sc_35b08f_cr5_left"
+                        android:enabled="true"
                         android:gravity="center"
                         android:text="@string/agree1" />
 
@@ -310,6 +318,7 @@
                         android:layout_weight="1"
                         android:alpha="0.5"
                         android:background="@drawable/sc_b04135_cr5_middle"
+                        android:enabled="true"
                         android:gravity="center"
                         android:text="@string/disagree1" />
 
@@ -322,6 +331,7 @@
                         android:layout_weight="1"
                         android:alpha="0.5"
                         android:background="@drawable/sc_656565_cr5_right"
+                        android:enabled="true"
                         android:gravity="center"
                         android:text="@string/abstention" />
 
@@ -356,11 +366,11 @@
                     android:layout_height="match_parent" />
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
+    </android.support.v4.widget.NestedScrollView>
 
 
     <RelativeLayout
-        android:id="@+id/rl_vote"
+        android:id="@+id/rl_vote_button"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:layout_marginTop="18dp"

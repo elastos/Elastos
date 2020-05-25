@@ -125,8 +125,7 @@ public class SearchFragment extends BaseFragment implements CommonRvListener, Ne
     public void onRvItemClick(int position, Object o) {
         Bundle bundle = new Bundle();
         ProposalSearchEntity.DataBean.ListBean bean = (ProposalSearchEntity.DataBean.ListBean) o;
-        bundle.putInt("position", position);
-        bundle.putParcelableArrayList("ProposalSearchDateList", list);
+        bundle.putParcelable("ProposalSearchDate", bean);
         start(PropasalDetailFragment.class, bundle);
     }
 

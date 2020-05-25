@@ -745,5 +745,11 @@
     <string name="rejected">否决</string>
     <string name="withdrawhash">提取哈希</string>
     <string name="withdrawaddress">提取地址</string>
+    <string name="aboutday">约%1$s天</string>
+    <string name="abouthour">约 %1$sge 个小时</string>
+    <string name="noonehour">不足 1 小时</string>
+    <string name="hasfinished">已完结</string>
+    <string name="proposalman">提案人</string>
+
 
 </resources>

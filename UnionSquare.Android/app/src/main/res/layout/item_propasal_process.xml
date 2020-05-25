@@ -2,9 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/blue1"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -45,48 +50,60 @@
         android:textSize="11sp" />
 
     <LinearLayout
+        android:background="@mipmap/cr_sg_comment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/iv_icon1"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@color/whiter" />
-
-        <TextView
-            android:id="@+id/tv_name1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:textColor="#ffffffff"
-            android:textSize="13sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/sc_stroke"
-            android:text="@string/secretarygeneral"
-            android:textColor="@color/whiter50"
-            android:textSize="10sp" />
-
-        <TextView
-            android:id="@+id/tv_time1"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="right"
+            android:layout_marginTop="15dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/iv_icon1"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@color/whiter" />
+
+            <TextView
+                android:id="@+id/tv_name1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:textColor="#ffffffff"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/sc_stroke"
+                android:text="@string/secretarygeneral"
+                android:textColor="@color/whiter50"
+                android:textSize="10sp" />
+
+            <TextView
+                android:id="@+id/tv_time1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textColor="@color/whiter50"
+                android:textSize="11sp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_description1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:textColor="@color/whiter50"
             android:textSize="11sp" />
-
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tv_description1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/whiter50"
-        android:textSize="11sp" />
+    <View
+        style="@style/line1"
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="15dp" />
 </LinearLayout>
