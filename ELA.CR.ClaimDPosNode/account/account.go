@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -6,8 +6,7 @@
 package account
 
 import (
-	"errors"
-
+	"encoding/json"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -26,6 +25,15 @@ type Account struct {
 	ProgramHash  common.Uint168
 	RedeemScript []byte
 	Address      string
+}
+
+// String format of Account
+type AccountInfo struct {
+	PrivateKey   string `json:"PrivateKey"`
+	PublicKey    string `json:"PublicKey"`
+	ProgramHash  string `json:"ProgramHash"`
+	RedeemScript string `json:"RedeemScript"`
+	Address      string `json:"Address"`
 }
 
 // Create an account instance with private key and public key
@@ -52,12 +60,6 @@ func NewAccount() (*Account, error) {
 }
 
 func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
-	priKeyLen := len(privateKey)
-
-	if priKeyLen != 32 && priKeyLen != 96 && priKeyLen != 104 {
-		return nil, errors.New("invalid private key")
-	}
-
 	pubKey := crypto.NewPubKey(privateKey)
 	signatureContract, err := contract.CreateStandardContract(pubKey)
 	if err != nil {
@@ -111,4 +113,72 @@ func (ac *Account) PubKey() *crypto.PublicKey {
 // Sign data with account
 func (ac *Account) Sign(data []byte) ([]byte, error) {
 	return crypto.Sign(ac.PrivateKey, data)
+}
+
+// Convert account to JSON string
+func (ac *Account) ToJson() (string, error) {
+	pk, err := ac.PublicKey.EncodePoint(true)
+	if err != nil {
+		return "", err
+	}
+
+	info := AccountInfo{
+		PrivateKey:   common.BytesToHexString(ac.PrivateKey),
+		PublicKey:    common.BytesToHexString(pk),
+		ProgramHash:  ac.ProgramHash.String(),
+		RedeemScript: common.BytesToHexString(ac.RedeemScript),
+		Address:      ac.Address,
+	}
+	data, err := json.Marshal(&info)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+// Create account from JSON string
+func FromJson(data string) (*Account, error) {
+	var info AccountInfo
+	if err := json.Unmarshal([]byte(data), &info); err != nil {
+		return nil, err
+	}
+
+	priKey, err := common.HexStringToBytes(info.PrivateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	pubKeyBuf, err := common.HexStringToBytes(info.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	pubKey, err := crypto.DecodePoint(pubKeyBuf)
+	if err != nil {
+		return nil, err
+	}
+
+	hashBuf, err := common.HexStringToBytes(info.ProgramHash)
+	if err != nil {
+		return nil, err
+	}
+
+	hash, err := common.Uint168FromBytes(hashBuf)
+	if err != nil {
+		return nil, err
+	}
+
+	redeem, err := common.HexStringToBytes(info.RedeemScript)
+	if err != nil {
+		return nil, err
+	}
+
+	account := &Account{
+		PrivateKey:   priKey,
+		PublicKey:    pubKey,
+		ProgramHash:  *hash,
+		RedeemScript: redeem,
+		Address:      info.Address,
+	}
+	return account, nil
 }

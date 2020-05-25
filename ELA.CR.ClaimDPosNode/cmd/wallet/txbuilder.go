@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -141,8 +141,9 @@ func getSender(walletPath string, from string) (*account.AccountData, error) {
 	return sender, nil
 }
 
-func createInputs(sender *account.AccountData, totalAmount common.Fixed64) ([]*types.Input, []*types.Output, error) {
-	UTXOs, err := getUTXOsByAmount(sender.Address, totalAmount)
+func createInputs(fromAddr string, totalAmount common.Fixed64) ([]*types.Input,
+	[]*types.Output, error) {
+	UTXOs, err := getUTXOsByAmount(fromAddr, totalAmount)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -168,7 +169,7 @@ func createInputs(sender *account.AccountData, totalAmount common.Fixed64) ([]*t
 		if err != nil {
 			return nil, nil, err
 		}
-		programHash, err := common.Uint168FromAddress(sender.Address)
+		programHash, err := common.Uint168FromAddress(fromAddr)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -286,7 +287,7 @@ func createTransaction(walletPath string, from string, fee common.Fixed64, outpu
 	}
 
 	// create inputs
-	txInputs, changeOutputs, err := createInputs(sender, totalAmount)
+	txInputs, changeOutputs, err := createInputs(sender.Address, totalAmount)
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +307,6 @@ func createTransaction(walletPath string, from string, fee common.Fixed64, outpu
 		Code:      redeemScript,
 		Parameter: nil,
 	}
-
 	return &types.Transaction{
 		Version:    types.TxVersion09,
 		TxType:     types.TransferAsset,
@@ -388,6 +388,107 @@ func CreateActivateProducerTransaction(c *cli.Context) error {
 	return nil
 }
 
+func CreateCRCProposalWithdrawTransaction(c *cli.Context) error {
+	walletPath := c.String("wallet")
+	if walletPath == "" {
+		return errors.New("use --wallet to specify wallet path")
+	}
+	password, err := cmdcom.GetFlagPassword(c)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("walletPath %s, password %s \n", walletPath, password)
+
+	proposalHashStr := c.String("proposalhash")
+	if proposalHashStr == "" {
+		return errors.New("use --proposalhash to specify transfer proposalhash")
+	}
+	CRCCommiteeAddr := c.String("crccommiteeaddr")
+	if CRCCommiteeAddr == "" {
+		return errors.New("use --crccommiteeaddr to specify from address")
+	}
+	amountStr := c.String("amount")
+	if amountStr == "" {
+		return errors.New("use --amount to specify transfer amount")
+	}
+	amount, err := common.StringToFixed64(amountStr)
+	feeStr := c.String("fee")
+	if feeStr == "" {
+		return errors.New("use --fee to specify transfer fee")
+	}
+	fee, err := common.StringToFixed64(feeStr)
+
+	fmt.Printf("proposalhash:%s, fee:%s amout:%s CRCCommiteeAddr:%s\n",
+		proposalHashStr, feeStr, amountStr, CRCCommiteeAddr)
+	*amount -= *fee
+
+	client, err := account.Open(walletPath, password)
+	if err != nil {
+		return err
+	}
+	var acc *account.Account
+	var SponsorPublicKey []byte
+
+	acc = client.GetMainAccount()
+	if contract.GetPrefixType(acc.ProgramHash) != contract.PrefixStandard {
+		return errors.New("main account is not a standard account")
+	}
+	SponsorPublicKey, err = acc.PublicKey.EncodePoint(true)
+	if err != nil {
+		return err
+	}
+	proposalHash, err2 := common.Uint256FromHexString(proposalHashStr)
+	if err2 != nil {
+		return err2
+	}
+	crcProposalWithdraw := &payload.CRCProposalWithdraw{
+		ProposalHash:   *proposalHash,
+		OwnerPublicKey: SponsorPublicKey,
+	}
+
+	signBuf := new(bytes.Buffer)
+	crcProposalWithdraw.SerializeUnsigned(signBuf, payload.CRCProposalWithdrawVersion)
+	signature, err := acc.Sign(signBuf.Bytes())
+	if err != nil {
+		return err
+	}
+	crcProposalWithdraw.Signature = signature
+
+	recipient := c.String("to")
+	outputs := make([]*OutputInfo, 0)
+	outpusInfo := &OutputInfo{
+		Recipient: recipient,
+		Amount:    amount,
+	}
+	outputs = append(outputs, outpusInfo)
+	// create outputs
+	txOutputs, totalAmount, err := createNormalOutputs(outputs, *fee, uint32(0))
+	if err != nil {
+		return err
+	}
+	// create inputs from CRCCommiteeAddr
+	txInputs, changeOutputs, err := createInputs(CRCCommiteeAddr, totalAmount)
+	if err != nil {
+		return err
+	}
+	txOutputs = append(txOutputs, changeOutputs...)
+
+	txn := &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.CRCProposalWithdraw,
+		Payload:    crcProposalWithdraw,
+		Attributes: []*types.Attribute{},
+		Inputs:     txInputs,
+		Outputs:    txOutputs,
+		Programs:   []*pg.Program{},
+		LockTime:   0,
+	}
+
+	OutputTx(0, 0, txn)
+
+	return nil
+}
+
 func CreateVoteTransaction(c *cli.Context) error {
 	walletPath := c.String("wallet")
 
@@ -435,7 +536,7 @@ func CreateVoteTransaction(c *cli.Context) error {
 	}
 
 	// create inputs
-	txInputs, changeOutputs, err := createInputs(sender, totalAmount)
+	txInputs, changeOutputs, err := createInputs(sender.Address, totalAmount)
 	if err != nil {
 		return err
 	}
@@ -554,7 +655,7 @@ func createCrossChainTransaction(walletPath string, from string, fee common.Fixe
 	}
 
 	// create inputs
-	txInputs, changeOutputs, err := createInputs(sender, totalAmount)
+	txInputs, changeOutputs, err := createInputs(sender.Address, totalAmount)
 	if err != nil {
 		return nil, err
 	}

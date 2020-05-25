@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package blockchain
 
@@ -10,7 +10,6 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
 	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 )
@@ -33,18 +32,6 @@ func (l *Ledger) IsDoubleSpend(Tx *Transaction) bool {
 	return DefaultLedger.Store.IsDoubleSpend(Tx)
 }
 
-//Get the DefaultLedger.
-//Note: the later version will support the mutiLedger.So this func mybe expired later.
-
-//Get the Asset from store.
-func (l *Ledger) GetAsset(assetID Uint256) (*payload.Asset, error) {
-	asset, err := l.Store.GetAsset(assetID)
-	if err != nil {
-		return nil, errors.New("[Ledger],GetAsset failed with assetID =" + assetID.String())
-	}
-	return asset, nil
-}
-
 //Get Block With Height.
 func (l *Ledger) GetBlockWithHeight(height uint32) (*Block, error) {
 	temp, err := l.Blockchain.GetBlockHash(height)
@@ -55,7 +42,7 @@ func (l *Ledger) GetBlockWithHeight(height uint32) (*Block, error) {
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + temp.String())
 	}
-	return bk, nil
+	return bk.Block, nil
 }
 
 //Get block with block hash.
@@ -64,7 +51,7 @@ func (l *Ledger) GetBlockWithHash(hash Uint256) (*Block, error) {
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + hash.String())
 	}
-	return bk, nil
+	return bk.Block, nil
 }
 
 //Get transaction with hash.

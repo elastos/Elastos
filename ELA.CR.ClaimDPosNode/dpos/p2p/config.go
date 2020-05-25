@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -54,7 +54,7 @@ type Config struct {
 	// messages.
 	PingInterval time.Duration
 
-	// Sign will be invoked when creating a signature of the data content.
+	// Signature will be invoked when creating a signature of the data content.
 	Sign func(data []byte) (signature []byte)
 
 	// PingNonce will be invoked before send a ping message to the connect peer

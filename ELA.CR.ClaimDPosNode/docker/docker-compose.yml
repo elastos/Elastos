@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  elanode:
+    image: ela:latest
+    restart: always
+    environment:
+      - PASSWORD=
+    network_mode: host
+    cap_add:
+      - ALL
+    volumes:
+      - /data:/data
