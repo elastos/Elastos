@@ -68,7 +68,6 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctmanager));
         presenter = new CtManagePresenter();
-        showFirstLayout();
     }
 
     String status;
@@ -79,6 +78,11 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
         did = data.getString("did");
         status = data.getString("status");
         depositAmount = data.getString("depositAmount");
+        if(!AppUtlis.isNullOrEmpty(status) && status.equals("Elected")) {
+            showSecondLayout();
+        } else {
+            showFirstLayout();
+        }
     }
 
     private void showRefreshView() {
