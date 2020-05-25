@@ -141,7 +141,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             recyclerView.setAdapter(adapter);
             adapter.setCommonRvListener((position, o) -> {
-                start(GeneralCtDetailFragment.class);
+                //TODO daokun.xi 待确认是否要跳转到提案详情
             });
         } else {
             list.clear();

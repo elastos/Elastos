@@ -70,14 +70,11 @@
         android:id="@+id/confirm"
         android:layout_width="250dp"
         android:layout_height="40dp"
-        android:background="#2d454e"
+        android:background="@drawable/ct_btn_border"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
         android:layout_alignParentBottom="true"
         android:textSize="16sp"
         android:gravity="center"
         android:text="@string/confirmed"/>
-
-
-
 </RelativeLayout>

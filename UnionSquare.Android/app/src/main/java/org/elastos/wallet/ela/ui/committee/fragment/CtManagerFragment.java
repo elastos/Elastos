@@ -100,14 +100,15 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
 
     @OnClick({R.id.refresh_ct_info, R.id.refresh_ct_did, R.id.deposit, R.id.tv_close, R.id.tv_deposit})
     public void onClick(View view) {
+        Bundle bundle = new Bundle();
         switch (view.getId()) {
             case R.id.refresh_ct_info:
                 //TODO 待确认
+                bundle.putParcelable("crStatusBean", crStatusBean);
                 start(UpdateCtInformationFragment.class, getArguments());
-                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid().replace("did:elastos:", ""), this, "2");
+//                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid().replace("did:elastos:", ""), this, "2");
                 break;
             case R.id.refresh_ct_did:
-                Bundle bundle = new Bundle();
                 bundle.putString("type", "authorization");
                 bundle.putParcelable("wallet", wallet);
                 start(AuthorizationFragment.class, bundle);
@@ -169,6 +170,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
         }
     }
 
+    CrStatusBean crStatusBean = null;
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
@@ -191,7 +193,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
                 break;
 
             case "getRegisteredCRInfo":
-                CrStatusBean crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
+                crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
                 String ownerPublicKey = crStatusBean.getInfo().getCROwnerPublicKey();
                 presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey,
                         Arith.mulRemoveZero(depositAmount, MyWallet.RATE_S).toPlainString(), "", this);
