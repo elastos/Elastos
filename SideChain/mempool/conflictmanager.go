@@ -108,7 +108,7 @@ func newConflictManager(chain *blockchain.BlockChain) conflictManager {
 			// recharge to side chain transaction Hash
 			{
 				Name: SlotRechargeToSidechainTxHash,
-				Slot: NewConflictSlot(HashArray,
+				Slot: NewConflictSlot(Hash,
 					KeyTypeFuncPair{
 						Type: types.RechargeToSideChain,
 						Func: addRechargeToSideChainTransactionHash,
