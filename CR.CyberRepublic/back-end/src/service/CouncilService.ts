@@ -501,7 +501,6 @@ export default class extends Base {
             const didList = _.map(councilMembers, (o: any) => DID_PREFIX + o.did)
             const userList = await this.userMode.getDBInstance().find({'did.id': {$in: didList}}, ['_id', 'did.id'])
             const userByDID = _.keyBy(userList, (o: any) => o.did.id.replace(DID_PREFIX, ''))
-
             // TODO: need to optimizing (multiple update)
             // TODO: add didName
             // add avatar nickname into user's did
@@ -533,33 +532,21 @@ export default class extends Base {
             const newCouncilMembers = _.map(list.crmembersinfo, (o: any) => dataToCouncil(o))
             const newCouncilsByDID = _.keyBy(newCouncilMembers, 'did')
             const oldCouncilsByDID = _.keyBy(data.councilMembers, 'did')
-    
+
             const councils = _.map(oldCouncilsByDID, (v: any, k: any) => (_.merge(v._doc, newCouncilsByDID[k])))
+            
             const councilMembers = await updateUserInformation(councils)
-    
             await this.model.getDBInstance().update({_id: data._id}, {councilMembers})
         }
 
         const updateCdsInformation = async (list: any, data: any) => {
-            // update data
-            const newCouncilMembers = _.map(list.crcandidatesinfo, async (o: any) => {
-                const obj = dataToCouncil(o)
-                const depositObj = await ela.depositCoin(o.did)
-                if (!depositObj) {
-                    return obj
-                }
-                return {
-                    ...o,
-                    depositAmount: depositObj && depositObj.available || '0'
-                }
-            })
-
+            const newCouncilMembers = _.map(list.crcandidatesinfo, (o: any) => dataToCouncil(o))
             const newCouncilsByDID = _.keyBy(newCouncilMembers, 'did')
             const oldCouncilsByDID = _.keyBy(data.councilMembers, 'did')
-
+    
             const councils = _.map(oldCouncilsByDID, (v: any, k: any) => (_.merge(v._doc, newCouncilsByDID[k])))
             const councilMembers = await updateUserInformation(councils)
-
+            
             await this.model.getDBInstance().update({_id: data._id}, {councilMembers})
         }
 
@@ -589,7 +576,7 @@ export default class extends Base {
         }
         
         if(listcrs.crmembersinfo && !listcds.crcandidatesinfo){
-            if(currentCrs && votingCds){
+            if(currentCrs){
                 // votingCds status -> CURRENT, currentCrs status -> HISTORY
                 if(votingCds){
                     const time = await ela.getBlockByHeight(crrelatedStageStatus.ondutystartheight)
@@ -617,6 +604,9 @@ export default class extends Base {
                             }
                         }
                     )
+
+                // TODO : update member role
+
                 }
                 // update CurrentCrs data
                 if(!votingCds){
@@ -638,6 +628,8 @@ export default class extends Base {
                         }
                     }
                 )
+                // TODO : update member role
+
             }
             // if appear directly first current
             if(!currentCrs && !votingCds && !historyCrs){
@@ -653,6 +645,8 @@ export default class extends Base {
                     councilMembers: _.map(listcrs.crmembersinfo, (o) => dataToCouncil(o))
                 }
                 await this.model.getDBInstance().create(doc);
+                // TODO : update member role
+
             }
         }
 
@@ -676,6 +670,8 @@ export default class extends Base {
                         }
                     }
                 )
+                // TODO : update member role
+
 
                 // update votingCds data
                 if(votingCds){
@@ -687,6 +683,7 @@ export default class extends Base {
                     const doc: any = {
                         index: index+1,
                         startDate: new Date(startTime*1000),
+                        endDate: null,
                         status: constant.TERM_COUNCIL_STATUS.VOTING,
                         height: height || 0,
                         councilMembers: _.map(listcds.crcandidatesinfo, (o) => dataToCouncil(o))
@@ -728,6 +725,7 @@ export default class extends Base {
                         }
                     }
                 )
+                // TODO : update member role
             }
         }
     }
