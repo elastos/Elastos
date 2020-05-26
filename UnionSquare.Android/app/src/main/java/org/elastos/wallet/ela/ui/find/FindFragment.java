@@ -37,6 +37,7 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.committee.PastCtListFragment;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
+import org.elastos.wallet.ela.ui.committee.fragment.CtManagerFragment;
 import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.crvote.CRListFragment;
@@ -76,7 +77,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
 
     @Override
     protected void initView(View view) {
-        new CtDetailPresenter().getCurrentCouncilInfo(this, wallet.getDid().replace("did:elastos:", ""));
+        new CtDetailPresenter().getCurrentCouncilInfo(this, wallet.getDid().replace("did:elastos:", ""), "voting");
 
         tvTitle.setText(getString(R.string.social));
         ivTitleLeft.setVisibility(View.GONE);
@@ -152,11 +153,33 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
             //社区提案
              ((BaseFragment) getParentFragment()).start(ProposalFragment.class);
         } else if (position == 2) {
-            //cr委员会
-            ((BaseFragment) getParentFragment()).start(PastCtListFragment.class);
+            new CtDetailPresenter().getCurrentCouncilInfo(this, wallet.getDid().replace("did:elastos:", ""), "crc");
         }else if (position == 3) {
             ((BaseFragment) getParentFragment()).start(CRListFragment.class);
         }
+    }
+
+    private void go2(CtDetailBean ctDetailBean) {
+        CtDetailBean.DataBean dataBean = ctDetailBean.getData();
+        //cr委员会
+        if(dataBean != null) {
+            String status = dataBean.getStatus();
+            if(!AppUtlis.isNullOrEmpty(status) ) {
+                if(status.equals("Terminated")
+                        || status.equals("Impeached")
+                        || status.equals("Returned")) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("did", dataBean.getDid());
+                    bundle.putString("status", status);
+                    bundle.putString("depositAmount", dataBean.getDepositAmount());
+                    start(CtManagerFragment.class, bundle);
+                    return;
+                }
+            }
+        }
+        Bundle bundle = new Bundle();
+        bundle.putString("type", dataBean.getType());
+        ((BaseFragment) getParentFragment()).start(PastCtListFragment.class, bundle);
     }
 
     /**
@@ -174,7 +197,11 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "getCurrentCouncilInfo":
-                setView((CtDetailBean) baseEntity);
+                if(o.equals("voting")) {
+                    setView((CtDetailBean) baseEntity);
+                } else {
+                    go2((CtDetailBean) baseEntity);
+                }
                 break;
         }
     }
