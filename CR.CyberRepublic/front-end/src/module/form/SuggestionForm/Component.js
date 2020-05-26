@@ -83,14 +83,18 @@ class C extends BaseComponent {
       }
 
       const budget = form.getFieldValue('budget')
-      if (budget && typeof budget !== 'string') {
-        if (!budget.budgetAmount) {
+      const amount = _.get(budget, 'budgetAmount')
+      const address = _.get(budget, 'elaAddress')
+      const pItems = _.get(budget, 'paymentItems')
+
+      if (amount || address || !_.isEmpty(pItems)) {
+        if (!amount) {
           this.setState({ loading: false })
           message.error(I18N.get('suggestion.form.error.amount'))
           return
         }
 
-        if (!budget.elaAddress) {
+        if (!address) {
           this.setState({ loading: false })
           message.error(I18N.get('suggestion.form.error.address'))
           return
@@ -98,7 +102,6 @@ class C extends BaseComponent {
 
         const plan = form.getFieldValue('plan')
         const milestone = _.get(plan, 'milestone')
-        const pItems = _.get(budget, 'paymentItems')
         const initiation = pItems.filter((item) => item.type === ADVANCE)
         const completion = pItems.filter((item) => item.type === COMPLETION)
         if (
