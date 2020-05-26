@@ -4,14 +4,14 @@ import _ from 'lodash'
 import styled from 'styled-components'
 import { CVOTE_SUMMARY_STATUS, CVOTE_STATUS } from '@/constant'
 import Summary from './list/Container'
-// import CreateForm from './create/Container'
+import CreateForm from './create/Container'
 
 export default class extends BaseComponent {
   ord_render() {
     return (
       <Container>
         {this.renderSummary()}
-        {/* {this.renderForm()} */}
+        {this.renderForm()}
       </Container>
     )
   }

@@ -27,7 +27,7 @@ import MemberVoteQrCode from './MemberVoteQrCode'
 import Preamble from './Preamble'
 import ElipPreamble from './ElipPreamble'
 import Tracking from '../tracking/Container'
-// import Summary from '../summary/Container'
+import Summary from '../summary/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import { logger } from '@/util'
@@ -170,7 +170,7 @@ class C extends StandardPage {
     const voteActionsNode = this.renderVoteActions()
     const voteDetailNode = this.renderVoteResults()
     const trackingNode = this.renderTracking()
-    // const summaryNode = this.renderSummary()
+    const summaryNode = this.renderSummary()
 
     // get the first line pure text of abstract
     const abstract = data.abstract && data.abstract.trim().split('\n')[0]
@@ -194,7 +194,7 @@ class C extends StandardPage {
               {voteActionsNode}
               {voteDetailNode}
               {trackingNode}
-              {/* {summaryNode} */}
+              {summaryNode}
             </Body>
             <SocialShareButtons
               shareQuote={`${data.title} - Proposal Detail - Cyber Republic`}
