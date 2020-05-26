@@ -97,7 +97,11 @@ export default {
       elaAddress: '地址无效，请核对',
       amount: '总预算为空',
       address: 'ELA 收款地址为空',
-      payment: '支付项和里程碑个数必须保持一致, 必须有预付款和结项款'
+      payment: '支付项和里程碑个数必须保持一致, 必须有预付款和结项款',
+      advance: '预付款只能用于项目第一阶段',
+      completion: '结项款只能用于项目最后阶段.',
+      conditioned: '该阶段支付不能用于项目的这个阶段',
+      isUsed: '该项目阶段已被其它支付项使用了'
     }
   },
   modal: {

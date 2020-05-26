@@ -97,7 +97,11 @@ export default {
       elaAddress: 'invalid address, please check your address',
       amount: 'Total budget is empty.',
       address: 'ELA receive address is emtpy.',
-      payment: 'Project Initiation Payment and Project Completion Payment are required, and each payment must match one milestone.'
+      payment: 'Project Initiation Payment and Project Completion Payment are required, and each payment must match one milestone.',
+      advance: 'Project initiation payment only apply to the first milestone.',
+      completion: 'Project completion payment only apply to the last milestone.',
+      conditioned: 'Project milestone payment can not apply to this milestone.',
+      isUsed: 'This milestone has been used.'
     }
   },
   modal: {
