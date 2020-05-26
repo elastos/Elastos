@@ -79,6 +79,10 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     RecyclerView recyclerView;
     @BindView(R.id.no_info)
     TextView norecord;
+    @BindView(R.id.impeach_cr_layout)
+    View impeachLayout;
+    @BindView(R.id.line)
+    View line;
     CtExpRecAdapter adapter;
     List<CtDetailBean.Term> list = null;
 
@@ -88,12 +92,14 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
 
     private String id;
     private String did;
+    private String status;
 
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
         id = data.getString("id");
         did = data.getString("did");
+        status = data.getString("status");
     }
 
     @Override
@@ -105,6 +111,11 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     protected void initView(View view) {
         registReceiver();
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctdetail));
+        if(!AppUtlis.isNullOrEmpty(status) &&
+                (status.equalsIgnoreCase("Impeached") || status.equalsIgnoreCase("Returned"))) {
+            impeachLayout.setVisibility(View.INVISIBLE);
+            line.setVisibility(View.INVISIBLE);
+        }
         presenter = new CtDetailPresenter();
         presenter.getCouncilInfo(this, id, did);
         experienceTitleTv.setText(String.format(getString(R.string.performancerecord), String.valueOf(0)));
@@ -261,9 +272,9 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         GlideApp.with(getContext()).load(dataBean.getAvatar()).error(R.mipmap.icon_ela).circleCrop().into(headIc);
         location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
 //        BigDecimal gress = new BigDecimal(dataBean.getImpeachmentVotes()).divide(new BigDecimal(dataBean.getImpeachmentThroughVotes())).multiply(new BigDecimal(100));
-        progress.setProgress(new BigDecimal(dataBean.getImpeachmentRatio()).multiply(new BigDecimal(100)).floatValue());
-        currentVotes.setText(String.valueOf(dataBean.getImpeachmentVotes()));
-        impeachmentCount.setText(String.valueOf(dataBean.getImpeachmentThroughVotes()));
+        progress.setProgress(new BigDecimal(dataBean.getImpeachmentRatio()).longValue());
+        currentVotes.setText(String.valueOf(new BigDecimal(dataBean.getImpeachmentVotes()).longValue()));
+        impeachmentCount.setText(String.valueOf(new BigDecimal(dataBean.getImpeachmentThroughVotes()).longValue()));
     }
 
     @BindView(R.id.did)

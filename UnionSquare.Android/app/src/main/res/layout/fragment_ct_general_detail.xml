@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_below="@+id/bar_layout"
-        android:layout_above="@+id/impeachment_btn">
+        android:layout_above="@+id/line">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -209,17 +209,27 @@
     </LinearLayout>
 
 
-    <TextView
-        android:id="@+id/impeachment_btn"
-        android:layout_width="250dp"
-        android:layout_height="40dp"
-        android:layout_centerHorizontal="true"
+    <View
+        android:id="@+id/line"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/white"
+        android:layout_above="@+id/impeach_cr_layout"/>
+    <FrameLayout
+        android:id="@+id/impeach_cr_layout"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="20dp"
-        android:gravity="center"
-        android:text="@string/impeachmemeber"
-        android:background="@drawable/ct_btn_border"
-        android:textColor="@color/white"
-        android:textSize="16sp"/>
-
+        android:background="#aa000000">
+        <TextView
+            android:id="@+id/impeachment_btn"
+            android:layout_width="250dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:text="@string/impeachmemeber"
+            android:background="@drawable/ct_btn_border"
+            android:textColor="@color/white"
+            android:textSize="16sp"/>
+    </FrameLayout>
 </RelativeLayout>

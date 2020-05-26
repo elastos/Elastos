@@ -109,6 +109,7 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
                 Bundle bundle = new Bundle();
                 bundle.putString("id", String.valueOf(index));
                 bundle.putString("did", generalList.get(position).getDid());
+                bundle.putString("status", generalList.get(position).getStatus());
                 start(GeneralCtDetailFragment.class, bundle);
             });
 
@@ -131,7 +132,7 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
             secretaryAdapter.setCommonRvListener((position, o) -> {
                 Bundle bundle = new Bundle();
                 bundle.putString("id", String.valueOf(index));
-                bundle.putString("did", generalList.get(position).getDid());
+                bundle.putString("did", secretaryList.get(position).getDid());
                 start(SecretaryCtDetailFragment.class, bundle);
             });
 

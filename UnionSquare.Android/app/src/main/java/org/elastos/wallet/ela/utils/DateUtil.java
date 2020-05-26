@@ -239,8 +239,9 @@ public class DateUtil {
      * @return
      */
     public static String formatTimestamp(String timestamp, String format) {
+        if(AppUtlis.isNullOrEmpty(timestamp) || timestamp.trim().equalsIgnoreCase("0")) return "";
         try {
-            Date date = new Date(Long.valueOf(timestamp));
+            Date date = new Date(Long.valueOf(timestamp) * 1000);
             SimpleDateFormat formatter = new SimpleDateFormat(format);
             String dateStr = formatter.format(date);
             return dateStr;
