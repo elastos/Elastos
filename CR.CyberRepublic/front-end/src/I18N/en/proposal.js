@@ -1,8 +1,16 @@
 import {
   CVOTE_TRACKING_STATUS,
   CVOTE_SUMMARY_STATUS,
-  ABSTRACT_MAX_WORDS
+  ABSTRACT_MAX_WORDS,
+  MILESTONE_STATUS
 } from '@/constant'
+const {
+  WAITING_FOR_APPROVAL,
+  WAITING_FOR_REQUEST,
+  WAITING_FOR_WITHDRAWAL,
+  REJECTED,
+  WITHDRAWN
+} = MILESTONE_STATUS
 
 export default {
   fields: {
@@ -124,5 +132,15 @@ export default {
     approved: 'Approved and published successfully',
     draftSaved: 'Saved as draft successfully, you can check it in proposal list page',
     proposalPublished: 'Proposal published successfully'
+  },
+  milestone: {
+    status: 'Status',
+    request: 'Request',
+    rerequest: 'Re-request',
+    [WAITING_FOR_REQUEST]: 'WAITING FOR REQUEST',
+    [WAITING_FOR_APPROVAL]: 'WAITING FOR APPROVAL',
+    [WAITING_FOR_WITHDRAWAL]: 'WAITING FOR WITHDRAW',
+    [WITHDRAWN]: 'WITHDRAWN',
+    [REJECTED]: 'REJECTED'
   }
 }

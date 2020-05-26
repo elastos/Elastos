@@ -102,7 +102,7 @@ class PaymentList extends Component {
               this.showModal(item)
             }}
           >
-            Apply
+            Request
           </div>
         )
       )
@@ -116,7 +116,7 @@ class PaymentList extends Component {
               this.showModal(item)
             }}
           >
-            Reapply
+            Re-request
           </div>
         )
       )
@@ -192,7 +192,7 @@ class PaymentList extends Component {
             style={{ p: { margin: '1em 0' } }}
           />
         </td>
-        <td>{item.status}</td>
+        <td>{I18N.get(`proposal.milestone.${item.status}`)}</td>
         {visible && <td>{this.renderActions(item)}</td>}
       </StyledRow>
     )
@@ -237,7 +237,7 @@ class PaymentList extends Component {
             <th>{I18N.get('suggestion.budget.reasons')}</th>
             <th>{I18N.get('suggestion.budget.goal')}</th>
             <th>{I18N.get('suggestion.budget.criteria')}</th>
-            <th>Status</th>
+            <th>{I18N.get('proposal.milestone.status')}</th>
             {visible && <th>{I18N.get('suggestion.budget.action')}</th>}
           </StyledRow>
         </StyledHead>
