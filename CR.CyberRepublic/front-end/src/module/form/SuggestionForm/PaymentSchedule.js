@@ -43,31 +43,24 @@ class PaymentSchedule extends Component {
   validateAddress = (value) => {
     const reg = /^[E8][a-zA-Z0-9]+$/
     const len = value.length === 34
-    return reg.test(value) && len
+    return !value || (reg.test(value) && len)
   }
 
   validateFields = (field, value) => {
     const { errors } = this.state
-    if (!value || !value.length) {
+    if (field === 'total' && !this.validateAmount(value)) {
       return {
         ...errors,
-        [field]: I18N.get('suggestion.form.error.required')
+        [field]: I18N.get('suggestion.form.error.isNaN')
       }
-    } else {
-      if (field === 'total' && !this.validateAmount(value)) {
-        return {
-          ...errors,
-          [field]: I18N.get('suggestion.form.error.isNaN')
-        }
-      }
-      if (field === 'address' && !this.validateAddress(value)) {
-        return {
-          ...errors,
-          [field]: I18N.get('suggestion.form.error.elaAddress')
-        }
-      }
-      return { ...errors, [field]: '' }
     }
+    if (field === 'address' && !this.validateAddress(value)) {
+      return {
+        ...errors,
+        [field]: I18N.get('suggestion.form.error.elaAddress')
+      }
+    }
+    return { ...errors, [field]: '' }
   }
 
   handleChange = (e, field) => {
