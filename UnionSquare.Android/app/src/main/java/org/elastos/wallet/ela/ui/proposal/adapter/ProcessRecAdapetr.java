@@ -28,7 +28,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +35,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalDetailEntity;
+import org.elastos.wallet.ela.utils.DateUtil;
+import org.elastos.wallet.ela.utils.SPUtil;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
 
 import java.util.List;
 
@@ -46,12 +49,12 @@ import butterknife.ButterKnife;
 public class ProcessRecAdapetr extends RecyclerView.Adapter<ProcessRecAdapetr.ViewHolder> {
 
 
-    private List<String> list;
+    private List<ProposalDetailEntity.DataBean.TrackingBean> list;
 
     private Context context;
 
 
-    public ProcessRecAdapetr(Context context, List<String> list) {
+    public ProcessRecAdapetr(Context context, List<ProposalDetailEntity.DataBean.TrackingBean> list) {
         this.list = list;
         this.context = context;
 
@@ -68,16 +71,62 @@ public class ProcessRecAdapetr extends RecyclerView.Adapter<ProcessRecAdapetr.Vi
     @Override
     public void onBindViewHolder(ProcessRecAdapetr.ViewHolder holder, final int position) {
 
+        ProposalDetailEntity.DataBean.TrackingBean bean = list.get(position);
+        String stage = bean.getStage() + "";
+        int Language = new SPUtil(context).getLanguage();
+        if (Language != 0) {
+            switch (bean.getStage()) {
+                case 1:
+                    stage = "1st";
+                    break;
+                case 2:
+                    stage = "2nd";
+                    break;
+                case 3:
+                    stage = "3rd";
+                    break;
+                default:
+                    stage = stage + "th";
+            }
+        }
 
-        String str="这是设置TextView部分文字背景颜色和前景颜色的demo!";
-        int bstart=str.indexOf("背景");
-        int bend=bstart+"背景".length();
-        int fstart=str.indexOf("前景");
-        int fend=fstart+"前景".length();
-        SpannableStringBuilder style=new SpannableStringBuilder(str);
-        style.setSpan(new BackgroundColorSpan(Color.RED),bstart,bend, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        style.setSpan(new BackgroundColorSpan(Color.WHITE),bstart,bend, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+        stage = String.format(context.getString(R.string.thexprocess), stage);
+        holder.tvStatus.setText(stage);
+        GlideApp.with(context).load(bean.getAvatar()).error(R.mipmap.found_vote_initial_circle).circleCrop().into(holder.ivIcon);
+        holder.tvName.setText(context.getString(R.string.proposalman) + bean.getDidName());
+        holder.tvTime.setText(DateUtil.time(bean.getCreatedAt(), context));
+        holder.tvDescription.setText(bean.getContent());
+
+        GlideApp.with(context).load(bean.getComment().getAvatar()).error(R.mipmap.found_vote_initial_circle).circleCrop().into(holder.ivIcon1);
+        holder.tvName.setText(context.getString(R.string.proposalman) + bean.getComment().getCreatedBy());
+        holder.tvTime.setText(DateUtil.time(bean.getComment().getCreatedAt(), context));
+        holder.tvDescription1.setText(bean.getComment().getContent());
+        switch (bean.getComment().getOpinion().toUpperCase()) {
+            // 跟踪审核意见
+            //[赞同: 'APPROVED',
+            //反对: 'REJECTED']
+            case "APPROVED":
+                stage = context.getString(R.string.pass);
+                break;
+            case "REJECTED":
+                stage = context.getString(R.string.rejected);
+                break;
+
+        }
+
+        String str = stage + " " + bean.getComment().getContent();
+
+        int bend = stage.length();
+
+        SpannableStringBuilder style = new SpannableStringBuilder(str);
+        style.setSpan(new BackgroundColorSpan(Color.WHITE), 0, bend, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+
+        if (stage.equals(context.getString(R.string.pass)))
+            style.setSpan(new BackgroundColorSpan(0x35B08F), 0, bend, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        else
+            style.setSpan(new BackgroundColorSpan(Color.RED), 0, bend, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         holder.tvDescription1.setText(style);
+
 
     }
 
@@ -92,6 +141,8 @@ public class ProcessRecAdapetr extends RecyclerView.Adapter<ProcessRecAdapetr.Vi
         ImageView ivIcon;
         @BindView(R.id.tv_name)
         TextView tvName;
+        @BindView(R.id.tv_status)
+        TextView tvStatus;
         @BindView(R.id.tv_time)
         TextView tvTime;
         @BindView(R.id.tv_description)
@@ -104,6 +155,7 @@ public class ProcessRecAdapetr extends RecyclerView.Adapter<ProcessRecAdapetr.Vi
         TextView tvTime1;
         @BindView(R.id.tv_description1)
         TextView tvDescription1;
+
         ViewHolder(View view) {
 
             super(view);

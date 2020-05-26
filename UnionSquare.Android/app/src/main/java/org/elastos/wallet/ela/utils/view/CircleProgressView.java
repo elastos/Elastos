@@ -12,6 +12,8 @@ import android.view.View;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.utils.ScreenUtil;
 
+import java.math.BigDecimal;
+
 public class CircleProgressView extends View {
     private Paint paint;
     private float pointX;
@@ -21,6 +23,7 @@ public class CircleProgressView extends View {
 
     public void setProgress(float progress) {
         this.progress = progress;
+        invalidate();
     }
 
     private float progress = 0;
@@ -46,13 +49,14 @@ public class CircleProgressView extends View {
     private void init() {
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setTextSize(ScreenUtil.dp2px(getContext(), 12));
-        paint.setColor(ContextCompat.getColor(getContext(), R.color.whiter15));
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        paint.setColor(ContextCompat.getColor(getContext(), R.color.whiter15));
         drawCircle(canvas, radius);
+        paint.setColor(ContextCompat.getColor(getContext(), R.color.white));
         drawArc(canvas);
         paint.setColor(ContextCompat.getColor(getContext(), R.color.blue11));
         drawCircle(canvas, radius - ScreenUtil.dp2px(getContext(), 2));
@@ -76,14 +80,15 @@ public class CircleProgressView extends View {
     }
 
     private void drawArc(Canvas canvas) {
-        paint.setColor(ContextCompat.getColor(getContext(), R.color.white));
+
         RectF rect = new RectF(0, 0, radius * 2, radius * 2);
-        canvas.drawArc(rect, 270, progress / 100 * 360, true, paint);
+        float angle = new BigDecimal(progress).multiply(new BigDecimal(360)).setScale(2, BigDecimal.ROUND_DOWN).floatValue();
+        canvas.drawArc(rect, 270, angle, true, paint);
     }
 
     private void drawText(Canvas canvas) {
 
-        String text = progress + "%";
+        String text = new BigDecimal(progress).multiply(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_DOWN).floatValue() + "%";
 
         paint.setTextSize(ScreenUtil.dp2px(getContext(), 11));
         //测量字符串长度

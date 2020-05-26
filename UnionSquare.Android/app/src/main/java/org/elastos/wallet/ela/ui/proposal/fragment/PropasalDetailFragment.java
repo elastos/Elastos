@@ -24,20 +24,24 @@ import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
+import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.fragment.WebViewFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
 import org.elastos.wallet.ela.ui.proposal.adapter.ProcessRecAdapetr;
 import org.elastos.wallet.ela.ui.proposal.adapter.VoteRecAdapetr;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalDetailEntity;
 import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
 import org.elastos.wallet.ela.ui.proposal.presenter.ProposalDetailPresenter;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
@@ -54,6 +58,7 @@ import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
@@ -83,8 +88,8 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     TextView tvWeb;
     @BindView(R.id.ll_info)
     LinearLayout llInfo;
-    @BindView(R.id.abstract1)
-    TextView abstract1;
+    @BindView(R.id.tv_abstract1)
+    TextView tvAbstract1;
     @BindView(R.id.iv_vote)
     ImageView ivVote;
     @BindView(R.id.tv_agree)
@@ -99,8 +104,8 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     RecyclerView rvProcess;
     @BindView(R.id.ll_vote)
     LinearLayout llVote;
-    @BindView(R.id.rl_vote)
-    RelativeLayout rlVote;
+    @BindView(R.id.rl_vote_button)
+    RelativeLayout rlVoteButton;
     Unbinder unbinder;
     @BindView(R.id.ll_disagreeprogress)
     LinearLayout llDisagreeprogress;
@@ -108,10 +113,10 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     TextView tvNovote;
     @BindView(R.id.circleIndicator)
     CircleProgressView circleIndicator;
-    @BindView(R.id.currentvote)
-    TextView currentvote;
-    @BindView(R.id.needvote)
-    TextView needvote;
+    @BindView(R.id.tv_currentvote)
+    TextView tvCurrentvote;
+    @BindView(R.id.tv_needvote)
+    TextView tvNeedvote;
     @BindView(R.id.tv_vote)
     TextView tvVote;
     @BindView(R.id.tv_votestatus)
@@ -130,10 +135,10 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     int tag = 1;
     private String scanResult;
     private Wallet wallet;
-    //private ProposalPresenter proposalPresenter;
+    private ProposalPresenter proposalPresenter;
     private String maxBalance;
     private ProposalDetailPresenter presenter;
-    ArrayList<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
+    private List<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
 
     @Override
     protected int getLayoutId() {
@@ -143,35 +148,41 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
-        searchBeanList = data.getParcelableArrayList("ProposalSearchDateList");
-        searchBean = searchBeanList.get(data.getInt("position"));
+
+        searchBean = data.getParcelable("ProposalSearchDate");
     }
 
     @Override
     protected void initView(View view) {
-        setVoteRecycleView();
-        setProcessRecycleView();
+        tvAgree.setEnabled(false);
+        tvDisagree.setEnabled(false);
+        tvAbstention.setEnabled(false);
         wallet = new RealmUtil().queryDefauleWallet();
         presenter = new ProposalDetailPresenter();
-       // presenter.proposalDetail(searchBean.getId(), this);
+        proposalPresenter = new ProposalPresenter();
+        proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
+
+        presenter.proposalDetail(searchBean.getId(), this);
         registReceiver();
         switch (searchBean.getStatus()) {
             case "VOTING":
                 //委员评议
                 tvTitle.setText(R.string.proposalcomments);
-                rlVote.setVisibility(View.VISIBLE);
+                tvStatus.setText(R.string.menberreview);
                 break;
             case "NOTIFICATION":
                 //公示期
                 tvTitle.setText(R.string.proposalpublished);
                 tvVote.setText(R.string.votedisagree);
+                tvStatus.setText(R.string.publishing);
                 setInfoStatue(false);
-                setDisagreeProgress(30);
-                rlVote.setVisibility(View.VISIBLE);
+                rlVoteButton.setVisibility(View.VISIBLE);
+                llDisagreeprogress.setVisibility(View.VISIBLE);
                 break;
             case "ACTIVE":
                 //执行期;
                 tvTitle.setText(R.string.proposalprocess);
+                tvStatus.setText(R.string.executing);
                 llProcess.setVisibility(View.VISIBLE);
                 setInfoStatue(false);
                 setVoteStatue(false);
@@ -179,24 +190,70 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
             case "FINAL":
                 //已完结
                 tvTitle.setText(R.string.proposalfinish);
+                tvStatus.setText(R.string.hasfinished);
                 llProcess.setVisibility(View.VISIBLE);
                 setInfoStatue(false);
                 setVoteStatue(false);
                 break;
             case "REJECTED":
-            case "VETOED":
-                //已废止
+                // 已废止 未通过
                 tvTitle.setText(R.string.proposalabandon);
-                setDisagreeProgress(100f);
+                tvStatus.setText(R.string.nopass);
                 tvPropasalTile.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//删除线
+                break;
+            case "VETOED":
+                //已废止 已否决
+                llDisagreeprogress.setVisibility(View.VISIBLE);
+                tvTitle.setText(R.string.proposalabandon);
+                tvStatus.setText(R.string.hasreject);
+                tvPropasalTile.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//删除线
+
                 break;
         }
     }
 
+    private void setWebData(ProposalDetailEntity.DataBean data) {
+
+        tvPropasalTile.setText(searchBean.getTitle());
+        tvNum.setText("#" + searchBean.getId());
+        tvTime.setText(DateUtil.timeNYR(searchBean.getCreatedAt(), getContext(), true));
+        tvPeople.setText(searchBean.getProposedBy());
+        tvHash.setText(searchBean.getProposalHash());
+        tvResttime.setText(setRestDay(data.getDuration()));
+        tvWeb.setText(data.getAddress());
+        tvAbstract1.setText(data.getAbs());
+        initVote(data.getVoteResult());
+        setDisagreeProgress(data.getRejectRatio());
+        tvCurrentvote.setText(data.getRejectAmount());
+        tvNeedvote.setText(data.getRejectThroughAmount());
+
+        setProcessRecycleView(data.getTracking());
+
+    }
+
+    private String setRestDay(long time) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(time * 1000);
+        int year = calendar.get(Calendar.DAY_OF_YEAR) - Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+        if (year > 0) {
+        }
+        int day = calendar.get(Calendar.DAY_OF_YEAR) - Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+        if (day > 0) {
+            return String.format(getString(R.string.aboutday), String.valueOf(day));
+        } else {
+            int hour = calendar.get(Calendar.HOUR_OF_DAY) - Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+            if (hour > 0) {
+                return String.format(getString(R.string.abouthour), String.valueOf(day));
+            } else {
+                return getString(R.string.noonehour);
+            }
+        }
+
+    }
+
     private void setDisagreeProgress(float progress) {
-        llDisagreeprogress.setVisibility(View.VISIBLE);
+
         circleIndicator.setProgress(progress);
-        circleIndicator.invalidate();
         setInfoStatue(false);
     }
 
@@ -215,11 +272,16 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
 
     private void setVoteStatue(boolean show) {
         if (!show) {
-            tvVotestatus.setVisibility(View.GONE);
+            //同意 6   反对 2   弃权 2
+            tvVotestatus.setVisibility(View.VISIBLE);
+            tvVotestatus.setText(getString(R.string.agree) + " " + (supportList == null ? 0 : supportList.size())
+                    + "   " + getString(R.string.disagree1) + " " + (rejectList == null ? 0 : rejectList.size())
+                    + "   " + getString(R.string.abstention) + " " + (abstentionList == null ? 0 : abstentionList.size()));
+
             llVote.setVisibility(View.GONE);
             ivVote.setImageResource(R.mipmap.cr_arrow_right);
         } else {
-            tvVotestatus.setVisibility(View.VISIBLE);
+            tvVotestatus.setVisibility(View.GONE);
             llVote.setVisibility(View.VISIBLE);
             ivVote.setImageResource(R.mipmap.cr_arrow_down);
         }
@@ -233,6 +295,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_agree:
+                setVoteRecycleView(supportList);
                 view.setAlpha(1);
                 tvDisagree.setAlpha(0.5f);
                 tvAbstention.setAlpha(0.5f);
@@ -241,6 +304,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                 setMargin(tvAbstention, ScreenUtil.dp2px(getContext(), 5), 0, 0, ScreenUtil.dp2px(getContext(), 5));
                 break;
             case R.id.tv_disagree:
+                setVoteRecycleView(rejectList);
                 view.setAlpha(1);
                 tvAgree.setAlpha(0.5f);
                 tvAbstention.setAlpha(0.5f);
@@ -249,6 +313,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                 setMargin(tvAbstention, ScreenUtil.dp2px(getContext(), 5), 0, 0, ScreenUtil.dp2px(getContext(), 5));
                 break;
             case R.id.tv_abstention:
+                setVoteRecycleView(abstentionList);
                 view.setAlpha(1);
                 tvAgree.setAlpha(0.5f);
                 tvDisagree.setAlpha(0.5f);
@@ -276,6 +341,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                     if (otherUnActiveVote == null) {
                         otherUnActiveVote = new JSONArray();
                     }
+                    proposalPresenter.proposalSearch(-1, -1, "VOTING", null, this);
                     new VoteListPresenter().getDepositVoteList("1", "all", this, false);
                     new CRlistPresenter().getCRlist(1, 1000, "all", this, false);
                     new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
@@ -287,6 +353,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                 } else {
                     setInfoStatue(true);
                 }
+                break;
             case R.id.iv_vote:
                 if (llVote.getVisibility() == View.VISIBLE) {
                     setVoteStatue(false);
@@ -300,23 +367,68 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         }
     }
 
-    private void setVoteRecycleView() {
+    List<ProposalDetailEntity.DataBean.VoteResultBean> supportList;
+    List<ProposalDetailEntity.DataBean.VoteResultBean> rejectList;
+    List<ProposalDetailEntity.DataBean.VoteResultBean> abstentionList;
 
-        ArrayList<String> list = new ArrayList<String>();
-        list.add(tag + "");
-        list.add(tag + "");
-        list.add(tag + "");
+    private void initVote(List<ProposalDetailEntity.DataBean.VoteResultBean> list) {
+
+        if (list == null || list.size() == 0) {
+            tvNovote.setVisibility(View.VISIBLE);
+            ivVote.setVisibility(View.GONE);
+            llVote.setVisibility(View.GONE);
+            return;
+        }
+        tvNovote.setVisibility(View.GONE);
+        ivVote.setVisibility(View.VISIBLE);
+        llVote.setVisibility(View.VISIBLE);
+        supportList = new ArrayList<>();
+        rejectList = new ArrayList<>();
+        abstentionList = new ArrayList<>();
+
+        for (ProposalDetailEntity.DataBean.VoteResultBean bean : list) {
+            //  投票类型 [赞同: 'support', 反对: 'reject', 弃权: 'abstention']
+            if ("support".equals(bean.getValue())) {
+                supportList.add(bean);
+            } else if ("reject".equals(bean.getValue())) {
+                rejectList.add(bean);
+            } else if ("abstention".equals(bean.getValue())) {
+                abstentionList.add(bean);
+            }
+        }
+        tvAgree.setText(getString(R.string.agree1) + " (" + supportList.size() + ")");
+        tvDisagree.setText(getString(R.string.disagree1) + " (" + rejectList.size() + ")");
+        tvAbstention.setText(getString(R.string.abstention) + " (" + abstentionList.size() + ")");
+
+        if (abstentionList.size() > 0) {
+            tvAbstention.setEnabled(true);
+            setVoteRecycleView(abstentionList);
+
+        }
+        if (rejectList.size() > 0) {
+            tvDisagree.setEnabled(true);
+            setVoteRecycleView(rejectList);
+        }
+        if (supportList.size() > 0) {
+            tvAgree.setEnabled(true);
+            setVoteRecycleView(supportList);
+        }
+    }
+
+    private void setVoteRecycleView(List<ProposalDetailEntity.DataBean.VoteResultBean> list) {
+
+        if (list == null || list.size() == 0) {
+            return;
+        }
         VoteRecAdapetr adapter = new VoteRecAdapetr(getContext(), list);
         rvVote.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         rvVote.setAdapter(adapter);
     }
 
-    private void setProcessRecycleView() {
-
-        ArrayList<String> list = new ArrayList<String>();
-        list.add(tag + "");
-        list.add(tag + "");
-        list.add(tag + "");
+    private void setProcessRecycleView(List<ProposalDetailEntity.DataBean.TrackingBean> list) {
+        if (list == null || list.size() == 0) {
+            return;
+        }
         ProcessRecAdapetr adapter = new ProcessRecAdapetr(getContext(), list);
         rvProcess.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         rvProcess.setAdapter(adapter);
@@ -357,6 +469,16 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "getCurrentCouncilInfo":
+                CtDetailBean ctDetailBean = (CtDetailBean) baseEntity;
+                if ("CouncilMember".equals(ctDetailBean.getData().getType())
+                        && searchBean.getStatus().equals("VOTING")) {
+                    rlVoteButton.setVisibility(View.VISIBLE);
+                }
+                break;
+            case "proposalSearch":
+                searchBeanList = ((ProposalSearchEntity) baseEntity).getData().getList();
+                break;
             case "getVoteInfo":
                 //剔除非公示期的
                 try {
@@ -366,7 +488,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                         //在没有crlist的时候
                         otherUnActiveVote.put(presenter.getCRLastVote(voteJson));
                     } else if ("CRCProposal".equals(o)) {
-                        //获得上次的投票后筛选数据
+                        //点击下一步 获得上次的投票后筛选数据
                         String amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
                         JSONObject newVotes = presenter.getPublishDataFromLastVote(voteJson, amount, searchBeanList);
                         newVotes.put(searchBean.getProposalHash(), amount);
@@ -396,6 +518,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                 }
                 break;
             case "proposalDetail":
+                setWebData(((ProposalDetailEntity) baseEntity).getData());
                 break;
             case "createVoteCRCProposalTransaction":
                 //签名发交易

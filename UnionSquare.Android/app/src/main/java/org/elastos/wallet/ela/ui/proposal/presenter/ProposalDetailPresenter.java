@@ -141,7 +141,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
      * @param amount   新数据的
      * @throws JSONException
      */
-    public JSONObject getPublishDataFromLastVote(JSONObject lastVote, String amount, ArrayList<ProposalSearchEntity.DataBean.ListBean> searchBeanList) {
+    public JSONObject getPublishDataFromLastVote(JSONObject lastVote, String amount, List<ProposalSearchEntity.DataBean.ListBean> searchBeanList) {
         JSONObject newVotes = new JSONObject();
         try {
             Iterator it = lastVote.keys();

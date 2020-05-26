@@ -6,11 +6,11 @@ import java.util.List;
 
 public class ProposalDetailEntity extends BaseEntity {
 
+
     /**
      * code : 1
-     * data : {"id":1,"abs":"this is sample abstract","address":"http://localhost:3001/proposals/5ea53e2bb0461a06630c0227","duration":0,"rejectAmount":"33.333","rejectThroughAmount":"1000","rejectRatio":0.033333,"voteResult":[{"value":"support","reason":"this is opinion","avatar":"http:/","votedBy":"Feng Zhang"}],"tracking":[{"comment":{"content":"tracking opinion","avatar":"http://test.com/assets/image.jpg","createdBy":"username"},"content":"tracking content","status":"PUBLISHED","createdAt":1589271912,"updatedAt":1589271912}],"summary":{"comment":{"content":"opinion content","avatar":"http://test.com/assets/image.jpg","createdBy":"username"},"content":"summary content","status":"PUBLISHED","createdAt":1589271912,"updatedAt":1589271912}}
+     * data : {"id":1,"status":"VOTING","abs":"this is sample abstract","address":"http://localhost:3001/proposals/5ea53e2bb0461a06630c0227","duration":0,"rejectAmount":"33.333","rejectThroughAmount":"1000","rejectRatio":0.033333,"voteResult":[{"value":"support","reason":"this is opinion","avatar":"","votedBy":"Feng Zhang"}],"tracking":[{"stage":2,"didName":"cr11-did","avatar":"https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3695181958,4180835461&fm=26&gp=0.jpg","content":"test21","createdAt":1589380234,"comment":{"content":"test123","opinion":"REJECTED","avatar":"http://test.com/test.jpg","createdAt":1589380243}}],"message":"ok"}
      */
-
 
     private DataBean data;
 
@@ -26,25 +26,26 @@ public class ProposalDetailEntity extends BaseEntity {
     public static class DataBean {
         /**
          * id : 1
+         * status : VOTING
          * abs : this is sample abstract
          * address : http://localhost:3001/proposals/5ea53e2bb0461a06630c0227
          * duration : 0
          * rejectAmount : 33.333
          * rejectThroughAmount : 1000
          * rejectRatio : 0.033333
-         * voteResult : [{"value":"support","reason":"this is opinion","avatar":"http:/","votedBy":"Feng Zhang"}]
-         * tracking : [{"comment":{"content":"tracking opinion","avatar":"http://test.com/assets/image.jpg","createdBy":"username"},"content":"tracking content","status":"PUBLISHED","createdAt":1589271912,"updatedAt":1589271912}]
-         * summary : {"comment":{"content":"opinion content","avatar":"http://test.com/assets/image.jpg","createdBy":"username"},"content":"summary content","status":"PUBLISHED","createdAt":1589271912,"updatedAt":1589271912}
+         * voteResult : [{"value":"support","reason":"this is opinion","avatar":"","votedBy":"Feng Zhang"}]
+         * tracking : [{"stage":2,"didName":"cr11-did","avatar":"https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3695181958,4180835461&fm=26&gp=0.jpg","content":"test21","createdAt":1589380234,"comment":{"content":"test123","opinion":"REJECTED","avatar":"http://test.com/test.jpg","createdAt":1589380243}}]
+         * message : ok
          */
 
         private int id;
+        private String status;
         private String abs;
         private String address;
-        private int duration;
+        private long duration;
         private String rejectAmount;
         private String rejectThroughAmount;
-        private double rejectRatio;
-        private SummaryBean summary;
+        private float rejectRatio;
         private List<VoteResultBean> voteResult;
         private List<TrackingBean> tracking;
 
@@ -54,6 +55,14 @@ public class ProposalDetailEntity extends BaseEntity {
 
         public void setId(int id) {
             this.id = id;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
         }
 
         public String getAbs() {
@@ -72,11 +81,11 @@ public class ProposalDetailEntity extends BaseEntity {
             this.address = address;
         }
 
-        public int getDuration() {
+        public long getDuration() {
             return duration;
         }
 
-        public void setDuration(int duration) {
+        public void setDuration(long duration) {
             this.duration = duration;
         }
 
@@ -96,21 +105,14 @@ public class ProposalDetailEntity extends BaseEntity {
             this.rejectThroughAmount = rejectThroughAmount;
         }
 
-        public double getRejectRatio() {
+        public float getRejectRatio() {
             return rejectRatio;
         }
 
-        public void setRejectRatio(double rejectRatio) {
+        public void setRejectRatio(float rejectRatio) {
             this.rejectRatio = rejectRatio;
         }
 
-        public SummaryBean getSummary() {
-            return summary;
-        }
-
-        public void setSummary(SummaryBean summary) {
-            this.summary = summary;
-        }
 
         public List<VoteResultBean> getVoteResult() {
             return voteResult;
@@ -128,103 +130,11 @@ public class ProposalDetailEntity extends BaseEntity {
             this.tracking = tracking;
         }
 
-        public static class SummaryBean {
-            /**
-             * comment : {"content":"opinion content","avatar":"http://test.com/assets/image.jpg","createdBy":"username"}
-             * content : summary content
-             * status : PUBLISHED
-             * createdAt : 1589271912
-             * updatedAt : 1589271912
-             */
-
-            private CommentBean comment;
-            private String content;
-            private String status;
-            private int createdAt;
-            private int updatedAt;
-
-            public CommentBean getComment() {
-                return comment;
-            }
-
-            public void setComment(CommentBean comment) {
-                this.comment = comment;
-            }
-
-            public String getContent() {
-                return content;
-            }
-
-            public void setContent(String content) {
-                this.content = content;
-            }
-
-            public String getStatus() {
-                return status;
-            }
-
-            public void setStatus(String status) {
-                this.status = status;
-            }
-
-            public int getCreatedAt() {
-                return createdAt;
-            }
-
-            public void setCreatedAt(int createdAt) {
-                this.createdAt = createdAt;
-            }
-
-            public int getUpdatedAt() {
-                return updatedAt;
-            }
-
-            public void setUpdatedAt(int updatedAt) {
-                this.updatedAt = updatedAt;
-            }
-
-            public static class CommentBean {
-                /**
-                 * content : opinion content
-                 * avatar : http://test.com/assets/image.jpg
-                 * createdBy : username
-                 */
-
-                private String content;
-                private String avatar;
-                private String createdBy;
-
-                public String getContent() {
-                    return content;
-                }
-
-                public void setContent(String content) {
-                    this.content = content;
-                }
-
-                public String getAvatar() {
-                    return avatar;
-                }
-
-                public void setAvatar(String avatar) {
-                    this.avatar = avatar;
-                }
-
-                public String getCreatedBy() {
-                    return createdBy;
-                }
-
-                public void setCreatedBy(String createdBy) {
-                    this.createdBy = createdBy;
-                }
-            }
-        }
-
         public static class VoteResultBean {
             /**
              * value : support
              * reason : this is opinion
-             * avatar : http:/
+             * avatar :
              * votedBy : Feng Zhang
              */
 
@@ -268,25 +178,43 @@ public class ProposalDetailEntity extends BaseEntity {
 
         public static class TrackingBean {
             /**
-             * comment : {"content":"tracking opinion","avatar":"http://test.com/assets/image.jpg","createdBy":"username"}
-             * content : tracking content
-             * status : PUBLISHED
-             * createdAt : 1589271912
-             * updatedAt : 1589271912
+             * stage : 2
+             * didName : cr11-did
+             * avatar : https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3695181958,4180835461&fm=26&gp=0.jpg
+             * content : test21
+             * createdAt : 1589380234
+             * comment : {"content":"test123","opinion":"REJECTED","avatar":"http://test.com/test.jpg","createdAt":1589380243}
              */
 
-            private CommentBeanX comment;
+            private int stage;
+            private String didName;
+            private String avatar;
             private String content;
-            private String status;
             private int createdAt;
-            private int updatedAt;
+            private CommentBean comment;
 
-            public CommentBeanX getComment() {
-                return comment;
+            public int getStage() {
+                return stage;
             }
 
-            public void setComment(CommentBeanX comment) {
-                this.comment = comment;
+            public void setStage(int stage) {
+                this.stage = stage;
+            }
+
+            public String getDidName() {
+                return didName;
+            }
+
+            public void setDidName(String didName) {
+                this.didName = didName;
+            }
+
+            public String getAvatar() {
+                return avatar;
+            }
+
+            public void setAvatar(String avatar) {
+                this.avatar = avatar;
             }
 
             public String getContent() {
@@ -297,14 +225,6 @@ public class ProposalDetailEntity extends BaseEntity {
                 this.content = content;
             }
 
-            public String getStatus() {
-                return status;
-            }
-
-            public void setStatus(String status) {
-                this.status = status;
-            }
-
             public int getCreatedAt() {
                 return createdAt;
             }
@@ -313,24 +233,34 @@ public class ProposalDetailEntity extends BaseEntity {
                 this.createdAt = createdAt;
             }
 
-            public int getUpdatedAt() {
-                return updatedAt;
+            public CommentBean getComment() {
+                return comment;
             }
 
-            public void setUpdatedAt(int updatedAt) {
-                this.updatedAt = updatedAt;
+            public void setComment(CommentBean comment) {
+                this.comment = comment;
             }
 
-            public static class CommentBeanX {
+            public static class CommentBean {
                 /**
-                 * content : tracking opinion
-                 * avatar : http://test.com/assets/image.jpg
-                 * createdBy : username
+                 * content : test123
+                 * opinion : REJECTED
+                 * avatar : http://test.com/test.jpg
+                 * createdAt : 1589380243
                  */
-
-                private String content;
-                private String avatar;
                 private String createdBy;
+                private String content;
+                private String opinion;
+                private String avatar;
+                private int createdAt;
+
+                public String getCreatedBy() {
+                    return createdBy;
+                }
+
+                public void setCreatedBy(String createdBy) {
+                    this.createdBy = createdBy;
+                }
 
                 public String getContent() {
                     return content;
@@ -338,6 +268,14 @@ public class ProposalDetailEntity extends BaseEntity {
 
                 public void setContent(String content) {
                     this.content = content;
+                }
+
+                public String getOpinion() {
+                    return opinion;
+                }
+
+                public void setOpinion(String opinion) {
+                    this.opinion = opinion;
                 }
 
                 public String getAvatar() {
@@ -348,12 +286,12 @@ public class ProposalDetailEntity extends BaseEntity {
                     this.avatar = avatar;
                 }
 
-                public String getCreatedBy() {
-                    return createdBy;
+                public int getCreatedAt() {
+                    return createdAt;
                 }
 
-                public void setCreatedBy(String createdBy) {
-                    this.createdBy = createdBy;
+                public void setCreatedAt(int createdAt) {
+                    this.createdAt = createdAt;
                 }
             }
         }
