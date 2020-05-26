@@ -684,8 +684,8 @@
     <string name="voting">In Election</string>
     <string name="pastitemtitle">the %1$d-th Term(%2$s)</string>
     <string name="amember">the %1$s-th Term</string>
-    <string name="votemanager">Election Management</string>
-    <string name="ctmanager">Council Member Management</string>
+    <string name="votemanager">Management</string>
+    <string name="ctmanager">Management</string>
     <string name="refreshctinfo">Update Member Profile</string>
     <string name="refreshdidinfo">Update DID Info</string>
     <string name="actmember">The %1$s-th Council</string>
