@@ -67,7 +67,7 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
         }
         if(null != managerListener) {
             viewHolder.manager.setOnClickListener(v ->
-                    managerListener.onManagerClick(i)
+                    managerListener.onManagerClick(i, status)
             );
         }
         if (commonRvListener != null) {
@@ -90,7 +90,7 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
     }
 
     public interface ManagerListener {
-        void onManagerClick(int position);
+        void onManagerClick(int position, String type);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

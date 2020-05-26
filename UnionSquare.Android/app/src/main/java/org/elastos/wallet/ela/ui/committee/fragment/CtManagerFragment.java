@@ -21,6 +21,7 @@ import org.elastos.wallet.ela.ui.committee.presenter.CtManagePresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
+import org.elastos.wallet.ela.ui.crvote.fragment.UpdateCRInformationFragment;
 import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
@@ -79,8 +80,11 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
         did = data.getString("did");
         status = data.getString("status");
         depositAmount = data.getString("depositAmount");
-        if(!AppUtlis.isNullOrEmpty(status) && status.equals("Elected")) {
+        if(status.equalsIgnoreCase("Elected")) {
             showSecondLayout();
+        } else if( status.equalsIgnoreCase("VOTING")) {
+            showSecondLayout();
+            showDepositView();
         } else {
             showFirstLayout();
         }
@@ -104,7 +108,6 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
         Bundle bundle = new Bundle();
         switch (view.getId()) {
             case R.id.refresh_ct_info:
-                //TODO 待确认
                 bundle.putParcelable("crStatusBean", crStatusBean);
                 start(UpdateCtInformationFragment.class, bundle);
 //                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid().replace("did:elastos:", ""), this, "2");
@@ -162,6 +165,11 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
             case "Returned":
                 description.setText(String.format(getString(R.string.dimissofficehint), depositAmount));
                 showDepositView();
+                break;
+
+            case "VOTING":
+                description.setText(R.string.votingfinishhint);
+                showRefreshView();
                 break;
             case "Elected":
                 description.setText(getString(R.string.inofficehint));

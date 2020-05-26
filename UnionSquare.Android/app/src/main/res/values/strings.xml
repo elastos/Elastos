@@ -750,6 +750,5 @@
     <string name="noonehour">不足 1 小时</string>
     <string name="hasfinished">已完结</string>
     <string name="proposalman">提案人</string>
-
-
+    <string name="votingfinishhint">本轮竞选已经结束，很遗憾您此次未能当选。感谢您的参与，祝您好运！</string>
 </resources>

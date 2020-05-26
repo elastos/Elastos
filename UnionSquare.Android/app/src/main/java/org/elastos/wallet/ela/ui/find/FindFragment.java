@@ -33,20 +33,25 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.committee.PastCtListFragment;
+import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
+import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.crvote.CRListFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.FindListBean;
 import org.elastos.wallet.ela.ui.find.adapter.FindListRecAdapter;
 import org.elastos.wallet.ela.ui.proposal.ProposalFragment;
 import org.elastos.wallet.ela.ui.vote.SuperNodeListFragment;
+import org.elastos.wallet.ela.utils.AppUtlis;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 
-public class FindFragment extends BaseFragment implements CommonRvListener {
+public class FindFragment extends BaseFragment implements CommonRvListener, NewBaseViewData {
     @BindView(R.id.iv_title_left)
     ImageView ivTitleLeft;
     @BindView(R.id.tv_title)
@@ -55,6 +60,9 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
     RecyclerView rv;
     private FindListRecAdapter adapter;
     private List<FindListBean> list;
+
+    private RealmUtil realmUtil = new RealmUtil();
+    private Wallet wallet = realmUtil.queryDefauleWallet();
 
     @Override
     protected int getLayoutId() {
@@ -68,8 +76,17 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
 
     @Override
     protected void initView(View view) {
+        new CtDetailPresenter().getCurrentCouncilInfo(this, wallet.getDid().replace("did:elastos:", ""));
+
         tvTitle.setText(getString(R.string.social));
         ivTitleLeft.setVisibility(View.GONE);
+    }
+
+    private void setView(CtDetailBean ctDetailBean){
+
+        CtDetailBean.DataBean dataBean = ctDetailBean.getData();
+        String status = dataBean.getStatus();
+
         list = new ArrayList<>();
         FindListBean bean1 = new FindListBean();
         bean1.setResouceId(R.mipmap.found_dpos_icon);
@@ -94,13 +111,14 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
         list.add(bean1);
         list.add(bean2);
         list.add(bean3);
-        list.add(bean4);
+        if(!AppUtlis.isNullOrEmpty(status) && status.equalsIgnoreCase("VOTING")) list.add(bean4);
+
         //  list.add(R.mipmap.found_card_id);
         //list.add(R.mipmap.found_card_paradrop);
 //        presenter = new FindPresenter();
 //        presenter.getSupportedChains(wallet.getWalletId(), MyWallet.ELA, this);
         setRecycleView();
-    }
+    };
 
     public static FindFragment newInstance() {
         Bundle args = new Bundle();
@@ -152,4 +170,12 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
     }
 
 
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "getCurrentCouncilInfo":
+                setView((CtDetailBean) baseEntity);
+                break;
+        }
+    }
 }
