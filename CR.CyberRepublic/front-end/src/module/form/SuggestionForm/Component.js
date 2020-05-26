@@ -26,7 +26,7 @@ const TAB_KEYS = [
   'relevance',
   'budget'
 ]
-const { ADVANCE, COMPLETION, CONDITIONED } = SUGGESTION_BUDGET_TYPE
+const { ADVANCE, COMPLETION } = SUGGESTION_BUDGET_TYPE
 
 class C extends BaseComponent {
   constructor(props) {
