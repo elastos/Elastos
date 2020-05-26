@@ -83,10 +83,20 @@ class C extends BaseComponent {
       }
 
       const budget = form.getFieldValue('budget')
-      if (budget) {
+      if (budget && typeof budget !== 'string') {
         const plan = form.getFieldValue('plan')
         const milestone = _.get(plan, 'milestone')
         const pItems = _.get(budget, 'paymentItems')
+        if (!budget.budgetAmount) {
+          this.setState({ loading: false })
+          message.error(
+            'Total budget is empty.'
+          )
+          return
+        }
+        if (!budget.elaAddress) {
+          message.error('ELA receive address is emtpy.')
+        }
         if (milestone.length !== pItems.length) {
           this.setState({ loading: false })
           message.error(
