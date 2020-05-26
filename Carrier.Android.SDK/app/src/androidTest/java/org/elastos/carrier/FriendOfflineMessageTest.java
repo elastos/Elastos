@@ -1,6 +1,7 @@
 package org.elastos.carrier;
 
 import android.util.Log;
+import java.util.Date;
 
 import org.elastos.carrier.common.RobotConnector;
 import org.elastos.carrier.common.Synchronizer;
@@ -73,7 +74,7 @@ public class FriendOfflineMessageTest {
 		}
 
 		@Override
-		public void onFriendMessage(Carrier carrier, String from, byte[] message, boolean isOffline) {
+		public void onFriendMessage(Carrier carrier, String from, byte[] message, Date date, boolean isOffline) {
 			TestContext.Bundle bundle = mContext.getExtra();
 			bundle.setFrom(from);
 			bundle.setExtraData(new String(message));

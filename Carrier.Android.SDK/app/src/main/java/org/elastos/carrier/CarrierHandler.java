@@ -23,6 +23,7 @@
 package org.elastos.carrier;
 
 import java.util.List;
+import java.util.Date;
 
 /**
  * The interface to Carrier node.
@@ -157,11 +158,14 @@ public interface CarrierHandler extends GroupHandler {
 	 * @param
 	 * 		message   	The message content
 	 * @param
+	 *      timestamp   The message sent time as the number of miliseconds
+	 *                  since the Epoch, 1970-01-01 00:00:00 +0000 (UTC)
+	 * @param
 	 *      isOffline	The boolean value means this message is received as offline message
 	 *                  or online message. The vlaue of true means the message is received
 	 *                  as offline message, otherwise as online message.
 	 */
-	void onFriendMessage(Carrier carrier, String from, byte[] message, boolean isOffline);
+	void onFriendMessage(Carrier carrier, String from, byte[] message, Date timestamp, boolean isOffline);
 
 	/**
 	 * The callback function to process the friend invite request.

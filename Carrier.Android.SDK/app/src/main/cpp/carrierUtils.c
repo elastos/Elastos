@@ -127,7 +127,7 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
 
     (*env)->DeleteLocalRef(env, jnodes);
 
-    rc = callObjectMethod(env, clazz, jopts, "getHiveBootstrapNodes", "()Ljava/util/List;", &jhvnodes);
+    rc = callObjectMethod(env, clazz, jopts, "getExpressNodes", "()Ljava/util/List;", &jhvnodes);
     if (!rc) {
         logE("call method Carrier::Options::getHiveBootstrapNodes error");
         return 0;
@@ -153,20 +153,20 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
 
     if (size == 0) {
         (*env)->DeleteLocalRef(env, jhvnodes);
-        opts->hive_bootstraps_size = 0;
-        opts->hive_bootstraps = NULL;
+        opts->express_nodes_size = 0;
+        opts->express_nodes = NULL;
         return 1;
     }
 
-    opts->hive_bootstraps_size = (size_t)size;
-    opts->hive_bootstraps = (HiveBootstrapHelper *)calloc(1, sizeof(HiveBootstrapHelper) * size);
-    if (!opts->hive_bootstraps) {
+    opts->express_nodes_size = (size_t)size;
+    opts->express_nodes = (ExpressNodeHelper *)calloc(1, sizeof(ExpressNodeHelper) * size);
+    if (!opts->express_nodes) {
         (*env)->DeleteLocalRef(env, jhvnodes);
         return 0;
     }
 
     for (i = 0; i < (int)size; i++) {
-        HiveBootstrapHelper *node = &opts->hive_bootstraps[i];
+        ExpressNodeHelper *node = &opts->express_nodes[i];
         jclass  jnodeClazz;
         jobject jnode;
 
@@ -185,8 +185,8 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
         }
 
         if (!getStringExt(env, jnodeClazz, jnode, "getIpv4", &node->ipv4) ||
-            !getStringExt(env, jnodeClazz, jnode, "getIpv6", &node->ipv6) ||
-            !getStringExt(env, jnodeClazz, jnode, "getPort", &node->port)) {
+            !getStringExt(env, jnodeClazz, jnode, "getPort", &node->port) ||
+            !getStringExt(env, jnodeClazz, jnode, "getPublicKey", &node->public_key)) {
 
             logE("At least one getter method of class 'Carrier.HiveBootstrapNode' mismatched");
 
@@ -195,6 +195,7 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
             return 0;
         }
 
+        node->ipv6 = NULL;
         (*env)->DeleteLocalRef(env, jnode);
     }
 
@@ -226,9 +227,9 @@ void cleanupOptionsHelper(OptionsHelper* opts)
         free(opts->bootstraps);
     }
 
-    if (opts->hive_bootstraps) {
-        for (i = 0; i < opts->hive_bootstraps_size; i++) {
-            HiveBootstrapHelper *node = &opts->hive_bootstraps[i];
+    if (opts->express_nodes) {
+        for (i = 0; i < opts->express_nodes_size; i++) {
+            ExpressNodeHelper *node = &opts->express_nodes[i];
 
             if (node->ipv4)
                 free(node->ipv4);
@@ -238,7 +239,7 @@ void cleanupOptionsHelper(OptionsHelper* opts)
                 free(node->port);
         }
 
-        free(opts->hive_bootstraps);
+        free(opts->express_nodes);
     }
 }
 
@@ -496,5 +497,63 @@ int newJavaGroupPeerInfo(JNIEnv* env, const ElaGroupPeer* peer, jobject* jpeerIn
     }
 
     *jpeerInfo = jobj;
+    return 1;
+}
+
+int newJavaReceiptState(JNIEnv* env, ElaReceiptState state, jobject* jstate)
+{
+    jclass clazz;
+    jobject jobj;
+    int rc;
+
+    assert(env);
+    assert(jstate);
+
+    clazz = (*env)->FindClass(env, _T("ReceiptState"));
+    if (!clazz) {
+        logE("Java class 'ReceiptState' not found");
+        return 0;
+    }
+
+    rc = callStaticObjectMethod(env, clazz, "valueOf", "(I)"_W("ReceiptState;"),
+                                &jobj, state);
+    if (!rc) {
+        logE("call static method ReceiptState::valueOf error");
+        return 0;
+    }
+
+    *jstate = jobj;
+    return 1;
+}
+
+int newJavaDate(JNIEnv* env, int64_t timestamp, jobject* jdate)
+{
+    jclass clazz;
+    jobject jobj;
+    jmethodID ctor;
+    int rc;
+
+    assert(env);
+    assert(jdate);
+
+    clazz = (*env)->FindClass(env, "java/util/Date");
+    if (!clazz) {
+        logE("Java class 'java/util/Date' not found");
+        return 0;
+    }
+
+    ctor = (*env)->GetMethodID(env, clazz, "<init>", "(J)V");
+    if (!ctor) {
+        logE("Contructor GroupPeerInfo() not found");
+        return 0;
+    }
+
+    jobj = (*env)->NewObject(env, clazz, ctor, timestamp/1000);
+    if (!jobj) {
+        logE("New class GroupPeerInfo object error");
+        return 0;
+    }
+
+    *jdate = jobj;
     return 1;
 }

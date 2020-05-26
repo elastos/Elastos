@@ -130,8 +130,8 @@ jboolean carrierInit(JNIEnv* env, jobject thiz, jobject joptions, jobject jcallb
         .persistent_location = helper.persistent_location,
         .bootstraps_size = helper.bootstraps_size,
         .bootstraps = (BootstrapNode *)helper.bootstraps,
-        .hive_bootstraps_size = helper.hive_bootstraps_size,
-        .hive_bootstraps = (HiveBootstrapNode *)helper.hive_bootstraps
+        .express_nodes_size = helper.express_nodes_size,
+        .express_nodes = (ExpressNode *)helper.express_nodes
     };
 
     if (!handlerCtxtSet(hc, env, thiz, jcallbacks)) {
@@ -652,6 +652,87 @@ jint sendMessage(JNIEnv* env, jobject thiz, jstring jto, jbyteArray jmsg)
 }
 
 static
+void messageReceiptCallback(int64_t msgid, ElaReceiptState state, void *context)
+{
+    jobject jstate;
+
+    ARG(context, 0, JNIEnv*, env);
+    ARG(context, 1, jobject, jhandler);
+    free(context);
+
+    if (!newJavaReceiptState(env, state, &jstate)) {
+        logE("Construct java ReceiptState object error");
+        return;
+    }
+
+    if (!callVoidMethod(env, NULL, jhandler, "onReceipt",
+                        "(J"_W("ReceiptState;)V"), (jlong)msgid, jstate)) {
+        logE("Call method 'void onReceipt(Long, ReceiptState)' error");
+    }
+
+    (*env)->DeleteLocalRef(env, jstate);
+    (*env)->DeleteGlobalRef(env, jhandler);
+}
+
+static
+jlong sendMessageWithReceipt(JNIEnv* env, jobject thiz, jstring jto, jbyteArray jmsg,
+                            jobject jreceiptHandler)
+{
+    const char *to;
+    jbyte *msg;
+    jsize len;
+    int64_t rc;
+    bool is_offline;
+    jobject gjhandler;
+    void **argv;
+
+    assert(jto);
+    assert(jmsg);
+
+    to = (*env)->GetStringUTFChars(env, jto, NULL);
+    if (!to) {
+        setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        return -1;
+    }
+
+    msg = (*env)->GetByteArrayElements(env, jmsg, NULL);
+    len = (*env)->GetArrayLength(env, jmsg);
+    assert(msg);
+    assert(len);
+
+    gjhandler = (*env)->NewGlobalRef(env, jreceiptHandler);
+    if (!gjhandler) {
+        setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
+        goto errorExit;
+    }
+
+    argv = (void**)calloc(1, sizeof(void*) * 4);
+    if (!argv) {
+        setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        goto errorExit;
+    }
+    argv[0] = getCarrierEnv(env, thiz);
+    argv[1] = gjhandler;
+
+    rc = ela_send_message_with_receipt(getCarrier(env, thiz), to, msg, len,
+                                       messageReceiptCallback,(void *)argv);
+    (*env)->ReleaseStringUTFChars(env, jto, to);
+
+    if (rc < 0) {
+        setErrorCode(ela_get_error());
+        free(argv);
+        goto errorExit;
+    }
+
+    return (jlong)rc;
+
+errorExit:
+    if (to) (*env)->ReleaseStringUTFChars(env, jto, to);
+    if (gjhandler) (*env)->DeleteGlobalRef(env, gjhandler);
+    return -1;
+}
+
+static
 void friendInviteRspCallback(ElaCarrier* carrier, const char* from, const char *bundle, int status,
                               const char* reason, const void* data, size_t length, void* context)
 {
@@ -844,6 +925,8 @@ static JNINativeMethod gMethods[] = {
         {"accept_friend",      "("_J("String;)Z"),                 (void *) acceptFriend       },
         {"remove_friend",      "("_J("String;)Z"),                 (void *) removeFriend       },
         {"send_message",       "("_J("String;[B)I"),               (void *) sendMessage        },
+        {"send_message_with_receipt", "("_J("String;[B")_W("FriendMessageReceiptHandler;)J"),     \
+                                                                   (void *) sendMessageWithReceipt },
         {"friend_invite",      "("_J("String;")_J("String;")_W("FriendInviteResponseHandler;)Z"), \
                                                                    (void*)inviteFriend         },
         {"reply_friend_invite","("_J("String;I")_J("String;")_J("String;)Z"),\

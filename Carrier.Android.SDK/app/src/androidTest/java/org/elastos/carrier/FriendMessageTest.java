@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.nio.ByteBuffer;
+import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -75,7 +76,7 @@ public class FriendMessageTest {
 		}
 
 		@Override
-		public void onFriendMessage(Carrier carrier, String from, byte[] message, boolean isOffline) {
+		public void onFriendMessage(Carrier carrier, String from, byte[] message, Date date, boolean isOffline) {
 			TestContext.Bundle bundle = mContext.getExtra();
 			bundle.setFrom(from);
 			bundle.setExtraData(new String(message));

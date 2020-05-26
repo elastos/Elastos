@@ -33,19 +33,20 @@ typedef struct BootstrapHelper {
     char *public_key;
 } BootstrapHelper;
 
-typedef struct HiveBootstrapHelper {
+typedef struct ExpressNodeHelper {
     char *ipv4;
     char *ipv6;
     char *port;
-} HiveBootstrapHelper;
+    char *public_key;
+} ExpressNodeHelper;
 
 typedef struct OptionsHelper {
     int udp_enabled;
     char* persistent_location;
     size_t  bootstraps_size;
     BootstrapHelper *bootstraps;
-    size_t  hive_bootstraps_size;
-    HiveBootstrapHelper *hive_bootstraps;
+    size_t express_nodes_size;
+    ExpressNodeHelper *express_nodes;
 } OptionsHelper;
 
 int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts);
@@ -65,5 +66,9 @@ int newJavaPresenceStatus(JNIEnv* env, ElaPresenceStatus presence, jobject* jpre
 int newNativePresenceStatus(JNIEnv *env, jobject jpresence, ElaPresenceStatus *presence);
 
 int newJavaGroupPeerInfo(JNIEnv* env, const ElaGroupPeer* peer, jobject* jpeerInfo);
+
+int newJavaReceiptState(JNIEnv* env, ElaReceiptState state, jobject* jstate);
+
+int newJavaDate(JNIEnv* env, int64_t timestamp, jobject* jdate);
 
 #endif //__CARRIER_UTILS_H__

@@ -259,7 +259,12 @@ typedef struct BootstrapNode {
     const char *public_key;
 } BootstrapNode;
 
-typedef struct HiveBootstrapNode {
+/**
+ * \~English
+ * ExpressNode defines a couple of perperities to provide for Carrier node
+ * to send offline messages. The definition of ExpressNode is same with
+ */
+typedef struct ExpressNode {
     /**
      * \~English
      * The ip address supported with ipv4 protocol.
@@ -268,17 +273,26 @@ typedef struct HiveBootstrapNode {
 
     /**
      * \~English
-     * The ip address supported with ipv6 protocol.
+     * This field is reserved for future, not suported currently.
+     * user should feed this vaue with NULL.
      */
     const char *ipv6;
 
     /**
      * \~English
      * The ip port.
-     * The default value is 9095
+     * The default value is 33445.
      */
     const char *port;
-} HiveBootstrapNode;
+
+    /**
+     * \~English
+     * The unique public key to provide for Carrier nodes, terminated
+     * by null-string.
+     * The length of public key is about 45 bytes.
+     */
+    const char *public_key;
+} ExpressNode;
 
 /**
  * \~English
@@ -345,17 +359,17 @@ typedef struct ElaOptions {
 
     /**
      * \~English
-     * The total number of Hive bootstrap nodes to connect.
-     * There must have at least one bootstrap node for the very first time
+     * The total number of Express nodes to connect.
+     * There must have at least on node for the very first time
      * to create carrier instance.
      */
-    size_t hive_bootstraps_size;
+    size_t express_nodes_size;
 
     /**
      * \~English
-     * The array of Hive bootstrap nodes.
+     * The array of Express nodes.
      */
-    HiveBootstrapNode *hive_bootstraps;
+    ExpressNode *express_nodes;
 } ElaOptions;
 
 /**
@@ -794,6 +808,9 @@ typedef struct ElaCallbacks {
      * @param
      *      len         [in] The message length in bytes.
      * @param
+     *      timestamp   [in] The message sent time as the number of seconds
+     *                       since the Epoch, 1970-01-01 00:00:00 +0000 (UTC).
+     * @param
      *      offline     [in] The value tells whether this message is received
      *                       as offline message or online message. The value of
      *                       true means this message is received as offline
@@ -802,7 +819,9 @@ typedef struct ElaCallbacks {
      *      context     [in] The application defined context data.
      */
     void (*friend_message)(ElaCarrier *carrier, const char *from,
-                           const void *msg, size_t len, bool offline, void *context);
+                           const void *msg, size_t len,
+                           int64_t timestamp, bool offline,
+                           void *context);
 
     /**
      * \~English
@@ -1331,7 +1350,7 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  * @param
  *      to          [in] The target userid.
  * @param
- *      msg         [in] The message content defined by application.
+ *      message     [in] The message content defined by application.
  * @param
  *      len         [in] The message length in bytes.
  * @param
@@ -1348,7 +1367,86 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  */
 CARRIER_API
 int ela_send_friend_message(ElaCarrier *carrier, const char *to,
-                            const void *msg, size_t len, bool *offline);
+                            const void *message, size_t len, bool *offline);
+
+/**
+ * \~English
+ * Carrier message receipt status to Carrier network.
+ */
+typedef enum ElaReceiptState {
+    /**
+     * \~English
+     * Message has been accepted by remote friend via carrier network.
+     */
+    ElaReceipt_ByFriend,
+    /**
+     * \~English
+     * Message has been delivered to offline message store.
+     */
+    ElaReceipt_Offline,
+    /**
+     * \~English
+     * Message sent before not
+     * Message send unsuccessfully. A specific error code can be
+     * retrieved by calling ela_get_error().
+     */
+    ElaReceipt_Error,
+} ElaReceiptState;
+
+/**
+ * \~English
+ * An application-defined function that notify the message receipt status.
+ *
+ * ElaFriendMessageReceiptCallback is the callback function type.
+ *
+ * @param
+ *      msgid        [in] The unique id.
+ * @param
+ *      state        [in] The message sent state.
+ * @param
+ *      context      [in] The application defined context data.
+ *
+ * @return
+ *      Return true to continue iterate next friend user info,
+ *      false to stop iterate.
+ */
+typedef void ElaFriendMessageReceiptCallback(int64_t msgid,
+                                             ElaReceiptState state,
+                                             void *context);
+
+/**
+ * \~English
+ * Send a message to a friend with receipt.
+ *
+ * The message length may not exceed ELA_MAX_BULK_MESSAGE_LEN. Larger messages
+ * must be split by application and sent as separate fragments. Other carrier
+ * nodes can reassemble the fragments.
+ *
+ * Message may not be empty or NULL.
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      to          [in] The target userid.
+ * @param
+ *      message     [in] The message content defined by application.
+ * @param
+ *      len         [in] The message length in bytes.
+ * @param
+ *      cb          [in] The pointer to callback which will be called when the
+ *                        receipt is received or failed to send message.
+ * @param
+ *      content     [in] The user context in callback.
+ *
+ * @return
+ *      > 0 message id if the text message successfully add to send task list.
+ *      Otherwise, return <0, and a specific error code can be
+ *      retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
+                                      const void *message, size_t len,
+                                      ElaFriendMessageReceiptCallback *cb,
+                                      void *context);
 
 /**
  * \~English
@@ -1716,6 +1814,7 @@ int ela_get_groups(ElaCarrier *carrier, ElaIterateGroupCallback *callback,
 #define ELAF_RESERVED2                              0x04
 #define ELAF_ICE                                    0x05
 #define ELAF_DHT                                    0x06
+#define ELAF_EXPRESS                                0x07
 
 /**
  * \~English
@@ -1923,6 +2022,12 @@ int ela_get_groups(ElaCarrier *carrier, ElaIterateGroupCallback *callback,
 
 /**
  * \~English
+ * Bad flat buffer.
+ */
+#define ELAERR_BAD_FLATBUFFER                       0x23
+
+/**
+ * \~English
  * Unknown error.
  */
 #define ELAERR_UNKNOWN                              0xFF
@@ -1934,6 +2039,7 @@ int ela_get_groups(ElaCarrier *carrier, ElaIterateGroupCallback *callback,
 #define ELA_SYS_ERROR(code)           ELA_MK_ERROR(ELAF_SYS, code)
 #define ELA_ICE_ERROR(code)           ELA_MK_ERROR(ELAF_ICE, code)
 #define ELA_DHT_ERROR(code)           ELA_MK_ERROR(ELAF_DHT, code)
+#define ELA_EXPRESS_ERROR(code)       ELA_MK_ERROR(ELAF_EXPRESS, code)
 
 /*
  * \~English

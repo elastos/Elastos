@@ -25,6 +25,7 @@ package org.elastos.carrier;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -121,8 +122,8 @@ public class Carrier {
 			carrier.handler.onFriendRemoved(carrier, friendId);
 		}
 
-		void onFriendMessage(Carrier carrier, String from, byte[] message, boolean isOffline) {
-			carrier.handler.onFriendMessage(carrier, from, message, isOffline);
+		void onFriendMessage(Carrier carrier, String from, byte[] message, Date timestamp, boolean isOffline) {
+			carrier.handler.onFriendMessage(carrier, from, message, timestamp, isOffline);
 		}
 
 		void onFriendInviteRequest(Carrier carrier, String from, String data) {
@@ -175,7 +176,7 @@ public class Carrier {
 		private String persistentLocation;
 		private boolean udpEnabled;
 		private List<BootstrapNode> bootstrapNodes;
-		private List<HiveBootstrapNode> hiveBootstrapNodes;
+		private List<ExpressNode> expressNodes;
 
 		public static class BootstrapNode {
 			private String ipv4;
@@ -220,12 +221,12 @@ public class Carrier {
 			}
 		}
 
-		public static class HiveBootstrapNode {
+		public static class ExpressNode {
 			private String ipv4;
-			private String ipv6;
 			private String port;
+			private String publicKey;
 
-			public HiveBootstrapNode setIpv4(String ipv4) {
+			public ExpressNode setIpv4(String ipv4) {
 				this.ipv4 = ipv4;
 				return this;
 			}
@@ -234,22 +235,22 @@ public class Carrier {
 				return ipv4;
 			}
 
-			public HiveBootstrapNode setIpv6(String ipv6) {
-				this.ipv6 = ipv6;
-				return this;
-			}
-
-			public String getIpv6() {
-				return ipv6;
-			}
-
-			public HiveBootstrapNode setPort(String port) {
+			public ExpressNode setPort(String port) {
 				this.port = port;
 				return this;
 			}
 
 			public String getPort() {
 				return port;
+			}
+
+			public ExpressNode setPublicKey(String publicKey) {
+				this.publicKey = publicKey;
+				return this;
+			}
+
+			public String getPublicKey() {
+				return publicKey;
 			}
 		}
 
@@ -307,13 +308,13 @@ public class Carrier {
 			return bootstrapNodes;
 		}
 
-		public Options setHiveBootstrapNodes(List<HiveBootstrapNode> hiveBootstrapNodes) {
-			this.hiveBootstrapNodes = hiveBootstrapNodes;
+		public Options setExpressNodes(List<ExpressNode> expressNodes) {
+			this.expressNodes = expressNodes;
 			return this;
 		}
 
-		public List<HiveBootstrapNode> getHiveBootstrapNodes() {
-			return hiveBootstrapNodes;
+		public List<ExpressNode> getExpressNodes() {
+			return expressNodes;
 		}
 	}
 
@@ -346,6 +347,8 @@ public class Carrier {
 	private native boolean remove_friend(String userId);
 
 	private native int send_message(String to, byte[] message);
+	private native long send_message_with_receipt(String to, byte[] message,
+												  FriendMessageReceiptHandler handler);
 	private native boolean friend_invite(String to, String data,
 										 FriendInviteResponseHandler handler);
 	private native boolean reply_friend_invite(String from, int status, String reason,
@@ -906,6 +909,69 @@ public class Carrier {
 
 		Log.d(TAG, "Send " + message.length + " bytes message to friend " + to);
 		return (ret == 0);
+	}
+
+	/**
+	 * Send a message to a friend.
+	 *
+	 * The message length may not exceed ELA_MAX_APP_BULKMSG_LEN, and message itself
+	 * should be text-formatted. Larger messages must be split by application
+	 * and sent as separate messages. Other nodes can reassemble the fragments.
+	 *
+	 * @param
+	 * 		to 			The target id
+	 * @param
+	 * 		message		The message content defined by application
+	 * @param
+	 *      handler     The handler to receive the receipt notification.
+	 * @return
+	 *      Return the message identifier which would be used for handler to
+	 *      invoke receipt notification.
+	 *
+	 * @throws IllegalArgumentException illegal exception.
+	 * @throws CarrierException  carrier exception.
+	 */
+	public long sendFriendMessage(String to, String message, FriendMessageReceiptHandler handler)
+			throws CarrierException {
+		if (to == null || to.length() == 0 ||
+				message == null || message.length() == 0 || message.length() >= ELA_MAX_APP_BULKMSG_LEN)
+			throw new IllegalArgumentException();
+
+		return sendFriendMessage(to, message.getBytes(UTF8), handler);
+	}
+
+	/**
+	 * Send a message to a friend.
+	 *
+	 * The message length may not exceed ELA_MAX_APP_BULKMSG_LEN, and message itself
+	 * should be text-formatted. Larger messages must be split by application
+	 * and sent as separate messages. Other nodes can reassemble the fragments.
+	 *
+	 * @param
+	 * 		to 			The target id
+	 * @param
+	 * 		message		The message content defined by application
+	 * @param
+	 *      handler     The handler to receive the receipt notification.
+	 * @return
+	 *      Return the message identifier which would be used for handler to
+	 * 	    invoke receipt notification.
+	 *
+	 * @throws IllegalArgumentException illegal exception.
+	 * @throws CarrierException  carrier exception.
+	 */
+	public long sendFriendMessage(String to, byte[] message, FriendMessageReceiptHandler handler)
+			throws CarrierException {
+		if (to == null || to.length() == 0 || message == null || message.length == 0 ||
+				handler == null)
+			throw new IllegalArgumentException();
+
+		long ret = send_message_with_receipt(to, message, handler);
+		if (ret < 0)
+			throw CarrierException.fromErrorCode(get_error_code());
+
+		Log.d(TAG, "Send " + message.length + " bytes message with receipt ack to friend " + to);
+		return ret;
 	}
 
 	/**
