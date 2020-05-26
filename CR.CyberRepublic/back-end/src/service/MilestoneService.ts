@@ -571,7 +571,7 @@ export default class extends Base {
       const { id, milestoneKey } = param
       const proposal = await this.model.findById(id)
       if (!proposal) {
-        return { success: false, message: 'No this proposal.'}
+        return { success: false, message: 'No this proposal.' }
       }
       // check if current user is the proposal's owner
       if (!proposal.proposer.equals(this.currentUser._id)) {
@@ -580,10 +580,14 @@ export default class extends Base {
       if (![ACTIVE, FINAL].includes(proposal.status)) {
         return { success: false, message: 'The proposal is not active.' }
       }
-      
+
       const last: any = _.last(proposal.budget)
-      if (proposal.status === FINAL && last.status === WITHDRAWN) {
-        return { success: false, message: 'The proposal is final.'}
+      if (
+        proposal.status === FINAL &&
+        last.type === 'COMPLETION' &&
+        last.status === WITHDRAWN
+      ) {
+        return { success: false, message: 'The proposal is final.' }
       }
 
       // check if milestoneKey is valid
