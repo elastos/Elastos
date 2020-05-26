@@ -742,4 +742,5 @@
     <string name="rejected">否决</string>
     <string name="withdrawhash">提取哈希</string>
     <string name="withdrawaddress">提取地址</string>
+    <string name="votingfinishhint">本轮竞选已经结束，很遗憾您此次未能当选。感谢您的参与，祝您好运！</string>
 </resources>

@@ -159,10 +159,14 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     }
 
     @Override
-    public void onManagerClick(int position) {
+    public void onManagerClick(int position, String status) {
+        if(AppUtlis.isNullOrEmpty(status)) return;
         Bundle bundle = new Bundle();
-
-        bundle.putString("status", "Elected");
+        if(status.equalsIgnoreCase("VOTING")) {
+            bundle.putString("status", "VOTING");
+        } else {
+            bundle.putString("status", "Elected");
+        }
         start(CtManagerFragment.class, bundle);
     }
 
