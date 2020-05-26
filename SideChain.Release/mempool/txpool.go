@@ -121,6 +121,7 @@ func (p *TxPool) GetTxsInPool() map[common.Uint256]*types.Transaction {
 func (p *TxPool) CleanSubmittedTransactions(block *types.Block) error {
 	p.Lock()
 	defer p.Unlock()
+	p.cleanMainChainTx(block.Transactions)
 	return p.cleanTransactionList(block.Transactions)
 }
 
@@ -198,6 +199,38 @@ func (p *TxPool) cleanTransactionList(txns []*types.Transaction) error {
 	log.Debugf("[cleanTransactionList] %d cleaned,  Remains %d in TxPool",
 		cleaned, p.getTransactionCount())
 	return nil
+}
+
+// clean the mainchain tx pool
+func (p *TxPool) cleanMainChainTx(txs []*types.Transaction) {
+	mainChainHashes := make(map[common.Uint256]struct{}, 0)
+	for _, txn := range txs {
+		if txn.IsRechargeToSideChainTx() {
+			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
+			mainTxHash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
+			if err != nil {
+				log.Error("get hash failed when clean mainchain tx:", txn.Hash())
+				continue
+			}
+			mainChainHashes[*mainTxHash] = struct{}{}
+		}
+	}
+	if len(mainChainHashes) == 0 {
+		return
+	}
+	for _, tx := range p.txnList {
+		if tx.IsRechargeToSideChainTx() {
+			rechargePayload := tx.Payload.(*types.PayloadRechargeToSideChain)
+			mainTxHash, err := rechargePayload.GetMainchainTxHash(tx.PayloadVersion)
+			if err != nil {
+				log.Error("get hash failed when clean main chain tx:", tx.Hash())
+				continue
+			}
+			if _, ok := mainChainHashes[*mainTxHash]; ok {
+				p.doRemoveTransaction(tx)
+			}
+		}
+	}
 }
 
 func (p *TxPool) delFromTxList(txId common.Uint256) bool {
