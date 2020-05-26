@@ -93,7 +93,8 @@ export default {
       team: 'Implementation team is empty',
       amount: 'The amount is more than 30% of the total budget',
       previousMilestoneDate: 'The date must be later than the previous milestone.',
-      requirePayment: 'Project Completion Payment is required before completing a proposal.'
+      requirePayment: 'Project Completion Payment is required before completing a proposal.',
+      elaAddress: 'invalid address, please check your address'
     }
   },
   modal: {

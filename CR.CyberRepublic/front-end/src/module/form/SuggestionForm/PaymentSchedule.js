@@ -43,6 +43,12 @@ class PaymentSchedule extends Component {
     return (!isNaN(value) && reg.test(value)) || value === '' ? true : false
   }
 
+  validateAddress = (value) => {
+    const reg = /^[E8][a-zA-Z0-9]+$/
+    const len = value.length === 34
+    return reg.test(value) && len
+  }
+
   validateFields = (field, value) => {
     const { errors } = this.state
     if (!value || !value.length) {
@@ -55,6 +61,12 @@ class PaymentSchedule extends Component {
         return {
           ...errors,
           [field]: I18N.get('suggestion.form.error.isNaN')
+        }
+      }
+      if (field === 'address' && !this.validateAddress(value)) {
+        return {
+          ...errors,
+          [field]: I18N.get('suggestion.form.error.elaAddress')
         }
       }
       return { ...errors, [field]: '' }
