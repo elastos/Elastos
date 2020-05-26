@@ -31,7 +31,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalDetailEntity;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
 
 import java.util.List;
 
@@ -42,12 +43,12 @@ import butterknife.ButterKnife;
 public class VoteRecAdapetr extends RecyclerView.Adapter<VoteRecAdapetr.ViewHolder> {
 
 
-    private List<String> list;
+    private List<ProposalDetailEntity.DataBean.VoteResultBean> list;
 
     private Context context;
 
 
-    public VoteRecAdapetr(Context context, List<String> list) {
+    public VoteRecAdapetr(Context context, List<ProposalDetailEntity.DataBean.VoteResultBean> list) {
         this.list = list;
         this.context = context;
 
@@ -63,8 +64,11 @@ public class VoteRecAdapetr extends RecyclerView.Adapter<VoteRecAdapetr.ViewHold
 
     @Override
     public void onBindViewHolder(VoteRecAdapetr.ViewHolder holder, final int position) {
+        ProposalDetailEntity.DataBean.VoteResultBean bean = list.get(position);
+        GlideApp.with(context).load(bean.getAvatar()).error(R.mipmap.found_vote_initial_circle).circleCrop().into(holder.ivIcon);
+        holder.tvName.setText(bean.getVotedBy());
+        holder.tvDescription.setText(bean.getReason());
 
-        holder.tvName.setText(list.get(position));
 
     }
 
@@ -81,6 +85,7 @@ public class VoteRecAdapetr extends RecyclerView.Adapter<VoteRecAdapetr.ViewHold
         TextView tvName;
         @BindView(R.id.tv_description)
         TextView tvDescription;
+
         ViewHolder(View view) {
 
             super(view);
