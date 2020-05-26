@@ -140,6 +140,12 @@ public class TransferActivity extends BaseActivity {
 
         type = data.getStringExtra("type");
         switch (type) {
+            case Constant.IMPEACHMENTCRC:
+                rlAddress.setVisibility(View.GONE);
+                rlRate.setVisibility(View.GONE);
+                title.setText(R.string.impeachment);
+                tvAmountTag.setText(R.string.impeachvotes);
+                break;
             case Constant.SIDEWITHDRAW:
                 //侧链充值
                 break;
@@ -153,12 +159,6 @@ public class TransferActivity extends BaseActivity {
                 rlHash.setVisibility(View.VISIBLE);
                 tvHash.setText(searchBean.getProposalHash());
                 tvAmountTag.setText(R.string.rejectticket);
-            case Constant.IMPEACHMENTCRC:
-                rlAddress.setVisibility(View.GONE);
-                rlRate.setVisibility(View.GONE);
-                title.setText(R.string.impeachment);
-                tvAmountTag.setText(R.string.impeachvotes);
-                break;
             case Constant.SUPERNODEVOTE:
             case Constant.CRVOTE:
             case Constant.WITHDRAWSUPERNODE:

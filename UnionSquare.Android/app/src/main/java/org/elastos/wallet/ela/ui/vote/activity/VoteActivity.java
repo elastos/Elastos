@@ -91,7 +91,6 @@ public class VoteActivity extends BaseActivity {
                 etVote.setHint(getString(R.string.available) + maxBalance);
                 break;
             case Constant.IMPEACHMENTCRC:
-
                 tvVoteTag.setText(R.string.impeachvotes);
                 tvTitle.setText(R.string.impeachment);
                 tv_max.setBackgroundResource(0);
