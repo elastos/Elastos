@@ -846,6 +846,16 @@ export default class extends Base {
         const {WITHDRAWN} = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel('CVote')
         const proposal = await db_cvote.findOne(query)
+        const sortedBudget = _.sortBy(proposal.budget, 'milestoneKey')
+        const last: any = _.last(sortedBudget)
+        // proposal is final
+        if (
+          proposal.status === 'FINAL' &&
+          last.type === 'COMPLETION' &&
+          last.status === WITHDRAWN
+        ) {
+          return
+        }
         if (proposal.status === 'ACTIVE' || proposal.status === 'FINAL') {
             const result = await getProposalData(proposal.proposalHash)
             const status = _.get(result, 'status')
@@ -854,8 +864,7 @@ export default class extends Base {
             }
             const budgets = _.get(result, 'data.proposal.budgets')
             if (budgets) {
-                const temp = _.sortBy(proposal.budget, 'milestoneKey')
-                const budget = temp.map((item, index) => {
+                const budget = sortedBudget.map((item, index) => {
                     if (budgets[index].status.toLowerCase() === 'withdrawn') {
                         return {...item, status: WITHDRAWN}
                     }

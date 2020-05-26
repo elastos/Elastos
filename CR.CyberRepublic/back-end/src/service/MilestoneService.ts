@@ -580,8 +580,8 @@ export default class extends Base {
       if (![ACTIVE, FINAL].includes(proposal.status)) {
         return { success: false, message: 'The proposal is not active.' }
       }
-
-      const last: any = _.last(proposal.budget)
+      const sortedBudget = _.sortBy(proposal.budget, 'milestoneKey')
+      const last: any = _.last(sortedBudget)
       if (
         proposal.status === FINAL &&
         last.type === 'COMPLETION' &&
