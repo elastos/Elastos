@@ -83,26 +83,6 @@ static void test_didurl_equals(void)
     CU_ASSERT_FALSE(isEqual);
 }
 
-static void test_didurl_copy(void)
-{
-    int rc;
-    DIDURL copyid;
-    char _idstring[ELA_MAX_DIDURL_LEN];
-
-    CU_ASSERT_PTR_NOT_NULL(DIDURL_Copy(&copyid, id));
-    CU_ASSERT_STRING_EQUAL(DIDURL_ToString(&copyid, _idstring, sizeof(_idstring), false),
-            testid_string);
-}
-
-static void test_didurl_copy_error(void)
-{
-    int rc;
-    DIDURL copyid;
-
-    CU_ASSERT_PTR_NULL(DIDURL_Copy(&copyid, NULL));
-    CU_ASSERT_PTR_NULL(DIDURL_Copy(NULL, id));
-}
-
 static int didurl_test_operation_suite_init(void)
 {
     did = DID_FromString(testdid_string);
@@ -132,8 +112,6 @@ static CU_TestInfo cases[] = {
     {   "test_didurl_tostring_error",             test_didurl_tostring_error  },
     {   "test_didurl_compare",                    test_didurl_compare         },
     {   "test_didurl_equals",                     test_didurl_equals          },
-    {   "test_didurl_copy",                       test_didurl_copy            },
-    {   "test_didurl_copy_error",                 test_didurl_copy_error      },
     {   NULL,                                     NULL                        }
 };
 

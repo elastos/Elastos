@@ -49,7 +49,7 @@ int ResolveResult_FromJson(ResolveResult *result, cJSON *json, bool all)
         DIDError_Set(DIDERR_MALFORMED_RESOLVE_RESULT, "Invalid resolved DID.");
         return -1;
     }
-    if (parse_did(&result->did, item->valuestring) == -1)
+    if (Parse_DID(&result->did, item->valuestring) == -1)
         return -1;
 
     item = cJSON_GetObjectItem(json, "status");

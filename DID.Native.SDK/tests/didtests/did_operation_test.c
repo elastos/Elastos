@@ -69,23 +69,6 @@ static void test_did_equals(void)
     CU_ASSERT_FALSE(isEqual);
 }
 
-static void test_did_copy(void)
-{
-    DID copydid;
-    char id[ELA_MAX_DID_LEN];
-
-    CU_ASSERT_PTR_NOT_NULL(DID_Copy(&copydid, did));
-    CU_ASSERT_STRING_EQUAL(DID_ToString(&copydid, id, sizeof(id)), testdid_string);
-}
-
-static void test_did_copy_error(void)
-{
-    DID copydid;
-
-    CU_ASSERT_PTR_NULL(DID_Copy(&copydid, NULL));
-    CU_ASSERT_PTR_NULL(DID_Copy(NULL, did));
-}
-
 static int did_test_operation_suite_init(void)
 {
     did = DID_FromString(testdid_string);
@@ -108,8 +91,6 @@ static CU_TestInfo cases[] = {
     {   "test_did_tostring_error",             test_did_tostring_error  },
     {   "test_did_compare",                    test_did_compare         },
     {   "test_did_equals",                     test_did_equals          },
-    {   "test_did_copy",                       test_did_copy            },
-    {   "test_did_copy_error",                 test_did_copy_error      },
     {   NULL,                                  NULL                     }
 };
 

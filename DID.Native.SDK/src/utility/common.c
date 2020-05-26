@@ -111,7 +111,7 @@ int list_dir(const char *path, const char *pattern,
     if (!path || !*path || !pattern || !callback)
         return -1;
 
-    len = snprintf(full_pattern, sizeof(full_pattern), "%s/%s", path, pattern);
+    len = snprintf(full_pattern, sizeof(full_pattern), "%s/{.*,%s}", path, pattern);
     if (len == sizeof(full_pattern))
         full_pattern[len-1] = 0;
 
@@ -135,7 +135,8 @@ int list_dir(const char *path, const char *pattern,
     size_t pos = strlen(path) + 1;
 
     memset(&gl, 0, sizeof(gl));
-    glob(full_pattern, GLOB_DOOFFS, NULL, &gl);
+    glob(full_pattern, GLOB_DOOFFS | GLOB_BRACE, NULL, &gl);
+
     for (int i = 0; i < gl.gl_pathc; i++) {
         char *fn = gl.gl_pathv[i] + pos;
         rc = callback(fn, context);

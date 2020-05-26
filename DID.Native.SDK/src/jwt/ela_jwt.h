@@ -24,7 +24,6 @@
 #define __ELA_JWT_H__
 
 #include "ela_did.h"
-#include "HDkey.h"
 
 /**
  * \~English

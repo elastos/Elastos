@@ -42,6 +42,8 @@ bool file_exist(const char *path);
 
 bool dir_exist(const char* path);
 
+void delete_file(const char *path);
+
 const char *Generater_Publickey(char *publickeybase58, size_t size);
 
 DerivedKey *Generater_KeyPair(DerivedKey *dkey);
@@ -50,7 +52,9 @@ int Set_Doc_Txid(DIDDocument *doc, const char *txid);
 
 int Set_Doc_Signature(DIDDocument *doc, const char *signature);
 
-void delete_file(const char *path);
+DID *DID_Copy(DID *dest, DID *src);
+
+DIDURL *DIDURL_Copy(DIDURL *dest, DIDURL *src);
 
 ////////////////////////////////////////
 void TestData_Init(void);

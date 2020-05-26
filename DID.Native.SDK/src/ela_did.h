@@ -391,19 +391,6 @@ DID_API int DID_Compare(DID *did1, DID *did2);
 
 /**
  * \~English
- * Copy one DID to the other DID.
- *
- * @param
- *      dest                   [in] DID to be copied.
- * @param
- *      src                   [in] DID be copied.
- * @return
- *      the handle to dest DID if succuss, NULL if failed .
- */
-DID_API DID *DID_Copy(DID *dest, DID *src);
-
-/**
- * \~English
  * Destroy DID.
  *
  * @param
@@ -624,19 +611,6 @@ DID_API bool DIDURL_Equals(DIDURL *id1, DIDURL *id2);
  *      return value > 0, it indicates id1 is greater than id2.
  */
 DID_API int DIDURL_Compare(DIDURL *id1, DIDURL *id2);
-
-/**
- * \~English
- * Copy one DID URL to the other DID URL.
- *
- * @param
- *      dest                [in] DID URL to be copied.
- * @param
- *      src                 [in] DID URL be copied.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API DIDURL *DIDURL_Copy(DIDURL *dest, DIDURL *src);
 
 /**
  * \~English
@@ -2480,6 +2454,21 @@ DID_API const char *DIDStore_PublishDID(DIDStore *store, const char *storepass,
  */
 DID_API const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         DID *did, DIDURL *signkey);
+
+/**
+ * \~English
+ * Change the store password from old one to new one.
+ *
+ * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
+ *      new                     [in] New store password for DIDStore.
+ * @param
+ *      old                     [in] Old store password for DIDStore.
+ * @return
+ *      0 on success, -1 if an error occurred. Caller should free the returned value.
+ */
+DID_API int DIDStore_ChangePassword(DIDStore *store, const char *new, const char *old);
 
 /******************************************************************************
  * Mnemonic

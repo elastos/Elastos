@@ -45,14 +45,18 @@ struct  DIDURL {
     CredentialMeta meta;
 };
 
-int parse_did(DID *did, const char *idstring);
+int Parse_DID(DID *did, const char *idstring);
 
-int parse_didurl(DIDURL *id, const char *idstring, DID *base);
+int Parse_DIDURL(DIDURL *id, const char *idstring, DID *base);
 
 //caller provide DIDURL object
-int init_didurl(DIDURL *id, DID *did, const char *fragment);
+int Init_DIDURL(DIDURL *id, DID *did, const char *fragment);
 
-int init_did(DID *did, const char *idstring);
+int Init_DID(DID *did, const char *idstring);
+
+DID *DID_Copy(DID *dest, DID *src);
+
+DIDURL *DIDURL_Copy(DIDURL *dest, DIDURL *src);
 
 #ifdef __cplusplus
 }

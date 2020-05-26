@@ -247,7 +247,7 @@ static int Parse_PublicKey(DID *did, cJSON *json, PublicKey **publickey)
         return -1;
     }
 
-    if (!cJSON_IsString(field) || parse_didurl(&pk->id, field->valuestring, did) < 0) {
+    if (!cJSON_IsString(field) || Parse_DIDURL(&pk->id, field->valuestring, did) < 0) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid public key id.");
         PublicKey_Destroy(pk);
         return -1;
@@ -276,7 +276,7 @@ static int Parse_PublicKey(DID *did, cJSON *json, PublicKey **publickey)
     //'controller' may be default
     field = cJSON_GetObjectItem(json, "controller");
     if (field) {
-        if (!cJSON_IsString(field) || parse_did(&pk->controller, field->valuestring) < 0) {
+        if (!cJSON_IsString(field) || Parse_DID(&pk->controller, field->valuestring) < 0) {
             DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid publicKey controller.");
             PublicKey_Destroy(pk);
             return -1;
@@ -371,7 +371,7 @@ int Parse_Auth_PublicKeys(DIDDocument *document, cJSON *json, KeyType type)
 
         id_field = cJSON_GetObjectItem(pk_item, "id");
         if (!id_field) {
-            if (parse_didurl(&id, pk_item->valuestring, &document->did) < 0)
+            if (Parse_DIDURL(&id, pk_item->valuestring, &document->did) < 0)
                 continue;
 
             pk = DIDDocument_GetPublicKey(document, &id);
@@ -443,7 +443,7 @@ static int Parse_Services(DIDDocument *document, cJSON *json)
             continue;
         }
 
-        if (parse_didurl(&service->id, field->valuestring, &document->did) < 0) {
+        if (Parse_DIDURL(&service->id, field->valuestring, &document->did) < 0) {
             Service_Destroy(service);
             continue;
         }
@@ -513,7 +513,7 @@ static int Parse_Proof(DIDDocument *document, cJSON *json)
     item = cJSON_GetObjectItem(json, "creator");
     if (item) {
         if (!cJSON_IsString(item) ||
-                parse_didurl(&document->proof.creater, item->valuestring, &document->did) == -1) {
+                Parse_DIDURL(&document->proof.creater, item->valuestring, &document->did) == -1) {
             DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid document creater.");
             return -1;
         }
@@ -652,7 +652,7 @@ DIDDocument *DIDDocument_FromJson(const char *json)
         goto errorExit;
     }
     if (!cJSON_IsString(item) ||
-            parse_did(&doc->did, item->valuestring) == -1) {
+            Parse_DID(&doc->did, item->valuestring) == -1) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid document subject.");
         goto errorExit;
     }

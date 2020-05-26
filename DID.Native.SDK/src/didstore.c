@@ -73,6 +73,13 @@ static const char *CREDENTIALS_DIR = "credentials";
 static const char *CREDENTIAL_FILE = "credential";
 static const char *PRIVATEKEYS_DIR = "privatekeys";
 
+static const char *PRIVATE_JOURNAL = "private.journal";
+static const char *DID_JOURNAL = "ids.journal";
+
+static const char *KEY_PATH = "/private/key";
+static const char *MNEMONIC_PATH = "/private/mnemonic";
+static const char *POST_PASSWORD = "postChangePassword";
+
 extern const char *ProofType;
 
 typedef struct DID_List_Helper {
@@ -89,6 +96,13 @@ typedef struct Cred_List_Helper {
     DID did;
     const char *type;
 } Cred_List_Helper;
+
+typedef struct Dir_Copy_Helper {
+    const char *srcpath;
+    const char *dstpath;
+    const char *oldpassword;
+    const char *newpassword;
+} Dir_Copy_Helper;
 
 static int store_didmeta(DIDStore *store, DIDMeta *meta, DID *did)
 {
@@ -369,6 +383,48 @@ static int create_store(DIDStore *store)
     return 0;
 }
 
+static int postChangePassword(DIDStore *store)
+{
+    char post_file[PATH_MAX];
+    char private_dir[PATH_MAX], private_journal[PATH_MAX], private_deprecated[PATH_MAX];
+    char did_dir[PATH_MAX], did_journal[PATH_MAX], did_deprecated[PATH_MAX];
+
+    assert(store);
+
+    sprintf(post_file, "%s/%s", store->root, POST_PASSWORD);
+    if(test_path(post_file) == S_IFREG) {
+        if (get_dir(private_journal, 0, 2, store->root, PRIVATE_JOURNAL) == 0) {
+            if (get_dir(private_dir, 0, 2, store->root, PRIVATE_DIR) == 0) {
+                sprintf(private_deprecated, "%s/%s", store->root, "private.deprecated");
+                delete_file(private_deprecated);
+                rename(private_dir, private_deprecated);
+            }
+
+            rename(private_journal, private_dir);
+        }
+
+        if (get_dir(did_journal, 0, 2, store->root, DID_JOURNAL) == 0) {
+            if (get_dir(did_dir, 0, 2, store->root, DID_DIR) == 0) {
+                sprintf(did_deprecated, "%s/%s", store->root, "ids.deprecated");
+                delete_file(did_deprecated);
+                rename(did_dir, did_deprecated);
+            }
+
+            rename(did_journal, did_dir);
+        }
+
+        delete_file(private_deprecated);
+        delete_file(did_deprecated);
+        delete_file(post_file);
+    } else {
+        if (get_dir(private_journal, 0, 2, store->root, PRIVATE_JOURNAL) == 0)
+            delete_file(private_journal);
+        if (get_dir(did_journal, 0, 2, store->root, DID_JOURNAL) == 0)
+            delete_file(did_journal);
+    }
+    return 0;
+}
+
 static int check_store(DIDStore *store)
 {
     int fd;
@@ -412,7 +468,8 @@ static int check_store(DIDStore *store)
     }
 
     close(fd);
-    return 0;
+
+    return postChangePassword(store);
 }
 
 static int store_extendedprvkey(DIDStore *store, uint8_t *extendedkey,
@@ -813,7 +870,7 @@ static DIDDocument *create_document(DIDStore *store, DID *did, const char *key,
     assert(storepass);
     assert(*storepass);
 
-    if (init_didurl(&id, did, "primary") == -1)
+    if (Init_DIDURL(&id, did, "primary") == -1)
         return NULL;
 
     builder = did_createbuilder(did, store);
@@ -1616,7 +1673,7 @@ static int store_default_privatekey(DIDStore *store, const char *storepass,
     assert(idstring && *idstring);
     assert(privatekey);
 
-    if (init_did(&did, idstring) == -1 || init_didurl(&id, &did, "primary") == -1)
+    if (Init_DID(&did, idstring) == -1 || Init_DIDURL(&id, &did, "primary") == -1)
         return -1;
 
     if (DIDStore_StorePrivateKey(store, storepass, &did, &id, (unsigned char *)privatekey) == -1)
@@ -1651,7 +1708,7 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeC
         if (!derivedkey)
             continue;
 
-        if (init_did(&did, DerivedKey_GetAddress(derivedkey)) == 0) {
+        if (Init_DID(&did, DerivedKey_GetAddress(derivedkey)) == 0) {
             chainCopy = DID_Resolve(&did, true);
             if (chainCopy) {
                 if (DIDDocument_IsDeactivated(chainCopy)) {
@@ -1951,7 +2008,7 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
     if (!derivedkey)
         return NULL;
 
-    if (init_did(&did, DerivedKey_GetAddress(derivedkey)) == -1) {
+    if (Init_DID(&did, DerivedKey_GetAddress(derivedkey)) == -1) {
         DerivedKey_Wipe(derivedkey);
         return NULL;
     }
@@ -2189,4 +2246,209 @@ const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
 
     DIDDocument_Destroy(doc);
     return rc == 0 ? txid : NULL;
+}
+
+static bool need_reencrypt(const char *path)
+{
+    char file[PATH_MAX];
+    char *token;
+    int i = 0;
+
+    assert(path && *path);
+
+    strcpy(file, path);
+
+    if (!strcmp(file + strlen(file) - strlen(KEY_PATH), KEY_PATH) ||
+            !strcmp(file + strlen(file) - strlen(MNEMONIC_PATH), MNEMONIC_PATH))
+        return true;
+
+    //handle did privatekeys
+    token = strtok((char*)file, PATH_SEP);
+    while(token) {
+        if (i >= 1 || !strcmp(token, DID_DIR))
+            i++;
+        if (i == 3 && !strcmp(token, PRIVATEKEYS_DIR))
+            i++;
+        if (i == 4 && strlen(token) > 0)
+            return true;
+        token = strtok(NULL, PATH_SEP);
+    }
+
+    return false;
+}
+
+int dir_copy(const char *dst, const char *src, const char *new, const char *old);
+
+static int dir_copy_helper(const char *path, void *context)
+{
+    char srcpath[PATH_MAX];
+    char dstpath[PATH_MAX];
+    int rc;
+
+    Dir_Copy_Helper *dh = (Dir_Copy_Helper*)context;
+
+    if (!path)
+        return 0;
+
+    if (strcmp(path, ".") == 0 || strcmp(path, "..") == 0)
+        return 0;
+
+    sprintf(srcpath, "%s/%s", dh->srcpath, path);
+    sprintf(dstpath, "%s/%s", dh->dstpath, path);
+
+    return dir_copy(dstpath, srcpath, dh->newpassword, dh->oldpassword);
+}
+
+int dir_copy(const char *dst, const char *src, const char *new, const char *old)
+{
+    int rc;
+    Dir_Copy_Helper dh;
+    const char *string;
+    ssize_t size;
+    uint8_t plain[256];
+    unsigned char data[512];
+
+    assert(dst && *dst);
+    assert(src && *src);
+
+    if (test_path(src) < 0)
+        return -1;
+
+    //src is directory.
+    if (test_path(src) == S_IFDIR) {
+        if (test_path(dst) < 0) {
+            rc = mkdirs(dst, S_IRWXU);
+            if (rc < 0) {
+                DIDError_Set(DIDERR_IO_ERROR, "Create cache directory (%s) failed", dst);
+                return -1;
+            }
+        }
+
+        dh.srcpath = src;
+        dh.dstpath = dst;
+        dh.oldpassword = old;
+        dh.newpassword = new;
+
+        if (list_dir(src, "*", dir_copy_helper, (void*)&dh) == -1) {
+            DIDError_Set(DIDERR_DIDSTORE_ERROR, "Copy directory failed.");
+            return -1;
+        }
+
+        return 0;
+    }
+
+    //src is file
+    string = load_file(src);
+    if (!string || !*string) {
+        DIDError_Set(DIDERR_IO_ERROR, "Load %s failed.", src);
+        return -1;
+    }
+
+    //src is not encrypted file.
+    if (!need_reencrypt(src)) {
+        rc = store_file(dst, string);
+        free((char*)string);
+        if (rc < 0)
+            DIDError_Set(DIDERR_IO_ERROR, "Store %s failed.", dst);
+        return rc;
+    }
+
+    //src is encrypted file.
+    size = decrypt_from_base64(plain, old, string);
+    free((char*)string);
+    if (size < 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Decrypt %s failed.", src);
+        return -1;
+    }
+
+    size = encrypt_to_base64((char*)data, new, plain, size);
+    memset(plain, 0, sizeof(plain));
+    if (size < 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Encrypt %s with new pass word failed.", src);
+        return -1;
+    }
+
+    rc = store_file(dst, (char*)data);
+    if (rc < 0)
+        DIDError_Set(DIDERR_IO_ERROR, "Store %s failed.", dst);
+
+    return rc;
+}
+
+static int changepassword(DIDStore *store, const char *new, const char *old)
+{
+    char private_dir[PATH_MAX] = {0}, private_journal[PATH_MAX]= {0};
+    char did_dir[PATH_MAX]= {0}, did_journal[PATH_MAX]= {0};
+    char path[PATH_MAX] = {0};
+
+    assert(store);
+    assert(new && *new);
+    assert(old && *old);
+
+    if (get_dir(private_dir, 0, 2, store->root, PRIVATE_DIR) == -1) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Private identity doesn't exist.");
+        return -1;
+    }
+    if (test_path(private_dir) != S_IFDIR) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Private identity is not a directory.");
+        return -1;
+    }
+
+    if (get_dir(private_journal, 1, 2, store->root, PRIVATE_JOURNAL) == -1) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create private identiaty journal failed.");
+        return -1;
+    }
+    if (test_path(private_journal) != S_IFDIR) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Private identity journal is not a directory.");
+        return -1;
+    }
+
+    if (get_dir(did_dir, 0, 2, store->root, DID_DIR) == -1) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "DID directory doesn't exist.");
+        return -1;
+    }
+    if (test_path(did_dir) != S_IFDIR) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "DID directory is not a directory.");
+        return -1;
+    }
+
+    if (get_dir(did_journal, 1, 2, store->root, DID_JOURNAL) == -1) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create did journal failed.");
+        return -1;
+    }
+    if (test_path(did_journal) != S_IFDIR) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "DID journal is not a directory.");
+        return -1;
+    }
+
+    if (dir_copy(private_journal, private_dir, new, old) == -1) {
+        delete_file(private_journal);
+        return -1;
+    }
+
+    if (dir_copy(did_journal, did_dir, new, old) == -1) {
+        delete_file(private_journal);
+        delete_file(did_journal);
+        return -1;
+    }
+
+    //create tag file to indicate copying dir successfully.
+    if (get_file(path, 1, 2, store->root, POST_PASSWORD) == -1) {
+        delete_file(private_journal);
+        delete_file(did_journal);
+        return -1;
+    }
+
+    return store_file(path, "");
+}
+
+int DIDStore_ChangePassword(DIDStore *store, const char *new, const char *old)
+{
+    if (!store || !old || !*old || !new || !*new)
+        return -1;
+
+    if (changepassword(store, new, old) == -1)
+        return -1;
+
+    return postChangePassword(store);
 }

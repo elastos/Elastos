@@ -318,7 +318,7 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
     }
 
     subject = DIDDocument_GetSubject(request->doc);
-    if (parse_didurl(&request->proof.verificationMethod,
+    if (Parse_DIDURL(&request->proof.verificationMethod,
             cJSON_GetStringValue(field), subject) < 0) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid signing key.");
         goto errorExit;

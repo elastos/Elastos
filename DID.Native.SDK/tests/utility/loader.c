@@ -365,6 +365,30 @@ static int import_privatekey(DIDURL *id, const char *storepass, const char *file
     return 0;
 }
 
+DID *DID_Copy(DID *dest, DID *src)
+{
+    if (!dest || !src) {
+        return NULL;
+    }
+
+    strcpy(dest->idstring, src->idstring);
+    memcpy(&dest->meta, &src->meta, sizeof(DIDMeta));
+    return dest;
+}
+
+DIDURL *DIDURL_Copy(DIDURL *dest, DIDURL *src)
+{
+    if (!dest || !src ) {
+        return NULL;
+    }
+
+    strcpy(dest->did.idstring, src->did.idstring);
+    strcpy(dest->fragment, src->fragment);
+    memcpy(&dest->meta, &src->meta, sizeof(CredentialMeta));
+
+    return dest;
+}
+
 /////////////////////////////////////
 void TestData_Init(void)
 {

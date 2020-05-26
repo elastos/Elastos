@@ -103,17 +103,17 @@ static int parse_id_string(char *id, char *fragment, const char *idstring, DID *
     return 0;
 }
 
-int parse_did(DID *did, const char *idstring)
+int Parse_DID(DID *did, const char *idstring)
 {
     return parse_id_string(did->idstring, NULL, idstring, NULL);
 }
 
-int parse_didurl(DIDURL *id, const char *idstring, DID *base)
+int Parse_DIDURL(DIDURL *id, const char *idstring, DID *base)
 {
     return parse_id_string(id->did.idstring, id->fragment, idstring, base);
 }
 
-int init_didurl(DIDURL *id, DID *did, const char *fragment)
+int Init_DIDURL(DIDURL *id, DID *did, const char *fragment)
 {
     assert(id);
     assert(did);
@@ -129,7 +129,7 @@ int init_didurl(DIDURL *id, DID *did, const char *fragment)
     return 0;
 }
 
-int init_did(DID *did, const char *idstring)
+int Init_DID(DID *did, const char *idstring)
 {
     assert(did);
     assert(idstring && *idstring);
@@ -158,7 +158,7 @@ DID *DID_FromString(const char *idstring)
         return NULL;
     }
 
-    if (parse_did(did, idstring) < 0) {
+    if (Parse_DID(did, idstring) < 0) {
         free(did);
         return NULL;
     }
@@ -285,7 +285,7 @@ DIDURL *DIDURL_FromString(const char *idstring, DID *ref)
         return NULL;
     }
 
-    if (parse_didurl(id, idstring, ref) < 0) {
+    if (Parse_DIDURL(id, idstring, ref) < 0) {
         free(id);
         return NULL;
     }

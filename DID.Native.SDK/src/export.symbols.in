@@ -8,7 +8,6 @@ _DID_GetMethodSpecificId
 _DID_ToString
 _DID_Equals
 _DID_Compare
-_DID_Copy
 _DID_Destroy
 _DID_SetAlias
 _DID_GetAlias
@@ -27,7 +26,6 @@ _DIDURL_GetFragment
 _DIDURL_ToString
 _DIDURL_Equals
 _DIDURL_Compare
-_DIDURL_Copy
 _DIDURL_Destroy
 _DIDURL_SetAlias
 _DIDURL_GetAlias
@@ -156,6 +154,7 @@ _DIDStore_PublishDID
 _DIDStore_DeactivateDID
 _DIDStore_ExportMnemonic
 _DIDStore_Synchronize
+_DIDStore_ChangePassword
 
 # Backend
 _DIDBackend_InitializeDefault

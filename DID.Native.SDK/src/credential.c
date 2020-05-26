@@ -503,7 +503,7 @@ Credential *Parse_Credential(cJSON *json, DID *did)
         DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Invalid id.");
         goto errorExit;
     }
-    if (parse_didurl(&credential->id, item->valuestring, did) < 0) {
+    if (Parse_DIDURL(&credential->id, item->valuestring, did) < 0) {
         DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Invalid credential id.");
         goto errorExit;
     }
@@ -515,7 +515,7 @@ Credential *Parse_Credential(cJSON *json, DID *did)
 
     //issuer
     item = cJSON_GetObjectItem(json, "issuer");
-    if (item && (!cJSON_IsString(item) || parse_did(&credential->issuer, item->valuestring) < 0)) {
+    if (item && (!cJSON_IsString(item) || Parse_DID(&credential->issuer, item->valuestring) < 0)) {
         DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Invalid issuer.");
         goto errorExit;
     }
@@ -579,7 +579,7 @@ Credential *Parse_Credential(cJSON *json, DID *did)
         goto errorExit;
     }
     if (!cJSON_IsString(field) ||
-            parse_didurl(&credential->proof.verificationMethod,
+            Parse_DIDURL(&credential->proof.verificationMethod,
             field->valuestring, &credential->issuer) < 0) {
         DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Invalid verification method.");
         goto errorExit;
@@ -618,7 +618,7 @@ Credential *Parse_Credential(cJSON *json, DID *did)
             goto errorExit;
         }
     } else {
-        if (parse_did(&credential->subject.id, field->valuestring) == -1) {
+        if (Parse_DID(&credential->subject.id, field->valuestring) == -1) {
             DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Invalid subject id.");
             goto errorExit;
         }
