@@ -8,6 +8,7 @@ import getting_started from './en/getting_started'
 import whitepaper from './en/whitepaper'
 import elip from './en/elip'
 import area from './en/area'
+import milestone from './en/milestone'
 
 const en = {
   council,
@@ -19,6 +20,7 @@ const en = {
   elip,
   whitepaper,
   area,
+  milestone,
   // Header
   '0000': 'ALPHA',
   '0001': 'Bounty Programs',

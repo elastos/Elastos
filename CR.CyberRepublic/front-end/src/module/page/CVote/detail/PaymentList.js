@@ -102,7 +102,7 @@ class PaymentList extends Component {
               this.showModal(item)
             }}
           >
-            Request
+            {I18N.get('milestone.request')}
           </div>
         )
       )
@@ -116,7 +116,7 @@ class PaymentList extends Component {
               this.showModal(item)
             }}
           >
-            Re-request
+            {I18N.get('milestone.rerequest')}
           </div>
         )
       )
@@ -131,7 +131,7 @@ class PaymentList extends Component {
                 this.showModal(item, 'APPROVED')
               }}
             >
-              Approve
+              {I18N.get('milestone.approve')}
             </div>
             <div
               className="action reject"
@@ -139,7 +139,7 @@ class PaymentList extends Component {
                 this.showModal(item, 'REJECTED')
               }}
             >
-              Reject
+              {I18N.get('milestone.reject')}
             </div>
           </div>
         )
@@ -152,7 +152,7 @@ class PaymentList extends Component {
             className="action"
             onClick={() => this.showWithdrawalModal(item.milestoneKey)}
           >
-            Withdraw
+            {I18N.get('milestone.withdraw')}
           </div>
         )
       )
@@ -192,7 +192,7 @@ class PaymentList extends Component {
             style={{ p: { margin: '1em 0' } }}
           />
         </td>
-        <td>{I18N.get(`proposal.milestone.${item.status}`)}</td>
+        <td>{I18N.get(`milestone.${item.status}`)}</td>
         {visible && <td>{this.renderActions(item)}</td>}
       </StyledRow>
     )
@@ -237,7 +237,7 @@ class PaymentList extends Component {
             <th>{I18N.get('suggestion.budget.reasons')}</th>
             <th>{I18N.get('suggestion.budget.goal')}</th>
             <th>{I18N.get('suggestion.budget.criteria')}</th>
-            <th>{I18N.get('proposal.milestone.status')}</th>
+            <th>{I18N.get('milestone.status')}</th>
             {visible && <th>{I18N.get('suggestion.budget.action')}</th>}
           </StyledRow>
         </StyledHead>

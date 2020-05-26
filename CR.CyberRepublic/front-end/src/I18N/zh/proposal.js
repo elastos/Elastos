@@ -1,17 +1,8 @@
 import {
   CVOTE_TRACKING_STATUS,
   CVOTE_SUMMARY_STATUS,
-  ABSTRACT_MAX_WORDS,
-  MILESTONE_STATUS
+  ABSTRACT_MAX_WORDS
 } from '@/constant'
-
-const {
-  WAITING_FOR_APPROVAL,
-  WAITING_FOR_REQUEST,
-  WAITING_FOR_WITHDRAWAL,
-  REJECTED,
-  WITHDRAWN
-} = MILESTONE_STATUS
 
 export default {
   fields: {
@@ -134,15 +125,5 @@ export default {
     approved: '已批准并发布',
     draftSaved: '草稿保存成功，请前往提案列表查看',
     proposalPublished: '提案发布成功'
-  },
-  milestone: {
-    status: '状态',
-    request: '申请',
-    rerequest: '重新申请',
-    [WAITING_FOR_REQUEST]: '等待申请',
-    [WAITING_FOR_APPROVAL]: '等待审核',
-    [WAITING_FOR_WITHDRAWAL]: '等待取款',
-    [WITHDRAWN]: '已取款',
-    [REJECTED]: '已拒绝'
   }
 }
