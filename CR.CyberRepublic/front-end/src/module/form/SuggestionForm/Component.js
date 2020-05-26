@@ -84,36 +84,32 @@ class C extends BaseComponent {
 
       const budget = form.getFieldValue('budget')
       if (budget && typeof budget !== 'string') {
+        if (!budget.budgetAmount) {
+          this.setState({ loading: false })
+          message.error('Total budget is empty.')
+          return
+        }
+
+        if (!budget.elaAddress) {
+          this.setState({ loading: false })
+          message.error('ELA receive address is emtpy.')
+          return
+        }
+        
         const plan = form.getFieldValue('plan')
         const milestone = _.get(plan, 'milestone')
         const pItems = _.get(budget, 'paymentItems')
-        if (!budget.budgetAmount) {
-          this.setState({ loading: false })
-          message.error(
-            'Total budget is empty.'
-          )
-          return
-        }
-        if (!budget.elaAddress) {
-          message.error('ELA receive address is emtpy.')
-        }
-        if (milestone.length !== pItems.length) {
-          this.setState({ loading: false })
-          message.error(
-            'Payment schedule must keep consistent with milestones.'
-          )
-          return
-        }
         const initiation = pItems.filter((item) => item.type === ADVANCE)
-        if (initiation.length !== 1) {
-          this.setState({ loading: false })
-          message.error('Must provide only one project initiation payment')
-          return
-        }
         const completion = pItems.filter((item) => item.type === COMPLETION)
-        if (completion.length !== 1) {
+        if (
+          milestone.length !== pItems.length ||
+          initiation.length !== 1 ||
+          completion.length !== 1
+        ) {
           this.setState({ loading: false })
-          message.error('Must provide only one project completion payment')
+          message.error(
+            'Project Initiation Payment and Project Completion Payment are required, and each payment must match one milestone.'
+          )
           return
         }
       }
