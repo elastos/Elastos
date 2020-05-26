@@ -711,9 +711,9 @@
     <string name="inofficehint">每位CR委员须运行一个默认当选的DPoS超级节点，享有该节点产生的所有收益，并有义务保证节点正常运行。</string>
     <string name="completeofficehint">上届CR委员任期已满，所有委员自动卸任离职。根据您实际履职情况及CRC委员节点的运行情况，您的竞选押金返还额度为%1$sELA。</string>
     <string name="completedialoghint">上届CR委员任期已满，所有委员自动卸任离职。</string>
-    <string name="cancelofficehint">由于对您的弹劾已通过，您的委员职务已被免职。据您时机履职情况及CRC委员节点的运行情况，您的竞选押金返回金额为%1$sELA。</string>
+    <string name="cancelofficehint">由于对您的弹劾已通过，您的委员职务已被免职。据您实际履职情况及CRC委员节点的运行情况，您的竞选押金返回金额为%1$sELA。</string>
     <string name="canceldialoghint">由于对您的弹劾已通过，您的委员职务已被免职。</string>
-    <string name="dimissofficehint">上届CR委员会因故解散，所有委员自动去职。根据您时机履职情况及CRC委员节点的运行情况，您的竞选押金返回金额为%1$sELA。</string>
+    <string name="dimissofficehint">上届CR委员会因故解散，所有委员自动去职。根据您实际履职情况及CRC委员节点的运行情况，您的竞选押金返回金额为%1$sELA。</string>
     <string name="dimissdialoghint">上届CR委员会因故解散，所有委员自动去职。</string>
     <string name="withdrawaldeposit">提取质押金</string>
 
