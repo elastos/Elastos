@@ -54,11 +54,23 @@ public class TestOptions extends Options {
 
             ArrayList<ExpressNode> expressNodes = new ArrayList<>();
             ExpressNode enode = new ExpressNode();
-            enode.setIpv4("149.28.249.233");
-            enode.setPort("5000");
+            enode.setIpv4("ece00.trinity-tech.io");
+            enode.setPort("443");
             enode.setPublicKey("FyTt6cgnoN1eAMfmTRJCaX2UoN6ojAgCimQEbv1bruy9");
-
             expressNodes.add(enode);
+
+            enode = new ExpressNode();
+            enode.setIpv4("ece01.trinity-tech.io");
+            enode.setPort("443");
+            enode.setPublicKey("FyTt6cgnoN1eAMfmTRJCaX2UoN6ojAgCimQEbv1bruy9");
+            expressNodes.add(enode);
+
+            enode = new ExpressNode();
+            enode.setIpv4("ece01.trinity-tech.cn");
+            enode.setPort("443");
+            enode.setPublicKey("FyTt6cgnoN1eAMfmTRJCaX2UoN6ojAgCimQEbv1bruy9");
+            expressNodes.add(enode);
+
             setExpressNodes(expressNodes);
 
         } catch (Exception e){

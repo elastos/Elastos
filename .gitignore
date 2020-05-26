@@ -12,3 +12,4 @@
 .externalNativeBuild
 /app/native-dist/lib
 /doc
+/speedbox
