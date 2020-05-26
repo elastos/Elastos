@@ -27,11 +27,6 @@
 
 /**
  * \~English
- * A JWT Builder to set jwt header and body elems.
- */
-typedef struct JWTBuilder          JWTBuilder;
-/**
- * \~English
  * JWS is from parsing jwt token，signing the given plaintext within the given header.
  */
 typedef struct JWS                 JWS;

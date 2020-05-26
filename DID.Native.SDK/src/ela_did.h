@@ -88,9 +88,9 @@ typedef ptrdiff_t       ssize_t;
 #define ELA_MAX_MNEMONIC_LEN            128
 
 typedef enum {
-    DID_FILTER_ALL,
-    DID_FILTER_HAS_PRIVATEKEY,
-    DID_FILTER_NO_PRIVATEKEY
+    DID_FILTER_ALL = 0,
+    DID_FILTER_HAS_PRIVATEKEY = 1,
+    DID_FILTER_NO_PRIVATEKEY = 2
 } ELA_DID_FILTER;
 
 /**

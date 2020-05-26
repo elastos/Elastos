@@ -36,7 +36,7 @@ set(ENABLE_DOCS FALSE CACHE BOOL "Build APIs documentation")
 add_subdirectory(deps)
 add_subdirectory(hdkey)
 
-if (ENABLE_SPVADAPTER)
+if(ENABLE_SPVADAPTER)
     add_subdirectory(adapter)
 endif()
 
@@ -50,6 +50,10 @@ if(NOT HDKEY_ONLY)
     if(ENABLE_APPS)
         add_subdirectory(apps)
     endif()
+endif()
+
+if(ENABLE_DOCS)
+   add_subdirectory(docs)
 endif()
 
 # Alias target for package. But it fix issue about making package
