@@ -28,6 +28,8 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.ScaleXSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,6 +59,11 @@ public class ProcessRecAdapetr extends RecyclerView.Adapter<ProcessRecAdapetr.Vi
     public ProcessRecAdapetr(Context context, List<ProposalDetailEntity.DataBean.TrackingBean> list) {
         this.list = list;
         this.context = context;
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getComment() == null || list.get(i).getComment().getOpinion() == null) {
+                list.remove(i--);
+            }
+        }
 
 
     }
@@ -72,6 +79,7 @@ public class ProcessRecAdapetr extends RecyclerView.Adapter<ProcessRecAdapetr.Vi
     public void onBindViewHolder(ProcessRecAdapetr.ViewHolder holder, final int position) {
 
         ProposalDetailEntity.DataBean.TrackingBean bean = list.get(position);
+
         String stage = bean.getStage() + "";
         int Language = new SPUtil(context).getLanguage();
         if (Language != 0) {
@@ -98,9 +106,10 @@ public class ProcessRecAdapetr extends RecyclerView.Adapter<ProcessRecAdapetr.Vi
         holder.tvDescription.setText(bean.getContent());
 
         GlideApp.with(context).load(bean.getComment().getAvatar()).error(R.mipmap.found_vote_initial_circle).circleCrop().into(holder.ivIcon1);
-        holder.tvName.setText(context.getString(R.string.proposalman) + bean.getComment().getCreatedBy());
-        holder.tvTime.setText(DateUtil.time(bean.getComment().getCreatedAt(), context));
+        holder.tvName1.setText(context.getString(R.string.proposalman) + bean.getComment().getCreatedBy());
+        holder.tvTime1.setText(DateUtil.time(bean.getComment().getCreatedAt(), context));
         holder.tvDescription1.setText(bean.getComment().getContent());
+
         switch (bean.getComment().getOpinion().toUpperCase()) {
             // 跟踪审核意见
             //[赞同: 'APPROVED',
@@ -119,12 +128,12 @@ public class ProcessRecAdapetr extends RecyclerView.Adapter<ProcessRecAdapetr.Vi
         int bend = stage.length();
 
         SpannableStringBuilder style = new SpannableStringBuilder(str);
-        style.setSpan(new BackgroundColorSpan(Color.WHITE), 0, bend, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
-
+        style.setSpan(new ForegroundColorSpan(Color.WHITE), 0, bend, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+        //style.setSpan(new ScaleXSpan(3.0f),0, bend, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
         if (stage.equals(context.getString(R.string.pass)))
-            style.setSpan(new BackgroundColorSpan(0x35B08F), 0, bend, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            style.setSpan(new BackgroundColorSpan(0xff35B08F), 0, bend, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         else
-            style.setSpan(new BackgroundColorSpan(Color.RED), 0, bend, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            style.setSpan(new BackgroundColorSpan(0xffB04135), 0, bend, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         holder.tvDescription1.setText(style);
 
 

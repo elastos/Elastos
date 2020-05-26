@@ -43,7 +43,6 @@ import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -160,13 +159,13 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         wallet = new RealmUtil().queryDefauleWallet();
         presenter = new ProposalDetailPresenter();
         proposalPresenter = new ProposalPresenter();
-        proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
 
         presenter.proposalDetail(searchBean.getId(), this);
         registReceiver();
         switch (searchBean.getStatus()) {
             case "VOTING":
                 //委员评议
+                proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
                 tvTitle.setText(R.string.proposalcomments);
                 tvStatus.setText(R.string.menberreview);
                 break;
@@ -274,10 +273,6 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         if (!show) {
             //同意 6   反对 2   弃权 2
             tvVotestatus.setVisibility(View.VISIBLE);
-            tvVotestatus.setText(getString(R.string.agree) + " " + (supportList == null ? 0 : supportList.size())
-                    + "   " + getString(R.string.disagree1) + " " + (rejectList == null ? 0 : rejectList.size())
-                    + "   " + getString(R.string.abstention) + " " + (abstentionList == null ? 0 : abstentionList.size()));
-
             llVote.setVisibility(View.GONE);
             ivVote.setImageResource(R.mipmap.cr_arrow_right);
         } else {
@@ -289,37 +284,40 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
 
     }
 
+    private void voteLeftClickUI(View target, List<ProposalDetailEntity.DataBean.VoteResultBean> list) {
+        setVoteRecycleView(list);
+        int targetBottom = ScreenUtil.dp2px(getContext(), 5);
+        tvAgree.setAlpha(0.5f);
+        tvDisagree.setAlpha(0.5f);
+        tvAbstention.setAlpha(0.5f);
+        setMargin(tvAgree, 0, 0, 0, targetBottom);
+        setMargin(tvDisagree, ScreenUtil.dp2px(getContext(), 5), 0, 0, targetBottom);
+        setMargin(tvAbstention, ScreenUtil.dp2px(getContext(), 5), 0, 0, targetBottom);
+
+        target.setAlpha(1);
+        if (target == tvAgree) {
+            setMargin(target, 0, 0, 0, 0);
+        }
+        if (target == tvDisagree||target == tvAbstention) {
+            setMargin(target, ScreenUtil.dp2px(getContext(), 5), 0, 0, 0);
+
+        }
+
+    }
+
     JSONArray otherUnActiveVote;
 
     @OnClick({R.id.tv_agree, R.id.iv_info, R.id.iv_vote, R.id.tv_disagree, R.id.tv_abstention, R.id.tv_hash, R.id.tv_web, R.id.tv_vote})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_agree:
-                setVoteRecycleView(supportList);
-                view.setAlpha(1);
-                tvDisagree.setAlpha(0.5f);
-                tvAbstention.setAlpha(0.5f);
-                setMargin(view, 0, 0, 0, 0);
-                setMargin(tvDisagree, ScreenUtil.dp2px(getContext(), 5), 0, 0, ScreenUtil.dp2px(getContext(), 5));
-                setMargin(tvAbstention, ScreenUtil.dp2px(getContext(), 5), 0, 0, ScreenUtil.dp2px(getContext(), 5));
+                voteLeftClickUI(view, supportList);
                 break;
             case R.id.tv_disagree:
-                setVoteRecycleView(rejectList);
-                view.setAlpha(1);
-                tvAgree.setAlpha(0.5f);
-                tvAbstention.setAlpha(0.5f);
-                setMargin(view, ScreenUtil.dp2px(getContext(), 5), 0, 0, 0);
-                setMargin(tvAgree, 0, 0, 0, ScreenUtil.dp2px(getContext(), 5));
-                setMargin(tvAbstention, ScreenUtil.dp2px(getContext(), 5), 0, 0, ScreenUtil.dp2px(getContext(), 5));
+                voteLeftClickUI(view, rejectList);
                 break;
             case R.id.tv_abstention:
-                setVoteRecycleView(abstentionList);
-                view.setAlpha(1);
-                tvAgree.setAlpha(0.5f);
-                tvDisagree.setAlpha(0.5f);
-                setMargin(view, ScreenUtil.dp2px(getContext(), 5), 0, 0, 0);
-                setMargin(tvDisagree, ScreenUtil.dp2px(getContext(), 5), 0, 0, ScreenUtil.dp2px(getContext(), 5));
-                setMargin(tvAgree, 0, 0, 0, ScreenUtil.dp2px(getContext(), 5));
+                voteLeftClickUI(view, abstentionList);
                 break;
             case R.id.tv_hash:
                 ClipboardUtil.copyClipboar(getBaseActivity(), tvHash.getText().toString().trim());
@@ -402,17 +400,20 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
 
         if (abstentionList.size() > 0) {
             tvAbstention.setEnabled(true);
-            setVoteRecycleView(abstentionList);
+            voteLeftClickUI(tvAbstention, supportList);
 
         }
         if (rejectList.size() > 0) {
             tvDisagree.setEnabled(true);
-            setVoteRecycleView(rejectList);
+            voteLeftClickUI(tvDisagree, supportList);
         }
         if (supportList.size() > 0) {
             tvAgree.setEnabled(true);
-            setVoteRecycleView(supportList);
+            voteLeftClickUI(tvAgree, supportList);
         }
+        tvVotestatus.setText(getString(R.string.agree) + " " + (supportList == null ? 0 : supportList.size())
+                + "   " + getString(R.string.disagree1) + " " + (rejectList == null ? 0 : rejectList.size())
+                + "   " + getString(R.string.abstention) + " " + (abstentionList == null ? 0 : abstentionList.size()));
     }
 
     private void setVoteRecycleView(List<ProposalDetailEntity.DataBean.VoteResultBean> list) {

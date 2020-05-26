@@ -213,7 +213,7 @@ public class NodeInformationFragment extends BaseFragment {
                         if (list.get(i).equals(bean.getOwnerpublickey())) {
                             ToastUtils.showShort(getString(R.string.yi_remove_candidate_list));
                             sbJrhxlb.setText(getString(R.string.candidate_list));
-                            list.remove(i);
+                            list.remove(i--);
                             CacheUtil.setProducerListString(list);
                         }
                     }

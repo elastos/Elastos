@@ -261,6 +261,7 @@
                     android:textSize="14sp" />
 
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/tv_votestatus"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
