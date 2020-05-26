@@ -1958,8 +1958,8 @@ func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 
 	// Inputs amount need equal to outputs amount
 	totalOutput := txn.Outputs[0].Value
-	if totalInput != totalOutput {
-		return fmt.Errorf("inputs does not equal to outputs amount, "+
+	if totalInput != totalOutput+RectifyTxFee {
+		return fmt.Errorf("inputs minus outputs does not match with 10000 sela fee , "+
 			"inputs:%s outputs:%s", totalInput, totalOutput)
 	}
 
