@@ -223,11 +223,11 @@ export default class extends Base {
   }
 
   public async getById(id): Promise<any> {
-    return await this.model.getDBInstance().findOne({ _id: id })
+    return await this.model.getDBInstance().findOne({ _id: id }, '-voteHistory')
   }
 
   public async getProposalById(id): Promise<any> {
-    return await this.getDBModel('CVote').getDBInstance().findOne({ _id: id })
+    return await this.getDBModel('CVote').getDBInstance().findOne({ _id: id }, '-voteHistory')
   }
 
   private async notifyUsers(param: Mail) {

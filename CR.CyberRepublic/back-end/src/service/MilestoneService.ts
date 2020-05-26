@@ -551,7 +551,7 @@ export default class extends Base {
   private async getProposal(id: string) {
     const rs = await this.model
       .getDBInstance()
-      .findOne({ _id: id })
+      .findOne({ _id: id }, '-voteHistory')
       .populate(
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR

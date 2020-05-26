@@ -880,7 +880,7 @@ export default class extends Base {
         await this.updateProposalBudget(query)
         const rs = await db_cvote
             .getDBInstance()
-            .findOne(query)
+            .findOne(query, '-voteHistory')
             .populate(
                 'voteResult.votedBy',
                 constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
