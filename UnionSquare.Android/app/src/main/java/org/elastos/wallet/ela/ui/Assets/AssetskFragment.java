@@ -1295,7 +1295,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 case "voteforproposal"://voteforproposal
                     //公示期谁都可以投票
                     curentJwtEntity = JSON.parseObject(payload, RecievePublishedVoteJwtEntity.class);
-                    proposalPresenter.proposalSearch(-1, -1, "VOTING", null, this);
+                    proposalPresenter.proposalSearch(-1, -1, "NOTIFICATION", null, this);
                     new VoteListPresenter().getDepositVoteList("1", "all", this, false);
                     new CRlistPresenter().getCRlist(-1, -1, "all", this, false);
                     commonGetBalancePresenter.getBalance(wallet.getWalletId(), MyWallet.ELA, this);

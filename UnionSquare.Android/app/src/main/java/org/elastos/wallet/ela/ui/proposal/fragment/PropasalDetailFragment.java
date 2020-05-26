@@ -336,7 +336,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                     requstManifestPermission(getString(R.string.needpermission));
                 } else if ("NOTIFICATION".equals(searchBean.getStatus())) {
                     //公示期 投票反对
-                    proposalPresenter.proposalSearch(-1, -1, "VOTING", null, this);
+                    proposalPresenter.proposalSearch(-1, -1, "NOTIFICATION", null, this);
                     new VoteListPresenter().getDepositVoteList("1", "all", this, false);
                     new CRlistPresenter().getCRlist(-1, -1, "all", this, false);
                     new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
