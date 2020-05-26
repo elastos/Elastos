@@ -86,16 +86,16 @@ class C extends BaseComponent {
       if (budget && typeof budget !== 'string') {
         if (!budget.budgetAmount) {
           this.setState({ loading: false })
-          message.error('Total budget is empty.')
+          message.error(I18N.get('suggestion.form.error.amount'))
           return
         }
 
         if (!budget.elaAddress) {
           this.setState({ loading: false })
-          message.error('ELA receive address is emtpy.')
+          message.error(I18N.get('suggestion.form.error.address'))
           return
         }
-        
+
         const plan = form.getFieldValue('plan')
         const milestone = _.get(plan, 'milestone')
         const pItems = _.get(budget, 'paymentItems')
@@ -107,9 +107,7 @@ class C extends BaseComponent {
           completion.length !== 1
         ) {
           this.setState({ loading: false })
-          message.error(
-            'Project Initiation Payment and Project Completion Payment are required, and each payment must match one milestone.'
-          )
+          message.error(I18N.get('suggestion.form.error.payment'))
           return
         }
       }

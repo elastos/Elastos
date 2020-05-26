@@ -94,7 +94,10 @@ export default {
       amount: '金额大于总金额的30%',
       previousMilestoneDate: '日期必须晚于前一个里程碑',
       requirePayment: '在完成提案之前，需要填写项目的支付项。',
-      elaAddress: '地址无效，请核对'
+      elaAddress: '地址无效，请核对',
+      amount: '总预算为空',
+      address: 'ELA 收款地址为空',
+      payment: '支付项和里程碑个数必须保持一致, 必须有预付款和结项款'
     }
   },
   modal: {
