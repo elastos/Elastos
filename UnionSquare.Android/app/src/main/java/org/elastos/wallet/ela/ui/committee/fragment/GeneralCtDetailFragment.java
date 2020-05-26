@@ -339,7 +339,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
-            num = result.getName();
+            num = (String) result.getObj();
             presenter.getVoteInfo(wallet.getWalletId(), "CRCImpeachment", this);
         }
         if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {

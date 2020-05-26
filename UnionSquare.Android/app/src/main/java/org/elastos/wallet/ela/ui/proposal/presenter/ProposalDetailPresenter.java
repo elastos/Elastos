@@ -15,7 +15,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -67,6 +66,20 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
         return getActiveJson("CRC", candidates);
     }
 
+    public JSONObject getCRCImpeachmentUnactiveData(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list) {
+
+        JSONArray candidates = new JSONArray();
+        if (list != null && list.size() > 0) {
+            for (int i = 0; i < list.size(); i++) {
+                CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = list.get(i);
+                if (!bean.getState().equals("Active")) {
+                    candidates.put(bean.getDid());
+                }
+            }
+        }
+        return getActiveJson("CRCImpeachment", candidates);
+    }
+
     public JSONObject getDepositUnactiveData(List<VoteListBean.DataBean.ResultBean.ProducersBean> list) {
 
         JSONArray candidates = new JSONArray();
@@ -115,25 +128,110 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
         return unActiveVote;
     }
 
-    /**
-     * 只获得数组的第一个 的vote数据
-     *
-     * @param voteInfo
-     * @return
-     */
-    public JSONObject conversVote(String voteInfo) {
+
+
+    public JSONObject conversVote(String voteInfo, String targetType) {
         if (!TextUtils.isEmpty(voteInfo) && !voteInfo.equals("null") && !voteInfo.equals("[]")) {
             try {
+
                 JSONArray lastVoteInfo = new JSONArray(voteInfo);
-                if (lastVoteInfo.length() >= 1) {
-                    return lastVoteInfo.getJSONObject(0).getJSONObject("Votes");
+                for (int i = 0; i < lastVoteInfo.length(); i++) {
+                    JSONObject jsonObject = lastVoteInfo.getJSONObject(i);
+                    String type = jsonObject.getString("Type");
+
+                    if (targetType.equals(type)) {
+                        return jsonObject.getJSONObject("Votes");
+                    }
+
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+
+
+            }
+        }
+        return null;
+    }
+
+    public JSONArray conversUnactiveVote(String remove, String voteInfo, List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList,
+                                         List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crcList, List<ProposalSearchEntity.DataBean.ListBean> voteList) {
+        JSONArray otherUnActiveVote = new JSONArray();
+
+        if (!TextUtils.isEmpty(voteInfo) && !voteInfo.equals("null") && !voteInfo.equals("[]")) {
+
+            try {
+                JSONArray lastVoteInfo = new JSONArray(voteInfo);
+                for (int i = 0; i < lastVoteInfo.length(); i++) {
+                    JSONObject jsonObject = lastVoteInfo.getJSONObject(i);
+                    String type = jsonObject.getString("Type");
+
+                    if (type.equals(remove)) {
+                        break;
+                    }
+                    JSONObject votes = jsonObject.getJSONObject("Votes");
+                    Iterator it = votes.keys();
+                    JSONArray candidates = new JSONArray();
+                    switch (type) {
+                        case "Delegate":
+                            while (it.hasNext()) {
+                                String key = (String) it.next();
+                                if (depositList == null || depositList.size() == 0) {
+                                    candidates.put(key);
+                                    break;
+                                }
+                                for (VoteListBean.DataBean.ResultBean.ProducersBean bean : depositList) {
+                                    if (bean.getOwnerpublickey().equals(key) && !bean.getState().equals("Active")) {
+                                        candidates.put(key);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            break;
+                        case "CRC":
+                        case "CRCImpeachment":
+                            while (it.hasNext()) {
+                                String key = (String) it.next();
+                                if (crcList == null || crcList.size() == 0) {
+                                    candidates.put(key);
+                                    break;
+                                }
+                                for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : crcList) {
+                                    if (bean.getDid().equals(key) && !bean.getState().equals("Active")) {
+                                        candidates.put(key);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            break;
+                        case "CRCProposal":
+                            while (it.hasNext()) {
+                                String key = (String) it.next();
+                                if (crcList == null || crcList.size() == 0) {
+                                    candidates.put(key);
+                                    break;
+                                }
+                                for (ProposalSearchEntity.DataBean.ListBean bean : voteList) {
+                                    if (bean.getProposalHash().equals(key)) {
+                                        candidates.put(key);
+                                        break;
+                                    }
+                                }
+                            }
+                            break;
+
+
+                    }
+                    otherUnActiveVote.put(getActiveJson(type, candidates));
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
         }
-        return null;
+        return otherUnActiveVote;
     }
 
     /**

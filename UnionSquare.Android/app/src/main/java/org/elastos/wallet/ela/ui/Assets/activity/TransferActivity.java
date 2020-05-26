@@ -25,7 +25,6 @@ package org.elastos.wallet.ela.ui.Assets.activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -37,7 +36,6 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
 import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.Constant;
@@ -155,9 +153,9 @@ public class TransferActivity extends BaseActivity {
                 break;
             case Constant.PROPOSALPUBLISHED:
                 //公示期投票
-                ProposalSearchEntity.DataBean.ListBean searchBean = data.getParcelableExtra("extra");
+                String hash = data.getStringExtra("extra");
                 rlHash.setVisibility(View.VISIBLE);
-                tvHash.setText(searchBean.getProposalHash());
+                tvHash.setText(hash);
                 tvAmountTag.setText(R.string.rejectticket);
             case Constant.SUPERNODEVOTE:
             case Constant.CRVOTE:

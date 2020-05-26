@@ -480,7 +480,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
-            num = result.getName();
+            num = (String) result.getObj();
             String amount;
             if ("MAX".equals(num)) {
                 amount = Arith.mulRemoveZero(maxBalance, MyWallet.RATE_S).toPlainString();
