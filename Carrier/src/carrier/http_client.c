@@ -673,9 +673,12 @@ int http_client_request(http_client_t *client)
     if (client->mime)
         curl_easy_setopt(client->curl, CURLOPT_MIMEPOST, client->mime);
 
+
+    curl_easy_setopt(client->curl, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(client->curl, CURLOPT_SSL_VERIFYHOST, 0L);
     code = curl_easy_perform(client->curl);
     if (code != CURLE_OK) {
-        vlogE("HttpClient: Perform http request error (%d)", code);
+        vlogE("HttpClient: Perform request error (%d)", code);
         return code;
     }
 

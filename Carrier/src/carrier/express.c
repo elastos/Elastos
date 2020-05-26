@@ -343,7 +343,7 @@ static int parse_msg_stream(ExpressConnector *connector, uint8_t *shared_key,
         }
         rc = parse_msg(connector, shared_key, msg, msg_sz, timestamp);
         if(rc < 0) {
-            vlogW("Express: http response body parse message failed: (%x).",rc);
+            vlogW("Express: response body parse message failed: (%x).",rc);
             continue; // skip to next message
         }
     }
@@ -427,19 +427,19 @@ static int http_do(ExpressConnector *connector, http_client_t *http_client,
                        : "unknown"))));
 
     snprintf(url, sizeof(url), "https://%s:%d/%s", ip, port, path);
-    vlogD("Express: %s message, url: %s", dowhat, url);
+    // vlogD("Express: %s message, node: %s", dowhat, ip);
 
     http_client_reset(http_client);
 
     rc = http_client_set_url(http_client, url);
     if(rc != 0) {
-        vlogE("Express: Failed to set http url.(CURLE: %d)", rc);
+        vlogE("Express: Failed to set url.(CURLE: %d)", rc);
         return ELA_EXPRESS_ERROR(conv_curlcode(rc));
     }
 
     rc = http_client_set_method(http_client, method);
     if(rc != 0) {
-        vlogE("Express: Failed to set http method.(CURLE: %d)", rc);
+        vlogE("Express: Failed to set method.(CURLE: %d)", rc);
         return ELA_EXPRESS_ERROR(conv_curlcode(rc));
     }
 
@@ -449,13 +449,13 @@ static int http_do(ExpressConnector *connector, http_client_t *http_client,
 
         rc = http_client_set_request_body(http_client, http_write_data, userdata);
         if (rc != 0) {
-            vlogE("Express: Failed to set http request body.(CURLE: %d)", rc);
+            vlogE("Express: Failed to set request body.(CURLE: %d)", rc);
             return ELA_EXPRESS_ERROR(conv_curlcode(rc));
         }
     } else if (method == HTTP_METHOD_GET) {
         rc = http_client_set_response_body(http_client, http_read_data, userdata);
         if (rc != 0) {
-            vlogE("Express: Failed to set http response body.(CURLE: %d)", rc);
+            vlogE("Express: Failed to set response body.(CURLE: %d)", rc);
             return ELA_EXPRESS_ERROR(conv_curlcode(rc));
         }
     }
@@ -464,23 +464,23 @@ static int http_do(ExpressConnector *connector, http_client_t *http_client,
                             method == HTTP_METHOD_HEAD ?  EXP_HTTP_HEAD_TIMEOUT : EXP_HTTP_REQ_TIMEOUT);
     rc = http_client_request(http_client);
     if(rc != 0) {
-        vlogE("Express: Failed to perform http request. url=%s,(CURLE: %d)", url, rc);
+        vlogE("Express: Failed to perform request. node:%s, path:%s. (CURLE: %d)", ip, path, rc);
         return ELA_EXPRESS_ERROR(conv_curlcode(rc));
     }
 
     rc = http_client_get_response_code(http_client, &http_client_rescode);
     if(rc != 0) {
-        vlogE("Express: Failed to get http response code.(CURLE: %d)", rc);
+        vlogE("Express: Failed to get response code.(CURLE: %d)", rc);
         return ELA_EXPRESS_ERROR(conv_curlcode(rc));
     }
     if((method == HTTP_METHOD_POST && http_client_rescode != 201)
     || (method == HTTP_METHOD_GET && http_client_rescode != 200)
     || (method == HTTP_METHOD_DELETE && http_client_rescode != 205)) {
-        vlogE("Express: Failed to %s message from server rescode=%d.(CURLE: %d)", dowhat, http_client_rescode, rc);
+        vlogE("Express: Failed to %s message from node. rescode=%d.(CURLE: %d)", dowhat, http_client_rescode, rc);
         return ELA_EXPRESS_ERROR(ELAERR_WRONG_STATE);
     }
 
-    vlogD("Express: Success to %s message, url: %s", dowhat, url);
+    // vlogD("Express: Success to %s message, node: %s", dowhat, ip);
 
     return 0;
 }
