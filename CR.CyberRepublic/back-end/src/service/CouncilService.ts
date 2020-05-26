@@ -468,7 +468,7 @@ export default class extends Base {
 
         const currentCrs = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.CURRENT})
         const votingCds = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.VOTING})
-        const historyCrs = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.HISTORY},{sort: -1})
+        const historyCrs = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.HISTORY})
 
         let index: any
         if(currentCrs){
@@ -526,6 +526,32 @@ export default class extends Base {
                 ...o,
                 user: userByDID[o.did]
             }))
+        }
+
+        const updateUserRole = async (councilMembers : any, role : any) => {
+            const didList = _.map(councilMembers, (o: any) => DID_PREFIX + o.did)
+            switch(role){
+                case 1:
+                    await this.userMode.update(
+                        { 'did.id': {$in: didList}},
+                        {
+                            $set:{
+                                role: constant.USER_ROLE.COUNCIL
+                            }
+                        }
+                    )
+                    break;
+                case 2:
+                    await this.userMode.update(
+                        { 'did.id': {$in: didList}},
+                        {
+                            $set:{
+                                role: constant.USER_ROLE.MEMBER
+                            }
+                        }
+                    )
+                    break;
+            }
         }
 
         const updateCrsInformation = async (list: any, data: any) => {
@@ -586,7 +612,6 @@ export default class extends Base {
                         },
                         {
                             $set:{
-                                // ...currentCrs,
                                 endDate: new Date(time*1000),
                                 status: constant.TERM_COUNCIL_STATUS.HISTORY
                             }
@@ -598,14 +623,16 @@ export default class extends Base {
                         },
                         {
                             $set:{
-                                // ...votingCds,
                                 startDate: new Date(time*1000),
                                 status: constant.TERM_COUNCIL_STATUS.CURRENT
                             }
                         }
                     )
 
-                // TODO : update member role
+                // update member role, MEMBER => COUNCIL
+                await updateUserRole(listcrs.crmembersinfo,1)
+                // update member role, COUNCIL => MEMBER
+                await updateUserRole(currentCrs.councilMembers,2)
 
                 }
                 // update CurrentCrs data
@@ -622,13 +649,13 @@ export default class extends Base {
                     },
                     {
                         $set: {
-                            // ...votingCds,
                             startDate: new Date(startTime*1000),
                             status: constant.TERM_COUNCIL_STATUS.CURRENT
                         }
                     }
                 )
-                // TODO : update member role
+                // update member role, MEMBER => COUNCIL
+                await updateUserRole(listcrs.crmembersinfo,1)
 
             }
             // if appear directly first current
@@ -640,12 +667,13 @@ export default class extends Base {
                     index: 1,
                     height: height || 0,
                     startDate: new Date(startTime*1000),
-                    endDate: null,
+                    endDate: new Date(0),
                     status: constant.TERM_COUNCIL_STATUS.CURRENT,
                     councilMembers: _.map(listcrs.crmembersinfo, (o) => dataToCouncil(o))
                 }
                 await this.model.getDBInstance().create(doc);
-                // TODO : update member role
+                // update user role, MEMBER => COUNCIL
+                await updateUserRole(listcrs.crmembersinfo,1)
 
             }
         }
@@ -670,8 +698,8 @@ export default class extends Base {
                         }
                     }
                 )
-                // TODO : update member role
-
+                // update member role, COUNCIL => MEMBER
+                await updateUserRole(currentCrs.councilMembers,2)
 
                 // update votingCds data
                 if(votingCds){
@@ -683,7 +711,7 @@ export default class extends Base {
                     const doc: any = {
                         index: index+1,
                         startDate: new Date(startTime*1000),
-                        endDate: null,
+                        endDate: new Date(0),
                         status: constant.TERM_COUNCIL_STATUS.VOTING,
                         height: height || 0,
                         councilMembers: _.map(listcds.crcandidatesinfo, (o) => dataToCouncil(o))
@@ -698,16 +726,30 @@ export default class extends Base {
                 }
                 // add votingCds -> database , status VOTING
                 if(!votingCds){
-                    const startTime = await ela.getBlockByHeight(crrelatedStageStatus.ondutystartheight)
-                    const doc: any = {
-                        index,
-                        startDate: new Date(startTime*1000),
-                        endDate: null,
-                        status: constant.TERM_COUNCIL_STATUS.VOTING,
-                        height: height || 0,
-                        councilMembers: _.map(listcds.crcandidatesinfo, (o) => dataToCouncil(o))
+                    if(historyCrs){
+                        const startTime = await ela.getBlockByHeight(crrelatedStageStatus.ondutystartheight)
+                        const doc: any = {
+                            index: index+1,
+                            startDate: new Date(startTime*1000),
+                            endDate: new Date(0),
+                            status: constant.TERM_COUNCIL_STATUS.VOTING,
+                            height: height || 0,
+                            councilMembers: _.map(listcds.crcandidatesinfo, (o) => dataToCouncil(o))
+                        }
+                        await this.model.getDBInstance().create(doc);
+                    }else {
+                        const startTime = await ela.getBlockByHeight(crrelatedStageStatus.ondutystartheight)
+                        const doc: any = {
+                            index: index,
+                            startDate: new Date(startTime*1000),
+                            endDate: new Date(0),
+                            status: constant.TERM_COUNCIL_STATUS.VOTING,
+                            height: height || 0,
+                            councilMembers: _.map(listcds.crcandidatesinfo, (o) => dataToCouncil(o))
+                        }
+                        await this.model.getDBInstance().create(doc);
                     }
-                    await this.model.getDBInstance().create(doc);
+                    
                 }
             }
         }
@@ -725,7 +767,8 @@ export default class extends Base {
                         }
                     }
                 )
-                // TODO : update member role
+                // update member role, COUNCILE => MEMBER
+                await updateUserRole(currentCrs.councilMembers,2)
             }
         }
     }
