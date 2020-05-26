@@ -2,7 +2,7 @@ import {
   CVOTE_TRACKING_STATUS,
   CVOTE_SUMMARY_STATUS,
   ABSTRACT_MAX_WORDS
-} from '@/constan'
+} from '@/constant'
 
 export default {
   fields: {

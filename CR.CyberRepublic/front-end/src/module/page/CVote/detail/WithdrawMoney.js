@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
 import QRCode from 'qrcode.react'
-import { Spin, Modal } from 'antd'
+import { Modal } from 'antd'
+import I18N from '@/I18N'
 
 class WithdrawMoney extends Component {
   constructor(props) {
@@ -21,7 +22,7 @@ class WithdrawMoney extends Component {
     const rs = await withdraw(proposalId, stage)
     if (rs && !rs.success && rs.url === null) {
       this.setState({
-        message: 'The business is busy, please try again later.'
+        message: I18N.get('milestone.noUtxos')
       })
     }
     if (rs && rs.success) {
@@ -41,7 +42,7 @@ class WithdrawMoney extends Component {
         {url ? (
           <Content>
             <QRCode value={url} size={400} />
-            <Tip>Scan the QR code above to withdraw ELA.</Tip>
+            <Tip>{I18N.get('milestone.scanToWithdraw')}</Tip>
           </Content>
         ) : (
           <Content>{message}</Content>

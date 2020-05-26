@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import styled from 'styled-components'
 import { Form, Button, Input, message, Modal, Spin } from 'antd'
 import QRCode from 'qrcode.react'
+import I18N from '@/I18N'
 
 const { TextArea } = Input
 const FormItem = Form.Item
@@ -89,7 +90,7 @@ class Signature extends Component {
         if (rs.message) {
           message.error(rs.message)
         } else {
-          message.error('Something went wrong')
+          message.error(I18N.get('milestone.exception'))
         }
         hideModal()
       }
@@ -102,15 +103,10 @@ class Signature extends Component {
 
   signatureQrCode = () => {
     const { url } = this.state
-    const { isSecretary } = this.props
     return (
       <Content>
         {url ? <QRCode value={url} size={400} /> : <Spin />}
-        {isSecretary ? (
-          <Tip>Scan the QR code above to sign</Tip>
-        ) : (
-          <Tip>Scan the QR code above to sign your application.</Tip>
-        )}
+        <Tip>{I18N.get('milestone.sign')}</Tip>
       </Content>
     )
   }
@@ -123,21 +119,23 @@ class Signature extends Component {
         {isSecretary && <Msg>{application.message}</Msg>}
         <Label>
           <span>*</span>
-          {isCompletion ? 'Summary' : 'Reason'}
+          {isCompletion
+            ? I18N.get('milestone.summary')
+            : I18N.get('milestone.reason')}
         </Label>
         <FormItem>
           {getFieldDecorator('message', {
             rules: [
               {
                 required: true,
-                message: 'This field is required'
+                message: I18N.get('milestone.required')
               }
             ]
           })(<TextArea rows={16} style={{ resize: 'none' }} />)}
         </FormItem>
         <Actions>
           <Button className="cr-btn cr-btn-primary" htmlType="submit">
-            Next
+            {I18N.get('milestone.next')}
           </Button>
         </Actions>
       </Form>
@@ -161,7 +159,9 @@ class Signature extends Component {
               {flag ? 'Reject' : 'Approve'} Payment #{parseInt(stage) + 1}
             </Title>
           ) : (
-            <Title>Apply Payment #{parseInt(stage) + 1}</Title>
+            <Title>
+              {I18N.get('milestone.header')} #{parseInt(stage) + 1}
+            </Title>
           )}
 
           {url ? this.signatureQrCode() : this.renderTextare()}
