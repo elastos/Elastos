@@ -179,10 +179,14 @@ export const CVote = {
     type: String
   },
   proposalHash: {
-    type: String
+    type: String,
+    required: true,
+    unique: true
   },
   draftHash: {
-    type: String
+    type: String,
+    required: true,
+    unique: true
   },
   ownerPublicKey: String,
   rejectAmount: {

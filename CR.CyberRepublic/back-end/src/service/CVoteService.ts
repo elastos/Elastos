@@ -136,7 +136,7 @@ export default class extends Base {
                 })
                 if (rs && rs.success && rs.status === 'Registered') {
                     const proposal = await this.proposeSuggestion({
-                        suggestionId: id
+                        suggestion
                     })
                     return {success: true, id: proposal._id}
                 }
@@ -150,14 +150,7 @@ export default class extends Base {
         const db_cvote = this.getDBModel('CVote')
         const db_suggestion = this.getDBModel('Suggestion')
         const db_user = this.getDBModel('User')
-        const {suggestionId} = param
-
-        const suggestion =
-            suggestionId && (await db_suggestion.findById(suggestionId))
-        if (!suggestion) {
-            throw 'cannot find suggestion'
-        }
-
+        const { suggestion } = param
         const creator = await db_user.findById(suggestion.createdBy)
         const vid = await this.getNewVid()
 
@@ -170,7 +163,7 @@ export default class extends Base {
             proposedBy: userUtil.formatUsername(creator),
             proposer: suggestion.createdBy,
             createdBy: this.currentUser._id,
-            reference: suggestionId,
+            reference: suggestion._id,
             proposalHash: suggestion.proposalHash,
             draftHash: suggestion.draftHash,
             ownerPublicKey: suggestion.ownerPublicKey
@@ -195,7 +188,7 @@ export default class extends Base {
         try {
             const res = await db_cvote.save(doc)
             await db_suggestion.update(
-                {_id: suggestionId},
+                {_id: suggestion._id},
                 {
                     $addToSet: {reference: res._id},
                     $set: {tags: []}
