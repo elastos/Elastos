@@ -148,7 +148,7 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    const { data } = this.props
+    const { data, currentUserId } = this.props
     if (!data) {
       return (
         <div className="center">
@@ -163,6 +163,15 @@ class C extends StandardPage {
         </div>
       )
     }
+
+    const currentVoted = _.find(data.voteResult,function(o){
+      if(o.votedBy != null){
+        if (o.votedBy._id == currentUserId ){
+          return o
+        }
+      }
+    } )
+    const isChaining = currentVoted.status == 'chaining'
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
@@ -191,7 +200,7 @@ class C extends StandardPage {
               {contentNode}
               {translationBtn}
               {notesNode}
-              {voteActionsNode}
+              { !isChaining ? voteActionsNode : null }
               {voteDetailNode}
               {trackingNode}
               {summaryNode}
