@@ -1259,7 +1259,7 @@ export default class extends Base {
                 await callback(array[index], index, array);
             }
         }
-
+        const rejectThroughAmount: any = (await ela.currentCirculatingSupply()) * 0.1
         await asyncForEach(list, async (o: any) => {
             const {proposalHash, status, voteResult} = o._doc
             const rs: any = await getProposalData(proposalHash)
@@ -1279,6 +1279,7 @@ export default class extends Base {
                     await this.updateProposalOnNotification({
                         rs,
                         _id: o._id,
+                        rejectThroughAmount
                     })
                     break;
             }
@@ -1329,16 +1330,16 @@ export default class extends Base {
         const {WAITING_FOR_WITHDRAWAL, WAITING_FOR_REQUEST} = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel("CVote")
         const {rs, _id} = data
+        let {rejectThroughAmount} = data
         const {
             data: {
                 votersrejectamount: rejectAmount,
             },
             status: chainStatus
         } = rs
-        let rejectThroughAmount: any
+        
         const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
         if (proposalStatus === constant.CVOTE_STATUS.ACTIVE) {
-            rejectThroughAmount = (await ela.currentCirculatingSupply()) * 0.1
             const proposal = await db_cvote.findById(_id)
             const budget = proposal.budget.map((item: any) => {
                 if (item.type === 'ADVANCE') {
@@ -1797,18 +1798,6 @@ export default class extends Base {
         return list
     }
 
-    // poll notification, get votersrejectamount and registerheight
-    public async pollVotersRejectAmount() {
-        const db_cvote = this.getDBModel('CVote')
-        const list = await db_cvote.find({
-            status: constant.CVOTE_STATUS.NOTIFICATION
-        })
-
-        _.each(list, (item) => {
-            this.getVotersRejectAmount(item._id)
-        })
-    }
-
     public async getVotersRejectAmount(id) {
         try {
             const db_cvote = this.getDBModel('CVote')
@@ -1839,74 +1828,4 @@ export default class extends Base {
         }
     }
 
-    // trigger temporary change，if proposal status is notification or proposed alter aborted
-    public async pollProposalAborted() {
-        const db_cvote = this.getDBModel('CVote')
-        const list = await db_cvote.find({
-            $or: [{status: constant.CVOTE_STATUS.NOTIFICATION}, {status: constant.CVOTE_STATUS.PROPOSED}]
-        })
-        const idsAborted = []
-        _.each(list, (item) => {
-            idsAborted.push(item._id)
-            this.proposalAborted(item.proposalHash)
-        })
-    }
-
-    public async pollProposalStatus() {
-        const db_cvote = this.getDBModel('CVote')
-        const list = await db_cvote.find()
-        _.each(list, (item) => {
-            this.updateProposalStatus(item.proposalHash)
-        })
-
-    }
-
-    public async updateProposalStatus(proposalHash) {
-        const db_cvote = this.getDBModel('CVote')
-        const rs: any = await getProposalData(proposalHash)
-
-        // status not support "Terminated"
-        if (rs && rs.success && rs.status !== 'Terminated') {
-            if (rs.status === 'Aborted') {
-                const rs = await db_cvote.find({proposalHash})
-                if (rs.status === 'PROPOSED') {
-                    await db_cvote.update(
-                        {proposalHash},
-                        {
-                            status: CHAIN_STATUS_TO_PROPOSAL_STATUS.Aborted[rs.status]
-                        }
-                    )
-                }
-                if (rs.status === 'NOTIFICATION') {
-                    await db_cvote.update(
-                        {proposalHash},
-                        {
-                            status: CHAIN_STATUS_TO_PROPOSAL_STATUS.Aborted[rs.status]
-                        }
-                    )
-                }
-            } else {
-                await db_cvote.update(
-                    {proposalHash},
-                    {
-                        status: CHAIN_STATUS_TO_PROPOSAL_STATUS[rs.status]
-                    }
-                )
-            }
-        }
-    }
-
-    // TODO
-    public async proposalAborted(proposalHash) {
-        const db_cvote = this.getDBModel('CVote')
-        const rs: any = await getProposalData(proposalHash)
-        if (rs && rs.success && rs.status === 'Aborted') {
-            await db_cvote.update(
-                {proposalHash},
-                {
-                    status: 'ABORTED' // proposal aboretd
-                }
-            )
-        }
-    }
 }
