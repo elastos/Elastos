@@ -437,6 +437,7 @@ export default class extends Base {
             console.log('---------------- start council or secretariat cronJob -------------')
             await this.eachJob()
             await this.eachSecretariatJob()
+            await this.scheduledTasks()
         }, 1000 * 60 * 10)
     }
 
@@ -501,8 +502,6 @@ export default class extends Base {
             const didList = _.map(councilMembers, (o: any) => DID_PREFIX + o.did)
             const userList = await this.userMode.getDBInstance().find({'did.id': {$in: didList}}, ['_id', 'did.id'])
             const userByDID = _.keyBy(userList, (o: any) => o.did.id.replace(DID_PREFIX, ''))
-            // TODO: need to optimizing (multiple update)
-            // TODO: add didName
             // add avatar nickname into user's did
             await Promise.all(_.map(userList, async (o: any) => {
                 if (o && o.did && !o.did.id) {
