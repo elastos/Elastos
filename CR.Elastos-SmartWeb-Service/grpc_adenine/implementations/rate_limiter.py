@@ -34,9 +34,9 @@ class RateLimiter:
                         session_local.commit()
                         return response
                 else:
-                    session_local.add_access_count(result["user_api_id"], service_name, 'reset')
+                    self.add_access_count(result["user_api_id"], service_name, 'reset')
             else:
-                session_local.add_new_access_entry(api_key, service_name)
+                self.add_new_access_entry(api_key, service_name)
             session_local.commit()
         except Exception as e:
             session_local.rollback()
