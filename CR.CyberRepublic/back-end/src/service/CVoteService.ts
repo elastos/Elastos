@@ -1190,6 +1190,9 @@ export default class extends Base {
                                             votedBy: voteResult.votedBy,
                                             signature: voteResult.signature
                                         }
+                                    },
+                                    $inc: {
+                                        __v: 1
                                     }
                                 }
                             )
