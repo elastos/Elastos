@@ -197,6 +197,25 @@ func getUriSegment(uri string) string {
 func (v *validator) checkVerificationMethod(proof *id.DIDProofInfo,
 	payloadInfo *id.DIDPayloadInfo) error {
 	proofUriSegment := getUriSegment(proof.VerificationMethod)
+
+	masterPubKeyVerifyOk := false
+	for i := 0; i < len(payloadInfo.PublicKey); i++ {
+		if proofUriSegment == getUriSegment(payloadInfo.PublicKey[i].ID) {
+			pubKeyByte := base58.Decode(payloadInfo.PublicKey[i].PublicKeyBase58)
+			//get did address
+			didAddress, err := getDIDAddress(pubKeyByte)
+			if err != nil {
+				return err
+			}
+			//didAddress must equal address in DID
+			if didAddress != v.Store.GetDIDFromUri(payloadInfo.ID) {
+				return errors.New("[ID checkVerificationMethod] ID and PublicKeyBase58 not match ")
+			}
+			masterPubKeyVerifyOk = true
+			break
+		}
+	}
+
 	for _, auth := range payloadInfo.Authentication {
 		switch auth.(type) {
 		case string:
@@ -221,23 +240,8 @@ func (v *validator) checkVerificationMethod(proof *id.DIDProofInfo,
 			return errors.New("[ID checkVerificationMethod] invalid  auth.(type)")
 		}
 	}
-	//if not in Authentication
-	//VerificationMethod uri -------->to find publicKeyBase58 in publicKey array which id is
-	//VerificationMethod uri and publicKeyBase58 can derive id address
-	for i := 0; i < len(payloadInfo.PublicKey); i++ {
-		//get PublicKeyBase58 accord to VerificationMethod
-		if proofUriSegment == getUriSegment(payloadInfo.PublicKey[i].ID) {
-			pubKeyByte := base58.Decode(payloadInfo.PublicKey[i].PublicKeyBase58)
-			//get did address
-			didAddress, err := getDIDAdress(pubKeyByte)
-			if err != nil {
-				return err
-			}
-			//didAddress must equal address in DID
-			if didAddress == v.Store.GetDIDFromUri(payloadInfo.ID) {
-				return nil
-			}
-		}
+	if masterPubKeyVerifyOk {
+		return nil
 	}
 	return errors.New("[ID checkVerificationMethod] wrong public key by VerificationMethod ")
 }
@@ -259,7 +263,32 @@ func getDIDHashByCode(code []byte) (*common.Uint168, error) {
 	return ct1.ToProgramHash(), error
 }
 
-func getDIDAdress(publicKey []byte) (string, error) {
+func CreateCRIDContractByCode(code []byte) (*contract.Contract, error) {
+	if len(code) == 0 {
+		return nil, errors.New("code is nil")
+	}
+	return &contract.Contract{
+		Code:   code,
+		Prefix: PrefixCRDID,
+	}, nil
+}
+
+func getDIDAddress(publicKey []byte) (string,error) {
+	code , err := getCodeByPubKey(publicKey)
+	if err != nil {
+		return "", err
+	}
+	newCode := make([]byte, len(code))
+	copy(newCode, code)
+	didCode := append(newCode[:len(newCode)-1], 0xAD)
+	ct1, err2 := CreateCRIDContractByCode(didCode)
+	if err2 != nil {
+		return "", err
+	}
+	return ct1.ToProgramHash().ToAddress()
+}
+
+func getCIDAdress(publicKey []byte) (string, error) {
 	hash, err := getDIDByPublicKey(publicKey)
 	if err != nil {
 		return "", err
