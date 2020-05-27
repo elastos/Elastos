@@ -11,7 +11,6 @@ export const CouncilMembers = {
     },
     cid: {
         type: String,
-        required: true,
     },
     did: {
         type: String,
@@ -19,21 +18,21 @@ export const CouncilMembers = {
     },
     didName: {
         type: String,
-        required: true,
     },
     avatar: {
         type: String,
     },
     address: {
         type: String,
-        required: true,
     },
     introduction: {
         type: String,
     },
+    votes: {
+        type: Number,
+    },
     impeachmentVotes: {
         type: Number,
-        required: true,
     },
     location: {
         type: Number,
@@ -41,15 +40,12 @@ export const CouncilMembers = {
     },
     depositAmount: {
         type: String,
-        required: true,
     },
     depositAddress: {
         type: String,
-        required: true,
     },
     penalty: {
         type: String,
-        required: true,
     },
     status: {
         type: String,
@@ -72,12 +68,19 @@ export const Council = {
     },
     endDate: {
         type: Date,
-        required: true,
     },
+    // startHeight: {
+    //     type: Number,
+    //     required: true,
+    // },
+    // endHeight: {
+    //     type: Number,
+    // },
     status: {
         type: String,
         required: true,
     },
+    // current height
     height: {
         type: Number,
         required: true,
