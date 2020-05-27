@@ -59,12 +59,14 @@ import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.adapter.AssetskAdapter;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.RecieveJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProcessJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalFatherJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecievePublishedVoteJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveReviewJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveWithdrawJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
@@ -90,21 +92,30 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
 import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.bean.MessageEntity;
 import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
 import org.elastos.wallet.ela.ui.proposal.fragment.SuggestionsInfoFragment;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalDetailPresenter;
 import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
 import org.elastos.wallet.ela.ui.proposal.presenter.bean.ProposalProcessPayLoad;
 import org.elastos.wallet.ela.ui.proposal.presenter.bean.ProposalReviewPayLoad;
 import org.elastos.wallet.ela.ui.proposal.presenter.bean.ProposalWithdrawPayLoad;
+import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
+import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
+import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
+import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.JwtUtils;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.MyUtil;
+import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -116,6 +127,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -156,7 +168,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private String scanResult;
     private String payPasswd;
     private ProposalPresenter proposalPresenter;
+    private ProposalDetailPresenter proposalDetailPresenter;
     private RecieveProposalFatherJwtEntity curentJwtEntity;
+    private String voteNum;
+    private List<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
+    private List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
+    private List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
 
     @Override
     protected int getLayoutId() {
@@ -472,6 +489,22 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
         }
     }
+
+    private void toVoteActivity(BalanceEntity data) {
+        Intent intent = new Intent(getContext(), VoteActivity.class);
+        BigDecimal balance = Arith.div(Arith.sub(data.getBalance(), 1000000), MyWallet.RATE_S, 8);
+        String maxBalance = NumberiUtil.removeZero(balance.toPlainString());
+        //小于1 huo 0
+        if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
+            intent.putExtra("maxBalance", "0");
+        } else {
+            intent.putExtra("maxBalance", maxBalance);
+        }
+        intent.putExtra("openType", getClass().getSimpleName());
+        intent.putExtra("type", Constant.PROPOSALPUBLISHED);
+        startActivity(intent);
+    }
+
 
     @Override
     public void onRvItemClick(View view, int position, Object o) {
@@ -808,6 +841,26 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 scanElastos(scanResult);
             }
         }
+        if (integer == RxEnum.TRANSACTIONSUCCESSMESSAGE.ordinal()) {
+            if (getClass().getSimpleName().equals(result.getName())) {
+                new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        restoreScanData();
+                    }
+                });
+            }
+        }
+        if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
+            if (getClass().getSimpleName().equals(result.getName())) {
+                voteNum = (String) result.getObj();
+                //点击下一步 获得金额后
+                if (proposalDetailPresenter == null) {
+                    proposalDetailPresenter = new ProposalDetailPresenter();
+                }
+                proposalDetailPresenter.getVoteInfo(wallet.getWalletId(), "", this);
+            }
+        }
 
     }
 
@@ -1011,6 +1064,50 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "getVoteInfo":
+                //剔除非公示期的
+                String voteInfo = ((CommmonStringEntity) baseEntity).getData();
+                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("CRCProposal", voteInfo, depositList, crList, searchBeanList);
+                try {
+                    JSONObject voteJson = proposalDetailPresenter.conversVote(voteInfo, "CRCProposal");//key value
+                    //点击下一步 获得上次的投票后筛选数据
+                    String amount = Arith.mulRemoveZero(voteNum, MyWallet.RATE_S).toPlainString();
+                    JSONObject newVotes = proposalDetailPresenter.getPublishDataFromLastVote(voteJson, amount, searchBeanList);
+                    newVotes.put(((RecievePublishedVoteJwtEntity) curentJwtEntity).getData().getProposalhash(), amount);
+                    proposalDetailPresenter.createVoteCRCProposalTransaction(wallet.getWalletId(), newVotes.toString(), otherUnActiveVote.toString(), this);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "createVoteCRCProposalTransaction":
+                //签名发交易
+                goTransferActivity(((CommmonStringEntity) baseEntity).getData());
+                break;
+            case "proposalSearch":
+                searchBeanList = ((ProposalSearchEntity) baseEntity).getData().getList();
+                break;
+            case "getCRlist":
+                crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+
+                break;
+            case "getDepositVoteList":
+                depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
+                break;
+            case "getBalance":
+
+                BalanceEntity balanceEntity = (BalanceEntity) ((CommmonObjEntity) baseEntity).getData();
+                List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(balanceEntity.getMasterWalletId());
+                for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
+                    if (assetsItemEntity.getChainId().equals(balanceEntity.getChainId())) {
+                        assetsItemEntity.setBalance(balanceEntity.getBalance());
+                        if (wallet.getWalletId().equals(balanceEntity.getMasterWalletId())) {
+                            post(RxEnum.BALANCECHANGE.ordinal(), null, assetsItemEntity);
+                        }
+                    }
+
+                }
+                toVoteActivity(balanceEntity);
+                break;
             case "getCurrentCouncilInfo":
                 CtDetailBean ctDetailBean = (CtDetailBean) baseEntity;
                 switch (curentJwtEntity.getCommand().toLowerCase()) {
@@ -1140,6 +1237,18 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
     }
 
+    private void goTransferActivity(String attributesJson) {
+        Intent intent = new Intent(getActivity(), TransferActivity.class);
+        intent.putExtra("amount", voteNum);
+        intent.putExtra("wallet", wallet);
+        intent.putExtra("openType", getClass().getSimpleName());
+        intent.putExtra("chainId", MyWallet.ELA);
+        intent.putExtra("attributes", attributesJson);
+        intent.putExtra("type", Constant.PROPOSALPUBLISHED);
+        intent.putExtra("extra", ((RecievePublishedVoteJwtEntity) curentJwtEntity).getData().getProposalhash());
+        intent.putExtra("transType", 1004);
+        startActivity(intent);
+    }
 
     private void verifyDID(DIDDocument didDocument, String tag) {
         String result = scanResult.replace(tag, "");
@@ -1183,6 +1292,16 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 proposalPresenter = new ProposalPresenter();
             }
             switch (command) {
+                case "voteforproposal"://voteforproposal
+                    //公示期谁都可以投票
+                    curentJwtEntity = JSON.parseObject(payload, RecievePublishedVoteJwtEntity.class);
+                    proposalPresenter.proposalSearch(-1, -1, "NOTIFICATION", null, this);
+                    new VoteListPresenter().getDepositVoteList("1", "all", this, false);
+                    new CRlistPresenter().getCRlist(-1, -1, "all", this, false);
+                    commonGetBalancePresenter.getBalance(wallet.getWalletId(), MyWallet.ELA, this);
+
+
+                    break;
                 case "withdraw":
                     //提现  判断是否本人
                     curentJwtEntity = JSON.parseObject(payload, RecieveWithdrawJwtEntity.class);
@@ -1330,5 +1449,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private void restoreScanData() {
         payPasswd = null;
         curentJwtEntity = null;
+        crList = null;
+        searchBeanList = null;
+        depositList = null;
+        voteNum=null;
     }
 }
