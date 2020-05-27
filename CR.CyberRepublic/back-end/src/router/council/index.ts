@@ -3,6 +3,7 @@ import Base from '../Base'
 import term from './term'
 import council_list from './council_list'
 import council_information from './council_information'
+import scheduled_tasks from './scheduled_tasks'
 
 export default Base.setRouter([
     {
@@ -18,6 +19,11 @@ export default Base.setRouter([
     {
         path: '/information/:did/:id?',
         router: council_information,
+        method: 'get'
+    },
+    {
+        path: '/scheduled_tasks',
+        router: scheduled_tasks,
         method: 'get'
     }
 ])

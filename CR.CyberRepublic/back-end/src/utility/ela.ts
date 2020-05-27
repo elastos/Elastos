@@ -85,6 +85,40 @@ const ela = {
             logger.error(err)
         }
     },
+    async getCrrelatedStage() {
+        const data = {
+            'method': 'getcrrelatedstage',
+            'params': {}
+        }
+        try {
+            const res = await axios.post(process.env.ELA_NODE_URL, data, {
+                headers: DEFAULT_HEADERS
+            })
+            if (res && res.data && res.data.result) {
+                return res.data.result
+            }
+        } catch (err) {
+            logger.error(err)
+        }
+    },
+    async getBlockByHeight(height) {
+        const data = {
+            'method': 'getblockbyheight',
+            'params': {
+                'height': height
+            }
+        }
+        try {
+            const res = await axios.post(process.env.ELA_NODE_URL, data, {
+                headers: DEFAULT_HEADERS
+            })
+            if (res && res.data && res.data.result) {
+                return res.data.result.time
+            }
+        } catch (err) {
+            logger.error(err)
+        }
+    },
     async depositCoin(did: string) {
         const data = {
             'method': 'getcrdepositcoin',
