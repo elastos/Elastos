@@ -171,7 +171,7 @@ class C extends StandardPage {
         }
       }
     } )
-    const isChaining = currentVoted.status == 'chaining'
+    const isChaining = currentVoted && currentVoted.status == 'chaining'
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
