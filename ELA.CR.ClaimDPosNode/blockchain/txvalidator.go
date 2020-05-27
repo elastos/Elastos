@@ -595,19 +595,30 @@ func (b *BlockChain) checkCRCProposalWithdrawOutput(txn *Transaction) error {
 	if proposalState == nil {
 		return errors.New("proposal not exist")
 	}
-	//check output[0] must equal with Recipient
-	if txn.Outputs[0].ProgramHash != proposalState.Proposal.Recipient {
-		return errors.New("txn.Outputs[0].ProgramHash != Recipient")
-	}
-	//check output[1] if exist must equal with CRCComitteeAddresss
-	if len(txn.Outputs) > 1 {
-		if txn.Outputs[1].ProgramHash != b.chainParams.CRCCommitteeAddress {
-			return errors.New("txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
+
+	if txn.PayloadVersion == payload.CRCProposalWithdrawDefault {
+		//check output[0] must equal with Recipient
+		if txn.Outputs[0].ProgramHash != proposalState.Proposal.Recipient {
+			return errors.New("txn.Outputs[0].ProgramHash != Recipient")
 		}
+		//check output[1] if exist must equal with CRCComitteeAddresss
+		if len(txn.Outputs) > 1 {
+			if txn.Outputs[1].ProgramHash != b.chainParams.CRCCommitteeAddress {
+				return errors.New("txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
+			}
+		}
+		if len(txn.Outputs) > 2 {
+			return errors.New("CRCProposalWithdraw tx should not have over two output")
+		}
+	} else if txn.PayloadVersion == payload.CRCProposalWithdrawVersion01 {
+
+		//check output[0] must equal with Recipient
+		if withdrawPayload.Recipient != proposalState.Proposal.Recipient {
+			return errors.New("withdrawPayload.Recipient != Recipient")
+		}
+
 	}
-	if len(txn.Outputs) > 2 {
-		return errors.New("CRCProposalWithdraw tx should not have over two output")
-	}
+
 	return nil
 }
 
@@ -995,7 +1006,7 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 
 func checkTransactionSignature(tx *Transaction, references map[*Input]Output) error {
 	programHashes, err := GetTxProgramHashes(tx, references)
-	if tx.IsCRCProposalWithdrawTx() {
+	if tx.IsCRCProposalWithdrawTx() && tx.PayloadVersion == payload.CRCProposalWithdrawDefault {
 		return nil
 	}
 	if err != nil {
@@ -1797,9 +1808,11 @@ func getCode(publicKey []byte) ([]byte, error) {
 func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	references map[*Input]Output, blockHeight uint32) error {
 
-	for _, output := range references {
-		if output.ProgramHash != b.chainParams.CRCCommitteeAddress {
-			return errors.New("proposal withdrawal transaction for non-crc committee address")
+	if txn.PayloadVersion == payload.CRCProposalWithdrawDefault {
+		for _, output := range references {
+			if output.ProgramHash != b.chainParams.CRCCommitteeAddress {
+				return errors.New("proposal withdrawal transaction for non-crc committee address")
+			}
 		}
 	}
 
@@ -1831,13 +1844,20 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	if withdrawAmount == 0 {
 		return errors.New("no need to withdraw")
 	}
-	//Recipient count + fee must equal to availableWithdrawalAmount
-	if txn.Outputs[0].Value+fee != withdrawAmount {
-		return errors.New("txn.Outputs[0].Value + fee != withdrawAmout ")
+	if txn.PayloadVersion == payload.CRCProposalWithdrawDefault {
+		//Recipient count + fee must equal to availableWithdrawalAmount
+		if txn.Outputs[0].Value+fee != withdrawAmount {
+			return errors.New("txn.Outputs[0].Value + fee != withdrawAmout ")
+		}
+	} else if txn.PayloadVersion == payload.CRCProposalWithdrawVersion01 {
+		// Recipient Amount + fee must equal to availableWithdrawalAmount
+		if withdrawPayload.Amount+fee != withdrawAmount {
+			return errors.New("withdrawPayload.Amount + fee != withdrawAmount ")
+		}
 	}
 
 	signedBuf := new(bytes.Buffer)
-	err := withdrawPayload.SerializeUnsigned(signedBuf, payload.CRCProposalWithdrawVersion)
+	err := withdrawPayload.SerializeUnsigned(signedBuf, txn.PayloadVersion)
 	if err != nil {
 		return err
 	}

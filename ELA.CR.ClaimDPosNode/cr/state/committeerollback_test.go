@@ -297,7 +297,7 @@ func getCRCProposalWithdrawTx(proposalHash common.Uint256,
 	}
 
 	signBuf := new(bytes.Buffer)
-	crcProposalWithdraw.SerializeUnsigned(signBuf, payload.CRCProposalWithdrawVersion)
+	crcProposalWithdraw.SerializeUnsigned(signBuf, payload.CRCProposalWithdrawDefault)
 	signature, _ := crypto.Sign(sponsorPrivateKey, signBuf.Bytes())
 	crcProposalWithdraw.Signature = signature
 

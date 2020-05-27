@@ -447,7 +447,7 @@ func CreateCRCProposalWithdrawTransaction(c *cli.Context) error {
 	}
 
 	signBuf := new(bytes.Buffer)
-	crcProposalWithdraw.SerializeUnsigned(signBuf, payload.CRCProposalWithdrawVersion)
+	crcProposalWithdraw.SerializeUnsigned(signBuf, payload.CRCProposalWithdrawDefault)
 	signature, err := acc.Sign(signBuf.Bytes())
 	if err != nil {
 		return err
