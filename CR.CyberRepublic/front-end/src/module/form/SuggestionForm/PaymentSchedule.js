@@ -27,10 +27,7 @@ class PaymentSchedule extends Component {
   }
 
   passDataToParent() {
-    const { total, address, paymentItems, errors } = this.state
-    if (!total || errors.total || !address || !paymentItems.length) {
-      return
-    }
+    const { total, address, paymentItems } = this.state
     this.changeValue({
       budgetAmount: Number(total),
       elaAddress: address,
@@ -43,22 +40,27 @@ class PaymentSchedule extends Component {
     return (!isNaN(value) && reg.test(value)) || value === '' ? true : false
   }
 
+  validateAddress = (value) => {
+    const reg = /^[E8][a-zA-Z0-9]+$/
+    const len = value.length === 34
+    return !value || (reg.test(value) && len)
+  }
+
   validateFields = (field, value) => {
     const { errors } = this.state
-    if (!value || !value.length) {
+    if (field === 'total' && !this.validateAmount(value)) {
       return {
         ...errors,
-        [field]: I18N.get('suggestion.form.error.required')
+        [field]: I18N.get('suggestion.form.error.isNaN')
       }
-    } else {
-      if (field === 'total' && !this.validateAmount(value)) {
-        return {
-          ...errors,
-          [field]: I18N.get('suggestion.form.error.isNaN')
-        }
-      }
-      return { ...errors, [field]: '' }
     }
+    if (field === 'address' && !this.validateAddress(value)) {
+      return {
+        ...errors,
+        [field]: I18N.get('suggestion.form.error.elaAddress')
+      }
+    }
+    return { ...errors, [field]: '' }
   }
 
   handleChange = (e, field) => {

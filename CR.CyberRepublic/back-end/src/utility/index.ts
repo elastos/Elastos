@@ -133,16 +133,17 @@ export const getUtxosByAmount = async (amount: string) => {
   }
 }
 
-export const getProposalState = async (draftHash: string) => {
+export const getProposalState = async (query: {
+  drafthash?: string
+  proposalhash?: string
+}) => {
   const headers = {
     'Content-Type': 'application/json'
   }
   const data = {
     jsonrpc: '2.0',
     method: 'getcrproposalstate',
-    params: {
-      drafthash: draftHash
-    }
+    params: query
   }
   try {
     const res = await axios.post(process.env.ELA_NODE_URL, data, {

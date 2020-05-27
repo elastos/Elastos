@@ -26,17 +26,17 @@ class BudgetForm extends Component {
     const max = milestone.length - 1
     if (type === ADVANCE && activeKey !== '0') {
       return {
-        error: 'Project initiation payment only apply to the first milestone.'
+        error: I18N.get('suggestion.form.error.advance')
       }
     }
     if (type === COMPLETION && activeKey !== `${max}`) {
       return {
-        error: 'Project completion payment only apply to the last milestone.'
+        error: I18N.get('suggestion.form.error.completion')
       }
     }
     if (type === CONDITIONED && (activeKey === '0' || activeKey === `${max}`)) {
       return {
-        error: 'Project milestone payment can not apply to this milestone.'
+        error: I18N.get('suggestion.form.error.conditioned')
       }
     }
     if (type === CONDITIONED && keys.includes(activeKey)) {
@@ -49,7 +49,7 @@ class BudgetForm extends Component {
       }
       // add project milestone payment
       return {
-        error: 'This milestone has been used.'
+        error: I18N.get('suggestion.form.error.isUsed')
       }
     }
   }

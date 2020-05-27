@@ -125,13 +125,15 @@ export default class extends Base {
         const suggestion = await db_suggestion.findById(id)
         const db_cvote = this.getDBModel('CVote')
         if (suggestion) {
-            const draftHash = _.get(suggestion, 'draftHash')
-            if (draftHash) {
-                const cvote = await db_cvote.findOne({draftHash})
+            const proposalHash = _.get(suggestion, 'proposalHash')
+            if (proposalHash) {
+                const cvote = await db_cvote.findOne({proposalHash})
                 if (cvote) {
                     return {success: true, id: cvote._id}
                 }
-                const rs: any = await getProposalState(draftHash)
+                const rs: any = await getProposalState({
+                    proposalhash: proposalHash
+                })
                 if (rs && rs.success && rs.status === 'Registered') {
                     const proposal = await this.proposeSuggestion({
                         suggestionId: id
@@ -844,6 +846,16 @@ export default class extends Base {
         const {WITHDRAWN} = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel('CVote')
         const proposal = await db_cvote.findOne(query)
+        const sortedBudget = _.sortBy(proposal.budget, 'milestoneKey')
+        const last: any = _.last(sortedBudget)
+        // proposal is final
+        if (
+          proposal.status === 'FINAL' &&
+          last.type === 'COMPLETION' &&
+          last.status === WITHDRAWN
+        ) {
+          return
+        }
         if (proposal.status === 'ACTIVE' || proposal.status === 'FINAL') {
             const result = await getProposalData(proposal.proposalHash)
             const status = _.get(result, 'status')
@@ -852,8 +864,7 @@ export default class extends Base {
             }
             const budgets = _.get(result, 'data.proposal.budgets')
             if (budgets) {
-                const temp = _.sortBy(proposal.budget, 'milestoneKey')
-                const budget = temp.map((item, index) => {
+                const budget = sortedBudget.map((item, index) => {
                     if (budgets[index].status.toLowerCase() === 'withdrawn') {
                         return {...item, status: WITHDRAWN}
                     }
@@ -878,7 +889,7 @@ export default class extends Base {
         await this.updateProposalBudget(query)
         const rs = await db_cvote
             .getDBInstance()
-            .findOne(query)
+            .findOne(query, '-voteHistory')
             .populate(
                 'voteResult.votedBy',
                 constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
@@ -1014,7 +1025,6 @@ export default class extends Base {
             // await this.pollCouncilVoteStatus()
             // member vote status in agreed
             // await this.pollVotersRejectAmount()
-
         }, 1000 * 60 * 2)
     }
 
