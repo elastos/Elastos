@@ -1047,6 +1047,7 @@ static void ela_destroy(void *argv)
     if (w->bulkmsgs)
         deref(w->bulkmsgs);
 
+    pthread_mutex_destroy(&w->receipts_mutex);
     if (w->receipts)
         deref(w->receipts);
 
@@ -1286,6 +1287,13 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         return NULL;
     }
 
+    rc = pthread_mutex_init(&w->receipts_mutex, NULL);
+    if (rc) {
+        free_persistence_data(&data);
+        deref(w);
+        ela_set_error(ELA_SYS_ERROR(rc));
+        return NULL;
+    }
     w->receipts = receipts_create(16);
     if (!w->receipts) {
         free_persistence_data(&data);
@@ -2332,7 +2340,9 @@ void on_friend_message_receipt(ElaCarrier *w, ElaReceiptState state,
 {
     Receipt *receipt;
 
+    pthread_mutex_lock(&w->receipts_mutex);
     receipt = receipts_remove(w->receipts, msgid);
+    pthread_mutex_unlock(&w->receipts_mutex);
     if(!receipt)
         return;
 
@@ -3631,15 +3641,7 @@ int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
         return -1;
     }
 
-    msgid = send_friend_message_internal(carrier, to, msg, len, &is_offline);
-    if(msgid < 0) {
-        deref(receipt);
-        return -1;
-    }
-
     strcpy(receipt->to, to);
-    receipt->msgch = (is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
-    receipt->msgid = msgid;
 
     gettimeofday(&receipt->expire_time, NULL);
     expire_interval.tv_sec = DHT_MSG_EXPIRE_TIME;
@@ -3651,8 +3653,18 @@ int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
     receipt->size = len;
     memcpy(receipt->data, msg, len);
 
+    pthread_mutex_lock(&carrier->receipts_mutex);
+    msgid = send_friend_message_internal(carrier, to, msg, len, &is_offline);
+    if(msgid < 0) {
+        deref(receipt);
+        pthread_mutex_unlock(&carrier->receipts_mutex);
+        return -1;
+    }
+    receipt->msgch = (is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
+    receipt->msgid = msgid;
     receipts_put(carrier->receipts, receipt);
     deref(receipt);
+    pthread_mutex_unlock(&carrier->receipts_mutex);
 
     return msgid;
 }

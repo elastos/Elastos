@@ -35,7 +35,6 @@
 #include "express.h"
 
 #define DHT_BOOTSTRAP_DEFAULT_PORT 33445
-#define HIVE_BOOTSTRAP_DEFAULT_PORT 9095
 
 #define MAX_IPV4_ADDRESS_LEN (15)
 #define MAX_IPV6_ADDRESS_LEN (47)
@@ -52,12 +51,6 @@ typedef struct DhtBootstrapNodeBuf {
     uint16_t port;
     uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
 } DhtBootstrapNodeBuf;
-
-typedef struct HiveBootstrapNodeBuf {
-    char ipv4[MAX_IPV4_ADDRESS_LEN + 1];
-    char ipv6[MAX_IPV6_ADDRESS_LEN + 1];
-    uint16_t port;
-} HiveBootstrapNodeBuf;
 
 typedef struct ExpressNodeBuf {
     char *ipv4;
@@ -166,6 +159,8 @@ struct ElaCarrier {
     hashtable_t *tassembly_irsps;
 
     hashtable_t *bulkmsgs;
+
+    pthread_mutex_t receipts_mutex;
     hashtable_t *receipts;
 
     pthread_t main_thread;
