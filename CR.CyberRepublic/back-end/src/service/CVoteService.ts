@@ -135,7 +135,7 @@ export default class extends Base {
                     proposalhash: proposalHash
                 })
                 if (rs && rs.success && rs.status === 'Registered') {
-                    const proposal = await this.proposeSuggestion({
+                    const proposal = await this.makeSuggIntoProposal({
                         suggestion
                     })
                     return {success: true, id: proposal._id}
@@ -146,7 +146,7 @@ export default class extends Base {
         }
     }
 
-    public async proposeSuggestion(param: any): Promise<Document> {
+    private async makeSuggIntoProposal(param: any): Promise<Document> {
         const db_cvote = this.getDBModel('CVote')
         const db_suggestion = this.getDBModel('Suggestion')
         const db_user = this.getDBModel('User')
@@ -202,6 +202,71 @@ export default class extends Base {
             return
         }
     }
+
+    public async proposeSuggestion(param: any): Promise<Document> {
+        const db_cvote = this.getDBModel('CVote')
+        const db_suggestion = this.getDBModel('Suggestion')
+        const db_user = this.getDBModel('User')
+        const {suggestionId} = param
+
+        const suggestion =
+            suggestionId && (await db_suggestion.findById(suggestionId))
+        if (!suggestion) {
+            throw 'cannot find suggestion'
+        }
+
+        const creator = await db_user.findById(suggestion.createdBy)
+        const vid = await this.getNewVid()
+
+        const doc: any = {
+            vid,
+            type: suggestion.type,
+            status: constant.CVOTE_STATUS.PROPOSED,
+            published: true,
+            contentType: constant.CONTENT_TYPE.MARKDOWN,
+            proposedBy: userUtil.formatUsername(creator),
+            proposer: suggestion.createdBy,
+            createdBy: this.currentUser._id,
+            reference: suggestionId,
+            proposalHash: suggestion.proposalHash,
+            draftHash: suggestion.draftHash,
+            ownerPublicKey: suggestion.ownerPublicKey
+        }
+
+        Object.assign(doc, _.pick(suggestion, BASE_FIELDS))
+
+        const councilMembers = await db_user.find({
+            role: constant.USER_ROLE.COUNCIL
+        })
+        const voteResult = []
+        doc.proposedAt = Date.now()
+        _.each(councilMembers, (user) =>
+            voteResult.push({
+                votedBy: user._id,
+                value: constant.CVOTE_RESULT.UNDECIDED
+            })
+        )
+        doc.voteResult = voteResult
+        doc.voteHistory = voteResult
+
+        try {
+            const res = await db_cvote.save(doc)
+            await db_suggestion.update(
+                {_id: suggestionId},
+                {
+                    $addToSet: {reference: res._id},
+                    $set: {tags: []}
+                }
+            )
+            this.notifySubscribers(res)
+            this.notifyCouncil(res)
+            return res
+        } catch (error) {
+            logger.error(error)
+            return
+        }
+    }
+
 
     /**
      *
