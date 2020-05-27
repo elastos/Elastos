@@ -282,7 +282,7 @@ export default class extends Base {
             console.log('---------------- start council or secretariat cronJob -------------')
             await this.eachSecretariatJob()
             await this.eachCouncilJob()
-        }, 1000 * 15)
+        }, 1000 * 60 * 5)
     }
 
     /**
