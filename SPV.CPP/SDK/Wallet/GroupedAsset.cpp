@@ -141,6 +141,7 @@ namespace Elastos {
 															 const std::string &memo) {
 			uint64_t feeAmount;
 			BigInt totalInputAmount, totalOutputAmount;
+			AddressPtr inputAddr;
 			TransactionPtr tx = TransactionPtr(new Transaction(type, payload));
 
 			std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
@@ -152,7 +153,7 @@ namespace Elastos {
 			_parent->Lock();
 
 			for (UTXOSet::iterator u = _utxosDeposit.begin(); u != _utxosDeposit.end(); ++u) {
-				if (_parent->IsUTXOSpending(*u))
+				if (_parent->IsUTXOSpending(*u) || (*u)->Index() != 0)
 					continue;
 
 				if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
@@ -164,6 +165,7 @@ namespace Elastos {
 					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
 					bytes_t code;
 					std::string path;
+					inputAddr = (*u)->Output()->Addr();
 					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
 					tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 				}
@@ -183,6 +185,10 @@ namespace Elastos {
 
 			AddressPtr receiveAddress = _parent->_subAccount->UnusedAddresses(1, 0)[0];
 			tx->AddOutput(OutputPtr(new TransactionOutput(totalOutputAmount, *receiveAddress)));
+
+			if (totalInputAmount > totalOutputAmount + feeAmount) {
+				tx->AddOutput(OutputPtr(new TransactionOutput(totalInputAmount - totalOutputAmount - feeAmount, *inputAddr)));
+			}
 
 			tx->SetFee(feeAmount);
 
