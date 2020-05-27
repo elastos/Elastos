@@ -152,6 +152,13 @@ export const TASK_CANDIDATE_CATEGORY = {
 
 export const TERM_COUNCIL_STATUS = create(['HISTORY', 'CURRENT', 'VOTING'])
 
+export const COUNCIL_STATUS = {
+  ELECTED: 'Elected',
+  IMPEACHED: 'Impeached',
+  RETURNED: 'Returned',
+  TERMINATED: 'Terminated'
+}
+
 export const SECRETARIAT_STATUS = create(['CURRENT', 'NON_CURRENT'])
 
 // ACTIVE === PASSED, currently 'published' flag is used for 'DRAFT'
