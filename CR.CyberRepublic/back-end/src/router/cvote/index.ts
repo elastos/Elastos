@@ -1,7 +1,6 @@
 import Base from '../Base'
 
 import create_draft from './create_draft'
-import propose_suggestion from './propose_suggestion'
 import update_draft from './update_draft'
 import delete_draft from './delete_draft'
 import create from './create'
@@ -32,11 +31,6 @@ export default Base.setRouter([
   {
     path: '/poll_proposal_state',
     router: pollProposalState,
-    method: 'post'
-  },
-  {
-    path: '/propose_suggestion',
-    router: propose_suggestion,
     method: 'post'
   },
   {
