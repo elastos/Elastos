@@ -255,8 +255,9 @@ export default class extends Base {
         } else {
 
             // update secretariat
-            await this.secretariatModel.getDBInstance().update({did: secretariatDID}, {
+            await this.secretariatModel.getDBInstance().update({$or: [{did: secretariatDID}, {did: DID_PREFIX + secretariatDID}]}, {
                 ...information,
+                did: secretariatDID,
                 user: user && user._id,
             })
         }
