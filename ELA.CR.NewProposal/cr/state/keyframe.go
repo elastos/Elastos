@@ -96,6 +96,16 @@ type CRMember struct {
 	MemberState      MemberState
 }
 
+// CRProposalWithdrawInfo defines CR proposal withdraw related info
+type CRProposalWithdrawInfo struct {
+
+	// The specified ELA address where the funds will be sent.
+	Recipient common.Uint168
+
+	// The amount of sela to send
+	Amount common.Fixed64
+}
+
 // StateKeyFrame holds necessary state about CR committee.
 type KeyFrame struct {
 	Members                    map[common.Uint168]*CRMember
@@ -148,8 +158,9 @@ type ProposalState struct {
 	RegisterHeight     uint32
 	VoteStartHeight    uint32
 
-	WithdrawnBudgets    map[uint8]common.Fixed64 // proposalWithdraw
-	WithdrawableBudgets map[uint8]common.Fixed64 // proposalTracking
+	WithdrawnBudgets    map[uint8]common.Fixed64                  // proposalWithdraw
+	WithdrawableTxInfo  map[common.Uint256]CRProposalWithdrawInfo // proposalWithdraw info
+	WithdrawableBudgets map[uint8]common.Fixed64                  // proposalTracking
 	BudgetsStatus       map[uint8]BudgetStatus
 	FinalPaymentStatus  bool
 

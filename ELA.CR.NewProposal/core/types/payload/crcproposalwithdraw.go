@@ -14,14 +14,24 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-const CRCProposalWithdrawVersion byte = 0x00
+const (
+	CRCProposalWithdrawDefault   byte = 0x00
+	CRCProposalWithdrawVersion01 byte = 0x01
+)
 
 type CRCProposalWithdraw struct {
+
 	// Hash of the proposal to withdrawal ela.
 	ProposalHash common.Uint256
 
 	// Public key of proposal owner.
 	OwnerPublicKey []byte
+
+	// The specified ELA address where the funds will be sent.
+	Recipient common.Uint168
+
+	// The amount of sela to send
+	Amount common.Fixed64
 
 	// Signature of proposal owner.
 	Signature []byte
@@ -58,6 +68,16 @@ func (p *CRCProposalWithdraw) SerializeUnsigned(w io.Writer, version byte) error
 		return err
 	}
 
+	if version == CRCProposalWithdrawVersion01 {
+		if err := p.Recipient.Serialize(w); err != nil {
+			return err
+		}
+
+		if err := p.Amount.Serialize(w); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -85,5 +105,14 @@ func (p *CRCProposalWithdraw) DeserializeUnsigned(r io.Reader,
 		return err
 	}
 	p.OwnerPublicKey = ownerPublicKey
+
+	if version == CRCProposalWithdrawVersion01 {
+		if err := p.Recipient.Deserialize(r); err != nil {
+			return err
+		}
+		if err := p.Amount.Deserialize(r); err != nil {
+			return err
+		}
+	}
 	return nil
 }

@@ -1434,7 +1434,7 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 	}
 	pubkey := getPublicKeyFromCode(acc.RedeemScript)
 	crcProposalWithdraw.OwnerPublicKey = pubkey
-	err = crcProposalWithdraw.SerializeUnsigned(rpSignBuf, payload.CRCProposalWithdrawVersion)
+	err = crcProposalWithdraw.SerializeUnsigned(rpSignBuf, payload.CRCProposalWithdrawDefault)
 	rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)

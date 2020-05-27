@@ -405,6 +405,7 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		RegisterHeight:      height,
 		VoteStartHeight:     0,
 		WithdrawnBudgets:    make(map[uint8]common.Fixed64),
+		WithdrawableTxInfo:  make(map[common.Uint256]CRProposalWithdrawInfo),
 		WithdrawableBudgets: make(map[uint8]common.Fixed64),
 		BudgetsStatus:       budgetsStatus,
 		FinalPaymentStatus:  false,
@@ -518,11 +519,20 @@ func (p *ProposalManager) proposalWithdraw(tx *types.Transaction,
 
 			}
 		}
+		if tx.PayloadVersion == payload.CRCProposalWithdrawVersion01 {
+			proposalState.WithdrawableTxInfo[tx.Hash()] = CRProposalWithdrawInfo{
+				Recipient: withdrawPayload.Recipient,
+				Amount:    withdrawPayload.Amount,
+			}
+		}
 	}, func() {
 		for k, _ := range withdrawingBudgets {
 			delete(proposalState.WithdrawnBudgets, k)
 		}
 		proposalState.BudgetsStatus = oriBudgetsStatus
+		if tx.PayloadVersion == payload.CRCProposalWithdrawVersion01 {
+			delete(proposalState.WithdrawableTxInfo, tx.Hash())
+		}
 	})
 }
 
