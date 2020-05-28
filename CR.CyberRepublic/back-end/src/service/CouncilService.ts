@@ -255,8 +255,9 @@ export default class extends Base {
         } else {
 
             // update secretariat
-            await this.secretariatModel.getDBInstance().update({did: secretariatDID}, {
+            await this.secretariatModel.getDBInstance().update({$or: [{did: secretariatDID}, {did: DID_PREFIX + secretariatDID}]}, {
                 ...information,
+                did: secretariatDID,
                 user: user && user._id,
             })
         }
@@ -282,7 +283,7 @@ export default class extends Base {
             console.log('---------------- start council or secretariat cronJob -------------')
             await this.eachSecretariatJob()
             await this.eachCouncilJob()
-        }, 1000 * 15)
+        }, 1000 * 60 * 5)
     }
 
     /**
@@ -414,7 +415,7 @@ export default class extends Base {
             if (data.status === constant.TERM_COUNCIL_STATUS.CURRENT) {
                 const result = _.filter(oldCouncilsByDID, (v: any, k: any) =>
                     (newCouncilsByDID[k]
-                        && v.status !== constant.COUNCIL_STATUS.IMPEACHED
+                        // && v.status !== constant.COUNCIL_STATUS.IMPEACHED
                         && newCouncilsByDID[k].status === constant.COUNCIL_STATUS.IMPEACHED))
                 await updateUserRole(result, constant.USER_ROLE.MEMBER)
             }

@@ -26,7 +26,7 @@ const TAB_KEYS = [
   'relevance',
   'budget'
 ]
-const { ADVANCE, COMPLETION, CONDITIONED } = SUGGESTION_BUDGET_TYPE
+const { ADVANCE, COMPLETION } = SUGGESTION_BUDGET_TYPE
 
 class C extends BaseComponent {
   constructor(props) {
@@ -83,27 +83,34 @@ class C extends BaseComponent {
       }
 
       const budget = form.getFieldValue('budget')
-      if (budget) {
+      const amount = _.get(budget, 'budgetAmount')
+      const address = _.get(budget, 'elaAddress')
+      const pItems = _.get(budget, 'paymentItems')
+
+      if (amount || address || !_.isEmpty(pItems)) {
+        if (!amount) {
+          this.setState({ loading: false })
+          message.error(I18N.get('suggestion.form.error.amount'))
+          return
+        }
+
+        if (!address) {
+          this.setState({ loading: false })
+          message.error(I18N.get('suggestion.form.error.address'))
+          return
+        }
+
         const plan = form.getFieldValue('plan')
         const milestone = _.get(plan, 'milestone')
-        const pItems = _.get(budget, 'paymentItems')
-        if (milestone.length !== pItems.length) {
-          this.setState({ loading: false })
-          message.error(
-            'Payment schedule must keep consistent with milestones.'
-          )
-          return
-        }
         const initiation = pItems.filter((item) => item.type === ADVANCE)
-        if (initiation.length !== 1) {
-          this.setState({ loading: false })
-          message.error('Must provide only one project initiation payment')
-          return
-        }
         const completion = pItems.filter((item) => item.type === COMPLETION)
-        if (completion.length !== 1) {
+        if (
+          milestone.length !== pItems.length ||
+          initiation.length !== 1 ||
+          completion.length !== 1
+        ) {
           this.setState({ loading: false })
-          message.error('Must provide only one project completion payment')
+          message.error(I18N.get('suggestion.form.error.payment'))
           return
         }
       }
