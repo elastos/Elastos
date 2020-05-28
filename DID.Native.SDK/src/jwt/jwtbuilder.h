@@ -37,7 +37,7 @@ extern "C" {
 
 typedef struct JWTBuilder {
     cjose_header_t *header;
-    cjose_jwk_t *jwk;
+    cjose_jws_t *jws;
     json_t *claims;
     DID issuer;
     DIDDocument *doc;

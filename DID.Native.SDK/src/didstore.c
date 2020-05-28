@@ -383,6 +383,11 @@ static int create_store(DIDStore *store)
     return 0;
 }
 
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-overflow="
+#endif
+
 static int postChangePassword(DIDStore *store)
 {
     char post_file[PATH_MAX];
@@ -424,6 +429,10 @@ static int postChangePassword(DIDStore *store)
     }
     return 0;
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 static int check_store(DIDStore *store)
 {

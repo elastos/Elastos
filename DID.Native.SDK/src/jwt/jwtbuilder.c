@@ -109,8 +109,8 @@ void JWTBuilder_Destroy(JWTBuilder *builder)
 
     if (builder->header)
         cjose_header_release(builder->header);
-    if (builder->jwk)
-        cjose_jwk_release(builder->jwk);
+    if (builder->jws)
+        cjose_jws_release(builder->jws);
     if (builder->claims)
         json_decref(builder->claims);
     if (builder->doc)
@@ -282,10 +282,12 @@ bool JWTBuilder_SetId(JWTBuilder *builder, const char *jti)
 int JWTBuilder_Sign(JWTBuilder *builder, DIDURL *keyid, const char *storepass)
 {
     cjose_err err;
+    cjose_jwk_t *jwk = NULL;
     PublicKey *pk;
     uint8_t pubkey[PUBLICKEY_BYTES];
     uint8_t privatekey[PRIVATEKEY_BYTES];
     char idstring[ELA_MAX_DID_LEN];
+    const char *payload;
     KeySpec _keyspec, *keyspec;
     DID *issuer;
 
@@ -317,8 +319,8 @@ int JWTBuilder_Sign(JWTBuilder *builder, DIDURL *keyid, const char *storepass)
     if (!keyspec)
         return -1;
 
-    builder->jwk = cjose_jwk_create_EC_spec((cjose_jwk_ec_keyspec*)keyspec, &err);
-    if (!builder->jwk) {
+    jwk = cjose_jwk_create_EC_spec((cjose_jwk_ec_keyspec*)keyspec, &err);
+    if (!jwk) {
         DIDError_Set(DIDERR_JWT, "Create jwk failed.");
         return -1;
     }
@@ -326,19 +328,110 @@ int JWTBuilder_Sign(JWTBuilder *builder, DIDURL *keyid, const char *storepass)
     if (!cjose_header_set(builder->header, CJOSE_HDR_KID,
             DIDURL_ToString(keyid, idstring, sizeof(idstring), false), &err)) {
         DIDError_Set(DIDERR_JWT, "Set jwt sign key failed.");
+        cjose_jwk_release(jwk);
+        return -1;
+    }
+
+    payload = json_dumps(builder->claims, 0);
+    if (!payload) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Get jwt body string failed.");
+        cjose_jwk_release(jwk);
+        return -1;
+    }
+
+    builder->jws = cjose_jws_sign(jwk, builder->header, (uint8_t*)payload, strlen(payload), &err);
+    free((void*)payload);
+    if (!builder->jws) {
+        DIDError_Set(DIDERR_JWT, "Sign jwt body failed.");
+        cjose_jwk_release(jwk);
         return -1;
     }
 
     return 0;
 }
 
+static const char *jws_export(JWTBuilder *builder)
+{
+    cjose_err err;
+    bool exported;
+    const char *payload = NULL;
+
+    assert(builder);
+    assert(builder->header);
+    assert(builder->claims);
+
+    exported = cjose_jws_export(builder->jws, &payload, &err);
+    if (!exported) {
+        DIDError_Set(DIDERR_JWT, "Export token failed.");
+        return NULL;
+    }
+
+    return strdup(payload);
+}
+
+static const char *jwt_export(JWTBuilder *builder)
+{
+    const char *header = NULL, *claims = NULL;
+    char *payload = NULL, *token = NULL;
+    size_t len, token_len = 0;
+
+    assert(builder);
+    assert(builder->header);
+    assert(builder->claims);
+
+    //get header part in jwt
+    header = json_dumps(builder->header, 0);
+    if (!header) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Get jwt header string failed.");
+        goto errorExit;
+    }
+
+    claims = json_dumps(builder->claims, 0);
+    if (!claims) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Get jwt body string failed.");
+        goto errorExit;
+    }
+
+    token = (char*)malloc(strlen(header) * 4 / 3 + strlen(claims) * 4 / 3 + 32 + 3);
+    if (!token) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for token failed.");
+        goto errorExit;
+    }
+
+    len = base64_url_encode(token, (const uint8_t *)header, strlen(header));
+    free((char*)header);
+    if (len <= 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Encode jwt header failed");
+        goto errorExit;
+    }
+    token_len += len;
+    token[token_len++] = '.';
+
+    len = base64_url_encode(token + token_len, (const uint8_t *)claims, strlen(claims));
+    free((char*)claims);
+    if (len <= 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Encode jwt body failed");
+        goto errorExit;
+    }
+    token_len += len;
+    token[token_len++] = '.';
+    token[token_len] = 0;
+
+    return token;
+
+errorExit:
+    if (header)
+        free((char*)header);
+    if (claims)
+        free((char*)claims);
+    if (token)
+        free((char*)token);
+
+    return NULL;
+}
+
 const char *JWTBuilder_Compact(JWTBuilder *builder)
 {
-    cjose_jws_t *jws;
-    cjose_err err;
-    const char *payload, *compacted_str;
-    bool exported;
-
     if (!builder) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
@@ -349,31 +442,10 @@ const char *JWTBuilder_Compact(JWTBuilder *builder)
         return NULL;
     }
 
-    payload = json_dumps(builder->claims, 0);
-    if (!payload) {
-        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Get jwt body string failed.");
-        return NULL;
-    }
+    if (!builder->jws)
+        return jwt_export(builder);
 
-    jws = cjose_jws_sign(builder->jwk, builder->header, (uint8_t*)payload, strlen(payload), &err);
-    free((void*)payload);
-    if (!jws) {
-        DIDError_Set(DIDERR_JWT, "Sign jwt body failed.");
-        return NULL;
-    }
-
-    payload = NULL;
-    exported = cjose_jws_export(jws, &payload, &err);
-    if (!exported) {
-        DIDError_Set(DIDERR_JWT, "Export token failed.");
-        cjose_jws_release(jws);
-        return NULL;
-    }
-
-    compacted_str = strdup(payload);
-    cjose_jws_release(jws);
-
-    return compacted_str;
+    return jws_export(builder);
 }
 
 int JWTBuilder_Reset(JWTBuilder *builder)
@@ -387,13 +459,13 @@ int JWTBuilder_Reset(JWTBuilder *builder)
         cjose_header_release(builder->header);
         builder->header = NULL;
     }
-    if (builder->jwk) {
-        cjose_jwk_release(builder->jwk);
-        builder->jwk = NULL;
-    }
     if (builder->claims) {
         json_decref(builder->claims);
         builder->claims = NULL;
+    }
+    if (builder->jws) {
+        cjose_jws_release(builder->jws);
+        builder->jws = NULL;
     }
 
     return init_jwtbuilder(builder);

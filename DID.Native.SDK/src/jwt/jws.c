@@ -35,8 +35,8 @@ void JWS_Destroy(JWS *jws)
     if (!jws)
         return;
 
-    if (jws->jws)
-        cjose_jws_release(jws->jws);
+    if (jws->header)
+        json_decref(jws->header);
     if (jws->claims)
         json_decref(jws->claims);
 }

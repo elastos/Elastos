@@ -233,6 +233,7 @@ DID_API int JWTBuilder_Sign(JWTBuilder *builder, DIDURL *keyid, const char *stor
  *      builder         [in] The handle to JWTBuilder.
  * @return
  *      If no error occurs, return token string. Otherwise, return NULL.
+ *      Free the return value after using it.
  */
 DID_API const char *JWTBuilder_Compact(JWTBuilder *builder);
 
@@ -276,7 +277,6 @@ DID_API void JWS_Destroy(JWS *jws);
  *      attr            [in] The key to header.
  * @return
  *      If no error occurs, return value string. Otherwise, return NULL.
- *      Free the return value after using it.
  */
 DID_API const char *JWS_GetHeader(JWS *jws, const char *attr);
 
@@ -288,7 +288,6 @@ DID_API const char *JWS_GetHeader(JWS *jws, const char *attr);
  *      jws             [in] The handle to JWS.
  * @return
  *      If no error occurs, return algorithm string. Otherwise, return NULL.
- *      Free the return value after using it.
  */
 DID_API const char *JWS_GetAlgorithm(JWS *jws);
 
@@ -300,7 +299,6 @@ DID_API const char *JWS_GetAlgorithm(JWS *jws);
  *      jws             [in] The handle to JWS.
  * @return
  *      If no error occurs, return key string. Otherwise, return NULL.
- *      Free the return value after using it.
  */
 DID_API const char *JWS_GetKeyId(JWS *jws);
 
@@ -341,7 +339,6 @@ DID_API const char *JWS_GetClaimAsJson(JWS *jws, const char *key);
  *      key             [in] The key to claim.
  * @return
  *      If no error occurs, return integar value. Otherwise, return 0.
- *      Free the return value after using it.
  */
 DID_API long JWS_GetClaimAsInteger(JWS *jws, const char *key);
 
@@ -377,7 +374,6 @@ DID_API const char *JWS_GetIssuer(JWS *jws);
  *      jws             [in] The handle to JWS.
  * @return
  *      If no error occurs, return subject string. Otherwise, return NULL.
- *      Free the return value after using it.
  */
 DID_API const char *JWS_GetSubject(JWS *jws);
 
@@ -389,7 +385,6 @@ DID_API const char *JWS_GetSubject(JWS *jws);
  *      jws             [in] The handle to JWS.
  * @return
  *      If no error occurs, return audience string. Otherwise, return NULL.
- *      Free the return value after using it.
  */
 DID_API const char *JWS_GetAudience(JWS *jws);
 
@@ -401,7 +396,6 @@ DID_API const char *JWS_GetAudience(JWS *jws);
  *      jws             [in] The handle to JWS.
  * @return
  *      If no error occurs, return id string. Otherwise, return NULL.
- *      Free the return value after using it.
  */
 DID_API const char *JWS_GetId(JWS *jws);
 
@@ -413,7 +407,6 @@ DID_API const char *JWS_GetId(JWS *jws);
  *      jws             [in] The handle to JWS.
  * @return
  *      If no error occurs, return expire time. Otherwise, return 0.
- *      Free the return value after using it.
  */
 DID_API time_t JWS_GetExpiration(JWS *jws);
 
