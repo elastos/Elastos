@@ -59,7 +59,7 @@ public class VoteActivity extends BaseActivity {
     TextView tvTitle;
     @BindView(R.id.tv_vote_tag)
     TextView tvVoteTag;
-    private String type;
+    private String type,openType;
 
     @Override
     protected int getLayoutId() {
@@ -79,6 +79,7 @@ public class VoteActivity extends BaseActivity {
 
     @Override
     protected void setExtraData(Intent data) {
+        openType = data.getStringExtra("openType");
         type = data.getStringExtra("type");
         maxBalance = data.getStringExtra("maxBalance");
         NumberiUtil.editTestFormat(etVote, 8);
@@ -140,7 +141,7 @@ public class VoteActivity extends BaseActivity {
 //                    showToastMessage(getString(R.string.lack_of_balance));
 //                    return;
 //                }
-                post(RxEnum.VOTETRANSFERACTIVITY.ordinal(), num, null);
+                post(RxEnum.VOTETRANSFERACTIVITY.ordinal(), openType, num);
                 finish();
 
                 // dialogUtil.showWarmPromptInput(this, null, null, this);
@@ -150,10 +151,4 @@ public class VoteActivity extends BaseActivity {
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // TODO: add setContentView(...) invocation
-        ButterKnife.bind(this);
-    }
 }

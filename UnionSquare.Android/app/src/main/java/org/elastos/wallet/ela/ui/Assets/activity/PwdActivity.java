@@ -50,7 +50,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     private String chainId;
     private PwdPresenter presenter;
     private String attributes;
-    private String pwd;
+    private String pwd, openType;
     private boolean onlySign;//为1时候只需要签名然后post出去
     private int transType;
 
@@ -73,6 +73,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
 
     @Override
     protected void setExtraData(Intent data) {
+        openType = data.getStringExtra("openType");
         chainId = data.getStringExtra("chainId");
         attributes = data.getStringExtra("attributes");
         wallet = data.getParcelableExtra("wallet");
@@ -133,7 +134,8 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                post(RxEnum.TRANSFERSUCESS.ordinal(), transType+"", hash);
+                post(RxEnum.TRANSFERSUCESS.ordinal(), transType + "", hash);
+                post(RxEnum.TRANSACTIONSUCCESSMESSAGE.ordinal(), openType, null);//只为通知特定页面加的补丁
                 finish();
                 break;
         }
