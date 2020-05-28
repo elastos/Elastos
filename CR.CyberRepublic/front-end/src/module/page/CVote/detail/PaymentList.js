@@ -6,7 +6,7 @@ import linkifyStr from 'linkifyjs/string'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import Signature from './Signature'
-import { MILESTONE_STATUS, SUGGESTION_BUDGET_TYPE } from '@/constant'
+import { MILESTONE_STATUS, SUGGESTION_BUDGET_TYPE, CVOTE_STATUS } from '@/constant'
 import WithdrawMoney from './WithdrawMoney'
 
 const {
@@ -18,6 +18,7 @@ const {
 } = MILESTONE_STATUS
 
 const { COMPLETION } = SUGGESTION_BUDGET_TYPE
+const { FIANL } = CVOTE_STATUS
 
 class PaymentList extends Component {
   constructor(props) {
@@ -93,7 +94,7 @@ class PaymentList extends Component {
     if (isFinal) {
       return null
     }
-    if (status === WAITING_FOR_REQUEST) {
+    if (status === WAITING_FOR_REQUEST && this.props.status !== FIANL) {
       return (
         !user.is_secretary && (
           <div
@@ -107,7 +108,7 @@ class PaymentList extends Component {
         )
       )
     }
-    if (status === REJECTED) {
+    if (status === REJECTED && this.props.status !== FIANL) {
       return (
         !user.is_secretary && (
           <div
