@@ -115,3 +115,7 @@ target_link_libraries(libcurl INTERFACE ${CURL_DEPS})
 if(WIN32)
     target_compile_definitions(libcurl INTERFACE CURL_STATICLIB)
 endif()
+
+if(ENABLE_STATIC)
+    export_static_library(curl)
+endif()

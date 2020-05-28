@@ -24,3 +24,9 @@ ExternalProject_Add(
         -DENABLE_NC=OFF
         ${CMAKE_ARGS_INIT}
 )
+
+if(ENABLE_STATIC)
+    export_static_library(ssl)
+    export_static_library(tls)
+    export_static_library(crypto)
+endif()
