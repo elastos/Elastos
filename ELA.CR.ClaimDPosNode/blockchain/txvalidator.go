@@ -1098,6 +1098,15 @@ func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) 
 		if blockHeight < b.chainParams.CRCommitteeStartHeight {
 			return errors.New("not support before CRCommitteeStartHeight")
 		}
+		if txn.TxType == CRCProposalWithdraw {
+			if txn.PayloadVersion == payload.CRCProposalWithdrawDefault && blockHeight >= b.chainParams.CRCProposalWithdrawPayloadV1Height {
+				return errors.New("not support after CRCProposalWithdrawPayloadV1Height")
+			}
+
+			if txn.PayloadVersion == payload.CRCProposalWithdrawVersion01 && blockHeight < b.chainParams.CRCProposalWithdrawPayloadV1Height {
+				return errors.New("not support before CRCProposalWithdrawPayloadV1Height")
+			}
+		}
 	case CRAssetsRectify:
 		if blockHeight < b.chainParams.CRAssetsRectifyTransactionHeight {
 			return errors.New("not support before CRAssetsRectifyTransactionHeight")
