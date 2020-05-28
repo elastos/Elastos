@@ -2393,8 +2393,8 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 }
 
 func (s *txValidatorTestSuite) getCRCProposalWithdrawTx(crPublicKeyStr,
-	crPrivateKeyStr string, stage uint8, recipient,
-	commitee *common.Uint168, recipAmout, commiteAmout common.Fixed64) *types.
+	crPrivateKeyStr string, recipient,
+	commitee *common.Uint168, recipAmout, commiteAmout common.Fixed64, payloadVersion byte) *types.
 	Transaction {
 
 	privateKey1, _ := common.HexStringToBytes(crPrivateKeyStr)
@@ -2403,13 +2403,25 @@ func (s *txValidatorTestSuite) getCRCProposalWithdrawTx(crPublicKeyStr,
 	txn := new(types.Transaction)
 	txn.TxType = types.CRCProposalWithdraw
 	txn.Version = types.TxVersionDefault
-	crcProposalWithdraw := &payload.CRCProposalWithdraw{
-		ProposalHash:   *randomUint256(),
-		OwnerPublicKey: pkBytes,
+	var crcProposalWithdraw *payload.CRCProposalWithdraw
+	switch payloadVersion {
+	case 0x00:
+		crcProposalWithdraw = &payload.CRCProposalWithdraw{
+			ProposalHash:   *randomUint256(),
+			OwnerPublicKey: pkBytes,
+		}
+	case 0x01:
+		crcProposalWithdraw = &payload.CRCProposalWithdraw{
+			ProposalHash:   *randomUint256(),
+			OwnerPublicKey: pkBytes,
+			Recipient:      *recipient,
+			Amount:         recipAmout,
+		}
+		txn.PayloadVersion = payload.CRCProposalWithdrawVersion01
 	}
 
 	signBuf := new(bytes.Buffer)
-	crcProposalWithdraw.SerializeUnsigned(signBuf, payload.CRCProposalReviewVersion)
+	crcProposalWithdraw.SerializeUnsigned(signBuf, txn.PayloadVersion)
 	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
 	crcProposalWithdraw.Signature = sig
 
@@ -2483,8 +2495,8 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 
 	s.Chain.chainParams.CRCCommitteeAddress = *CRCCommitteeAddressU168
 	// stage = 1 ok
-	txn := s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 1,
-		Recipient, CRCCommitteeAddressU168, 9*ela, 50*ela)
+	txn := s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1,
+		Recipient, CRCCommitteeAddressU168, 9*ela, 50*ela, 0)
 	crcProposalWithdraw, _ := txn.Payload.(*payload.CRCProposalWithdraw)
 	propState := &crstate.ProposalState{
 		Status: crstate.VoterAgreed,
@@ -2510,8 +2522,8 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	s.EqualError(err, "no need to withdraw")
 
 	//stage =2 ok
-	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 2,
-		Recipient, CRCCommitteeAddressU168, 19*ela, 40*ela)
+	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1,
+		Recipient, CRCCommitteeAddressU168, 19*ela, 40*ela, 0)
 	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
 	propState.WithdrawableBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8}
 	propState.FinalPaymentStatus = false
@@ -2522,8 +2534,8 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	s.NoError(err)
 
 	//stage =3 ok
-	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 3,
-		Recipient, CRCCommitteeAddressU168, 29*ela, 30*ela)
+	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1,
+		Recipient, CRCCommitteeAddressU168, 29*ela, 30*ela, 0)
 	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
 	propState.WithdrawableBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8, 2: 30 * 1e8}
 	propState.WithdrawnBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8}
@@ -2563,6 +2575,49 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	references[inputs[0]] = *outputs[1]
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
 	s.EqualError(err, "proposal withdrawal transaction for non-crc committee address")
+
+	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1,
+		Recipient, CRCCommitteeAddressU168, 19*ela, 40*ela, 1)
+	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
+	propState.WithdrawableBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8}
+	propState.WithdrawnBudgets = map[uint8]common.Fixed64{0: 10 * 1e8}
+	propState.FinalPaymentStatus = false
+	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
+		ProposalHash] = propState
+	propState.ProposalOwner = pk1Bytes
+	err = s.Chain.checkTransactionOutput(txn, tenureHeight)
+	inputs = []*types.Input{
+		{
+			Previous: types.OutPoint{
+				TxID:  common.EmptyHash,
+				Index: 1,
+			},
+			Sequence: math.MaxUint32,
+		},
+	}
+	outputs = []*types.Output{
+		{
+			AssetID:     config.ELAAssetID,
+			ProgramHash: *CRCCommitteeAddressU168,
+			Value:       common.Fixed64(61 * ela),
+		},
+	}
+	references = make(map[*types.Input]types.Output)
+	references[inputs[0]] = *outputs[0]
+	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
+	s.EqualError(err, "withdrawPayload.Amount + fee != withdrawAmount ")
+	outputs = []*types.Output{
+		{
+			AssetID:     config.ELAAssetID,
+			ProgramHash: *CRCCommitteeAddressU168,
+			Value:       common.Fixed64(60 * ela),
+		},
+	}
+	references = make(map[*types.Input]types.Output)
+	references[inputs[0]] = *outputs[0]
+	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
+	s.NoError(err)
+
 }
 
 func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
