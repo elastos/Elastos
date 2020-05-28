@@ -1516,9 +1516,10 @@ export default class extends Base {
             }
           } else {
             const did = _.get(payload, 'data.did')
+            const timestamp = _.get(payload, 'data.iat')
             try {
               await this.model.update(
-                { _id: payload.sid, 'proposers.did': did },
+                { _id: payload.sid, 'proposers.did': did, 'proposers.createdAt': moment.unix(timestamp)},
                 { 'proposers.$.proposalHash': { proposalHash: decoded.data } }
               )
               return { code: 200, success: true, message: 'Ok' }
