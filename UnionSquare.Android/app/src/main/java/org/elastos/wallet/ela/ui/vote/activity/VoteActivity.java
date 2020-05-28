@@ -25,7 +25,6 @@ package org.elastos.wallet.ela.ui.vote.activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
@@ -41,7 +40,6 @@ import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -59,7 +57,7 @@ public class VoteActivity extends BaseActivity {
     TextView tvTitle;
     @BindView(R.id.tv_vote_tag)
     TextView tvVoteTag;
-    private String type,openType;
+    private String type, openType;
 
     @Override
     protected int getLayoutId() {
@@ -80,7 +78,7 @@ public class VoteActivity extends BaseActivity {
     @Override
     protected void setExtraData(Intent data) {
         openType = data.getStringExtra("openType");
-        type = data.getStringExtra("type");
+        type = data.getStringExtra("type") + "";
         maxBalance = data.getStringExtra("maxBalance");
         NumberiUtil.editTestFormat(etVote, 8);
         switch (type) {

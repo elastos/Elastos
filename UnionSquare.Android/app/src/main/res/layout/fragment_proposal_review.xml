@@ -172,7 +172,7 @@
                     android:id="@+id/iv_info"
                     android:layout_width="33dp"
                     android:layout_height="33dp"
-                    android:src="@mipmap/cr_arrow_down" />
+                    android:src="@mipmap/cr_arrow_right" />
             </LinearLayout>
 
             <View style="@style/line1" />
@@ -181,14 +181,15 @@
                 android:id="@+id/ll_info"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <LinearLayout
                     android:id="@+id/ll_restTime"
-                    android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -281,18 +282,9 @@
                     android:id="@+id/iv_vote"
                     android:layout_width="33dp"
                     android:layout_height="33dp"
-                    android:src="@mipmap/cr_arrow_down" />
+                    android:src="@mipmap/cr_arrow_right" />
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/tv_novote"
-                android:layout_width="match_parent"
-                android:layout_height="140dp"
-                android:gravity="center"
-                android:text="@string/novote"
-                android:textColor="@color/whiter50"
-                android:textSize="12sp"
-                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/ll_vote"
@@ -301,57 +293,76 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
+                <TextView
+                    android:id="@+id/tv_novote"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:gravity="center"
+                    android:text="@string/novote"
+                    android:textColor="@color/whiter50"
+                    android:textSize="12sp" />
+
                 <LinearLayout
+                    android:id="@+id/ll_hasvote"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:orientation="horizontal">
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                    <TextView
-                        android:id="@+id/tv_agree"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginBottom="5dp"
-                        android:layout_weight="1"
-                        android:alpha="0.5"
-                        android:background="@drawable/sc_35b08f_cr5_left"
-                        android:enabled="true"
-                        android:gravity="center"
-                        android:text="@string/agree1" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
 
-                    <TextView
-                        android:id="@+id/tv_disagree"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_weight="1"
-                        android:alpha="0.5"
-                        android:background="@drawable/sc_b04135_cr5_middle"
-                        android:enabled="true"
-                        android:gravity="center"
-                        android:text="@string/disagree1" />
 
-                    <TextView
-                        android:id="@+id/tv_abstention"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_weight="1"
-                        android:alpha="0.5"
-                        android:background="@drawable/sc_656565_cr5_right"
-                        android:enabled="true"
-                        android:gravity="center"
-                        android:text="@string/abstention" />
+                        <TextView
+                            android:id="@+id/tv_agree"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="5dp"
+                            android:layout_weight="1"
+                            android:alpha="0.5"
+                            android:background="@drawable/sc_35b08f_cr5_left"
+                            android:enabled="true"
+                            android:gravity="center"
+                            android:text="@string/agree1" />
 
+                        <TextView
+                            android:id="@+id/tv_disagree"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginBottom="5dp"
+                            android:layout_weight="1"
+                            android:alpha="0.5"
+                            android:background="@drawable/sc_b04135_cr5_middle"
+                            android:enabled="true"
+                            android:gravity="center"
+                            android:text="@string/disagree1" />
+
+                        <TextView
+                            android:id="@+id/tv_abstention"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginBottom="5dp"
+                            android:layout_weight="1"
+                            android:alpha="0.5"
+                            android:background="@drawable/sc_656565_cr5_right"
+                            android:enabled="true"
+                            android:gravity="center"
+                            android:text="@string/abstention" />
+
+                    </LinearLayout>
+
+                    <android.support.v7.widget.RecyclerView
+
+                        android:id="@+id/rv_vote"
+                        android:layout_width="match_parent"
+                        android:layout_height="255dp"
+                        android:background="@drawable/sc_1affffff_cr10_button" />
                 </LinearLayout>
-
-                <android.support.v7.widget.RecyclerView
-
-                    android:id="@+id/rv_vote"
-                    android:layout_width="match_parent"
-                    android:layout_height="255dp"
-                    android:background="@drawable/sc_1affffff_cr10_button" />
             </LinearLayout>
 
             <LinearLayout
@@ -370,6 +381,7 @@
                     android:textSize="14sp" />
 
                 <android.support.v7.widget.RecyclerView
+                    android:layout_marginBottom="20dp"
                     android:id="@+id/rv_process"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
@@ -385,7 +397,7 @@
         android:layout_marginTop="18dp"
         android:background="@color/black30"
         android:orientation="vertical"
-        android:visibility="invisible">
+        android:visibility="gone">
 
         <View style="@style/line1" />
 

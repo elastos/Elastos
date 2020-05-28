@@ -102,6 +102,8 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     RecyclerView rvProcess;
     @BindView(R.id.ll_vote)
     LinearLayout llVote;
+    @BindView(R.id.ll_hasvote)
+    LinearLayout llHasvote;
     @BindView(R.id.ll_restTime)
     LinearLayout llRestTime;
     @BindView(R.id.rl_vote_button)
@@ -170,6 +172,8 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                 proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
                 tvTitle.setText(R.string.proposalcomments);
                 tvStatus.setText(R.string.menberreview);
+                setInfoStatue(true);
+                setVoteStatue(true);
                 break;
             case "NOTIFICATION":
                 //公示期
@@ -177,7 +181,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                 tvTitle.setText(R.string.proposalpublished);
                 tvVote.setText(R.string.votedisagree);
                 tvStatus.setText(R.string.publishing);
-                setInfoStatue(false);
+                setVoteStatue(true);
                 rlVoteButton.setVisibility(View.VISIBLE);
                 llDisagreeprogress.setVisibility(View.VISIBLE);
                 break;
@@ -186,22 +190,20 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                 tvTitle.setText(R.string.proposalprocess);
                 tvStatus.setText(R.string.executing);
                 llProcess.setVisibility(View.VISIBLE);
-                setInfoStatue(false);
-                setVoteStatue(false);
                 break;
             case "FINAL":
                 //已完结
                 tvTitle.setText(R.string.proposalfinish);
                 tvStatus.setText(R.string.hasfinished);
                 llProcess.setVisibility(View.VISIBLE);
-                setInfoStatue(false);
-                setVoteStatue(false);
                 break;
             case "REJECTED":
                 // 已废止 未通过
                 tvTitle.setText(R.string.proposalabandon);
                 tvStatus.setText(R.string.nopass);
                 tvPropasalTile.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//删除线
+                setInfoStatue(true);
+                setVoteStatue(true);
                 break;
             case "VETOED":
                 //已废止 已否决
@@ -209,7 +211,8 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                 tvTitle.setText(R.string.proposalabandon);
                 tvStatus.setText(R.string.hasreject);
                 tvPropasalTile.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//删除线
-
+                setInfoStatue(true);
+                setVoteStatue(true);
                 break;
         }
     }
@@ -226,8 +229,8 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         tvAbstract1.setText(data.getAbs());
         initVote(data.getVoteResult());
         setDisagreeProgress(data.getRejectRatio());
-        tvCurrentvote.setText(data.getRejectAmount());
-        tvNeedvote.setText(data.getRejectThroughAmount());
+        tvCurrentvote.setText(data.getRejectAmount() != null ? data.getRejectAmount().split("\\.")[0] : "");
+        tvNeedvote.setText(data.getRejectThroughAmount() != null ? data.getRejectThroughAmount().split("\\.")[0] : "");
 
         setProcessRecycleView(data.getTracking());
 
@@ -365,12 +368,12 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         if (list == null || list.size() == 0) {
             tvNovote.setVisibility(View.VISIBLE);
             ivVote.setVisibility(View.GONE);
-            llVote.setVisibility(View.GONE);
+            llHasvote.setVisibility(View.GONE);
+            tvVotestatus.setVisibility(View.GONE);
             return;
         }
         tvNovote.setVisibility(View.GONE);
-        ivVote.setVisibility(View.VISIBLE);
-        llVote.setVisibility(View.VISIBLE);
+        llHasvote.setVisibility(View.VISIBLE);
         supportList = new ArrayList<>();
         rejectList = new ArrayList<>();
         abstentionList = new ArrayList<>();
