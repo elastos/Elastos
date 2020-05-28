@@ -36,7 +36,7 @@ public class CtDetailBean extends BaseEntity {
         private long endDate;
         private double impeachmentThroughVotes;
         private double impeachmentVotes;
-        private long impeachmentRatio;
+        private double impeachmentRatio;
         private String depositAmount;
         private List<Term> term;
 
@@ -192,7 +192,7 @@ public class CtDetailBean extends BaseEntity {
             this.impeachmentVotes = impeachmentVotes;
         }
 
-        public long getImpeachmentRatio() {
+        public double getImpeachmentRatio() {
             return impeachmentRatio;
         }
 
