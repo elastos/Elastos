@@ -129,12 +129,12 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
 
     rc = callObjectMethod(env, clazz, jopts, "getExpressNodes", "()Ljava/util/List;", &jhvnodes);
     if (!rc) {
-        logE("call method Carrier::Options::getHiveBootstrapNodes error");
+        logE("call method Carrier::Options::getExpressNodes error");
         return 0;
     }
 
     if (!jhvnodes) {
-        logE("Not hiveBootstrapNodes attached.");
+        logE("Not ExpressNodes attached.");
         return 1;
     }
 
@@ -188,7 +188,7 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
             !getStringExt(env, jnodeClazz, jnode, "getPort", &node->port) ||
             !getStringExt(env, jnodeClazz, jnode, "getPublicKey", &node->public_key)) {
 
-            logE("At least one getter method of class 'Carrier.HiveBootstrapNode' mismatched");
+            logE("At least one getter method of class 'Carrier.ExpressNode' mismatched");
 
             (*env)->DeleteLocalRef(env, jnode);
             (*env)->DeleteLocalRef(env, jhvnodes);
