@@ -151,12 +151,10 @@ export default class extends Base {
                     drafthash: draftHash
                 })
                 if (rs && rs.success && rs.status === 'Registered') {
-                    const chainDid = rs.proposal.crcouncilmemberdid
-                    const proposer = proposers.filter(item => item.did === chainDid)[0]
                     const proposal = await this.makeSuggIntoProposal({
                         suggestion,
-                        proposalHash: proposer.proposalHash,
-                        councilMember: chainDid
+                        proposalHash: rs.proposalHash,
+                        chainDid: rs.proposal.crcouncilmemberdid
                     })
                     return {success: true, id: proposal._id}
                 }

@@ -152,8 +152,9 @@ export const getProposalState = async (query: {
     if (res) {
       const status = _.get(res.data, 'result.proposalstate.status')
       const proposal = _.get(res.data, 'result.proposalstate.proposal')
+      const proposalHash = _.get(res.data, 'result.proposalstate.proposalhash')
       if (status) {
-        return { success: true, status, proposal }
+        return { success: true, status, proposal, proposalHash }
       }
     }
   } catch (err) {
