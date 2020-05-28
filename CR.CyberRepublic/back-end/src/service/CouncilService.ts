@@ -176,7 +176,6 @@ export default class extends Base {
                 impeachmentObj['impeachmentVotes'] = council.impeachmentVotes
                 impeachmentObj['impeachmentThroughVotes'] = _.toNumber(impeachmentThroughVotes.toFixed(8))
                 impeachmentObj['impeachmentRatio'] = _.toNumber((council.impeachmentVotes / impeachmentThroughVotes).toFixed(4))
-
                 // update term
                 if (council && council.user) {
                     const proposalFields = [
@@ -629,15 +628,37 @@ export default class extends Base {
         }
     }
 
-    private async updateCouncil( data: any ) {
-        const { 
-            _id,
-            index, 
-            height, 
-            crInfo,
-            status
-        } = data
+    public async eachCouncilJobPlus() {
+        const listCrs = await ela.currentCouncil()
+        const listCds = await ela.currentCandidates()
+        const height = await ela.height()
+
         const crRelatedStageStatus = await ela.getCrrelatedStage()
+
+        const currentCrs = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.CURRENT}) || {}
+        const votingCds = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.VOTING}) || {}
+        const historyCrs = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.HISTORY}) || {}
+
+        const currentCrsTemp = {
+            ...currentCrs._doc
+        }
+
+        const votingCdsTemp = {
+            ...votingCds._doc
+        }
+
+        const historyCrsTemp = {
+            ...historyCrs._doc
+        }
+
+        let index: any
+        if (currentCrs) {
+            index = currentCrs.index + 1
+        } else if (!currentCrs && historyCrs) {
+            index = historyCrs.index + 1
+        } else {
+            index = 1
+        }
 
         const fields = [
             'code',
@@ -658,35 +679,38 @@ export default class extends Base {
             status: data.state,
         });
 
-        const startTime = await ela.getBlockByHeight(crRelatedStageStatus.ondutystartheight)
-        const votingstartheight = await ela.getBlockByHeight(crRelatedStageStatus.votingstartheight)
-        const endTIme = status == constant.TERM_COUNCIL_STATUS.VOTING ? null : votingstartheight
-        const doc: any = {
-            index: index,
-            startDate: new Date(startTime * 1000),
-            endDate: endTIme,
-            status,
-            height: height || 0,
-            councilMembers: _.map(crInfo, (o) => dataToCouncil(o))
+        const updateUserRole = async (councilMembers: any, role: any) => {
+            const didList = _.map(councilMembers, (o: any) => DID_PREFIX + o.did)
+
+            switch (role) {
+                case constant.USER_ROLE.COUNCIL:
+                    await this.userMode.update(
+                        {'did.id': {$in: didList}},
+                        {
+                            $set: {
+                                role: constant.USER_ROLE.COUNCIL
+                            }
+                        },
+                        {
+                            multi: true
+                        }
+                    )
+                    break;
+                case constant.USER_ROLE.MEMBER:
+                    await this.userMode.update(
+                        {'did.id': {$in: didList}},
+                        {
+                            $set: {
+                                role: constant.USER_ROLE.MEMBER
+                            }
+                        },
+                        {
+                            multi: true
+                        }
+                    )
+                    break;
+            }
         }
-
-        if (_id){
-            await this.model.getDBInstance().create(doc);
-
-        }else {
-            await this.model.getDBInstance().update(
-                { _id},
-                {
-                    $set: {
-                        status,
-                        endDate: new Date(startTime * 1000)
-                    }
-                }
-            )
-        }
-    }
-
-    private async updateUser() {
 
     }
 
