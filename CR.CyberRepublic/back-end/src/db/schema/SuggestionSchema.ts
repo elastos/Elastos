@@ -98,7 +98,7 @@ export const Suggestion = {
     {
       did: String,
       proposalHash: String,
-      createdAt: Date
+      timestamp: String
     }
   ]
 }

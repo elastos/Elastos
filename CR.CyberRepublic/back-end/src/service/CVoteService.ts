@@ -136,7 +136,6 @@ export default class extends Base {
             const proposers = _.get(suggestion, 'proposers')
             // make sure current council member had signed
             const currentProposer = proposers && proposers.filter(item => item.did === did)[0]
-
             if (currentProposer && currentProposer.proposalHash) {
                 // draft hash is a constant
                 const draftHash = _.get(suggestion, 'draftHash')

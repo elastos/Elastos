@@ -1449,7 +1449,7 @@ export default class extends Base {
       )
       await this.model.update(
         { _id: suggestion._id },
-        { $push: { proposers: { did: councilMemberDid, createdAt: currDate } } }
+        { $push: { proposers: { did: councilMemberDid, timestamp: now } } }
       )
       const url = `elastos://crproposal/${jwtToken}`
       return { success: true, url }
@@ -1485,7 +1485,6 @@ export default class extends Base {
       const suggestion = await this.model.findById({
         _id: payload.sid
       })
-
       if (!suggestion) {
         return {
           code: 400,
@@ -1516,11 +1515,11 @@ export default class extends Base {
             }
           } else {
             const did = _.get(payload, 'data.did')
-            const timestamp = _.get(payload, 'data.iat')
+            const timestamp = _.get(payload, 'iat')
             try {
               await this.model.update(
-                { _id: payload.sid, 'proposers.did': did, 'proposers.createdAt': moment.unix(timestamp)},
-                { 'proposers.$.proposalHash': { proposalHash: decoded.data } }
+                { _id: payload.sid, 'proposers.did': did, 'proposers.timestamp': timestamp.toString()},
+                { 'proposers.$.proposalHash': decoded.data }
               )
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
