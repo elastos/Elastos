@@ -173,7 +173,10 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
         //cr委员会
         if(dataBean != null) {
             String status = dataBean.getStatus();
-            if(!AppUtlis.isNullOrEmpty(status) ) {
+            String depositAmount = dataBean.getDepositAmount();
+            if(!AppUtlis.isNullOrEmpty(status)
+                    && !AppUtlis.isNullOrEmpty(depositAmount)
+                    && !depositAmount.equalsIgnoreCase("0")) {
                 if(status.equals("Terminated")
                         || status.equals("Impeached")
                         || status.equals("Returned")) {
