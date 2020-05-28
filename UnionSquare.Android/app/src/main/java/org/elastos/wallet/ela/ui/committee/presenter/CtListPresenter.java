@@ -14,7 +14,7 @@ public class CtListPresenter extends NewPresenterAbstract {
     public void getCouncilList(BaseFragment baseFragment, String id) {
         Observable observable = RetrofitManager.webApiCreate().getCouncilList(id);
         Observer observer = createObserver(baseFragment, "getCouncilList");
-        subscriberObservable(observer, observable, baseFragment, true);
+        subscriberObservable(observer, observable, baseFragment, 3);
     }
 
     public void createImpeachmentCRCTransaction(String masterWalletID, String chainID, String fromAddress, String votes, String memo

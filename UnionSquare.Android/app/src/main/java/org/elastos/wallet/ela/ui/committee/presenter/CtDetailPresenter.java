@@ -27,19 +27,19 @@ public class CtDetailPresenter extends NewPresenterAbstract {
     public void getCouncilInfo(BaseFragment baseFragment, String id, String did) {
         Observable observable = RetrofitManager.webApiCreate().getCouncilInfo(id, did);
         Observer observer = createObserver(baseFragment, "getCouncilInfo");
-        subscriberObservable(observer, observable, baseFragment, true);
+        subscriberObservable(observer, observable, baseFragment, 3);
     }
 
     public void getCurrentCouncilInfo(BaseFragment baseFragment, String did, String type) {
         Observable observable = RetrofitManager.webApiCreate().getCurrentCouncilInfo(did).retry();
         Observer observer = createObserver(baseFragment, "getCurrentCouncilInfo", type);
-        subscriberObservable(observer, observable, baseFragment, true);
+        subscriberObservable(observer, observable, baseFragment, 3);
     }
 
     public void getCurrentCouncilInfo(BaseFragment baseFragment, String did) {
         Observable observable = RetrofitManager.webApiCreate().getCurrentCouncilInfo(did).retry();
         Observer observer = createObserver(baseFragment, "getCurrentCouncilInfo");
-        subscriberObservable(observer, observable, baseFragment, true);
+        subscriberObservable(observer, observable, baseFragment, 3);
     }
 
     public void getVoteInfo(String masterWalletID, String type, BaseFragment baseFragment) {
@@ -62,7 +62,7 @@ public class CtDetailPresenter extends NewPresenterAbstract {
                 return baseFragment.getMyWallet().createImpeachmentCRCTransaction(masterWalletID, chainID, fromAddress, votes, memo, unActiveData);
             }
         });
-        subscriberObservable(observer, observable, baseFragment, true);
+        subscriberObservable(observer, observable, baseFragment, 3);
     }
 
     public JSONObject getPublishDataFromLastVote(JSONObject lastVote, String amount, ArrayList<ProposalSearchEntity.DataBean.ListBean> searchBeanList) {

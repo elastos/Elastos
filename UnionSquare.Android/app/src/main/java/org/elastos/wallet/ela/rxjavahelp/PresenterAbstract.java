@@ -52,21 +52,31 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     protected Context context;
 
     protected void subscriberObservable(Observer subscriber,
-                                        Observable observable, boolean needRetry) {
+                                        Observable observable, int retryTime) {
         observable.unsubscribeOn(Schedulers.io()).subscribeOn(Schedulers.io())
                 .throttleFirst(2, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .retry(3)
                 .subscribe(subscriber);
+
+        if(retryTime <= 0 ) {
+            observable.retry();
+        } else {
+            observable.retry(retryTime);
+        }
     }
 
     protected void subscriberObservable(Observer subscriber,
-                                        Observable observable, BaseFragment baseFragment, boolean needRetry) {
+                                        Observable observable, BaseFragment baseFragment, int retryTime) {
         observable.compose(baseFragment.bindToLife()).unsubscribeOn(Schedulers.io())
                 .subscribeOn(Schedulers.io()).throttleFirst(1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .retry(3)
                 .subscribe(subscriber);
+
+        if(retryTime <= 0 ) {
+            observable.retry();
+        } else {
+            observable.retry(retryTime);
+        }
     }
 
     @Deprecated
