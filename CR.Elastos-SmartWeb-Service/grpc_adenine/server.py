@@ -19,6 +19,7 @@ from grpc_adenine.implementations.hive import Hive
 from grpc_adenine.implementations.sidechain_eth import SidechainEth
 
 from grpc_adenine.implementations.cron import Cron
+from grpc_adenine import settings
 
 
 def serve():
@@ -32,7 +33,10 @@ def serve():
     logging.debug("Initializing the grpc server")
 
     # Initialize the server
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), maximum_concurrent_rpcs=10000)
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), maximum_concurrent_rpcs=10000, options=[
+                                          ('grpc.max_send_message_length', settings.GRPC_MAX_MSG_SIZE),
+                                          ('grpc.max_receive_message_length', settings.GRPC_MAX_MSG_SIZE)
+                                      ])
 
     health_servicer = HealthServicer()
     health_servicer.set('', health_check_pb2.HealthCheckResponse.SERVING)
