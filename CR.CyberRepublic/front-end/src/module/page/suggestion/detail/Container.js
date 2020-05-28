@@ -43,9 +43,6 @@ export default createContainer(
       async createDraft(param) {
         return cVoteService.createDraft(param)
       },
-      async proposeSuggestion(param) {
-        return cVoteService.proposeSuggestion(param)
-      },
       async pollProposalState(param) {
         return cVoteService.pollProposalState(param)
       },
