@@ -139,7 +139,7 @@ DID_API bool JWTBuilder_SetIssuer(JWTBuilder *builder, const char *issuer);
  * @param
  *      builder         [in] The handle to JWTBuilder.
  * @param
- *      issuer          [in] The subject value.
+ *      subject          [in] The subject value.
  * @return
  *      If no error occurs, return true. Otherwise, return false.
  */
@@ -191,7 +191,7 @@ DID_API bool JWTBuilder_SetNotBefore(JWTBuilder *builder, time_t nbf);
  * @param
  *      builder         [in] The handle to JWTBuilder.
  * @param
- *      nbf             [in] The 'nbf' value.
+ *      iat             [in] The 'iat' value.
  * @return
  *      If no error occurs, return true. Otherwise, return false.
  */
@@ -252,6 +252,15 @@ DID_API int JWTBuilder_Reset(JWTBuilder *builder);
  * JWTParser.
  *****************************************************************************/
 
+/**
+ * \~English
+ * Parse jwt token.
+ *
+ * @param
+ *      token           [in] The handle to JWTBuilder.
+ * @return
+ *      If no error occurs, return 0. Otherwise, return -1.
+ */
 DID_API JWS *JWTParser_Parse(const char *token);
 
 /******************************************************************************
@@ -263,7 +272,7 @@ DID_API JWS *JWTParser_Parse(const char *token);
  * Destroy the JWS.
  *
  * @param
- *      builder             [in] The handle to JWTBuilder.
+ *      jws             [in] The handle to JWS.
  */
 DID_API void JWS_Destroy(JWS *jws);
 

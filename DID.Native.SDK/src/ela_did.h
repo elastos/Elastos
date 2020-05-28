@@ -87,9 +87,25 @@ typedef ptrdiff_t       ssize_t;
  */
 #define ELA_MAX_MNEMONIC_LEN            128
 
+/**
+ * \~English
+ * Indicate the DID type to list.
+ */
 typedef enum {
+    /**
+     * \~English
+     * List all dids.
+     */
     DID_FILTER_ALL = 0,
+    /**
+     * \~English
+     * List dids that contain private key.
+     */
     DID_FILTER_HAS_PRIVATEKEY = 1,
+    /**
+     * \~English
+     * List dids without private key contained.
+     */
     DID_FILTER_NO_PRIVATEKEY = 2
 } ELA_DID_FILTER;
 
@@ -100,7 +116,15 @@ typedef enum {
  * each related to a subject of the credential.
  */
 typedef struct Property {
+    /**
+     * \~English
+     * Property key.
+     */
     char *key;
+    /**
+     * \~English
+     * Property value.
+     */
     char *value;
 } Property;
 
@@ -169,7 +193,6 @@ typedef struct DIDDocumentBuilder   DIDDocumentBuilder;
  * issuer's sign key.
  */
 typedef struct Issuer               Issuer;
-
 /**
  * \~English
  * DIDStore is local store for specified DID.
@@ -193,22 +216,80 @@ typedef struct JWTBuilder           JWTBuilder;
 /**
  * \~English
  * DID list callbacks, return alias about did.
+ * @param
+ *      did               [in] A handle to DID.
+ * @param
+ *      context           [in] The application defined context data.
+ * @return
+ *      If no error occurs, return 0. Otherwise, return -1.
  */
 typedef int DIDStore_DIDsCallback(DID *did, void *context);
 /**
  * \~English
  * Credential list callbacks, return alias about credential.
+ * @param
+ *      did               [in] A handle to DID.
+ * @param
+ *      context           [in] The application defined context data.
+ * @return
+ *      If no error occurs, return 0. Otherwise, return -1.
  */
 typedef int DIDStore_CredentialsCallback(DIDURL *id, void *context);
-
+/**
+ * \~English
+ * The function indicate how to resolve the confict, if the local document is different
+ * with the one resolved from chain.
+ * @param
+ *      chaincopy           [in] The document from DIDStore.
+ * @param
+ *      localcopy           [in] The document from chain.
+ * @return
+ *      If no error occurs, return merged document. Otherwise, return NULL.
+ */
 typedef DIDDocument* DIDStore_MergeCallback(DIDDocument *chaincopy, DIDDocument *localcopy);
-
+/**
+ * \~English
+ * DIDAdapter is support method to create did transaction.
+ */
 struct DIDAdapter {
-    const char* (*createIdTransaction) (DIDAdapter *adapter,
-            const char *payload, const char *memo);
+    /**
+     * \~English
+     * User need to implement 'createIdTransaction' function.
+     * An application-defined function that create id transaction to chain.
+     * @param
+     *      adapter              [in] A handle to DIDAdapter.
+     * @param
+     *      payload              [in] The content of id transaction to publish.
+     * @param
+     *      memo                 [in] Memo string.
+     * @return
+     *      If no error occurs, return transaction id.
+     *      Otherwise, return NULL.
+     */
+    const char* (*createIdTransaction) (DIDAdapter *adapter, const char *payload,
+            const char *memo);
 };
-
+/**
+ * \~English
+ * DIDResolver is support method to resolve did document from chain.
+ * User need to realize 'resolve' function.
+ */
 struct DIDResolver {
+    /**
+     * \~English
+     * User need to implement 'createIdTransaction' function.
+     * An application-defined function that resolve data from chain.
+     * @param
+     *      resolver             [in] A handle to DIDResolver.
+     * @param
+     *      did                  [in] Specified DID.
+     * @param
+     *      all                  [in] Resolve all transaction data or the lastest one.
+     *                           all = 1: all transaction; all = 0: only the lastest transaction.
+     * @return
+     *      If no error occurs, return transaction id.
+     *      Otherwise, return NULL.
+     */
     const char* (*resolve) (DIDResolver *resolver, const char *did, int all);
 };
 
@@ -500,8 +581,8 @@ DID_API time_t DID_GetLastTransactionTimestamp(DID *did);
  *
  * @param
  *      idstring     [in] A pointer to string including id information.
- *                   idstring support: 1. did:elastos:xxxxxxx#xxxxx
- *                                     2. #xxxxxxx
+ *                   idstring support: 1. "did:elastos:xxxxxxx#xxxxx"
+ *                                     2. "#xxxxxxx"
  * @param
  *      ref          [in] A pointer to DID.
  * @return
@@ -579,8 +660,7 @@ DID_API const char *DIDURL_GetFragment(DIDURL *id);
  *      compact          [in] Id string is compact or not.
  *                       true represents compact, flase represents not compact.
  * @return
- *      If no error occurs, return id string.
- *      Otherwise, return NULL.
+ *      If no error occurs, return id string. Otherwise, return NULL.
  */
 DID_API char *DIDURL_ToString(DIDURL *id, char *idstring, size_t len, bool compact);
 
@@ -630,8 +710,7 @@ DID_API void DIDURL_Destroy(DIDURL *id);
   * @param
  *      alias                    [in] Alias string for DID.
  * @return
- *      If no error occurs, return 0.
- *      Otherwise, return -1.
+ *      If no error occurs, return 0. Otherwise, return -1.
  */
 DID_API int DIDURL_SetAlias(DIDURL *id, const char *alias);
 
@@ -642,8 +721,7 @@ DID_API int DIDURL_SetAlias(DIDURL *id, const char *alias);
  * @param
  *      id                        [in] The handle of DIDURL.
  * @return
- *      If no error occurs, return alias string.
- *      Otherwise, return NULL.
+ *      If no error occurs, return alias string. Otherwise, return NULL.
  */
 DID_API const char *DIDURL_GetAlias(DIDURL *id);
 
@@ -793,9 +871,9 @@ DID_API DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder,
  * @param
  *      builder               [in] A handle to DIDDocument Builder.
  * @param
- *      key                  [in] An identifier of public key.
+ *      keyid                 [in] An identifier of public key.
  * @param
- *      controller           [in] A controller property, identifies
+ *      controller            [in] A controller property, identifies
  *                              the controller of the corresponding private key.
  * @param
  *      key                  [in] Key propertie depend on key type.
@@ -944,7 +1022,7 @@ DID_API int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder,
  * @param
  *      properties           [in] The array of credential subject property.
  * @param
- *      size                 [in] The size of credential subject property.
+ *      propsize             [in] The size of credential subject property.
  * @param
  *      expires              [in] The time to credential be expired.
  *                               Support expires == 0, api add document expires time.
@@ -982,7 +1060,7 @@ DID_API int DIDDocumentBuilder_RemoveCredential(DIDDocumentBuilder *builder,
  * @param
  *      type                 [in] The type of Service.
  * @param
- *      point                [in] ServiceEndpoint property is a valid URI.
+ *      endpoint             [in] ServiceEndpoint property is a valid URI.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -1399,11 +1477,27 @@ DID_API time_t DIDDocument_GetExpires(DIDDocument *document);
  */
 DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass,
         char *sig, int count, ...);
+
 /**
+ * \~English
+ * Sign digest by DID.
+ *
+ * @param
+ *      document                 [in] The handle to DID Document.
+ * @param
+ *      keyid                    [in] Public key to sign.
+ *                               If keyid is null, then will sign with
+ *                               the default key of this DID document.
+ * @param
+ *      storepass                [in] Pass word to sign.
+ * @param
+ *      sig                      [out] The buffer will receive signature data.
  * @param
  *      digest                   [in] The digest to sign.
   * @param
  *      size                     [in] The length of digest array.
+ * @return
+ *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDDocument_SignDigest(DIDDocument *document, DIDURL *keyid,
         const char *storepass, char *sig, uint8_t *digest, size_t size);
@@ -1422,20 +1516,29 @@ DID_API int DIDDocument_SignDigest(DIDDocument *document, DIDURL *keyid,
  *      sig                     [in] Signature data.
  * @param
  *      count                   [in] The size of data list.
- * @param
- *      digest                   [in] The digest to sign.
-  * @param
- *      size                     [in] The length of digest array.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDDocument_Verify(DIDDocument *document, DIDURL *keyid, char *sig,
         int count, ...);
 /**
+ * \~English
+ * verify digest.
+ *
+ * @param
+ *      document                [in] The handle to DID Document.
+ * @param
+ *      keyid                   [in] Public key to sign.
+ *                                   If key = NULL, sdk will get default key from
+ *                                   DID Document.
+ * @param
+ *      sig                     [in] Signature data.
  * @param
  *      digest                   [in] The digest to sign.
   * @param
  *      size                     [in] The length of digest array.
+ * @return
+ *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDDocument_VerifyDigest(DIDDocument *document, DIDURL *keyid,
         char *sig, uint8_t *digest, size_t size);
@@ -1822,11 +1925,6 @@ DID_API ssize_t Credential_GetPropertyCount(Credential *cred);
  *
  * @param
  *      cred                 [in] A handle to Credential.
- * @param
- *      properties           [out] The buffer that will receive
- *                                 credential subject properties.
- * @param
- *      size                 [in] The buffer size of credential subject properties.
  * @return
  *      size of subject porperties on success, -1 if an error occurred.
  */
@@ -1958,6 +2056,8 @@ DID_API const char *Credential_GetAlias(Credential *credential);
  *      did                      [in] Issuer's did.
  * @param
  *      signkey                  [in] Issuer's key to sign credential.
+ * @param
+ *      store                    [in] The handle to DIDStore.
  * @return
  *      The handle of Issuer.
  */
@@ -1974,8 +2074,7 @@ DID_API void Issuer_Destroy(Issuer *issuer);
 
 /**
  * \~English
- * An issuer issues a verifiable credential to a holder.
- * Issuance always occurs before any other actions involving a credential.
+ * An issuer issues a verifiable credential to a holder with subject object.
  *
  * @param
  *      issuer               [in] An issuer issues this credential.
@@ -1995,7 +2094,7 @@ DID_API void Issuer_Destroy(Issuer *issuer);
  * @param
  *      expires              [in] The time to credential be expired.
  * @param
- *      passphase            [in] Pass word to sign.
+ *      storepass            [in] The password for DIDStore.
  * @return
  *      If no error occurs, return the handle to Credential issued.
  *      Otherwise, return NULL.
@@ -2004,8 +2103,33 @@ DID_API Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *
         const char **types, size_t typesize, Property *subject, int size,
         time_t expires, const char *storepass);
 
-DID_API Credential *Issuer_CreateCredentialByString(Issuer *issuer, DID *owner, DIDURL *credid,
-        const char **types, size_t typesize, const char *subject,
+/**
+ * \~English
+ * An issuer issues a verifiable credential to a holder with subject string.
+ *
+ * @param
+ *      issuer               [in] An issuer issues this credential.
+ * @param
+ *      owner                [in] A handle to DID.
+ *                               The holder of this Credential.
+ * @param
+ *      credid               [in] The handle to DIDURL.
+ * @param
+ *      types                [in] The array of credential types.
+ * @param
+ *      typesize             [in] The size of credential types.
+ * @param
+ *      subject              [in] The array of credential subject property.
+ * @param
+ *      expires              [in] The time to credential be expired.
+ * @param
+ *      storepass            [in] The password for DIDStore.
+ * @return
+ *      If no error occurs, return the handle to Credential issued.
+ *      Otherwise, return NULL.
+ */
+DID_API Credential *Issuer_CreateCredentialByString(Issuer *issuer, DID *owner,
+        DIDURL *credid, const char **types, size_t typesize, const char *subject,
         time_t expires, const char *storepass);
 
 /**
@@ -2070,29 +2194,54 @@ DID_API bool DIDStore_ContainsPrivateIdentity(DIDStore *store);
 
 /**
  * \~English
- * Store seed of keypair to initial user's identity.
+ * Initial user's private identity by mnemonic.
  *
   * @param
- *      store                  [in] THe handle to DIDStore.
+ *      store             [in] THe handle to DIDStore.
  * @param
- *      storepass              [in] The password for DIDStore.
+ *      storepass         [in] The password for DIDStore.
  * @param
- *      mnemonic               [in] Mnemonic for generate key.
+ *      mnemonic          [in] Mnemonic for generate key.
  * @param
- *      passphrase             [in] The pass word to generate private identity.
+ *      passphrase        [in] The pass word to generate private identity.
  * @param
- *      language               [in] The language for DID.
- *                             support language string: "chinese_simplified",
- *                             "chinese_traditional", "czech", "english", "french",
- *                             "italian", "japanese", "korean", "spanish".
+ *      language          [in] The language for DID.
+ *                        support language string: "chinese_simplified",
+ *                        "chinese_traditional", "czech", "english", "french",
+ *                        "italian", "japanese", "korean", "spanish".
  * @param
- *      extendedkey            [in] Extendedkey string.
+ *      force             [in] If private identity exist, remove or remain it.
+ *                        If force is true, then will choose to create a new identity
+ *                        even if the private identity already exists and
+ *                        the new private key will replace the original one in DIDStore.
+ *                        If force is false, then will choose to remain the old
+ *                        private key if the private identity exists, and return error code.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
         const char *mnemonic, const char *passphrase, const char *language, bool force);
 
+/**
+ * \~English
+ * Initial user's identity by e.
+ *
+  * @param
+ *      store             [in] The handle to DIDStore.
+ * @param
+ *      storepass         [in] The password for DIDStore.
+ * @param
+ *      extendedkey       [in] Extendedkey string.
+ * @param
+ *      force             [in] If private identity exist, remove or remain it.
+ *                        If force is true, then will choose to create a new identity
+ *                        even if the private identity already exists and
+ *                        the new private key will replace the original one in DIDStore.
+ *                        If force is false, then will choose to remain the old
+ *                        private key if the private identity exists, and return error code.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
 DID_API int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store,
         const char *storepass, const char *extendedkey, bool force);
 
@@ -2129,6 +2278,22 @@ DID_API int DIDStore_Synchronize(DIDStore *store, const char *storepass,
 DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass,
         const char *alias);
 
+/**
+ * \~English
+ * Create new DID document and store it in the DID store with given index.
+ *
+ * @param
+ *      store                     [in] THe handle to DIDStore.
+ * @param
+ *      storepass                 [in] Password for DIDStore.
+ * @param
+ *      index                     [in] The index to create new did.
+ * @param
+ *      alias                     [in] The nickname of DID.
+ * @return
+ *      If no error occurs, return the handle to DID Document.
+ *      Otherwise, return NULL.
+ */
 DID_API DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
         int index, const char *alias);
 
@@ -2413,7 +2578,7 @@ DID_API int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass,
  * @param
  *      did                     [in] The handle to DID.
  * @param
- *      id                      [in] The identifier of public key.
+ *      keyid                    [in] The identifier of public key.
  */
 DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid);
 
@@ -2524,7 +2689,9 @@ DID_API bool Mnemonic_IsValid(const char *mnemonic, const char *language);
  *      did                      [in] The handle to DID.
  * @param
  *      signkey                  [in] The key id to sign.
-  * @param
+ * @param
+ *      store                    [in] The handle to DIDStore.
+ * @param
  *      storepass                [in] The password of DIDStore.
  * @param
  *      nonce                    [in] Indicate the usage of Presentation.
@@ -2719,6 +2886,8 @@ DID_API bool Presentation_IsValid(Presentation *pre);
  *
  * @param
  *      url              [in] The URL string.
+ * @param
+ *      cachedir         [in] The directory for cache.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -2729,7 +2898,9 @@ DID_API int DIDBackend_InitializeDefault(const char *url, const char *cachedir);
  * Initialize DIDBackend to resolve by DIDResolver.
  *
  * @param
- *      resolver            [in] The handle to DIDResolver.
+ *      resolver          [in] The handle to DIDResolver.
+ * @param
+ *      cachedir          [in] The directory for cache.
  * @return
  *      0 on success, -1 if an error occurred.
  */
