@@ -1420,7 +1420,8 @@ export default class extends Base {
       if (!suggestion) {
         return { success: false }
       }
-      const now = Math.floor(Date.now() / 1000)
+      const currDate = Date.now()
+      const now = Math.floor(currDate / 1000)
       const jwtClaims = {
         iat: now,
         exp: now + 60 * 60 * 24,
@@ -1445,6 +1446,10 @@ export default class extends Base {
         {
           algorithm: 'ES256'
         }
+      )
+      await this.model.update(
+        { _id: suggestion._id },
+        { $push: { proposers: { did: councilMemberDid, createdAt: currDate } } }
       )
       const url = `elastos://crproposal/${jwtToken}`
       return { success: true, url }
@@ -1510,10 +1515,11 @@ export default class extends Base {
               message: 'Verify signatrue failed.'
             }
           } else {
+            const did = _.get(payload, 'data.did')
             try {
               await this.model.update(
-                { _id: payload.sid },
-                { $set: { proposalHash: decoded.data } }
+                { _id: payload.sid, 'proposers.did': did },
+                { 'proposers.$.proposalHash': { proposalHash: decoded.data } }
               )
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {

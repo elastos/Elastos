@@ -24,13 +24,6 @@ const tag = {
   }
 }
 
-const proposeHistorySchema = {
-  councilMemberDid: String,
-  proposalHash: String,
-  createdAt: Date
-}
-
-
 export const Suggestion = {
   ...SuggestionCore,
   contentType: {
@@ -100,5 +93,12 @@ export const Suggestion = {
   draftHash: String,
   ownerPublicKey: String,
   proposalHash: String,
-  proposeHistory: [proposeHistorySchema]
+  // council members make suggesiton into proposal
+  proposers: [
+    {
+      did: String,
+      proposalHash: String,
+      createdAt: Date
+    }
+  ]
 }
