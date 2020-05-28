@@ -151,8 +151,9 @@ export const getProposalState = async (query: {
     })
     if (res) {
       const status = _.get(res.data, 'result.proposalstate.status')
+      const proposal = _.get(res.data, 'result.proposalstate.proposal')
       if (status) {
-        return { success: true, status }
+        return { success: true, status, proposal }
       }
     }
   } catch (err) {

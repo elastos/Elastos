@@ -120,23 +120,44 @@ export default class extends Base {
     }
 
     public async pollProposalState(param: any) {
-        const {id} = param
+        const did = _.get(this.currentUser, 'did.id')
+        if (!did) {
+          return { success: false, message: 'Your DID not bound' }
+        }
+        const role = _.get(this.currentUser, 'role')
+        if (!permissions.isCouncil(role)) {
+          return { success: false, message: 'No access right' }
+        }
+        const { id } = param
         const db_suggestion = this.getDBModel('Suggestion')
         const suggestion = await db_suggestion.findById(id)
         const db_cvote = this.getDBModel('CVote')
         if (suggestion) {
-            const proposalHash = _.get(suggestion, 'proposalHash')
-            if (proposalHash) {
-                const cvote = await db_cvote.findOne({proposalHash})
-                if (cvote) {
-                    return {success: true, id: cvote._id}
+            const proposers = _.get(suggestion, 'proposers')
+            // make sure current council member had signed
+            const currentProposer = proposers && proposers.filter(item => item.did === did)[0]
+
+            if (currentProposer && currentProposer.proposalHash) {
+                // draft hash is a constant
+                const draftHash = _.get(suggestion, 'draftHash')
+                const cvote = await db_cvote.findOne({ draftHash })
+                if (cvote && cvote.proposalHash === currentProposer.proposalHash) {
+                    return { success: true, id: cvote._id }
+                }
+                // make into proposal by other council members
+                if (cvote && cvote.proposalHash !== currentProposer.proposalHash) {
+                    return { success: true, id: cvote._id, proposer: false }
                 }
                 const rs: any = await getProposalState({
-                    proposalhash: proposalHash
+                    drafthash: draftHash
                 })
                 if (rs && rs.success && rs.status === 'Registered') {
+                    const chainDid = rs.proposal.crcouncilmemberdid
+                    const proposer = proposers.filter(item => item.did === chainDid)[0]
                     const proposal = await this.makeSuggIntoProposal({
-                        suggestion
+                        suggestion,
+                        proposalHash: proposer.proposalHash,
+                        councilMember: chainDid
                     })
                     return {success: true, id: proposal._id}
                 }
@@ -150,10 +171,13 @@ export default class extends Base {
         const db_cvote = this.getDBModel('CVote')
         const db_suggestion = this.getDBModel('Suggestion')
         const db_user = this.getDBModel('User')
-        const { suggestion } = param
-        const creator = await db_user.findById(suggestion.createdBy)
+        const { suggestion, proposalHash, chainDid } = param
         const vid = await this.getNewVid()
-
+        const users = await Promise.all([
+            db_user.findById(suggestion.createdBy),
+            db_user.findOne({'did.id': chainDid})
+        ])
+        const creator = users[0]
         const doc: any = {
             vid,
             type: suggestion.type,
@@ -162,9 +186,9 @@ export default class extends Base {
             contentType: constant.CONTENT_TYPE.MARKDOWN,
             proposedBy: userUtil.formatUsername(creator),
             proposer: suggestion.createdBy,
-            createdBy: this.currentUser._id,
+            createdBy: users[1]._id,
             reference: suggestion._id,
-            proposalHash: suggestion.proposalHash,
+            proposalHash,
             draftHash: suggestion.draftHash,
             ownerPublicKey: suggestion.ownerPublicKey
         }
@@ -191,7 +215,8 @@ export default class extends Base {
                 {_id: suggestion._id},
                 {
                     $addToSet: {reference: res._id},
-                    $set: {tags: []}
+                    $set: {tags: []},
+                    proposalHash
                 }
             )
             this.notifySubscribers(res)
