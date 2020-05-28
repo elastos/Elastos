@@ -77,17 +77,23 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
 
     @Override
     protected void initView(View view) {
-        new CtDetailPresenter().getCurrentCouncilInfo(this, wallet.getDid().replace("did:elastos:", ""), "voting");
-
         tvTitle.setText(getString(R.string.social));
         ivTitleLeft.setVisibility(View.GONE);
+        setView();
     }
 
-    private void setView(CtDetailBean ctDetailBean){
-
+    public void showCrVoteItem(CtDetailBean ctDetailBean) {
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         String status = dataBean.getStatus();
 
+        FindListBean bean4 = new FindListBean();
+        bean4.setResouceId(R.mipmap.found_cr_vote);
+        bean4.setUpText(getString(R.string.findlistup4));
+        bean4.setDownText(getString(R.string.findlistdown4));
+        if(!AppUtlis.isNullOrEmpty(status) && status.equalsIgnoreCase("VOTING")) list.add(bean4);
+    }
+
+    private void setView(){
         list = new ArrayList<>();
         FindListBean bean1 = new FindListBean();
         bean1.setResouceId(R.mipmap.found_dpos_icon);
@@ -104,15 +110,9 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
         bean3.setUpText(getString(R.string.findlistup3));
         bean3.setDownText(getString(R.string.findlistdown3));
 
-        FindListBean bean4 = new FindListBean();
-        bean4.setResouceId(R.mipmap.found_cr_vote);
-        bean4.setUpText(getString(R.string.findlistup4));
-        bean4.setDownText(getString(R.string.findlistdown4));
-
         list.add(bean1);
         list.add(bean2);
         list.add(bean3);
-        if(!AppUtlis.isNullOrEmpty(status) && status.equalsIgnoreCase("VOTING")) list.add(bean4);
 
         //  list.add(R.mipmap.found_card_id);
         //list.add(R.mipmap.found_card_paradrop);
@@ -120,6 +120,15 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
 //        presenter.getSupportedChains(wallet.getWalletId(), MyWallet.ELA, this);
         setRecycleView();
     };
+
+    private boolean hasRefresh = false;
+
+    public void refreshView() {
+        if(!hasRefresh) {
+            new CtDetailPresenter().getCurrentCouncilInfo(this, wallet.getDid().replace("did:elastos:", ""), "voting");
+            hasRefresh = true;
+        }
+    }
 
     public static FindFragment newInstance() {
         Bundle args = new Bundle();
@@ -198,7 +207,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
         switch (methodName) {
             case "getCurrentCouncilInfo":
                 if(o.equals("voting")) {
-                    setView((CtDetailBean) baseEntity);
+                    showCrVoteItem((CtDetailBean) baseEntity);
                 } else {
                     go2((CtDetailBean) baseEntity);
                 }

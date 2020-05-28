@@ -121,6 +121,8 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
                         bottombaritem.setBackgroundResource(R.color.black1);
                         bottombaritem1.setBackgroundResource(R.color.mainitembg);
                         bottombaritem2.setBackgroundResource(R.color.black1);
+                        FindFragment findFragment = (FindFragment) mFragments[1];
+                        findFragment.refreshView();
                         break;
                     case 2:
                         bottombaritem.setBackgroundResource(R.color.black1);
