@@ -277,7 +277,7 @@ public class DIDDocument {
 
     public func jwtBuilder() throws -> JwtBuilder {
 
-        return JwtBuilder(publicKey: { (id) -> Data in
+        let build = JwtBuilder(issuer: subject.toString(), publicKey: { (id) -> Data in
 
             var _id: DIDURL
             if id == nil {
@@ -297,11 +297,12 @@ public class DIDDocument {
             }
             return try self.keyPair_PrivateKey(ofId: _id, using: storepass)
         }
+        return build.setIssuer(iss: subject.description)
     }
 
     public func jwtParserBuilder() -> JwtParserBuilder {
 
-        var builder: JwtParserBuilder = JwtParserBuilder()
+        let builder: JwtParserBuilder = JwtParserBuilder()
         builder.getPublicKey = { (id) in
 
             var _id: DIDURL

@@ -40,7 +40,10 @@ public struct JWT {
     
     /// The JWT claims
     public var claims: Claims
-    
+
+    /// The JWT signature
+    public var signature: String?
+
     /// Initialize a `JWT` instance from a `Header` and `Claims`.
     ///
     /// - Parameter header: A JSON Web Token header object.
@@ -70,6 +73,9 @@ public struct JWT {
         else {
             throw JWTError.invalidJWTString
         }
+        if components.count == 3 {
+            signature = components[2]
+        }
         guard JWT.verify(jwtString, using: verifier) else {
             throw JWTError.failedVerification
         }
@@ -92,11 +98,20 @@ public struct JWT {
     /// - Throws: A Signing error if the jwtSigner is unable to sign the JWT with the provided key.
     public mutating func sign(using jwtSigner: JWTSigner) throws -> String {
         let tempHeader = header
-        tempHeader.headers[tempHeader.alg] = jwtSigner.name
+        tempHeader.headers[Header.alg] = jwtSigner.name
         let headerString = try tempHeader.encode()
         let claimsString = try claims.encode()
-        header.headers[tempHeader.alg] = tempHeader.alg
+        header.headers[Header.alg] = tempHeader.headers[Header.alg]
         return try jwtSigner.sign(header: headerString, claims: claimsString)
+    }
+
+    public func compact(sign: String?) throws -> String {
+        let tempHeader = header
+        let headerString = try tempHeader.encode()
+        let claimsString = try claims.encode()
+        header.headers[Header.alg] = tempHeader.headers[Header.alg]
+
+        return headerString + "." + claimsString + "." + (sign ?? "")
     }
 
     /// Verify the signature of the encoded JWT using the given algorithm.
@@ -115,19 +130,19 @@ public struct JWT {
     /// - Parameter leeway: The time in seconds that the JWT can be invalid but still accepted to account for clock differences.
     /// - Returns: A value of `ValidateClaimsResult`.
     public func validateClaims(leeway: TimeInterval = 0) -> ValidateClaimsResult {        
-            if let expirationDate = claims.claims[claims.exp] {
+        if let expirationDate = claims.claims[Claims.exp] {
                 if expirationDate as! Date + leeway < Date() {
                     return .expired
                 }
             }
 
-            if let notBeforeDate = claims.claims[claims.nbf] {
+            if let notBeforeDate = claims.claims[Claims.nbf] {
                 if notBeforeDate as! Date > Date() + leeway {
                     return .notBefore
                 }
             }
 
-            if let issuedAtDate = claims.claims[claims.iat] {
+            if let issuedAtDate = claims.claims[Claims.iat] {
                 if issuedAtDate as! Date > Date() + leeway {
                     return .issuedAt
                 }

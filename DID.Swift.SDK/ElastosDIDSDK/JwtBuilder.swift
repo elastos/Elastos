@@ -3,10 +3,14 @@ import Foundation
 public class JwtBuilder {
     var h: Header?
     var c: Claims?
+    var signature: String?
+    var issuer: String
+    var jwt: JWT?
     var publicKeyClosure: ((_ id: String?) throws -> Data)?
     var privateKeyClosure: ((_ id: String?, _ storepass: String) throws -> Data)?
 
-    init(publicKey: @escaping (_ id: String?) throws -> Data, privateKey: @escaping (_ id: String?, _ storepass: String) throws -> Data) {
+    init(issuer: String, publicKey: @escaping (_ id: String?) throws -> Data, privateKey: @escaping (_ id: String?, _ storepass: String) throws -> Data) {
+        self.issuer = issuer
         publicKeyClosure = publicKey
         privateKeyClosure = privateKey
     }
@@ -28,7 +32,7 @@ public class JwtBuilder {
         if h == nil {
             h = Header()
         }
-        h?.headers[h!.typ] = type
+        h?.headers[Header.TYPE] = type
         return self
     }
 
@@ -36,12 +40,15 @@ public class JwtBuilder {
         if h == nil {
             h = Header()
         }
-        h?.headers[h!.cty] = cty
+        h?.headers[Header.CONTENT_TYPE] = cty
         return self
     }
 
     public func setClaims(_ claim: Claims) -> JwtBuilder {
         c = claim
+        if !claim.containsKey(key: Claims.iss) {
+          c = claim.setIssuer(issuer: issuer)
+        }
         return self
     }
 
@@ -63,51 +70,59 @@ public class JwtBuilder {
         return self
     }
 
-    public func appdendSubject(sub: String) -> JwtBuilder {
+    public func setIssuer(iss: String) -> JwtBuilder {
         if c == nil {
             c = Claims()
         }
-        c?.claims[c!.sub] = sub
+        c = c?.setIssuer(issuer: iss)
         return self
     }
 
-    public func appdendId(id: String) -> JwtBuilder {
+    public func setSubject(sub: String) -> JwtBuilder {
         if c == nil {
             c = Claims()
         }
-        c?.claims[c!.jti] = id
+        c?.claims[Claims.sub] = sub
         return self
     }
 
-    public func appdendAudience(audience: String) -> JwtBuilder {
+    public func setId(id: String) -> JwtBuilder {
         if c == nil {
             c = Claims()
         }
-        c?.claims[c!.aud] = audience
+        c?.claims[Claims.jti] = id
         return self
     }
 
-    public func appdendIssuedAt(issuedAt: Date) -> JwtBuilder {
+    public func setAudience(audience: String) -> JwtBuilder {
         if c == nil {
             c = Claims()
         }
-        c?.claims[c!.iat] = issuedAt
+        c?.claims[Claims.aud] = audience
         return self
     }
 
-    public func appdendExpiration(expiration: Date) -> JwtBuilder {
+    public func setIssuedAt(issuedAt: Date) -> JwtBuilder {
         if c == nil {
             c = Claims()
         }
-        c?.claims[c!.exp] = expiration
+        c = c?.setIssuedAt(issuedAt: issuedAt)
         return self
     }
 
-    public func appdendNotBefore(nbf: Date) -> JwtBuilder {
+    public func setExpiration(expiration: Date) -> JwtBuilder {
         if c == nil {
             c = Claims()
         }
-        c?.claims[c!.nbf] = nbf
+        c = c?.setExpiration(expiration: expiration)
+        return self
+    }
+
+    public func setNotBefore(nbf: Date) -> JwtBuilder {
+        if c == nil {
+            c = Claims()
+        }
+        c = c?.setNotBefore(notBefore: nbf)
         return self
     }
 
@@ -117,6 +132,19 @@ public class JwtBuilder {
         }
         c?.claims[key] = value
         return self
+    }
+
+    public func claimWithJson(key: String, value: String) throws -> JwtBuilder {
+        let dic = try JSONSerialization.jsonObject(with: value.data(using: .utf8)!, options: [])
+        return claims(key: key, value: dic)
+    }
+
+    public func claimWithJson(value: String) throws -> JwtBuilder {
+        let dic = try JSONSerialization.jsonObject(with: value.data(using: .utf8)!, options: []) as? [String : Any]
+        guard dic != nil else {
+            throw DIDError.illegalArgument("TODO")
+        }
+        return claim(claim: dic! )
     }
 
     public func claim(claim: [String: Any]) -> JwtBuilder {
@@ -129,23 +157,39 @@ public class JwtBuilder {
         return self
     }
 
-    public func sign(using password: String) throws -> String {
-        var jwt = JWT(header: self.h!, claims: self.c!)
+    public func sign(using password: String) throws -> JwtBuilder {
+        jwt = JWT(header: self.h!, claims: self.c!)
         let privateKey = try self.privateKeyClosure!(nil, password)
-        let publicKey = try self.publicKeyClosure!(nil)
         let jwtSigner = JWTSigner.es256(privateKey: privateKey)
-        let jwtVerify = JWTVerifier.es256(publicKey: publicKey)
+        signature = try jwt!.sign(using: jwtSigner)
 
-        let signedJWT = try jwt.sign(using: jwtSigner)
+        return self
+    }
 
-        // test
-        let ok = JWT.verify(signedJWT, using: jwtVerify)
-        print(ok)
-//        // test
+    public func sign(withKey: String, using password: String) throws -> JwtBuilder {
+        jwt = JWT(header: self.h!, claims: self.c!)
+        let privateKey = try self.privateKeyClosure!(withKey, password)
+        let jwtSigner = JWTSigner.es256(privateKey: privateKey)
+        signature = try jwt!.sign(using: jwtSigner)
+
+        return self
+    }
+
+    public func compact() throws -> String {
+        if jwt == nil {
+            jwt = JWT(header: self.h!, claims: self.c!)
+        }
+
+        // test verify
+//        let publicKey = try self.publicKeyClosure!(nil)
+//        let jwtVerify = JWTVerifier.es256(publicKey: publicKey)
+//        let ok = JWT.verify(signedJWT, using: jwtVerify)
+//        print(ok)
 //        let j = JWT<Claims>(jwtString: signedJWT)
 //        j.header.headers
-        return signedJWT
+        return try jwt!.compact(sign: signature)
     }
+
 // test
     func read(fileName: String) -> Data {
         do {

@@ -36,7 +36,8 @@ class BlueHMAC: SignerAlgorithm, VerifierAlgorithm {
         }
         let signature = try sign(unsignedData)
         let signatureString = JWTEncoder.base64urlEncodedString(data: signature)
-        return header + "." + claims + "." + signatureString
+//        return header + "." + claims + "." + signatureString
+        return signatureString
     }
     
     func sign(_ data: Data) throws -> Data {

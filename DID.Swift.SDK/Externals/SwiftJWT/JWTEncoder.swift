@@ -159,12 +159,12 @@ fileprivate class _JWTEncoder: Encoder {
                 }
                 // Set the jwtSigner while you have acces to the keyID
                 if encoder.jwtSigner == nil {
-                    guard let keyID = _header.headers[_header.kid], let keyIDJWTSigner = encoder.keyIDToSigner(keyID as! String) else {
+                    guard let keyID = _header.headers[Header.kid], let keyIDJWTSigner = encoder.keyIDToSigner(keyID as! String) else {
                         throw JWTError.invalidKeyID
                     }
                     encoder.jwtSigner = keyIDJWTSigner
                 }
-                _header.headers[_header.alg] = encoder.jwtSigner?.name
+                _header.headers[Header.alg] = encoder.jwtSigner?.name
                 encoder.header = try _header.encode()
             } else if fieldName == "claims" {
                 let data = try jsonEncoder.encode(value)

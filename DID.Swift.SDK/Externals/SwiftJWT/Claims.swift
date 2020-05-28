@@ -23,7 +23,7 @@ public class Claims {
      JWT.  The processing of this claim is generally application specific.
      The "iss" value is a case-sensitive.
      */
-    public let iss: String = "iss"
+    public static let iss: String = "iss"
 
     /**
      The "sub" (subject) claim identifies the principal that is the
@@ -33,7 +33,7 @@ public class Claims {
      The processing of this claim is generally application specific.  The
      "sub" value is case-sensitive.
      */
-    public let sub: String = "sub"
+    public static let sub: String = "sub"
 
     /**
      The "aud" (audience) claim identifies the recipients that the JWT is
@@ -44,7 +44,7 @@ public class Claims {
      rejected. The interpretation of audience values is generally application specific.
      The "aud" value is case-sensitive.
      */
-    public let aud: String = "aud"
+    public static let aud: String = "aud"
 
     /**
      The "exp" (expiration time) claim identifies the expiration time on
@@ -54,7 +54,7 @@ public class Claims {
      Implementers MAY provide for some small leeway, usually no more than
      a few minutes, to account for clock skew.
      */
-    public let exp: String = "exp"
+    public static let exp: String = "exp"
 
     /**
      The "nbf" (not before) claim identifies the time before which the JWT
@@ -64,13 +64,13 @@ public class Claims {
      provide for some small leeway, usually no more than a few minutes, to
      account for clock skew.
      */
-    public let nbf: String = "nbf"
+    public static let nbf: String = "nbf"
 
     /**
      The "iat" (issued at) claim identifies the time at which the JWT was
      issued.  This claim can be used to determine the age of the JWT.
      */
-    public let iat: String = "iat"
+    public static let iat: String = "iat"
 
     /**
      The "jti" (JWT ID) claim provides a unique identifier for the JWT.
@@ -82,74 +82,74 @@ public class Claims {
      to prevent the JWT from being replayed.  The "jti" value is case-
      sensitive
      */
-    public let jti: String = "jti"
+    public static let jti: String = "jti"
 
     var claims: [String: Any] = [: ]
 
     public init() { }
 
     public func setSubject(subject: String) -> Claims {
-        claims[sub] = subject
+        claims[Claims.sub] = subject
         return self
     }
 
     public func getSubject() -> String? {
-        return claims[sub] as? String
+        return claims[Claims.sub] as? String
     }
 
     public func setId(id: String) -> Claims {
-        claims[jti] = id
+        claims[Claims.jti] = id
         return self
     }
 
     public func getId() -> String? {
-        return claims[jti] as? String
+        return claims[Claims.jti] as? String
     }
 
     public func setIssuer(issuer: String) -> Claims {
-        claims[iss] = issuer
+        claims[Claims.iss] = issuer
         return self
     }
 
     public func getIssuer() -> String? {
-        return claims[iss] as? String
+        return claims[Claims.iss] as? String
     }
 
     public func setAudience(audience: String) -> Claims {
-        claims[aud] = audience
+        claims[Claims.aud] = audience
         return self
     }
 
     public func getAudience() -> String? {
-        return claims[aud] as? String
+        return claims[Claims.aud] as? String
     }
 
     public func setIssuedAt(issuedAt: Date) -> Claims {
-        claims[iat] = DateHelper.formateDate(issuedAt)
+        claims[Claims.iat] = DateHelper.formateDate(issuedAt)
         return self
     }
 
     public func getIssuedAt() -> Date? {
 
-        return DateFormatter.convertToUTCDateFromString((claims[iat] as? String)!)
+        return DateFormatter.convertToUTCDateFromString((claims[Claims.iat] as? String)!)
     }
 
     public func setExpiration(expiration: Date) -> Claims {
-        claims[exp] = DateHelper.formateDate(expiration)
+        claims[Claims.exp] = DateHelper.formateDate(expiration)
         return self
     }
 
     public func getExpiration() -> Date? {
-        return DateFormatter.convertToUTCDateFromString((claims[exp] as? String)!)
+        return DateFormatter.convertToUTCDateFromString((claims[Claims.exp] as? String)!)
     }
 
     public func setNotBefore(notBefore: Date) -> Claims {
-        claims[nbf] = DateHelper.formateDate(notBefore)
+        claims[Claims.nbf] = DateHelper.formateDate(notBefore)
         return self
     }
 
     public func getNotBefore() -> Date? {
-        return DateFormatter.convertToUTCDateFromString((claims[nbf] as? String)!)
+        return DateFormatter.convertToUTCDateFromString((claims[Claims.nbf] as? String)!)
     }
 
     public func setValue(key: String, value: Any) -> Claims {
@@ -159,6 +159,10 @@ public class Claims {
 
     public func getValue(key: String) -> Any {
         return claims[key] as Any
+    }
+
+    public func containsKey(key: String) -> Bool {
+        return claims[key] != nil
     }
 }
 

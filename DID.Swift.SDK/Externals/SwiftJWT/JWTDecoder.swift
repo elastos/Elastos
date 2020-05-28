@@ -217,7 +217,7 @@ private struct _JWTKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContaine
         jsonDecoder.dateDecodingStrategy = .secondsSince1970
         if key.stringValue == "header" {
             let header = try Header.decode(self.header) // try jsonDecoder.decode(Header.self, from: self.header)
-            decoder.keyID = header.kid
+            decoder.keyID = Header.kid
             guard let decodedHeader = header as? T else {
                 throw DecodingError.typeMismatch(T.self, DecodingError.Context(codingPath: codingPath, debugDescription: "Type of header key was not a JWT Header"))
             }

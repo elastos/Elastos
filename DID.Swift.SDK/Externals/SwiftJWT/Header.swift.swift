@@ -19,60 +19,50 @@ import Foundation
 // MARK: Header
 public class Header {
 
-//    typ: String? = "JWT",
-//    jku: String? = nil,
-//    jwk: String? = nil,
-//    kid: String? = nil,
-//    x5u: String? = nil,
-//    x5c: [String]? = nil,
-//    x5t: String? = nil,
-//    x5tS256: String? = nil,
-//    cty: String? = nil,
-//    crit: [String]? = nil'
-
+    public static let JWT_TYPE: String = "JWT"
     /// Type Header Parameter
-    public let typ: String = "typ"
+    public static let TYPE: String = "typ"
     /// Algorithm Header Parameter
-    public let alg: String = "alg"
+    public static let alg: String = "alg"
     /// JSON Web Token Set URL Header Parameter
-    public let jku: String = "jku"
+    public static let jku: String = "jku"
     /// JSON Web Key Header Parameter
-    public let jwk: String = "jwk"
+    public static let jwk: String = "jwk"
     /// Key ID Header Parameter
-    public let kid: String = "kid"
+    public static let kid: String = "kid"
     /// X.509 URL Header Parameter
-    public let x5u: String = "x5u"
+    public static let x5u: String = "x5u"
     /// X.509 Certificate Chain Header Parameter
-    public let x5c: String = "x5c"
+    public static let x5c: String = "x5c"
     /// X.509 Certificate SHA-256 Thumbprint Header Parameter
-    public let x5t: String = "x5t"
+    public static let x5t: String = "x5t"
     /// X.509 Certificate SHA-256 Thumbprint Header Parameter
-    public let x5tS256: String = "x5tS256"
+    public static let x5tS256: String = "x5tS256"
     /// Content Type Header Parameter
-    public let cty: String = "cty"
+    public static let CONTENT_TYPE: String = "cty"
     /// Critical Header Parameter
-    public let crit: String = "crit"
+    public static let crit: String = "crit"
 
     var headers: [String: Any] = [: ]
 
     public init() { }
 
     public func setType(_ type: String) -> Header {
-        headers[typ] = type
+        headers[Header.TYPE] = type
         return self
     }
 
     public func getType() -> String? {
-        return headers[typ] as? String
+        return headers[Header.TYPE] as? String
     }
 
-    public func setContentType(_ cty: String) -> Header {
-        headers[cty] = cty
+    public func setContentType(_ contentType: String) -> Header {
+        headers[Header.CONTENT_TYPE] = contentType
         return self
     }
 
     public func getContentType() -> String? {
-        return headers[cty] as? String
+        return headers[Header.CONTENT_TYPE] as? String
     }
 
     public func setValue(key: String, value: Any) -> Header {

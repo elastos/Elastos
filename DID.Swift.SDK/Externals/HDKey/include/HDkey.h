@@ -131,9 +131,9 @@ KeySpec *KeySpec_Fill(KeySpec *keyspec, uint8_t *publickey, uint8_t *privatekey)
 
 KeySpec *KeySpec_Copy(KeySpec *dst, KeySpec *src);
 
-int PEM_WritePublicKey(const uint8_t *publicKey, char *buffer, size_t *size);
+ssize_t PEM_WritePublicKey(const uint8_t *publicKey, char *buffer, size_t size);
 
-int PEM_WritePrivateKey(const uint8_t *publickey, const uint8_t *privatekey,  char *buffer, size_t *size);
+ssize_t PEM_WritePrivateKey(const uint8_t *publickey, const uint8_t *privatekey,  char *buffer, size_t size);
 
 #ifdef __cplusplus
 }
