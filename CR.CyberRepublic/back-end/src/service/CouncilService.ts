@@ -188,7 +188,7 @@ export default class extends Base {
                         'voteResult'
                     ]
                     const proposalList = await this.proposalMode.getDBInstance()
-                        .find({$or: [{proposer: council.user._id}, {'voteResult.votedBy': council.user._id}]}, proposalFields).sort({createdAt: -1})
+                        .find({$or: [{proposer: council.user._id}, {'voteResult.votedBy': council.user._id}, {'voteHistory.votedBy': council.user._id}]}, proposalFields).sort({createdAt: -1})
                         .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
                     term = _.map(proposalList, (o: any) => {
@@ -196,7 +196,7 @@ export default class extends Base {
                         const chainStatus = [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
                         // Todo: add chain status limit
                         // const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy === council.user._id && (chainStatus.includes(o.status) || o.value === constant.CVOTE_RESULT.UNDECIDED))
-                        const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy.equals(council.user._id))
+                        const voteResult = _.filter(o.voteResult, (o: any) => council.user._id.equals(o.votedBy))
                         const currentVoteResult = _.get(voteResult[0], 'value')
                         return {
                             id: o.vid,
@@ -206,6 +206,9 @@ export default class extends Base {
                             voteResult: currentVoteResult,
                             createdAt: moment(o.createdAt).unix()
                         }
+                    })
+                    term = _.filter(term, (o: any)=> {
+                        return o.voteResult !== constant.CVOTE_RESULT.UNDECIDED
                     })
                 }
             }
