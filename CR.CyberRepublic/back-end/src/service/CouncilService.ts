@@ -415,7 +415,7 @@ export default class extends Base {
             if (data.status === constant.TERM_COUNCIL_STATUS.CURRENT) {
                 const result = _.filter(oldCouncilsByDID, (v: any, k: any) =>
                     (newCouncilsByDID[k]
-                        && v.status !== constant.COUNCIL_STATUS.IMPEACHED
+                        // && v.status !== constant.COUNCIL_STATUS.IMPEACHED
                         && newCouncilsByDID[k].status === constant.COUNCIL_STATUS.IMPEACHED))
                 await updateUserRole(result, constant.USER_ROLE.MEMBER)
             }
