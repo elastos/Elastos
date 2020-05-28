@@ -57,7 +57,6 @@ import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
@@ -103,6 +102,8 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     RecyclerView rvProcess;
     @BindView(R.id.ll_vote)
     LinearLayout llVote;
+    @BindView(R.id.ll_restTime)
+    LinearLayout llRestTime;
     @BindView(R.id.rl_vote_button)
     RelativeLayout rlVoteButton;
     Unbinder unbinder;
@@ -165,12 +166,14 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         switch (searchBean.getStatus()) {
             case "VOTING":
                 //委员评议
+                llRestTime.setVisibility(View.VISIBLE);
                 proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
                 tvTitle.setText(R.string.proposalcomments);
                 tvStatus.setText(R.string.menberreview);
                 break;
             case "NOTIFICATION":
                 //公示期
+                llRestTime.setVisibility(View.VISIBLE);
                 tvTitle.setText(R.string.proposalpublished);
                 tvVote.setText(R.string.votedisagree);
                 tvStatus.setText(R.string.publishing);
@@ -231,21 +234,13 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     }
 
     private String setRestDay(long time) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(time * 1000);
-        int year = calendar.get(Calendar.DAY_OF_YEAR) - Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
-        if (year > 0) {
-        }
-        int day = calendar.get(Calendar.DAY_OF_YEAR) - Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
-        if (day > 0) {
-            return String.format(getString(R.string.aboutday), String.valueOf(day));
+        int hours = (int) (time / 3600);
+        if (hours >= 24) {
+            return String.format(getString(R.string.aboutday), String.valueOf(hours / 24));
+        } else if (hours >= 1) {
+            return String.format(getString(R.string.abouthour), String.valueOf(hours));
         } else {
-            int hour = calendar.get(Calendar.HOUR_OF_DAY) - Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-            if (hour > 0) {
-                return String.format(getString(R.string.abouthour), String.valueOf(day));
-            } else {
-                return getString(R.string.noonehour);
-            }
+            return getString(R.string.noonehour);
         }
 
     }
@@ -304,7 +299,6 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         }
 
     }
-
 
 
     @OnClick({R.id.tv_agree, R.id.iv_info, R.id.iv_vote, R.id.tv_disagree, R.id.tv_abstention, R.id.tv_hash, R.id.tv_web, R.id.tv_vote})

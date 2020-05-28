@@ -2,10 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:focusableInTouchMode="true"
+    android:background="@color/blue1"
     android:descendantFocusability="blocksDescendants"
     android:fillViewport="true"
-    android:background="@color/blue1"
+    android:focusableInTouchMode="true"
     android:orientation="vertical">
 
     <include layout="@layout/title" />
@@ -183,20 +183,28 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/ll_restTime"
+                    android:visibility="gone"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="@string/resttime"
-                    android:textColor="@color/whiter50"
-                    android:textSize="13sp" />
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tv_resttime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="9dp"
-                    android:textSize="11sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/resttime"
+                        android:textColor="@color/whiter50"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tv_resttime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="9dp"
+                        android:textSize="11sp" />
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -261,13 +269,13 @@
                     android:textSize="14sp" />
 
                 <TextView
-                    android:visibility="gone"
                     android:id="@+id/tv_votestatus"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:textColor="#ffffffff"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    android:visibility="gone" />
 
                 <ImageView
                     android:id="@+id/iv_vote"

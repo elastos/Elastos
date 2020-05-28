@@ -60,6 +60,13 @@ public class ProposalItemFragment extends BaseFragment implements CommonRvListen
         //Log.i("????", "initView" + status + firstShow);
 
         //setUserVisibleHint->initView  所用可能cotext无加载 ifstayus=all这里  其他setUserVisibleHint
+        if (status.equals("ALL") && firstShow) {
+            presenter = new ProposalPresenter();
+            presenter.proposalSearch(pageNum, 20, status, null, this);
+            firstShow = false;
+            // Log.i("????", "oncreate" + status );
+        }
+
     }
 
 
@@ -103,8 +110,8 @@ public class ProposalItemFragment extends BaseFragment implements CommonRvListen
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        //Log.i("????", isVisibleToUser + status + firstShow);
-        if (isVisibleToUser && firstShow) {
+        // Log.i("????", isVisibleToUser + status + firstShow);
+        if (!status.equals("ALL") && isVisibleToUser && firstShow) {
             presenter = new ProposalPresenter();
             presenter.proposalSearch(pageNum, 20, status, null, this);
             firstShow = false;
