@@ -470,7 +470,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         } else {
             intent.putExtra("maxBalance", maxBalance);
         }
-
+        intent.putExtra("type", Constant.SUPERNODEVOTE);
         startActivity(intent);
     }
 

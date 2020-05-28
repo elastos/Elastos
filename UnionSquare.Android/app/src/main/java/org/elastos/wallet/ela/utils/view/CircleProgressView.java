@@ -96,6 +96,6 @@ public class CircleProgressView extends View {
 
         paint.setColor(ContextCompat.getColor(getContext(), R.color.white));
         //把文本画在圆心居中
-        canvas.drawText(text, radius - textLength / 2, radius, paint);
+        canvas.drawText(text, radius - textLength / 2, radius+5, paint);
     }
 }
