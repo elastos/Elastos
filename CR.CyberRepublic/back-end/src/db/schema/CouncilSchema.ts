@@ -64,7 +64,6 @@ export const Council = {
     },
     startDate: {
         type: Date,
-        required: true,
     },
     endDate: {
         type: Date,
