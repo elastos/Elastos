@@ -185,7 +185,8 @@ export default class extends Base {
                         'vid',
                         'title',
                         'status',
-                        'voteResult'
+                        'voteResult',
+                        'voteHistory'
                     ]
                     const proposalList = await this.proposalMode.getDBInstance()
                         .find({$or: [{proposer: council.user._id}, {'voteResult.votedBy': council.user._id}, {'voteHistory.votedBy': council.user._id}]}, proposalFields).sort({createdAt: -1})
@@ -196,7 +197,10 @@ export default class extends Base {
                         const chainStatus = [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
                         // Todo: add chain status limit
                         // const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy === council.user._id && (chainStatus.includes(o.status) || o.value === constant.CVOTE_RESULT.UNDECIDED))
-                        const voteResult = _.filter(o.voteResult, (o: any) => council.user._id.equals(o.votedBy))
+                        let voteResult = _.filter(o.voteResult, (o: any) => council.user._id.equals(o.votedBy) && o.status == constant.CVOTE_CHAIN_STATUS.CHAINED)
+                        if (_.isEmpty(voteResult)) {
+                            voteResult = _.filter(o.voteHistory, (o: any) => council.user._id.equals(o.votedBy) && o.status == constant.CVOTE_CHAIN_STATUS.CHAINED)
+                        }
                         const currentVoteResult = _.get(voteResult[0], 'value')
                         return {
                             id: o.vid,
@@ -208,7 +212,7 @@ export default class extends Base {
                         }
                     })
                     term = _.filter(term, (o: any)=> {
-                        return o.voteResult !== constant.CVOTE_RESULT.UNDECIDED
+                        return o.voteResult && o.voteResult !== constant.CVOTE_RESULT.UNDECIDED
                     })
                 }
             }
