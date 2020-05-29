@@ -575,6 +575,7 @@ export default class extends Base {
                     }
                     await this.model.getDBInstance().create(doc)
                 }
+                await this.temporaryChangeUpdateStatus()
             }
             if (!currentCrs) {
                 // update votingCds data
@@ -627,7 +628,7 @@ export default class extends Base {
                 // update member role, COUNCILE => MEMBER
                 await updateUserRole(currentCrs.councilMembers, constant.USER_ROLE.MEMBER)
                 // TODO: update proposal status
-
+                await this.temporaryChangeUpdateStatus()
             }
 
             if (!votingCds) {
@@ -640,8 +641,52 @@ export default class extends Base {
                     councilMembers: []
                 }
                 await this.model.getDBInstance().create(votingDoc)
+                await this.temporaryChangeUpdateStatus()
             }
         }
+    }
+
+    public async temporaryChangeUpdateStatus() {
+        const db_cvote = this.getDBModel('CVote')
+        const proposaedList = await db_cvote.find({status: constant.CVOTE_STATUS.PROPOSED})
+        const notificationList = await db_cvote.find({status: constant.CVOTE_STATUS.NOTIFICATION})
+        const idsProposaed = []
+        const idsNotification = []
+
+        _.each(proposaedList, (item) => {
+            idsProposaed.push(item._id)
+            // this.proposalAborted(item.proposalHash)
+        })
+        _.each(notificationList, (item) => {
+            idsNotification.push(item._id)
+            // this.proposalAborted(item.proposalHash)
+        })
+        await db_cvote.update(
+            {
+                _id: {$in:idsProposaed}
+            },
+            {
+                $set:{
+                    status: constant.CVOTE_STATUS.REJECT
+                }
+            },
+            {
+                multi: true
+            }
+        )
+        await db_cvote.update(
+            {
+                _id: {$in:idsNotification}
+            },
+            {
+                $set:{
+                    status: constant.CVOTE_STATUS.VETOED
+                }
+            },
+            {
+                multi: true
+            }
+        )
     }
 
     public async eachCouncilJobPlus() {
