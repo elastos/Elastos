@@ -10,10 +10,8 @@ class SignSuggestionButton extends Component {
     super(props)
     this.state = {
       url: '',
-      timestamp: '',
       visible: false
     }
-    this.timerDid = null
   }
 
   elaQrCode = () => {
@@ -26,36 +24,31 @@ class SignSuggestionButton extends Component {
     )
   }
 
-  pollingProposalState = () => {
+  proposalState = async () => {
     const { id, pollProposalState, history } = this.props
-    const { timestamp } = this.state
-    this.timerDid = setInterval(async () => {
-      const rs = await pollProposalState({ id, timestamp })
-      if (rs && rs.success) {
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        if (rs.proposer === false) {
-          message.info('This suggestion had been made into proposal by other council member.')
-        }
-        history.push(`/proposals/${rs.id}`)
+    const rs = await pollProposalState({ id })
+    if (rs && rs.success) {
+      if (rs.proposer === false) {
+        message.info('This suggestion had been made into proposal by other council member.')
       }
-      if (rs && rs.success === false) {
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        if (rs.message) {
-          message.error(rs.message)
-        } else {
-          message.error('Something went wrong')
-        }
-        this.setState({ visible: false })
+      history.push(`/proposals/${rs.id}`)
+    }
+    if (rs && rs.success === false) {
+      if (rs.message) {
+        message.error(rs.message)
+      } else {
+        message.error('Something went wrong')
       }
-    }, 5000)
+      this.setState({ visible: false })
+    }
+  }
+
+  pollingProposalState = async () => {
+    await this.proposalState()
+    setTimeout(this.pollingProposalState, 5000)
   }
 
   handleSign = async () => {
-    if (this.timerDid) {
-      return
-    }
     this.pollingProposalState()
   }
 
@@ -63,12 +56,8 @@ class SignSuggestionButton extends Component {
     const { id, getCMSignatureUrl } = this.props
     const rs = await getCMSignatureUrl(id)
     if (rs && rs.success) {
-      this.setState({ url: rs.url, timestamp: rs.timestamp })
+      this.setState({ url: rs.url })
     }
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.timerDid)
   }
 
   handleVisibleChange = (visible) => {

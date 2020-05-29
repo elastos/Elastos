@@ -140,8 +140,11 @@ export default class extends Base {
                 // draft hash is a constant
                 const draftHash = _.get(suggestion, 'draftHash')
                 const cvote = await db_cvote.findOne({ draftHash })
-                if (cvote) {
+                if (cvote && currentProposer.proposalHash === cvote.proposalHash) {
                     return { success: true, id: cvote._id }
+                }
+                if (cvote && currentProposer.proposalHash !== cvote.proposalHash) {
+                    return { success: true, id: cvote._id, proposer: false }
                 }
                 const rs: any = await getProposalState({
                     drafthash: draftHash
