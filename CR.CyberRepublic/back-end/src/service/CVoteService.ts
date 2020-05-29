@@ -172,7 +172,7 @@ export default class extends Base {
         const vid = await this.getNewVid()
         const users = await Promise.all([
             db_user.findById(suggestion.createdBy),
-            db_user.findOne({'did.id': chainDid})
+            db_user.findOne({'did.id': `did:elastos:${chainDid}`})
         ])
         const creator = users[0]
         const doc: any = {
