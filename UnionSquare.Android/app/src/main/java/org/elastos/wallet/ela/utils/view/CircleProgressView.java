@@ -18,7 +18,7 @@ public class CircleProgressView extends View {
     private Paint paint;
     private float pointX;
     private float pointY;
-    private int radius;
+    private float radius;
 
 
     public void setProgress(float progress) {
@@ -69,7 +69,7 @@ public class CircleProgressView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = getMeasuredWidth();
         int height = getMeasuredHeight();
-        radius = Math.min(width, height) / 2;
+        radius = Math.min(width, height) / 2.0f;
         pointX = width / 2.0f;
         pointY = height / 2.0f;
     }
@@ -82,13 +82,13 @@ public class CircleProgressView extends View {
     private void drawArc(Canvas canvas) {
 
         RectF rect = new RectF(0, 0, radius * 2, radius * 2);
-        float angle = new BigDecimal(progress).multiply(new BigDecimal(360)).intValue();
+        float angle = new BigDecimal(progress).multiply(new BigDecimal(360)).setScale(2, BigDecimal.ROUND_DOWN).floatValue();
         canvas.drawArc(rect, 270, angle, true, paint);
     }
 
     private void drawText(Canvas canvas) {
 
-        String text = new BigDecimal(progress).multiply(new BigDecimal(100)).intValue() + "%";
+        String text = new BigDecimal(progress).multiply(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_DOWN).floatValue() + "%";
 
         paint.setTextSize(ScreenUtil.dp2px(getContext(), 11));
         //测量字符串长度
