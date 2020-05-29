@@ -957,10 +957,16 @@ export default class extends Base {
             throw 'invalid proposal id'
         }
         const currentVoteResult = _.find(cur._doc.voteResult, ['votedBy', votedBy])
+        const currentVoteHistory = cur._doc.voteHistory
+        const currentVoteHistoryIndex = _.findLastIndex(currentVoteHistory, ['votedBy', votedBy])
+        
+        currentVoteHistory[currentVoteHistoryIndex] = {
+            ..._.omit(currentVoteResult,['_id'])
+        }
         await db_cvote.update(
             {
                 _id,
-                'voteResult.votedBy': votedBy
+                'voteResult.votedBy': votedBy,
             },
             {
                 $set: {
@@ -969,11 +975,7 @@ export default class extends Base {
                     'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.UNCHAIN,
                     'voteResult.$.txid': '',
                     'voteResult.$.signature': null,
-                },
-                $push: {
-                    voteHistory: {
-                        ..._.omit(currentVoteResult, '_id')
-                    }
+                    'voteHistory': currentVoteHistory,
                 },
                 $inc: {
                     __v: 1
@@ -1180,6 +1182,13 @@ export default class extends Base {
                         }
                     } else {
                         try {
+                            const currentVoteResult = _.find(cur._doc.voteResult, ['votedBy', votedBy])
+                            const currentVoteHistory = cur._doc.voteHistory
+                            const currentVoteHistoryIndex = _.findLastIndex(currentVoteHistory, ['votedBy', votedBy])
+                            
+                            currentVoteHistory[currentVoteHistoryIndex] = {
+                                ..._.omit(currentVoteResult,['_id'])
+                            }
                             await db_cvote.update(
                                 {
                                     proposalHash: proposalHash,
@@ -1189,17 +1198,8 @@ export default class extends Base {
                                     $set: {
                                         'voteResult.$.txid': claims.data,
                                         'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINING,
-                                        'voteResult.$.signature': {data: decoded.data}
-                                    },
-                                    $push: {
-                                        voteHistory: {
-                                            value: voteResult.value,
-                                            reason: voteResult.reason,
-                                            txid: claims.data,
-                                            status: constant.CVOTE_CHAIN_STATUS.CHAINING,
-                                            votedBy: voteResult.votedBy,
-                                            signature: voteResult.signature
-                                        }
+                                        'voteResult.$.signature': {data: decoded.data},
+                                        'voteHistory': currentVoteHistory
                                     },
                                     $inc: {
                                         __v: 1
