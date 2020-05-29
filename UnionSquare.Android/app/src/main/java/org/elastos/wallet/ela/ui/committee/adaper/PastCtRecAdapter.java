@@ -22,10 +22,11 @@ import butterknife.ButterKnife;
 
 public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.ViewHolder>{
 
-    public PastCtRecAdapter(Context context, List<PastCtBean.DataBean> list, boolean isCRC) {
+    public PastCtRecAdapter(Context context, List<PastCtBean.DataBean> list, boolean isCRC, boolean isVoting) {
         this.context = context;
         this.list = list;
         this.isCRC = isCRC;
+        this.isVoting = isVoting;
     }
 
     @NonNull
@@ -58,7 +59,7 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
             }
         } else if(status.equalsIgnoreCase("VOTING")) {
             viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+context.getString(R.string.voting)+")"));
-            if(isCRC) {
+            if(isVoting) {
                 viewHolder.manager.setVisibility(View.VISIBLE);
                 viewHolder.manager.setText(context.getString(R.string.votemanager));
             }
@@ -120,5 +121,6 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
     private ManagerListener managerListener;
     private CommonRvListener commonRvListener;
     private boolean isCRC;
+    private boolean isVoting;
     private List<PastCtBean.DataBean> list;
 }

@@ -22,6 +22,16 @@ public class CtManagePresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
+    public void getCRlist(int pageNum, int pageSize, String state, BaseFragment baseFragment,boolean isShow) {
+        Map<String, Object> map = new HashMap();
+        map.put("pageNum", pageNum);
+        map.put("pageSize", pageSize);
+        map.put("state", state);
+        Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).getCRlist(map);
+        Observer observer = createObserver(baseFragment, "getCRlist",isShow);
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
     public void getRegisteredCRInfo(String walletId, String chainID, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "getRegisteredCRInfo",false);
         Observable observable = createObservable(new ObservableListener() {

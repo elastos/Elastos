@@ -172,6 +172,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         String type = dataBean.getType();
         String did = dataBean.getDid();
+        String cid = dataBean.getCid();
         String status = dataBean.getStatus();
         String depositAmount = dataBean.getDepositAmount();
 
@@ -195,6 +196,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
         Bundle bundle = new Bundle();
         bundle.putString("type", type);
         bundle.putString("did", did);
+        bundle.putString("cid", cid);
         bundle.putString("status", status);
         bundle.putString("depositAmount", depositAmount);
         ((BaseFragment) getParentFragment()).start(PastCtListFragment.class, bundle);
