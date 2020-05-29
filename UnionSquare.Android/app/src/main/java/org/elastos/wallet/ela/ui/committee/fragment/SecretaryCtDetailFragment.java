@@ -31,10 +31,18 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
     TextView toolbarTitle;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    @BindView(R.id.refresh_ct_did_layout)
+    View refreshDidLayout;
+    @BindView(R.id.line)
+    View line;
     CtDetailPresenter presenter;
+
+    private RealmUtil realmUtil = new RealmUtil();
+    private Wallet wallet = realmUtil.queryDefauleWallet();
 
     private String id;
     private String did;
+
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
@@ -51,6 +59,14 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.secretarydetail));
         presenter = new CtDetailPresenter();
+
+        if (!AppUtlis.isNullOrEmpty(did) && did.equalsIgnoreCase(wallet.getDid())) {
+            refreshDidLayout.setVisibility(View.VISIBLE);
+            line.setVisibility(View.VISIBLE);
+        } else {
+            refreshDidLayout.setVisibility(View.INVISIBLE);
+            line.setVisibility(View.INVISIBLE);
+        }
         presenter.getCurrentCouncilInfo(this, did);
     }
 
@@ -91,6 +107,7 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
     TextView microsoft;
     @BindView(R.id.personal_profile)
     TextView introduce;
+
     private void setInfo(CtDetailBean ctDetailBean) {
         try {
             CtDetailBean.DataBean dataBean = ctDetailBean.getData();
@@ -98,49 +115,49 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
             name.setText(dataBean.getDidName());
             location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
             didTv.setText(dataBean.getDid());
-            String startDate = dataBean.getStartDate()==0?"":String.valueOf(dataBean.getStartDate());
-            String endDate = dataBean.getEndDate()==0?"":String.valueOf(dataBean.getEndDate());
+            String startDate = dataBean.getStartDate() == 0 ? "" : String.valueOf(dataBean.getStartDate());
+            String endDate = dataBean.getEndDate() == 0 ? "" : String.valueOf(dataBean.getEndDate());
             endTime.setText(String.format("%1$s - %2$s",
                     DateUtil.formatTimestamp(startDate, "yyyy.MM.dd HH:mm:ss"),
                     DateUtil.formatTimestamp(endDate, "yyyy.MM.dd HH:mm:ss")));
-            String brithday = dataBean.getBirthday()==0?"":String.valueOf(dataBean.getBirthday());
+            String brithday = dataBean.getBirthday() == 0 ? "" : String.valueOf(dataBean.getBirthday());
             birthDay.setText(DateUtil.formatTimestamp(brithday, "yyyy.MM.dd"));
-            if(AppUtlis.isNullOrEmpty(brithday)){
+            if (AppUtlis.isNullOrEmpty(brithday)) {
                 birthdayTitle.setVisibility(View.GONE);
                 birthDay.setVisibility(View.GONE);
             }
             email.setText(dataBean.getEmail());
-            if(AppUtlis.isNullOrEmpty(dataBean.getEmail())) {
+            if (AppUtlis.isNullOrEmpty(dataBean.getEmail())) {
                 email.setVisibility(View.GONE);
                 emailTitle.setVisibility(View.GONE);
             }
             homepage.setText(dataBean.getAddress());
-            if(AppUtlis.isNullOrEmpty(dataBean.getAddress())) {
+            if (AppUtlis.isNullOrEmpty(dataBean.getAddress())) {
                 homepage.setVisibility(View.GONE);
                 homepageTitle.setVisibility(View.GONE);
             }
             wechat.setText(dataBean.getWechat());
-            if(AppUtlis.isNullOrEmpty(dataBean.getWechat())) {
+            if (AppUtlis.isNullOrEmpty(dataBean.getWechat())) {
                 wechatTitle.setVisibility(View.GONE);
                 wechat.setVisibility(View.GONE);
             }
             weibo.setText(dataBean.getWeibo());
-            if(AppUtlis.isNullOrEmpty(dataBean.getWeibo())) {
+            if (AppUtlis.isNullOrEmpty(dataBean.getWeibo())) {
                 weiboTitle.setVisibility(View.GONE);
                 weibo.setVisibility(View.GONE);
             }
             facebook.setText(dataBean.getFacebook());
-            if(AppUtlis.isNullOrEmpty(dataBean.getFacebook())) {
+            if (AppUtlis.isNullOrEmpty(dataBean.getFacebook())) {
                 facebookTitle.setVisibility(View.GONE);
                 facebook.setVisibility(View.GONE);
             }
             microsoft.setText(dataBean.getMicrosoft());
-            if(AppUtlis.isNullOrEmpty(dataBean.getMicrosoft())) {
+            if (AppUtlis.isNullOrEmpty(dataBean.getMicrosoft())) {
                 microsoftTitle.setVisibility(View.GONE);
                 microsoft.setVisibility(View.GONE);
             }
             introduce.setText(dataBean.getIntroduction());
-            if(AppUtlis.isNullOrEmpty(dataBean.getIntroduction())) {
+            if (AppUtlis.isNullOrEmpty(dataBean.getIntroduction())) {
                 introduce.setVisibility(View.GONE);
                 personalprofileTitle.setVisibility(View.GONE);
             }
@@ -148,9 +165,6 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
             e.printStackTrace();
         }
     }
-
-    private RealmUtil realmUtil = new RealmUtil();
-    private Wallet wallet = realmUtil.queryDefauleWallet();
 
     @OnClick({R.id.refresh_ct_did})
     public void onClick(View view) {
