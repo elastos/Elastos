@@ -251,7 +251,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     private void setDisagreeProgress(float progress) {
 
         circleIndicator.setProgress(progress);
-        setInfoStatue(false);
+        //setInfoStatue(false);
     }
 
     private void setInfoStatue(boolean show) {
