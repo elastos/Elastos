@@ -36,13 +36,15 @@ export default class extends Base {
 
         return _.map(result, (o: any) => {
             let dateObj = {}
+            if (o.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
+                dateObj['endDate'] = o.startDate && moment(o.startDate).unix()
+            }
             if (o.status === constant.TERM_COUNCIL_STATUS.HISTORY) {
                 dateObj['endDate'] = o.endDate && moment(o.endDate).unix()
             }
             return ({
                 id: o._id,
                 ..._.omit(o._doc, ['_id', 'startDate', 'endDate']),
-                startDate: moment(o.startDate).unix(),
                 ...dateObj,
             })
         })
@@ -210,7 +212,7 @@ export default class extends Base {
                             createdAt: moment(o.createdAt).unix()
                         }
                     })
-                    term = _.filter(term, (o: any)=> {
+                    term = _.filter(term, (o: any) => {
                         return o.voteResult && o.voteResult !== constant.CVOTE_RESULT.UNDECIDED
                     })
                 }
@@ -624,6 +626,20 @@ export default class extends Base {
                 )
                 // update member role, COUNCILE => MEMBER
                 await updateUserRole(currentCrs.councilMembers, constant.USER_ROLE.MEMBER)
+                // TODO: update proposal status
+
+            }
+
+            if (!votingCds) {
+                const votingDoc: any = {
+                    index: index + 1,
+                    height: height || 0,
+                    startDate: null,
+                    endDate: null,
+                    status: constant.TERM_COUNCIL_STATUS.VOTING,
+                    councilMembers: []
+                }
+                await this.model.getDBInstance().create(votingDoc)
             }
         }
     }
