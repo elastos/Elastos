@@ -22,6 +22,17 @@ public class CtManagePresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
+    public void getDIDByPublicKey(String masterWalletID, String publicKey, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "getDIDByPublicKey");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().getDIDByPublicKey(masterWalletID, publicKey);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
     public void getCRlist(int pageNum, int pageSize, String state, BaseFragment baseFragment,boolean isShow) {
         Map<String, Object> map = new HashMap();
         map.put("pageNum", pageNum);
