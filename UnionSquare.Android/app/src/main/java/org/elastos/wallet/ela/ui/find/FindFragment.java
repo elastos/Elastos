@@ -170,10 +170,13 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
 
     private void go2(CtDetailBean ctDetailBean) {
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
+        String type = dataBean.getType();
+        String did = dataBean.getDid();
+        String status = dataBean.getStatus();
+        String depositAmount = dataBean.getDepositAmount();
+
         //cr委员会
         if(dataBean != null) {
-            String status = dataBean.getStatus();
-            String depositAmount = dataBean.getDepositAmount();
             if(!AppUtlis.isNullOrEmpty(status)
                     && !AppUtlis.isNullOrEmpty(depositAmount)
                     && !depositAmount.equalsIgnoreCase("0")) {
@@ -181,16 +184,19 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
                         || status.equals("Impeached")
                         || status.equals("Returned")) {
                     Bundle bundle = new Bundle();
-                    bundle.putString("did", dataBean.getDid());
+                    bundle.putString("did", did);
                     bundle.putString("status", status);
-                    bundle.putString("depositAmount", dataBean.getDepositAmount());
+                    bundle.putString("depositAmount", depositAmount);
                     start(CtManagerFragment.class, bundle);
                     return;
                 }
             }
         }
         Bundle bundle = new Bundle();
-        bundle.putString("type", dataBean.getType());
+        bundle.putString("type", type);
+        bundle.putString("did", did);
+        bundle.putString("status", status);
+        bundle.putString("depositAmount", depositAmount);
         ((BaseFragment) getParentFragment()).start(PastCtListFragment.class, bundle);
     }
 

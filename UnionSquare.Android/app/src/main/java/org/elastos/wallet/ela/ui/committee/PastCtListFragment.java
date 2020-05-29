@@ -54,11 +54,18 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         return R.layout.fragment_ct_past_list;
     }
 
+    String did;
     String type;
+    String status;
+    String depositAmount;
+
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
+        did = data.getString("did");
         type = data.getString("type");
+        status = data.getString("status");
+        depositAmount = data.getString("depositAmount");
     }
 
     @Override
@@ -68,7 +75,10 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         pastCtPresenter = new PastCtPresenter();
         if(!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("SecretaryGeneral")) {
             ivTitleRight.setVisibility(View.VISIBLE);
-        } else if(!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("CouncilMember")) {
+        } else if(!AppUtlis.isNullOrEmpty(type)
+                && type.equalsIgnoreCase("CouncilMember")
+        && !AppUtlis.isNullOrEmpty(depositAmount)
+        && !depositAmount.trim().equalsIgnoreCase("0")) {
             isCrc = true;
         } else {
             isCrc = false;
@@ -132,14 +142,11 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     }
 
     @Override
-    public void onManagerClick(int position, String status) {
-        if(AppUtlis.isNullOrEmpty(status)) return;
+    public void onManagerClick(int position, String type) {
+        if(AppUtlis.isNullOrEmpty(type)) return;
         Bundle bundle = new Bundle();
-        if(status.equalsIgnoreCase("VOTING")) {
-            bundle.putString("status", "VOTING");
-        } else {
-            bundle.putString("status", "Elected");
-        }
+        bundle.putString("status", status);
+        bundle.putString("type", type);
         start(CtManagerFragment.class, bundle);
     }
 

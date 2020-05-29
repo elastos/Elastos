@@ -17,12 +17,10 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
-import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
 import org.elastos.wallet.ela.ui.committee.presenter.CtManagePresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
-import org.elastos.wallet.ela.ui.crvote.fragment.UpdateCRInformationFragment;
 import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
@@ -64,7 +62,6 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     CtManagePresenter presenter;
-    String depositAmount;
 
     @Override
     protected int getLayoutId() {
@@ -79,20 +76,37 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
         presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
     }
 
+    String type;
+    String depositAmount;
     String status;
     String did;
+
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
         did = data.getString("did");
         status = data.getString("status");
+        type = data.getString("type");
         depositAmount = data.getString("depositAmount");
-        if(status.equalsIgnoreCase("Elected")) {
-            showSecondLayout();
-        } else if( status.equalsIgnoreCase("VOTING")) {
+
+        //当届
+        if(!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("CURRENT")) {
+            //任职不正常
+            if(!AppUtlis.isNullOrEmpty(status)
+                    && !AppUtlis.isNullOrEmpty(depositAmount)
+                    && !depositAmount.trim().equalsIgnoreCase("0")
+                   && (status.equalsIgnoreCase("Terminated")
+                            || status.equalsIgnoreCase("Impeached")
+                            || status.equalsIgnoreCase("Returned"))) {
+                showFirstLayout();
+            } else {
+                showSecondLayout();
+                showRefreshView();
+            }
+        } else if(!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("VOTING")) {
             showSecondLayout();
             showDepositView();
-        } else {
+        } else { // from FindFragment
             showFirstLayout();
         }
     }
@@ -160,6 +174,13 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     private void showSecondLayout() {
         firstLayout.setVisibility(View.GONE);
         secondLayout.setVisibility(View.VISIBLE);
+
+        if(!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("VOTING")) {
+            description.setText(R.string.votingfinishhint);
+            showDepositView();
+            return;
+        }
+
         switch (status) {
             case "Terminated":
                 description.setText(String.format(getString(R.string.completeofficehint), depositAmount));
@@ -173,11 +194,6 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
                 description.setText(String.format(getString(R.string.dimissofficehint), depositAmount));
                 showDepositView();
                 break;
-
-            case "VOTING":
-                description.setText(R.string.votingfinishhint);
-                showRefreshView();
-                break;
             case "Elected":
                 description.setText(getString(R.string.inofficehint));
                 showRefreshView();
@@ -188,6 +204,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     }
 
     CrStatusBean crStatusBean = null;
+
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
@@ -205,7 +222,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
             case "getCRDepositcoin":
                 CRDePositcoinBean getdePositcoinBean = (CRDePositcoinBean) baseEntity;
                 depositAmount = getdePositcoinBean.getData().getResult().getAvailable();
-                if(!AppUtlis.isNullOrEmpty(depositAmount))
+                if (!AppUtlis.isNullOrEmpty(depositAmount))
                     presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
                 break;
 
@@ -218,7 +235,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
-        if(integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
             new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
