@@ -54,12 +54,13 @@ const (
 	UpdateCR            TxType = 0x23
 	ReturnCRDepositCoin TxType = 0x24
 
-	CRCProposal         TxType = 0x25
-	CRCProposalReview   TxType = 0x26
-	CRCProposalTracking TxType = 0x27
-	CRCAppropriation    TxType = 0x28
-	CRCProposalWithdraw TxType = 0x29
-	CRAssetsRectify     TxType = 0x2a
+	CRCProposal             TxType = 0x25
+	CRCProposalReview       TxType = 0x26
+	CRCProposalTracking     TxType = 0x27
+	CRCAppropriation        TxType = 0x28
+	CRCProposalWithdraw     TxType = 0x29
+	CRCProposalRealWithdraw TxType = 0x2a
+	CRAssetsRectify         TxType = 0x2b
 )
 
 func (self TxType) Name() string {
