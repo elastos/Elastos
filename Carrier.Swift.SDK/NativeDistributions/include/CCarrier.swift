@@ -63,11 +63,10 @@ internal struct CBootstrapNode {
 
 /**
  * \~English
- * HiveBootstrapNode defines a couple of perperities to provide for Carrier nodes
- * to connect with. The HiveBootstrapNode nodes help Carrier nodes be connected to
- * the others with more higher possibilities.
+ * ExpressNode defines a couple of perperities to provide for Carrier node
+ * to send offline messages. The definition of ExpressNode is same with
  */
-internal struct CHiveBootstrapNode {
+internal struct CExpressNode {
     /**
      * \~English
      * The ip address supported with ipv4 protocol.
@@ -76,7 +75,8 @@ internal struct CHiveBootstrapNode {
 
     /**
      * \~English
-     * The ip address supported with ipv6 protocol.
+     * This field is reserved for future, not suported currently.
+     * user should feed this vaue with NULL.
      */
     var ipv6: UnsafePointer<Int8>?
 
@@ -87,6 +87,14 @@ internal struct CHiveBootstrapNode {
      */
     var port: UnsafePointer<Int8>?
 
+    /**
+     * \~English
+     * The unique public key to provide for Carrier nodes, terminated
+     * by null-string.
+     * The length of public key is about 45 bytes.
+     */
+    var public_key: UnsafePointer<Int8>?
+    
     init() {}
 }
 
@@ -161,14 +169,14 @@ internal struct COptions {
      * There must have at least one bootstrap node for the very first time
      * to create carrier instance.
      */
-    var hive_bootstraps_size: Int = 0
+    var express_nodes_size: Int = 0
 
 
     /**
      * \~English
      * The array of Hive bootstrap nodes.
      */
-    var hive_bootstraps: UnsafePointer<CHiveBootstrapNode>?
+    var express_nodes: UnsafePointer<CExpressNode>?
 
     init() {}
 }
@@ -309,6 +317,42 @@ internal var CPresenceStatus_Away: CConnectionStatus { get { return CConnectionS
  * Carrier node is being busy.
  */
 internal var CPresenceStatus_Busy: CConnectionStatus { get { return CConnectionStatus(2) } }
+
+/**
+ * \~English
+ * Carrier message receipt status to Carrier network.
+ */
+internal struct CReceiptState : RawRepresentable, Equatable {
+
+    init(_ rawValue: Int32) {
+        self.rawValue = rawValue
+    }
+
+    init(rawValue: Int32) {
+        self.rawValue = rawValue
+    }
+
+    var rawValue: Int32
+}
+
+/**
+ * \~English
+ * Message has been accepted by remote friend via carrier network.
+ */
+internal var CReceiptState_ByFriend: CReceiptState { get { return CReceiptState(0) } }
+/**
+ * \~English
+ * Message has been delivered to offline message store.
+ */
+internal var CReceiptState_Offline: CReceiptState { get { return CReceiptState(1) } }
+
+/**
+ * \~English
+ * Message sent before not
+ * Message send unsuccessfully. A specific error code can be
+ * retrieved by calling ela_get_error().
+ */
+internal var CReceiptState_Error: CReceiptState { get { return CReceiptState(2) } }
 
 /**
  * \~English
@@ -703,8 +747,8 @@ internal struct CCallbacks {
      * @param
      *      context     [in] The application defined context data.
      */
-    var friend_message: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, Bool, UnsafeMutableRawPointer?) -> Swift.Void)!
 
+    var friend_message: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, Int64, Bool, UnsafeMutableRawPointer?) -> Swift.Void)!
     /**
      * \~English
      * An application-defined function that process the friend invite request.
@@ -1289,6 +1333,65 @@ internal func ela_send_friend_message(_ carrier: OpaquePointer!,
  */
 internal typealias CFriendInviteResponseCallback = @convention(c)
     (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int32, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void
+
+/**
+* \~English
+* An application-defined function that notify the message receipt status.
+*
+* CFriendMessageReceiptCallback is the callback function type.
+*
+* @param
+*      msgid        [in] The unique id.
+* @param
+*      state        [in] The message sent state.
+* @param
+*      context      [in] The application defined context data.
+*
+* @return
+*      Return true to continue iterate next friend user info,
+*      false to stop iterate.
+*/
+internal typealias CFriendMessageReceiptCallback = @convention(c) (Int64, Int32, UnsafeMutableRawPointer?) -> Swift.Void
+
+/**
+ * \~English
+ * Send a message to a friend with receipt.
+ *
+ * The message length may not exceed ELA_MAX_BULK_MESSAGE_LEN. Larger messages
+ * must be split by application and sent as separate fragments. Other carrier
+ * nodes can reassemble the fragments.
+ *
+ * Message may not be empty or NULL.
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      to          [in] The target userid.
+ * @param
+ *      message     [in] The message content defined by application.
+ * @param
+ *      len         [in] The message length in bytes.
+ * @param
+ *      cb          [in] The pointer to callback which will be called when the
+ *                        receipt is received or failed to send message.
+ * @param
+ *      content     [in] The user context in callback.
+ *
+ * @return
+ *      > 0 message id if the text message successfully add to send task list.
+ *      Otherwise, return <0, and a specific error code can be
+ *      retrieved by calling ela_get_error().
+ */
+
+@_silgen_name("ela_send_message_with_receipt")
+internal func ela_send_message_with_receipt(_ carrier: OpaquePointer!,
+                                _ to: UnsafePointer<Int8>!,
+                                _ message: UnsafePointer<Int8>!,
+                                _ len: Int,
+                                _ callback: CFriendMessageReceiptCallback!,
+                                _ context: UnsafeMutableRawPointer!) -> Int32
+/*
+ internal func ela_invite_friend
+ */
 
 /**
  * \~English

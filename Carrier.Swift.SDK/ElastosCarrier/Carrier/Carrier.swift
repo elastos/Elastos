@@ -33,8 +33,11 @@ public class Carrier: NSObject {
     
     public typealias CarrierFriendInviteResponseHandler =
         (_ carrier: Carrier, _ from: String, _ status: Int, _ reason: String?,
-        _ data: String?) ->Void
-    
+        _ data: String?) -> Void
+
+    public typealias CarrierFriendMessageReceiptResponseHandler =
+        (_ msgid: Int64, _ status: CarrierReceiptState) -> Void
+
     /// Carrier node App message max length.
     @objc public static let MAX_APP_MESSAGE_LEN: Int = 2048
     
@@ -835,6 +838,119 @@ public class Carrier: NSObject {
         Log.d(Carrier.TAG, "Sended friend invite request to \(target).")
     }
     
+    /// Send a message to a friend with receipt.
+    ///
+    /// The message length may not exceed ELA_MAX_BULK_MESSAGE_LEN. Larger messages
+    /// must be split by application and sent as separate fragments. Other carrier
+    /// nodes can reassemble the fragments.
+    ///
+    /// - Parameters:
+    ///   - target: The target id
+    ///   - msg: The message content defined by application.
+    ///   - responseHandler: The user context in callback.
+    /// - returns: Return the message identifier which would be used for handler to  invoke receipt notification.
+    ///
+    /// - Throws: CarrierError
+    public func sendMessageWithReceipt(to target: String,
+                                        withMessage msg: String,
+                                        responseHandler: @escaping CarrierFriendMessageReceiptResponseHandler) throws -> Int64 {
+        let cb: CFriendMessageReceiptCallback = { (cmsgid, cstatus, cctxt) in
+
+            let ectxt = Unmanaged<AnyObject>.fromOpaque(cctxt!)
+                .takeRetainedValue() as! [AnyObject?]
+
+            let handler = ectxt[1] as! CarrierFriendMessageReceiptResponseHandler
+
+            let msgid = Int64(cmsgid)
+
+            var status = Int(cstatus)
+            if status != 0 {
+                status = getErrorCode()
+            }
+            let receipt = CarrierReceiptState(rawValue: status)!
+            handler(msgid, receipt)
+        }
+
+        let econtext: [AnyObject?] = [self, responseHandler as AnyObject]
+        let unmanaged = Unmanaged.passRetained(econtext as AnyObject)
+        let cctxt = unmanaged.toOpaque()
+
+        Log.d(Carrier.TAG, "\(target) send message with receipt with")
+
+        let result = target.withCString { (cto) -> Int32 in
+            return msg.withCString { (cdata) -> Int32 in
+                let len = msg.utf8CString.count
+                return ela_send_message_with_receipt(ccarrier, cto, cdata, len, cb, cctxt)
+            }
+        }
+
+        guard result >= 0 else {
+            unmanaged.release()
+            let errno = getErrorCode()
+            Log.e(Carrier.TAG, "send message with receipt to \(target) error: 0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno)
+        }
+
+        Log.d(Carrier.TAG, "send message with receipt to \(target).")
+        return Int64(result)
+    }
+
+    /// Send a message to a friend with receipt.
+    ///
+    /// The message length may not exceed ELA_MAX_BULK_MESSAGE_LEN. Larger messages
+    /// must be split by application and sent as separate fragments. Other carrier
+    /// nodes can reassemble the fragments.
+    ///
+    /// - Parameters:
+    ///   - target: The target id
+    ///   - msg: The message content defined by application.
+    ///   - responseHandler: The user context in callback.
+    /// - returns: Return the message identifier which would be used for handler to  invoke receipt notification.
+    ///
+    /// - Throws: CarrierError
+    public func sendMessageWithReceipt(to target: String,
+                                        withMessage msg: Data,
+                                        responseHandler: @escaping CarrierFriendMessageReceiptResponseHandler) throws -> Int64 {
+        let cb: CFriendMessageReceiptCallback = { (cmsgid, cstatus, cctxt) in
+
+            let ectxt = Unmanaged<AnyObject>.fromOpaque(cctxt!)
+                .takeRetainedValue() as! [AnyObject?]
+
+            let handler = ectxt[1] as! CarrierFriendMessageReceiptResponseHandler
+
+            let msgid = Int64(cmsgid)
+
+            var status = Int(cstatus)
+            if status != 0 {
+                status = getErrorCode()
+            }
+            let receipt = CarrierReceiptState(rawValue: status)!
+            handler(msgid, receipt)
+        }
+
+        let econtext: [AnyObject?] = [self, responseHandler as AnyObject]
+        let unmanaged = Unmanaged.passRetained(econtext as AnyObject)
+        let cctxt = unmanaged.toOpaque()
+
+        Log.d(Carrier.TAG, "\(target) send message with receipt with")
+
+        let result = target.withCString { (cto) -> Int32 in
+            return msg.withUnsafeBytes { (cdata) -> Int32 in
+                return ela_send_message_with_receipt(ccarrier, cto, cdata, msg.count, cb, cctxt)
+            }
+        }
+
+        guard result >= 0 else {
+            unmanaged.release()
+            let errno = getErrorCode()
+            Log.e(Carrier.TAG, "send message with receipt to \(target) error: 0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno)
+        }
+
+        Log.d(Carrier.TAG, "send message with receipt to \(target).")
+        return Int64(result)
+    }
+
     /// Reply the friend invite request.
     ///
     /// This function will send a invite response to friend.

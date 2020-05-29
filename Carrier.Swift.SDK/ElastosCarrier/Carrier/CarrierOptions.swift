@@ -49,7 +49,7 @@ public class CarrierOptions: NSObject {
     
     @objc public var bootstrapNodes: [BootstrapNode]?
 
-    @objc public var hivebootstrapNodes: [HiveBootstrapNode]?
+    @objc public var expressNodes: [ExpressNode]?
 
     @objc public var loglevel: CarrierLogLevel = .Debug
 
@@ -58,7 +58,7 @@ public class CarrierOptions: NSObject {
 internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COptions {
     var cOptions = COptions()
     var cNodes: UnsafeMutablePointer<CBootstrapNode>?
-    var cHiveNodes: UnsafeMutablePointer<CHiveBootstrapNode>?
+    var cExpressNodes: UnsafeMutablePointer<CExpressNode>?
     
     cOptions.persistent_location = createCStringDuplicate(options.persistentLocation)
     cOptions.udp_enabled = options.udpEnabled
@@ -66,9 +66,9 @@ internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COp
     cOptions.bootstraps = UnsafePointer<CBootstrapNode>(cNodes)
     cOptions.log_level = convertCarrierLogLevelToCLogLevel(options.loglevel)
 
-    if options.hivebootstrapNodes != nil {
-        (cHiveNodes, cOptions.hive_bootstraps_size) = convertBootstrapNodesToCHiveBootstrapNode(options.hivebootstrapNodes!)
-        cOptions.hive_bootstraps = UnsafePointer<CHiveBootstrapNode>(cHiveNodes)
+    if options.expressNodes != nil {
+        (cExpressNodes, cOptions.express_nodes_size) = convertBootstrapNodesToCExpressNode(options.expressNodes!)
+        cOptions.express_nodes = UnsafePointer<CExpressNode>(cExpressNodes)
     }
 
     return cOptions
@@ -79,9 +79,9 @@ internal func cleanupCOptions(_ cOptions : COptions) {
     cleanupCBootstrap(cOptions.bootstraps!, cOptions.bootstraps_size)
     UnsafeMutablePointer<CBootstrapNode>(mutating: cOptions.bootstraps)?.deallocate()
 
-    guard cOptions.hive_bootstraps != nil else {
+    guard cOptions.express_nodes != nil else {
         return
     }
-    cleanupCBootstraphive(cOptions.hive_bootstraps!, cOptions.hive_bootstraps_size)
-    UnsafeMutablePointer<CHiveBootstrapNode>(mutating: cOptions.hive_bootstraps)?.deallocate()
+    cleanupCBootstraphive(cOptions.express_nodes!, cOptions.express_nodes_size)
+    UnsafeMutablePointer<CExpressNode>(mutating: cOptions.express_nodes)?.deallocate()
 }

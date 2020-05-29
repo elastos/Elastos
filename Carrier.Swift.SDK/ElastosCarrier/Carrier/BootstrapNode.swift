@@ -58,7 +58,7 @@ public class BootstrapNode: NSObject {
     }
 }
 
-public class HiveBootstrapNode: NSObject {
+public class ExpressNode: NSObject {
 
     /**
      Ipv4 address.
@@ -75,15 +75,21 @@ public class HiveBootstrapNode: NSObject {
      */
     @objc public var port: String?
 
-    internal static func format(_ node: HiveBootstrapNode) -> String {
+    /**
+     public address.
+     */
+    @objc public var publicKey: String?
+
+    internal static func format(_ node: ExpressNode) -> String {
         return String(format: "ipv4[%@], ipv6[%@], port[%@], publicKey[%@]",
                       String.toHardString(node.ipv4),
                       String.toHardString(node.ipv6),
-                      String.toHardString(node.port))
+                      String.toHardString(node.port),
+                      String.toHardString(node.publicKey))
     }
 
     @objc public override var description: String {
-        return HiveBootstrapNode.format(self)
+        return ExpressNode.format(self)
     }
 }
 
@@ -117,16 +123,16 @@ internal func convertBootstrapNodesToCBootstrapNodes(_ nodes: [BootstrapNode]) -
     return (cNodes, nodes.count)
 }
 
-internal func convertBootstrapNodesToCHiveBootstrapNode(_ nodes: [HiveBootstrapNode]) -> (UnsafeMutablePointer<CHiveBootstrapNode>?, Int){
-    var cNodes: UnsafeMutablePointer<CHiveBootstrapNode>?
-    cNodes = UnsafeMutablePointer<CHiveBootstrapNode>.allocate(capacity: nodes.count)
+internal func convertBootstrapNodesToCExpressNode(_ nodes: [ExpressNode]) -> (UnsafeMutablePointer<CExpressNode>?, Int){
+    var cNodes: UnsafeMutablePointer<CExpressNode>?
+    cNodes = UnsafeMutablePointer<CExpressNode>.allocate(capacity: nodes.count)
     if cNodes == nil {
         return (nil, 0)
     }
 
     for (index, node) in nodes.enumerated() {
 
-        var cNode = CHiveBootstrapNode()
+        var cNode = CExpressNode()
         node.ipv4?.withCString { (ipv4) in
             cNode.ipv4 = UnsafePointer<Int8>(strdup(ipv4))
         }
@@ -135,6 +141,9 @@ internal func convertBootstrapNodesToCHiveBootstrapNode(_ nodes: [HiveBootstrapN
         }
         node.port?.withCString { (port) in
             cNode.port = UnsafePointer<Int8>(strdup(port));
+        }
+        node.publicKey?.withCString { (publicKey) in
+            cNode.public_key = UnsafePointer<Int8>(strdup(publicKey));
         }
         (cNodes! + index).initialize(to: cNode)
     }
@@ -161,10 +170,10 @@ internal func cleanupCBootstrap(_ cNodes: UnsafePointer<CBootstrapNode>, _ count
     }
 }
 
-internal func cleanupCBootstraphive(_ cNodes: UnsafePointer<CHiveBootstrapNode>, _ count: Int) -> Void {
+internal func cleanupCBootstraphive(_ cNodes: UnsafePointer<CExpressNode>, _ count: Int) -> Void {
 
     for index in 0..<count {
-        let cNode: CHiveBootstrapNode = (cNodes + index).pointee
+        let cNode: CExpressNode = (cNodes + index).pointee
         if cNode.ipv4 != nil {
             free(UnsafeMutablePointer<Int8>(mutating: cNode.ipv4))
         }
@@ -173,6 +182,9 @@ internal func cleanupCBootstraphive(_ cNodes: UnsafePointer<CHiveBootstrapNode>,
         }
         if cNode.port != nil {
             free(UnsafeMutablePointer<Int8>(mutating: cNode.port))
+        }
+        if cNode.public_key != nil {
+            free(UnsafeMutablePointer<Int8>(mutating: cNode.public_key))
         }
     }
 }

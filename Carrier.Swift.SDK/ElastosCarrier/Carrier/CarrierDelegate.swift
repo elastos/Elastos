@@ -173,10 +173,11 @@ public protocol CarrierDelegate: CarrierGroupDelegate {
     ///                as offline message, otherwise as online message.
     ///
     /// - Returns: Void
-    @objc(carrier:didReceiveFriendMessage:data:isOffline:) optional
+    @objc(carrier:didReceiveFriendMessage:data:timestamp:isOffline:) optional
     func didReceiveFriendMessage(_ carrier: Carrier,
                                  _ from: String,
                                  _ data: Data,
+                                 _ timestamp: Date,
                                  _ isOffline: Bool)
 
     /// Tell the delegate that an friend invite request has been received.
