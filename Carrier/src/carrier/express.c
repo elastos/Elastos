@@ -71,6 +71,7 @@ struct ExpConnector {
     uint32_t magic_num;
 
     http_client_t *http_client;
+    int curr_express_node;
     int express_nodes_size;
     ExpNode express_nodes[0];
 };
@@ -505,8 +506,11 @@ static int del_msgs(ExpressConnector *connector, http_client_t *httpc,
     lasttime_len = strlen(lasttime);
 
     for(idx = 0; idx < connector->express_nodes_size; idx++) {
+        int node_idx = (idx + connector->curr_express_node) % connector->express_nodes_size;
+        ExpNode *node = &connector->express_nodes[node_idx];
+
         crypted_data = alloca(NONCE_BYTES + lasttime_len + ZERO_BYTES);
-        rc = encrypt_data(connector->express_nodes[idx].shared_key, (uint8_t*)lasttime, lasttime_len, crypted_data);
+        rc = encrypt_data(node->shared_key, (uint8_t*)lasttime, lasttime_len, crypted_data);
         if(rc < 0) {
             vlogE("Express: encrypt last tiime failed.(%x)", rc);
             return rc;
@@ -523,8 +527,7 @@ static int del_msgs(ExpressConnector *connector, http_client_t *httpc,
         }
 
         snprintf(path, sizeof(path), "%s?until=%s", my_userid(connector), encoded_data);
-        rc = http_do(connector, httpc,
-                     connector->express_nodes[idx].ipv4, connector->express_nodes[idx].port,
+        rc = http_do(connector, httpc, node->ipv4, node->port,
                      path, HTTP_METHOD_DELETE,
                      NULL);
         if (rc >= 0)
@@ -534,6 +537,8 @@ static int del_msgs(ExpressConnector *connector, http_client_t *httpc,
         vlogE("Express: delete message failed.(%x)", rc);
         return rc;
     }
+
+    connector->curr_express_node = (idx + connector->curr_express_node) % connector->express_nodes_size;
 
     return 0;
 }
@@ -553,6 +558,9 @@ static int postmsg_runner(ExpTasklet *base)
 
     snprintf(path, sizeof(path), "%s/%s", task->to, my_userid(connector));
     for(idx = 0; idx < connector->express_nodes_size; idx++) {
+        int node_idx = (idx + connector->curr_express_node) % connector->express_nodes_size;
+        ExpNode *node = &connector->express_nodes[node_idx];
+
         task->crypted_data_cache.pos = 0;
         task->crypted_data_cache.size = task->data_size + NONCE_BYTES + ZERO_BYTES;
         task->crypted_data_cache.data = calloc(1, task->crypted_data_cache.size);
@@ -563,7 +571,7 @@ static int postmsg_runner(ExpTasklet *base)
             return rc;
         }
 
-        rc = encrypt_data(connector->express_nodes[idx].shared_key, (uint8_t *)task->data, task->data_size,
+        rc = encrypt_data(node->shared_key, (uint8_t *)task->data, task->data_size,
                           task->crypted_data_cache.data);
         if (rc < 0) {
             vlogE("Express: Encrypt data error");
@@ -573,8 +581,7 @@ static int postmsg_runner(ExpTasklet *base)
         }
         task->crypted_data_cache.size = rc;
 
-        rc = http_do(connector, connector->http_client,
-                     connector->express_nodes[idx].ipv4, connector->express_nodes[idx].port,
+        rc = http_do(connector, connector->http_client, node->ipv4, node->port,
                      path, HTTP_METHOD_POST,
                      task);
         free((void*)task->crypted_data_cache.data);
@@ -591,6 +598,8 @@ static int postmsg_runner(ExpTasklet *base)
         return rc;
     }
 
+    connector->curr_express_node = (idx + connector->curr_express_node) % connector->express_nodes_size;
+
     vlogD("Express: Success to post message to %s.", task->to);
     return 0;
 }
@@ -605,9 +614,11 @@ static int pullmsgs_runner(ExpTasklet *base)
 
     path = my_userid(connector);
     for(idx = 0; idx < connector->express_nodes_size; idx++) {
-        task->shared_key_cache = connector->express_nodes[idx].shared_key;
-        rc = http_do(connector, connector->http_client,
-                     connector->express_nodes[idx].ipv4, connector->express_nodes[idx].port,
+        int node_idx = (idx + connector->curr_express_node) % connector->express_nodes_size;
+        ExpNode *node = &connector->express_nodes[node_idx];
+
+        task->shared_key_cache = node->shared_key;
+        rc = http_do(connector, connector->http_client, node->ipv4, node->port,
                      path, HTTP_METHOD_GET,
                      task);
         if (rc >= 0)
@@ -617,6 +628,7 @@ static int pullmsgs_runner(ExpTasklet *base)
         vlogE("Express: Failed to pull message.(%x)", rc);
         return rc;
     }
+    connector->curr_express_node = (idx + connector->curr_express_node) % connector->express_nodes_size;
     vlogD("Express: Success to pull message from %s.", path);
 
     if(task->last_timestamp > 0) {
@@ -642,9 +654,10 @@ static int speedmeter_runner(ExpTasklet *base)
     memset(timeloss, 0, sizeof(*timeloss) * connector->express_nodes_size);
 
     for(idx = 0; idx < connector->express_nodes_size; idx++) {
+        ExpNode *node = &connector->express_nodes[idx];
+
         gettimeofday(&starttime, NULL);
-        rc = http_do(connector, connector->http_client,
-                     connector->express_nodes[idx].ipv4, connector->express_nodes[idx].port,
+        rc = http_do(connector, connector->http_client, node->ipv4, node->port,
                      "version", HTTP_METHOD_HEAD, NULL);
         if(rc >= 0) {
             gettimeofday(&timeloss[idx], NULL);
