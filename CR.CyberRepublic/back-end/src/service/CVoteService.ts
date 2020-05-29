@@ -128,24 +128,20 @@ export default class extends Base {
         if (!permissions.isCouncil(role)) {
           return { success: false, message: 'No access right' }
         }
-        const { id, timestamp } = param
+        const { id } = param
         const db_suggestion = this.getDBModel('Suggestion')
         const suggestion = await db_suggestion.findById(id)
         const db_cvote = this.getDBModel('CVote')
         if (suggestion) {
             const proposers = _.get(suggestion, 'proposers')
             // make sure current council member had signed
-            const currentProposer = proposers && proposers.filter(item => item.timestamp === timestamp)[0]
-            if (currentProposer && currentProposer.proposalHash) {
+            const currentProposer = proposers && proposers.filter(item => item.proposalHash && item.did === did)[0]
+            if (currentProposer) {
                 // draft hash is a constant
                 const draftHash = _.get(suggestion, 'draftHash')
                 const cvote = await db_cvote.findOne({ draftHash })
-                if (cvote && cvote.proposalHash === currentProposer.proposalHash) {
+                if (cvote) {
                     return { success: true, id: cvote._id }
-                }
-                // make into proposal by other council members
-                if (cvote && cvote.proposalHash !== currentProposer.proposalHash) {
-                    return { success: true, id: cvote._id, proposer: false }
                 }
                 const rs: any = await getProposalState({
                     drafthash: draftHash
