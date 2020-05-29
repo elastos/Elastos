@@ -128,14 +128,14 @@ export default class extends Base {
         if (!permissions.isCouncil(role)) {
           return { success: false, message: 'No access right' }
         }
-        const { id } = param
+        const { id, timestamp } = param
         const db_suggestion = this.getDBModel('Suggestion')
         const suggestion = await db_suggestion.findById(id)
         const db_cvote = this.getDBModel('CVote')
         if (suggestion) {
             const proposers = _.get(suggestion, 'proposers')
             // make sure current council member had signed
-            const currentProposer = proposers && proposers.filter(item => item.did === did)[0]
+            const currentProposer = proposers && proposers.filter(item => item.timestamp === timestamp)[0]
             if (currentProposer && currentProposer.proposalHash) {
                 // draft hash is a constant
                 const draftHash = _.get(suggestion, 'draftHash')

@@ -181,11 +181,11 @@ export default class extends BaseService {
     return rs
   }
 
-  async pollProposalState(id) {
+  async pollProposalState(data) {
     const rs = await api_request({
       path: `${this.prefixPath}/poll_proposal_state`,
       method: 'post',
-      data: { id }
+      data
     })
     return rs
   }

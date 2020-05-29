@@ -10,6 +10,7 @@ class SignSuggestionButton extends Component {
     super(props)
     this.state = {
       url: '',
+      timestamp: '',
       visible: false
     }
     this.timerDid = null
@@ -27,11 +28,15 @@ class SignSuggestionButton extends Component {
 
   pollingProposalState = () => {
     const { id, pollProposalState, history } = this.props
+    const { timestamp } = this.state
     this.timerDid = setInterval(async () => {
-      const rs = await pollProposalState(id)
+      const rs = await pollProposalState({ id, timestamp })
       if (rs && rs.success) {
         clearInterval(this.timerDid)
         this.timerDid = null
+        if (rs.proposer === false) {
+          message.info('This suggestion had been made into proposal by other council member.')
+        }
         history.push(`/proposals/${rs.id}`)
       }
       if (rs && rs.success === false) {
@@ -58,7 +63,7 @@ class SignSuggestionButton extends Component {
     const { id, getCMSignatureUrl } = this.props
     const rs = await getCMSignatureUrl(id)
     if (rs && rs.success) {
-      this.setState({ url: rs.url })
+      this.setState({ url: rs.url, timestamp: rs.timestamp })
     }
   }
 

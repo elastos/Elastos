@@ -1452,7 +1452,7 @@ export default class extends Base {
         { $push: { proposers: { did: councilMemberDid, timestamp: now } } }
       )
       const url = `elastos://crproposal/${jwtToken}`
-      return { success: true, url }
+      return { success: true, url, timestamp: now }
     } catch (err) {
       logger.error(err)
       return { success: false }
