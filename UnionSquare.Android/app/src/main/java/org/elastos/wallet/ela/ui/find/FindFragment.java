@@ -187,7 +187,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
                     bundle.putString("did", did);
                     bundle.putString("status", status);
                     bundle.putString("depositAmount", depositAmount);
-                    start(CtManagerFragment.class, bundle);
+                    ((BaseFragment) getParentFragment()).start(CtManagerFragment.class, bundle);
                     return;
                 }
             }
