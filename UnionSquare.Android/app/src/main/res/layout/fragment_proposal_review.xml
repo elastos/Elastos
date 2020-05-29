@@ -275,8 +275,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:textColor="#ffffffff"
-                    android:textSize="14sp"
-                    android:visibility="gone" />
+                    android:textSize="14sp" />
 
                 <ImageView
                     android:id="@+id/iv_vote"
@@ -312,8 +311,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="40dp"
-                        android:orientation="horizontal"
-                        android:visibility="gone">
+                        android:orientation="horizontal">
 
 
                         <TextView
@@ -357,11 +355,11 @@
                     </LinearLayout>
 
                     <android.support.v7.widget.RecyclerView
-
                         android:id="@+id/rv_vote"
                         android:layout_width="match_parent"
                         android:layout_height="255dp"
-                        android:background="@drawable/sc_1affffff_cr10_button" />
+                        android:background="@drawable/sc_1affffff_cr10_button"
+                        android:paddingBottom="15dp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -381,10 +379,10 @@
                     android:textSize="14sp" />
 
                 <android.support.v7.widget.RecyclerView
-                    android:layout_marginBottom="20dp"
                     android:id="@+id/rv_process"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="20dp" />
             </LinearLayout>
         </LinearLayout>
     </android.support.v4.widget.NestedScrollView>
