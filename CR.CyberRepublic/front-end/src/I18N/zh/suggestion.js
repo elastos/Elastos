@@ -101,7 +101,8 @@ export default {
       advance: '预付款只能用于项目第一阶段',
       completion: '结项款只能用于项目最后阶段.',
       conditioned: '该阶段支付不能用于项目的这个阶段',
-      isUsed: '该项目阶段已被其它支付项使用了'
+      isUsed: '该项目阶段已被其它支付项使用了',
+      exception: '出错了'
     }
   },
   modal: {
@@ -125,7 +126,9 @@ export default {
     notify: '已给秘书发送邮件',
     archived: '建议已归档',
     unarchived: '建议已取消归档',
-    revertVersion: '已使用指定版本的内容'
+    revertVersion: '已使用指定版本的内容',
+    madeByOtherCM: '其他委员已经把这个建议转成提案了。',
+    scanQRCode: '扫描上面二维码把建议转成提案'
   },
   header: {
     suggestion: '建议',

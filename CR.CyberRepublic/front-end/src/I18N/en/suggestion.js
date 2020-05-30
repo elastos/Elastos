@@ -101,7 +101,8 @@ export default {
       advance: 'Project initiation payment only apply to the first milestone.',
       completion: 'Project completion payment only apply to the last milestone.',
       conditioned: 'Project milestone payment can not apply to this milestone.',
-      isUsed: 'This milestone has been used.'
+      isUsed: 'This milestone has been used.',
+      exception: 'Something went wrong'
     }
   },
   modal: {
@@ -125,7 +126,9 @@ export default {
     notify: 'Email was sent to secretary.',
     archived: 'Suggestion archived successfully.',
     unarchived: 'Suggestion unarchived successfully.',
-    revertVersion: 'Suggestion reverted successfully.'
+    revertVersion: 'Suggestion reverted successfully.',
+    madeByOtherCM: 'This suggestion had been made into proposal by other council member.',
+    scanQRCode: 'Scan the QR code above to make this suggestion into proposal.'
   },
   header: {
     suggestion: 'suggestion',

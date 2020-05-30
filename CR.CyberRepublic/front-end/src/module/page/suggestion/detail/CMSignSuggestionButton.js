@@ -33,7 +33,7 @@ class SignSuggestionButton extends Component {
     return (
       <Content>
         {url ? <QRCode value={url} size={400} /> : <Spin />}
-        <Tip>Scan the QR code above to make this suggestion into proposal.</Tip>
+        <Tip>I18N.get('suggestion.msg.scanQRCode')</Tip>
       </Content>
     )
   }
@@ -44,7 +44,7 @@ class SignSuggestionButton extends Component {
     if (rs && rs.success) {
       this.clearTimerList()
       if (rs.proposer === false) {
-        message.info('This suggestion had been made into proposal by other council member.')
+        message.info(I18N.get('suggestion.msg.madeByOtherCM'))
       }
       history.push(`/proposals/${rs.id}`)
       return
@@ -54,7 +54,7 @@ class SignSuggestionButton extends Component {
       if (rs.message) {
         message.error(rs.message)
       } else {
-        message.error('Something went wrong')
+        message.error(I18N.get('suggestion.error.exception'))
       }
       this.setState({ visible: false })
       return
