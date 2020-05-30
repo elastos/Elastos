@@ -139,12 +139,17 @@ export default class extends Base {
             if (currentProposer) {
                 // draft hash is a constant
                 const draftHash = _.get(suggestion, 'draftHash')
-                const cvote = await db_cvote.findOne({ draftHash })
-                if (cvote && currentProposer.proposalHash === cvote.proposalHash) {
-                    return { success: true, id: cvote._id }
-                }
-                if (cvote && currentProposer.proposalHash !== cvote.proposalHash) {
-                    return { success: true, id: cvote._id, proposer: false }
+                const cvote = await db_cvote.getDBInstance().findOne({ draftHash }).populate('createdBy')
+                if (cvote) {
+                    return {
+                        success: true,
+                        reference: {
+                            _id: cvote._id,
+                            vid: cvote.vid,
+                            proposer: userUtil.formatUsername(cvote.createdBy),
+                            status: cvote.status
+                        }
+                    }
                 }
                 const rs: any = await getProposalState({
                     drafthash: draftHash
@@ -155,7 +160,7 @@ export default class extends Base {
                         proposalHash: rs.proposalHash,
                         chainDid: rs.proposal.crcouncilmemberdid
                     })
-                    return {success: true, id: proposal._id}
+                    return { success: true, reference: proposal }
                 }
             }
         } else {
@@ -163,26 +168,25 @@ export default class extends Base {
         }
     }
 
-    private async makeSuggIntoProposal(param: any): Promise<Document> {
+    private async makeSuggIntoProposal(param: any) {
         const db_cvote = this.getDBModel('CVote')
         const db_suggestion = this.getDBModel('Suggestion')
         const db_user = this.getDBModel('User')
         const { suggestion, proposalHash, chainDid } = param
         const vid = await this.getNewVid()
-        const users = await Promise.all([
+        const [owner, creator] = await Promise.all([
             db_user.findById(suggestion.createdBy),
             db_user.findOne({'did.id': `did:elastos:${chainDid}`})
         ])
-        const creator = users[0]
         const doc: any = {
             vid,
             type: suggestion.type,
             status: constant.CVOTE_STATUS.PROPOSED,
             published: true,
             contentType: constant.CONTENT_TYPE.MARKDOWN,
-            proposedBy: userUtil.formatUsername(creator),
+            proposedBy: userUtil.formatUsername(owner),
             proposer: suggestion.createdBy,
-            createdBy: users[1]._id,
+            createdBy: creator._id,
             reference: suggestion._id,
             proposalHash,
             draftHash: suggestion.draftHash,
@@ -206,7 +210,7 @@ export default class extends Base {
         doc.voteHistory = voteResult
 
         try {
-            const res = await db_cvote.save(doc)
+            const res: any = await db_cvote.save(doc)
             await db_suggestion.update(
                 {_id: suggestion._id},
                 {
@@ -217,7 +221,12 @@ export default class extends Base {
             )
             this.notifySubscribers(res)
             this.notifyCouncil(res)
-            return res
+            return {
+                _id: res._id,
+                vid: res.vid,
+                proposer: userUtil.formatUsername(creator),
+                status: res.status
+            }
         } catch (error) {
             logger.error(error)
             return

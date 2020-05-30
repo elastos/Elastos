@@ -43,6 +43,7 @@ class SuggestionRedux extends BaseRedux {
       // the proper handling is to only query the latest proposal and change this to struct to define which statuses we want
       // for now I will just use a boolean to mean any proposal referencing it with any status
       reference_status: false,
+      reference: {},
       edit_history: [],
     }
   }

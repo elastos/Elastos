@@ -25,14 +25,14 @@ export default createContainer(
       isAdmin: state.user.is_admin,
       isReference: !_.isEmpty(
         state.suggestion.detail && state.suggestion.detail.reference
-      )
+      ) || state.suggestion.reference_status,
+      proposal: state.suggestion.reference
     }
   },
   () => {
     const service = new SuggestionService()
     const commentService = new CommentService()
     const cVoteService = new CVoteService()
-
     return {
       async getDetail({ id, incViewsNum }) {
         return service.getDetail({
@@ -44,7 +44,7 @@ export default createContainer(
         return cVoteService.createDraft(param)
       },
       async pollProposalState(param) {
-        return cVoteService.pollProposalState(param)
+        return service.pollProposalState(param)
       },
       async update(param) {
         return service.update(param)

@@ -33,20 +33,17 @@ class SignSuggestionButton extends Component {
     return (
       <Content>
         {url ? <QRCode value={url} size={400} /> : <Spin />}
-        <Tip>I18N.get('suggestion.msg.scanQRCode')</Tip>
+        <Tip>{I18N.get('suggestion.msg.scanQRCode')}</Tip>
       </Content>
     )
   }
 
   pollingProposalState = async () => {
-    const { id, pollProposalState, history } = this.props
+    const { id, pollProposalState } = this.props
     const rs = await pollProposalState({ id })
     if (rs && rs.success) {
       this.clearTimerList()
-      if (rs.proposer === false) {
-        message.info(I18N.get('suggestion.msg.madeByOtherCM'))
-      }
-      history.push(`/proposals/${rs.id}`)
+      this.setState({ visible: false })
       return
     }
     if (rs && rs.success === false) {

@@ -4,6 +4,7 @@ import { api_request } from '@/util'
 export default class extends BaseService {
   constructor() {
     super()
+    this.suggRedux = this.store.getRedux('suggestion')
     this.selfRedux = this.store.getRedux('cvote')
     this.prefixPath = '/api/cvote'
   }
@@ -177,15 +178,6 @@ export default class extends BaseService {
       path: `${this.prefixPath}/member_vote`,
       method: 'post',
       data: { id }
-    })
-    return rs
-  }
-
-  async pollProposalState(data) {
-    const rs = await api_request({
-      path: `${this.prefixPath}/poll_proposal_state`,
-      method: 'post',
-      data
     })
     return rs
   }

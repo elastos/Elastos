@@ -418,4 +418,20 @@ export default class extends BaseService {
     })
     return res
   }
+
+  async pollProposalState(data) {
+    const rs = await api_request({
+      path: '/api/cvote/poll_proposal_state',
+      method: 'post',
+      data
+    })
+    if(rs && rs.success) {
+      this.dispatch(
+        this.selfRedux.actions.reference_status_update(true)
+      )
+      this.dispatch(this.selfRedux.actions.reference_update(rs.reference))
+    }
+    return rs
+  }
+
 }

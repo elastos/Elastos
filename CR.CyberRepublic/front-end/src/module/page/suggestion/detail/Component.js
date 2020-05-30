@@ -396,9 +396,18 @@ export default class extends StandardPage {
   }
 
   renderLabelNode() {
-    const reference = _.get(this.props.detail, 'reference')
-    if (_.isEmpty(reference)) return null
-    const { _id, vid, status } = _.last(reference)
+    const { isReference, proposal } = this.props
+    if (!isReference) {
+      return null
+    }
+    let result = _.get(this.props.detail, 'reference')
+    let reference
+    if (_.isEmpty(result)) {
+      reference = proposal
+    } else {
+      reference = _.last(result)
+    }
+    const { _id, vid, status } = reference
     // when proposal is draft, do not show the label
     if (status === CVOTE_STATUS.DRAFT) return null
     const linkText = `${I18N.get('council.voting.proposal')} #${vid}`
@@ -587,8 +596,7 @@ export default class extends StandardPage {
       isReference,
       detail,
       getCMSignatureUrl,
-      pollProposalState,
-      history
+      pollProposalState
     } = this.props
     const signature = _.get(detail, 'signature.data')
     const makeIntoProposalPanel = this.renderMakeIntoProposalPanel()
@@ -618,7 +626,7 @@ export default class extends StandardPage {
         </StyledButton>
       </Col>
     )
-    const createFormBtn = signature &&
+    const makeIntoProposalBtn = signature &&
       isCouncil &&
       !isReference && (
         <Col xs={24} sm={8}>
@@ -626,7 +634,6 @@ export default class extends StandardPage {
             getCMSignatureUrl={getCMSignatureUrl}
             id={detail._id}
             pollProposalState={pollProposalState}
-            history={history}
           />
         </Col>
       )
@@ -659,7 +666,7 @@ export default class extends StandardPage {
         <Row type="flex" justify="start">
           {considerBtn}
           {needMoreInfoBtn}
-          {createFormBtn}
+          {makeIntoProposalBtn}
         </Row>
         <Row type="flex" justify="start">
           {needDueDiligenceBtn}
@@ -671,10 +678,14 @@ export default class extends StandardPage {
   }
 
   renderMakeIntoProposalPanel() {
-    const { isReference, detail } = this.props
+    const { isReference, detail, proposal } = this.props
     if (!isReference) return null
-    const reference = _.get(this.props.detail, 'reference')
-    const { _id, vid } = _.last(reference)
+    let result = _.get(this.props.detail, 'reference')
+    let reference = proposal
+    if (result && !_.isEmpty(result)) {
+      reference = _.last(result)
+    }
+    const { _id, vid, proposer } = reference
     return (
       <Row style={{ marginBottom: 30 }}>
         <Row type="flex" justify="center" style={{ marginBottom: 15 }}>
@@ -690,7 +701,8 @@ export default class extends StandardPage {
         <Row type="flex" justify="center">
           <Col span={24}>
             <CreateProposalText>
-              {`${userUtil.formatUsername(detail.proposer)} `}
+              {proposer ? proposer : userUtil.formatUsername(detail.proposer)}
+              {' '}
               {I18N.get('suggestion.label.hasMadeIntoProposal')}
               <Link to={`/proposals/${_id}`}>
                 {` ${I18N.get('council.voting.proposal')} #${vid}`}
