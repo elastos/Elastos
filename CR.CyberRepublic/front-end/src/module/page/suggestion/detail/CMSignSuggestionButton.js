@@ -24,7 +24,7 @@ class SignSuggestionButton extends Component {
     )
   }
 
-  proposalState = async () => {
+  pollingProposalState = async () => {
     const { id, pollProposalState, history } = this.props
     const rs = await pollProposalState({ id })
     if (rs && rs.success) {
@@ -32,6 +32,7 @@ class SignSuggestionButton extends Component {
         message.info('This suggestion had been made into proposal by other council member.')
       }
       history.push(`/proposals/${rs.id}`)
+      return
     }
     if (rs && rs.success === false) {
       if (rs.message) {
@@ -40,11 +41,8 @@ class SignSuggestionButton extends Component {
         message.error('Something went wrong')
       }
       this.setState({ visible: false })
+      return
     }
-  }
-
-  pollingProposalState = async () => {
-    await this.proposalState()
     setTimeout(this.pollingProposalState, 5000)
   }
 
