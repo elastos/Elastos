@@ -34,8 +34,7 @@ const EXPLORER = 'https://blockchain.elastos.org';
 
 const RSS_FEED_URL = 'https://news.elastos.org/feed/';
 
-const REST_SERVICES = [
-  {
+const REST_SERVICES = [{
     name: 'node1',
     url: 'https://node1.elaphant.app',
   },
@@ -259,6 +258,9 @@ const publicKeyCallback = (message) => {
   } else {
     ledgerDeviceInfo.error = true;
     ledgerDeviceInfo.message = message.message;
+    bannerStatus = message.message;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
     renderApp();
   }
   pollDataTypeIx++;
@@ -379,7 +381,11 @@ const getJson = (url, readyCallback, errorCallback) => {
       if (this.status == 200) {
         readyCallback(JSON.parse(this.response));
       } else {
-        errorCallback({'status': this.status, 'statusText': this.statusText, 'response': this.response});
+        errorCallback({
+          'status': this.status,
+          'statusText': this.statusText,
+          'response': this.response
+        });
       }
     }
   };
@@ -512,7 +518,7 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     elt.txDetailsUrl = link;
     elt.txHash = transactionJson.result;
     sendToAddressStatuses.length = 0;
-    const message ='Transaction Successful.';
+    const message = 'Transaction Successful.';
     bannerClass = 'bg_green color_white banner-look';
     sendToAddressStatuses.push(message);
     bannerStatus = message;
@@ -572,7 +578,7 @@ const hideLedgerConfirmBanner = () => {
 };
 
 const getTxByteLength = (transactionHex) => {
-  const transactionByteLength = Math.ceil(transactionHex.length/2);
+  const transactionByteLength = Math.ceil(transactionHex.length / 2);
   return transactionByteLength;
 };
 
@@ -930,7 +936,7 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
         if (tx.CreateTime == 0) {
           time = formatDate(new Date());
         }
-        const elaFloat = parseInt(tx.Value)/100000000;
+        const elaFloat = parseInt(tx.Value) / 100000000;
         const elaDisplay = Number(elaFloat.toFixed(8));
         const parsedTransaction = {};
         parsedTransaction.sortTime = tx.CreateTime;
