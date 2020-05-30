@@ -102,7 +102,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         if (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("SecretaryGeneral")) {
             ivTitleRight.setVisibility(View.VISIBLE);
         } else if(!AppUtlis.isNullOrEmpty(type)
-                && (type.equalsIgnoreCase("type"))) {
+                && (type.equalsIgnoreCase("UnelectedCouncilMember"))) {
             isVoting = true;
         } else if (!AppUtlis.isNullOrEmpty(type)
                 && type.equalsIgnoreCase("CouncilMember")
