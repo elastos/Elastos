@@ -587,7 +587,6 @@ export default class extends Base {
                     }
                     await this.model.getDBInstance().create(doc)
                 }
-                await this.temporaryChangeUpdateStatus()
             }
             if (!currentCrs) {
                 // update votingCds data
@@ -622,6 +621,7 @@ export default class extends Base {
 
                 }
             }
+            await this.temporaryChangeUpdateStatus()
         }
 
         if (!listCrs.crmembersinfo && !listCds.crcandidatesinfo) {
@@ -640,7 +640,6 @@ export default class extends Base {
                 // update member role, COUNCILE => MEMBER
                 await updateUserRole(currentCrs.councilMembers, constant.USER_ROLE.MEMBER)
                 // TODO: update proposal status
-                await this.temporaryChangeUpdateStatus()
             }
 
             if (!votingCds) {
@@ -653,8 +652,9 @@ export default class extends Base {
                     councilMembers: []
                 }
                 await this.model.getDBInstance().create(votingDoc)
-                await this.temporaryChangeUpdateStatus()
             }
+            
+            await this.temporaryChangeUpdateStatus()
         }
     }
 
