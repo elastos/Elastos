@@ -30,7 +30,6 @@ import org.elastos.wallet.ela.ui.committee.presenter.PastCtPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
-import org.elastos.wallet.ela.ui.crvote.CRListFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRAgreementFragment;

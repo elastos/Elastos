@@ -137,7 +137,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
     public void refreshView() {
         if(!hasRefresh) {
             new PastCtPresenter().getCouncilTerm(this);
-//            hasRefresh = true;
+            hasRefresh = true;
         }
     }
 
