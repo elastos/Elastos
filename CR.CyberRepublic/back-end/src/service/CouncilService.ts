@@ -162,6 +162,13 @@ export default class extends Base {
             .populate('user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
         if (!councilList && !secretariat) {
+            const unelectedCouncil = await ela.depositCoin(did);
+            if (unelectedCouncil) {
+                return {
+                    type: 'UnelectedCouncilMember',
+                    depositAmount: _.get(unelectedCouncil, 'available')
+                }
+            } 
             return {
                 type: 'Other'
             }
@@ -195,9 +202,6 @@ export default class extends Base {
 
                     term = _.map(proposalList, (o: any) => {
                         const didName = _.get(o, 'createdBy.did.didName')
-                        const chainStatus = [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
-                        // Todo: add chain status limit
-                        // const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy === council.user._id && (chainStatus.includes(o.status) || o.value === constant.CVOTE_RESULT.UNDECIDED))
                         let voteResult = _.filter(o.voteResult, (o: any) => council.user._id.equals(o.votedBy) && o.status == constant.CVOTE_CHAIN_STATUS.CHAINED)
                         if (_.isEmpty(voteResult)) {
                             voteResult = _.filter(o.voteHistory, (o: any) => council.user._id.equals(o.votedBy) && o.status == constant.CVOTE_CHAIN_STATUS.CHAINED)
@@ -419,16 +423,21 @@ export default class extends Base {
             const newCouncilsByDID = _.keyBy(newCouncilMembers, 'did')
             const oldCouncilsByDID = _.keyBy(data.councilMembers, 'did')
 
-            // update IMPEACHED status
-            if (data.status === constant.TERM_COUNCIL_STATUS.CURRENT) {
-                const result = _.filter(oldCouncilsByDID, (v: any, k: any) =>
-                    (newCouncilsByDID[k]
-                        // && v.status !== constant.COUNCIL_STATUS.IMPEACHED
-                        && newCouncilsByDID[k].status === constant.COUNCIL_STATUS.IMPEACHED))
-                await updateUserRole(result, constant.USER_ROLE.MEMBER)
-            }
+            let councils
+            if (!_.isEmpty(oldCouncilsByDID)) {
+                // update IMPEACHED status
+                if (data.status === constant.TERM_COUNCIL_STATUS.CURRENT) {
+                    const result = _.filter(oldCouncilsByDID, (v: any, k: any) =>
+                        (newCouncilsByDID[k]
+                            // && v.status !== constant.COUNCIL_STATUS.IMPEACHED
+                            && newCouncilsByDID[k].status === constant.COUNCIL_STATUS.IMPEACHED))
+                    await updateUserRole(result, constant.USER_ROLE.MEMBER)
+                }
 
-            const councils = _.map(oldCouncilsByDID, (v: any, k: any) => (_.merge(v._doc, newCouncilsByDID[k])))
+                councils = _.map(oldCouncilsByDID, (v: any, k: any) => (_.merge(v._doc, newCouncilsByDID[k])))
+            } else {
+                councils = newCouncilMembers
+            }
 
             const councilMembers = await updateUserInformation(councils)
             await this.model.getDBInstance().update({_id: data._id}, {councilMembers})
@@ -496,6 +505,9 @@ export default class extends Base {
                 // update CurrentCrs data
                 if (!votingCds) {
                     await updateInformation(listCrs.crmembersinfo, currentCrs)
+
+                    // update member role, MEMBER => COUNCIL
+                    await updateUserRole(listCrs.crmembersinfo, constant.USER_ROLE.COUNCIL)
                 }
             }
             // votingCds status -> CURRENT
