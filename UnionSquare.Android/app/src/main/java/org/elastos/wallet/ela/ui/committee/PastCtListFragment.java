@@ -90,7 +90,6 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         cid = data.getString("cid");
         depositAmount = data.getString("depositAmount");
 
-        electedStatus();
     }
 
     @Override
@@ -102,13 +101,15 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         addDIDPresenter = new AddDIDPresenter();
         if (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("SecretaryGeneral")) {
             ivTitleRight.setVisibility(View.VISIBLE);
+        } else if(!AppUtlis.isNullOrEmpty(type)
+                && (type.equalsIgnoreCase("type"))) {
+            isVoting = true;
         } else if (!AppUtlis.isNullOrEmpty(type)
                 && type.equalsIgnoreCase("CouncilMember")
                 && !AppUtlis.isNullOrEmpty(depositAmount)
                 && !depositAmount.trim().equalsIgnoreCase("0")) {
             isCrc = true;
         } else {
-            isCrc = false;
             ivTitleRight.setVisibility(View.GONE);
         }
         pastCtPresenter.getCouncilTerm(this);
@@ -253,16 +254,6 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
                         start(AddAssetFragment.class, bundle);
                     }
                 });
-    }
-
-    private void electedStatus() {
-//        if (!AppUtlis.isNullOrEmpty(status)
-//                && (status.equalsIgnoreCase("Terminated")
-//                || status.equalsIgnoreCase("Impeached")
-//                || status.equalsIgnoreCase("Returned"))) {
-//            isVoting = true;
-//        }
-        isVoting = true;
     }
 
     private void setRcViewData(PastCtBean pastCtBean) {
