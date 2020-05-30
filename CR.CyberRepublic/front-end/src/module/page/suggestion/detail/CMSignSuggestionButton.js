@@ -12,6 +12,20 @@ class SignSuggestionButton extends Component {
       url: '',
       visible: false
     }
+    this.timerList = []
+  }
+
+  sleep = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
+  clearTimerList = () => {
+    if (this.timerList && this.timerList.length) {
+      for (let timer of this.timerList) {
+        clearTimeout(timer)
+      }
+      this.timerList = []
+    }
   }
 
   elaQrCode = () => {
@@ -28,6 +42,7 @@ class SignSuggestionButton extends Component {
     const { id, pollProposalState, history } = this.props
     const rs = await pollProposalState({ id })
     if (rs && rs.success) {
+      this.clearTimerList()
       if (rs.proposer === false) {
         message.info('This suggestion had been made into proposal by other council member.')
       }
@@ -35,6 +50,7 @@ class SignSuggestionButton extends Component {
       return
     }
     if (rs && rs.success === false) {
+      this.clearTimerList()
       if (rs.message) {
         message.error(rs.message)
       } else {
@@ -43,10 +59,14 @@ class SignSuggestionButton extends Component {
       this.setState({ visible: false })
       return
     }
-    setTimeout(this.pollingProposalState, 5000)
+    const timer = setTimeout(this.pollingProposalState, 5000)
+    this.timerList.push(timer)
   }
 
   handleSign = async () => {
+    //clear timer
+    this.clearTimerList()
+    await this.sleep(5000)
     this.pollingProposalState()
   }
 
@@ -56,6 +76,10 @@ class SignSuggestionButton extends Component {
     if (rs && rs.success) {
       this.setState({ url: rs.url })
     }
+  }
+
+  componentWillUnmount = async () => {
+    this.clearTimerList()
   }
 
   handleVisibleChange = (visible) => {
