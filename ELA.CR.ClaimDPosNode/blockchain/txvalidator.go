@@ -273,12 +273,17 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		}
 		return nil
 
+	case CRCProposalRealWithdraw:
+		if err := b.checkCRCProposalRealWithdrawTransaction(txn, references); err != nil {
+			log.Warn("[checkCRAssetsRectifyTransaction],", err)
+			return elaerr.Simple(elaerr.ErrTxAssetsRectify, err)
+		}
+
 	case CRAssetsRectify:
 		if err := b.checkCRAssetsRectifyTransaction(txn, references); err != nil {
 			log.Warn("[checkCRAssetsRectifyTransaction],", err)
 			return elaerr.Simple(elaerr.ErrTxAssetsRectify, err)
 		}
-		return nil
 	}
 
 	if err := b.checkTransactionFee(txn, references); err != nil {
@@ -1107,7 +1112,7 @@ func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) 
 				return errors.New("not support before CRCProposalWithdrawPayloadV1Height")
 			}
 		}
-	case CRAssetsRectify:
+	case CRAssetsRectify, CRCProposalRealWithdraw:
 		if blockHeight < b.chainParams.CRAssetsRectifyTransactionHeight {
 			return errors.New("not support before CRAssetsRectifyTransactionHeight")
 		}
@@ -1955,6 +1960,34 @@ func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
 			txn.Outputs[0].Value, appropriationAmount)
 	}
 
+	return nil
+}
+
+func (b *BlockChain) checkCRCProposalRealWithdrawTransaction(txn *Transaction,
+	references map[*Input]Output) error {
+	crcRealWithdraw, ok := txn.Payload.(*payload.CRCProposalRealWithdraw)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	if len(crcRealWithdraw.WithdrawTransactionHashes) > len(txn.Outputs) {
+		return errors.New("invalid real withdraw transaction hashes")
+	}
+
+	txs := b.crCommittee.GetRealWithdrawTransactions()
+	for i, hash := range crcRealWithdraw.WithdrawTransactionHashes {
+		txInfo, ok := txs[hash]
+		if !ok {
+			return errors.New("invalid withdraw transaction hash")
+		}
+		output := txn.Outputs[i]
+		if output.Value != txInfo.Amount {
+			return errors.New("invalid real withdraw output amount")
+		}
+		if !output.ProgramHash.IsEqual(txInfo.Recipient) {
+			return errors.New("invalid real withdraw output address")
+		}
+	}
 	return nil
 }
 

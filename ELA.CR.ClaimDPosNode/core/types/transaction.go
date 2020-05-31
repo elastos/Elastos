@@ -123,6 +123,8 @@ func (self TxType) Name() string {
 		return "CRCProposalTracking"
 	case CRCAppropriation:
 		return "CRCAppropriation"
+	case CRCProposalRealWithdraw:
+		return "CRCProposalRealWithdraw"
 	case CRAssetsRectify:
 		return "CRAssetsRectify"
 	default:

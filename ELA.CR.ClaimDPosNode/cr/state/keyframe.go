@@ -158,9 +158,8 @@ type ProposalState struct {
 	RegisterHeight     uint32
 	VoteStartHeight    uint32
 
-	WithdrawnBudgets    map[uint8]common.Fixed64                  // proposalWithdraw
-	WithdrawableTxInfo  map[common.Uint256]CRProposalWithdrawInfo // proposalWithdraw info
-	WithdrawableBudgets map[uint8]common.Fixed64                  // proposalTracking
+	WithdrawnBudgets    map[uint8]common.Fixed64 // proposalWithdraw
+	WithdrawableBudgets map[uint8]common.Fixed64 // proposalTracking
 	BudgetsStatus       map[uint8]BudgetStatus
 	FinalPaymentStatus  bool
 
@@ -224,6 +223,8 @@ type ProposalKeyFrame struct {
 	//key is did value is proposalhash set
 	ProposalHashes  map[common.Uint168]ProposalHashSet
 	ProposalSession map[uint64][]common.Uint256
+	// proposalWithdraw info
+	WithdrawableTxInfo map[common.Uint256]CRProposalWithdrawInfo
 }
 
 func NewProposalMap() ProposalsMap {
@@ -1027,6 +1028,9 @@ func (p *ProposalKeyFrame) Serialize(w io.Writer) (err error) {
 	if err = p.serializeProposalSessionMap(p.ProposalSession, w); err != nil {
 		return
 	}
+	if err = p.serializeWithdrawableTransactionsMap(p.WithdrawableTxInfo, w); err != nil {
+		return
+	}
 	return
 }
 
@@ -1074,6 +1078,20 @@ func (p *ProposalKeyFrame) serializeProposalSessionMap(
 	return
 }
 
+func (p *ProposalKeyFrame) serializeWithdrawableTransactionsMap(
+	proposalWithdrableTx map[common.Uint256]CRProposalWithdrawInfo, w io.Writer) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(proposalWithdrableTx))); err != nil {
+		return
+	}
+	for k, _ := range proposalWithdrableTx {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+		// todo serialize withdrawable txInfo
+	}
+	return
+}
+
 func (p *ProposalKeyFrame) Deserialize(r io.Reader) (err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -1097,6 +1115,9 @@ func (p *ProposalKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 	if p.ProposalSession, err = p.deserializeProposalSessionMap(r); err != nil {
+		return
+	}
+	if p.WithdrawableTxInfo, err = p.deserializeWithdrawableTransactionsMap(r); err != nil {
 		return
 	}
 	return
@@ -1165,6 +1186,19 @@ func (p *ProposalKeyFrame) deserializeProposalSessionMap(r io.Reader) (
 	return
 }
 
+func (p *ProposalKeyFrame) deserializeWithdrawableTransactionsMap(r io.Reader) (
+	withdrawableTxsMap map[common.Uint256]CRProposalWithdrawInfo, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	withdrawableTxsMap = make(map[common.Uint256]CRProposalWithdrawInfo)
+	for i := uint64(0); i < count; i++ {
+		// todo deserialize withdrawable transactions
+	}
+	return
+}
+
 // Snapshot will create a new ProposalKeyFrame object and deep copy all related data.
 func (p *ProposalKeyFrame) Snapshot() *ProposalKeyFrame {
 	buf := new(bytes.Buffer)
@@ -1177,9 +1211,10 @@ func (p *ProposalKeyFrame) Snapshot() *ProposalKeyFrame {
 
 func NewProposalKeyFrame() *ProposalKeyFrame {
 	return &ProposalKeyFrame{
-		Proposals:       make(map[common.Uint256]*ProposalState),
-		ProposalHashes:  make(map[common.Uint168]ProposalHashSet),
-		ProposalSession: make(map[uint64][]common.Uint256),
+		Proposals:          make(map[common.Uint256]*ProposalState),
+		ProposalHashes:     make(map[common.Uint168]ProposalHashSet),
+		ProposalSession:    make(map[uint64][]common.Uint256),
+		WithdrawableTxInfo: make(map[common.Uint256]CRProposalWithdrawInfo),
 	}
 }
 
