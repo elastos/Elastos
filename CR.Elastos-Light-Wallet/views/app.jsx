@@ -80,7 +80,7 @@ class AppView extends React.Component {
 
 
   unsplash() {
-    setTimeout(() => this.setState({visible: true}), 5000) 
+    setTimeout(() => this.setState({visible: true}), 4000) 
   }
   
 
@@ -94,7 +94,7 @@ class AppView extends React.Component {
       {!this.state.visible && 
       <div className='splash-div h100pct w100pct'>
       <img src="artwork/logonew.svg" height="80px" width="240px" />
-      <img src="build/icon.png" height="100px" width="100px" className="rotate" /> 
+      <img src='artwork/iconlw.svg' height="100px" width="100px" className="rotate" /> 
       <div></div>
       </div>}
 
