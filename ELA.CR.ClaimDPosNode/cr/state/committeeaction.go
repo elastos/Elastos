@@ -64,6 +64,9 @@ func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.CRCAppropriation:
 		c.processCRCAppropriation(height, c.state.history)
+
+	case types.CRCProposalRealWithdraw:
+		c.processCRCRealWithdraw(tx, height, c.state.history)
 	}
 
 	c.processCRCAddressRelatedTx(tx, height)
