@@ -181,6 +181,9 @@ exports.decodeTx = (encodedTx, includePrograms) => {
 };
 
 exports.encodeTx = (decodedTx, includePrograms) => {
+  if (decodedTx === undefined) {
+    throw Error('decodedTx is a required parameter.');
+  }
   if (includePrograms === undefined) {
     throw Error('includePrograms is a required parameter.');
   }

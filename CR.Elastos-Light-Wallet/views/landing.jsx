@@ -24,7 +24,9 @@ const UseLedgerButton = (props) => {
   const GuiToggles = props.GuiToggles;
   const useLedger = () => {
     App.getPublicKeyFromLedger();
-    GuiToggles.showHome();
+    if (!App.getLedgerDeviceInfo().error) {
+      GuiToggles.showHome();
+    }
   }
   if (
     App.getLedgerDeviceInfo()
@@ -51,28 +53,28 @@ module.exports = (props) => {
 
       <p className="address-text font_size24 margin_none display_inline_block gradient-font">Create New Wallet</p>
       <div className="flex_center">
-      <button className="home-btn scale-hover landing-btnbg" onClick={(e) => GuiToggles.showGenerateNewMnemonic()}>
-            Create
-            </button>
+        <button className="home-btn scale-hover landing-btnbg" onClick={(e) => GuiToggles.showGenerateNewMnemonic()}>
+          Create
+        </button>
       </div>
       <p className="address-text font_size24 margin_none display_inline_block gradient-font">Import Wallet</p>
       <div className="flex_center">
-      <button className="home-btn scale-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginMnemonic()}>
-            Login with Mnemonics
-            </button>
+        <button className="home-btn scale-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginMnemonic()}>
+          Login with Mnemonics
+        </button>
       </div>
       <div className="flex_center">
-      <button className="home-btn scale-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginPrivateKey()}>
-            Login with Private Key
-            </button>
+        <button className="home-btn scale-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginPrivateKey()}>
+          Login with Private Key
+        </button>
       </div>
       <p className="address-text font_size24 margin_none display_inline_block gradient-font">Ledger</p>
-      <p className="color_white font_size16 w80pct word-breakword">Ledger Status: <LedgerMessage App={App}/></p>
+      <p className="color_white font_size16 w80pct word-breakword">Ledger Status:
+        <LedgerMessage App={App}/></p>
     </div>
-      <div>
-      <UseLedgerButton App={App} GuiToggles={GuiToggles} />
-      </div>
- 
+    <div>
+      <UseLedgerButton App={App} GuiToggles={GuiToggles}/>
+    </div>
 
   </div>);
-  }
+}

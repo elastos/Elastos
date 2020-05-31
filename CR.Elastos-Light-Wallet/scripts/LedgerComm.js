@@ -299,6 +299,9 @@ const sign = (transactionHex, callback) => {
           if (lastResponse == '6985') {
             message += ' Tx Denied on Ledger';
           }
+          if (lastResponse == '6D08') {
+            message += ' Tx Too Large for Ledger';
+          }
         }
       }
 

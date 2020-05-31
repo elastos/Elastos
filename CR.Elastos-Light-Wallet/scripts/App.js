@@ -34,8 +34,7 @@ const EXPLORER = 'https://blockchain.elastos.org';
 
 const RSS_FEED_URL = 'https://news.elastos.org/feed/';
 
-const REST_SERVICES = [
-  {
+const REST_SERVICES = [{
     name: 'node1',
     url: 'https://node1.elaphant.app',
   },
@@ -138,6 +137,8 @@ let bannerStatus = '';
 
 let bannerClass = '';
 
+const DECIMAL_REGEX = new RegExp('^[0-9]+([,.][0-9]+)?$');
+
 const mainConsole = new mainConsoleLib.Console(process.stdout, process.stderr);
 
 let GuiToggles;
@@ -206,6 +207,12 @@ const getStateUrl = () => {
   return url;
 };
 
+const isValidDecimal = (testAmount) => {
+  const isValid = DECIMAL_REGEX.test(testAmount);
+  mainConsole.log('isValidDecimal', 'testAmount', testAmount, isValid);
+  return isValid;
+}
+
 
 const formatDate = (date) => {
   let month = (date.getMonth() + 1).toString();
@@ -259,6 +266,9 @@ const publicKeyCallback = (message) => {
   } else {
     ledgerDeviceInfo.error = true;
     ledgerDeviceInfo.message = message.message;
+    bannerStatus = message.message;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
     renderApp();
   }
   pollDataTypeIx++;
@@ -379,7 +389,11 @@ const getJson = (url, readyCallback, errorCallback) => {
       if (this.status == 200) {
         readyCallback(JSON.parse(this.response));
       } else {
-        errorCallback({'status': this.status, 'statusText': this.statusText, 'response': this.response});
+        errorCallback({
+          'status': this.status,
+          'statusText': this.statusText,
+          'response': this.response
+        });
       }
     }
   };
@@ -512,7 +526,7 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     elt.txDetailsUrl = link;
     elt.txHash = transactionJson.result;
     sendToAddressStatuses.length = 0;
-    const message ='Transaction Successful.';
+    const message = 'Transaction Successful.';
     bannerClass = 'bg_green color_white banner-look';
     sendToAddressStatuses.push(message);
     bannerStatus = message;
@@ -543,20 +557,45 @@ const updateAmountAndFees = () => {
   sendToAddress = GuiUtils.getValue('sendToAddress');
   feeAmountSats = GuiUtils.getValue('feeAmount');
 
-  // mainConsole.log('INTERIM updateAmountAndFees',
-  //     'sendAmount:', sendAmount,
-  //     'sendToAddress:', sendToAddress,
-  //     'feeAmountSats:', feeAmountSats,
-  // );
+  mainConsole.log('INTERIM updateAmountAndFees',
+    'sendAmount:', sendAmount,
+    'sendToAddress:', sendToAddress,
+    'feeAmountSats:', feeAmountSats,
+  );
 
-  if (Number.isNaN(sendAmount)) {
-    throw new Error(`sendAmount ${sendAmount} is not a number`);
+  if (sendToAddress.length == 0) {
+    bannerStatus = `sendToAddress is blank`;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
+    return false;
   }
-  if (Number.isNaN(feeAmountSats)) {
-    throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
+
+  if (!isValidDecimal(sendAmount)) {
+    bannerStatus = `sendAmount ${sendAmount} is not a number`;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
+    return false;
   }
+  if (!isValidDecimal(feeAmountSats)) {
+    bannerStatus = `feeAmountSats ${feeAmountSats} is not a number`;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
+    return false;
+  }
+
+  const sendAmountSatsBn = BigNumber(sendAmount, 10).times(Asset.satoshis);
+  const feeAmountSatsBn = BigNumber(feeAmountSats, 10);
+  const balanceSatsBn = BigNumber(balance, 10).times(Asset.satoshis);
+  if (sendAmountSatsBn.plus(feeAmountSatsBn).isGreaterThanOrEqualTo(balanceSatsBn)) {
+    bannerStatus = `sendAmount ${sendAmount} + feeAmountSats ${feeAmountSats} is greater than balance ${balance}`;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
+    return false;
+  }
+
   feeAmountEla = BigNumber(feeAmountSats, 10).dividedBy(Asset.satoshis).toString();
   // mainConsole.log('SUCCESS updateAmountAndFees');
+  return true;
 };
 
 const showLedgerConfirmBanner = (size) => {
@@ -572,22 +611,18 @@ const hideLedgerConfirmBanner = () => {
 };
 
 const getTxByteLength = (transactionHex) => {
-  const transactionByteLength = Math.ceil(transactionHex.length/2);
+  const transactionByteLength = Math.ceil(transactionHex.length / 2);
   return transactionByteLength;
 };
 
 const sendAmountToAddress = () => {
-  updateAmountAndFees();
+  const isValid = updateAmountAndFees();
+  if (!isValid) {
+    return;
+  }
 
   const unspentTransactionOutputs = parsedUnspentTransactionOutputs;
   mainConsole.log('sendAmountToAddress.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
-
-  if (Number.isNaN(sendAmount)) {
-    throw new Error(`sendAmount ${sendAmount} is not a number`);
-  }
-  if (Number.isNaN(feeAmountSats)) {
-    throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
-  }
 
   let encodedTx;
 
@@ -807,8 +842,11 @@ const sendVoteTx = () => {
     const unspentTransactionOutputs = parsedUnspentTransactionOutputs;
     // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
 
-    if (Number.isNaN(feeAmountSats)) {
-      throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
+    if (!isValidDecimal(feeAmountSats)) {
+      bannerStatus = `feeAmountSats ${feeAmountSats} is not a number`;
+      bannerClass = 'bg_red color_white banner-look';
+      GuiToggles.showAllBanners();
+      return;
     }
 
     const candidates = [];
@@ -930,7 +968,7 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
         if (tx.CreateTime == 0) {
           time = formatDate(new Date());
         }
-        const elaFloat = parseInt(tx.Value)/100000000;
+        const elaFloat = parseInt(tx.Value) / 100000000;
         const elaDisplay = Number(elaFloat.toFixed(8));
         const parsedTransaction = {};
         parsedTransaction.sortTime = tx.CreateTime;
