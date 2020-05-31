@@ -564,20 +564,20 @@ const updateAmountAndFees = () => {
   );
 
   if (sendToAddress.length == 0) {
-    bannerStatus = `sendToAddress is blank`;
+    bannerStatus = `Address field is blank`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     return false;
   }
 
   if (!isValidDecimal(sendAmount)) {
-    bannerStatus = `sendAmount ${sendAmount} is not a number`;
+    bannerStatus = `Amount: ${sendAmount} is not a number`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     return false;
   }
   if (!isValidDecimal(feeAmountSats)) {
-    bannerStatus = `feeAmountSats ${feeAmountSats} is not a number`;
+    bannerStatus = `Fees: ${feeAmountSats} is not a number`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     return false;
@@ -587,7 +587,7 @@ const updateAmountAndFees = () => {
   const feeAmountSatsBn = BigNumber(feeAmountSats, 10);
   const balanceSatsBn = BigNumber(balance, 10).times(Asset.satoshis);
   if (sendAmountSatsBn.plus(feeAmountSatsBn).isGreaterThanOrEqualTo(balanceSatsBn)) {
-    bannerStatus = `sendAmount ${sendAmount} + feeAmountSats ${feeAmountSats} is greater than balance ${balance}`;
+    bannerStatus = `Amount: ${sendAmount} + Fees ${feeAmountSats} is greater than balance ${balance}`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     return false;
@@ -1112,7 +1112,7 @@ const copyPrivateKeyToClipboard = () => {
 
 const verifyLedgerBanner = () => {
   if (useLedgerFlag) {
-    bannerStatus = `Please verify this address:\n${address} corresponds to the address on you Ledger device`;
+    bannerStatus = `Please verify that this address:\n${address} corresponds to the address on your Ledger device`;
     bannerClass = 'landing-btnbg color_white banner-look';
   } else {
     bannerStatus = `No Ledger Device Connected`;
