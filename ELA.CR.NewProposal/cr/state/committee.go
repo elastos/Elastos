@@ -1090,6 +1090,13 @@ func (c *Committee) GetProposalByDraftHash(draftHash common.Uint256) *ProposalSt
 	return c.manager.getProposalByDraftHash(draftHash)
 }
 
+func (c *Committee) GetRealWithdrawTransactions() map[common.Uint256]CRProposalWithdrawInfo {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	return c.manager.WithdrawableTxInfo
+}
+
 // GetCandidateByID returns candidate with specified cid or did, it will return
 // nil if not found.
 func (c *Committee) GetCandidateByID(id common.Uint168) *Candidate {
