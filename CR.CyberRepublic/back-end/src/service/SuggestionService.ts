@@ -1220,7 +1220,7 @@ export default class extends Base {
 
       const did = _.get(this.currentUser, 'did.id')
       if (!did) {
-        return { success: false, message: 'Please bind a did to your account.' }
+        return { success: false, message: 'You DID not bound.' }
       }
       const rs: {
         compressedPublicKey: string
@@ -1406,18 +1406,24 @@ export default class extends Base {
     try {
       const councilMemberDid = _.get(this.currentUser, 'did.id')
       if (!councilMemberDid) {
-        return { success: false }
+        return { success: false, message: 'Your DID not bound.' }
       }
 
       const role = _.get(this.currentUser, 'role')
       if (!permissions.isCouncil(role)) {
-        return { success: false }
+        return { success: false, message: 'No access right.' }
       }
 
       const { id } = param
       const suggestion = await this.model.findById(id)
       if (!suggestion) {
-        return { success: false }
+        return { success: false, message: 'No this suggestion.' }
+      }
+      if (suggestion && suggestion.toChain === true) {
+        return {
+          success: false,
+          message: 'This suggestion is saving to chain.'
+        }
       }
       const currDate = Date.now()
       const now = Math.floor(currDate / 1000)
@@ -1517,8 +1523,12 @@ export default class extends Base {
             const timestamp = _.get(payload, 'iat')
             try {
               await this.model.update(
-                { _id: payload.sid, 'proposers.did': did, 'proposers.timestamp': timestamp.toString()},
-                { 'proposers.$.proposalHash': decoded.data }
+                {
+                  _id: payload.sid,
+                  'proposers.did': did,
+                  'proposers.timestamp': timestamp.toString()
+                },
+                { 'proposers.$.proposalHash': decoded.data, toChain: true }
               )
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
