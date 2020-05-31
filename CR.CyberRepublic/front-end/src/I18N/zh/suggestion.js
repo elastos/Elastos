@@ -129,7 +129,7 @@ export default {
     revertVersion: '已使用指定版本的内容',
     madeByOtherCM: '其他委员已经把这个建议转成提案了。',
     scanQRCode: '扫描上面二维码把建议转成提案',
-    toChain: '上链中'
+    toChain: '正在上链中'
   },
   header: {
     suggestion: '建议',

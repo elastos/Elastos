@@ -596,7 +596,8 @@ export default class extends StandardPage {
       isReference,
       detail,
       getCMSignatureUrl,
-      pollProposalState
+      pollProposalState,
+      isProposed
     } = this.props
     const signature = _.get(detail, 'signature.data')
     const makeIntoProposalPanel = this.renderMakeIntoProposalPanel()
@@ -634,6 +635,7 @@ export default class extends StandardPage {
             getCMSignatureUrl={getCMSignatureUrl}
             id={detail._id}
             pollProposalState={pollProposalState}
+            isProposed={isProposed}
           />
         </Col>
       )
@@ -701,8 +703,7 @@ export default class extends StandardPage {
         <Row type="flex" justify="center">
           <Col span={24}>
             <CreateProposalText>
-              {proposer ? proposer : userUtil.formatUsername(detail.proposer)}
-              {' '}
+              {proposer ? proposer : userUtil.formatUsername(detail.proposer)}{' '}
               {I18N.get('suggestion.label.hasMadeIntoProposal')}
               <Link to={`/proposals/${_id}`}>
                 {` ${I18N.get('council.voting.proposal')} #${vid}`}

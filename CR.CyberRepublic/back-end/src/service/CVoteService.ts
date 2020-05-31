@@ -227,7 +227,8 @@ export default class extends Base {
                 _id: res._id,
                 vid: res.vid,
                 proposer: userUtil.formatUsername(creator),
-                status: res.status
+                status: res.status,
+                proposed: { $unset: false }
             }
         } catch (error) {
             logger.error(error)

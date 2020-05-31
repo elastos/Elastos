@@ -44,6 +44,7 @@ class SuggestionRedux extends BaseRedux {
       // for now I will just use a boolean to mean any proposal referencing it with any status
       reference_status: false,
       reference: {},
+      proposed: false,
       edit_history: [],
     }
   }

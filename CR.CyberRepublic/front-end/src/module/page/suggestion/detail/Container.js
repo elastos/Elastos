@@ -26,7 +26,8 @@ export default createContainer(
       isReference: !_.isEmpty(
         state.suggestion.detail && state.suggestion.detail.reference
       ) || state.suggestion.reference_status,
-      proposal: state.suggestion.reference
+      proposal: state.suggestion.reference,
+      isProposed: state.suggestion.detail.proposed || state.suggestion.proposed
     }
   },
   () => {

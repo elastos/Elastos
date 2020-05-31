@@ -295,7 +295,7 @@ export const USER_PROFESSION = create([
   'MANAGEMENT'
 ])
 
-export const SUGGESTION_STATUS = create(['ACTIVE', 'ABUSED', 'ARCHIVED'])
+export const SUGGESTION_STATUS = create(['ACTIVE', 'ABUSED', 'ARCHIVED', 'PROPOSED'])
 
 export const SUGGESTION_ABUSED_STATUS = create(['REPORTED', 'HANDLED'])
 

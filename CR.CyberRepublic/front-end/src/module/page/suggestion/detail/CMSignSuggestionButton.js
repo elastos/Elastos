@@ -10,8 +10,7 @@ class SignSuggestionButton extends Component {
     super(props)
     this.state = {
       url: '',
-      visible: false,
-      toChain: false
+      visible: false
     }
     this.timerList = []
   }
@@ -42,9 +41,6 @@ class SignSuggestionButton extends Component {
   pollingProposalState = async () => {
     const { id, pollProposalState } = this.props
     const rs = await pollProposalState({ id })
-    if (rs && rs.success && rs.toChain) {
-      this.setState({ visible: false, toChain: true })
-    }
     if (rs && rs.success && rs.reference) {
       this.clearTimerList()
       this.setState({ visible: false })
@@ -88,13 +84,13 @@ class SignSuggestionButton extends Component {
   }
 
   render() {
-    const { visible, toChain } = this.state
-    if (toChain) {
+    const { visible } = this.state
+    if (this.props.isProposed) {
       return (
         <StyledButton
           type="ebp"
           className="cr-btn cr-btn-primary"
-          loading={true}
+          disabled
         >
           {I18N.get('suggestion.msg.toChain')}
         </StyledButton>

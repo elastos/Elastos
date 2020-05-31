@@ -1419,10 +1419,16 @@ export default class extends Base {
       if (!suggestion) {
         return { success: false, message: 'No this suggestion.' }
       }
-      if (suggestion && suggestion.toChain === true) {
+      if (suggestion && !_.isEmpty(suggestion.reference)) {
         return {
           success: false,
-          message: 'This suggestion is saving to chain.'
+          message: 'This suggestion was made into a proposal.'
+        }
+      }
+      if (suggestion && suggestion.proposed === true) {
+        return {
+          success: false,
+          message: 'This suggestion is proposed.'
         }
       }
       const currDate = Date.now()
@@ -1528,7 +1534,7 @@ export default class extends Base {
                   'proposers.did': did,
                   'proposers.timestamp': timestamp.toString()
                 },
-                { 'proposers.$.proposalHash': decoded.data, toChain: true }
+                { 'proposers.$.proposalHash': decoded.data, proposed: true }
               )
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {

@@ -101,5 +101,5 @@ export const Suggestion = {
       timestamp: String
     }
   ],
-  toChain: Boolean
+  proposed: Boolean
 }
