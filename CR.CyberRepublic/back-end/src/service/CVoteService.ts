@@ -1205,8 +1205,8 @@ export default class extends Base {
                         }
                     } else {
                         try {
-                            const currentVoteResult = _.find(cur._doc.voteResult, ['votedBy', votedBy])
-                            const currentVoteHistory = cur._doc.voteHistory
+                            const currentVoteResult = _.find(cur[0]._doc.voteResult, ['votedBy', votedBy])
+                            const currentVoteHistory = cur[0]._doc.voteHistory
                             const currentVoteHistoryIndex = _.findLastIndex(currentVoteHistory, ['votedBy', votedBy])
                             
                             currentVoteHistory[currentVoteHistoryIndex] = {
