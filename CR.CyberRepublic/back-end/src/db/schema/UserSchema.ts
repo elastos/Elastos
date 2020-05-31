@@ -79,7 +79,6 @@ export const VotePower = {
 
 const did = {
   id: String,
-  expirationDate: Date,
   message: String,
   compressedPublicKey: String,
   avatar: String,

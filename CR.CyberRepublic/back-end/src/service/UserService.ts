@@ -790,10 +790,7 @@ export default class extends Base {
                                     message: 'This DID had been used by other user.'
                                 }
                             }
-                            const did = {
-                                id: decoded.iss,
-                                expirationDate: rs.expirationDate
-                            }
+                            const did = { id: decoded.iss }
                             await db_user.update({_id: payload.userId}, {$set: {did}})
                             return {code: 200, success: true, message: 'Ok'}
                         } catch (err) {
@@ -950,7 +947,6 @@ export default class extends Base {
                                 {
                                     $set: {
                                         did: decoded.iss,
-                                        expirationDate: rs.expirationDate,
                                         success: true,
                                         message: 'Ok'
                                     }

@@ -1225,7 +1225,6 @@ export default class extends Base {
       const rs: {
         compressedPublicKey: string
         publicKey: string
-        expirationDate: moment.Moment
       } = await getDidPublicKey(did)
       if (!rs) {
         return {

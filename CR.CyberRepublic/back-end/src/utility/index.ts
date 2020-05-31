@@ -83,7 +83,6 @@ export const getDidPublicKey = async (did: string) => {
       const publicKey = bs58.decode(matched.publicKeyBase58).toString('hex')
       const pemPubKey = getPemPublicKey(publicKey)
       return {
-        expirationDate: moment(payload.expires),
         publicKey: pemPubKey,
         compressedPublicKey: publicKey
       }

@@ -17,10 +17,7 @@ const _ = require('lodash')
           const did = user.dids.find(el => el.active === true)
           if (_.get(did, 'id')) {
             console.log('user did email', user.email)
-            const data = {
-              id: did.id,
-              expirationDate: did.expirationDate
-            }
+            const data = { id: did.id }
             await db_user.update(
               { _id: user._id },
               { $set: { did: data }, $unset: { dids: [] } }
