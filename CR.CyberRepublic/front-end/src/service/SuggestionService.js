@@ -425,7 +425,7 @@ export default class extends BaseService {
       method: 'post',
       data
     })
-    if(rs && rs.success) {
+    if(rs && rs.success && rs.reference) {
       this.dispatch(
         this.selfRedux.actions.reference_status_update(true)
       )

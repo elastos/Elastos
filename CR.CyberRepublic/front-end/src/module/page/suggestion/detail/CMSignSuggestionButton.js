@@ -10,13 +10,14 @@ class SignSuggestionButton extends Component {
     super(props)
     this.state = {
       url: '',
-      visible: false
+      visible: false,
+      toChain: false
     }
     this.timerList = []
   }
 
   sleep = (ms) => {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   clearTimerList = () => {
@@ -41,7 +42,10 @@ class SignSuggestionButton extends Component {
   pollingProposalState = async () => {
     const { id, pollProposalState } = this.props
     const rs = await pollProposalState({ id })
-    if (rs && rs.success) {
+    if (rs && rs.success && rs.toChain) {
+      this.setState({ visible: false, toChain: true })
+    }
+    if (rs && rs.success && rs.reference) {
       this.clearTimerList()
       this.setState({ visible: false })
       return
@@ -84,12 +88,24 @@ class SignSuggestionButton extends Component {
   }
 
   render() {
+    const { visible, toChain } = this.state
+    if (toChain) {
+      return (
+        <StyledButton
+          type="ebp"
+          className="cr-btn cr-btn-primary"
+          loading={true}
+        >
+          {I18N.get('suggestion.msg.toChain')}
+        </StyledButton>
+      )
+    }
     return (
       <Popover
         content={this.elaQrCode()}
         trigger="click"
         placement="top"
-        visible={this.state.visible}
+        visible={visible}
         onVisibleChange={this.handleVisibleChange}
       >
         <StyledButton

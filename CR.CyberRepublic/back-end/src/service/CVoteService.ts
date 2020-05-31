@@ -161,6 +161,8 @@ export default class extends Base {
                         chainDid: rs.proposal.crcouncilmemberdid
                     })
                     return { success: true, reference: proposal }
+                } else {
+                    return { success: true, toChain: true }
                 }
             }
         } else {
