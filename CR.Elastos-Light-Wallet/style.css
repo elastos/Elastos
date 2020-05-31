@@ -1030,6 +1030,14 @@ select, input {
   width: 25px;
 }
 
+.w100pct {
+  width: 100%;
+}
+
+.h100pct {
+  height: 100%;
+}
+
 .h520px {
   height: 520px;
 }
@@ -1509,7 +1517,7 @@ select, input {
 }
 
 .landing-btnbg {
-  background: #E5A776;
+  background: #e5a776;
   opacity: 0.9;
 }
 
@@ -1540,4 +1548,53 @@ select, input {
   width: 70;
   height: 40px;
   border-color: #787981;
+}
+
+.rotate {
+  animation: pulse 1.5s infinite linear;
+  border-radius: 50%;
+
+}
+
+.splash-div {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+
+@-webkit-keyframes pulse {
+  0% {
+    -webkit-box-shadow: 0 0 0 0 rgba(229,167,118, 0.4);
+  }
+  70% {
+      -webkit-box-shadow: 0 0 0 10px rgba(229,167,118, 0);
+  }
+  100% {
+      -webkit-box-shadow: 0 0 0 0 rgba(229,167,118, 0);
+  }
+}
+@keyframes pulse {
+  0% {
+    -moz-box-shadow: 0 0 0 0 rgba(229,167,118, 0.4);
+    box-shadow: 0 0 0 0 rgba(229,167,118, 0.4);
+  }
+  70% {
+      -moz-box-shadow: 0 0 0 10px rgba(229,167,118, 0);
+      box-shadow: 0 0 0 10px rgba(229,167,118, 0);
+  }
+  100% {
+      -moz-box-shadow: 0 0 0 0 rgba(229,167,118, 0);
+      box-shadow: 0 0 0 0 rgba(229,167,118, 0);
+  }
 }

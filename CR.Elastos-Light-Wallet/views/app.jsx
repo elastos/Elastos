@@ -67,11 +67,38 @@ const openDevTools = () => {
   }
 }
 
+
 class AppView extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = { visible: false };
+    // this.splash = this.splash.bind(this);
+    this.unsplash = this.unsplash.bind(this)
+    
+  }
+
+
+  unsplash() {
+    setTimeout(() => this.setState({visible: true}), 5000) 
+  }
+  
+
   render() {
 
+    this.unsplash()
     // return (<div id="app" className="display_inline_block ta_center va_top font_sans_10">
-    return (<div id="app">
+    return (<div id="app"  >
+
+      
+      {!this.state.visible && 
+      <div className='splash-div h100pct w100pct'>
+      <img src="artwork/logonew.svg" height="80px" width="240px" />
+      <img src="build/icon.png" height="100px" width="100px" className="rotate" /> 
+      <div></div>
+      </div>}
+
+    <div style={this.state.visible ? {display: 'block'} : {display: 'none'}}>
       <Home App={App} openDevTools={openDevTools} onLinkClick={onLinkClick} GuiToggles={GuiToggles} Version={Version}/>
       <Landing App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <LoginMnemonic App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
@@ -80,6 +107,9 @@ class AppView extends React.Component {
       <GenerateMnemonic App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <Voting App={App} openDevTools={openDevTools} onLinkClick={onLinkClick} GuiToggles={GuiToggles} Version={Version}/>
       <QRCode App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
+
+    </div>
+
     </div>)
   }
 }
