@@ -275,8 +275,8 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 
 	case CRCProposalRealWithdraw:
 		if err := b.checkCRCProposalRealWithdrawTransaction(txn, references); err != nil {
-			log.Warn("[checkCRAssetsRectifyTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxAssetsRectify, err)
+			log.Warn("[checkCRCProposalRealWithdrawTransaction],", err)
+			return elaerr.Simple(elaerr.ErrTxRealWithdraw, err)
 		}
 
 	case CRAssetsRectify:
@@ -1969,11 +1969,21 @@ func (b *BlockChain) checkCRCProposalRealWithdrawTransaction(txn *Transaction,
 	if !ok {
 		return errors.New("invalid payload")
 	}
-
-	if len(crcRealWithdraw.WithdrawTransactionHashes) > len(txn.Outputs) {
-		return errors.New("invalid real withdraw transaction hashes")
+	txsCount := len(crcRealWithdraw.WithdrawTransactionHashes)
+	// check WithdrawTransactionHashes count and output count
+	if txsCount != len(txn.Outputs) && txsCount != len(txn.Outputs)-1 {
+		return errors.New("invalid real withdraw transaction hashes count")
 	}
 
+	// if need change, the last output is only allowed to CRCCommitteeAddress.
+	if txsCount != len(txn.Outputs) {
+		toProgramHash := txn.Outputs[len(txn.Outputs)-1].ProgramHash
+		if !toProgramHash.IsEqual(b.chainParams.CRCCommitteeAddress) {
+			return errors.New(fmt.Sprintf("last output is invalid"))
+		}
+	}
+
+	// check other outputs, need to match with WithdrawTransactionHashes
 	txs := b.crCommittee.GetRealWithdrawTransactions()
 	txsMap := make(map[common.Uint256]struct{})
 	for i, hash := range crcRealWithdraw.WithdrawTransactionHashes {
@@ -1982,17 +1992,35 @@ func (b *BlockChain) checkCRCProposalRealWithdrawTransaction(txn *Transaction,
 			return errors.New("invalid withdraw transaction hash")
 		}
 		output := txn.Outputs[i]
-		if output.Value != txInfo.Amount {
-			return errors.New("invalid real withdraw output amount")
-		}
 		if !output.ProgramHash.IsEqual(txInfo.Recipient) {
 			return errors.New("invalid real withdraw output address")
+		}
+		if output.Value != txInfo.Amount-RealWithdrawSingleFee {
+			return errors.New(fmt.Sprintf("invalid real withdraw output "+
+				"amount:%s, need to be:%s",
+				output.Value, txInfo.Amount-RealWithdrawSingleFee))
 		}
 		if _, ok := txsMap[hash]; ok {
 			return errors.New("duplicated real withdraw transactions hash")
 		}
 		txsMap[hash] = struct{}{}
 	}
+
+	// check transaction fee
+	var inputAmount common.Fixed64
+	for _, v := range references {
+		inputAmount += v.Value
+	}
+	var outputAmount common.Fixed64
+	for _, o := range txn.Outputs {
+		outputAmount += o.Value
+	}
+	if inputAmount-outputAmount != RealWithdrawSingleFee*common.Fixed64(txsCount) {
+		return errors.New(fmt.Sprintf("invalid real withdraw transaction"+
+			" fee:%s, need to be:%s, txsCount:%d", inputAmount-outputAmount,
+			RealWithdrawSingleFee*common.Fixed64(txsCount), txsCount))
+	}
+
 	return nil
 }
 
