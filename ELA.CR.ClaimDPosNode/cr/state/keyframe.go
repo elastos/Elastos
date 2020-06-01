@@ -1083,11 +1083,13 @@ func (p *ProposalKeyFrame) serializeWithdrawableTransactionsMap(
 	if err = common.WriteVarUint(w, uint64(len(proposalWithdrableTx))); err != nil {
 		return
 	}
-	for k, _ := range proposalWithdrableTx {
+	for k, v := range proposalWithdrableTx {
 		if err = k.Serialize(w); err != nil {
 			return
 		}
-		// todo serialize withdrawable txInfo
+		if err = v.Serialize(w); err != nil {
+			return
+		}
 	}
 	return
 }
@@ -1194,7 +1196,14 @@ func (p *ProposalKeyFrame) deserializeWithdrawableTransactionsMap(r io.Reader) (
 	}
 	withdrawableTxsMap = make(map[common.Uint256]CRProposalWithdrawInfo)
 	for i := uint64(0); i < count; i++ {
-		// todo deserialize withdrawable transactions
+		var hash common.Uint256
+		if err = hash.Deserialize(r); err != nil {
+			return
+		}
+		var withdrawInfo CRProposalWithdrawInfo
+		if err = withdrawInfo.Deserialize(r); err != nil {
+			return
+		}
 	}
 	return
 }
@@ -1368,4 +1377,18 @@ func copyHistoryMembersMap(src map[uint64]map[common.Uint168]*CRMember) (
 		dst[k] = copyMembersMap(v)
 	}
 	return
+}
+
+func (p *CRProposalWithdrawInfo) Serialize(w io.Writer) (err error) {
+	if err = p.Recipient.Serialize(w); err != nil {
+		return
+	}
+	return p.Amount.Serialize(w)
+}
+
+func (p *CRProposalWithdrawInfo) Deserialize(r io.Reader) (err error) {
+	if err = p.Recipient.Deserialize(r); err != nil {
+		return err
+	}
+	return p.Amount.Deserialize(r)
 }
