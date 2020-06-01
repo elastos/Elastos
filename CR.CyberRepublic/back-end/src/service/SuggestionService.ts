@@ -694,7 +694,7 @@ export default class extends Base {
 
     let doc = await model
       .getDBInstance()
-      .findOne(query)
+      .findOne(query, '-proposers')
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
       .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
 
@@ -713,6 +713,17 @@ export default class extends Base {
     doc = JSON.parse(JSON.stringify(doc))
     if (cvoteList) {
       doc.proposer = cvoteList.createdBy
+    }
+
+    const did = _.get(this.currentUser, 'did.id')
+    if (did) {
+      const proposers = _.get(doc, 'proposers')
+      if (!_.isEmpty(proposers)) {
+        const curProposer = proposers.filter((item: any) => item.proposalHash && item.did === did)[0]
+        if (curProposer) {
+          doc.curProposer = curProposer
+        }
+      }
     }
 
     if (doc && _.isEmpty(doc.comments)) return doc

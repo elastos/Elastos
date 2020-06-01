@@ -75,8 +75,8 @@ class SignSuggestionButton extends Component {
   }
 
   componentDidMount = async () => {
-    const { id, getCMSignatureUrl, isProposed } = this.props
-    if (isProposed) {
+    const { id, getCMSignatureUrl, isProposed, curProposer } = this.props
+    if (isProposed && curProposer) {
       this.pollingProposalState()
       return
     }
