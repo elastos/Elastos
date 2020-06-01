@@ -1975,6 +1975,7 @@ func (b *BlockChain) checkCRCProposalRealWithdrawTransaction(txn *Transaction,
 	}
 
 	txs := b.crCommittee.GetRealWithdrawTransactions()
+	txsMap := make(map[common.Uint256]struct{})
 	for i, hash := range crcRealWithdraw.WithdrawTransactionHashes {
 		txInfo, ok := txs[hash]
 		if !ok {
@@ -1987,6 +1988,10 @@ func (b *BlockChain) checkCRCProposalRealWithdrawTransaction(txn *Transaction,
 		if !output.ProgramHash.IsEqual(txInfo.Recipient) {
 			return errors.New("invalid real withdraw output address")
 		}
+		if _, ok := txsMap[hash]; ok {
+			return errors.New("duplicated real withdraw transactions hash")
+		}
+		txsMap[hash] = struct{}{}
 	}
 	return nil
 }

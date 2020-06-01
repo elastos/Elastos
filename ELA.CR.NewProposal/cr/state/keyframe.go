@@ -7,6 +7,7 @@ package state
 
 import (
 	"bytes"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -94,16 +95,6 @@ type CRMember struct {
 	ImpeachmentVotes common.Fixed64
 	DepositHash      common.Uint168
 	MemberState      MemberState
-}
-
-// CRProposalWithdrawInfo defines CR proposal withdraw related info
-type CRProposalWithdrawInfo struct {
-
-	// The specified ELA address where the funds will be sent.
-	Recipient common.Uint168
-
-	// The amount of sela to send
-	Amount common.Fixed64
 }
 
 // StateKeyFrame holds necessary state about CR committee.
@@ -224,7 +215,7 @@ type ProposalKeyFrame struct {
 	ProposalHashes  map[common.Uint168]ProposalHashSet
 	ProposalSession map[uint64][]common.Uint256
 	// proposalWithdraw info
-	WithdrawableTxInfo map[common.Uint256]CRProposalWithdrawInfo
+	WithdrawableTxInfo map[common.Uint256]types.OutputInfo
 }
 
 func NewProposalMap() ProposalsMap {
@@ -1079,7 +1070,7 @@ func (p *ProposalKeyFrame) serializeProposalSessionMap(
 }
 
 func (p *ProposalKeyFrame) serializeWithdrawableTransactionsMap(
-	proposalWithdrableTx map[common.Uint256]CRProposalWithdrawInfo, w io.Writer) (err error) {
+	proposalWithdrableTx map[common.Uint256]types.OutputInfo, w io.Writer) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(proposalWithdrableTx))); err != nil {
 		return
 	}
@@ -1189,18 +1180,18 @@ func (p *ProposalKeyFrame) deserializeProposalSessionMap(r io.Reader) (
 }
 
 func (p *ProposalKeyFrame) deserializeWithdrawableTransactionsMap(r io.Reader) (
-	withdrawableTxsMap map[common.Uint256]CRProposalWithdrawInfo, err error) {
+	withdrawableTxsMap map[common.Uint256]types.OutputInfo, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
 		return
 	}
-	withdrawableTxsMap = make(map[common.Uint256]CRProposalWithdrawInfo)
+	withdrawableTxsMap = make(map[common.Uint256]types.OutputInfo)
 	for i := uint64(0); i < count; i++ {
 		var hash common.Uint256
 		if err = hash.Deserialize(r); err != nil {
 			return
 		}
-		var withdrawInfo CRProposalWithdrawInfo
+		var withdrawInfo types.OutputInfo
 		if err = withdrawInfo.Deserialize(r); err != nil {
 			return
 		}
@@ -1223,7 +1214,7 @@ func NewProposalKeyFrame() *ProposalKeyFrame {
 		Proposals:          make(map[common.Uint256]*ProposalState),
 		ProposalHashes:     make(map[common.Uint168]ProposalHashSet),
 		ProposalSession:    make(map[uint64][]common.Uint256),
-		WithdrawableTxInfo: make(map[common.Uint256]CRProposalWithdrawInfo),
+		WithdrawableTxInfo: make(map[common.Uint256]types.OutputInfo),
 	}
 }
 
@@ -1377,18 +1368,4 @@ func copyHistoryMembersMap(src map[uint64]map[common.Uint168]*CRMember) (
 		dst[k] = copyMembersMap(v)
 	}
 	return
-}
-
-func (p *CRProposalWithdrawInfo) Serialize(w io.Writer) (err error) {
-	if err = p.Recipient.Serialize(w); err != nil {
-		return
-	}
-	return p.Amount.Serialize(w)
-}
-
-func (p *CRProposalWithdrawInfo) Deserialize(r io.Reader) (err error) {
-	if err = p.Recipient.Deserialize(r); err != nil {
-		return err
-	}
-	return p.Amount.Deserialize(r)
 }

@@ -331,12 +331,7 @@ func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 	return err
 }
 
-type OutputInfo struct {
-	Recipient Uint168
-	Amount    *Fixed64
-}
-
-func (b *BlockChain) createTransaction(pd Payload,
+func (b *BlockChain) createTransaction(pd Payload, txType TxType,
 	fromAddress Uint168, fee Fixed64, lockedUntil uint32,
 	utxos []*UTXO, outputs ...*OutputInfo) (*Transaction, error) {
 	// check output
@@ -355,15 +350,6 @@ func (b *BlockChain) createTransaction(pd Payload,
 		return nil, err
 	}
 	txOutputs = append(txOutputs, changeOutputs...)
-	var txType TxType
-	switch pd.(type) {
-	case *payload.CRAssetsRectify:
-		txType = CRAssetsRectify
-	case *payload.CRCAppropriation:
-		txType = CRCAppropriation
-	default:
-		return nil, errors.New("Invalid payload type")
-	}
 	return &Transaction{
 		Version:    TxVersion09,
 		TxType:     txType,
@@ -385,12 +371,12 @@ func (b *BlockChain) createNormalOutputs(outputs []*OutputInfo, fee Fixed64,
 		txOutput := &Output{
 			AssetID:     *elaact.SystemAssetID,
 			ProgramHash: output.Recipient,
-			Value:       *output.Amount,
+			Value:       output.Amount,
 			OutputLock:  lockedUntil,
 			Type:        OTNone,
 			Payload:     &outputpayload.DefaultOutput{},
 		}
-		totalAmount += *output.Amount
+		totalAmount += output.Amount
 		txOutputs = append(txOutputs, txOutput)
 	}
 	return txOutputs, totalAmount, nil
@@ -481,11 +467,31 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
 		return nil, nil
 	}
 	outputs := []*OutputInfo{{b.chainParams.CRCCommitteeAddress,
-		&appropriationAmount}}
+		appropriationAmount}}
 
 	var tx *Transaction
-	tx, err = b.createTransaction(&payload.CRCAppropriation{},
+	tx, err = b.createTransaction(&payload.CRCAppropriation{}, CRCAppropriation,
 		b.chainParams.CRCFoundation, Fixed64(0), uint32(0), utxos, outputs...)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
+}
+
+func (b *BlockChain) CreateCRRealWithdrawTransaction(
+	withdrawTransactionHashes []Uint256, outputs []*OutputInfo) (*Transaction, error) {
+	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRCCommitteeAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	 payload := &payload.CRCProposalRealWithdraw{
+		WithdrawTransactionHashes: withdrawTransactionHashes,
+	}
+
+	var tx *Transaction
+	tx, err = b.createTransaction(payload, CRCProposalRealWithdraw,
+		b.chainParams.CRCFoundation, Fixed64(RectifyTxFee), uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}
@@ -514,10 +520,10 @@ func (b *BlockChain) CreateCRAssetsRectifyTransaction() (*Transaction, error) {
 		return nil, nil
 	}
 	outputs := []*OutputInfo{{b.chainParams.CRCFoundation,
-		&rectifyAmount}}
+		rectifyAmount}}
 
 	var tx *Transaction
-	tx, err = b.createTransaction(&payload.CRAssetsRectify{},
+	tx, err = b.createTransaction(&payload.CRAssetsRectify{}, CRAssetsRectify,
 		b.chainParams.CRCFoundation, Fixed64(RectifyTxFee), uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err

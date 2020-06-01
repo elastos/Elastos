@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package types
 
@@ -140,4 +140,23 @@ func getOutputPayload(outputType OutputType) (OutputPayload, error) {
 		return nil, errors.New("invalid transaction output type")
 	}
 	return op, nil
+}
+
+type OutputInfo struct {
+	Recipient common.Uint168
+	Amount    common.Fixed64
+}
+
+func (o *OutputInfo) Serialize(w io.Writer) (err error) {
+	if err = o.Recipient.Serialize(w); err != nil {
+		return
+	}
+	return o.Amount.Serialize(w)
+}
+
+func (o *OutputInfo) Deserialize(r io.Reader) (err error) {
+	if err = o.Recipient.Deserialize(r); err != nil {
+		return err
+	}
+	return o.Amount.Deserialize(r)
 }
