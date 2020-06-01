@@ -18,7 +18,7 @@ const {
 } = MILESTONE_STATUS
 
 const { COMPLETION } = SUGGESTION_BUDGET_TYPE
-const { FIANL } = CVOTE_STATUS
+const { FIANL, ACTIVE } = CVOTE_STATUS
 
 class PaymentList extends Component {
   constructor(props) {
@@ -60,8 +60,8 @@ class PaymentList extends Component {
   }
 
   isVisible() {
-    const { user } = this.props
-    return this.isOwner() || user.is_secretary
+    const { user, status } = this.props
+    return (this.isOwner() || user.is_secretary) && [ACTIVE, FINAL].includes(status)
   }
 
   renderMilestone = (item) => {
@@ -238,7 +238,7 @@ class PaymentList extends Component {
             <th>{I18N.get('suggestion.budget.reasons')}</th>
             <th>{I18N.get('suggestion.budget.goal')}</th>
             <th>{I18N.get('suggestion.budget.criteria')}</th>
-            <th>{I18N.get('milestone.status')}</th>
+            {visible && <th>I18N.get('milestone.status')</th>}
             {visible && <th>{I18N.get('suggestion.budget.action')}</th>}
           </StyledRow>
         </StyledHead>
