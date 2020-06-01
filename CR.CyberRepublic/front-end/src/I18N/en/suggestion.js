@@ -39,7 +39,8 @@ export default {
   btn: {
     makeIntoProposal: 'Make Into Proposal',
     needDueDiligence: 'Need Due Diligence',
-    needAdvisory: 'Need Advisory'
+    needAdvisory: 'Need Advisory',
+    sign: 'Sign Suggestion'
   },
   status: {
     posted: 'Posted',
@@ -128,8 +129,9 @@ export default {
     unarchived: 'Suggestion unarchived successfully.',
     revertVersion: 'Suggestion reverted successfully.',
     madeByOtherCM: 'This suggestion had been made into proposal by other council member.',
-    scanQRCode: 'Scan the QR code above to make this suggestion into proposal.',
-    toChain: 'Saving to Chain'
+    councilSign: 'Scan the QR code above to make this suggestion into proposal.',
+    toChain: 'Saving to Chain',
+    sign: 'Scan the QR code above to sign your suggestion.'
   },
   header: {
     suggestion: 'suggestion',
