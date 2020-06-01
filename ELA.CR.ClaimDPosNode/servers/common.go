@@ -25,7 +25,7 @@ type InputInfo struct {
 	Sequence uint32 `json:"sequence"`
 }
 
-type OutputInfo struct {
+type RpcOutputInfo struct {
 	Value         string            `json:"value"`
 	Index         uint32            `json:"n"`
 	Address       string            `json:"address"`
@@ -70,7 +70,7 @@ type TransactionInfo struct {
 	Payload        PayloadInfo        `json:"payload"`
 	Attributes     []AttributeInfo    `json:"attributes"`
 	Inputs         []InputInfo        `json:"vin"`
-	Outputs        []OutputInfo       `json:"vout"`
+	Outputs        []RpcOutputInfo    `json:"vout"`
 	LockTime       uint32             `json:"locktime"`
 	Programs       []ProgramInfo      `json:"programs"`
 }

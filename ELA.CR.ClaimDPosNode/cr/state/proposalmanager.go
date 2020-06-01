@@ -534,7 +534,7 @@ func (p *ProposalManager) proposalWithdraw(tx *types.Transaction,
 			}
 		}
 		if tx.PayloadVersion == payload.CRCProposalWithdrawVersion01 {
-			p.WithdrawableTxInfo[tx.Hash()] = CRProposalWithdrawInfo{
+			p.WithdrawableTxInfo[tx.Hash()] = types.OutputInfo{
 				Recipient: withdrawPayload.Recipient,
 				Amount:    withdrawPayload.Amount,
 			}

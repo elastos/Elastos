@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package main
 
@@ -251,6 +251,7 @@ func startNode(c *cli.Context, st *settings.Settings) {
 		GetHeight:                        chainStore.GetHeight,
 		CreateCRAppropriationTransaction: chain.CreateCRCAppropriationTransaction,
 		CreateCRAssetsRectifyTransaction: chain.CreateCRAssetsRectifyTransaction,
+		CreateCRRealWithdrawTransaction:  chain.CreateCRRealWithdrawTransaction,
 		IsCurrent:                        server.IsCurrent,
 		Broadcast: func(msg p2p.Message) {
 			server.BroadcastMessage(msg)
