@@ -238,7 +238,7 @@ class PaymentList extends Component {
             <th>{I18N.get('suggestion.budget.reasons')}</th>
             <th>{I18N.get('suggestion.budget.goal')}</th>
             <th>{I18N.get('suggestion.budget.criteria')}</th>
-            {visible && <th>I18N.get('milestone.status')</th>}
+            {visible && <th>{I18N.get('milestone.status')}</th>}
             {visible && <th>{I18N.get('suggestion.budget.action')}</th>}
           </StyledRow>
         </StyledHead>
@@ -307,14 +307,12 @@ const StyledRow = styled.tr`
     }
     .action {
       color: #43af92;
-      display: inline-block;
       &:hover {
         cursor: pointer;
       }
     }
     .reject {
       color: red;
-      margin-left: 16px;
     }
   }
 `
