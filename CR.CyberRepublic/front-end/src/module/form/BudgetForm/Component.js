@@ -76,7 +76,7 @@ class BudgetForm extends Component {
     if (!value) {
       return cb(I18N.get('suggestion.form.error.required'))
     }
-    const reg = /^(0|[1-9][0-9]*)(\.[0-9]*)?$/
+    const reg = /^(0|[1-9][0-9]*)(\.[0-9]{1,8})?$/
     const isNumber = !isNaN(value) && reg.test(value)
     if (!isNumber) {
       return cb(I18N.get('suggestion.form.error.isNaN'))
