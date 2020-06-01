@@ -155,8 +155,7 @@ export default class extends Base {
                         reference: {
                             _id: cvote._id,
                             vid: cvote.vid,
-                            proposer: userUtil.formatUsername(cvote.createdBy),
-                            status: cvote.status
+                            proposer: userUtil.formatUsername(cvote.createdBy)
                         }
                     }
                 }
@@ -227,7 +226,8 @@ export default class extends Base {
                 {
                     $addToSet: {reference: res._id},
                     $set: {tags: []},
-                    proposalHash
+                    proposalHash,
+                    proposed: { $unset: false }
                 }
             )
             this.notifySubscribers(res)
@@ -235,9 +235,7 @@ export default class extends Base {
             return {
                 _id: res._id,
                 vid: res.vid,
-                proposer: userUtil.formatUsername(creator),
-                status: res.status,
-                proposed: { $unset: false }
+                proposer: userUtil.formatUsername(creator)
             }
         } catch (error) {
             logger.error(error)
