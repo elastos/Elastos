@@ -13,21 +13,22 @@ import (
 )
 
 const (
-	slotDPoSOwnerPublicKey      = "DPoSOwnerPublicKey"
-	slotDPoSNodePublicKey       = "DPoSNodePublicKey"
-	slotDPoSNickname            = "DPoSNickname"
-	slotCRDID                   = "CrDID"
-	slotCRNickname              = "CrNickname"
-	slotProgramCode             = "ProgramCode"
-	slotCRCProposalDraftHash    = "CRCProposalDraftHash"
-	slotCRCProposalDID          = "CRCProposalDID"
-	slotCRCProposalHash         = "CRCProposalHash"
-	slotCRCProposalTrackingHash = "CRCProposalTrackingHash"
-	slotCRCProposalReviewKey    = "CRCProposalReviewKey"
-	slotCRCAppropriationKey     = "CRCAppropriationKey"
-	slotSpecialTxHash           = "SpecialTxHash"
-	slotSidechainTxHashes       = "SidechainTxHashes"
-	slotTxInputsReferKeys       = "TxInputsReferKeys"
+	slotDPoSOwnerPublicKey         = "DPoSOwnerPublicKey"
+	slotDPoSNodePublicKey          = "DPoSNodePublicKey"
+	slotDPoSNickname               = "DPoSNickname"
+	slotCRDID                      = "CrDID"
+	slotCRNickname                 = "CrNickname"
+	slotProgramCode                = "ProgramCode"
+	slotCRCProposalDraftHash       = "CRCProposalDraftHash"
+	slotCRCProposalDID             = "CRCProposalDID"
+	slotCRCProposalHash            = "CRCProposalHash"
+	slotCRCProposalTrackingHash    = "CRCProposalTrackingHash"
+	slotCRCProposalReviewKey       = "CRCProposalReviewKey"
+	slotCRCAppropriationKey        = "CRCAppropriationKey"
+	slotCRCProposalRealWithdrawKey = "SlotCRCProposalRealWithdrawKey"
+	slotSpecialTxHash              = "SpecialTxHash"
+	slotSidechainTxHashes          = "SidechainTxHashes"
+	slotTxInputsReferKeys          = "TxInputsReferKeys"
 )
 
 type conflict struct {
@@ -273,6 +274,16 @@ func newConflictManager() conflictManager {
 					keyTypeFuncPair{
 						Type: types.CRCAppropriation,
 						Func: strCRCAppropriation,
+					},
+				),
+			},
+			// CRC proposal real withdraw transaction key
+			{
+				name: slotCRCProposalRealWithdrawKey,
+				slot: newConflictSlot(hashArray,
+					keyTypeFuncPair{
+						Type: types.CRCProposalRealWithdraw,
+						Func: hashArrayCRCProposalRealWithdrawTransactionHashes,
 					},
 				),
 			},

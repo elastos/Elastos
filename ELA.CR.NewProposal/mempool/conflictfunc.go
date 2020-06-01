@@ -157,6 +157,18 @@ func strCRCAppropriation(*types.Transaction) (interface{}, error) {
 	return "CRC Appropriation", nil
 }
 
+func hashArrayCRCProposalRealWithdrawTransactionHashes(
+	tx *types.Transaction) (interface{}, error) {
+	p, ok := tx.Payload.(*payload.CRCProposalRealWithdraw)
+	if !ok {
+		return nil, fmt.Errorf(
+			"real proposal withdraw transaction cast failed, tx: %s",
+			tx.Hash())
+	}
+
+	return p.WithdrawTransactionHashes, nil
+}
+
 // program hashes related functions
 func addrCRInfoCRCID(tx *types.Transaction) (interface{}, error) {
 	p, err := comGetCRInfo(tx)
