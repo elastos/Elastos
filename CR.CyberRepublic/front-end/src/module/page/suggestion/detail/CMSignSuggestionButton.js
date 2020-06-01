@@ -96,7 +96,8 @@ class SignSuggestionButton extends Component {
 
   render() {
     const { visible, loading } = this.state
-    if (this.props.isProposed) {
+    const { isProposed } = this.props
+    if (isProposed && isProposed === true) {
       return (
         <StyledButton
           type="ebp"
