@@ -193,7 +193,7 @@ class PaymentList extends Component {
             style={{ p: { margin: '1em 0' } }}
           />
         </td>
-        <td>{I18N.get(`milestone.${item.status}`)}</td>
+        {visible && <td>{I18N.get(`milestone.${item.status}`)}</td>}
         {visible && <td>{this.renderActions(item)}</td>}
       </StyledRow>
     )
