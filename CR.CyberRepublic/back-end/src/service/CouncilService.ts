@@ -776,28 +776,24 @@ export default class extends Base {
             switch (role) {
                 case constant.USER_ROLE.COUNCIL:
                     await this.userMode.update(
-                        { 'did.id': { $in: didList } },
+                        {'did.id': { $in: didList }},
                         {
                             $set: {
                                 role: constant.USER_ROLE.COUNCIL
                             }
                         },
-                        {
-                            multi: true
-                        }
+                        {multi: true}
                     )
                     break;
                 case constant.USER_ROLE.MEMBER:
                     await this.userMode.update(
-                        { 'did.id': { $in: didList } },
+                        {'did.id': { $in: didList }},
                         {
                             $set: {
                                 role: constant.USER_ROLE.MEMBER
                             }
                         },
-                        {
-                            multi: true
-                        }
+                        {multi: true}
                     )
                     break;
             }
@@ -862,22 +858,24 @@ export default class extends Base {
             }else {
                 if(currentCrs){
                     await updateInformation(null, currentCrs, constant.TERM_COUNCIL_STATUS.HISTORY)
+                    await updateUserRole(currentCrs.councilMembers, constant.USER_ROLE.MEMBER)
                 }
                 if(votingCds){
                     await updateInformation(listCrs.crmembersinfo, votingCds, constant.TERM_COUNCIL_STATUS.CURRENT)
+                    await updateUserRole(listCrs.crmembersinfo, constant.USER_ROLE.COUNCIL)
                 }
             }
-            return 
         }
 
         if(!isOnduty) {
             if (currentCrs){
                 await updateInformation(null, currentCrs, constant.TERM_COUNCIL_STATUS.HISTORY)
+                await updateUserRole(currentCrs.councilMembers, constant.USER_ROLE.MEMBER)
+                await this.temporaryChangeUpdateStatus()
             }
             if (!votingCds){
                 await updateInformation(null, null, null)
             }
-            return 
         }
     }
 
