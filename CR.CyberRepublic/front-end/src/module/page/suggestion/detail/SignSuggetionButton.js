@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import styled from 'styled-components'
 import { Popover, Spin, message } from 'antd'
 import QRCode from 'qrcode.react'
+import I18N from '@/I18N'
 import { StyledButton } from './style'
 
 class SignSuggestionButton extends Component {
@@ -19,7 +20,7 @@ class SignSuggestionButton extends Component {
     return (
       <Content>
         {url ? <QRCode value={url} size={400} /> : <Spin />}
-        <Tip>Scan the QR code above to sign your suggestion.</Tip>
+        <Tip>{I18N.get('suggestion.msg.signQRCode')}</Tip>
       </Content>
     )
   }
@@ -39,7 +40,7 @@ class SignSuggestionButton extends Component {
         if (rs.message) {
           message.error(rs.message)
         } else {
-          message.error('Something went wrong')
+          message.error(I18N.get('suggestion.msg.exception'))
         }
         this.setState({ visible: false })
       }
@@ -82,7 +83,7 @@ class SignSuggestionButton extends Component {
           className="cr-btn cr-btn-default"
           onClick={this.handleSign}
         >
-          Sign Suggestion
+          {I18N.get('suggestion.btn.signSuggetion')}
         </StyledButton>
       </Popover>
     )

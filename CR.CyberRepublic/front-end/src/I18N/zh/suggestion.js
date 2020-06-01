@@ -39,7 +39,8 @@ export default {
   btn: {
     makeIntoProposal: '发布为提案',
     needDueDiligence: '需要尽职调查',
-    needAdvisory: '需要咨询'
+    needAdvisory: '需要咨询',
+    signSuggetion: '签名建议'
   },
   status: {
     posted: '发布',
@@ -128,8 +129,9 @@ export default {
     unarchived: '建议已取消归档',
     revertVersion: '已使用指定版本的内容',
     madeByOtherCM: '其他委员已经把这个建议转成提案了。',
-    scanQRCode: '扫描上面二维码把建议转成提案',
-    toChain: '正在上链中'
+    councilQRCode: '扫描上面二维码把建议转成提案',
+    toChain: '正在上链中',
+    signQRCode: '扫描上面二维码签名建议'
   },
   header: {
     suggestion: '建议',
