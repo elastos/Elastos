@@ -49,6 +49,9 @@ import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewDa
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.Arith;
+import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -94,6 +97,7 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
     @BindView(R.id.ll_bgtp)
     LinearLayout ll_bgtp;
     ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList = new ArrayList();
+    ArrayList<String> resultList = new ArrayList();
 
     String zb;
 
@@ -125,6 +129,30 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
     //变更投票
     @OnClick(R.id.ll_bgtp)
     public void onViewClicked() {
+        ArrayList<String> list = CacheUtil.getProducerListString();
+        if (list.size() > 0) {
+            new DialogUtil().showCommonWarmPrompt1(getBaseActivity(), getString(R.string.repalcecardlist),
+                    null, null, false, new NewWarmPromptListener() {
+                        @Override
+                        public void affireBtnClick(View view) {
+                            CacheUtil.setProducerListString(resultList);
+                            gotoVote();
+
+                        }
+
+                        @Override
+                        public void onCancel(View view) {
+                            gotoVote();
+                        }
+                    });
+        } else {
+            CacheUtil.setProducerListString(resultList);
+            gotoVote();
+        }
+
+    }
+
+    private void gotoVote() {
         Bundle bundle = getArguments();
         bundle.putString("type", "2");
         start(NodeCartFragment.class, bundle);
@@ -207,6 +235,7 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
         Recorder recorder = new Recorder();
         for (int i = 0; i < netList.size(); i++) {
             if (netList.get(i).getOwnerpublickey().equals(publickey)) {
+                resultList.add(publickey);
                 recorder.no = (netList.get(i).getIndex() + 1);
                 recorder.name = netList.get(i).getNickname();
                 return recorder;

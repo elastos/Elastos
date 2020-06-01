@@ -112,6 +112,9 @@ public class FirstFragment extends BaseFragment implements CommmonObjectWithMeth
                 break;
             case "getMasterWalletBaseEntity":
                 MasterWallet masterWallet = (MasterWallet) data;
+                if (masterWallet == null) {
+                    return;
+                }
                 SubWalletBasicInfo.InfoBean.AccountBean account = JSON.parseObject(masterWallet.GetBasicInfo(), SubWalletBasicInfo.InfoBean.AccountBean.class);
                 boolean singleAddress = account.isSingleAddress();
                 int type = getType(account);
