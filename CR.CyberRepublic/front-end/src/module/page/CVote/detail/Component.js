@@ -75,16 +75,19 @@ const renderRichContent = (data, key, title, user, actions) => {
         <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
         <Paragraph>{data.elaAddress}</Paragraph>
         <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
-        <PaymentList
-          list={data.budget}
-          milestone={data.plan.milestone}
-          withdrawalHistory={data.withdrawalHistory}
-          user={user}
-          proposer={data.proposer}
-          proposalId={data._id}
-          actions={actions}
-          status={data.status}
-        />
+        <div style={{overflowX: 'scroll'}}>
+          <PaymentList
+            list={data.budget}
+            milestone={data.plan.milestone}
+            withdrawalHistory={data.withdrawalHistory}
+            user={user}
+            proposer={data.proposer}
+            proposalId={data._id}
+            actions={actions}
+            status={data.status}
+          />
+        </div>
+
       </div>
     )
   } else if (key === 'plan' && data.plan && typeof data.plan !== 'string') {
