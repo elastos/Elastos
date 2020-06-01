@@ -2076,6 +2076,18 @@ func (s *txValidatorTestSuite) getCRCAppropriationTx(input *types.Input,
 	return txn
 }
 
+func (s *txValidatorTestSuite) getCRCProposalRealWithdrawTx(input *types.Input,
+	hashes []common.Uint256, outputs []*types.Output) *types.Transaction {
+	txn := new(types.Transaction)
+	txn.TxType = types.CRCProposalRealWithdraw
+	txn.Version = types.TxVersion09
+	cPayload := &payload.CRCProposalRealWithdraw{WithdrawTransactionHashes: hashes}
+	txn.Payload = cPayload
+	txn.Inputs = []*types.Input{input}
+	txn.Outputs = outputs
+	return txn
+}
+
 func (s *txValidatorTestSuite) TestCrInfoSanityCheck() {
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
@@ -2237,6 +2249,104 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 	str := fmt.Sprintf("nick name %s already exist", nickName2)
 	s.EqualError(err, str)
 
+}
+
+func (s *txValidatorTestSuite) TestCheckCRCProposalRealWithdrawTransaction() {
+	// Set CRC committee address.
+	s.Chain.chainParams.CRCCommitteeAddress = *randomUint168()
+
+	// Set WithdrawableTxInfo
+	withdrawTransactionHash1 := *randomUint256()
+	recipient1 := *randomUint168()
+	withdrawTransactionHash2 := *randomUint256()
+	recipient2 := *randomUint168()
+	wtHashes := make(map[common.Uint256]types.OutputInfo, 0)
+	wtHashes[withdrawTransactionHash1] = types.OutputInfo{
+		Recipient: recipient1,
+		Amount:    10 * 1e8,
+	}
+	wtHashes[withdrawTransactionHash2] = types.OutputInfo{
+		Recipient: recipient2,
+		Amount:    9 * 1e8,
+	}
+	s.Chain.crCommittee.GetProposalManager().WithdrawableTxInfo = wtHashes
+
+	// Create reference.
+	reference := make(map[*types.Input]types.Output)
+	input := &types.Input{
+		Previous: types.OutPoint{
+			TxID:  *randomUint256(),
+			Index: 0,
+		},
+	}
+	refOutput := types.Output{
+		Value:       20 * 1e8,
+		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
+	}
+	reference[input] = refOutput
+
+	// create outputs
+	output1 := &types.Output{
+		Value:       10*1e8 - 10000,
+		ProgramHash: recipient1,
+	}
+	output2 := &types.Output{
+		Value:       9*1e8 - 10000,
+		ProgramHash: recipient2,
+	}
+	output3 := &types.Output{
+		Value:       1 * 1e8,
+		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
+	}
+	output1Err := &types.Output{
+		Value:       10 * 1e8,
+		ProgramHash: recipient1,
+	}
+	output2Err := &types.Output{
+		Value:       9*1e8 - 10000,
+		ProgramHash: recipient1,
+	}
+	output3Err := &types.Output{
+		Value:       1 * 1e8,
+		ProgramHash: recipient1,
+	}
+
+	// check transaction
+	txn := s.getCRCProposalRealWithdrawTx(input,
+		[]common.Uint256{},
+		[]*types.Output{output1, output2})
+	err := s.Chain.checkCRCProposalRealWithdrawTransaction(txn, reference)
+	s.EqualError(err, "invalid real withdraw transaction hashes count")
+
+	txn = s.getCRCProposalRealWithdrawTx(input,
+		[]common.Uint256{withdrawTransactionHash1, withdrawTransactionHash2},
+		[]*types.Output{output1Err, output2, output3})
+	err = s.Chain.checkCRCProposalRealWithdrawTransaction(txn, reference)
+	s.EqualError(err, "invalid real withdraw output amount:10, need to be:9.99990000")
+
+	txn = s.getCRCProposalRealWithdrawTx(input,
+		[]common.Uint256{withdrawTransactionHash1, withdrawTransactionHash2},
+		[]*types.Output{output1, output2Err, output3})
+	err = s.Chain.checkCRCProposalRealWithdrawTransaction(txn, reference)
+	s.EqualError(err, "invalid real withdraw output address")
+
+	txn = s.getCRCProposalRealWithdrawTx(input,
+		[]common.Uint256{withdrawTransactionHash1, withdrawTransactionHash2},
+		[]*types.Output{output1, output1, output3Err})
+	err = s.Chain.checkCRCProposalRealWithdrawTransaction(txn, reference)
+	s.EqualError(err, "last output is invalid")
+
+	txn = s.getCRCProposalRealWithdrawTx(input,
+		[]common.Uint256{withdrawTransactionHash1, withdrawTransactionHash1},
+		[]*types.Output{output1, output1, output3})
+	err = s.Chain.checkCRCProposalRealWithdrawTransaction(txn, reference)
+	s.EqualError(err, "duplicated real withdraw transactions hash")
+
+	txn = s.getCRCProposalRealWithdrawTx(input,
+		[]common.Uint256{withdrawTransactionHash1, withdrawTransactionHash2},
+		[]*types.Output{output1, output2, output3})
+	err = s.Chain.checkCRCProposalRealWithdrawTransaction(txn, reference)
+	s.NoError(err)
 }
 
 func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {

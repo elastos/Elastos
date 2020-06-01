@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package errors
 
@@ -43,6 +43,7 @@ const (
 	ErrTxReturnDeposit     ErrCode = -22014
 	ErrTxAppropriation     ErrCode = -22015
 	ErrTxAssetsRectify     ErrCode = -22016
+	ErrTxRealWithdraw      ErrCode = -22017
 	// 23 sidechain
 	ErrTxSidechainValidation   ErrCode = -23000
 	ErrTxSidechainDuplicate    ErrCode = -23001

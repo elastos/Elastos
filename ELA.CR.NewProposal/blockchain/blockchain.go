@@ -41,8 +41,11 @@ const (
 	// irreversibleHeight defines the max height that the chain be reorganized
 	irreversibleHeight = 6
 
-	// rectifyTxFee defines the fee of cr rectify transaction
+	// RectifyTxFee defines the fee of cr rectify transaction
 	RectifyTxFee = 10000
+
+	// RealWithdrawSingleFee defines the single fee of cr real proposal withdraw transaction
+	RealWithdrawSingleFee = 10000
 )
 
 var (
@@ -485,13 +488,13 @@ func (b *BlockChain) CreateCRRealWithdrawTransaction(
 		return nil, err
 	}
 
-	 payload := &payload.CRCProposalRealWithdraw{
+	payload := &payload.CRCProposalRealWithdraw{
 		WithdrawTransactionHashes: withdrawTransactionHashes,
 	}
 
 	var tx *Transaction
 	tx, err = b.createTransaction(payload, CRCProposalRealWithdraw,
-		b.chainParams.CRCFoundation, Fixed64(RectifyTxFee), uint32(0), utxos, outputs...)
+		b.chainParams.CRCFoundation, Fixed64(RealWithdrawSingleFee), uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}
