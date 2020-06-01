@@ -130,7 +130,7 @@ export default {
     revertVersion: 'Suggestion reverted successfully.',
     madeByOtherCM: 'This suggestion had been made into proposal by other council member.',
     councilQRCode: 'Scan the QR code above to make this suggestion into proposal.',
-    toChain: 'Saving to Chain',
+    toChain: 'Saving onto blockchain',
     signQRCode: 'Scan the QR code above to sign your suggestion.'
   },
   header: {
