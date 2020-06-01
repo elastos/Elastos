@@ -125,7 +125,7 @@ class PaymentList extends Component {
     if (status === WAITING_FOR_APPROVAL) {
       return (
         user.is_secretary && (
-          <div>
+          <div className="review">
             <div
               className="action approve"
               onClick={() => {
@@ -313,6 +313,10 @@ const StyledRow = styled.tr`
     }
     .reject {
       color: red;
+      margin-left: 24px;
+    }
+    .review {
+      display: flex;
     }
   }
 `
