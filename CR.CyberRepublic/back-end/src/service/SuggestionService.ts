@@ -1422,7 +1422,7 @@ export default class extends Base {
       if (suggestion && !_.isEmpty(suggestion.reference)) {
         return {
           success: false,
-          message: 'This suggestion was made into a proposal.'
+          message: 'This suggestion had been made into a proposal.'
         }
       }
       if (suggestion && suggestion.proposed === true) {

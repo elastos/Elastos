@@ -10,7 +10,8 @@ class SignSuggestionButton extends Component {
     super(props)
     this.state = {
       url: '',
-      visible: false
+      visible: false,
+      loading: false
     }
     this.timerList = []
   }
@@ -41,6 +42,9 @@ class SignSuggestionButton extends Component {
   pollingProposalState = async () => {
     const { id, pollProposalState } = this.props
     const rs = await pollProposalState({ id })
+    if (rs && rs.success && rs.toChain) {
+      this.setState({ visible: false, loading: true })
+    }
     if (rs && rs.success && rs.reference) {
       this.clearTimerList()
       this.setState({ visible: false })
@@ -48,6 +52,9 @@ class SignSuggestionButton extends Component {
     }
     if (rs && rs.success === false) {
       this.clearTimerList()
+      if (rs.proposer === false) {
+        return
+      }
       if (rs.message) {
         message.error(rs.message)
       } else {
@@ -68,7 +75,11 @@ class SignSuggestionButton extends Component {
   }
 
   componentDidMount = async () => {
-    const { id, getCMSignatureUrl } = this.props
+    const { id, getCMSignatureUrl, isProposed } = this.props
+    if (isProposed) {
+      this.pollingProposalState()
+      return
+    }
     const rs = await getCMSignatureUrl(id)
     if (rs && rs.success) {
       this.setState({ url: rs.url })
@@ -84,13 +95,14 @@ class SignSuggestionButton extends Component {
   }
 
   render() {
-    const { visible } = this.state
+    const { visible, loading } = this.state
     if (this.props.isProposed) {
       return (
         <StyledButton
           type="ebp"
           className="cr-btn cr-btn-primary"
           disabled
+          loading={loading}
         >
           {I18N.get('suggestion.msg.toChain')}
         </StyledButton>
