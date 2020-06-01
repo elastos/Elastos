@@ -694,7 +694,7 @@ export default class extends Base {
 
     let doc = await model
       .getDBInstance()
-      .findOne(query, '-proposers')
+      .findOne(query)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
       .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
 

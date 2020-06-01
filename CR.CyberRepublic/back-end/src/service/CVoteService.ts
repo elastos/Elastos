@@ -155,7 +155,8 @@ export default class extends Base {
                         reference: {
                             _id: cvote._id,
                             vid: cvote.vid,
-                            proposer: userUtil.formatUsername(cvote.createdBy)
+                            proposer: userUtil.formatUsername(cvote.createdBy),
+                            status: cvote.status
                         }
                     }
                 }
@@ -235,7 +236,8 @@ export default class extends Base {
             return {
                 _id: res._id,
                 vid: res.vid,
-                proposer: userUtil.formatUsername(creator)
+                proposer: userUtil.formatUsername(creator),
+                status: res.status
             }
         } catch (error) {
             logger.error(error)
