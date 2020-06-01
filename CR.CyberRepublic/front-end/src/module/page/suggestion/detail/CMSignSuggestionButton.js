@@ -34,7 +34,7 @@ class SignSuggestionButton extends Component {
     return (
       <Content>
         {url ? <QRCode value={url} size={400} /> : <Spin />}
-        <Tip>{I18N.get('suggestion.msg.councilSign')}</Tip>
+        <Tip>{I18N.get('suggestion.msg.councilQRCode')}</Tip>
       </Content>
     )
   }

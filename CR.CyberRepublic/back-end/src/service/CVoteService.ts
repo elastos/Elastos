@@ -227,7 +227,7 @@ export default class extends Base {
                     $addToSet: {reference: res._id},
                     $set: {tags: []},
                     proposalHash,
-                    proposed: { $unset: false }
+                    $unset: {proposed: true}
                 }
             )
             this.notifySubscribers(res)
