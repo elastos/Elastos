@@ -208,7 +208,7 @@ export default class extends StandardPage {
         <Col span={6}>
           <ItemTitle>{header}</ItemTitle>
         </Col>
-        <Col span={18}>{text}</Col>
+        <Col span={18} style={{wordBreak: "break-all"}}>{text}</Col>
       </Item>
     )
   }
