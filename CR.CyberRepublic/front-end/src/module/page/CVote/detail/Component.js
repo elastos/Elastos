@@ -75,7 +75,7 @@ const renderRichContent = (data, key, title, user, actions) => {
         <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
         <Paragraph>{data.elaAddress}</Paragraph>
         <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
-        <div style={{overflowX: 'scroll'}}>
+        <div className='budget-payment-list'>
           <PaymentList
             list={data.budget}
             milestone={data.plan.milestone}

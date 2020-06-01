@@ -20,6 +20,9 @@ export const Container = styled.div`
     .cr-backlink {
       display: none;
     }
+    .budget-payment-list {
+      overflow-x: scroll;
+    }
   }
 `
 
