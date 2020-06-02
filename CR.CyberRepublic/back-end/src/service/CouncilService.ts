@@ -773,25 +773,25 @@ export default class extends Base {
         }
 
         const updateUserRoleToNewDid = async () => {
-            const electedCouncils = _.filter(listCrs.crmembersinfo, (o: any) => status === constant.COUNCIL_STATUS.ELECTED)
-            const impeachedCouncils = _.filter(listCrs.crmembersinfo, (o: any) => status !== constant.COUNCIL_STATUS.ELECTED)
+            const electedCouncils = _.filter(listCrs.crmembersinfo, (o: any) => o.state === constant.COUNCIL_STATUS.ELECTED)
+            const impeachedCouncils = _.filter(listCrs.crmembersinfo, (o: any) => o.state !== constant.COUNCIL_STATUS.ELECTED)
     
             const electedDidList = _.map(electedCouncils, (o: any) => DID_PREFIX + o.did)
             const impeachedDidList = _.map(impeachedCouncils, (o: any) => DID_PREFIX + o.did)
-    
-            await this.model.getDBInstance().update(
+            
+            await this.userMode.getDBInstance().update(
                 {'did.id': {$in: electedDidList}},
                 {
-                    $set: {status: constant.USER_ROLE.COUNCIL}
+                    $set: {role: constant.USER_ROLE.COUNCIL}
                 },
                 {
                     multi: true
                 }
             )
-            await this.model.getDBInstance().update(
+            await this.userMode.getDBInstance().update(
                 {'did.id': {$in: impeachedDidList}},
                 {
-                    $set: {status: constant.USER_ROLE.MEMBER}
+                    $set: {role: constant.USER_ROLE.MEMBER}
                 },
                 {
                     multi: true
