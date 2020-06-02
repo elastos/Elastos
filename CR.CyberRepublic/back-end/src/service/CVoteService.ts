@@ -170,7 +170,7 @@ export default class extends Base {
         }
     }
 
-    private async makeSuggIntoProposal(param: any) {
+    public async makeSuggIntoProposal(param: any) {
         const db_cvote = this.getDBModel('CVote')
         const db_suggestion = this.getDBModel('Suggestion')
         const db_user = this.getDBModel('User')
