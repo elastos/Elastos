@@ -64,7 +64,7 @@
             android:textSize="14sp" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="15dp"
@@ -73,53 +73,65 @@
             <org.elastos.wallet.ela.utils.view.CircleProgressView
                 android:id="@+id/progress"
                 android:layout_width="50dp"
+                android:layout_gravity="center_vertical"
                 android:layout_height="50dp"
                 android:layout_marginLeft="15dp" />
 
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="50dp">
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+              >
 
                 <TextView
                     android:id="@+id/vote_count_title"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:lines="2"
+                    android:maxLines="2"
                     android:text="@string/currentvotes"
                     android:textColor="@color/white"
                     android:textSize="11sp" />
 
                 <TextView
                     android:id="@+id/vote_count"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
+                    android:gravity="center"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/vote_count_title"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="6dp"
                     android:textColor="@color/white"
                     android:textSize="13sp" />
-            </RelativeLayout>
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/division"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginLeft="43dp"
                 android:text="/"
                 android:textSize="25sp"
                 android:textColor="@color/whiter50" />
 
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="30dp">
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_marginLeft="10dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
 
                 <TextView
+                    android:lines="2"
+                    android:maxLines="2"
                     android:id="@+id/impeachment_count_title"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
+                    android:gravity="center"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="8dp"
@@ -129,14 +141,15 @@
 
                 <TextView
                     android:id="@+id/impeachment_count"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
+                    android:gravity="center"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/impeachment_count_title"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="6dp"
                     android:textColor="@color/white"
                     android:textSize="13sp" />
-            </RelativeLayout>
+            </LinearLayout>
 
         </LinearLayout>
 

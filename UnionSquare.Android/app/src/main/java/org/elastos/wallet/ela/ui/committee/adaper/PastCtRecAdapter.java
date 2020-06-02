@@ -52,13 +52,13 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
         if(AppUtlis.isNullOrEmpty(status) || status.equalsIgnoreCase("HISTORY")) {
             viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), ""));
         } else if(status.equalsIgnoreCase("CURRENT")) {
-            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+context.getString(R.string.current)+")"));
+            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(),context.getString(R.string.current)));
             if(isCRC) {
                 viewHolder.manager.setText(context.getString(R.string.ctmanager));
                 viewHolder.manager.setVisibility(View.VISIBLE);
             }
         } else if(status.equalsIgnoreCase("VOTING")) {
-            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+context.getString(R.string.voting)+")"));
+            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), context.getString(R.string.voting)));
             if(isVoting) {
                 viewHolder.manager.setVisibility(View.VISIBLE);
                 viewHolder.manager.setText(context.getString(R.string.votemanager));

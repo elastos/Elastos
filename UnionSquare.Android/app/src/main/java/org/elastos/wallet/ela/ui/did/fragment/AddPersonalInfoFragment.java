@@ -342,8 +342,8 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
             new DialogUtil().showTime(getBaseActivity(), getString(R.string.plzselectbirthday), calendar.getTimeInMillis(), minData, new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
-                    String date = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)
-                            + "-" + ((TextConfigDataPicker) view).getDayOfMonth();
+                    String date = ((TextConfigDataPicker) view).getYear() + "." + (((TextConfigDataPicker) view).getMonth() + 1)
+                            + "." + ((TextConfigDataPicker) view).getDayOfMonth();
                     birthday = DateUtil.parseToLong(date);
 
                     v.setText(DateUtil.timeNYR(birthday, getContext(), false));
