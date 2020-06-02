@@ -151,6 +151,11 @@ const en = {
   'popup.changes.2018-12-26.4': 'You can also automatically login to the forum through the link in the top right:',
   'popup.changes.2018-12-26.5': 'The updated CR website will be relaunched on January 15, 2019, more information can be found at',
   'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/2018/12/26/important-cyber-republic-announcement',
+  
+  'popup.suggestion.title': 'Important notice',
+  'popup.suggestion.content': 'In order to launch CRC, the website will be in maintenance till June 10, 2020. Please add your suggestion after June 10.',
+  'popup.suggestion.thanks': 'Thanks',
+  'popup.suggestion.team': 'Cyber Republic Team',
 
   // LoginForm
   'login.label_username': 'Please input your email address or username',
