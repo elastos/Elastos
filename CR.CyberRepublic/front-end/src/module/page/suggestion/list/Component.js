@@ -79,6 +79,7 @@ export default class extends StandardPage {
     this.state = {
       showForm: uri.hasQuery('create'),
       showArchived: false,
+      showDidModal: uri.hasQuery('create'),
 
       // named status since we eventually want to use a struct of statuses to filter on
       referenceStatus,
@@ -205,6 +206,7 @@ export default class extends StandardPage {
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
     const sortActionsNode = this.renderSortActions()
+    const didModal = this.renderDidModal()
 
     return (
       <div>
@@ -275,6 +277,7 @@ export default class extends StandardPage {
           <Row gutter={24} style={{ marginTop: 32 }}>
             <Col span={24}>{listNode}</Col>
           </Row>
+          {didModal}
           {createForm}
         </SuggestionContainer>
         <Footer />
@@ -302,7 +305,10 @@ export default class extends StandardPage {
       onCancel: this.hideCreateForm,
       onSubmit: this.onFormSubmit
     }
-
+    const { isLogin, user } = this.props
+    if (isLogin && !_.get(user, 'did.id')) {
+      return this.renderDidModal()
+    }
     return (
       <Modal
         className="project-detail-nobar"
@@ -317,12 +323,41 @@ export default class extends StandardPage {
     )
   }
 
+  renderDidModal = () => {
+    const { history } = this.props
+    return (
+      <Modal
+        className="project-detail-nobar"
+        maskClosable={false}
+        visible={this.state.showDidModal}
+        onCancel={this.hideDidModal}
+        footer={null}
+        width={400}
+      >
+        <div>
+          <div>Please associate your DID first</div>
+          <Button onClick={() => {history.push('/profile/info')}}>
+            Associate DID
+          </Button>
+        </div>
+      </Modal>
+    )
+  }
+
+  hideDidModal = () => {
+    this.setState({ showDidModal: false })
+  }
+
   showCreateForm = () => {
-    const { isLogin, history } = this.props
+    const { isLogin, history, user } = this.props
     if (!isLogin) {
       const query = { create: true }
       loginRedirectWithQuery({ query })
       history.push('/login')
+      return
+    }
+    if (isLogin && !_.get(user, 'did.id')) {
+      this.setState({ showDidModal: true })
       return
     }
     this.props.history.push('/suggestion/create')
