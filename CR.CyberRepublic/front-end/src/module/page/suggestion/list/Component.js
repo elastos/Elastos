@@ -293,9 +293,11 @@ export default class extends StandardPage {
 
   onFormSubmit = async (param) => {
     try {
-      await this.props.create(param)
+      const rs = await this.props.create(param)
       this.setState({ showForm: false })
-      this.refetch()
+      if (rs && rs._id) {
+        this.props.history.push(`/suggestion/${rs._id}?new=true`)
+      }
     } catch (error) {
       logger.error(error)
     }
