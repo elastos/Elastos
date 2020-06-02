@@ -50,11 +50,13 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRMyVotePresenter;
 import org.elastos.wallet.ela.utils.Arith;
+import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
+import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -98,7 +100,7 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
     @BindView(R.id.ll_bgtp)
     LinearLayout ll_bgtp;
     ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> netList = new ArrayList();
-
+    ArrayList<String> resultList = new ArrayList();
 
     @Override
     protected int getLayoutId() {
@@ -122,7 +124,27 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
     //变更投票
     @OnClick(R.id.ll_bgtp)
     public void onViewClicked() {
-        start(CRNodeCartFragment.class, getArguments());
+
+        ArrayList<String> list = CacheUtil.getCRProducerListString();
+        if (list.size() > 0) {
+            new DialogUtil().showCommonWarmPrompt1(getBaseActivity(), getString(R.string.repalcecardlist),
+                    null, null, false, new NewWarmPromptListener() {
+                        @Override
+                        public void affireBtnClick(View view) {
+                            CacheUtil.setCRProducerListString(resultList);
+                            start(CRNodeCartFragment.class, getArguments());
+
+                        }
+
+                        @Override
+                        public void onCancel(View view) {
+                            start(CRNodeCartFragment.class, getArguments());
+                        }
+                    });
+        } else {
+            CacheUtil.setCRProducerListString(resultList);
+            start(CRNodeCartFragment.class, getArguments());
+        }
     }
 
     BigDecimal ticketSum = new BigDecimal(0);
@@ -198,7 +220,7 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
                 helper.setTextColor(R.id.tv_name, mContext.getResources().getColor(R.color.whiter50));
             } else {
                 helper.setTextColor(R.id.tv_no, mContext.getResources().getColor(R.color.whiter));
-                helper.setTextColor(R.id.tv_name,mContext.getResources().getColor(R.color.whiter));
+                helper.setTextColor(R.id.tv_name, mContext.getResources().getColor(R.color.whiter));
                 helper.setText(R.id.tv_no, "NO." + item.no);
 
             }
@@ -206,13 +228,14 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
     }
 
     //获取名字
-    private Recorder getRecord(String did, String ticketNum) {
+    private Recorder getRecord(String cid, String ticketNum) {
         Recorder recorder = new Recorder();
         recorder.no = Integer.MAX_VALUE;
         recorder.name = getString(R.string.invalidcr);
         for (int i = 0; i < netList.size(); i++) {
             recorder.ticketNum = ticketNum;
-            if (netList.get(i).getDid().equals(did)) {
+            if (netList.get(i).getDid().equals(cid)) {
+                resultList.add(cid);
                 recorder.no = (netList.get(i).getIndex() + 1);
                 recorder.name = netList.get(i).getNickname();
                 return recorder;
