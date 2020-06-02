@@ -189,7 +189,10 @@ export default class extends StandardPage {
             </Row>
           </MediaQuery>
           {editForm}
-          <SignSuggestionModal />
+          <SignSuggestionModal
+            id={detail._id}
+            getSignatureUrl={this.props.getSignatureUrl}
+          />
         </Container>
         <Footer />
       </div>
