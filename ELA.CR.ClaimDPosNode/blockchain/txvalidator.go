@@ -987,10 +987,13 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 			return errors.New("return CR deposit coin transactions should have one and only one program")
 		}
 	case CRCProposalWithdraw:
-		if len(tx.Programs) != 0 {
+		if len(tx.Programs) != 0 && blockHeight < b.chainParams.CRCProposalWithdrawPayloadV1Height {
 			return errors.New("crcproposalwithdraw tx should have no programs")
 		}
-		return nil
+
+		if tx.PayloadVersion == payload.CRCProposalWithdrawDefault {
+			return nil
+		}
 	}
 
 	// Check attributes
@@ -1030,7 +1033,6 @@ func checkTransactionSignature(tx *Transaction, references map[*Input]Output) er
 	// sort the program hashes of owner and programs of the transaction
 	common.SortProgramHashByCodeHash(programHashes)
 	SortPrograms(tx.Programs)
-
 	return RunPrograms(buf.Bytes(), programHashes, tx.Programs)
 }
 
@@ -1110,6 +1112,7 @@ func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) 
 			return errors.New("not support before CRCommitteeStartHeight")
 		}
 		if txn.TxType == CRCProposalWithdraw {
+
 			if txn.PayloadVersion == payload.CRCProposalWithdrawDefault && blockHeight >= b.chainParams.CRCProposalWithdrawPayloadV1Height {
 				return errors.New("not support after CRCProposalWithdrawPayloadV1Height")
 			}

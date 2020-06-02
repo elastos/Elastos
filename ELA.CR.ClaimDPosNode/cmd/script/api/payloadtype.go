@@ -1668,6 +1668,11 @@ func getPublicKeyFromCode(code []byte) []byte {
 func newCRCProposalWithdraw(L *lua.LState) int {
 	proposalHashString := L.ToString(1)
 	client, err := checkClient(L, 2)
+	payloadversion := L.ToInt(3)
+	receipt := L.ToString(4)
+	amount := L.ToInt64(5)
+	fee := L.ToInt64(6)
+
 	if err != nil {
 		fmt.Println("err != nil wallet expected")
 		os.Exit(1)
@@ -1684,7 +1689,16 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 	}
 	pubkey := getPublicKeyFromCode(acc.RedeemScript)
 	crcProposalWithdraw.OwnerPublicKey = pubkey
-	err = crcProposalWithdraw.SerializeUnsigned(rpSignBuf, payload.CRCProposalWithdrawDefault)
+	if payloadversion == 1 {
+		r, err := common.Uint168FromAddress(receipt)
+		if err != nil {
+			fmt.Println("invalid receipt")
+			os.Exit(1)
+		}
+		crcProposalWithdraw.Recipient = *r
+		crcProposalWithdraw.Amount = common.Fixed64(amount - fee)
+	}
+	err = crcProposalWithdraw.SerializeUnsigned(rpSignBuf, byte(payloadversion))
 	rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
