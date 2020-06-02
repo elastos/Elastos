@@ -40,7 +40,8 @@ export default {
     makeIntoProposal: 'Make Into Proposal',
     needDueDiligence: 'Need Due Diligence',
     needAdvisory: 'Need Advisory',
-    signSuggetion: 'Sign Suggestion'
+    signSuggetion: 'Sign Suggestion',
+    associateDid: 'Associate DID'
   },
   status: {
     posted: 'Posted',
@@ -131,7 +132,8 @@ export default {
     madeByOtherCM: 'This suggestion had been made into proposal by other council member.',
     councilQRCode: 'Scan the QR code above to make this suggestion into proposal.',
     toChain: 'Saving onto blockchain',
-    signQRCode: 'Scan the QR code above to sign your suggestion.'
+    signQRCode: 'Scan the QR code above to sign your suggestion.',
+    associateDidFirst: 'Please associate your DID first.'
   },
   header: {
     suggestion: 'suggestion',

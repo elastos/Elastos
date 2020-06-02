@@ -40,7 +40,8 @@ export default {
     makeIntoProposal: '发布为提案',
     needDueDiligence: '需要尽职调查',
     needAdvisory: '需要咨询',
-    signSuggetion: '签名建议'
+    signSuggetion: '签名建议',
+    associateDid: '绑定 DID'
   },
   status: {
     posted: '发布',
@@ -131,7 +132,8 @@ export default {
     madeByOtherCM: '其他委员已经把这个建议转成提案了。',
     councilQRCode: '扫描上面二维码把建议转成提案',
     toChain: '正在上链中',
-    signQRCode: '扫描上面二维码签名建议'
+    signQRCode: '扫描上面二维码签名建议',
+    associateDidFirst: '请先绑定您的 DID'
   },
   header: {
     suggestion: '建议',
