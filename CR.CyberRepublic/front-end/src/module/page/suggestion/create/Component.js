@@ -38,7 +38,7 @@ export default class extends StandardPage {
   }
 
   historyBack = (id) => {
-    this.props.history.push(`/suggestion/${id}`)
+    this.props.history.push(`/suggestion/${id}?new=true`)
   }
 
   onSubmit = async (model) => {

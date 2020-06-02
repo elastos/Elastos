@@ -29,6 +29,7 @@ import {
   getBudgetHtml
 } from '@/util/markdown-it'
 import { logger } from '@/util'
+import URI from 'urijs'
 import userUtil from '@/util/user'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
@@ -142,7 +143,7 @@ export default class extends StandardPage {
     const editForm = this.renderEditForm()
     const commentNode = this.renderCommentNode()
     const socialShareButtonsNode = this.renderSocialShareButtonsNode()
-
+    const uri = URI(this.props.location.search || '')
     return (
       <div>
         <Meta
@@ -189,11 +190,11 @@ export default class extends StandardPage {
             </Row>
           </MediaQuery>
           {editForm}
-          <SignSuggestionModal
+          {uri.hasQuery('new') && <SignSuggestionModal
             id={detail._id}
             getSignatureUrl={this.props.getSignatureUrl}
             getSignature={this.props.getSignature}
-          />
+          />}
         </Container>
         <Footer />
       </div>
