@@ -145,7 +145,7 @@ export default class extends StandardPage {
 
     return (
       <div>
-        <SuggestionPopupNotification/>
+        {/* <SuggestionPopupNotification/> */}
         <Meta
           desc={detail.shortDesc}
           title={`${detail.title} - Suggestion Detail - Cyber Republic`}
