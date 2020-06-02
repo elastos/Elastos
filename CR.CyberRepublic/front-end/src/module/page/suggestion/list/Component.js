@@ -208,6 +208,7 @@ export default class extends StandardPage {
     const sortActionsNode = this.renderSortActions()
     const didModal = this.renderDidModal()
 
+    const uri = URI(this.props.location.search || '')
     return (
       <div>
         <Meta title="Cyber Republic - Elastos" />
@@ -277,7 +278,7 @@ export default class extends StandardPage {
           <Row gutter={24} style={{ marginTop: 32 }}>
             <Col span={24}>{listNode}</Col>
           </Row>
-          {didModal}
+          {!uri.hasQuery('create') && didModal}
           {createForm}
         </SuggestionContainer>
         <Footer />
