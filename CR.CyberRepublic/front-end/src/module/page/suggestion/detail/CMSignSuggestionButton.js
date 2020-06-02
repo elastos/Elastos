@@ -31,7 +31,7 @@ class CMSignSuggestionButton extends Component {
   }
 
   elaQrCode = () => {
-    const { url, isBound } = this.state
+    const { url, isBound, message } = this.state
     if (!isBound) {
       return (
         <Content>
@@ -46,6 +46,9 @@ class CMSignSuggestionButton extends Component {
           </Button>
         </Content>
       )
+    }
+    if (isBound && message) {
+      return (<Content>{message}</Content>)
     }
     return (
       <Content>
@@ -82,9 +85,13 @@ class CMSignSuggestionButton extends Component {
 
   handleSign = async () => {
     const { user } = this.props
+    const { message } = this.state
     if (user && user.did && user.did.id) {
       this.setState({ isBound: true, visible: true })
       if (this.timerList.length) {
+        return
+      }
+      if (message) {
         return
       }
       await this.sleep(5000)
@@ -102,7 +109,10 @@ class CMSignSuggestionButton extends Component {
     }
     const rs = await getCMSignatureUrl(id)
     if (rs && rs.success) {
-      this.setState({ url: rs.url })
+      this.setState({ url: rs.url, message: '' })
+    }
+    if (rs && rs.success === false && rs.message) {
+      this.setState({ message: rs.message, url: '' })
     }
   }
 
@@ -143,6 +153,7 @@ class CMSignSuggestionButton extends Component {
           visible={visible}
           onCancel={this.hideModal}
           footer={null}
+          width={500}
         >
           {this.elaQrCode()}
         </Modal>
