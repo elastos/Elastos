@@ -198,26 +198,7 @@ func (p *ProposalManager) updateProposals(height uint32,
 					unusedAmount += getProposalTotalBudgetAmount(v.Proposal)
 					continue
 				}
-				if v.Proposal.ProposalType == payload.ChangeProposalOwner {
-					proposal := p.getProposal(v.Proposal.PreviousHash)
-					originRecipient := proposal.Recipient
-					emptyUint168 := common.Uint168{}
-					p.history.Append(height, func() {
-						proposal.ProposalOwner = v.Proposal.NewOwnerPublicKey
-						if v.Proposal.Recipient != emptyUint168 {
-							proposal.Recipient = v.Proposal.Recipient
-						}
-					}, func() {
-						proposal.ProposalOwner = v.Proposal.OwnerPublicKey
-						proposal.Recipient = originRecipient
-					})
-				}
-				if v.Proposal.ProposalType == payload.CloseProposal {
-					closeProposal := p.Proposals[v.Proposal.CloseProposalHash]
-					unusedAmount += getProposalUnusedBudgetAmount(closeProposal)
-					p.terminatedProposal(closeProposal, height)
-				}
-				p.dealProposal(v, height)
+				p.dealProposal(v, &unusedAmount, height)
 			}
 		}
 	}
@@ -305,17 +286,33 @@ func (p *ProposalManager) transferRegisteredState(proposalState *ProposalState,
 	return
 }
 
-func (p *ProposalManager) dealProposal(proposalState *ProposalState, height uint32) {
-	oriSecretaryGeneralPublicKey := p.SecretaryGeneralPublicKey
-	p.history.Append(height, func() {
-		if proposalState.Proposal.ProposalType == payload.SecretaryGeneral {
+func (p *ProposalManager) dealProposal(proposalState *ProposalState, unusedAmount *common.Fixed64, height uint32) {
+	switch proposalState.Proposal.ProposalType {
+	case payload.ChangeProposalOwner:
+		proposal := p.getProposal(proposalState.Proposal.PreviousHash)
+		originRecipient := proposal.Recipient
+		emptyUint168 := common.Uint168{}
+		p.history.Append(height, func() {
+			proposal.ProposalOwner = proposalState.Proposal.NewOwnerPublicKey
+			if proposalState.Proposal.Recipient != emptyUint168 {
+				proposal.Recipient = proposalState.Proposal.Recipient
+			}
+		}, func() {
+			proposal.ProposalOwner = proposalState.Proposal.OwnerPublicKey
+			proposal.Recipient = originRecipient
+		})
+	case payload.CloseProposal:
+		closeProposal := p.Proposals[proposalState.Proposal.CloseProposalHash]
+		*unusedAmount += getProposalUnusedBudgetAmount(closeProposal)
+		p.terminatedProposal(closeProposal, height)
+	case payload.SecretaryGeneral:
+		oriSecretaryGeneralPublicKey := p.SecretaryGeneralPublicKey
+		p.history.Append(height, func() {
 			p.SecretaryGeneralPublicKey = common.BytesToHexString(proposalState.Proposal.SecretaryGeneralPublicKey)
-		}
-	}, func() {
-		if proposalState.Proposal.ProposalType == payload.SecretaryGeneral {
+		}, func() {
 			p.SecretaryGeneralPublicKey = oriSecretaryGeneralPublicKey
-		}
-	})
+		})
+	}
 }
 
 // transferCRAgreedState will transfer CRAgreed state by votes' reject amount.

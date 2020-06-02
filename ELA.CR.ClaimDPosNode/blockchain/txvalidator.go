@@ -1819,8 +1819,6 @@ func getCode(publicKey []byte) ([]byte, error) {
 			return redeemScript, nil
 		}
 	}
-	//<<<<<<< HEAD
-	//=======
 }
 
 func getDiDFromPublicKey(publicKey []byte) (*common.Uint168, error) {
@@ -1829,7 +1827,6 @@ func getDiDFromPublicKey(publicKey []byte) (*common.Uint168, error) {
 	} else {
 		return getDIDFromCode(code)
 	}
-	//>>>>>>> Add change secretary general proposal transaction
 }
 
 func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
@@ -2369,18 +2366,8 @@ func (b *BlockChain) checkProposalCRCouncilMemberSign(crcProposal *payload.CRCPr
 
 	return nil
 }
-func (b *BlockChain) checkChangeSecretaryGeneralProposalTx(crcProposal *payload.CRCProposal, blockHeight uint32) error {
+func (b *BlockChain) checkChangeSecretaryGeneralProposalTx(crcProposal *payload.CRCProposal) error {
 	// The number of the proposals of the committee can not more than 128
-	if b.crCommittee.IsProposalFull(crcProposal.CRCouncilMemberDID) {
-		return errors.New("proposal is full")
-	}
-	// Check draft hash of proposal.
-	if b.crCommittee.ExistDraft(crcProposal.DraftHash) {
-		return errors.New("duplicated draft proposal hash")
-	}
-	if !b.crCommittee.IsProposalAllowed(blockHeight) {
-		return errors.New("ChangeSecretaryGeneralProposal tx must InElectionPeriod and not during voting period")
-	}
 	var ownerCode []byte
 	var ownerDID *common.Uint168
 	var err error
@@ -2427,210 +2414,89 @@ func (b *BlockChain) checkChangeSecretaryGeneralProposalTx(crcProposal *payload.
 	return nil
 }
 
-func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
-	blockHeight uint32, proposalsUsedAmount common.Fixed64) error {
-	proposal, ok := txn.Payload.(*payload.CRCProposal)
-	if !ok {
-		return errors.New("invalid payload")
+func (b *BlockChain) checkCloseProposal(proposal *payload.CRCProposal) error {
+	pk, err := crypto.DecodePoint(proposal.OwnerPublicKey)
+	if err != nil {
+		return errors.New("DecodePoint from OwnerPublicKey error")
 	}
-	if proposal.ProposalType == payload.SecretaryGeneral {
-		return b.checkChangeSecretaryGeneralProposalTx(proposal, blockHeight)
+	redeemScript, err := contract.CreateStandardRedeemScript(pk)
+	if err != nil {
+		return errors.New("CreateStandardRedeemScript from OwnerPublicKey error")
 	}
-
-	if !b.crCommittee.IsProposalAllowed(blockHeight - 1) {
-		return errors.New("cr proposal tx must not during voting period")
+	didCode := append(redeemScript[:len(redeemScript)-1], common.DID)
+	ct, err := contract.CreateCRIDContractByCode(didCode)
+	if err != nil {
+		return errors.New("CreateCRIDContractByCode from OwnerPublicKey error")
 	}
+	ownerDid := ct.ToProgramHash()
+	ownerMember := b.crCommittee.GetMember(*ownerDid)
 
-	// Check type of proposal.
-	if proposal.ProposalType.Name() == "Unknown" {
-		return errors.New("type of proposal should be known")
+	if ownerMember == nil {
+		return errors.New("CloseProposal owner should be one of the CR members")
 	}
-
-	if len(proposal.CategoryData) > MaxCategoryDataStringLength {
-		return errors.New("the Proposal category data cannot be more than 4096 characters")
+	if ownerMember.MemberState != crstate.MemberElected {
+		return errors.New("CloseProposal owner should be an of the elected CR members")
 	}
-
-	if len(proposal.Budgets) > MaxBudgetsCount {
-		return errors.New("budgets exceeded the maximum limit")
+	if ps := b.crCommittee.GetProposal(proposal.CloseProposalHash); ps == nil {
+		return errors.New("CloseProposalHash does not exist")
+	} else if ps.Status != crstate.VoterAgreed {
+		return errors.New("CloseProposalHash has to be voterAgreed")
 	}
+	if len(proposal.Budgets) > 0 {
+		return errors.New("CloseProposal cannot have budget")
+	}
+	emptyUint168 := common.Uint168{}
+	if proposal.Recipient != emptyUint168 {
+		return errors.New("CloseProposal recipient must be empty")
+	}
+	CRCouncilMember := b.crCommittee.GetMember(proposal.CRCouncilMemberDID)
+	return b.checkOwnerAndCRCouncilMemberSign(proposal, CRCouncilMember.Info.Code)
+}
 
-	if proposal.ProposalType == payload.ChangeProposalOwner {
-		proposalState := b.crCommittee.GetProposal(proposal.PreviousHash)
-		if proposalState == nil {
-			return errors.New("proposal doesn't exist")
-		}
-		if proposalState.Status != crstate.VoterAgreed {
-			return errors.New("proposal status is not VoterAgreed")
-		}
-
-		publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
-		if err != nil {
-			return errors.New("invalid owner")
-		}
-
-		newPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
-		if err != nil {
-			return errors.New("invalid owner")
-		}
-
-		if newPublicKey == publicKey {
-			return errors.New("cr new did must be different from the previous one")
-		}
-
-		newCode, err := contract.CreateStandardRedeemScript(newPublicKey)
-		if err != nil {
-			return errors.New("invalid owner")
-		}
-		did, err := getDIDByCode(newCode)
-		if err != nil {
-			return errors.New("invalid owner code")
-		}
-		crMember := b.crCommittee.GetMember(*did)
-		if crMember == nil {
-			return errors.New("proposal sponsors must be members")
-		}
-
-		if crMember.MemberState != crstate.MemberElected {
-			return errors.New("cr members should be elected")
-		}
+func (b *BlockChain) checkChangeProposalOwner(proposal *payload.CRCProposal) error {
+	proposalState := b.crCommittee.GetProposal(proposal.PreviousHash)
+	if proposalState == nil {
+		return errors.New("proposal doesn't exist")
+	}
+	if proposalState.Status != crstate.VoterAgreed {
+		return errors.New("proposal status is not VoterAgreed")
 	}
 
-	if proposal.ProposalType == payload.ELIP {
-		if len(proposal.Budgets) != ELIPBudgetsCount {
-			return errors.New("ELIP needs to have and only have two budget")
-		}
-		for _, budget := range proposal.Budgets {
-			if budget.Type == payload.NormalPayment {
-				return errors.New("ELIP needs to have no normal payment")
-			}
-		}
+	publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
 	}
 
-	if proposal.ProposalType == payload.CloseProposal {
-		pk, err := crypto.DecodePoint(proposal.OwnerPublicKey)
-		if err != nil {
-			return errors.New("DecodePoint from OwnerPublicKey error")
-		}
-		redeemScript, err := contract.CreateStandardRedeemScript(pk)
-		if err != nil {
-			return errors.New("CreateStandardRedeemScript from OwnerPublicKey error")
-		}
-		didCode := append(redeemScript[:len(redeemScript)-1], common.DID)
-		ct, err := contract.CreateCRIDContractByCode(didCode)
-		if err != nil {
-			return errors.New("CreateCRIDContractByCode from OwnerPublicKey error")
-		}
-		ownerDid := ct.ToProgramHash()
-		ownerMember := b.crCommittee.GetMember(*ownerDid)
-
-		if ownerMember == nil {
-			return errors.New("CloseProposal owner should be one of the CR members")
-		}
-		if ownerMember.MemberState != crstate.MemberElected {
-			return errors.New("CloseProposal owner should be an of the elected CR members")
-		}
-		if ps := b.crCommittee.GetProposal(proposal.CloseProposalHash); ps == nil {
-			return errors.New("CloseProposalHash does not exist")
-		} else if ps.Status != crstate.VoterAgreed {
-			return errors.New("CloseProposalHash has to be voterAgreed")
-		}
-		if len(proposal.Budgets) > 0 {
-			return errors.New("CloseProposal cannot have budget")
-		}
-		emptyUint168 := common.Uint168{}
-		if proposal.Recipient != emptyUint168 {
-			return errors.New("CloseProposal recipient must be empty")
-		}
+	newPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
 	}
 
-	if proposal.ProposalType != payload.CloseProposal {
-		// Check budgets of proposal
-		if len(proposal.Budgets) < 1 {
-			return errors.New("a proposal cannot be without a Budget")
-		}
-		budgets := make([]payload.Budget, len(proposal.Budgets))
-		for i, budget := range proposal.Budgets {
-			budgets[i] = budget
-		}
-		sort.Slice(budgets, func(i, j int) bool {
-			return budgets[i].Stage < budgets[j].Stage
-		})
-		if budgets[0].Type == payload.Imprest && budgets[0].Stage != 0 {
-			return errors.New("proposal imprest can only be in the first phase")
-		}
-		if budgets[0].Type != payload.Imprest && budgets[0].Stage != 1 {
-			return errors.New("the first general type budget needs to start at the beginning")
-		}
-		if budgets[len(budgets)-1].Type != payload.FinalPayment {
-			return errors.New("proposal final payment can only be in the last phase")
-		}
-		stage := budgets[0].Stage
-		var amount common.Fixed64
-		var imprestPaymentCount int
-		var finalPaymentCount int
-		for _, b := range budgets {
-			switch b.Type {
-			case payload.Imprest:
-				imprestPaymentCount++
-			case payload.NormalPayment:
-			case payload.FinalPayment:
-				finalPaymentCount++
-			default:
-				return errors.New("type of budget should be known")
-			}
-			if b.Stage != stage {
-				return errors.New("the first phase starts incrementing")
-			}
-			if b.Amount < 0 {
-				return errors.New("invalid amount")
-			}
-			stage++
-			amount += b.Amount
-		}
-		if imprestPaymentCount > 1 {
-			return errors.New("imprest payment count invalid")
-		}
-		if finalPaymentCount != 1 {
-			return errors.New("final payment count invalid")
-		}
-		if amount > b.crCommittee.CRCCurrentStageAmount*CRCProposalBudgetsPercentage/100 {
-			return errors.New("budgets exceeds 10% of CRC committee balance")
-		} else if amount > b.crCommittee.CRCCurrentStageAmount-
-			b.crCommittee.CRCCommitteeUsedAmount-proposalsUsedAmount {
-			return errors.New("budgets exceeds the balance of CRC committee")
-		} else if amount < 0 {
-			return errors.New("budgets is invalid")
-		}
-		emptyUint168 := common.Uint168{}
-		if proposal.Recipient == emptyUint168 {
-			return errors.New("recipient is empty")
-		}
-		prefix := contract.GetPrefixType(proposal.Recipient)
-		if prefix != contract.PrefixStandard && prefix != contract.PrefixMultiSig {
-			return errors.New("invalid recipient prefix")
-		}
-		_, err := proposal.Recipient.ToAddress()
-		if err != nil {
-			return errors.New("invalid recipient")
-		}
+	if newPublicKey == publicKey {
+		return errors.New("cr new did must be different from the previous one")
 	}
-	// The number of the proposals of the committee can not more than 128
-	if b.crCommittee.IsProposalFull(proposal.CRCouncilMemberDID) {
-		return errors.New("proposal is full")
+
+	newCode, err := contract.CreateStandardRedeemScript(newPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
 	}
-	// Check draft hash of proposal.
-	if b.crCommittee.ExistDraft(proposal.DraftHash) {
-		return errors.New("duplicated draft proposal hash")
+	did, err := getDIDByCode(newCode)
+	if err != nil {
+		return errors.New("invalid owner code")
 	}
-	// Check CR Council Member DID of proposal.
-	crMember := b.crCommittee.GetMember(proposal.CRCouncilMemberDID)
+	crMember := b.crCommittee.GetMember(*did)
 	if crMember == nil {
-		return errors.New("CR Council Member should be one of the CR members")
-	}
-	if crMember.MemberState != crstate.MemberElected {
-		return errors.New("CR Council Member should be an elected CR members")
+		return errors.New("proposal sponsors must be members")
 	}
 
+	if crMember.MemberState != crstate.MemberElected {
+		return errors.New("cr members should be elected")
+	}
+	crCouncilMember := b.crCommittee.GetMember(proposal.CRCouncilMemberDID)
+	return b.checkOwnerAndCRCouncilMemberSign(proposal, crCouncilMember.Info.Code)
+}
+
+func (b *BlockChain) checkOwnerAndCRCouncilMemberSign(proposal *payload.CRCProposal, crMemberCode []byte) error {
 	// Check signature of owner.
 	publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
 	if err != nil {
@@ -2657,11 +2523,144 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if err = proposal.CRCouncilMemberDID.Serialize(signedBuf); err != nil {
 		return errors.New("failed to write CR Council Member's DID")
 	}
-	if err = checkCRTransactionSignature(proposal.CRCouncilMemberSignature, crMember.Info.Code,
+	if err = checkCRTransactionSignature(proposal.CRCouncilMemberSignature, crMemberCode,
 		signedBuf.Bytes()); err != nil {
 		return errors.New("failed to check CR Council Member signature")
 	}
+	return nil
+}
 
+func (b *BlockChain) checkNormalOrELIPProposal(proposal *payload.CRCProposal, proposalsUsedAmount common.Fixed64) error {
+	if proposal.ProposalType == payload.ELIP {
+		if len(proposal.Budgets) != ELIPBudgetsCount {
+			return errors.New("ELIP needs to have and only have two budget")
+		}
+		for _, budget := range proposal.Budgets {
+			if budget.Type == payload.NormalPayment {
+				return errors.New("ELIP needs to have no normal payment")
+			}
+		}
+	}
+	// Check budgets of proposal
+	if len(proposal.Budgets) < 1 {
+		return errors.New("a proposal cannot be without a Budget")
+	}
+	budgets := make([]payload.Budget, len(proposal.Budgets))
+	for i, budget := range proposal.Budgets {
+		budgets[i] = budget
+	}
+	sort.Slice(budgets, func(i, j int) bool {
+		return budgets[i].Stage < budgets[j].Stage
+	})
+	if budgets[0].Type == payload.Imprest && budgets[0].Stage != 0 {
+		return errors.New("proposal imprest can only be in the first phase")
+	}
+	if budgets[0].Type != payload.Imprest && budgets[0].Stage != 1 {
+		return errors.New("the first general type budget needs to start at the beginning")
+	}
+	if budgets[len(budgets)-1].Type != payload.FinalPayment {
+		return errors.New("proposal final payment can only be in the last phase")
+	}
+	stage := budgets[0].Stage
+	var amount common.Fixed64
+	var imprestPaymentCount int
+	var finalPaymentCount int
+	for _, b := range budgets {
+		switch b.Type {
+		case payload.Imprest:
+			imprestPaymentCount++
+		case payload.NormalPayment:
+		case payload.FinalPayment:
+			finalPaymentCount++
+		default:
+			return errors.New("type of budget should be known")
+		}
+		if b.Stage != stage {
+			return errors.New("the first phase starts incrementing")
+		}
+		if b.Amount < 0 {
+			return errors.New("invalid amount")
+		}
+		stage++
+		amount += b.Amount
+	}
+	if imprestPaymentCount > 1 {
+		return errors.New("imprest payment count invalid")
+	}
+	if finalPaymentCount != 1 {
+		return errors.New("final payment count invalid")
+	}
+	if amount > b.crCommittee.CRCCurrentStageAmount*CRCProposalBudgetsPercentage/100 {
+		return errors.New("budgets exceeds 10% of CRC committee balance")
+	} else if amount > b.crCommittee.CRCCurrentStageAmount-
+		b.crCommittee.CRCCommitteeUsedAmount-proposalsUsedAmount {
+		return errors.New("budgets exceeds the balance of CRC committee")
+	} else if amount < 0 {
+		return errors.New("budgets is invalid")
+	}
+	emptyUint168 := common.Uint168{}
+	if proposal.Recipient == emptyUint168 {
+		return errors.New("recipient is empty")
+	}
+	prefix := contract.GetPrefixType(proposal.Recipient)
+	if prefix != contract.PrefixStandard && prefix != contract.PrefixMultiSig {
+		return errors.New("invalid recipient prefix")
+	}
+	_, err := proposal.Recipient.ToAddress()
+	if err != nil {
+		return errors.New("invalid recipient")
+	}
+	crCouncilMember := b.crCommittee.GetMember(proposal.CRCouncilMemberDID)
+	return b.checkOwnerAndCRCouncilMemberSign(proposal, crCouncilMember.Info.Code)
+}
+
+func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
+	blockHeight uint32, proposalsUsedAmount common.Fixed64) error {
+	proposal, ok := txn.Payload.(*payload.CRCProposal)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+	// The number of the proposals of the committee can not more than 128
+	if b.crCommittee.IsProposalFull(proposal.CRCouncilMemberDID) {
+		return errors.New("proposal is full")
+	}
+	// Check draft hash of proposal.
+	if b.crCommittee.ExistDraft(proposal.DraftHash) {
+		return errors.New("duplicated draft proposal hash")
+	}
+
+	if !b.crCommittee.IsProposalAllowed(blockHeight - 1) {
+		return errors.New("cr proposal tx must not during voting period")
+	}
+	if len(proposal.CategoryData) > MaxCategoryDataStringLength {
+		return errors.New("the Proposal category data cannot be more than 4096 characters")
+	}
+	if len(proposal.Budgets) > MaxBudgetsCount {
+		return errors.New("budgets exceeded the maximum limit")
+	}
+	// Check type of proposal.
+	if proposal.ProposalType.Name() == "Unknown" {
+		return errors.New("type of proposal should be known")
+	}
+	//CRCouncilMemberDID must MemberElected cr member
+	// Check CR Council Member DID of proposal.
+	crMember := b.crCommittee.GetMember(proposal.CRCouncilMemberDID)
+	if crMember == nil {
+		return errors.New("CR Council Member should be one of the CR members")
+	}
+	if crMember.MemberState != crstate.MemberElected {
+		return errors.New("CR Council Member should be an elected CR members")
+	}
+	switch proposal.ProposalType {
+	case payload.ChangeProposalOwner:
+		return b.checkChangeProposalOwner(proposal)
+	case payload.CloseProposal:
+		return b.checkCloseProposal(proposal)
+	case payload.SecretaryGeneral:
+		return b.checkChangeSecretaryGeneralProposalTx(proposal)
+	default:
+		return b.checkNormalOrELIPProposal(proposal, proposalsUsedAmount)
+	}
 	return nil
 }
 
