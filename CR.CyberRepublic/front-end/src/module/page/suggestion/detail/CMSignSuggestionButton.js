@@ -68,9 +68,6 @@ class CMSignSuggestionButton extends Component {
     }
     if (rs && rs.success === false) {
       this.clearTimerList()
-      if (rs.proposer === false) {
-        return
-      }
       if (rs.message) {
         message.error(rs.message)
       } else {
@@ -87,8 +84,9 @@ class CMSignSuggestionButton extends Component {
     const { user } = this.props
     if (user && user.did && user.did.id) {
       this.setState({ isBound: true, visible: true })
-      //clear timer
-      this.clearTimerList()
+      if (this.timerList.length) {
+        return
+      }
       await this.sleep(5000)
       this.pollingProposalState()
     } else {

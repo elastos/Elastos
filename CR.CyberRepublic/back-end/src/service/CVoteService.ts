@@ -132,18 +132,9 @@ export default class extends Base {
         const db_suggestion = this.getDBModel('Suggestion')
         const suggestion = await db_suggestion.findById(id)
         if (suggestion) {
-            if (!_.isEmpty(suggestion.reference)) {
-                return {
-                    success: false,
-                    message: 'This suggestion had been made into a proposal.'
-                }
-            }
             const proposers = _.get(suggestion, 'proposers')
             // make sure current council member had signed
             const currentProposer = proposers && proposers.filter(item => item.proposalHash && item.did === did)[0]
-            if (!currentProposer) {
-                return { success: false, proposer: false }
-            }
             if (currentProposer) {
                 // draft hash is a constant
                 const draftHash = _.get(suggestion, 'draftHash')
