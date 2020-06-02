@@ -374,6 +374,10 @@ func (tx *Transaction) IsCRCAppropriationTx() bool {
 	return tx.TxType == CRCAppropriation
 }
 
+func (tx *Transaction) IsCRCProposalRealWithdrawTx() bool {
+	return tx.TxType == CRCProposalRealWithdraw
+}
+
 func (tx *Transaction) IsUpdateCRTx() bool {
 	return tx.TxType == UpdateCR
 }
@@ -556,6 +560,8 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.CRCAppropriation)
 	case CRAssetsRectify:
 		p = new(payload.CRAssetsRectify)
+	case CRCProposalRealWithdraw:
+		p = new(payload.CRCProposalRealWithdraw)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

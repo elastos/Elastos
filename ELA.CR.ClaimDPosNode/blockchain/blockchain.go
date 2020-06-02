@@ -492,6 +492,10 @@ func (b *BlockChain) CreateCRRealWithdrawTransaction(
 		WithdrawTransactionHashes: withdrawTransactionHashes,
 	}
 
+	for _, v := range outputs {
+		v.Amount -= RealWithdrawSingleFee
+	}
+
 	var tx *Transaction
 	tx, err = b.createTransaction(payload, CRCProposalRealWithdraw,
 		b.chainParams.CRAsstesAddress, Fixed64(RealWithdrawSingleFee), uint32(0), utxos, outputs...)

@@ -968,7 +968,7 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 			}
 			return nil
 		}
-	case CRCAppropriation, CRAssetsRectify:
+	case CRCAppropriation, CRAssetsRectify, CRCProposalRealWithdraw:
 		if len(tx.Programs) != 0 {
 			return errors.New("CRCAppropriation txs should have no programs")
 		}
@@ -1020,7 +1020,7 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 
 func checkTransactionSignature(tx *Transaction, references map[*Input]Output) error {
 	programHashes, err := GetTxProgramHashes(tx, references)
-	if tx.IsCRCProposalWithdrawTx() && tx.PayloadVersion == payload.CRCProposalWithdrawDefault {
+	if (tx.IsCRCProposalWithdrawTx() && tx.PayloadVersion == payload.CRCProposalWithdrawDefault) || tx.IsCRAssetsRectifyTx() || tx.IsCRCProposalRealWithdrawTx() {
 		return nil
 	}
 	if err != nil {
@@ -1072,6 +1072,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.CRCProposalTracking:
 	case *payload.CRCAppropriation:
 	case *payload.CRAssetsRectify:
+	case *payload.CRCProposalRealWithdraw:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -1112,7 +1113,6 @@ func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) 
 			return errors.New("not support before CRCommitteeStartHeight")
 		}
 		if txn.TxType == CRCProposalWithdraw {
-
 			if txn.PayloadVersion == payload.CRCProposalWithdrawDefault && blockHeight >= b.chainParams.CRCProposalWithdrawPayloadV1Height {
 				return errors.New("not support after CRCProposalWithdrawPayloadV1Height")
 			}
