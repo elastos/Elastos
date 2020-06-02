@@ -37,7 +37,7 @@ export default class extends Base {
         return _.map(result, (o: any) => {
             let dateObj = {}
             if (o.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
-                dateObj['endDate'] = o.startDate && moment(o.startDate).unix()
+                dateObj['startDate'] = o.startDate && moment(o.startDate).unix()
             }
             if (o.status === constant.TERM_COUNCIL_STATUS.HISTORY) {
                 dateObj['endDate'] = o.endDate && moment(o.endDate).unix()
