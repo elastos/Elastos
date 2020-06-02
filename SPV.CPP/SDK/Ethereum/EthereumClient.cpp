@@ -34,7 +34,7 @@ namespace Elastos {
 			_storagePath(storagePath) {
 
 			_ewm = EthereumEWMPtr(
-				new EthereumEWM(this, EthereumEWM::Mode::API_ONLY, network, _storagePath, payperKey, EnglishWordLists));
+				new EthereumEWM(this, EthereumEWM::Mode::P2P_ONLY, network, _storagePath, payperKey, EnglishWordLists));
 
 		}
 
@@ -50,23 +50,36 @@ namespace Elastos {
 											const std::string &data,
 											int rid) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("from: {}", from);
+			ArgInfo("to: {}", to);
+			ArgInfo("amount: {}", amount);
+			ArgInfo("data: {}", data);
+			ArgInfo("rid: {}", rid);
 
 		}
 
 		void EthereumClient::getBalance(BREthereumWallet wid, const std::string &address, int rid) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("address: {}", address);
+			ArgInfo("rid: {}", rid);
 
 		}
 
 		void EthereumClient::submitTransaction(BREthereumWallet wid, BREthereumTransfer tid, const std::string &rawTransaction,
 											   int rid) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("rawTx: {}", rawTransaction);
+			ArgInfo("rid: {}", rid);
 
 		}
 
 		void EthereumClient::getTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber,
 											 int rid) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("address: {}", address);
+			ArgInfo("begBlockNumber: {}", begBlockNumber);
+			ArgInfo("endBlockNumber: {}", endBlockNumber);
+			ArgInfo("rid: {}", rid);
 
 		}
 
@@ -77,6 +90,11 @@ namespace Elastos {
 									 uint64_t endBlockNumber,
 									 int rid) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("contract: {}", contract);
+			ArgInfo("address: {}", address);
+			ArgInfo("event: {}", event);
+			ArgInfo("begBlockNumber: {}", begBlockNumber);
+			ArgInfo("endBlockNumber: {}", endBlockNumber);
 
 		}
 
@@ -86,33 +104,48 @@ namespace Elastos {
 									   uint64_t blockNumberStop,
 									   int rid) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("address: {}", address);
+			ArgInfo("interests: {}", interests);
+			ArgInfo("blockNumberStart: {}", blockNumberStart);
+			ArgInfo("blockNumberStop: {}", blockNumberStop);
+			ArgInfo("rid: {}", rid);
 
 		}
 
 		void EthereumClient::getTokens(int rid) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("rid: {}", rid);
 
 		}
 
 		void EthereumClient::getBlockNumber(int rid) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("rid: {}", rid);
 
 		}
 
 		void EthereumClient::getNonce(const std::string &address, int rid) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("address: {}", address);
+			ArgInfo("rid: {}", rid);
 
 		}
 
 		void EthereumClient::handleEWMEvent(EthereumEWM::EWMEvent event, EthereumEWM::Status status,
 											const std::string &errorDescription) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("event: {}", event);
+			ArgInfo("status: {}", status);
+			ArgInfo("errorDesc: {}", errorDescription);
 
 		}
 
 		void EthereumClient::handlePeerEvent(EthereumEWM::PeerEvent event, EthereumEWM::Status status,
 											 const std::string &errorDescription) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("event: {}", event);
+			ArgInfo("status: {}", status);
+			ArgInfo("errorDesc: {}", errorDescription);
 
 		}
 
@@ -120,11 +153,15 @@ namespace Elastos {
 											   EthereumEWM::WalletEvent event, EthereumEWM::Status status,
 											   const std::string &errorDescription) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("event: {}", event);
+			ArgInfo("status: {}", status);
+			ArgInfo("errorDesc: {}", errorDescription);
 
 		}
 
 		void EthereumClient::handleTokenEvent(const EthereumTokenPtr &token, EthereumEWM::TokenEvent event) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("event: {}", event);
 
 		}
 
@@ -132,6 +169,9 @@ namespace Elastos {
 											  EthereumEWM::BlockEvent event, EthereumEWM::Status status,
 											  const std::string &errorDescription) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("event: {}", event);
+			ArgInfo("status: {}", status);
+			ArgInfo("errorDesc: {}", errorDescription);
 
 		}
 
@@ -140,6 +180,9 @@ namespace Elastos {
 												 EthereumEWM::TransactionEvent event, EthereumEWM::Status status,
 												 const std::string &errorDescription) {
 			ArgInfo("{}", GetFunName());
+			ArgInfo("event: {}", event);
+			ArgInfo("status: {}", status);
+			ArgInfo("errorDesc: {}", errorDescription);
 
 		}
 

@@ -47,14 +47,18 @@ namespace Elastos {
 									  const char *data, int id) {
 			if (NULL == context) return;
 			EthereumEWM *c = (EthereumEWM *) context;
-			c->trampolineGetGasEstimate(node, wid, tid, from, to, amount, data, id);
+			c->trampolineGetGasEstimate(node, wid, tid,
+										from ? from : "",
+										to ? to : "",
+										amount ? amount : "",
+										data ? data : "", id);
 		}
 
 		static void clientGetBalance(BREthereumClientContext context, BREthereumEWM node,
 									 BREthereumWallet wid, const char *account, int id) {
 			if (NULL == context) return;
 			EthereumEWM *c = (EthereumEWM *) context;
-			c->trampolineGetBalance(node, wid, account, id);
+			c->trampolineGetBalance(node, wid, account ? account : "", id);
 		}
 
 		static void clientSubmitTransaction(BREthereumClientContext context, BREthereumEWM node,
@@ -62,7 +66,7 @@ namespace Elastos {
 											const char *transaction, int id) {
 			if (NULL == context) return;
 			EthereumEWM *c = (EthereumEWM *) context;
-			c->trampolineSubmitTransaction(node, wid, tid, transaction, id);
+			c->trampolineSubmitTransaction(node, wid, tid, transaction ? transaction : "", id);
 		}
 
 		static void clientGetTransactions(BREthereumClientContext context, BREthereumEWM node,
@@ -70,7 +74,7 @@ namespace Elastos {
 										  int id) {
 			if (NULL == context) return;
 			EthereumEWM *c = (EthereumEWM *) context;
-			c->trampolineGetTransactions(node, address, begBlockNumber, endBlockNumber, id);
+			c->trampolineGetTransactions(node, address ? address : "", begBlockNumber, endBlockNumber, id);
 		}
 
 		static void clientGetLogs(BREthereumClientContext context, BREthereumEWM node,
@@ -78,7 +82,10 @@ namespace Elastos {
 								  uint64_t begBlockNumber, uint64_t endBlockNumber, int rid) {
 			if (NULL == context) return;
 			EthereumEWM *c = (EthereumEWM *) context;
-			c->trampolineGetLogs(node, contract, address, event, begBlockNumber, endBlockNumber, rid);
+			c->trampolineGetLogs(node, contract ? contract : "",
+								 address ? address : "",
+								 event ? event : "",
+								 begBlockNumber, endBlockNumber, rid);
 		}
 
 		static void clientGetBlocks(BREthereumClientContext context, BREthereumEWM ewm,
@@ -86,7 +93,8 @@ namespace Elastos {
 									uint64_t blockNumberStart, uint64_t blockNumberStop, int rid) {
 			if (NULL == context) return;
 			EthereumEWM *c = (EthereumEWM *) context;
-			c->trampolineGetBlocks(ewm, address, interests, blockNumberStart, blockNumberStop, rid);
+			c->trampolineGetBlocks(ewm, address ? address : "",
+								   interests, blockNumberStart, blockNumberStop, rid);
 		}
 
 		static void clientGetTokens(BREthereumClientContext context, BREthereumEWM ewm, int rid) {
@@ -105,7 +113,7 @@ namespace Elastos {
 		static void clientGetNonce(BREthereumClientContext context, BREthereumEWM node, const char *address, int id) {
 			if (NULL == context) return;
 			EthereumEWM *c = (EthereumEWM *) context;
-			c->trampolineGetNonce(node, address, id);
+			c->trampolineGetNonce(node, address ? address : "", id);
 		}
 
 
@@ -113,7 +121,7 @@ namespace Elastos {
 										  BREthereumStatus status, const char *errorDescription) {
 			if (NULL == context) return;
 			EthereumEWM *c = (EthereumEWM *) context;
-			c->trampolineEWMEvent(ewm, event, status, errorDescription);
+			c->trampolineEWMEvent(ewm, event, status, errorDescription ? errorDescription : "");
 		}
 
 		static void clientPeerEventHandler(BREthereumClientContext context, BREthereumEWM ewm,
@@ -121,7 +129,7 @@ namespace Elastos {
 										   const char *errorDescription) {
 			if (NULL == context) return;
 			EthereumEWM *c = (EthereumEWM *) context;
-			c->trampolinePeerEvent(ewm, event, status, errorDescription);
+			c->trampolinePeerEvent(ewm, event, status, errorDescription ? errorDescription : "");
 		}
 
 		static void clientWalletEventHandler(BREthereumClientContext context, BREthereumEWM node,
@@ -129,7 +137,7 @@ namespace Elastos {
 											 BREthereumStatus status, const char *errorDescription) {
 			if (NULL == context) return;
 			EthereumEWM *c = (EthereumEWM *) context;
-			c->trampolineWalletEvent(node, wid, event, status, errorDescription);
+			c->trampolineWalletEvent(node, wid, event, status, errorDescription ? errorDescription : "");
 		}
 
 		static void clientTokenEventHandler(BREthereumClientContext context, BREthereumEWM ewm,
@@ -145,7 +153,7 @@ namespace Elastos {
 											   const char *errorDescription) {
 			if (NULL == context) return;
 			EthereumEWM *c = (EthereumEWM *) context;
-			c->trampolineTransferEvent(node, wid, tid, event, status, errorDescription);
+			c->trampolineTransferEvent(node, wid, tid, event, status, errorDescription ? errorDescription : "");
 		}
 
 		// Client Announcers

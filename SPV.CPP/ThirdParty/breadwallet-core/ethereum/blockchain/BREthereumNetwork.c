@@ -145,18 +145,21 @@ MainnetChainConfig = &ChainConfig{
 //
 static struct BREthereumNetworkRecord ethereumTestnetRecord = {
     "Testnet",
-    3,
+    21,
     EMPTY_HASH_INIT,
     EMPTY_HASH_INIT,
     // Seeds
-    {   "seed.ropsten.eth.brd.breadwallet.com",
-        "seed.ropsten.eth.community.breadwallet.com",
+    {   //"seed.ropsten.eth.brd.breadwallet.com",
+        //"seed.ropsten.eth.community.breadwallet.com",
         NULL },
 
     // Enodes
 
     // BRD
-    {   "enode://87ef58b88a9c7574eb870097675e26f78dcd958834bd768b678aa01eabd316c74df1ff01bfbe030c5b75878646df4108554434df61de591a2c6859e329bbacde@138.68.6.252:8888",
+    {   //"enode://87ef58b88a9c7574eb870097675e26f78dcd958834bd768b678aa01eabd316c74df1ff01bfbe030c5b75878646df4108554434df61de591a2c6859e329bbacde@138.68.6.252:8888",
+		"enode://5e1d6f9f74e33b2d1e2fda87efaf60a788b338c08eefd3a435e9c7de98645bc041421c27d9ed3927c7b5195febd691aff30de881842749f3030089df0e135232@3.208.184.54:20630",
+		"enode://30dc2b7986e2ec5902498ec26fad6fcecece617aa1652f227f684ede6a0939bb7a205ada1c91420d30b427c86bbdcc31fdfd6d955dd8f5854370f583025a0708@3.209.35.13:20630",
+		"enode://b0357d45e9070c1660f63f077e0e3b0054a18d93785589d498586b6e0b7ec7c5b39ef608e82e7280ca95019db7c36455275d98a3e8684916ba8f3a7aab4ad38b@3.210.227.193:20630",
         NULL },
     { NULL },
     { NULL },
@@ -184,7 +187,7 @@ TestnetChainConfig = &ChainConfig{
 //
 static struct BREthereumNetworkRecord ethereumRinkebyRecord = {
     "Rinkeby",
-    4,
+    22,
     EMPTY_HASH_INIT,
     EMPTY_HASH_INIT,
     // Seeds
@@ -192,7 +195,10 @@ static struct BREthereumNetworkRecord ethereumRinkebyRecord = {
 
     // Enodes
     
-    { NULL },
+    { "enode://fe44bc423f210805daad60cc5d308f449e9282c28a9aba91040d7c727cf5751d1ae9e85d32a430f4a6fe15c8eb52833a1747e8b28e6ed5ae291fdae32e6b9181@18.217.15.245:20630",
+	  "enode://777e2a86687d675c05344acc6e24cefbd3e233759e8b89d7b3d101aeffc89e6292f66a115c5bfc30f250c120e6a2354a7a6ea304439cfded706de1c9ade61abf@18.217.15.245:20630",
+	  "enode://deb84117dada6c2c8f9c5d9d44f749b6fbbefdc987a1611b683ead6e4e2ce8e0d05a196591a713376eee5d9c165d3888d2e175e8eb842e5a381f273c0268edca@18.217.15.245:20630",
+	  NULL },
     { NULL },
     { NULL },
     { NULL }

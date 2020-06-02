@@ -145,7 +145,7 @@ namespace Elastos {
 		}
 
 		void EthSidechainSubWallet::SyncStart() {
-
+			_client->_ewm->connect();
 		}
 
 		void EthSidechainSubWallet::SyncStop() {
