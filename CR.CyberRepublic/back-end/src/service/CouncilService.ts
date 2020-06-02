@@ -817,23 +817,31 @@ export default class extends Base {
                 councilMembers: [],
                 ..._.omit(data && data._doc, ['_id'])
             }
-            if(_.isEmpty(data)){
+
+            const startTime = await ela.getBlockByHeight(crRelatedStageStatus.ondutystartheight)
+            const endTime = await ela.getBlockByHeight(crRelatedStageStatus.votingstartheight)
+            if (status) {
+                const councilMembers = await updateUserInformation(newCouncilMembers)
+                doc['status'] = status
+                doc['startDate'] = new Date(startTime * 1000)
+                doc['councilMembers'] = councilMembers
+            }
+
+            if (_.isEmpty(data)) {
                 doc['index'] = index+1
                 await this.model.getDBInstance().create(doc)
                 return
             }
 
-            const startTime = await ela.getBlockByHeight(crRelatedStageStatus.ondutystartheight)
-            const endTime = await ela.getBlockByHeight(crRelatedStageStatus.votingstartheight)
-            if( status && data.status === constant.TERM_COUNCIL_STATUS.VOTING){
+            if (status && data.status === constant.TERM_COUNCIL_STATUS.VOTING) {
                 doc['status'] = status
                 doc['startDate'] = new Date(startTime * 1000)
             }
-            if ( status && data.status === constant.TERM_COUNCIL_STATUS.CURRENT) {
+            if (status && data.status === constant.TERM_COUNCIL_STATUS.CURRENT) {
                 doc['status'] = status
-                doc['endDate'] = startTime ? new Date(startTime * 1000) : new Date(endTime * 1000)
+                doc['endDate'] = crRelatedStageStatus.ondutystartheight !== 0 ? new Date(startTime * 1000) : new Date(endTime * 1000)
             }
-
+            
             if (!_.isEmpty(oldCouncilsByDID)) {
                 // update IMPEACHED status
                 if (data.status === constant.TERM_COUNCIL_STATUS.CURRENT) {
@@ -858,7 +866,7 @@ export default class extends Base {
         if(isOnduty) {
             if(isInVoting){
                 await updateInformation(listCrs.crmembersinfo, currentCrs, null)
-                await updateInformation(listCrs.crmembersinfo, votingCds, null)
+                await updateInformation(null, votingCds, null)
             } else {
                 if(currentCrs && votingCds){
                     await updateInformation(listCrs.crmembersinfo, votingCds, constant.TERM_COUNCIL_STATUS.CURRENT)
@@ -874,7 +882,8 @@ export default class extends Base {
                     await updateInformation(listCrs.crmembersinfo, currentCrs, null)
                 }
                 if(!currentCrs && !votingCds && !historyCrs){
-                    await updateInformation(listCrs.crmembersinfo,null,null)
+                    await updateInformation(listCrs.crmembersinfo,null,constant.TERM_COUNCIL_STATUS.CURRENT)
+                    await updateUserRole(listCrs.crmembersinfo, constant.USER_ROLE.COUNCIL)
                 }
             }
         }
