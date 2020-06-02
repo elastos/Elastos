@@ -65,6 +65,7 @@ import {
 } from './style'
 
 import './style.scss'
+import SignSuggestionModal from './SignSuggestionModal'
 
 const { TextArea } = Input
 
@@ -188,6 +189,7 @@ export default class extends StandardPage {
             </Row>
           </MediaQuery>
           {editForm}
+          <SignSuggestionModal />
         </Container>
         <Footer />
       </div>

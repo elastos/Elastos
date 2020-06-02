@@ -113,7 +113,10 @@ export default {
     cancel: '取消',
     pleaseUpdate: '请按照需求更新建议，并通过评论通知委员或社区',
     commentsFromCouncil: '来自委员或管理员的评论:',
-    consideration: '您确定要将此建议标记为委员会正在审议中？'
+    consideration: '您确定要将此建议标记为委员会正在审议中？',
+    signNotice: '您的建议签名之后，才能被委员审核。您不能修改签名后的建议。',
+    signNow: '签名',
+    signLater: '稍后'
   },
   tag: {
     show: '展示',

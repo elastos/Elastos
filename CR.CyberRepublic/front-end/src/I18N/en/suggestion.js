@@ -113,7 +113,10 @@ export default {
     cancel: 'Cancel',
     pleaseUpdate: 'Please update the Suggestion with the requested info and notify the council/community through a comment.',
     commentsFromCouncil: 'Comments from Council/Admin:',
-    consideration: 'Are you sure to mark this suggestion as under council consideration?'
+    consideration: 'Are you sure to mark this suggestion as under council consideration?',
+    signNotice: 'Ready for council members to review? Please sign the suggestion now. A suggestion can not be edited if it was signed.',
+    signNow: 'Sign Now',
+    signLater: 'Later'
   },
   tag: {
     show: 'Show',

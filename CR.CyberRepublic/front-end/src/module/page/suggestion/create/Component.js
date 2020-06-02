@@ -47,7 +47,7 @@ export default class extends StandardPage {
     localStorage.removeItem(LOCALSTORAGE_DRAFT)
   }
 
-  onSaveDraft = model => {
+  onSaveDraft = (model) => {
     localStorage.setItem(LOCALSTORAGE_DRAFT, JSON.stringify(model))
   }
 
