@@ -12,6 +12,36 @@ class SignSuggestionModal extends Component {
       visible: true,
       message: ''
     }
+    this.timerOneList = []
+  }
+
+  clearTimerList = () => {
+    if (this.timerOneList && this.timerOneList.length) {
+      for (let timer of this.timerOneList) {
+        clearTimeout(timer)
+      }
+      this.timerOneList = []
+    }
+  }
+
+  pollingSignature = async () => {
+    const { id, getSignature } = this.props
+    const rs = await getSignature(id)
+    if (rs && rs.success) {
+      this.clearTimerList()
+      this.setState({ visible: false })
+    }
+    if (rs && rs.success === false) {
+      this.clearTimerList()
+      if (rs.message) {
+        message.error(rs.message)
+      } else {
+        message.error(I18N.get('suggestion.msg.exception'))
+      }
+      this.setState({ visible: false })
+    }
+     const timer = setTimeout(this.pollingSignature, 5000)
+     this.timerOneList.push(timer)
   }
 
   handleSign = async () => {
@@ -19,10 +49,15 @@ class SignSuggestionModal extends Component {
     const rs = await getSignatureUrl(id)
     if (rs && rs.success) {
       this.setState({ url: rs.url })
+      await this.pollingSignature()
     }
     if (rs && rs.success === false && rs.message) {
       this.setState({ message: rs.message })
     }
+  }
+
+  componentWillUnmount = () => {
+    this.clearTimerList()
   }
 
   elaQrCode = (url) => {

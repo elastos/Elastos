@@ -192,6 +192,7 @@ export default class extends StandardPage {
           <SignSuggestionModal
             id={detail._id}
             getSignatureUrl={this.props.getSignatureUrl}
+            getSignature={this.props.getSignature}
           />
         </Container>
         <Footer />

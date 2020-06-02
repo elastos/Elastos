@@ -106,7 +106,7 @@ class CMSignSuggestionButton extends Component {
     }
   }
 
-  componentWillUnmount = async () => {
+  componentWillUnmount = () => {
     this.clearTimerList()
   }
 
