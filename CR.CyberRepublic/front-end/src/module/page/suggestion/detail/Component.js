@@ -208,7 +208,9 @@ export default class extends StandardPage {
         <Col span={6}>
           <ItemTitle>{header}</ItemTitle>
         </Col>
-        <Col span={18} style={{wordBreak: "break-all"}}>{text}</Col>
+        <Col span={18} style={{ wordBreak: 'break-all' }}>
+          {text}
+        </Col>
       </Item>
     )
   }
@@ -637,6 +639,8 @@ export default class extends StandardPage {
             pollProposalState={pollProposalState}
             isProposed={isProposed}
             curProposer={_.get(detail, 'curProposer')}
+            user={this.props.user}
+            history={this.props.history}
           />
         </Col>
       )

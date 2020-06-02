@@ -1,17 +1,18 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Popover, Spin, message } from 'antd'
+import { Modal, Spin, message, Button } from 'antd'
 import QRCode from 'qrcode.react'
 import I18N from '@/I18N'
 import { StyledButton } from './style'
 
-class SignSuggestionButton extends Component {
+class CMSignSuggestionButton extends Component {
   constructor(props) {
     super(props)
     this.state = {
       url: '',
       visible: false,
-      loading: false
+      loading: false,
+      isBound: false
     }
     this.timerList = []
   }
@@ -30,7 +31,22 @@ class SignSuggestionButton extends Component {
   }
 
   elaQrCode = () => {
-    const { url } = this.state
+    const { url, isBound } = this.state
+    if (!isBound) {
+      return (
+        <Content>
+          <Notice>{I18N.get('suggestion.msg.associateDidFirst')}</Notice>
+          <Button
+            className="cr-btn cr-btn-primary"
+            onClick={() => {
+              this.props.history.push('/profile/info')
+            }}
+          >
+            {I18N.get('suggestion.btn.associateDid')}
+          </Button>
+        </Content>
+      )
+    }
     return (
       <Content>
         {url ? <QRCode value={url} size={400} /> : <Spin />}
@@ -68,10 +84,16 @@ class SignSuggestionButton extends Component {
   }
 
   handleSign = async () => {
-    //clear timer
-    this.clearTimerList()
-    await this.sleep(5000)
-    this.pollingProposalState()
+    const { user } = this.props
+    if (user && user.did && user.did.id) {
+      this.setState({ isBound: true, visible: true })
+      //clear timer
+      this.clearTimerList()
+      await this.sleep(5000)
+      this.pollingProposalState()
+    } else {
+      this.setState({ isBound: false, visible: true })
+    }
   }
 
   componentDidMount = async () => {
@@ -90,8 +112,8 @@ class SignSuggestionButton extends Component {
     this.clearTimerList()
   }
 
-  handleVisibleChange = (visible) => {
-    this.setState({ visible })
+  hideModal = () => {
+    this.setState({ visible: false })
   }
 
   render() {
@@ -110,13 +132,7 @@ class SignSuggestionButton extends Component {
       )
     }
     return (
-      <Popover
-        content={this.elaQrCode()}
-        trigger="click"
-        placement="top"
-        visible={visible}
-        onVisibleChange={this.handleVisibleChange}
-      >
+      <div>
         <StyledButton
           type="ebp"
           className="cr-btn cr-btn-default"
@@ -124,12 +140,20 @@ class SignSuggestionButton extends Component {
         >
           {I18N.get('suggestion.btn.makeIntoProposal')}
         </StyledButton>
-      </Popover>
+        <Modal
+          maskClosable={false}
+          visible={visible}
+          onCancel={this.hideModal}
+          footer={null}
+        >
+          {this.elaQrCode()}
+        </Modal>
+      </div>
     )
   }
 }
 
-export default SignSuggestionButton
+export default CMSignSuggestionButton
 
 const Content = styled.div`
   padding: 16px;
@@ -139,4 +163,9 @@ const Tip = styled.div`
   font-size: 14px;
   color: #000;
   margin-top: 16px;
+`
+const Notice = styled.div`
+  font-size: 16px;
+  color: #000;
+  margin-bottom: 24px;
 `

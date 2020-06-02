@@ -336,7 +336,7 @@ export default class extends StandardPage {
         width={400}
       >
         <div>
-          <div style={{marginBottom: 24}}>
+          <div style={{ marginBottom: 24, fontSize: 16, color: '#000' }}>
             {I18N.get('suggestion.msg.associateDidFirst')}
           </div>
           <Button
