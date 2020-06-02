@@ -379,6 +379,10 @@ var (
 		Name:  "crassetsrectifytransactionheight",
 		Usage: "defines the cr rectify transaction start height",
 	}
+	CRCProposalWithdrawPayloadV1Height = cli.StringFlag{
+		Name:  "crcproposalwithdrawpayloadv1height",
+		Usage: "defines the crc withdraw proposal payload type v1 accept height",
+	}
 )
 
 // MoveRPCFlags finds the rpc argument and moves it to the front
