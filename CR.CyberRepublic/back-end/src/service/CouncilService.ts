@@ -296,6 +296,7 @@ export default class extends Base {
             console.log('---------------- start council or secretariat cronJob -------------')
             await this.eachSecretariatJob()
             await this.eachCouncilJob()
+            await this.updateUserRoleJob()
         }, 1000 * 60 * 5)
     }
 
@@ -898,5 +899,35 @@ export default class extends Base {
                 await updateInformation(null, null, null)
             }
         }
+    }
+
+    public async updateUserRoleJob() {
+        const listCrs = await ela.currentCouncil()
+
+        const electedCouncils = _.filter(listCrs.crmembersinfo, (o: any) => status === constant.COUNCIL_STATUS.ELECTED)
+        const impeachedCouncils = _.filter(listCrs.crmembersinfo, (o: any) => status !== constant.COUNCIL_STATUS.ELECTED)
+
+        const electedDidList = _.map(electedCouncils, (o: any) => DID_PREFIX + o.did)
+        const impeachedDidList = _.map(impeachedCouncils, (o: any) => DID_PREFIX + o.did)
+
+
+        await this.model.getDBInstance().update(
+            {'did.id': {$in: electedDidList}},
+            {
+                $set: {status: constant.USER_ROLE.COUNCIL}
+            },
+            {
+                multi: true
+            }
+        )
+        await this.model.getDBInstance().update(
+            {'did.id': {$in: impeachedDidList}},
+            {
+                $set: {status: constant.USER_ROLE.MEMBER}
+            },
+            {
+                multi: true
+            }
+        )
     }
 }
