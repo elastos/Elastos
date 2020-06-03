@@ -1255,9 +1255,17 @@ export default class extends Base {
         const {id} = param
         const db_cvote = this.getDBModel('CVote')
         const userId = _.get(this.currentUser, '_id')
-        const proposal = await db_cvote.findOne({_id: id})
+        const proposal = await db_cvote.getDBInstance().findOne({_id: id})
+            .populate(
+                'voteResult.votedBy',
+                constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
+            )
+            .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+            .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+            .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
+            .populate('referenceElip', 'vid')
         if (proposal) {
-            const voteResult = _.filter(proposal.voteResult, (o: any) => userId.equals(o.votedBy))[0]
+            const voteResult = _.filter(proposal.voteResult, (o: any) => userId.equals(o.votedBy._id))[0]
             if (voteResult) {
                 const signature = _.get(voteResult, 'signature.data')
                 if (signature) {
