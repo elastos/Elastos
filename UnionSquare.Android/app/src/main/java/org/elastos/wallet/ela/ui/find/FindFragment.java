@@ -182,6 +182,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
     private void go2(CtDetailBean ctDetailBean) {
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         String type = dataBean.getType();
+        String name = dataBean.getDidName();
         String did = dataBean.getDid();
         String cid = dataBean.getCid();
         String status = dataBean.getStatus();
@@ -206,6 +207,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
         }
         Bundle bundle = new Bundle();
         bundle.putString("type", type);
+        bundle.putString("name", name);
         bundle.putString("did", did);
         bundle.putString("cid", cid);
         bundle.putString("status", status);

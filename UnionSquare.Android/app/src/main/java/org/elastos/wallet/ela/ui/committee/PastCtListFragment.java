@@ -76,6 +76,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
 
     String did;
     String type;
+    String name;
     String status;
     String cid;
     String depositAmount;
@@ -86,9 +87,9 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         did = data.getString("did");
         type = data.getString("type");
         status = data.getString("status");
+        name = data.getString("name");
         cid = data.getString("cid");
         depositAmount = data.getString("depositAmount");
-
     }
 
     @Override
@@ -151,7 +152,14 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
                 ISubWalletListEntity subWalletListEntity = (ISubWalletListEntity) baseEntity;
                 for (SubWallet subWallet : subWalletListEntity.getData()) {
                     if (subWallet.getChainId().equals(MyWallet.IDChain)) {
-                        addDIDPresenter.getAllPublicKeys(wallet.getWalletId(), MyWallet.IDChain, 0, 1, this);
+//                        addDIDPresenter.getAllPublicKeys(wallet.getWalletId(), MyWallet.IDChain, 0, 1, this);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("name", name);
+                        bundle.putString("status", status);
+                        bundle.putString("cid", cid);
+                        bundle.putString("depositAmount", depositAmount);
+                        bundle.putString("type", type);
+                        start(CtManagerFragment.class, bundle);
                         return;
                     }
                 }
@@ -159,14 +167,13 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
                 break;
 
             case "getAllPublicKeys":
-                AllPkEntity allPkEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), AllPkEntity.class);
-
-                if (allPkEntity.getPublicKeys() == null || allPkEntity.getPublicKeys().size() == 0) {
-                    return;
-                }
-                publickey = allPkEntity.getPublicKeys().get(0);
-//                addDIDPresenter.getCIDByPublicKey(wallet.getWalletId(), publickey, this);
-                ctManagePresenter.getDIDByPublicKey(wallet.getWalletId(), publickey, this);
+//                AllPkEntity allPkEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), AllPkEntity.class);
+//
+//                if (allPkEntity.getPublicKeys() == null || allPkEntity.getPublicKeys().size() == 0) {
+//                    return;
+//                }
+//                publickey = allPkEntity.getPublicKeys().get(0);
+//                ctManagePresenter.getDIDByPublicKey(wallet.getWalletId(), publickey, this);
                 break;
 
 //            case "getCIDByPublicKey":
@@ -174,34 +181,34 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
 //                ctManagePresenter.getCRlist(1, 1000, "all", this, true);
 //                break;
 
-            case "getDIDByPublicKey":
-                DID = ((CommmonStringEntity) baseEntity).getData();
-                ctManagePresenter.getCRlist(1, 1000, "all", this, true);
-                break;
+//            case "getDIDByPublicKey":
+//                DID = ((CommmonStringEntity) baseEntity).getData();
+//                ctManagePresenter.getCRlist(1, 1000, "all", this, true);
+//                break;
 
-            case "getCRlist":
-                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> curentAllList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
-                if (null!=curentAllList && !AppUtlis.isNullOrEmpty(DID)) {
-                    for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : curentAllList) {
-                        if (DID.equalsIgnoreCase(bean.getDid())) {
-                            curentNode = bean;
-                        }
-                    }
-                }
-                onGetVoteList(curentAllList);
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("wallet", wallet);
-                if (crStatusBean.getStatus().equals("Unregistered")) {
-                    bundle.putString("CID", CID);
-                    bundle.putString("publickey", publickey);
-                    bundle.putSerializable("netList", netList);
-                    start(CRSignUpForFragment.class, bundle);
-                } else {
-                    bundle.putParcelable("crStatusBean", crStatusBean);
-                    bundle.putParcelable("curentNode", curentNode);
-                    start(CRManageFragment.class, bundle);
-                }
-                break;
+//            case "getCRlist":
+//                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> curentAllList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+//                if (null!=curentAllList && !AppUtlis.isNullOrEmpty(DID)) {
+//                    for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : curentAllList) {
+//                        if (DID.equalsIgnoreCase(bean.getDid())) {
+//                            curentNode = bean;
+//                        }
+//                    }
+//                }
+//                onGetVoteList(curentAllList);
+//                Bundle bundle = new Bundle();
+//                bundle.putParcelable("wallet", wallet);
+//                if (crStatusBean.getStatus().equals("Unregistered")) {
+//                    bundle.putString("CID", CID);
+//                    bundle.putString("publickey", publickey);
+//                    bundle.putSerializable("netList", netList);
+//                    start(CRSignUpForFragment.class, bundle);
+//                } else {
+//                    bundle.putParcelable("crStatusBean", crStatusBean);
+//                    bundle.putParcelable("curentNode", curentNode);
+//                    start(CRManageFragment.class, bundle);
+//                }
+//                break;
         }
     }
 
@@ -286,15 +293,17 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     @Override
     public void onManagerClick(int position, String type) {
         if (AppUtlis.isNullOrEmpty(type)) return;
-        if (type.equalsIgnoreCase("VOTING")) {
-            ctManagePresenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
-        } else {
-            Bundle bundle = new Bundle();
-            bundle.putString("status", status);
-            bundle.putString("cid", cid);
-            bundle.putString("type", type);
-            start(CtManagerFragment.class, bundle);
-        }
+//        if (type.equalsIgnoreCase("VOTING")) {
+//            ctManagePresenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
+//        } else {
+//            Bundle bundle = new Bundle();
+//            bundle.putString("status", status);
+//            bundle.putString("cid", cid);
+//            bundle.putString("type", type);
+//            start(CtManagerFragment.class, bundle);
+//        }
+        this.type = type;
+        ctManagePresenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
     }
 
     @OnClick({R.id.iv_title_right})

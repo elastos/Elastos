@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/title_layout"
             android:layout_margin="15dp"
-            android:background="#99000000"
+            android:background="@drawable/ct_desc_border"
             android:orientation="vertical">
 
             <org.elastos.wallet.ela.utils.widget.RoundImageView
@@ -39,8 +39,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="20dp"
-                android:text="@string/ctname" />
+                android:layout_marginTop="20dp"/>
 
             <TextView
                 android:id="@+id/description"
@@ -50,6 +49,8 @@
                 android:layout_marginTop="80dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginBottom="60dp"
+                android:gravity="center"
+                android:lineSpacingExtra="5dp"
                 android:text="@string/inofficehint" />
 
         </LinearLayout>

@@ -43,7 +43,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     @BindView(R.id.toolbar)
     Toolbar toolbar;
     @BindView(R.id.name)
-    TextView name;
+    TextView nameTv;
     @BindView(R.id.description)
     TextView description;
     @BindView(R.id.refresh_ct_info)
@@ -70,7 +70,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctmanager));
+        setToobar(toolbar, toolbarTitle, (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("VOTING"))?getContext().getString(R.string.votemanager):getContext().getString(R.string.ctmanager));
         registReceiver();
         presenter = new CtManagePresenter();
         presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
@@ -80,12 +80,14 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     String depositAmount;
     String status;
     String did;
+    String name;
 
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
         did = data.getString("did");
         status = data.getString("status");
+        name = data.getString("name");
         type = data.getString("type");
         depositAmount = data.getString("depositAmount");
 
@@ -140,9 +142,11 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
                 break;
             case R.id.deposit:
 //                presenter.getCRDepositcoin(did, this);
-                String ownerPublicKey = crStatusBean.getInfo().getCROwnerPublicKey();
-                presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey,
-                        Arith.mulRemoveZero(depositAmount, MyWallet.RATE_S).toPlainString(), "", this);
+                if(!AppUtlis.isNullOrEmpty(depositAmount)) {
+                    String ownerPublicKey = crStatusBean.getInfo().getCROwnerPublicKey();
+                    presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey,
+                            Arith.mulRemoveZero(depositAmount, MyWallet.RATE_S).toPlainString(), "", this);
+                }
                 break;
             case R.id.tv_close:
                 popBackFragment();
@@ -176,6 +180,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
         secondLayout.setVisibility(View.VISIBLE);
 
         if(!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("VOTING")) {
+            nameTv.setText(name);
             description.setText(R.string.votingfinishhint);
             showDepositView();
             return;
