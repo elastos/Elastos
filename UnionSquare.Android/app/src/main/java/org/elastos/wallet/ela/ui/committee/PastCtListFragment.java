@@ -181,7 +181,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
 
             case "getCRlist":
                 List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> curentAllList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
-                if (!AppUtlis.isNullOrEmpty(DID)) {
+                if (null!=curentAllList && !AppUtlis.isNullOrEmpty(DID)) {
                     for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : curentAllList) {
                         if (DID.equalsIgnoreCase(bean.getDid())) {
                             curentNode = bean;
