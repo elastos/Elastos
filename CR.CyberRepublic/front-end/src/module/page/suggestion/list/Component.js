@@ -335,9 +335,9 @@ export default class extends StandardPage {
         visible={this.state.showDidModal}
         onCancel={this.hideDidModal}
         footer={null}
-        width={400}
+        width={500}
       >
-        <div>
+        <div style={{ textAlign: 'center', padding: 16 }}>
           <div style={{ marginBottom: 24, fontSize: 16, color: '#000' }}>
             {I18N.get('suggestion.msg.associateDidFirst')}
           </div>
