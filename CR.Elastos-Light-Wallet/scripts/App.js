@@ -139,6 +139,8 @@ let bannerClass = '';
 
 const DECIMAL_REGEX = new RegExp('^[0-9]+([,.][0-9]+)?$');
 
+const TRAILING_ZERO_REGEX = new RegExp('^.?0+$');
+
 const mainConsole = new mainConsoleLib.Console(process.stdout, process.stderr);
 
 let GuiToggles;
@@ -957,6 +959,11 @@ const getTransactionHistoryErrorCallback = (response) => {
   renderApp();
 };
 
+const formatTxValue = (value) => {
+  const elaFloat = parseInt(tx.Value) / 100000000;
+  const elaDisplay = elaFloat.toFixed(8);
+}
+
 const getTransactionHistoryReadyCallback = (transactionHistory) => {
   // mainConsole.log('getTransactionHistoryReadyCallback ' + JSON.stringify(transactionHistory));
   transactionHistoryStatus = 'History Received';
@@ -968,8 +975,6 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
         if (tx.CreateTime == 0) {
           time = formatDate(new Date());
         }
-        const elaFloat = parseInt(tx.Value) / 100000000;
-        const elaDisplay = Number(elaFloat.toFixed(8));
         const parsedTransaction = {};
         parsedTransaction.sortTime = tx.CreateTime;
         if (tx.Status == 'pending' && tx.CreateTime == 0) {
@@ -991,7 +996,7 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
           parsedTransaction.type = '*Receiving';
         }
         parsedTransaction.valueSat = tx.Value;
-        parsedTransaction.value = elaDisplay;
+        parsedTransaction.value = formatTxValue(tx.Value);
         parsedTransaction.address = tx.Address;
         parsedTransaction.txHash = tx.Txid;
         parsedTransaction.txHashWithEllipsis = tx.Txid;
@@ -1467,3 +1472,4 @@ exports.setRefreshCandiatesFlag = setRefreshCandiatesFlag;
 exports.requestListOfProducers = requestListOfProducers;
 exports.requestListOfCandidateVotes = requestListOfCandidateVotes;
 exports.verifyLedgerBanner = verifyLedgerBanner;
+exports.formatTxValue = formatTxValue;
