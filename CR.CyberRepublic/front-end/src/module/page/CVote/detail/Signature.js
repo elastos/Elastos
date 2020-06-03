@@ -160,13 +160,7 @@ class Signature extends Component {
   }
 
   hideModal = () => {
-    const { message } = this.state
-    if (message) {
-      this.props.hideModal()
-      return
-    }
-    const { isSecretary } = this.props
-    isSecretary && this.setState({ url: '' })
+    this.setState({ url: '', message: '' })
     this.props.hideModal()
   }
 
