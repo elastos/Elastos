@@ -79,6 +79,10 @@ export const Council = {
         type: String,
         required: true,
     },
+    circulatingSupply: {
+        type: Number,
+        required: true
+    },
     // current height
     height: {
         type: Number,

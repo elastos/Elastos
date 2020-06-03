@@ -46,6 +46,7 @@ import Milestones from '@/module/form/SuggestionForm/Milestones'
 import MilestonesReadonly from '@/module/form/SuggestionForm/MilestonesReadonly'
 import SignSuggestionButton from './SignSuggetionButton'
 import CMSignSuggestionButton from './CMSignSuggestionButton'
+import SuggestionPopupNotification from '@/module/common/SuggestionPopupNotification/Container'
 import {
   Container,
   Title,
@@ -146,6 +147,7 @@ export default class extends StandardPage {
     const uri = URI(this.props.location.search || '')
     return (
       <div>
+        {/* <SuggestionPopupNotification/> */}
         <Meta
           desc={detail.shortDesc}
           title={`${detail.title} - Suggestion Detail - Cyber Republic`}

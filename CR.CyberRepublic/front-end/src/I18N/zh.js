@@ -151,6 +151,11 @@ const zh = {
   'popup.changes.2018-12-26.4': '您还可以通过右上角的链接自动登录论坛：',
   'popup.changes.2018-12-26.5': '更新后的CR网站将于2019年1月15日重新上线，更多信息请参考：',
   'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/zh/2018/12/26/cyber-republic%E7%9A%84%E9%87%8D%E8%A6%81%E5%85%AC%E5%91%8A',
+  
+  'popup.suggestion.title': '重要通知',
+  'popup.suggestion.content': '为了配合CRC发布，网站会进入维护状态，直到2020年6月10号，请在10号之后再提交您的建议。',
+  'popup.suggestion.thanks': '谢谢您的配合',
+  'popup.suggestion.team': 'CR团队',
 
   // LoginForm
   'login.label_username': '请输入用户名或邮箱',
