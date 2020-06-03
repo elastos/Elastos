@@ -101,5 +101,6 @@ export const Suggestion = {
       timestamp: String
     }
   ],
-  proposed: Boolean
+  proposed: Boolean,
+  old: Boolean // mark an old suggestion
 }

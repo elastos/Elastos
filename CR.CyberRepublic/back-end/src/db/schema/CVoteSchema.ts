@@ -195,5 +195,6 @@ export const CVote = {
   rejectThroughAmount: {
     type: String
   },
-  withdrawalHistory: [withdrawalHistorySchema]
+  withdrawalHistory: [withdrawalHistorySchema],
+  old: Boolean // mark an old proposal
 }
