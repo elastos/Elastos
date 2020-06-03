@@ -35,13 +35,13 @@ const EXPLORER = 'https://blockchain.elastos.org';
 const RSS_FEED_URL = 'https://news.elastos.org/feed/';
 
 const REST_SERVICES = [{
-  name: 'node1',
-  url: 'https://node1.elaphant.app',
-},
-{
-  name: 'node3',
-  url: 'https://node3.elaphant.app',
-},
+    name: 'node1',
+    url: 'https://node1.elaphant.app',
+  },
+  {
+    name: 'node3',
+    url: 'https://node3.elaphant.app',
+  },
 ];
 
 /** global variables */
@@ -139,7 +139,7 @@ let bannerClass = '';
 
 const DECIMAL_REGEX = new RegExp('^[0-9]+([,.][0-9]+)?$');
 
-const TRAILING_ZERO_REGEX = new RegExp('^.?0+$');
+const TRAILING_ZERO_REGEX = new RegExp('^([0-9].[0-9]+?)0+$');
 
 const mainConsole = new mainConsoleLib.Console(process.stdout, process.stderr);
 
@@ -294,48 +294,48 @@ const pollForData = () => {
   try {
     const resetPollIndex = false;
     switch (pollDataTypeIx) {
-      case 0:
-        pollForDataCallback('Polling...');
-        break;
-      case 1:
-        LedgerComm.getLedgerDeviceInfo(pollForDataCallback);
-        break;
-      case 2:
-        if (useLedgerFlag) {
-          LedgerComm.getPublicKey(publicKeyCallback);
-        } else {
-          pollDataTypeIx++;
-          setPollForAllInfoTimer();
-        }
-        break;
-      case 3:
-        if (address != undefined) {
-          requestTransactionHistory();
-          requestBalance();
-          requestUnspentTransactionOutputs();
-          requestBlockchainState();
-        }
+    case 0:
+      pollForDataCallback('Polling...');
+      break;
+    case 1:
+      LedgerComm.getLedgerDeviceInfo(pollForDataCallback);
+      break;
+    case 2:
+      if (useLedgerFlag) {
+        LedgerComm.getPublicKey(publicKeyCallback);
+      } else {
         pollDataTypeIx++;
         setPollForAllInfoTimer();
-        break;
-      case 4:
-        if (refreshCandiatesFlag) {
-          requestListOfProducers(false);
-          requestListOfCandidateVotes();
-        }
-        requestRssFeed();
-        requestFee();
-        requestFeeAccount();
-        pollDataTypeIx++;
-        setPollForAllInfoTimer();
-        break;
-      case MAX_POLL_DATA_TYPE_IX:
-        // only check every 10 seconds for a change in device status.
-        pollDataTypeIx = 0;
-        setTimeout(pollForData, POLL_INTERVAL);
-        break;
-      default:
-        throw Error('poll data index reset failed.');
+      }
+      break;
+    case 3:
+      if (address != undefined) {
+        requestTransactionHistory();
+        requestBalance();
+        requestUnspentTransactionOutputs();
+        requestBlockchainState();
+      }
+      pollDataTypeIx++;
+      setPollForAllInfoTimer();
+      break;
+    case 4:
+      if (refreshCandiatesFlag) {
+        requestListOfProducers(false);
+        requestListOfCandidateVotes();
+      }
+      requestRssFeed();
+      requestFee();
+      requestFeeAccount();
+      pollDataTypeIx++;
+      setPollForAllInfoTimer();
+      break;
+    case MAX_POLL_DATA_TYPE_IX:
+      // only check every 10 seconds for a change in device status.
+      pollDataTypeIx = 0;
+      setTimeout(pollForData, POLL_INTERVAL);
+      break;
+    default:
+      throw Error('poll data index reset failed.');
     }
   } catch (error) {
     mainConsole.trace('pollForData', pollDataTypeIx, error);
@@ -351,7 +351,7 @@ const postJson = (url, jsonString, readyCallback, errorCallback) => {
   const xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
 
   const xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
+  xhttp.onreadystatechange = function () {
     if (this.readyState == 4) {
       // sendToAddressStatuses.push( `XMLHttpRequest: status:${this.status} response:'${this.response}'` );
       if (this.status == 200) {
@@ -386,7 +386,7 @@ const getRssFeed = async (url, readyCallback, errorCallback) => {
 
 const getJson = (url, readyCallback, errorCallback) => {
   const xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
+  xhttp.onreadystatechange = function () {
     if (this.readyState == 4) {
       if (this.status == 200) {
         readyCallback(JSON.parse(this.response));
@@ -560,9 +560,9 @@ const updateAmountAndFees = () => {
   feeAmountSats = GuiUtils.getValue('feeAmount');
 
   mainConsole.log('INTERIM updateAmountAndFees',
-      'sendAmount:', sendAmount,
-      'sendToAddress:', sendToAddress,
-      'feeAmountSats:', feeAmountSats,
+    'sendAmount:', sendAmount,
+    'sendToAddress:', sendToAddress,
+    'feeAmountSats:', feeAmountSats,
   );
 
   if (sendToAddress.length == 0) {
@@ -960,8 +960,9 @@ const getTransactionHistoryErrorCallback = (response) => {
 };
 
 const formatTxValue = (value) => {
-  const elaFloat = parseInt(tx.Value) / 100000000;
-  const elaDisplay = elaFloat.toFixed(8);
+  const elaFloat = parseInt(value) / 100000000;
+  const elaDisplay = elaFloat.toFixed(8).replace(TRAILING_ZERO_REGEX, '$1');
+  return elaDisplay;
 }
 
 const getTransactionHistoryReadyCallback = (transactionHistory) => {
