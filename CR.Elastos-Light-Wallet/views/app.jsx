@@ -84,7 +84,6 @@ class AppView extends React.Component {
 
   unsplash() {
     setTimeout(() => this.setState({visible: true}), 4000) 
-    console.log("splash")
   }
   
 
