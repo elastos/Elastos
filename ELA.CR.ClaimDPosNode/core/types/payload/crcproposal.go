@@ -114,10 +114,6 @@ type CRCProposal struct {
 	// Public key of proposal owner.
 	OwnerPublicKey []byte
 
-	NewOwnerPublicKey []byte
-
-	PreviousHash common.Uint256
-
 	// The hash of draft proposal.
 	DraftHash common.Uint256
 
@@ -127,8 +123,11 @@ type CRCProposal struct {
 	// The specified ELA address where the funds are to be sent.
 	Recipient common.Uint168
 
-	// To be closed proposal hash, this field will be used when the proposal type is CloseProposal
-	CloseProposalHash common.Uint256
+	// Hash of proposal that need to change owner.
+	TargetProposalHash common.Uint256
+
+	// New public key of proposal owner.
+	NewOwnerPublicKey []byte
 
 	// The signature of proposal's owner.
 	Signature []byte
@@ -219,14 +218,17 @@ func (p *CRCProposal) SerializeUnsignedChangeProposalOwner(w io.Writer, version 
 	if err := common.WriteVarBytes(w, p.OwnerPublicKey); err != nil {
 		return errors.New("failed to serialize OwnerPublicKey")
 	}
-	if err := common.WriteVarBytes(w, p.NewOwnerPublicKey); err != nil {
-		return errors.New("failed to serialize NewOwnerPublicKey")
-	}
-	if err := p.PreviousHash.Serialize(w); err != nil {
-		return errors.New("failed to serialize PreviousHash")
-	}
 	if err := p.DraftHash.Serialize(w); err != nil {
 		return errors.New("failed to serialize DraftHash")
+	}
+	if err := p.Recipient.Serialize(w); err != nil {
+		return errors.New("failed to serialize Recipient")
+	}
+	if err := p.TargetProposalHash.Serialize(w); err != nil {
+		return errors.New("failed to serialize TargetProposalHash")
+	}
+	if err := common.WriteVarBytes(w, p.NewOwnerPublicKey); err != nil {
+		return errors.New("failed to serialize NewOwnerPublicKey")
 	}
 	return nil
 }
@@ -268,7 +270,7 @@ func (p *CRCProposal) SerializeUnsignedCloseProposal(w io.Writer, version byte) 
 		return errors.New("failed to serialize DraftHash")
 	}
 
-	if err := p.CloseProposalHash.Serialize(w); err != nil {
+	if err := p.TargetProposalHash.Serialize(w); err != nil {
 		return errors.New("failed to serialize CloseProposalHash")
 	}
 
@@ -432,30 +434,29 @@ func (p *CRCProposal) DeserializeUnSignedNormalOrELIP(r io.Reader, version byte)
 }
 
 func (p *CRCProposal) DeserializeUnSignedChangeProposalOwner(r io.Reader, version byte) error {
-	err := common.ReadElement(r, &p.ProposalType)
-	if err != nil {
-		return errors.New("[CRCProposal], ProposalType deserialize failed")
-	}
+	var err error
 	p.CategoryData, err = common.ReadVarString(r)
 	if err != nil {
 		return errors.New("[CRCProposal], Category data deserialize failed")
+	}
+	if err = p.DraftHash.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize DraftHash")
 	}
 	p.OwnerPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "owner")
 	if err != nil {
 		return errors.New("failed to deserialize OwnerPublicKey")
 	}
-
+	if err = p.Recipient.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize Recipient")
+	}
+	if err = p.TargetProposalHash.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize TargetProposalHash")
+	}
 	p.NewOwnerPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "owner")
 	if err != nil {
 		return errors.New("failed to deserialize NewOwnerPublicKey")
 	}
-	if err = p.PreviousHash.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize PreviousHash")
-	}
 
-	if err = p.DraftHash.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize DraftHash")
-	}
 	return nil
 }
 func (p *CRCProposal) DeserializeUnSignedCloseProposal(r io.Reader, version byte) error {
@@ -475,7 +476,7 @@ func (p *CRCProposal) DeserializeUnSignedCloseProposal(r io.Reader, version byte
 		return errors.New("failed to deserialize DraftHash")
 	}
 
-	if err = p.CloseProposalHash.Deserialize(r); err != nil {
+	if err = p.TargetProposalHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize CloseProposalHash")
 	}
 

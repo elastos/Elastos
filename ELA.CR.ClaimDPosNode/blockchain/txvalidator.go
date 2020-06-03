@@ -2437,7 +2437,7 @@ func (b *BlockChain) checkCloseProposal(proposal *payload.CRCProposal) error {
 	if ownerMember.MemberState != crstate.MemberElected {
 		return errors.New("CloseProposal owner should be an of the elected CR members")
 	}
-	if ps := b.crCommittee.GetProposal(proposal.CloseProposalHash); ps == nil {
+	if ps := b.crCommittee.GetProposal(proposal.TargetProposalHash); ps == nil {
 		return errors.New("CloseProposalHash does not exist")
 	} else if ps.Status != crstate.VoterAgreed {
 		return errors.New("CloseProposalHash has to be voterAgreed")
@@ -2454,7 +2454,7 @@ func (b *BlockChain) checkCloseProposal(proposal *payload.CRCProposal) error {
 }
 
 func (b *BlockChain) checkChangeProposalOwner(proposal *payload.CRCProposal) error {
-	proposalState := b.crCommittee.GetProposal(proposal.PreviousHash)
+	proposalState := b.crCommittee.GetProposal(proposal.TargetProposalHash)
 	if proposalState == nil {
 		return errors.New("proposal doesn't exist")
 	}

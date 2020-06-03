@@ -637,7 +637,7 @@ func crpPayloadCloseProposalEqual(payload1 *payload.CRCProposal, payload2 *paylo
 		bytes.Equal(payload1.OwnerPublicKey, payload2.OwnerPublicKey) &&
 		payload1.CRCouncilMemberDID.IsEqual(payload2.CRCouncilMemberDID) &&
 		payload1.DraftHash.IsEqual(payload2.DraftHash) &&
-		payload1.CloseProposalHash.IsEqual(payload2.CloseProposalHash) &&
+		payload1.TargetProposalHash.IsEqual(payload2.TargetProposalHash) &&
 		bytes.Equal(payload1.Signature, payload2.Signature) &&
 		bytes.Equal(payload1.CRCouncilMemberSignature, payload2.CRCouncilMemberSignature)
 }
@@ -861,7 +861,7 @@ func createCRCProposalPayload(proposalType payload.CRCProposalType) *payload.CRC
 		OwnerPublicKey:           randomBytes(33),
 		CRCouncilMemberDID:       *randomUint168(),
 		DraftHash:                *randomUint256(),
-		CloseProposalHash:        *randomUint256(),
+		TargetProposalHash:       *randomUint256(),
 		Budgets:                  randomBudgets(3),
 		Signature:                randomBytes(64),
 		CRCouncilMemberSignature: randomBytes(64),

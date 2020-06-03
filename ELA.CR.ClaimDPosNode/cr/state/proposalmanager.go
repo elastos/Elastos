@@ -289,7 +289,7 @@ func (p *ProposalManager) transferRegisteredState(proposalState *ProposalState,
 func (p *ProposalManager) dealProposal(proposalState *ProposalState, unusedAmount *common.Fixed64, height uint32) {
 	switch proposalState.Proposal.ProposalType {
 	case payload.ChangeProposalOwner:
-		proposal := p.getProposal(proposalState.Proposal.PreviousHash)
+		proposal := p.getProposal(proposalState.Proposal.TargetProposalHash)
 		originRecipient := proposal.Recipient
 		emptyUint168 := common.Uint168{}
 		p.history.Append(height, func() {
@@ -302,7 +302,7 @@ func (p *ProposalManager) dealProposal(proposalState *ProposalState, unusedAmoun
 			proposal.Recipient = originRecipient
 		})
 	case payload.CloseProposal:
-		closeProposal := p.Proposals[proposalState.Proposal.CloseProposalHash]
+		closeProposal := p.Proposals[proposalState.Proposal.TargetProposalHash]
 		*unusedAmount += getProposalUnusedBudgetAmount(closeProposal)
 		p.terminatedProposal(closeProposal, height)
 	case payload.SecretaryGeneral:
