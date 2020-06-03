@@ -11,7 +11,20 @@ class Signature extends Component {
   constructor(props) {
     super(props)
     this.state = { url: '', messageHash: '' }
-    this.timerDid = null
+    this.mtimerList = []
+  }
+
+  sleep = (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
+  clearTimerList = () => {
+    if (this.mtimerList && this.mtimerList.length) {
+      for (let timer of this.mtimerList) {
+        clearTimeout(timer)
+      }
+      this.mtimerList = []
+    }
   }
 
   handleSubmit = (e) => {
@@ -32,6 +45,7 @@ class Signature extends Component {
         })
         if (rs.success && rs.url) {
           this.setState({ url: rs.url, messageHash: rs.messageHash })
+          await this.sleep(5000)
           this.pollingSignature()
         }
       }
@@ -57,13 +71,14 @@ class Signature extends Component {
         const rs = await reviewApplication(proposalId, stage, data)
         if (rs.success && rs.url) {
           this.setState({ url: rs.url, messageHash: rs.messageHash })
+          await this.sleep(5000)
           this.pollingSignature()
         }
       }
     })
   }
 
-  pollingSignature = () => {
+  pollingSignature = async () => {
     const {
       proposalId,
       getPaymentSignature,
@@ -72,33 +87,29 @@ class Signature extends Component {
       getReviewTxid
     } = this.props
     const { messageHash } = this.state
-    this.timerDid = setInterval(async () => {
-      let rs
-      if (isSecretary) {
-        rs = await getReviewTxid({ proposalId, messageHash })
+    let rs
+    if (isSecretary) {
+      rs = await getReviewTxid({ proposalId, messageHash })
+    } else {
+      rs = await getPaymentSignature({ proposalId, messageHash })
+    }
+    if (rs && rs.success) {
+      hideModal()
+    }
+    if (rs && rs.success === false) {
+      if (rs.message) {
+        message.error(rs.message)
       } else {
-        rs = await getPaymentSignature({ proposalId, messageHash })
+        message.error(I18N.get('milestone.exception'))
       }
-      if (rs && rs.success) {
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        hideModal()
-      }
-      if (rs && rs.success === false) {
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        if (rs.message) {
-          message.error(rs.message)
-        } else {
-          message.error(I18N.get('milestone.exception'))
-        }
-        hideModal()
-      }
-    }, 5000)
+      hideModal()
+    }
+    const timer = setTimeout(this.pollingSignature, 5000)
+    this.mtimerList.push(timer)
   }
 
   componentWillUnmount() {
-    clearInterval(this.timerDid)
+    this.clearTimerList()
   }
 
   signatureQrCode = () => {
