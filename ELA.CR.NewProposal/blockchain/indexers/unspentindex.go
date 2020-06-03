@@ -252,6 +252,9 @@ func (idx *UnspentIndex) FetchTx(txID common.Uint256) (*types.Transaction, uint3
 		var err error
 		var blockHash *common.Uint256
 		txn, blockHash, err = dbFetchTx(dbTx, &txID)
+		if err != nil {
+			return err
+		}
 		height, err = dbFetchHeightByHash(dbTx, blockHash)
 		return err
 	})
