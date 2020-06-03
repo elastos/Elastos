@@ -155,6 +155,7 @@ button {
   border-radius: 15px;
   opacity: 0.9;
   transition: 0.4s;
+  will-change: transform, opacity;
 }
 
 .refresh-icon:hover,
@@ -168,6 +169,8 @@ button {
 .dark-hover {
   -webkit-app-region: no-drag;	
   transition: 0.4s;
+  will-change: transform, opacity;
+
 }
 
 .dark-hover:hover {
@@ -190,6 +193,8 @@ button {
   opacity: 0.9;
   transition: 0.4s;
   -webkit-app-region: no-drag;
+  will-change: transform, opacity;
+
 }
 
 .scale-hover:hover {
@@ -551,6 +556,8 @@ button {
   color: #FFFFFF;
   letter-spacing: 0;
   opacity: 0.9;
+  will-change: transform, opacity;
+
 }
 
 .sendela-button:active,
@@ -1034,6 +1041,10 @@ select, input {
   width: 100%;
 }
 
+.h90pct {
+  height: 90%;
+}
+
 .h100pct {
   height: 100%;
 }
@@ -1260,6 +1271,14 @@ select, input {
 
 .candidate-status {
   flex-grow: 0.5;
+
+}
+.candidatevote-status {
+  flex-grow: 0.5;
+  width: 60%;
+  word-break: break-all;
+  height: 90%;
+  overflow: hidden;
 }
 
 .status-font {
@@ -1551,8 +1570,9 @@ select, input {
 }
 
 .rotate {
-  animation: pulse 1.5s infinite linear;
+  animation: pulse 1.5s 4 linear;
   border-radius: 50%;
+  transform: translate3d(0, 0, 0);
 
 }
 
@@ -1563,14 +1583,6 @@ select, input {
   justify-content: space-evenly;
 }
 
-@keyframes rotation {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(359deg);
-  }
-}
 
 
 @-webkit-keyframes pulse {

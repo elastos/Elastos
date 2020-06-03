@@ -117,7 +117,7 @@ module.exports = (props) => {
 
       <div className="voting-row4">
         <p className="display_inline_block active-heading">Active Votes</p>
-        <p className="display_inline_block candidate-status status-font">Status: {App.getCandidateVoteListStatus()}</p>
+        <p className="display_inline_block candidatevote-status status-font flex_center">Status: {App.getCandidateVoteListStatus()}</p>
         <p className="display_inline_block status-font">Voted {App.getParsedCandidateVoteList().candidateVotes.length}/36</p>
 
       </div>
