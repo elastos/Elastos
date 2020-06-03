@@ -254,6 +254,14 @@ export default class extends Base {
         return { success: false, message: 'Milestone status is wrong.' }
       }
 
+      const history = proposal.withdrawalHistory.filter((item: any) =>
+        item._id.equals(applicationId)
+      )[0]
+
+      if (history && _.get(history, 'review.txid')) {
+        return { success: false, message: 'You have reviewed this request.' }
+      }
+
       const currTime = Date.now()
       const now = Math.floor(currTime / 1000)
       const reasonHash = utilCrypto.sha256D(
@@ -282,9 +290,7 @@ export default class extends Base {
       } else {
         trackingStatus = constant.PROPOSAL_TRACKING_TYPE.REJECTED
       }
-      const history = proposal.withdrawalHistory.filter((item: any) =>
-        item._id.equals(applicationId)
-      )[0]
+
       // generate jwt url
       const jwtClaims = {
         iat: now,

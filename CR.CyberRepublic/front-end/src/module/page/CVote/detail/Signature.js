@@ -82,7 +82,6 @@ class Signature extends Component {
     const {
       proposalId,
       getPaymentSignature,
-      hideModal,
       isSecretary,
       getReviewTxid
     } = this.props
@@ -95,12 +94,12 @@ class Signature extends Component {
     }
     if (rs && rs.success) {
       this.clearTimerList()
-      hideModal()
+      this.hideModal()
       return
     }
     if (rs && rs.success === false) {
       this.clearTimerList()
-      hideModal()
+      this.hideModal()
       if (rs.message) {
         message.error(rs.message)
       } else {
@@ -158,6 +157,7 @@ class Signature extends Component {
   }
 
   hideModal = () => {
+    this.setState({ url: '' })
     this.props.hideModal()
   }
 
