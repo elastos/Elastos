@@ -33,12 +33,12 @@ local asset_id = m.get_asset_id()
 local fee = getFee()
 local proposal_tracking_type = getProposalTrackingType()
 local proposal_hash = getProposalHash()
-local document_hash = getDocumentHash()
-local secretar_opinion_hash = getSecretaryOpinionHash()
+local document_hash = getMessageHash()
+local secretar_opinion_hash = getSecretaryGeneralOpinionHash()
 local stage = getStage()
-local leader_pubkey = getLeaderPubkey()
+local leader_pubkey = getOwnerPublicKey()
 local leader_privkey = getLeaderPrivkey()
-local new_leader_pubkey = getNewLeaderPubkey()
+local new_leader_pubkey = getNewOwnerPublicKey()
 local new_leader_privkey = getNewLeaderPrivkey()
 local secretary_general_privkey = getSecretaryGeneralPrivkey()
 
@@ -52,17 +52,17 @@ if proposal_hash == "" then
 end
 
 if document_hash == "" then
-    print("document hash is nil, should use --documenthash to set it.")
+    print("document hash is nil, should use --MessageHash to set it.")
     return
 end
 
 if leader_pubkey == "" then
-    print("leader_pubkey is nil, should use --leaderpublickey to set it.")
+    print("leader_pubkey is nil, should use --ownerpublickey to set it.")
     return
 end
 
 if leader_privkey == "" then
-    print("leader_privkey is nil, should use --leaderprivatekey to set it.")
+    print("leader_privkey is nil, should use --ownerprivatekey to set it.")
     return
 end
 

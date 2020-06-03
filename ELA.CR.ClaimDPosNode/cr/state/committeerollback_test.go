@@ -237,15 +237,15 @@ func getCRCProposalReviewTx(proposalHash common.Uint256, vote payload.VoteResult
 func getCRCProposalTrackingTx(
 	trackingType payload.CRCProposalTrackingType,
 	proposalHash common.Uint256, stage uint8,
-	leaderPublicKeyStr, leaderPrivateKeyStr,
-	newLeaderPublicKeyStr, newLeaderPrivateKeyStr,
+	ownerpublickeyStr, ownerprivatekeyStr,
+	newownerpublickeyStr, newownerprivatekeyStr,
 	sgPrivateKeyStr string) *types.Transaction {
 
-	leaderPublicKey, _ := common.HexStringToBytes(leaderPublicKeyStr)
-	leaderPrivateKey, _ := common.HexStringToBytes(leaderPrivateKeyStr)
+	ownerpublickey, _ := common.HexStringToBytes(ownerpublickeyStr)
+	ownerprivatekey, _ := common.HexStringToBytes(ownerprivatekeyStr)
 
-	newLeaderPublicKey, _ := common.HexStringToBytes(newLeaderPublicKeyStr)
-	newLeaderPrivateKey, _ := common.HexStringToBytes(newLeaderPrivateKeyStr)
+	newownerpublickey, _ := common.HexStringToBytes(newownerpublickeyStr)
+	newownerprivatekey, _ := common.HexStringToBytes(newownerprivatekeyStr)
 
 	sgPrivateKey, _ := common.HexStringToBytes(sgPrivateKeyStr)
 
@@ -259,19 +259,19 @@ func getCRCProposalTrackingTx(
 		ProposalHash:                proposalHash,
 		Stage:                       stage,
 		MessageHash:                 common.Hash(documentData),
-		OwnerPublicKey:              leaderPublicKey,
-		NewOwnerPublicKey:           newLeaderPublicKey,
+		OwnerPublicKey:              ownerpublickey,
+		NewOwnerPublicKey:           newownerpublickey,
 		SecretaryGeneralOpinionHash: common.Hash(opinionHash),
 	}
 
 	signBuf := new(bytes.Buffer)
 	cPayload.SerializeUnsigned(signBuf, payload.CRCProposalTrackingVersion)
-	sig, _ := crypto.Sign(leaderPrivateKey, signBuf.Bytes())
+	sig, _ := crypto.Sign(ownerprivatekey, signBuf.Bytes())
 	cPayload.OwnerSignature = sig
 
-	if newLeaderPublicKeyStr != "" && newLeaderPrivateKeyStr != "" {
+	if newownerpublickeyStr != "" && newownerprivatekeyStr != "" {
 		common.WriteVarBytes(signBuf, sig)
-		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
+		crSig, _ := crypto.Sign(newownerprivatekey, signBuf.Bytes())
 		cPayload.NewOwnerSignature = crSig
 		sig = crSig
 	}
@@ -285,15 +285,15 @@ func getCRCProposalTrackingTx(
 }
 
 func getCRCProposalWithdrawTx(proposalHash common.Uint256,
-	sponsorPublicKeyStr, sponsorPrivateKeyStr string, fee common.Fixed64,
+	OwnerPublicKeyStr, sponsorPrivateKeyStr string, fee common.Fixed64,
 	inputs []*types.Input, outputs []*types.Output) *types.Transaction {
 
-	sponsorPublicKey, _ := common.HexStringToBytes(sponsorPublicKeyStr)
+	OwnerPublicKey, _ := common.HexStringToBytes(OwnerPublicKeyStr)
 	sponsorPrivateKey, _ := common.HexStringToBytes(sponsorPrivateKeyStr)
 
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
 		ProposalHash:   proposalHash,
-		OwnerPublicKey: sponsorPublicKey,
+		OwnerPublicKey: OwnerPublicKey,
 	}
 
 	signBuf := new(bytes.Buffer)

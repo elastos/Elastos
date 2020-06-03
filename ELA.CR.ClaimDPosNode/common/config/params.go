@@ -135,12 +135,12 @@ var DefaultParams = Params{
 		"node-mainnet-025.elastos.org:20338",
 	},
 
-	Foundation:          mainNetFoundation,
-	CRCAddress:          mainNetCRCAddress,
-	CRCFoundation:       CRCAssetsAddress,
-	CRCCommitteeAddress: CRCExpensesAddress,
-	DestroyELAAddress:   DestroyELAAddress,
-	GenesisBlock:        GenesisBlock(&mainNetFoundation),
+	Foundation:        mainNetFoundation,
+	CRCAddress:        mainNetCRCAddress,
+	CRAsstesAddress:   CRCAssetsAddress,
+	CRExpensesAddress: CRCExpensesAddress,
+	DestroyELAAddress: DestroyELAAddress,
+	GenesisBlock:      GenesisBlock(&mainNetFoundation),
 
 	DPoSMagic:       2019000,
 	DPoSDefaultPort: 20339,
@@ -234,8 +234,8 @@ func (p *Params) TestNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
-	copy.CRCFoundation = CRCAssetsAddress
-	copy.CRCCommitteeAddress = CRCExpensesAddress
+	copy.CRAsstesAddress = CRCAssetsAddress
+	copy.CRExpensesAddress = CRCExpensesAddress
 	copy.DestroyELAAddress = DestroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019100
@@ -297,8 +297,8 @@ func (p *Params) RegNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
-	copy.CRCFoundation = CRCAssetsAddress
-	copy.CRCCommitteeAddress = CRCExpensesAddress
+	copy.CRAsstesAddress = CRCAssetsAddress
+	copy.CRExpensesAddress = CRCExpensesAddress
 	copy.DestroyELAAddress = DestroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019200
@@ -381,12 +381,12 @@ type Params struct {
 	// CRCAddress defines the CRC address which receiving mining rewards.
 	CRCAddress common.Uint168
 
-	// CRCFoundation defines the CRC foundation address.
-	CRCFoundation common.Uint168
+	// CRAsstesAddress defines the CRC foundation address.
+	CRAsstesAddress common.Uint168
 
-	// CRCCommitteeAddress defines the CR committee address which receiving
+	// CRExpensesAddress defines the CR committee address which receiving
 	// appropriation from CRC foundation address.
-	CRCCommitteeAddress common.Uint168
+	CRExpensesAddress common.Uint168
 
 	// DestroyELAAddress defines address which receiving destroyed ELA.
 	DestroyELAAddress common.Uint168

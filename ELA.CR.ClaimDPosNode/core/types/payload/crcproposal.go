@@ -532,11 +532,11 @@ func (p *CRCProposal) DeserializeNormalOrELIP(r io.Reader, version byte) error {
 		return errors.New("failed to deserialize CRCouncilMemberDID")
 	}
 
-	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
+	CRCouncilMemberSignature, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
 	if err != nil {
 		return err
 	}
-	p.CRCouncilMemberSignature = crSign
+	p.CRCouncilMemberSignature = CRCouncilMemberSignature
 
 	return nil
 }
@@ -557,11 +557,11 @@ func (p *CRCProposal) DeserializeChangeProposalOwner(r io.Reader, version byte) 
 		return errors.New("failed to deserialize CRCouncilMemberDID")
 	}
 	// cr signature
-	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
+	CRCouncilMemberSignature, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
 	if err != nil {
 		return err
 	}
-	p.CRCouncilMemberSignature = crSign
+	p.CRCouncilMemberSignature = CRCouncilMemberSignature
 	return nil
 }
 func (p *CRCProposal) DeserializeCloseProposal(r io.Reader, version byte) error {
@@ -580,11 +580,11 @@ func (p *CRCProposal) DeserializeCloseProposal(r io.Reader, version byte) error 
 		return errors.New("failed to deserialize CRCouncilMemberDID")
 	}
 
-	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
+	CRCouncilMemberSignature, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
 	if err != nil {
 		return err
 	}
-	p.CRCouncilMemberSignature = crSign
+	p.CRCouncilMemberSignature = CRCouncilMemberSignature
 
 	return nil
 }
@@ -617,11 +617,11 @@ func (p *CRCProposal) DeserializeChangeSecretaryGeneral(r io.Reader, version byt
 		return errors.New("failed to deserialize CRCouncilMemberDID")
 	}
 
-	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
+	CRCouncilMemberSignature, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
 	if err != nil {
 		return err
 	}
-	p.CRCouncilMemberSignature = crSign
+	p.CRCouncilMemberSignature = CRCouncilMemberSignature
 	return nil
 }
 

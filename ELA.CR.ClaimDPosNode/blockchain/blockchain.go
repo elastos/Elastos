@@ -454,7 +454,7 @@ func (b *BlockChain) createInputs(fromAddress Uint168,
 }
 
 func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
-	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRCFoundation)
+	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRAsstesAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -469,12 +469,12 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
 	if appropriationAmount <= 0 {
 		return nil, nil
 	}
-	outputs := []*OutputInfo{{b.chainParams.CRCCommitteeAddress,
+	outputs := []*OutputInfo{{b.chainParams.CRExpensesAddress,
 		appropriationAmount}}
 
 	var tx *Transaction
 	tx, err = b.createTransaction(&payload.CRCAppropriation{}, CRCAppropriation,
-		b.chainParams.CRCFoundation, Fixed64(0), uint32(0), utxos, outputs...)
+		b.chainParams.CRAsstesAddress, Fixed64(0), uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}
@@ -483,7 +483,7 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
 
 func (b *BlockChain) CreateCRRealWithdrawTransaction(
 	withdrawTransactionHashes []Uint256, outputs []*OutputInfo) (*Transaction, error) {
-	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRCCommitteeAddress)
+	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRExpensesAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -494,7 +494,7 @@ func (b *BlockChain) CreateCRRealWithdrawTransaction(
 
 	var tx *Transaction
 	tx, err = b.createTransaction(payload, CRCProposalRealWithdraw,
-		b.chainParams.CRCFoundation, Fixed64(RealWithdrawSingleFee), uint32(0), utxos, outputs...)
+		b.chainParams.CRAsstesAddress, Fixed64(RealWithdrawSingleFee), uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}
@@ -502,7 +502,7 @@ func (b *BlockChain) CreateCRRealWithdrawTransaction(
 }
 
 func (b *BlockChain) CreateCRAssetsRectifyTransaction() (*Transaction, error) {
-	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRCFoundation)
+	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRAsstesAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -522,12 +522,12 @@ func (b *BlockChain) CreateCRAssetsRectifyTransaction() (*Transaction, error) {
 	if rectifyAmount <= 0 {
 		return nil, nil
 	}
-	outputs := []*OutputInfo{{b.chainParams.CRCFoundation,
+	outputs := []*OutputInfo{{b.chainParams.CRAsstesAddress,
 		rectifyAmount}}
 
 	var tx *Transaction
 	tx, err = b.createTransaction(&payload.CRAssetsRectify{}, CRAssetsRectify,
-		b.chainParams.CRCFoundation, Fixed64(RectifyTxFee), uint32(0), utxos, outputs...)
+		b.chainParams.CRAsstesAddress, Fixed64(RectifyTxFee), uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}

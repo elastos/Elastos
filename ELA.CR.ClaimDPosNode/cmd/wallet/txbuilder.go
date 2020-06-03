@@ -427,13 +427,13 @@ func CreateCRCProposalWithdrawTransaction(c *cli.Context) error {
 		return err
 	}
 	var acc *account.Account
-	var SponsorPublicKey []byte
+	var OwnerPublicKey []byte
 
 	acc = client.GetMainAccount()
 	if contract.GetPrefixType(acc.ProgramHash) != contract.PrefixStandard {
 		return errors.New("main account is not a standard account")
 	}
-	SponsorPublicKey, err = acc.PublicKey.EncodePoint(true)
+	OwnerPublicKey, err = acc.PublicKey.EncodePoint(true)
 	if err != nil {
 		return err
 	}
@@ -443,7 +443,7 @@ func CreateCRCProposalWithdrawTransaction(c *cli.Context) error {
 	}
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
 		ProposalHash:   *proposalHash,
-		OwnerPublicKey: SponsorPublicKey,
+		OwnerPublicKey: OwnerPublicKey,
 	}
 
 	signBuf := new(bytes.Buffer)

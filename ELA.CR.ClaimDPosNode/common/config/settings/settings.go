@@ -405,11 +405,11 @@ func NewSettings() *Settings {
 		DefaultValue: "",
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
-			crcFoundation, err := common.Uint168FromAddress(conf.CRCFoundation)
+			crcFoundation, err := common.Uint168FromAddress(conf.CRAsstesAddress)
 			if err != nil {
 				return errors.New("invalid CRC foundation")
 			}
-			params.CRCFoundation = *crcFoundation
+			params.CRAsstesAddress = *crcFoundation
 			return nil
 		},
 		CliSetter: func(i interface{}, params *config.Params,
@@ -422,22 +422,22 @@ func NewSettings() *Settings {
 			if err != nil {
 				return errors.New("invalid CRC foundation")
 			}
-			params.CRCFoundation = *crcFoundation
+			params.CRAsstesAddress = *crcFoundation
 			return nil
 		},
-		ConfigPath: "CRCFoundation",
-		ParamName:  "CRCFoundation"})
+		ConfigPath: "crasstesaddress",
+		ParamName:  "crasstesaddress"})
 
 	result.Add(&settingItem{
-		Flag:         cmdcom.CRCCommitteeAddressFlag,
+		Flag:         cmdcom.CRExpensesAddressFlag,
 		DefaultValue: "",
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
-			crcCommitteeAddress, err := common.Uint168FromAddress(conf.CRCCommitteeAddress)
+			CRExpensesAddress, err := common.Uint168FromAddress(conf.CRExpensesAddress)
 			if err != nil {
 				return errors.New("invalid CRC committee address")
 			}
-			params.CRCCommitteeAddress = *crcCommitteeAddress
+			params.CRExpensesAddress = *CRExpensesAddress
 			return nil
 		},
 		CliSetter: func(i interface{}, params *config.Params,
@@ -446,15 +446,15 @@ func NewSettings() *Settings {
 			if !ok {
 				return errors.New("unknown foundation address type")
 			}
-			crcCommitteeAddress, err := common.Uint168FromAddress(value)
+			CRExpensesAddress, err := common.Uint168FromAddress(value)
 			if err != nil {
 				return errors.New("invalid CRC committee address")
 			}
-			params.CRCCommitteeAddress = *crcCommitteeAddress
+			params.CRExpensesAddress = *CRExpensesAddress
 			return nil
 		},
-		ConfigPath: "CRCCommitteeAddress",
-		ParamName:  "CRCCommitteeAddress"})
+		ConfigPath: "crexpensesaddress",
+		ParamName:  "crexpensesaddress"})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.VoteStartHeightFlag,
