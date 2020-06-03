@@ -246,22 +246,22 @@ class PaymentList extends Component {
           {list &&
             list.map((item, index) => this.renderPaymentItem(item, index))}
         </tbody>
-        {toggle === true ? (
-          <Signature
-            toggle={toggle}
-            stage={stage}
-            isCompletion={isCompletion}
-            proposalId={proposalId}
-            applyPayment={actions.applyPayment}
-            getPaymentSignature={actions.getPaymentSignature}
-            hideModal={this.hideModal}
-            isSecretary={user.is_secretary}
-            opinion={opinion}
-            reviewApplication={actions.reviewApplication}
-            application={this.getApplication()}
-            getReviewTxid={actions.getReviewTxid}
-          />
-        ) : null}
+
+        <Signature
+          toggle={toggle}
+          stage={stage}
+          isCompletion={isCompletion}
+          proposalId={proposalId}
+          applyPayment={actions.applyPayment}
+          getPaymentSignature={actions.getPaymentSignature}
+          hideModal={this.hideModal}
+          isSecretary={user.is_secretary}
+          opinion={opinion}
+          reviewApplication={actions.reviewApplication}
+          application={this.getApplication()}
+          getReviewTxid={actions.getReviewTxid}
+        />
+
         {withdrawal ? (
           <WithdrawMoney
             withdrawal={withdrawal}

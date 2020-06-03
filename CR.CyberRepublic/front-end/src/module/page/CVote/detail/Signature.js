@@ -94,15 +94,19 @@ class Signature extends Component {
       rs = await getPaymentSignature({ proposalId, messageHash })
     }
     if (rs && rs.success) {
+      this.clearTimerList()
       hideModal()
+      return
     }
     if (rs && rs.success === false) {
+      this.clearTimerList()
+      hideModal()
       if (rs.message) {
         message.error(rs.message)
       } else {
         message.error(I18N.get('milestone.exception'))
       }
-      hideModal()
+      return
     }
     const timer = setTimeout(this.pollingSignature, 5000)
     this.mtimerList.push(timer)
@@ -153,15 +157,19 @@ class Signature extends Component {
     )
   }
 
+  hideModal = () => {
+    this.props.hideModal()
+  }
+
   render() {
     const { url } = this.state
-    const { stage, isSecretary, hideModal, toggle, opinion } = this.props
+    const { stage, isSecretary, toggle, opinion } = this.props
     const flag = opinion && opinion.toLowerCase() === 'rejected'
     return (
       <Modal
         maskClosable={false}
         visible={toggle}
-        onCancel={hideModal}
+        onCancel={this.hideModal}
         footer={null}
       >
         <Wrapper>
