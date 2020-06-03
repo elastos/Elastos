@@ -866,6 +866,7 @@ export default class extends Base {
             }
             if (status && data.status === constant.TERM_COUNCIL_STATUS.CURRENT) {
                 doc['status'] = status
+                doc['startDate'] = data.startDate
                 doc['endDate'] = crRelatedStageStatus.ondutystartheight !== 0 ? new Date(startTime * 1000) : new Date(endTime * 1000)
             }
             
@@ -927,6 +928,4 @@ export default class extends Base {
             }
         }
     }
-
-    public async 
 }
