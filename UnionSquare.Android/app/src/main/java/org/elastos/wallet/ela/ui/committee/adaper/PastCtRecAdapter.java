@@ -58,6 +58,7 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
                 viewHolder.manager.setVisibility(View.VISIBLE);
             }
         } else if(status.equalsIgnoreCase("VOTING")) {
+            isVoting = true;
             viewHolder.manager.setVisibility(View.VISIBLE);
             viewHolder.manager.setText(context.getString(R.string.votemanager));
             viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+context.getString(R.string.voting)+")"));
@@ -72,7 +73,7 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
 
         if(null != managerListener) {
             viewHolder.manager.setOnClickListener(v ->
-                    managerListener.onManagerClick(i, status)
+                    managerListener.onManagerClick(i, isVoting?"VOTING":status)
             );
         }
         if (commonRvListener != null) {
