@@ -1245,7 +1245,7 @@ func newCRChangeProposalOwner(L *lua.LState) int {
 	crcProposal := &payload.CRCProposal{
 		ProposalType:       payload.CRCProposalType(proposalType),
 		OwnerPublicKey:     newOwnerPublicKey,
-		PreviousHash:       *previousHash,
+		TargetProposalHash: *previousHash,
 		CRCouncilMemberDID: *did,
 	}
 
@@ -1345,7 +1345,7 @@ func newCRCCloseProposalHash(L *lua.LState) int {
 		ProposalType:       payload.CRCProposalType(proposalType),
 		OwnerPublicKey:     publicKey,
 		DraftHash:          *draftHash,
-		CloseProposalHash:  *closeProposalHash,
+		TargetProposalHash: *closeProposalHash,
 		CRCouncilMemberDID: *did,
 	}
 

@@ -1790,7 +1790,7 @@ func (s *txValidatorTestSuite) getCRCCloseProposalTxWithHash(publicKeyStr, priva
 		OwnerPublicKey:     publicKey1,
 		CRCouncilMemberDID: *CRCouncilMemberDID,
 		DraftHash:          common.Hash(draftData),
-		CloseProposalHash:  closeProposalHash,
+		TargetProposalHash: closeProposalHash,
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -1831,7 +1831,7 @@ func (s *txValidatorTestSuite) getCRCCloseProposalTx(publicKeyStr, privateKeyStr
 		OwnerPublicKey:     publicKey2,
 		CRCouncilMemberDID: *CRCouncilMemberDID,
 		DraftHash:          common.Hash(draftData),
-		CloseProposalHash:  common.Hash(randomBytes(10)),
+		TargetProposalHash: common.Hash(randomBytes(10)),
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -2846,7 +2846,7 @@ func (s *txValidatorTestSuite) getCRChangeProposalOwnerProposalTx(publicKeyStr, 
 		ProposalType:       payload.ChangeProposalOwner,
 		OwnerPublicKey:     crPublicKey,
 		NewOwnerPublicKey:  newOwnerPublicKey,
-		PreviousHash:       previousHash,
+		TargetProposalHash: previousHash,
 		DraftHash:          common.Hash(draftData),
 		CRCouncilMemberDID: *crDid,
 	}
@@ -3065,7 +3065,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	newOwnerPublicKey, _ := hex.DecodeString(newOwnerPublicKeyStr)
 	proposalState2, proposal2 := s.createSpecificStatusProposal(publicKey1, publicKey2, tenureHeight+1,
 		crstate.VoterAgreed, payload.ChangeProposalOwner)
-	proposal2.PreviousHash = previousHash
+	proposal2.TargetProposalHash = previousHash
 	proposal2.OwnerPublicKey = newOwnerPublicKey
 	s.Chain.crCommittee.GetProposalManager().Proposals[previousHash] = proposalState2
 	txn = s.getCRChangeProposalOwnerProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1,
@@ -3110,14 +3110,14 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	hash = proposal.Hash()
 	s.Chain.crCommittee.GetProposalManager().Proposals[hash] = proposalState
 	txn = s.getCRCCloseProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
-	txn.Payload.(*payload.CRCProposal).CloseProposalHash = hash
+	txn.Payload.(*payload.CRCProposal).TargetProposalHash = hash
 	txn.Payload.(*payload.CRCProposal).Recipient = *randomUint168()
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "CloseProposal recipient must be empty")
 
 	// invalid budget
 	txn = s.getCRCCloseProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
-	txn.Payload.(*payload.CRCProposal).CloseProposalHash = hash
+	txn.Payload.(*payload.CRCProposal).TargetProposalHash = hash
 	txn.Payload.(*payload.CRCProposal).Budgets = []payload.Budget{{
 		payload.Imprest,
 		0x01,
