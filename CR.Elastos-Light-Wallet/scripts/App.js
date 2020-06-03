@@ -139,6 +139,8 @@ let bannerClass = '';
 
 const DECIMAL_REGEX = new RegExp('^[0-9]+([,.][0-9]+)?$');
 
+const TRAILING_ZERO_REGEX = new RegExp('^([0-9].[0-9]+?)0+$');
+
 const mainConsole = new mainConsoleLib.Console(process.stdout, process.stderr);
 
 let GuiToggles;
@@ -211,7 +213,7 @@ const isValidDecimal = (testAmount) => {
   const isValid = DECIMAL_REGEX.test(testAmount);
   mainConsole.log('isValidDecimal', 'testAmount', testAmount, isValid);
   return isValid;
-}
+};
 
 
 const formatDate = (date) => {
@@ -292,48 +294,48 @@ const pollForData = () => {
   try {
     const resetPollIndex = false;
     switch (pollDataTypeIx) {
-      case 0:
-        pollForDataCallback('Polling...');
-        break;
-      case 1:
-        LedgerComm.getLedgerDeviceInfo(pollForDataCallback);
-        break;
-      case 2:
-        if (useLedgerFlag) {
-          LedgerComm.getPublicKey(publicKeyCallback);
-        } else {
-          pollDataTypeIx++;
-          setPollForAllInfoTimer();
-        }
-        break;
-      case 3:
-        if (address != undefined) {
-          requestTransactionHistory();
-          requestBalance();
-          requestUnspentTransactionOutputs();
-          requestBlockchainState();
-        }
+    case 0:
+      pollForDataCallback('Polling...');
+      break;
+    case 1:
+      LedgerComm.getLedgerDeviceInfo(pollForDataCallback);
+      break;
+    case 2:
+      if (useLedgerFlag) {
+        LedgerComm.getPublicKey(publicKeyCallback);
+      } else {
         pollDataTypeIx++;
         setPollForAllInfoTimer();
-        break;
-      case 4:
-        if (refreshCandiatesFlag) {
-          requestListOfProducers(false);
-          requestListOfCandidateVotes();
-        }
-        requestRssFeed();
-        requestFee();
-        requestFeeAccount();
-        pollDataTypeIx++;
-        setPollForAllInfoTimer();
-        break;
-      case MAX_POLL_DATA_TYPE_IX:
-        // only check every 10 seconds for a change in device status.
-        pollDataTypeIx = 0;
-        setTimeout(pollForData, POLL_INTERVAL);
-        break;
-      default:
-        throw Error('poll data index reset failed.');
+      }
+      break;
+    case 3:
+      if (address != undefined) {
+        requestTransactionHistory();
+        requestBalance();
+        requestUnspentTransactionOutputs();
+        requestBlockchainState();
+      }
+      pollDataTypeIx++;
+      setPollForAllInfoTimer();
+      break;
+    case 4:
+      if (refreshCandiatesFlag) {
+        requestListOfProducers(false);
+        requestListOfCandidateVotes();
+      }
+      requestRssFeed();
+      requestFee();
+      requestFeeAccount();
+      pollDataTypeIx++;
+      setPollForAllInfoTimer();
+      break;
+    case MAX_POLL_DATA_TYPE_IX:
+      // only check every 10 seconds for a change in device status.
+      pollDataTypeIx = 0;
+      setTimeout(pollForData, POLL_INTERVAL);
+      break;
+    default:
+      throw Error('poll data index reset failed.');
     }
   } catch (error) {
     mainConsole.trace('pollForData', pollDataTypeIx, error);
@@ -349,7 +351,7 @@ const postJson = (url, jsonString, readyCallback, errorCallback) => {
   const xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
 
   const xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
+  xhttp.onreadystatechange = function () {
     if (this.readyState == 4) {
       // sendToAddressStatuses.push( `XMLHttpRequest: status:${this.status} response:'${this.response}'` );
       if (this.status == 200) {
@@ -384,7 +386,7 @@ const getRssFeed = async (url, readyCallback, errorCallback) => {
 
 const getJson = (url, readyCallback, errorCallback) => {
   const xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
+  xhttp.onreadystatechange = function () {
     if (this.readyState == 4) {
       if (this.status == 200) {
         readyCallback(JSON.parse(this.response));
@@ -392,7 +394,7 @@ const getJson = (url, readyCallback, errorCallback) => {
         errorCallback({
           'status': this.status,
           'statusText': this.statusText,
-          'response': this.response
+          'response': this.response,
         });
       }
     }
@@ -957,6 +959,12 @@ const getTransactionHistoryErrorCallback = (response) => {
   renderApp();
 };
 
+const formatTxValue = (value) => {
+  const elaFloat = parseInt(value) / 100000000;
+  const elaDisplay = elaFloat.toFixed(8).replace(TRAILING_ZERO_REGEX, '$1');
+  return elaDisplay;
+}
+
 const getTransactionHistoryReadyCallback = (transactionHistory) => {
   // mainConsole.log('getTransactionHistoryReadyCallback ' + JSON.stringify(transactionHistory));
   transactionHistoryStatus = 'History Received';
@@ -968,8 +976,6 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
         if (tx.CreateTime == 0) {
           time = formatDate(new Date());
         }
-        const elaFloat = parseInt(tx.Value) / 100000000;
-        const elaDisplay = Number(elaFloat.toFixed(8));
         const parsedTransaction = {};
         parsedTransaction.sortTime = tx.CreateTime;
         if (tx.Status == 'pending' && tx.CreateTime == 0) {
@@ -991,7 +997,7 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
           parsedTransaction.type = '*Receiving';
         }
         parsedTransaction.valueSat = tx.Value;
-        parsedTransaction.value = elaDisplay;
+        parsedTransaction.value = formatTxValue(tx.Value);
         parsedTransaction.address = tx.Address;
         parsedTransaction.txHash = tx.Txid;
         parsedTransaction.txHashWithEllipsis = tx.Txid;
@@ -1467,3 +1473,4 @@ exports.setRefreshCandiatesFlag = setRefreshCandiatesFlag;
 exports.requestListOfProducers = requestListOfProducers;
 exports.requestListOfCandidateVotes = requestListOfCandidateVotes;
 exports.verifyLedgerBanner = verifyLedgerBanner;
+exports.formatTxValue = formatTxValue;
