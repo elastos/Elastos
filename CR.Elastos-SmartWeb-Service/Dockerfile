@@ -1,24 +1,22 @@
-# The Google Cloud Platform Python runtime is based on Debian Jessie
-# You can read more about the runtime at:
-#   https://github.com/GoogleCloudPlatform/python-runtime
-FROM gcr.io/google_appengine/python
+FROM ubuntu:18.04
 
 RUN apt-get update -y && \
-    apt-get install software-properties-common -y && \
+    apt-get install software-properties-common python3.8 python3.8-dev python3-pip -y && \
     add-apt-repository ppa:ethereum/ethereum && \
     apt-get update -y && \
     apt-get install solc -y
 
-# Create a virtualenv for dependencies. This isolates these packages from
-# system-level packages.
-RUN virtualenv -p python3.6 /env
+RUN pip3 install virtualenv
+
+RUN virtualenv -p /usr/bin/python3.8 /venv
+RUN . venv/bin/activate
 
 ENV SRC_DIR /elastos-smartweb-service
 
 # Setting these environment variables are the same as running
 # source /env/bin/activate.
-ENV VIRTUAL_ENV /env
-ENV PATH /env/bin:$PATH
+ENV VIRTUAL_ENV /venv
+ENV PATH /venv/bin:$PATH
 ENV PYTHONPATH="${PYTHONPATH}:${SRC_DIR}/grpc_adenine/stubs/"
 
 WORKDIR ${SRC_DIR}

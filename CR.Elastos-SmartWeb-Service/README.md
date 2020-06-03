@@ -152,7 +152,7 @@ gcloud run deploy elastos-smartweb-service-esp --image="gcr.io/endpoints-release
 
 # Every time there is an update
 python3 -m grpc_tools.protoc --include_imports --include_source_info --proto_path=grpc_adenine/definitions --descriptor_set_out=api_descriptor.pb --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/*.proto;
-# Replace all the subts with "from . import __"
+# Replace all the stubs with "from . import __"
 
 # Build and push docker image
 docker build -t cyberrepublic/elastos-smartweb-service .;
@@ -164,7 +164,7 @@ gcloud endpoints services deploy api_descriptor.pb api_config.yaml;
 
 # Build and run a new esp image
 ./gcloud_build_image.sh -s elastos-smartweb-service-esp-jgdewju65a-uk.a.run.app -c 2020-02-26r2 -p careful-pillar-269322;
-gcloud run deploy elastos-smartweb-service-esp \
+gcloud run deploy elastos-smartweb-service \
   --image="gcr.io/careful-pillar-269322/endpoints-runtime-serverless:elastos-smartweb-service-esp-jgdewju65a-uk.a.run.app-2020-02-26r2" \
   --set-env-vars=ESPv2_ARGS=--cors_preset=basic \
   --allow-unauthenticated \

@@ -5,59 +5,95 @@ from . import wallet_pb2 as wallet__pb2
 
 
 class WalletStub(object):
-  """The service definition.
-  """
-
-  def __init__(self, channel):
-    """Constructor.
-
-    Args:
-      channel: A grpc.Channel.
+    """The service definition.
     """
-    self.CreateWallet = channel.unary_unary(
-        '/wallet.Wallet/CreateWallet',
-        request_serializer=wallet__pb2.Request.SerializeToString,
-        response_deserializer=wallet__pb2.Response.FromString,
-        )
-    self.RequestELA = channel.unary_unary(
-        '/wallet.Wallet/RequestELA',
-        request_serializer=wallet__pb2.Request.SerializeToString,
-        response_deserializer=wallet__pb2.Response.FromString,
-        )
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.CreateWallet = channel.unary_unary(
+                '/wallet.Wallet/CreateWallet',
+                request_serializer=wallet__pb2.Request.SerializeToString,
+                response_deserializer=wallet__pb2.Response.FromString,
+                )
+        self.RequestELA = channel.unary_unary(
+                '/wallet.Wallet/RequestELA',
+                request_serializer=wallet__pb2.Request.SerializeToString,
+                response_deserializer=wallet__pb2.Response.FromString,
+                )
 
 
 class WalletServicer(object):
-  """The service definition.
-  """
+    """The service definition.
+    """
 
-  def CreateWallet(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
+    def CreateWallet(self, request, context):
+        """Missing associated documentation comment in .proto file"""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
-  def RequestELA(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
+    def RequestELA(self, request, context):
+        """Missing associated documentation comment in .proto file"""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
 
 def add_WalletServicer_to_server(servicer, server):
-  rpc_method_handlers = {
-      'CreateWallet': grpc.unary_unary_rpc_method_handler(
-          servicer.CreateWallet,
-          request_deserializer=wallet__pb2.Request.FromString,
-          response_serializer=wallet__pb2.Response.SerializeToString,
-      ),
-      'RequestELA': grpc.unary_unary_rpc_method_handler(
-          servicer.RequestELA,
-          request_deserializer=wallet__pb2.Request.FromString,
-          response_serializer=wallet__pb2.Response.SerializeToString,
-      ),
-  }
-  generic_handler = grpc.method_handlers_generic_handler(
-      'wallet.Wallet', rpc_method_handlers)
-  server.add_generic_rpc_handlers((generic_handler,))
+    rpc_method_handlers = {
+            'CreateWallet': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateWallet,
+                    request_deserializer=wallet__pb2.Request.FromString,
+                    response_serializer=wallet__pb2.Response.SerializeToString,
+            ),
+            'RequestELA': grpc.unary_unary_rpc_method_handler(
+                    servicer.RequestELA,
+                    request_deserializer=wallet__pb2.Request.FromString,
+                    response_serializer=wallet__pb2.Response.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'wallet.Wallet', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Wallet(object):
+    """The service definition.
+    """
+
+    @staticmethod
+    def CreateWallet(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/wallet.Wallet/CreateWallet',
+            wallet__pb2.Request.SerializeToString,
+            wallet__pb2.Response.FromString,
+            options, channel_credentials,
+            call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RequestELA(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/wallet.Wallet/RequestELA',
+            wallet__pb2.Request.SerializeToString,
+            wallet__pb2.Response.FromString,
+            options, channel_credentials,
+            call_credentials, compression, wait_for_ready, timeout, metadata)
