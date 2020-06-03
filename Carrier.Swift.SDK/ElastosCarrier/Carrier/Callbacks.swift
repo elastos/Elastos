@@ -183,7 +183,7 @@ private func onFriendMessage(_: OpaquePointer?,
     let from = String(cString: cfrom!)
     let msg  = Data(bytes: cmessage!, count: len)
     let interval:TimeInterval = TimeInterval.init(timestamp)
-    let date = Date(timeIntervalSince1970: interval)
+    let date = Date(timeIntervalSince1970: interval / 1000000)
 
     handler.didReceiveFriendMessage?(carrier, from, msg, date, is_offline)
 }
