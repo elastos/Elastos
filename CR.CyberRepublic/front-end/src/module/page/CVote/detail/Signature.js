@@ -10,7 +10,7 @@ const FormItem = Form.Item
 class Signature extends Component {
   constructor(props) {
     super(props)
-    this.state = { url: '', messageHash: '' }
+    this.state = { url: '', messageHash: '', message: '' }
     this.mtimerList = []
   }
 
@@ -73,6 +73,9 @@ class Signature extends Component {
           this.setState({ url: rs.url, messageHash: rs.messageHash })
           await this.sleep(5000)
           this.pollingSignature()
+        }
+        if (!rs.success && rs.message) {
+          this.setState({ message: rs.message })
         }
       }
     })
@@ -157,8 +160,25 @@ class Signature extends Component {
   }
 
   hideModal = () => {
-    this.setState({ url: '' })
+    const { message } = this.state
+    if (message) {
+      this.props.hideModal()
+      return
+    }
+    const { isSecretary } = this.props
+    isSecretary && this.setState({ url: '' })
     this.props.hideModal()
+  }
+
+  modalContent = () => {
+    const { message, url } = this.state
+    if (message) {
+      return <div>{message}</div>
+    }
+    if (url) {
+      return this.signatureQrCode()
+    }
+    return this.renderTextare()
   }
 
   render() {
@@ -183,7 +203,7 @@ class Signature extends Component {
             </Title>
           )}
 
-          {url ? this.signatureQrCode() : this.renderTextare()}
+          {this.modalContent()}
         </Wrapper>
       </Modal>
     )
