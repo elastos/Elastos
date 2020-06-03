@@ -1276,7 +1276,7 @@ internal func ela_remove_friend(_ carrier: OpaquePointer!,
  * \~English
  * Send a message to a friend.
  *
- * The message length may not exceed ELA_MAX_APP_MESSAGE_LEN, and message
+ * The message length may not exceed ELA_MAX_APP_BULKMSG_LEN, and message
  * itself should be text-formatted. Larger messages must be split by application
  * and sent as separate messages. Other carrier nodes can reassemble the
  * fragments.

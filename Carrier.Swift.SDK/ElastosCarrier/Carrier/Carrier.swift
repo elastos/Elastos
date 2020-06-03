@@ -44,7 +44,7 @@ public class Carrier: NSObject {
     private static let TAG: String = "Carrier"
     private static let MAX_ADDRESS_LEN: Int = 52;
     private static let MAX_ID_LEN: Int = 45
-
+    private let ELA_MAX_APP_BULKMSG_LEN = (5 * 1024 * 1024)
     internal var ccarrier: OpaquePointer?
     private  var didKill : Bool
     private  let semaph  : DispatchSemaphore
@@ -617,7 +617,7 @@ public class Carrier: NSObject {
     /// Send a message to target friend without intent to know whether the message
     /// was sent as online message or offline message.
     ///
-    /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
+    /// The message length may not exceed `ELA_MAX_APP_BULKMSG_LEN`, and message
     /// itself should be text-formatted. Larger messages must be splitted by
     /// application and sent as separate messages. Other nodes can reassemble
     /// the fragments.
@@ -637,7 +637,7 @@ public class Carrier: NSObject {
     /// Send a message to target friend without intent to know whether the message
     /// was sent as online message or offline message.
     ///
-    /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
+    /// The message length may not exceed `ELA_MAX_APP_BULKMSG_LEN`, and message
     /// itself should be text-formatted. Larger messages must be splitted by
     /// application and sent as separate messages. Other nodes can reassemble
     /// the fragments.
@@ -649,6 +649,10 @@ public class Carrier: NSObject {
     /// - Throws: CarrierError
     @objc(sendFriendMessage:withData:error:)
     public func sendFriendMessage(to target: String, _ withData: Data) throws {
+
+        guard withData.count < ELA_MAX_APP_BULKMSG_LEN else {
+            throw CarrierError.InvalidArgument
+        }
         var isOffline: CBool = false
         let result = target.withCString { cto in
             return withData.withUnsafeBytes{ cdata -> Int32 in
@@ -668,7 +672,7 @@ public class Carrier: NSObject {
     /// Send a message to target friend with intent to konw whether the message
     /// was sent as online message or offline message.
     ///
-    /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
+    /// The message length may not exceed `ELA_MAX_APP_BULKMSG_LEN`, and message
     /// itself should be text-formatted. Larger messages must be splitted by
     /// application and sent as separate messages. Other nodes can reassemble
     /// the fragments.
@@ -689,7 +693,7 @@ public class Carrier: NSObject {
     /// Send a message to target friend with intent to konw whether the message
     /// was sent as online message or offline message.
     ///
-    /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
+    /// The message length may not exceed `ELA_MAX_APP_BULKMSG_LEN`, and message
     /// itself should be text-formatted. Larger messages must be splitted by
     /// application and sent as separate messages. Other nodes can reassemble
     /// the fragments.
@@ -702,6 +706,9 @@ public class Carrier: NSObject {
     /// - returns: The value of true means the message was sent as online message.
     ///            Otherwise as offline message.
     public func sendFriendMessage(to target: String, withData data: Data) throws -> Bool {
+        guard data.count < ELA_MAX_APP_BULKMSG_LEN else {
+            throw CarrierError.InvalidArgument
+        }
         var isOffline: CBool = false
         let result = target.withCString { cto in
             return data.withUnsafeBytes{ cdata -> Int32 in
@@ -722,7 +729,7 @@ public class Carrier: NSObject {
     /// Send a message to target friend with intent to konw whether the message
     /// was sent as online message or offline message.
     ///
-    /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
+    /// The message length may not exceed `ELA_MAX_APP_BULKMSG_LEN`, and message
     /// itself should be text-formatted. Larger messages must be splitted by
     /// application and sent as separate messages. Other nodes can reassemble 
     /// the fragments.
@@ -743,7 +750,7 @@ public class Carrier: NSObject {
     /// Send a message to target friend with intent to konw whether the message
     /// was sent as online message or offline message.
     ///
-    /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
+    /// The message length may not exceed `ELA_MAX_APP_BULKMSG_LEN`, and message
     /// itself should be text-formatted. Larger messages must be splitted by
     /// application and sent as separate messages. Other nodes can reassemble
     /// the fragments.
@@ -756,6 +763,10 @@ public class Carrier: NSObject {
     ///            Otherwise as offline message.
     @objc(sendFriendMessage:data:error:)
     public func sendFriendMessage(to target: String, withData data: Data, error: NSErrorPointer) -> Bool {
+        guard data.count < ELA_MAX_APP_BULKMSG_LEN else {
+            error?.pointee = CarrierError.InvalidArgument as NSError
+            return false
+        }
         var isOffline: CBool = false
         let result = target.withCString { cto in
             return data.withUnsafeBytes { cdata -> Int32 in
