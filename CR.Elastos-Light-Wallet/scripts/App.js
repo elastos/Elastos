@@ -211,7 +211,7 @@ const getStateUrl = () => {
 
 const isValidDecimal = (testAmount) => {
   const isValid = DECIMAL_REGEX.test(testAmount);
-  mainConsole.log('isValidDecimal', 'testAmount', testAmount, isValid);
+  // mainConsole.log('isValidDecimal', 'testAmount', testAmount, isValid);
   return isValid;
 };
 
@@ -559,11 +559,11 @@ const updateAmountAndFees = () => {
   sendToAddress = GuiUtils.getValue('sendToAddress');
   feeAmountSats = GuiUtils.getValue('feeAmount');
 
-  mainConsole.log('INTERIM updateAmountAndFees',
-    'sendAmount:', sendAmount,
-    'sendToAddress:', sendToAddress,
-    'feeAmountSats:', feeAmountSats,
-  );
+  // mainConsole.log('INTERIM updateAmountAndFees',
+  //   'sendAmount:', sendAmount,
+  //   'sendToAddress:', sendToAddress,
+  //   'feeAmountSats:', feeAmountSats,
+  // );
 
   if (sendToAddress.length == 0) {
     bannerStatus = `Address field is blank`;
