@@ -869,7 +869,7 @@ export default class extends Base {
     }
 
     private async updateProposalBudget(query: any) {
-        const {WITHDRAWN} = constant.MILESTONE_STATUS
+        const { WITHDRAWN, WAITING_FOR_WITHDRAWAL } = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel('CVote')
         const proposal = await db_cvote.findOne(query)
         const sortedBudget = _.sortBy(proposal.budget, 'milestoneKey')
@@ -891,8 +891,12 @@ export default class extends Base {
             const budgets = _.get(result, 'data.proposal.budgets')
             if (budgets) {
                 const budget = sortedBudget.map((item, index) => {
-                    if (budgets[index].status.toLowerCase() === 'withdrawn') {
-                        return {...item, status: WITHDRAWN}
+                    const chainStatus = budgets[index].status.toLowerCase()
+                    if (chainStatus === 'withdrawn') {
+                        return { ...item, status: WITHDRAWN }
+                    }
+                    if (chainStatus === 'withdrawable') {
+                        return { ...item, status: WAITING_FOR_WITHDRAWAL }
                     }
                     return item
                 })
