@@ -182,7 +182,8 @@ export default class extends Base {
             let impeachmentObj = {}
             if (councilList.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
                 // update impeachment
-                const impeachmentThroughVotes = councilList.circulatingSupply * 0.2
+                const impeachmentThroughVotes = (await ela.circulatingSupply(councilList.height)) * 0.2
+                // const impeachmentThroughVotes = councilList.circulatingSupply * 0.2
                 impeachmentObj['impeachmentVotes'] = council.impeachmentVotes
                 impeachmentObj['impeachmentThroughVotes'] = _.toNumber(impeachmentThroughVotes.toFixed(8))
                 impeachmentObj['impeachmentRatio'] = _.toNumber((council.impeachmentVotes / impeachmentThroughVotes).toFixed(4))
