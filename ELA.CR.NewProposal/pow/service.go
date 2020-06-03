@@ -112,7 +112,7 @@ func (pow *Service) GetDefaultTxVersion(height uint32) types.TransactionVersion 
 func (pow *Service) CreateCoinbaseTx(minerAddr string, height uint32) (*types.Transaction, error) {
 	crRewardAddr := pow.chainParams.Foundation
 	if height >= pow.chainParams.CRCommitteeStartHeight {
-		crRewardAddr = pow.chainParams.CRCFoundation
+		crRewardAddr = pow.chainParams.CRAsstesAddress
 	}
 
 	minerProgramHash, err := common.Uint168FromAddress(minerAddr)

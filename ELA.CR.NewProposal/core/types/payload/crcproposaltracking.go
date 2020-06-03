@@ -194,12 +194,12 @@ func (p *CRCProposalTracking) Deserialize(r io.Reader, version byte) error {
 	}
 	p.OwnerSignature = ownerSign
 
-	newLeaderSign, err := common.ReadVarBytes(r, crypto.SignatureLength,
+	NewOwnerSignature, err := common.ReadVarBytes(r, crypto.SignatureLength,
 		"new owner signature")
 	if err != nil {
-		return errors.New("failed to deserialize newLeaderSign")
+		return errors.New("failed to deserialize NewOwnerSignature")
 	}
-	p.NewOwnerSignature = newLeaderSign
+	p.NewOwnerSignature = NewOwnerSignature
 
 	pType, err := common.ReadBytes(r, 1)
 	if err != nil {

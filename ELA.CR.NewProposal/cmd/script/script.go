@@ -170,14 +170,14 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	budgets := c.String("budgets")
 	voteResult := c.Int("voteresult")
 	proposalTrackingType := c.Int64("proposaltrackingtype")
-	documentHash := c.String("documenthash")
+	MessageHash := c.String("MessageHash")
 	crOpinionHash := c.String("cropinionhash")
-	secretaryOpinionHash := c.String("secretaryopinionhash")
+	SecretaryGeneralOpinionHash := c.String("SecretaryGeneralOpinionHash")
 	stage := c.Int64("stage")
-	leaderPubkey := c.String("leaderpublickey")
-	newLeaderPubkey := c.String("newleaderpublickey")
-	leaderPrivkey := c.String("leaderprivatekey")
-	newLeaderPrivkey := c.String("newleaderprivatekey")
+	OwnerPublicKey := c.String("ownerpublickey")
+	newOwnerPublicKey := c.String("newownerpublickey")
+	leaderPrivkey := c.String("ownerprivatekey")
+	newLeaderPrivkey := c.String("newownerprivatekey")
 	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
 	secretaryGeneralPublickey := c.String("secretarygeneralpublickey")
 
@@ -185,7 +185,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	changeProposalOwnerKey := c.String("newownerpublickey")
 	previousHash := c.String("previoushash")
 	closeProposalHash := c.String("closeproposalhash")
-	crcCommitteeAddress := c.String("crccommiteeaddr")
+	CRExpensesAddress := c.String("crccommiteeaddr")
 	payloadVersion := c.Int64("payloadversion")
 
 	getProposalType := func(L *lua.LState) int {
@@ -218,28 +218,28 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LNumber(proposalTrackingType))
 		return 1
 	}
-	getDocumentHash := func(L *lua.LState) int {
-		L.Push(lua.LString(documentHash))
+	getMessageHash := func(L *lua.LState) int {
+		L.Push(lua.LString(MessageHash))
 		return 1
 	}
 	getCROpinionHash := func(L *lua.LState) int {
 		L.Push(lua.LString(crOpinionHash))
 		return 1
 	}
-	getSecretaryOpinionHash := func(L *lua.LState) int {
-		L.Push(lua.LString(secretaryOpinionHash))
+	getSecretaryGeneralOpinionHash := func(L *lua.LState) int {
+		L.Push(lua.LString(SecretaryGeneralOpinionHash))
 		return 1
 	}
 	getStage := func(L *lua.LState) int {
 		L.Push(lua.LNumber(stage))
 		return 1
 	}
-	getLeaderPubkey := func(L *lua.LState) int {
-		L.Push(lua.LString(leaderPubkey))
+	getOwnerPublicKey := func(L *lua.LState) int {
+		L.Push(lua.LString(OwnerPublicKey))
 		return 1
 	}
-	getNewLeaderPubkey := func(L *lua.LState) int {
-		L.Push(lua.LString(newLeaderPubkey))
+	getNewOwnerPublicKey := func(L *lua.LState) int {
+		L.Push(lua.LString(newOwnerPublicKey))
 		return 1
 	}
 	getLeaderPrivkey := func(L *lua.LState) int {
@@ -275,8 +275,8 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(closeProposalHash))
 		return 1
 	}
-	getCRCCommitteeAddress := func(L *lua.LState) int {
-		L.Push(lua.LString(crcCommitteeAddress))
+	getCRExpensesAddress := func(L *lua.LState) int {
+		L.Push(lua.LString(CRExpensesAddress))
 		return 1
 	}
 	getPayloadVersion := func(L *lua.LState) int {
@@ -289,12 +289,12 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getProposalHash", getProposalHash)
 	L.Register("getVoteResult", getVoteResult)
 	L.Register("getProposalTrackingType", getProposalTrackingType)
-	L.Register("getDocumentHash", getDocumentHash)
+	L.Register("getMessageHash", getMessageHash)
 	L.Register("getCROpinionHash", getCROpinionHash)
-	L.Register("getSecretaryOpinionHash", getSecretaryOpinionHash)
+	L.Register("getSecretaryGeneralOpinionHash", getSecretaryGeneralOpinionHash)
 	L.Register("getStage", getStage)
-	L.Register("getLeaderPubkey", getLeaderPubkey)
-	L.Register("getNewLeaderPubkey", getNewLeaderPubkey)
+	L.Register("getOwnerPublicKey", getOwnerPublicKey)
+	L.Register("getNewOwnerPublicKey", getNewOwnerPublicKey)
 	L.Register("getLeaderPrivkey", getLeaderPrivkey)
 	L.Register("getNewLeaderPrivkey", getNewLeaderPrivkey)
 	L.Register("getSecretaryGeneralPrivkey", getSecretaryGeneralPrivkey)
@@ -303,7 +303,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getChangeProposalOwnerKey", getChangeProposalOwnerKey)
 	L.Register("getPreviousHash", getPreviousHash)
 	L.Register("getCloseProposalHash", getCloseProposalHash)
-	L.Register("getCRCCommitteeAddress", getCRCCommitteeAddress)
+	L.Register("getCRExpensesAddress", getCRExpensesAddress)
 	L.Register("getPayloadVersion", getPayloadVersion)
 }
 
@@ -449,10 +449,10 @@ func NewCommand() *cli.Command {
 				Name:  "drafthash",
 				Usage: "set the draft proposal hash",
 			},
-			cli.StringFlag{
-				Name:  "newownerpublickey",
-				Usage: "set the new owner public key",
-			},
+			//cli.StringFlag{
+			//	Name:  "newownerpublickey",
+			//	Usage: "set the new owner public key",
+			//},
 			cli.StringFlag{
 				Name:  "previoushash",
 				Usage: "set the previous proposal hash",
@@ -482,7 +482,7 @@ func NewCommand() *cli.Command {
 				Usage: "set the type of proposal tracking transaction",
 			},
 			cli.StringFlag{
-				Name:  "documenthash",
+				Name:  "MessageHash",
 				Usage: "set the hash of proposal tracking document",
 			},
 			cli.StringFlag{
@@ -490,27 +490,27 @@ func NewCommand() *cli.Command {
 				Usage: "set the hash of proposal opinion",
 			},
 			cli.StringFlag{
-				Name:  "secretaryopinionhash",
+				Name:  "SecretaryGeneralOpinionHash",
 				Usage: "set the hash of proposal tracking opinion",
 			},
 			cli.Int64Flag{
 				Name:  "stage",
 				Usage: "set the stage of proposal",
 			},
+			//cli.StringFlag{
+			//	Name:  "ownerpublickey",
+			//	Usage: "set the public key of proposal leader",
+			//},
 			cli.StringFlag{
-				Name:  "leaderpublickey",
-				Usage: "set the public key of proposal leader",
-			},
-			cli.StringFlag{
-				Name:  "newleaderpublickey",
+				Name:  "newownerpublickey",
 				Usage: "set the public key of new proposal leader",
 			},
+			//cli.StringFlag{
+			//	Name:  "ownerprivatekey",
+			//	Usage: "set the private key of proposal leader",
+			//},
 			cli.StringFlag{
-				Name:  "leaderprivatekey",
-				Usage: "set the private key of proposal leader",
-			},
-			cli.StringFlag{
-				Name:  "newleaderprivatekey",
+				Name:  "newownerprivatekey",
 				Usage: "set the private key of new proposal leader",
 			},
 			cli.StringFlag{

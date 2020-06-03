@@ -2035,14 +2035,14 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 	trackingType payload.CRCProposalTrackingType,
 	proposalHash common.Uint256, stage uint8,
 	ownerPublicKeyStr, ownerPrivateKeyStr,
-	newLeaderPublicKeyStr, newLeaderPrivateKeyStr,
+	newownerpublickeyStr, newownerprivatekeyStr,
 	sgPublicKeyStr, sgPrivateKeyStr string) *types.Transaction {
 
 	ownerPublicKey, _ := common.HexStringToBytes(ownerPublicKeyStr)
 	ownerPrivateKey, _ := common.HexStringToBytes(ownerPrivateKeyStr)
 
-	newLeaderPublicKey, _ := common.HexStringToBytes(newLeaderPublicKeyStr)
-	newLeaderPrivateKey, _ := common.HexStringToBytes(newLeaderPrivateKeyStr)
+	newownerpublickey, _ := common.HexStringToBytes(newownerpublickeyStr)
+	newownerprivatekey, _ := common.HexStringToBytes(newownerprivatekeyStr)
 
 	sgPrivateKey, _ := common.HexStringToBytes(sgPrivateKeyStr)
 
@@ -2057,7 +2057,7 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 		Stage:                       stage,
 		MessageHash:                 common.Hash(documentData),
 		OwnerPublicKey:              ownerPublicKey,
-		NewOwnerPublicKey:           newLeaderPublicKey,
+		NewOwnerPublicKey:           newownerpublickey,
 		SecretaryGeneralOpinionHash: common.Hash(opinionHash),
 	}
 
@@ -2066,9 +2066,9 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 	sig, _ := crypto.Sign(ownerPrivateKey, signBuf.Bytes())
 	cPayload.OwnerSignature = sig
 
-	if newLeaderPublicKeyStr != "" && newLeaderPrivateKeyStr != "" {
+	if newownerpublickeyStr != "" && newownerprivatekeyStr != "" {
 		common.WriteVarBytes(signBuf, sig)
-		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
+		crSig, _ := crypto.Sign(newownerprivatekey, signBuf.Bytes())
 		cPayload.NewOwnerSignature = crSig
 		sig = crSig
 	}
@@ -2084,8 +2084,8 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 
 func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	// Set CRC foundation and CRC committee address.
-	s.Chain.chainParams.CRCFoundation = *randomUint168()
-	s.Chain.chainParams.CRCCommitteeAddress = *randomUint168()
+	s.Chain.chainParams.CRAsstesAddress = *randomUint168()
+	s.Chain.chainParams.CRExpensesAddress = *randomUint168()
 
 	// Set CRC foundation and CRC committee amount.
 	s.Chain.crCommittee.CRCFoundationBalance = common.Fixed64(900 * 1e8)
@@ -2102,7 +2102,7 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	}
 	refOutput := types.Output{
 		Value:       900 * 1e8,
-		ProgramHash: s.Chain.chainParams.CRCFoundation,
+		ProgramHash: s.Chain.chainParams.CRAsstesAddress,
 	}
 	refOutputErr := types.Output{
 		Value:       900 * 1e8,
@@ -2113,19 +2113,19 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	// Create CRC appropriation transaction.
 	output1 := &types.Output{
 		Value:       90 * 1e8,
-		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
+		ProgramHash: s.Chain.chainParams.CRExpensesAddress,
 	}
 	output2 := &types.Output{
 		Value:       810 * 1e8,
-		ProgramHash: s.Chain.chainParams.CRCFoundation,
+		ProgramHash: s.Chain.chainParams.CRAsstesAddress,
 	}
 	output1Err := &types.Output{
 		Value:       91 * 1e8,
-		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
+		ProgramHash: s.Chain.chainParams.CRExpensesAddress,
 	}
 	output2Err := &types.Output{
 		Value:       809 * 1e8,
-		ProgramHash: s.Chain.chainParams.CRCFoundation,
+		ProgramHash: s.Chain.chainParams.CRAsstesAddress,
 	}
 
 	// Check correct transaction.
@@ -2349,7 +2349,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 
 func (s *txValidatorTestSuite) TestCheckCRCProposalRealWithdrawTransaction() {
 	// Set CRC committee address.
-	s.Chain.chainParams.CRCCommitteeAddress = *randomUint168()
+	s.Chain.chainParams.CRExpensesAddress = *randomUint168()
 
 	// Set WithdrawableTxInfo
 	withdrawTransactionHash1 := *randomUint256()
@@ -2377,7 +2377,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalRealWithdrawTransaction() {
 	}
 	refOutput := types.Output{
 		Value:       20 * 1e8,
-		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
+		ProgramHash: s.Chain.chainParams.CRExpensesAddress,
 	}
 	reference[input] = refOutput
 
@@ -2392,7 +2392,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalRealWithdrawTransaction() {
 	}
 	output3 := &types.Output{
 		Value:       1 * 1e8,
-		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
+		ProgramHash: s.Chain.chainParams.CRExpensesAddress,
 	}
 	output1Err := &types.Output{
 		Value:       10 * 1e8,
@@ -2666,14 +2666,14 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
 	RecipientAddress := "ERyUmNH51roR9qfru37Kqkaok2NghR7L5U"
-	CRCCommitteeAddress := "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
-	NOCRCCommitteeAddress := "EWm2ZGeSyDBBAsVSsvSvspPKV4wQBKPjUk"
+	CRExpensesAddress := "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	NOCRExpensesAddress := "EWm2ZGeSyDBBAsVSsvSvspPKV4wQBKPjUk"
 	Recipient, _ := common.Uint168FromAddress(RecipientAddress)
 	tenureHeight := config.DefaultParams.CRCommitteeStartHeight
 	pk1Bytes, _ := common.HexStringToBytes(publicKeyStr1)
 	ela := common.Fixed64(100000000)
-	CRCCommitteeAddressU168, _ := common.Uint168FromAddress(CRCCommitteeAddress)
-	NOCRCCommitteeAddressU168, _ := common.Uint168FromAddress(NOCRCCommitteeAddress)
+	CRExpensesAddressU168, _ := common.Uint168FromAddress(CRExpensesAddress)
+	NOCRExpensesAddressU168, _ := common.Uint168FromAddress(NOCRExpensesAddress)
 
 	inputs := []*types.Input{
 		{
@@ -2687,12 +2687,12 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	outputs := []*types.Output{
 		{
 			AssetID:     config.ELAAssetID,
-			ProgramHash: *CRCCommitteeAddressU168,
+			ProgramHash: *CRExpensesAddressU168,
 			Value:       common.Fixed64(60 * ela),
 		},
 		{
 			AssetID:     config.ELAAssetID,
-			ProgramHash: *NOCRCCommitteeAddressU168,
+			ProgramHash: *NOCRExpensesAddressU168,
 			Value:       common.Fixed64(600 * ela),
 		},
 	}
@@ -2700,10 +2700,10 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	references := make(map[*types.Input]types.Output)
 	references[inputs[0]] = *outputs[0]
 
-	s.Chain.chainParams.CRCCommitteeAddress = *CRCCommitteeAddressU168
+	s.Chain.chainParams.CRExpensesAddress = *CRExpensesAddressU168
 	// stage = 1 ok
 	txn := s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1,
-		Recipient, CRCCommitteeAddressU168, 9*ela, 50*ela, 0)
+		Recipient, CRExpensesAddressU168, 9*ela, 50*ela, 0)
 	crcProposalWithdraw, _ := txn.Payload.(*payload.CRCProposalWithdraw)
 	propState := &crstate.ProposalState{
 		Status: crstate.VoterAgreed,
@@ -2731,7 +2731,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 
 	//stage =2 ok
 	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1,
-		Recipient, CRCCommitteeAddressU168, 19*ela, 40*ela, 0)
+		Recipient, CRExpensesAddressU168, 19*ela, 40*ela, 0)
 	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
 	propState.WithdrawableBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8}
 	propState.FinalPaymentStatus = false
@@ -2743,7 +2743,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 
 	//stage =3 ok
 	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1,
-		Recipient, CRCCommitteeAddressU168, 29*ela, 30*ela, 0)
+		Recipient, CRExpensesAddressU168, 29*ela, 30*ela, 0)
 	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
 	propState.WithdrawableBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8, 2: 30 * 1e8}
 	propState.WithdrawnBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8}
@@ -2764,7 +2764,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	txn.Outputs = rightOutPuts
 	txn.Outputs[1].ProgramHash = *Recipient
 	err = s.Chain.checkTransactionOutput(txn, tenureHeight)
-	txn.Outputs[1].ProgramHash = *CRCCommitteeAddressU168
+	txn.Outputs[1].ProgramHash = *CRExpensesAddressU168
 	s.EqualError(err, "txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
 
 	//len(txn.Outputs) >2 CRCProposalWithdraw tx should not have over two output
@@ -2785,7 +2785,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	s.EqualError(err, "proposal withdrawal transaction for non-crc committee address")
 
 	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1,
-		Recipient, CRCCommitteeAddressU168, 19*ela, 40*ela, 1)
+		Recipient, CRExpensesAddressU168, 19*ela, 40*ela, 1)
 	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
 	propState.WithdrawableBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8}
 	propState.WithdrawnBudgets = map[uint8]common.Fixed64{0: 10 * 1e8}
@@ -2806,7 +2806,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	outputs = []*types.Output{
 		{
 			AssetID:     config.ELAAssetID,
-			ProgramHash: *CRCCommitteeAddressU168,
+			ProgramHash: *CRExpensesAddressU168,
 			Value:       common.Fixed64(61 * ela),
 		},
 	}
@@ -2817,7 +2817,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	outputs = []*types.Output{
 		{
 			AssetID:     config.ELAAssetID,
-			ProgramHash: *CRCCommitteeAddressU168,
+			ProgramHash: *CRExpensesAddressU168,
 			Value:       common.Fixed64(60 * ela),
 		},
 	}
@@ -4004,11 +4004,11 @@ func (s *txValidatorTestSuite) TestCreateCRCAppropriationTransaction() {
 	crAddress := "ERyUmNH51roR9qfru37Kqkaok2NghR7L5U"
 	crcFoundation, _ := common.Uint168FromAddress(crAddress)
 
-	s.Chain.chainParams.CRCFoundation = *crcFoundation
+	s.Chain.chainParams.CRAsstesAddress = *crcFoundation
 	crcCommiteeAddressStr := "ESq12oQrvGqHfTkEDYJyR9MxZj1NMnonjo"
 
 	crcCommiteeAddressHash, _ := common.Uint168FromAddress(crcCommiteeAddressStr)
-	s.Chain.chainParams.CRCCommitteeAddress = *crcCommiteeAddressHash
+	s.Chain.chainParams.CRExpensesAddress = *crcCommiteeAddressHash
 
 	s.CurrentHeight = 1
 	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)

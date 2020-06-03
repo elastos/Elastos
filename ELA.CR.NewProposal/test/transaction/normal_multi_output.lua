@@ -3,6 +3,8 @@
 -- license that can be found in the LICENSE file.
 -- 
 
+print("noral_multi_output.lua begin ------------------")
+
 local m = require("api")
 
 local keystore = getWallet()

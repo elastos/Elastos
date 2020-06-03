@@ -19,7 +19,7 @@ local wallet = client.new(keystore, password, false)
 
 -- account
 local addr = wallet:get_address()
-local crcCommitteeAddress = getCRCCommitteeAddress()
+local CRExpensesAddress = getCRExpensesAddress()
 -- asset_id
 local asset_id = m.get_asset_id()
 local proposal_hash = getProposalHash()
@@ -27,7 +27,7 @@ local amount = getAmount()
 local fee = getFee()
 local recipient = getToAddr()
 
-print("crcCommitteeAddress " .. crcCommitteeAddress)
+print("CRExpensesAddress " .. CRExpensesAddress)
 print("amount " .. amount)
 print("fee " .. fee)
 print("addr " .. addr)
@@ -38,7 +38,7 @@ local crcproposalwithdraw_payload =crcproposalwithdraw.new(proposal_hash, wallet
 local tx = transaction.new(9, 0x29, 0, crcproposalwithdraw_payload, 0)
 print(tx:get())
 
-local charge = tx:appendenough(crcCommitteeAddress, amount * 100000000)
+local charge = tx:appendenough(CRExpensesAddress, amount * 100000000)
 print(charge)
 
 -- outputpayload
@@ -47,7 +47,7 @@ local amount_output = output.new(asset_id, amount * 100000000-fee*
         100000000, recipient, 0, default_output)
 tx:appendtxout(amount_output)
 
-local charge_output = output.new(asset_id, charge, crcCommitteeAddress, 0, default_output)
+local charge_output = output.new(asset_id, charge, CRExpensesAddress, 0, default_output)
 tx:appendtxout(charge_output)
 print(tx:get())
 

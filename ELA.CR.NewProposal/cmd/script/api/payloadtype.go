@@ -1561,38 +1561,38 @@ func RegisterCRCProposalTrackingType(L *lua.LState) {
 func newCRCProposalTracking(L *lua.LState) int {
 	proposalTrackingType := L.ToInt64(1)
 	proposalHashStr := L.ToString(2)
-	documentHashStr := L.ToString(3)
+	MessageHashStr := L.ToString(3)
 	stage := L.ToInt64(4)
-	leaderPublicKeyStr := L.ToString(5)
-	leaderPrivateKeyStr := L.ToString(6)
-	newLeaderPublicKeyStr := L.ToString(7)
-	newLeaderPrivateKeyStr := L.ToString(8)
+	ownerpublickeyStr := L.ToString(5)
+	ownerprivatekeyStr := L.ToString(6)
+	newownerpublickeyStr := L.ToString(7)
+	newownerprivatekeyStr := L.ToString(8)
 	sgPrivateKeyStr := L.ToString(9)
-	secretaryOpinionHashStr := L.ToString(10)
+	SecretaryGeneralOpinionHashStr := L.ToString(10)
 	proposalHash, _ := common.Uint256FromHexString(proposalHashStr)
-	documentHash, _ := common.Uint256FromHexString(documentHashStr)
+	MessageHash, _ := common.Uint256FromHexString(MessageHashStr)
 	opinionHash := &common.Uint256{}
-	if secretaryOpinionHashStr != "" {
+	if SecretaryGeneralOpinionHashStr != "" {
 		var err error
-		opinionHash, err = common.Uint256FromHexString(secretaryOpinionHashStr)
+		opinionHash, err = common.Uint256FromHexString(SecretaryGeneralOpinionHashStr)
 		if err != nil {
 			return 1
 		}
 	}
-	leaderPublicKey, _ := common.HexStringToBytes(leaderPublicKeyStr)
-	leaderPrivateKey, _ := common.HexStringToBytes(leaderPrivateKeyStr)
-	newLeaderPublicKey, _ := common.HexStringToBytes(newLeaderPublicKeyStr)
-	newLeaderPrivateKey, _ := common.HexStringToBytes(newLeaderPrivateKeyStr)
+	ownerpublickey, _ := common.HexStringToBytes(ownerpublickeyStr)
+	ownerprivatekey, _ := common.HexStringToBytes(ownerprivatekeyStr)
+	newownerpublickey, _ := common.HexStringToBytes(newownerpublickeyStr)
+	newownerprivatekey, _ := common.HexStringToBytes(newownerprivatekeyStr)
 	sgPrivateKey, _ := common.HexStringToBytes(sgPrivateKeyStr)
 
 	cPayload := &payload.CRCProposalTracking{
 		ProposalTrackingType:        payload.CRCProposalTrackingType(proposalTrackingType),
 		ProposalHash:                *proposalHash,
-		MessageHash:                 *documentHash,
+		MessageHash:                 *MessageHash,
 		SecretaryGeneralOpinionHash: *opinionHash,
 		Stage:                       uint8(stage),
-		OwnerPublicKey:              leaderPublicKey,
-		NewOwnerPublicKey:           newLeaderPublicKey,
+		OwnerPublicKey:              ownerpublickey,
+		NewOwnerPublicKey:           newownerpublickey,
 		OwnerSignature:              []byte{},
 		NewOwnerSignature:           []byte{},
 		SecretaryGeneralSignature:   []byte{},
@@ -1600,12 +1600,12 @@ func newCRCProposalTracking(L *lua.LState) int {
 
 	signBuf := new(bytes.Buffer)
 	cPayload.SerializeUnsigned(signBuf, payload.CRCProposalTrackingVersion)
-	sig, _ := crypto.Sign(leaderPrivateKey, signBuf.Bytes())
+	sig, _ := crypto.Sign(ownerprivatekey, signBuf.Bytes())
 	cPayload.OwnerSignature = sig
 
-	if len(newLeaderPublicKey) != 0 && len(newLeaderPrivateKey) != 0 {
+	if len(newownerpublickey) != 0 && len(newownerprivatekey) != 0 {
 		common.WriteVarBytes(signBuf, sig)
-		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
+		crSig, _ := crypto.Sign(newownerprivatekey, signBuf.Bytes())
 		cPayload.NewOwnerSignature = crSig
 		sig = crSig
 	}

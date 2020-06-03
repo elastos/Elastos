@@ -356,11 +356,11 @@ var (
 		Usage: "defines percentage about CRC appropriation",
 	}
 	CRCFoundationFlag = cli.StringFlag{
-		Name:  "crcfoundation",
+		Name:  "crasstesaddress",
 		Usage: "defines foundation address of CRC",
 	}
-	CRCCommitteeAddressFlag = cli.StringFlag{
-		Name:  "crccommitteeaddress",
+	CRExpensesAddressFlag = cli.StringFlag{
+		Name:  "crexpensesaddress",
 		Usage: "defines appropriation address of CRC committee",
 	}
 	RegisterCRByDIDHeightFlag = cli.StringFlag{

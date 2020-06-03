@@ -269,7 +269,7 @@ func (c *Committee) processCRCAddressRelatedTx(tx *types.Transaction, height uin
 	oriCRCFoundationLockedAmounts := c.CRCFoundationLockedAmounts
 	for _, output := range tx.Outputs {
 		amount := output.Value
-		if output.ProgramHash.IsEqual(c.params.CRCFoundation) {
+		if output.ProgramHash.IsEqual(c.params.CRAsstesAddress) {
 			c.state.history.Append(height, func() {
 				c.CRAssetsAddressUTXOCount++
 				c.CRCFoundationBalance += amount
@@ -284,7 +284,7 @@ func (c *Committee) processCRCAddressRelatedTx(tx *types.Transaction, height uin
 				c.CRCFoundationBalance -= amount
 				c.CRCFoundationLockedAmounts = oriCRCFoundationLockedAmounts
 			})
-		} else if output.ProgramHash.IsEqual(c.params.CRCCommitteeAddress) {
+		} else if output.ProgramHash.IsEqual(c.params.CRExpensesAddress) {
 			c.state.history.Append(height, func() {
 				c.CRCCommitteeBalance += amount
 			}, func() {

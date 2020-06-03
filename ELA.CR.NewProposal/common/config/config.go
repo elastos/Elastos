@@ -55,8 +55,8 @@ type Configuration struct {
 	MinCrossChainTxFee          common.Fixed64    `json:"MinCrossChainTxFee"`
 	FoundationAddress           string            `json:"FoundationAddress"`
 	CRCAddress                  string            `json:"CRCAddress"`
-	CRCFoundation               string            `json:"CRCFoundation"`
-	CRCCommitteeAddress         string            `json:"CRCCommitteeAddress"`
+	CRAsstesAddress             string            `json:"CRAsstesAddress"`
+	CRExpensesAddress           string            `json:"CRExpensesAddress"`
 	PowConfiguration            PowConfiguration  `json:"PowConfiguration"`
 	RpcConfiguration            RpcConfiguration  `json:"RpcConfiguration"`
 	DPoSConfiguration           DPoSConfiguration `json:"DPoSConfiguration"`
