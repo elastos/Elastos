@@ -749,4 +749,5 @@
     <string name="proposalman">提案人</string>
     <string name="votingfinishhint">本轮竞选已经结束，很遗憾您此次未能当选。感谢您的参与，祝您好运！</string>
     <string name="repalcecardlist">是否覆盖现有候选列表</string>
+    <string name="proposalhashnotsame">提案哈希不匹配</string>
 </resources>

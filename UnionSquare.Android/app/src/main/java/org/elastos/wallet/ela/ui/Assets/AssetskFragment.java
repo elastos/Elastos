@@ -836,10 +836,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
         if (integer == RxEnum.SCANDATATOASSETPAGE.ordinal()) {
             //其他页面接收的二维码数据
-            if (getClass().getSimpleName().equals(result.getName())) {
-                scanResult = (String) result.getObj();
-                scanElastos(scanResult);
-            }
+            scanResult = (String) result.getObj();
+            scanElastos(scanResult);
+
         }
         if (integer == RxEnum.TRANSACTIONSUCCESSMESSAGE.ordinal()) {
             if (getClass().getSimpleName().equals(result.getName())) {
@@ -1353,7 +1352,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     //评议期  身份必须是本委员(委员身份网站已经确认   本人) 发交易
                     curentJwtEntity = JSON.parseObject(payload, RecieveReviewJwtEntity.class);
                     RecieveReviewJwtEntity.DataBean reviewData = ((RecieveReviewJwtEntity) curentJwtEntity).getData();
-                    if (reviewData.getDID().toLowerCase().equals(wallet.getDid().toLowerCase())) {
+                    if (reviewData.getDID().equals(wallet.getDid())) {
                         proposalPresenter.showFeePage(wallet, Constant.PROPOSALREVIEW, 38, this, reviewData);
                     } else {
                         restoreScanData();
@@ -1452,6 +1451,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         crList = null;
         searchBeanList = null;
         depositList = null;
-        voteNum=null;
+        voteNum = null;
     }
 }

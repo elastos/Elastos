@@ -12,6 +12,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -22,6 +24,7 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveReviewJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
@@ -43,6 +46,7 @@ import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.JwtUtils;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -391,19 +395,21 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         tvAgree.setText(getString(R.string.agree1) + " (" + supportList.size() + ")");
         tvDisagree.setText(getString(R.string.disagree1) + " (" + rejectList.size() + ")");
         tvAbstention.setText(getString(R.string.abstention) + " (" + abstentionList.size() + ")");
-
         if (abstentionList.size() > 0) {
             tvAbstention.setEnabled(true);
-            voteLeftClickUI(tvAbstention, supportList);
-
         }
         if (rejectList.size() > 0) {
             tvDisagree.setEnabled(true);
-            voteLeftClickUI(tvDisagree, supportList);
         }
         if (supportList.size() > 0) {
             tvAgree.setEnabled(true);
+        }
+        if (supportList.size() > 0) {
             voteLeftClickUI(tvAgree, supportList);
+        } else if (rejectList.size() > 0) {
+            voteLeftClickUI(tvDisagree, supportList);
+        } else if (abstentionList.size() > 0) {
+            voteLeftClickUI(tvAbstention, supportList);
         }
         tvVotestatus.setText(getString(R.string.agree) + " " + (supportList == null ? 0 : supportList.size())
                 + "   " + getString(R.string.disagree1) + " " + (rejectList == null ? 0 : rejectList.size())
@@ -443,7 +449,21 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
             if (!TextUtils.isEmpty(scanResult) /*&& matcherUtil.isMatcherAddr(result)*/) {
                 if (scanResult.startsWith("elastos://crproposal/")) {
                     //兼容elastos:
-                    post(RxEnum.SCANDATATOASSETPAGE.ordinal(), getClass().getSimpleName(), scanResult);//交给首页去处理
+                    String result = scanResult.replace("elastos://crproposal/", "");
+                    try {
+                        String payload = JwtUtils.getJwtPayload(result);
+                        RecieveReviewJwtEntity curentJwtEntity = JSON.parseObject(payload, RecieveReviewJwtEntity.class);
+                        if (!"reviewproposal".equals(curentJwtEntity.getCommand())) {
+                            showToast(getString(R.string.infoformatwrong));
+                        } else if (!curentJwtEntity.getData().getProposalhash().equals(searchBean.getProposalHash())) {
+                            showToast(getString(R.string.proposalhashnotsame));
+                        } else {
+                            post(RxEnum.SCANDATATOASSETPAGE.ordinal(), getClass().getSimpleName(), scanResult);//交给首页去处理
+                        }
+
+                    } catch (Exception e) {
+                        showToast(getString(R.string.infoformatwrong));
+                    }
                 } else {
                     showToast(getString(R.string.infoformatwrong));
                 }
