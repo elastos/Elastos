@@ -78,6 +78,9 @@ class AppView extends React.Component {
     
   }
 
+  componentDidMount(){
+    this.unsplash()
+  }
 
   unsplash() {
     setTimeout(() => this.setState({visible: true}), 4000) 
@@ -86,7 +89,6 @@ class AppView extends React.Component {
 
   render() {
 
-    this.unsplash()
     // return (<div id="app" className="display_inline_block ta_center va_top font_sans_10">
     return (<div id="app"  >
 
