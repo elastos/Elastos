@@ -12,7 +12,7 @@ module.exports = (props) => {
     <div id={page+'Banner'} className = {App.getBannerClass()}>
       <div></div>
       <div className="w50pct">{App.getBannerStatus()}</div>
-      <div className="banner-button scale-hover cursor_def flex_center" onClick={(e) => hideBanner()}>Ok</div>
+      <div className="banner-button scale-hover cursor_def flex_center marginright_15px" onClick={(e) => hideBanner()}>Ok</div>
     </div>
   );
 }

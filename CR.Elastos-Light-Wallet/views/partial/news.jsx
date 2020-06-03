@@ -12,7 +12,7 @@ module.exports = (props) => {
       {
         App.getParsedRssFeed().map((item, index) => {
           return (<tr key={index}>
-            <td className="padding_10px dark-hover br10">
+            <td className="padding_10px txtable-row br10">
               <a className="exit_link" target="_blank" href={item.link} onClick={(e) => onLinkClick(e)}>
                 <p className="article-days">{item.pubDate}</p>
                 <p className="article-title">{item.title}</p>

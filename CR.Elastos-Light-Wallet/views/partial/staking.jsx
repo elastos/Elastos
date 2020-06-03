@@ -10,7 +10,7 @@ module.exports = (props) => {
     <p className="candidate-total cursor_def">{App.getParsedProducerList().producers.length} candidates total</p>
     <p className="candidate-voted cursor_def">{App.getParsedCandidateVoteList().candidateVotes.length}/36 Active Votes</p>
     <p className="votenow gradient-font cursor_def" onClick={(e) => GuiToggles.showVoting()} >Vote now</p>
-    <img src="" alt="" className="arrow-right" />
+    <img src="artwork/arrow.svg" alt="" className="arrow-right" />
   </div>
 
   )

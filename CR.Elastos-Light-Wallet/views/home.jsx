@@ -141,27 +141,20 @@ module.exports = (props) => {
 
   const SendScreenTwo = (props) => {
     const visibility = props.visibility;
-    return (<div id="sendTwo" className={`send-area ${visibility}`}>
-      <img src="artwork/sendicon.svg" className="send-icon" title="Refresh Blockchain Data" onClick={(e) => App.refreshBlockchainData()}/>
-      <p className="send-text">Send</p>
-      <div className="fees-text">Fees (in Satoshi ELA)</div>
-      <input type="text" size="14" id="feeAmount" placeholder="Fees" defaultValue={App.getFee()} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}></input>
-      <div className="estimate-new dark-hover cursor_def br5" onClick={(e) => showConfirmAndSeeFees()}>Estimate New Balance</div>
-      <p className="fees-balance">Your balance will be deducted
-        <span>
-          {App.getSendAmount()}
-          ELA</span>
-        +
-        <br/>
-        <span>{App.getFeeAmountEla()}</span>
-        ELA in fees.</p>
-      <span className="send-back dark-hover cursor_def" onClick={(e) => cancelSend()}>
-        Back
-      </span>
-      <button className="sendela-button" onClick={(e) => sendAmountToAddress()}>
-        <p>Send ELA</p>
-      </button>
-    </div>)
+    return (
+      <div id="sendTwo" className={`send-area ${visibility}`}>
+        <img src="artwork/sendicon.svg" className="send-icon" title="Refresh Blockchain Data"  onClick={(e) => App.refreshBlockchainData()}/>
+        <p className="send-text">Send</p>
+        <div className="fees-text">Fees (in Satoshi ELA)</div>
+        <input type="text" size="14" id="feeAmount" placeholder="Fees" defaultValue={App.getFee()} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}></input>
+        <div className="estimate-new dark-hover cursor_def br5" onClick={(e) => showConfirmAndSeeFees()}>Recalculate</div>
+        <p className="fees-balance">Your are sending <span> {App.getSendAmount()} ELA</span> + <span>{App.getFeeAmountEla()} ELA</span> in fees.</p>
+          <span className="send-back dark-hover cursor_def" onClick={(e) => cancelSend()}><img src="artwork/arrow.svg" alt="" className="rotate_180 arrow-back" />Back </span>
+          <button className="sendela-button" onClick={(e) => sendAmountToAddress()}>
+          <p>Send ELA</p>
+          </button>
+      </div>
+    )
   }
 
   return (<div id="home" className="gridback w780h520px">
@@ -176,7 +169,7 @@ module.exports = (props) => {
     <div className="logo-info">
       <Branding/>
       <header>
-        <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()}/>
+        <img src="artwork/refreshicon.svg" className="refresh-icon" title="Refresh" onClick={(e) => App.refreshBlockchainData()} />
         <nav id="homeMenuOpen" title="Menu" onClick={(e) => showMenu()}>
           <img src="artwork/nav.svg" className="nav-icon dark-hover" onClick={(e) => showMenu()}/>
         </nav>

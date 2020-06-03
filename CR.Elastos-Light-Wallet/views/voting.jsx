@@ -46,7 +46,7 @@ module.exports = (props) => {
       <div className="logo-info">
       <Branding onClick={(e) => GuiToggles.showHome()}/>
       <header>
-        <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()} />
+        <img src="artwork/refreshicon.svg" className="refresh-icon" title="Refresh" onClick={(e) => App.refreshBlockchainData()} />
         {/* Change to menu below */}
         <nav id="votingMenuOpen" title="menu" onClick={(e) => showMenu()}>
           <img src="artwork/nav.svg" className="nav-icon dark-hover" onClick={(e) => showMenu()}/>

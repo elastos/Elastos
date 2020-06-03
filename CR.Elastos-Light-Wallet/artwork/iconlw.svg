@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="898px" height="898px" viewBox="0 0 898 898" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.1 (72631) - https://sketchapp.com -->
+    <title>3</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="1024" height="1024"></rect>
+        <rect id="path-3" x="0" y="0" width="1024" height="1024"></rect>
+        <rect id="path-5" x="0" y="0" width="1024" height="1024"></rect>
+        <rect id="path-7" x="0" y="0" width="1024" height="1024"></rect>
+        <rect id="path-9" x="0" y="0" width="1024" height="1024"></rect>
+        <rect id="path-11" x="0" y="0" width="1024" height="1024"></rect>
+        <rect id="path-13" x="0" y="0" width="1024" height="1024"></rect>
+        <rect id="path-15" x="0" y="0" width="1024" height="1024"></rect>
+        <rect id="path-17" x="0" y="0" width="1024" height="1024"></rect>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="3" transform="translate(-66.000000, -62.000000)">
+            <g id="Clipped">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <g id="SVGID_1_"></g>
+                <path d="M515.001,1023 L514.999,1023 C232.23,1023 3,793.771 3,511 C3,228.23 232.23,-1 514.999,-1 L515.001,-1 C797.771,-1 1027,228.23 1027,511 C1027,793.771 797.771,1023 515.001,1023" id="Path" fill-rule="nonzero" mask="url(#mask-2)"></path>
+            </g>
+            <g id="Clipped">
+                <mask id="mask-4" fill="white">
+                    <use xlink:href="#path-3"></use>
+                </mask>
+                <g id="SVGID_1_"></g>
+                <path d="M649.624,444.206 L649.624,318.694 L757.996,381.263 L649.624,444.206 Z M525.421,515.937 L525.421,390.426 L592.248,429.24 L633.798,453.369 L525.421,515.937 Z M639.059,444.206 L572.22,405.385 L530.683,381.263 L639.059,318.694 L639.059,444.206 Z M514.853,515.937 L406.471,453.369 L435.881,436.293 L514.853,390.426 L514.853,515.937 Z M401.208,444.206 L401.208,318.694 L509.588,381.263 L480.182,398.339 L401.208,444.206 Z M390.643,444.206 L282.267,381.263 L390.643,318.694 L390.643,444.206 L390.643,444.206 Z" id="Shape" fill="#FFAD76" fill-rule="nonzero" mask="url(#mask-4)"></path>
+            </g>
+            <g id="Clipped">
+                <mask id="mask-6" fill="white">
+                    <use xlink:href="#path-5"></use>
+                </mask>
+                <g id="SVGID_1_"></g>
+                <polygon id="Path" fill="#FFAD76" fill-rule="nonzero" mask="url(#mask-6)" points="639.059 516.479 530.679 579.053 531.336 579.443 639.059 641.988"></polygon>
+            </g>
+            <g id="Clipped">
+                <mask id="mask-8" fill="white">
+                    <use xlink:href="#path-7"></use>
+                </mask>
+                <g id="SVGID_1_"></g>
+                <polygon id="Path" fill="#FFAD76" fill-rule="nonzero" mask="url(#mask-8)" points="525.421 713.727 633.798 651.159 633.133 650.769 525.421 588.216"></polygon>
+            </g>
+            <g id="Clipped">
+                <mask id="mask-10" fill="white">
+                    <use xlink:href="#path-9"></use>
+                </mask>
+                <g id="SVGID_1_"></g>
+                <polygon id="Path" fill="#FFAD76" fill-rule="nonzero" mask="url(#mask-10)" points="758 579.053 649.62 516.479 649.62 641.988"></polygon>
+            </g>
+            <g id="Clipped">
+                <mask id="mask-12" fill="white">
+                    <use xlink:href="#path-11"></use>
+                </mask>
+                <g id="SVGID_1_"></g>
+                <polygon id="Path" fill="#FFAD76" fill-rule="nonzero" mask="url(#mask-12)" points="401.208 641.988 509.588 579.053 401.208 516.479"></polygon>
+            </g>
+            <g id="Clipped">
+                <mask id="mask-14" fill="white">
+                    <use xlink:href="#path-13"></use>
+                </mask>
+                <g id="SVGID_1_"></g>
+                <polygon id="Path" fill="#FFAD76" fill-rule="nonzero" mask="url(#mask-14)" points="514.853 588.216 406.471 651.159 514.853 713.727"></polygon>
+            </g>
+            <g id="Clipped">
+                <mask id="mask-16" fill="white">
+                    <use xlink:href="#path-15"></use>
+                </mask>
+                <g id="SVGID_1_"></g>
+                <polygon id="Path" fill="#FFAD76" fill-rule="nonzero" mask="url(#mask-16)" points="390.643 516.479 282.267 579.053 390.643 641.988"></polygon>
+            </g>
+            <g id="Clipped">
+                <mask id="mask-18" fill="white">
+                    <use xlink:href="#path-17"></use>
+                </mask>
+                <g id="SVGID_1_"></g>
+                <path d="M515,74 C574,74 631.229,85.553 685.097,108.337 C737.133,130.346 783.869,161.857 824.006,201.994 C864.143,242.131 895.654,288.867 917.663,340.904 C940.447,394.771 952,452 952,511 C952,570 940.447,627.229 917.663,681.097 C895.654,733.133 864.142,779.869 824.006,820.006 C783.868,860.143 737.133,891.654 685.097,913.663 C631.229,936.447 574,948 515,948 C456,948 398.771,936.447 344.903,913.663 C292.867,891.654 246.131,860.142 205.994,820.006 C165.857,779.868 134.346,733.133 112.337,681.097 C89.553,627.229 78,570 78,511 C78,429.971 100.336,350.861 142.595,282.224 C183.69,215.475 242.005,160.869 311.236,124.311 C341.987,108.073 374.652,95.557 408.324,87.11 C443.005,78.411 478.896,74 515,74 M515,62 L515,62 C439.39,62 368.146,80.689 305.633,113.699 C163.125,188.953 66,338.634 66,511 C66,758.977 267.024,960 515,960 C762.977,960 964,758.977 964,511 C964,263.024 762.977,62 515,62" id="Shape" fill="#FFAD76" fill-rule="nonzero" mask="url(#mask-18)"></path>
+            </g>
+        </g>
+    </g>
+</svg>
