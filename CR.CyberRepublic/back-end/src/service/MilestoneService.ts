@@ -391,7 +391,7 @@ export default class extends Base {
                 status = REJECTED
               }
               if (history.review.opinion === APPROVED) {
-                status = WAITING_FOR_WITHDRAWAL
+                status = WAITING_FOR_APPROVAL
               }
               await this.model.update(
                 {
