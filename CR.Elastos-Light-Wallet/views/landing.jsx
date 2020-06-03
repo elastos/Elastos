@@ -43,8 +43,10 @@ module.exports = (props) => {
   const GuiToggles = props.GuiToggles;
   const openDevTools = props.openDevTools;
   const Version = props.Version;
-  return (<div id="landing">
-    <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()}/>
+  return (
+  
+    <div id="landing">
+    <img src="artwork/refreshicon.svg" className="refresh-icon" title="Refresh" onClick={(e) => App.refreshBlockchainData()}/>
 
     <div className="login-div ">
       <img src="artwork/logonew.svg" height="80px" width="240px" className="flexgrow_pt35"/>

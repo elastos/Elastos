@@ -35,13 +35,13 @@ const EXPLORER = 'https://blockchain.elastos.org';
 const RSS_FEED_URL = 'https://news.elastos.org/feed/';
 
 const REST_SERVICES = [{
-    name: 'node1',
-    url: 'https://node1.elaphant.app',
-  },
-  {
-    name: 'node3',
-    url: 'https://node3.elaphant.app',
-  },
+  name: 'node1',
+  url: 'https://node1.elaphant.app',
+},
+{
+  name: 'node3',
+  url: 'https://node3.elaphant.app',
+},
 ];
 
 /** global variables */
@@ -211,7 +211,7 @@ const isValidDecimal = (testAmount) => {
   const isValid = DECIMAL_REGEX.test(testAmount);
   mainConsole.log('isValidDecimal', 'testAmount', testAmount, isValid);
   return isValid;
-}
+};
 
 
 const formatDate = (date) => {
@@ -392,7 +392,7 @@ const getJson = (url, readyCallback, errorCallback) => {
         errorCallback({
           'status': this.status,
           'statusText': this.statusText,
-          'response': this.response
+          'response': this.response,
         });
       }
     }
@@ -558,26 +558,26 @@ const updateAmountAndFees = () => {
   feeAmountSats = GuiUtils.getValue('feeAmount');
 
   mainConsole.log('INTERIM updateAmountAndFees',
-    'sendAmount:', sendAmount,
-    'sendToAddress:', sendToAddress,
-    'feeAmountSats:', feeAmountSats,
+      'sendAmount:', sendAmount,
+      'sendToAddress:', sendToAddress,
+      'feeAmountSats:', feeAmountSats,
   );
 
   if (sendToAddress.length == 0) {
-    bannerStatus = `sendToAddress is blank`;
+    bannerStatus = `Address field is blank`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     return false;
   }
 
   if (!isValidDecimal(sendAmount)) {
-    bannerStatus = `sendAmount ${sendAmount} is not a number`;
+    bannerStatus = `Amount: ${sendAmount} is not a number`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     return false;
   }
   if (!isValidDecimal(feeAmountSats)) {
-    bannerStatus = `feeAmountSats ${feeAmountSats} is not a number`;
+    bannerStatus = `Fees: ${feeAmountSats} is not a number`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     return false;
@@ -587,7 +587,7 @@ const updateAmountAndFees = () => {
   const feeAmountSatsBn = BigNumber(feeAmountSats, 10);
   const balanceSatsBn = BigNumber(balance, 10).times(Asset.satoshis);
   if (sendAmountSatsBn.plus(feeAmountSatsBn).isGreaterThanOrEqualTo(balanceSatsBn)) {
-    bannerStatus = `sendAmount ${sendAmount} + feeAmountSats ${feeAmountSats} is greater than balance ${balance}`;
+    bannerStatus = `Amount: ${sendAmount} + Fees ${feeAmountSats} is greater than balance ${balance}`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     return false;
@@ -995,8 +995,8 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
         parsedTransaction.address = tx.Address;
         parsedTransaction.txHash = tx.Txid;
         parsedTransaction.txHashWithEllipsis = tx.Txid;
-        if (parsedTransaction.txHashWithEllipsis.length > 30) {
-          parsedTransaction.txHashWithEllipsis = parsedTransaction.txHashWithEllipsis.substring(0, 30) + '...';
+        if (parsedTransaction.txHashWithEllipsis.length > 20) {
+          parsedTransaction.txHashWithEllipsis = parsedTransaction.txHashWithEllipsis.substring(0, 20) + '...';
         }
         parsedTransaction.txDetailsUrl = getTransactionHistoryLink(tx.Txid);
         parsedTransaction.time = time;
@@ -1088,7 +1088,7 @@ const setBlockchainLastActionHeight = () => {
 
 const copyAddressToClipboard = () => {
   appClipboard.writeText(address);
-  bannerStatus = `copied to clipboard:\n${address}`;
+  bannerStatus = `Copied to clipboard:\n${address}`;
   bannerClass = 'bg_green color_white banner-look';
   GuiToggles.showAllBanners();
   renderApp();
@@ -1112,7 +1112,7 @@ const copyPrivateKeyToClipboard = () => {
 
 const verifyLedgerBanner = () => {
   if (useLedgerFlag) {
-    bannerStatus = `Please verify this address:\n${address} corresponds to the address on you Ledger device`;
+    bannerStatus = `Please verify that this address:\n${address} corresponds to the address on your Ledger device`;
     bannerClass = 'landing-btnbg color_white banner-look';
   } else {
     bannerStatus = `No Ledger Device Connected`;
