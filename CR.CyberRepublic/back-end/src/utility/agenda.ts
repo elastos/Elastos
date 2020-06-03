@@ -14,14 +14,14 @@ agenda.define('make into proposal', async (job: any) => {
     let count = 0
     for (let i = 0; i < suggestions.length; i++) {
       const doc = suggestions[i]
-      console.log('doc draftHash', doc.draftHash)
+      console.log('doc display id', doc.displayId)
       const rs = await getProposalState({ drafthash: doc.draftHash })
       if (rs && rs.success && rs.status === 'Registered') {
-        console.log('doc.displayId', doc.displayId)
+        console.log('registered doc.displayId', doc.displayId)
         count++
         const proposal = await cvote.findOne({ draftHash: doc.draftHash })
-        console.log('existed proposal vid', proposal.vid)
         if (proposal) {
+          console.log('existing proposal vid', proposal.vid)
           continue
         }
         const newProposal = await cvoteService.makeSuggIntoProposal({
@@ -29,7 +29,9 @@ agenda.define('make into proposal', async (job: any) => {
           proposalHash: rs.proposalHash,
           chainDid: rs.proposal.crcouncilmemberdid
         })
-        console.log('newProposal.vid', newProposal.vid)
+        if (newProposal) {
+          console.log('newProposal.vid', newProposal.vid)
+        }
       }
     }
     console.log('proposed suggestion count...', count)
