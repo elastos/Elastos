@@ -108,15 +108,19 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
+                            android:gravity="center"
                             android:layout_height="wrap_content"
                             android:text="@string/the_current_number"
+                            android:lines="2"
+                            android:maxLines="2"
                             android:textColor="@color/whiter50"
                             android:textSize="11sp" />
 
                         <TextView
                             android:id="@+id/tv_currentvote"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
+                            android:gravity="center"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:textSize="13sp" />
@@ -130,6 +134,7 @@
                         android:textSize="25dp" />
 
                     <LinearLayout
+                        android:layout_marginLeft="10dp"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -137,7 +142,10 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:lines="2"
+                            android:maxLines="2"
+                            android:gravity="center"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/todisagreeneedvote"
                             android:textColor="@color/whiter50"
@@ -145,7 +153,8 @@
 
                         <TextView
                             android:id="@+id/tv_needvote"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
+                            android:gravity="center"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:textSize="13sp" />

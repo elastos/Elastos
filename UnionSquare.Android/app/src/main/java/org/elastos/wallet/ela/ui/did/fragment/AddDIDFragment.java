@@ -100,8 +100,8 @@ public class AddDIDFragment extends BaseFragment {
                 new DialogUtil().showTime(getBaseActivity(), getString(R.string.plzselctoutdate), minData, endDate, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        String date = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)
-                                + "-" + ((TextConfigDataPicker) view).getDayOfMonth();
+                        String date = ((TextConfigDataPicker) view).getYear() + "." + (((TextConfigDataPicker) view).getMonth() + 1)
+                                + "." + ((TextConfigDataPicker) view).getDayOfMonth();
                         didEndDate = DateUtil.parseToDate(date);
 
                         tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(didEndDate, getContext()));
