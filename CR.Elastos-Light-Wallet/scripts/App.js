@@ -564,11 +564,11 @@ const updateAmountAndFees = () => {
   //   'sendToAddress:', sendToAddress,
   //   'feeAmountSats:', feeAmountSats,
   // );
-
   if (sendToAddress.length == 0) {
     bannerStatus = `Address field is blank`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
+    renderApp();
     return false;
   }
 
@@ -576,12 +576,14 @@ const updateAmountAndFees = () => {
     bannerStatus = `Amount: ${sendAmount} is not a number`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
+    renderApp();
     return false;
   }
   if (!isValidDecimal(feeAmountSats)) {
     bannerStatus = `Fees: ${feeAmountSats} is not a number`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
+    renderApp();
     return false;
   }
 
@@ -592,8 +594,11 @@ const updateAmountAndFees = () => {
     bannerStatus = `Amount: ${sendAmount} + Fees ${feeAmountSats} is greater than balance ${balance}`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
+    renderApp();
     return false;
   }
+  // GuiToggles.hideAllBanners();
+  // renderApp();
 
   feeAmountEla = BigNumber(feeAmountSats, 10).dividedBy(Asset.satoshis).toString();
   // mainConsole.log('SUCCESS updateAmountAndFees');
