@@ -2829,7 +2829,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 }
 
 func (s *txValidatorTestSuite) getCRChangeProposalOwnerProposalTx(publicKeyStr, privateKeyStr,
-	crPublicKeyStr, crPrivateKeyStr, newOwnerPublicKeyStr string, previousHash common.Uint256) *types.Transaction {
+	crPublicKeyStr, crPrivateKeyStr, newOwnerPublicKeyStr string, targetHash common.Uint256) *types.Transaction {
 
 	privateKey, _ := common.HexStringToBytes(privateKeyStr)
 	crPrivateKey, _ := common.HexStringToBytes(crPrivateKeyStr)
@@ -2846,7 +2846,7 @@ func (s *txValidatorTestSuite) getCRChangeProposalOwnerProposalTx(publicKeyStr, 
 		ProposalType:       payload.ChangeProposalOwner,
 		OwnerPublicKey:     crPublicKey,
 		NewOwnerPublicKey:  newOwnerPublicKey,
-		TargetProposalHash: previousHash,
+		TargetProposalHash: targetHash,
 		DraftHash:          common.Hash(draftData),
 		CRCouncilMemberDID: *crDid,
 	}
@@ -3061,15 +3061,15 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	s.EqualError(err, "proposal status is not VoterAgreed")
 
 	//proposal sponsors must be members
-	previousHash := proposal.Hash()
+	targetHash := proposal.Hash()
 	newOwnerPublicKey, _ := hex.DecodeString(newOwnerPublicKeyStr)
 	proposalState2, proposal2 := s.createSpecificStatusProposal(publicKey1, publicKey2, tenureHeight+1,
 		crstate.VoterAgreed, payload.ChangeProposalOwner)
-	proposal2.TargetProposalHash = previousHash
+	proposal2.TargetProposalHash = targetHash
 	proposal2.OwnerPublicKey = newOwnerPublicKey
-	s.Chain.crCommittee.GetProposalManager().Proposals[previousHash] = proposalState2
+	s.Chain.crCommittee.GetProposalManager().Proposals[targetHash] = proposalState2
 	txn = s.getCRChangeProposalOwnerProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1,
-		newOwnerPublicKeyStr, previousHash)
+		newOwnerPublicKeyStr, targetHash)
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "proposal sponsors must be members")
 

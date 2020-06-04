@@ -182,8 +182,9 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	secretaryGeneralPublickey := c.String("secretarygeneralpublickey")
 
 	recipient := c.String("recipient")
-	changeProposalOwnerKey := c.String("newownerpublickey")
-	previousHash := c.String("previoushash")
+	proposalOwnerKey := c.String("ownerpublickey")
+	newProposalOwnerKey := c.String("newownerpublickey")
+	targetHash := c.String("targethash")
 	closeProposalHash := c.String("closeproposalhash")
 	CRExpensesAddress := c.String("crccommiteeaddr")
 	payloadVersion := c.Int64("payloadversion")
@@ -263,12 +264,16 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(recipient))
 		return 1
 	}
-	getChangeProposalOwnerKey := func(L *lua.LState) int {
-		L.Push(lua.LString(changeProposalOwnerKey))
+	getProposalOwnerKey := func(L *lua.LState) int {
+		L.Push(lua.LString(proposalOwnerKey))
 		return 1
 	}
-	getPreviousHash := func(L *lua.LState) int {
-		L.Push(lua.LString(previousHash))
+	getNewProposalOwnerKey := func(L *lua.LState) int {
+		L.Push(lua.LString(newProposalOwnerKey))
+		return 1
+	}
+	getTargetHash := func(L *lua.LState) int {
+		L.Push(lua.LString(targetHash))
 		return 1
 	}
 	getCloseProposalHash := func(L *lua.LState) int {
@@ -300,8 +305,9 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getSecretaryGeneralPrivkey", getSecretaryGeneralPrivkey)
 	L.Register("getSecretaryGeneralPublickey", getSecretaryGeneralPublickey)
 	L.Register("getRecipient", getRecipient)
-	L.Register("getChangeProposalOwnerKey", getChangeProposalOwnerKey)
-	L.Register("getPreviousHash", getPreviousHash)
+	L.Register("getProposalOwnerKey", getProposalOwnerKey)
+	L.Register("getNewProposalOwnerKey", getNewProposalOwnerKey)
+	L.Register("getTargetHash", getTargetHash)
 	L.Register("getCloseProposalHash", getCloseProposalHash)
 	L.Register("getCRExpensesAddress", getCRExpensesAddress)
 	L.Register("getPayloadVersion", getPayloadVersion)
@@ -450,8 +456,16 @@ func NewCommand() *cli.Command {
 				Usage: "set the draft proposal hash",
 			},
 			cli.StringFlag{
-				Name:  "previoushash",
-				Usage: "set the previous proposal hash",
+				Name:  "newownerpublickey",
+				Usage: "set the new owner public key",
+			},
+			cli.StringFlag{
+				Name:  "targethash",
+				Usage: "set the target proposal hash",
+			},
+			cli.StringFlag{
+				Name:  "recipient",
+				Usage: "set the recipient address",
 			},
 			cli.StringFlag{
 				Name:  "closeproposalhash",

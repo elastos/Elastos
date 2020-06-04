@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package types
 
@@ -71,7 +71,7 @@ func (attr *Attribute) Serialize(w io.Writer) error {
 		return errors.New("Transaction attribute Usage serialization error.")
 	}
 	if !IsValidAttributeType(attr.Usage) {
-		return errors.New("[Attribute error] Unsupported attribute Description.")
+		return errors.New("[Attribute error] Serialize Unsupported attribute Description.")
 	}
 	if err := common.WriteVarBytes(w, attr.Data); err != nil {
 		return errors.New("Transaction attribute Data serialization error.")
@@ -86,7 +86,7 @@ func (attr *Attribute) Deserialize(r io.Reader) error {
 	}
 	attr.Usage = AttributeUsage(val[0])
 	if !IsValidAttributeType(attr.Usage) {
-		return errors.New("[Attribute error] Unsupported attribute Description.")
+		return errors.New("[Attribute error] Deserialize Unsupported attribute Description.")
 	}
 	attr.Data, err = common.ReadVarBytes(r, common.MaxVarStringLength,
 		"attribute data")

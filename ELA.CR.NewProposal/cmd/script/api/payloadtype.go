@@ -1200,53 +1200,72 @@ func newCRCProposal(L *lua.LState) int {
 }
 
 func newCRChangeProposalOwner(L *lua.LState) int {
-	publicKeyStr := L.ToString(1)
-	proposalType := L.ToInt64(2)
-	newOwnerPublicKeyStr := L.ToString(3)
-	previousHashStr := L.ToString(4)
+	proposalType := L.ToInt64(1)
+	recipientStr := L.ToString(2)
+	targetHashStr := L.ToString(3)
+	ownerPublicKeyStr := L.ToString(4)
+	ownerPrivateKeyStr := L.ToString(5)
+	newOwnerPublicKeyStr := L.ToString(6)
 
 	needSign := true
-	client, err := checkClient(L, 5)
+	client, err := checkClient(L, 7)
 	if err != nil {
 		needSign = false
 	}
 
+	targetHash, err := common.Uint256FromHexString(targetHashStr)
+	if err != nil {
+		fmt.Println("wrong target ProposalHash")
+		os.Exit(1)
+	}
+
+	recipient := &common.Uint168{}
+	if recipientStr != "" {
+		recipient, err = common.Uint168FromAddress(recipientStr)
+		if err != nil {
+			fmt.Println("wrong cr proposal ELA recipient")
+			os.Exit(1)
+		}
+	}
+
+	ownerPublicKey, err := common.HexStringToBytes(ownerPublicKeyStr)
+	if err != nil {
+		fmt.Println("wrong cr proposal owner public key")
+		os.Exit(1)
+	}
+	ownerPrivateKey, err := common.HexStringToBytes(ownerPrivateKeyStr)
+	if err != nil {
+		fmt.Println("wrong cr proposal owner private key")
+		os.Exit(1)
+	}
+
 	newOwnerPublicKey, err := common.HexStringToBytes(newOwnerPublicKeyStr)
 	if err != nil {
-		fmt.Println("wrong new cr owner public key")
+		fmt.Println("wrong new cr proposal owner public key")
 		os.Exit(1)
 	}
 
-	publicKey, err := common.HexStringToBytes(publicKeyStr)
-	if err != nil {
-		fmt.Println("wrong cr public key")
-		os.Exit(1)
-	}
+	account := client.GetMainAccount()
+	CRCouncilMembercode := account.RedeemScript
+	CRCouncilMemberDID, _ := getDIDFromCode(CRCouncilMembercode)
 
-	pk, err := crypto.DecodePoint(publicKey)
-	if err != nil {
-		fmt.Println("wrong cr public key")
-		os.Exit(1)
-	}
-
-	ct, err := contract.CreateStandardContract(pk)
-	if err != nil {
-		fmt.Println("wrong cr public key")
-		os.Exit(1)
-	}
-
-	previousHash, err := common.Uint256FromHexString(previousHashStr)
-	if err != nil {
-		fmt.Println("wrong previous ProposalHash")
-		os.Exit(1)
-	}
-	did, _ := getDIDFromCode(ct.Code)
+	fmt.Println("-----newCRChangeProposalOwner------")
+	fmt.Println("proposalType", proposalType)
+	fmt.Println("recipient", recipientStr)
+	fmt.Println("targetHashStr", targetHashStr)
+	fmt.Println("ownerPublicKeyStr", ownerPublicKeyStr)
+	fmt.Println("ownerPrivateStr", ownerPrivateKeyStr)
+	fmt.Println("newOwnerPublicKeyStr", newOwnerPublicKeyStr)
+	fmt.Printf("account %+v\n", account)
+	fmt.Println("-----newCRChangeProposalOwner------")
 
 	crcProposal := &payload.CRCProposal{
 		ProposalType:       payload.CRCProposalType(proposalType),
-		OwnerPublicKey:     newOwnerPublicKey,
-		TargetProposalHash: *previousHash,
-		CRCouncilMemberDID: *did,
+		OwnerPublicKey:     ownerPublicKey,
+		Recipient:          *recipient,
+		TargetProposalHash: *targetHash,
+		NewOwnerPublicKey:  newOwnerPublicKey,
+		CRCouncilMemberDID: *CRCouncilMemberDID,
 	}
 
 	if needSign {
@@ -1256,20 +1275,8 @@ func newCRChangeProposalOwner(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		codeHash, err := contract.PublicKeyToStandardCodeHash(publicKey)
 
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		acc := client.GetAccountByCodeHash(*codeHash)
-		if acc == nil {
-			fmt.Println("no available account in wallet")
-			os.Exit(1)
-		}
-
-		sig, err := crypto.Sign(acc.PrivKey(), signBuf.Bytes())
+		sig, err := crypto.Sign(ownerPrivateKey, signBuf.Bytes())
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -1279,12 +1286,12 @@ func newCRChangeProposalOwner(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+
 		if err = crcProposal.CRCouncilMemberDID.Serialize(signBuf); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		crSig, err := crypto.Sign(acc.PrivKey(), signBuf.Bytes())
-
+		crSig, err := crypto.Sign(account.PrivKey(), signBuf.Bytes())
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
