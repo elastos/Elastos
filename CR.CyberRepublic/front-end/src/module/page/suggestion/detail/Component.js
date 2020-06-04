@@ -737,12 +737,13 @@ export default class extends StandardPage {
 
   renderCommentNode() {
     const { detail } = this.props
+    const oldData = _.get(detail, 'old')
     return (
       <Comments
         id="comments"
         type="suggestion"
         suggestion={detail}
-        canPost={true}
+        canPost={!oldData}
         model={detail._id}
         returnUrl={`/suggestion/${detail._id}`}
       />
