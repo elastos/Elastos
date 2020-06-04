@@ -1338,6 +1338,7 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
 
 /**
  * \~English
+ * DISCARDED!
  * Send a message to a friend.
  *
  * The message length may not exceed ELA_MAX_BULK_MESSAGE_LEN. Larger messages

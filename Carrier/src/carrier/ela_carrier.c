@@ -3468,18 +3468,6 @@ static int64_t send_friend_message_internal(ElaCarrier *w, const char *to,
     return msgid;
 }
 
-int ela_send_friend_message(ElaCarrier *w, const char *to,
-                            const void *msg, size_t len, bool *is_offline)
-{
-    int64_t msgid;
-
-    msgid = send_friend_message_internal(w, to, msg, len, is_offline);
-    if(msgid < 0)
-        return (int)msgid;
-
-    return 0;
-}
-
 static void handle_offline_friend_message(EventBase *event, ElaCarrier *w)
 {
     OfflineMsgEvent *ev = (OfflineMsgEvent *)event;
@@ -3626,11 +3614,11 @@ static void notify_offreceipt_received(ElaCarrier *w, const char *to,
     }
 }
 
-int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
-                                      const void *msg, size_t len,
-                                      ElaFriendMessageReceiptCallback *cb, void *context)
+static int64_t ela_send_message_with_receipt_internal(ElaCarrier *carrier, const char *to,
+                                             const void *msg, size_t len,
+                                             ElaFriendMessageReceiptCallback *cb, void *context,
+                                             bool *is_offline)
 {
-    bool is_offline;
     int64_t msgid;
     Receipt *receipt;
     struct timeval expire_interval;
@@ -3654,7 +3642,7 @@ int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
     memcpy(receipt->data, msg, len);
 
     pthread_mutex_lock(&carrier->receipts_mutex);
-    msgid = send_friend_message_internal(carrier, to, msg, len, &is_offline);
+    msgid = send_friend_message_internal(carrier, to, msg, len, is_offline);
     if(msgid < 0) {
         deref(receipt);
         pthread_mutex_unlock(&carrier->receipts_mutex);
@@ -3665,6 +3653,30 @@ int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
     receipts_put(carrier->receipts, receipt);
     deref(receipt);
     pthread_mutex_unlock(&carrier->receipts_mutex);
+
+    return msgid;
+}
+
+int ela_send_friend_message(ElaCarrier *w, const char *to,
+                            const void *msg, size_t len, bool *is_offline)
+{
+    int64_t msgid;
+
+    msgid = ela_send_message_with_receipt_internal(w, to, msg, len, NULL, NULL, is_offline);
+    if(msgid < 0)
+        return (int)msgid;
+
+    return 0;
+}
+
+int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
+                                      const void *msg, size_t len,
+                                      ElaFriendMessageReceiptCallback *cb, void *context)
+{
+    bool is_offline;
+    int64_t msgid;
+
+    msgid = ela_send_message_with_receipt_internal(carrier, to, msg, len, cb, context, &is_offline);
 
     return msgid;
 }

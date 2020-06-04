@@ -465,7 +465,7 @@ static int http_do(ExpressConnector *connector, http_client_t *http_client,
                             method == HTTP_METHOD_HEAD ?  EXP_HTTP_HEAD_TIMEOUT : EXP_HTTP_REQ_TIMEOUT);
     rc = http_client_request(http_client);
     if(rc != 0) {
-        vlogE("Express: Failed to perform request. node:%s, path:%s. (CURLE: %d)", ip, path, rc);
+        vlogW("Express: Failed to perform request. node:%s, path:%s. (CURLE: %d)", ip, path, rc);
         return ELA_EXPRESS_ERROR(conv_curlcode(rc));
     }
 

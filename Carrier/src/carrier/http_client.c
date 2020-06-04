@@ -678,7 +678,7 @@ int http_client_request(http_client_t *client)
     curl_easy_setopt(client->curl, CURLOPT_SSL_VERIFYHOST, 0L);
     code = curl_easy_perform(client->curl);
     if (code != CURLE_OK) {
-        vlogE("HttpClient: Perform request error (%d)", code);
+        vlogW("HttpClient: Perform request error (%d)", code);
         return code;
     }
 
