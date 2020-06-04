@@ -3,8 +3,8 @@
 
 type: google.api.Service
 config_version: 3
-name: elastos-smartweb-service-esp-jgdewju65a-uk.a.run.app
-title: Elastos Smartweb Service - Cloud Endpoints + Cloud Run gRPC
+name: elastos-smartweb-service-endpoint-jgdewju65a-uk.a.run.app
+title: Elastos Smartweb Service Google API Service
 apis:
   - name: health_check.Health
   - name: common.Common
