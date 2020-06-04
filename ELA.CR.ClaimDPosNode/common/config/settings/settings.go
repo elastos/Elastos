@@ -390,7 +390,7 @@ func NewSettings() *Settings {
 		DefaultValue: "",
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
-			crcAddress, err := common.Uint168FromAddress(conf.CRCAddress)
+			crcAddress, err := common.Uint168FromAddress(conf.CRConfiguration.CRCAddress)
 			if err != nil {
 				return errors.New("invalid CRC address")
 			}
@@ -405,7 +405,7 @@ func NewSettings() *Settings {
 		DefaultValue: "",
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
-			crcFoundation, err := common.Uint168FromAddress(conf.CRAsstesAddress)
+			crcFoundation, err := common.Uint168FromAddress(conf.CRConfiguration.CRAsstesAddress)
 			if err != nil {
 				return errors.New("invalid CRC foundation")
 			}
@@ -433,7 +433,7 @@ func NewSettings() *Settings {
 		DefaultValue: "",
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
-			CRExpensesAddress, err := common.Uint168FromAddress(conf.CRExpensesAddress)
+			CRExpensesAddress, err := common.Uint168FromAddress(conf.CRConfiguration.CRExpensesAddress)
 			if err != nil {
 				return errors.New("invalid CRC committee address")
 			}

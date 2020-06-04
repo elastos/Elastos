@@ -54,9 +54,6 @@ type Configuration struct {
 	RestKeyPath                 string            `json:"RestKeyPath"`
 	MinCrossChainTxFee          common.Fixed64    `json:"MinCrossChainTxFee"`
 	FoundationAddress           string            `json:"FoundationAddress"`
-	CRCAddress                  string            `json:"CRCAddress"`
-	CRAsstesAddress             string            `json:"CRAsstesAddress"`
-	CRExpensesAddress           string            `json:"CRExpensesAddress"`
 	PowConfiguration            PowConfiguration  `json:"PowConfiguration"`
 	RpcConfiguration            RpcConfiguration  `json:"RpcConfiguration"`
 	DPoSConfiguration           DPoSConfiguration `json:"DPoSConfiguration"`
@@ -67,8 +64,6 @@ type Configuration struct {
 	PublicDPOSHeight            uint32            `json:"PublicDPOSHeight"`
 	EnableActivateIllegalHeight uint32            `json:"EnableActivateIllegalHeight"`
 	CheckRewardHeight           uint32            `json:"CheckRewardHeight"`
-	CRVotingStartHeight         uint32            `json:"CRVotingStartHeight"`
-	CRCommitteeStartHeight      uint32            `json:"CRCommitteeStartHeight"`
 	VoteStatisticsHeight        uint32            `json:"VoteStatisticsHeight"`
 	ProfilePort                 uint32            `json:"ProfilePort"`
 	MaxBlockSize                uint32            `json:"MaxBlockSize"`
@@ -118,6 +113,11 @@ type CRConfiguration struct {
 	MaxCRAssetsAddressUTXOCount        uint32  `json:"MaxCRAssetsAddressUTXOCount"`
 	CRAssetsRectifyTransactionHeight   uint32  `json:"CRAssetsRectifyTransactionHeight"`
 	CRCProposalWithdrawPayloadV1Height uint32  `json:"CRCProposalWithdrawPayloadV1Height"`
+	CRCAddress                         string  `json:"CRCAddress"`
+	CRAsstesAddress                    string  `json:"CRAsstesAddress"`
+	CRExpensesAddress                  string  `json:"CRExpensesAddress"`
+	CRVotingStartHeight                uint32  `json:"CRVotingStartHeight"`
+	CRCommitteeStartHeight             uint32  `json:"CRCommitteeStartHeight"`
 }
 
 type RPCServiceLevel byte
