@@ -212,7 +212,7 @@ const getStateUrl = () => {
 
 const isValidDecimal = (testAmount) => {
   const isValid = DECIMAL_REGEX.test(testAmount);
-  mainConsole.log('isValidDecimal', 'testAmount', testAmount, isValid);
+  // mainConsole.log('isValidDecimal', 'testAmount', testAmount, isValid);
   return isValid;
 };
 
@@ -560,16 +560,16 @@ const updateAmountAndFees = () => {
   sendToAddress = GuiUtils.getValue('sendToAddress');
   feeAmountSats = GuiUtils.getValue('feeAmount');
 
-  mainConsole.log('INTERIM updateAmountAndFees',
-    'sendAmount:', sendAmount,
-    'sendToAddress:', sendToAddress,
-    'feeAmountSats:', feeAmountSats,
-  );
-
+  // mainConsole.log('INTERIM updateAmountAndFees',
+  //   'sendAmount:', sendAmount,
+  //   'sendToAddress:', sendToAddress,
+  //   'feeAmountSats:', feeAmountSats,
+  // );
   if (sendToAddress.length == 0) {
     bannerStatus = `Address field is blank`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
+    renderApp();
     return false;
   }
 
@@ -577,12 +577,14 @@ const updateAmountAndFees = () => {
     bannerStatus = `Amount: ${sendAmount} is not a number`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
+    renderApp();
     return false;
   }
   if (!isValidDecimal(feeAmountSats)) {
     bannerStatus = `Fees: ${feeAmountSats} is not a number`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
+    renderApp();
     return false;
   }
 
@@ -593,8 +595,11 @@ const updateAmountAndFees = () => {
     bannerStatus = `Amount: ${sendAmount} + Fees ${feeAmountSats} is greater than balance ${balance}`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
+    renderApp();
     return false;
   }
+  // GuiToggles.hideAllBanners();
+  // renderApp();
 
   feeAmountEla = BigNumber(feeAmountSats, 10).dividedBy(Asset.satoshis).toString();
   // mainConsole.log('SUCCESS updateAmountAndFees');
