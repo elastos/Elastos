@@ -786,14 +786,30 @@ const toggleProducerSelection = (item) => {
 };
 
 const selectActiveVotes = () => {
-  let activeVotes = new Set(parsedCandidateVoteList.lastVote);
-  // let activeVotes = new Set(parsedCandidateVoteList.candidateVotes.map(e => e.ownerpublickey));
-  parsedProducerList.producers.map(e => {
-    if (activeVotes.has(e.ownerpublickey)) {
-      if (!e.isCandidate) {
-        e.isCandidate = true;
-        parsedProducerList.producersCandidateCount++;
+  if (parsedCandidateVoteList.lastVote.length > 0 ) {
+    let activeVotes = new Set(parsedCandidateVoteList.lastVote);
+    // let activeVotes = new Set(parsedCandidateVoteList.candidateVotes.map(e => e.ownerpublickey));
+    parsedProducerList.producers.map(e => {
+      if (activeVotes.has(e.ownerpublickey)) {
+        if (!e.isCandidate) {
+          e.isCandidate = true;
+          parsedProducerList.producersCandidateCount++;
+        }
       }
+    });
+  } else {
+    bannerStatus = `Previous voting record not found.`;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
+  }
+  renderApp();
+};
+
+const clearSelection = () => {
+  parsedProducerList.producers.map(e => {
+    if (e.isCandidate) {
+      e.isCandidate = false;
+      parsedProducerList.producersCandidateCount--;
     }
   });
   renderApp();
@@ -1499,3 +1515,4 @@ exports.requestListOfCandidateVotes = requestListOfCandidateVotes;
 exports.verifyLedgerBanner = verifyLedgerBanner;
 exports.formatTxValue = formatTxValue;
 exports.selectActiveVotes = selectActiveVotes;
+exports.clearSelection = clearSelection;
