@@ -145,6 +145,8 @@ export default class extends StandardPage {
     const commentNode = this.renderCommentNode()
     const socialShareButtonsNode = this.renderSocialShareButtonsNode()
     const uri = URI(this.props.location.search || '')
+    const signature = _.get(detail, 'signature.data')
+
     return (
       <div>
         {/* <SuggestionPopupNotification/> */}
@@ -192,7 +194,7 @@ export default class extends StandardPage {
             </Row>
           </MediaQuery>
           {editForm}
-          {uri.hasQuery('new') && (
+          {uri.hasQuery('new') && !signature && (
             <SignSuggestionModal
               id={detail._id}
               getSignatureUrl={this.props.getSignatureUrl}
