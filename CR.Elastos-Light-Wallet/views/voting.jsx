@@ -112,6 +112,7 @@ module.exports = (props) => {
       </div>
 
       <div className="voting-row3">
+        <button onClick = {() => App.selectActiveVotes()} >Revote</button>
         <button  onClick={(e) => App.sendVoteTx()} className="scale-hover">Vote</button>
       </div>
 

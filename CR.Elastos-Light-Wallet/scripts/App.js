@@ -109,6 +109,7 @@ let candidateVoteListStatus = 'No Candidate Votes Requested Yet';
 
 let parsedCandidateVoteList = {
   candidateVotes: [],
+  lastVote: [],
 };
 
 let unspentTransactionOutputsStatus = 'No UTXOs Requested Yet';
@@ -738,7 +739,7 @@ const requestListOfProducersReadyCallback = (response, force) => {
     // mainConsole.log('INTERIM Producers Callback', response.result.producers[0]);
   }
   // mainConsole.log('SUCCESS Producers Callback');
-
+  
   renderApp();
 };
 
@@ -779,6 +780,20 @@ const toggleProducerSelection = (item) => {
   renderApp();
 };
 
+const selectActiveVotes = () => {
+  let activeVotes = new Set(parsedCandidateVoteList.lastVote);
+  // let activeVotes = new Set(parsedCandidateVoteList.candidateVotes.map(e => e.ownerpublickey));
+  parsedProducerList.producers.map(e => {
+    if (activeVotes.has(e.ownerpublickey)) {
+      if (!e.isCandidate) {
+        e.isCandidate = true;
+        parsedProducerList.producersCandidateCount++;
+      }
+    }
+  });
+  renderApp();
+};
+
 const requestListOfCandidateVotesErrorCallback = (response) => {
   mainConsole.log('ERRORED Candidate Votes Callback', response);
   const displayRawError = true;
@@ -794,10 +809,14 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
   // mainConsole.log('STARTED Candidate Votes Callback', response);
   parsedCandidateVoteList = {};
   parsedCandidateVoteList.candidateVotes = [];
+  parsedCandidateVoteList.lastVote = [];
+
   if (response.status !== 200) {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
   } else {
     if (response.result) {
+      parsedCandidateVoteList.lastVote = response.result[0].Vote_Header.Nodes;
+
       response.result.forEach((candidateVote) => {
         // mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
         const header = candidateVote.Vote_Header;
@@ -1474,3 +1493,4 @@ exports.requestListOfProducers = requestListOfProducers;
 exports.requestListOfCandidateVotes = requestListOfCandidateVotes;
 exports.verifyLedgerBanner = verifyLedgerBanner;
 exports.formatTxValue = formatTxValue;
+exports.selectActiveVotes = selectActiveVotes;
