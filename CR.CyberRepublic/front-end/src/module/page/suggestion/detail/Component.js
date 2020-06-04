@@ -192,11 +192,13 @@ export default class extends StandardPage {
             </Row>
           </MediaQuery>
           {editForm}
-          {uri.hasQuery('new') && <SignSuggestionModal
-            id={detail._id}
-            getSignatureUrl={this.props.getSignatureUrl}
-            getSignature={this.props.getSignature}
-          />}
+          {uri.hasQuery('new') && (
+            <SignSuggestionModal
+              id={detail._id}
+              getSignatureUrl={this.props.getSignatureUrl}
+              getSignature={this.props.getSignature}
+            />
+          )}
         </Container>
         <Footer />
       </div>
@@ -567,6 +569,7 @@ export default class extends StandardPage {
       getSignatureUrl,
       getSignature
     } = this.props
+    const oldData = _.get(detail, 'old')
     const signature = _.get(detail, 'signature.data')
     const isOwner = currentUserId === _.get(detail, 'createdBy._id')
     const isEditable = (isOwner || isAdmin) && !signature
@@ -587,16 +590,18 @@ export default class extends StandardPage {
     )
     const isSignable = !signature && isOwner
     return (
-      <div>
-        {EditButton}
-        {isSignable && (
-          <SignSuggestionButton
-            getSignatureUrl={getSignatureUrl}
-            getSignature={getSignature}
-            id={detail._id}
-          />
-        )}
-      </div>
+      !oldData && (
+        <div>
+          {EditButton}
+          {isSignable && (
+            <SignSuggestionButton
+              getSignatureUrl={getSignatureUrl}
+              getSignature={getSignature}
+              id={detail._id}
+            />
+          )}
+        </div>
+      )
     )
   }
 
@@ -610,6 +615,7 @@ export default class extends StandardPage {
       pollProposalState,
       isProposed
     } = this.props
+    const oldData = _.get(detial, 'old')
     const signature = _.get(detail, 'signature.data')
     const makeIntoProposalPanel = this.renderMakeIntoProposalPanel()
 
@@ -690,7 +696,7 @@ export default class extends StandardPage {
         </Row>
       </BtnGroup>
     )
-    return res
+    return !oldData && res
   }
 
   renderMakeIntoProposalPanel() {
