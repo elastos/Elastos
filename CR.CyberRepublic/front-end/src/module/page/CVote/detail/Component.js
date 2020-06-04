@@ -502,11 +502,11 @@ class C extends StandardPage {
 
   renderSubTitle() {
     const status = this.renderStatus()
-    const btns = this.renderAdminActions()
+    // const btns = this.renderAdminActions()
     return (
       <SubTitleContainer>
         {status}
-        {btns}
+        {/* {btns} */}
       </SubTitleContainer>
     )
   }
@@ -716,8 +716,8 @@ class C extends StandardPage {
         requiredMsg={I18N.get('from.CVoteForm.reason.abstain.required')}
       />
     )
-
-    return (
+    const oldData = _.get(this.props.data, 'old')
+    return !oldData && (
       <VoteBtnGroup>
         {popOverYes}
         {popOverOppose}
