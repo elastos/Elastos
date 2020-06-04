@@ -60,6 +60,9 @@ class SignSuggestionButton extends Component {
     if (rs && rs.success) {
       this.setState({ url: rs.url })
     }
+    if (rs && !rs.success) {
+      message.error(rs.message)
+    }
   }
 
   componentWillUnmount() {

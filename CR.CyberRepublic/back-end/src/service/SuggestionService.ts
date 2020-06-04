@@ -1216,6 +1216,29 @@ export default class extends Base {
     return budgets
   }
 
+  private getDraftHash(suggestion: any) {
+    const fields = [
+      '_id',
+      'title',
+      'type',
+      'abstract',
+      'motivation',
+      'goal',
+      'plan',
+      'relevance',
+      'budget',
+      'budgetAmount',
+      'elaAddress'
+    ]
+    const content = {}
+    const sortedFields = _.sortBy(fields)
+    for (let index in sortedFields) {
+      const field = sortedFields[index]
+      content[field] = suggestion[field]
+    }
+    return utilCrypto.sha256D(JSON.stringify(content))
+  }
+
   /* author signs a suggestion */
   public async getSignatureUrl(param: { id: string }) {
     try {
@@ -1224,15 +1247,25 @@ export default class extends Base {
         .getDBInstance()
         .findById(id)
         .populate('createdBy')
+
+      if (!suggestion) {
+        return { success: false, message: 'No this suggestion' }
+      }
+
       // check if current user is the owner of this suggestion
       if (!suggestion.createdBy._id.equals(this.currentUser._id)) {
-        return { success: false }
+        return { success: false, message: 'You are not the owner' }
+      }
+
+      if (_.get(suggestion, 'signature.data')) {
+        return { success: false, message: 'You had signed.'}
       }
 
       const did = _.get(this.currentUser, 'did.id')
       if (!did) {
-        return { success: false, message: 'You DID not bound.' }
+        return { success: false, message: 'Your DID not bound.' }
       }
+
       const rs: {
         compressedPublicKey: string
         publicKey: string
@@ -1243,33 +1276,14 @@ export default class extends Base {
           message: `Can not get your did's public key.`
         }
       }
-      const ownerPublicKey = rs.compressedPublicKey
 
-      const fields = [
-        '_id',
-        'updatedAt',
-        'title',
-        'type',
-        'abstract',
-        'motivation',
-        'goal',
-        'plan',
-        'relevance',
-        'budget',
-        'budgetAmount',
-        'elaAddress'
-      ]
-      const content = {}
-      const sortedFields = _.sortBy(fields)
-      for (let index in sortedFields) {
-        const field = sortedFields[index]
-        content[field] = suggestion[field]
-      }
-      const draftHash = utilCrypto.sha256D(JSON.stringify(content))
+      let ownerPublicKey = rs.compressedPublicKey
+      const draftHash = this.getDraftHash(suggestion)
       await this.model.update(
         { _id: suggestion._id },
         { $set: { draftHash, ownerPublicKey } }
       )
+
       const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
         iat: now,
@@ -1287,6 +1301,7 @@ export default class extends Base {
           recipient: suggestion.elaAddress
         }
       }
+
       const jwtToken = jwt.sign(
         JSON.stringify(jwtClaims),
         process.env.APP_PRIVATE_KEY,
