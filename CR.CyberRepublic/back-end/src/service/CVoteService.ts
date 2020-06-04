@@ -1588,6 +1588,8 @@ export default class extends Base {
             }
         }
 
+        query.old = {$ne:true}
+
         const fields = [
             'vid',
             'title',
@@ -1655,7 +1657,7 @@ export default class extends Base {
         ]
         const proposal = await db_cvote
             .getDBInstance()
-            .findOne({vid: id}, fields.join(' '))
+            .findOne({vid: id, old: {$ne : true}}, fields.join(' '))
             .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
             .populate('voteHistory.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
