@@ -148,7 +148,11 @@ https://cloud.google.com/endpoints/docs/grpc/get-started-cloud-run
 
 ```
 # Only for the first time
-gcloud run deploy elastos-smartweb-service-esp --image="gcr.io/endpoints-release/endpoints-runtime-serverless:2" --allow-unauthenticated  --platform managed --project=careful-pillar-269322;
+gcloud run deploy elastos-smartweb-service-esp \
+    --image="gcr.io/endpoints-release/endpoints-runtime-serverless:2" \
+    --allow-unauthenticated  \
+    --platform managed \
+    --project=careful-pillar-269322;
 
 # Every time there is an update
 python3 -m grpc_tools.protoc --include_imports --include_source_info --proto_path=grpc_adenine/definitions --descriptor_set_out=api_descriptor.pb --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/*.proto;
@@ -163,10 +167,9 @@ docker push gcr.io/careful-pillar-269322/elastos-smartweb-service:latest;
 gcloud endpoints services deploy api_descriptor.pb api_config.yaml;
 
 # Build and run a new esp image
-./gcloud_build_image.sh -s elastos-smartweb-service-esp-jgdewju65a-uk.a.run.app -c 2020-02-26r2 -p careful-pillar-269322;
-gcloud run deploy elastos-smartweb-service \
-  --image="gcr.io/careful-pillar-269322/endpoints-runtime-serverless:elastos-smartweb-service-esp-jgdewju65a-uk.a.run.app-2020-02-26r2" \
-  --set-env-vars=ESPv2_ARGS=--cors_preset=basic \
+./gcloud_build_image.sh -s elastos-smartweb-service-esp-jgdewju65a-uk.a.run.app -c 2020-06-03r2 -p careful-pillar-269322;
+gcloud run deploy elastos-smartweb-service-esp \
+  --image="gcr.io/careful-pillar-269322/endpoints-runtime-serverless:elastos-smartweb-service-esp-jgdewju65a-uk.a.run.app-2020-06-03r2" \
   --allow-unauthenticated \
   --platform managed \
   --project=careful-pillar-269322;
