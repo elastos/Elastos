@@ -616,6 +616,12 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 				proposalState.FinalPaymentStatus = true
 			}
 		case payload.Rejected:
+			if proposalTracking.Stage == 0 {
+				break
+			}
+			if _, ok := proposalState.BudgetsStatus[proposalTracking.Stage]; !ok {
+				break
+			}
 			proposalState.BudgetsStatus[proposalTracking.Stage] = Rejected
 		case payload.ChangeOwner:
 			proposalState.ProposalOwner = proposalTracking.NewOwnerPublicKey
