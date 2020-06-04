@@ -281,12 +281,7 @@ func (pow *Service) GenerateBlock(minerAddr string,
 		if !blockchain.IsFinalizedTransaction(tx, nextBlockHeight) {
 			continue
 		}
-		references, err := pow.chain.UTXOCache.GetTxReference(tx)
-		if err != nil {
-			log.Warn("check transaction context failed, get transaction reference failed")
-			break
-		}
-		errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx, references, 0)
+		_, errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx, 0)
 		if errCode != nil {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue

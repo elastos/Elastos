@@ -95,225 +95,231 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32,
 
 // CheckTransactionContext verifies a transaction with history transaction in ledger
 func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
-	txn *Transaction, references map[*Input]Output, proposalsUsedAmount common.Fixed64) elaerr.ELAError {
+	txn *Transaction, proposalsUsedAmount common.Fixed64) (map[*Input]Output, elaerr.ELAError) {
 	// check if duplicated with transaction in ledger
 	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
-		return elaerr.Simple(elaerr.ErrTxDuplicate, nil)
+		return nil, elaerr.Simple(elaerr.ErrTxDuplicate, nil)
 	}
 
 	if txn.IsCoinBaseTx() {
-		return nil
+		return nil, nil
+	}
+
+	references, err := b.UTXOCache.GetTxReference(txn)
+	if err != nil {
+		log.Warn("[CheckTransactionContext] get transaction reference failed")
+		return nil, elaerr.Simple(elaerr.ErrTxUnknownReferredTx, nil)
 	}
 
 	// check double spent transaction
 	if DefaultLedger.IsDoubleSpend(txn) {
 		log.Warn("[CheckTransactionContext] IsDoubleSpend check failed")
-		return elaerr.Simple(elaerr.ErrTxDoubleSpend, nil)
+		return nil, elaerr.Simple(elaerr.ErrTxDoubleSpend, nil)
 	}
 
 	if err := checkTransactionUTXOLock(txn, references); err != nil {
 		log.Warn("[CheckTransactionUTXOLock],", err)
-		return elaerr.Simple(elaerr.ErrTxUTXOLocked, err)
+		return nil, elaerr.Simple(elaerr.ErrTxUTXOLocked, err)
 	}
 
 	switch txn.TxType {
 	case IllegalProposalEvidence:
 		if err := b.checkIllegalProposalsTransaction(txn); err != nil {
 			log.Warn("[CheckIllegalProposalsTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
-		return nil
+		return references, nil
 
 	case IllegalVoteEvidence:
 		if err := b.checkIllegalVotesTransaction(txn); err != nil {
 			log.Warn("[CheckIllegalVotesTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
-		return nil
+		return references, nil
 
 	case IllegalBlockEvidence:
 		if err := b.checkIllegalBlocksTransaction(txn); err != nil {
 			log.Warn("[CheckIllegalBlocksTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
-		return nil
+		return references, nil
 
 	case IllegalSidechainEvidence:
 		if err := b.checkSidechainIllegalEvidenceTransaction(txn); err != nil {
 			log.Warn("[CheckSidechainIllegalEvidenceTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
-		return nil
+		return references, nil
 
 	case InactiveArbitrators:
 		if err := b.checkInactiveArbitratorsTransaction(txn); err != nil {
 			log.Warn("[CheckInactiveArbitrators],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
-		return nil
+		return references, nil
 
 	case UpdateVersion:
 		if err := b.checkUpdateVersionTransaction(txn); err != nil {
 			log.Warn("[checkUpdateVersionTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
-		return nil
+		return references, nil
 
 	case SideChainPow:
 		arbitrator := DefaultLedger.Arbitrators.GetOnDutyCrossChainArbitrator()
 		if err := CheckSideChainPowConsensus(txn, arbitrator); err != nil {
 			log.Warn("[CheckSideChainPowConsensus],", err)
-			return elaerr.Simple(elaerr.ErrTxSidechainPowConsensus, err)
+			return nil, elaerr.Simple(elaerr.ErrTxSidechainPowConsensus, err)
 		}
 		if txn.IsNewSideChainPowTx() {
-			return nil
+			return references, nil
 		}
 
 	case RegisterProducer:
 		if err := b.checkRegisterProducerTransaction(txn); err != nil {
 			log.Warn("[CheckRegisterProducerTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
 	case CancelProducer:
 		if err := b.checkCancelProducerTransaction(txn); err != nil {
 			log.Warn("[CheckCancelProducerTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
 	case UpdateProducer:
 		if err := b.checkUpdateProducerTransaction(txn); err != nil {
 			log.Warn("[CheckUpdateProducerTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
 	case ActivateProducer:
 		if err := b.checkActivateProducerTransaction(txn, blockHeight); err != nil {
 			log.Warn("[CheckActivateProducerTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
-		return nil
+		return references, nil
 
 	case RegisterCR:
 		if err := b.checkRegisterCRTransaction(txn, blockHeight); err != nil {
 			log.Warn("[checkRegisterCRTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
 	case UpdateCR:
 		if err := b.checkUpdateCRTransaction(txn, blockHeight); err != nil {
 			log.Warn("[ checkUpdateCRTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
 	case UnregisterCR:
 		if err := b.checkUnRegisterCRTransaction(txn, blockHeight); err != nil {
 			log.Warn("[checkUnRegisterCRTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
 	case CRCProposal:
 		if err := b.checkCRCProposalTransaction(txn, blockHeight, proposalsUsedAmount); err != nil {
 			log.Warn("[checkCRCProposalTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
 	case CRCProposalReview:
 		if err := b.checkCRCProposalReviewTransaction(txn,
 			blockHeight); err != nil {
 			log.Warn("[checkCRCProposalReviewTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
 	case CRCProposalTracking:
 		if err := b.checkCRCProposalTrackingTransaction(txn,
 			blockHeight); err != nil {
 			log.Warn("[checkCRCProposalTrackingTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
 	case CRCProposalWithdraw:
 		if err := b.checkCRCProposalWithdrawTransaction(txn, references,
 			blockHeight); err != nil {
 			log.Warn("[checkCRCProposalWithdrawTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxPayload, err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
 	case WithdrawFromSideChain:
 		if err := b.checkWithdrawFromSideChainTransaction(txn, references); err != nil {
 			log.Warn("[CheckWithdrawFromSideChainTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxSidechainDuplicate, err)
+			return nil, elaerr.Simple(elaerr.ErrTxSidechainDuplicate, err)
 		}
 
 	case TransferCrossChainAsset:
 		if err := b.checkTransferCrossChainAssetTransaction(txn, references); err != nil {
 			log.Warn("[CheckTransferCrossChainAssetTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxInvalidOutput, err)
+			return nil, elaerr.Simple(elaerr.ErrTxInvalidOutput, err)
 		}
 
 	case ReturnDepositCoin:
 		if err := b.checkReturnDepositCoinTransaction(
 			txn, references, b.GetHeight()); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxReturnDeposit, err)
+			return nil, elaerr.Simple(elaerr.ErrTxReturnDeposit, err)
 		}
 
 	case ReturnCRDepositCoin:
 		if err := b.checkReturnCRDepositCoinTransaction(
 			txn, references, b.GetHeight()); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxReturnDeposit, err)
+			return nil, elaerr.Simple(elaerr.ErrTxReturnDeposit, err)
 		}
 
 	case CRCAppropriation:
 		if err := b.checkCRCAppropriationTransaction(txn, references); err != nil {
 			log.Warn("[checkCRCAppropriationTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxAppropriation, err)
+			return nil, elaerr.Simple(elaerr.ErrTxAppropriation, err)
 		}
-		return nil
+		return references, nil
 
 	case CRCProposalRealWithdraw:
 		if err := b.checkCRCProposalRealWithdrawTransaction(txn, references); err != nil {
 			log.Warn("[checkCRCProposalRealWithdrawTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxRealWithdraw, err)
+			return nil, elaerr.Simple(elaerr.ErrTxRealWithdraw, err)
 		}
 
 	case CRAssetsRectify:
 		if err := b.checkCRAssetsRectifyTransaction(txn, references); err != nil {
 			log.Warn("[checkCRAssetsRectifyTransaction],", err)
-			return elaerr.Simple(elaerr.ErrTxAssetsRectify, err)
+			return nil, elaerr.Simple(elaerr.ErrTxAssetsRectify, err)
 		}
 	}
 
 	if err := b.checkTransactionFee(txn, references); err != nil {
 		log.Warn("[CheckTransactionFee],", err)
-		return elaerr.Simple(elaerr.ErrTxBalance, err)
+		return nil, elaerr.Simple(elaerr.ErrTxBalance, err)
 	}
 
 	if err := checkDestructionAddress(references); err != nil {
 		log.Warn("[CheckDestructionAddress], ", err)
-		return elaerr.Simple(elaerr.ErrTxInvalidInput, err)
+		return nil, elaerr.Simple(elaerr.ErrTxInvalidInput, err)
 	}
 
 	if err := checkTransactionDepositUTXO(txn, references); err != nil {
 		log.Warn("[CheckTransactionDepositUTXO],", err)
-		return elaerr.Simple(elaerr.ErrTxInvalidInput, err)
+		return nil, elaerr.Simple(elaerr.ErrTxInvalidInput, err)
 	}
 
 	if err := checkTransactionDepositOutpus(b, txn); err != nil {
 		log.Warn("[checkTransactionDepositOutpus],", err)
-		return elaerr.Simple(elaerr.ErrTxInvalidInput, err)
+		return nil, elaerr.Simple(elaerr.ErrTxInvalidInput, err)
 	}
 
 	if err := checkTransactionSignature(txn, references); err != nil {
 		log.Warn("[CheckTransactionSignature],", err)
-		return elaerr.Simple(elaerr.ErrTxSignature, err)
+		return nil, elaerr.Simple(elaerr.ErrTxSignature, err)
 	}
 
 	if err := b.checkInvalidUTXO(txn); err != nil {
 		log.Warn("[CheckTransactionCoinbaseLock]", err)
-		return elaerr.Simple(elaerr.ErrBlockIneffectiveCoinbase, err)
+		return nil, elaerr.Simple(elaerr.ErrBlockIneffectiveCoinbase, err)
 	}
 
 	if txn.Version >= TxVersion09 {
@@ -331,11 +337,11 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			getProducerPublicKeysMap(producers), getCRCIDsMap(candidates))
 		if err != nil {
 			log.Warn("[CheckVoteOutputs]", err)
-			return elaerr.Simple(elaerr.ErrTxInvalidOutput, err)
+			return nil, elaerr.Simple(elaerr.ErrTxInvalidOutput, err)
 		}
 	}
 
-	return nil
+	return references, nil
 }
 
 func getProducerPublicKeysMap(producers []*state.Producer) map[string]struct{} {
