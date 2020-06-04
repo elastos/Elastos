@@ -116,7 +116,9 @@ def did_callback_elastos(request):
                 data['Email'] = cred['credentialSubject']['email']
             data["exp_time"] = cred['expirationDate']
 
-        data['RandomNumber'] = data["req"]
+        req = data["req"].replace("elastos://credaccess/", "")
+        appid = jwt.decode(req, verify=False)["appid"]
+        data['RandomNumber'] = appid
 
         try:
             recently_created_time = timezone.now() - timedelta(minutes=1)
