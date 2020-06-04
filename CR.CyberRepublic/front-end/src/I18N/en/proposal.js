@@ -42,7 +42,9 @@ export default {
     summary: {
       reject: 'Reject & Comment',
       approve: 'Approve & Publish'
-    }
+    },
+    viewOldData: 'View old data',
+    viewNewData: 'View new data'
   },
   text: {
     tracking: {

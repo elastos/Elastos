@@ -571,7 +571,6 @@ export default class extends Base {
         const currentUserId = _.get(this.currentUser, '_id')
         const userRole = _.get(this.currentUser, 'role')
         const query: any = {}
-
         if (!param.published) {
             if (!this.isLoggedIn() || !this.canManageProposal()) {
                 throw 'cvoteservice.list - unpublished proposals only visible to council/secretary'
@@ -663,6 +662,13 @@ export default class extends Base {
         // status
         if (param.status && constant.CVOTE_STATUS[param.status]) {
             query.status = param.status
+        }
+        // old data 
+        if (!param.old) {
+            query.old = { $exists: false }
+        }
+        if (param.old) {
+            query.old = true
         }
         // budget
         if (param.budgetLow || param.budgetHigh) {

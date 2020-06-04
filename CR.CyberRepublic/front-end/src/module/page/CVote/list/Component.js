@@ -32,14 +32,15 @@ import {
   ItemUndecided,
   StyledButton,
   StyledSearch,
-  VoteFilter,
   FilterLabel,
   FilterPanel,
   FilterContent,
   FilterItem,
   FilterItemLabel,
   FilterClearBtn,
-  CheckboxText
+  CheckboxText,
+  SplitLabel,
+  ViewOldDataBtn
 } from './style'
 
 const { RangePicker } = DatePicker
@@ -89,6 +90,7 @@ export default class extends BaseComponent {
       author,
       type,
       endsDate,
+      showOldData: false
     }
 
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
@@ -103,39 +105,39 @@ export default class extends BaseComponent {
     this.setState({ isVisitableFilter: !isVisitableFilter })
   }
 
-  handleSearchChange = e => {
+  handleSearchChange = (e) => {
     this.setState({ search: e.target.value })
   }
 
-  handleStatusChange = status => {
+  handleStatusChange = (status) => {
     this.setState({ status })
   }
 
-  handleBudgetRequestedChange = budgetRequested => {
+  handleBudgetRequestedChange = (budgetRequested) => {
     this.setState({ budgetRequested })
   }
 
-  handleHasTrackingMsgChange = e => {
+  handleHasTrackingMsgChange = (e) => {
     this.setState({ hasTrackingMsg: e.target.checked })
   }
 
-  handleIsUnvotedByYouChange = e => {
+  handleIsUnvotedByYouChange = (e) => {
     this.setState({ isUnvotedByYou: e.target.checked })
   }
 
-  handleCreationDateChange = creationDate => {
+  handleCreationDateChange = (creationDate) => {
     this.setState({ creationDate })
   }
 
-  handleAuthorChange = e => {
+  handleAuthorChange = (e) => {
     this.setState({ author: e.target.value })
   }
 
-  handleTypeChange = type => {
+  handleTypeChange = (type) => {
     this.setState({ type })
   }
 
-  handleEndsDateChange = endsDate => {
+  handleEndsDateChange = (endsDate) => {
     this.setState({ endsDate })
   }
 
@@ -156,7 +158,7 @@ export default class extends BaseComponent {
       creationDate,
       author,
       type,
-      endsDate,
+      endsDate
     } = this.state
     this.props.updateFilters({
       voteResult,
@@ -168,8 +170,20 @@ export default class extends BaseComponent {
       creationDate,
       author,
       type,
-      endsDate,
+      endsDate
     })
+    this.refetch()
+  }
+
+  viewOldData = async () => {
+    await this.setState((state) => ({
+      showOldData: !state.showOldData,
+      // go back to page 1 on toggle
+      page: 1,
+      results: 10,
+      total: 0
+    }))
+
     this.refetch()
   }
 
@@ -183,7 +197,7 @@ export default class extends BaseComponent {
       6: I18N.get('council.voting.type.information')
     }
     const { canManage, isSecretary, isCouncil } = this.props
-    const canCreateProposal = (!isCouncil && !isSecretary)
+    const canCreateProposal = !isCouncil && !isSecretary
     const { isVisitableFilter } = this.state
 
     const columns = [
@@ -238,18 +252,16 @@ export default class extends BaseComponent {
       {
         title: I18N.get('council.voting.proposedAt'),
         dataIndex: 'proposedAt',
-        render: (proposedAt, doc) => this.renderProposed(doc.published, proposedAt || doc.createdAt)
+        render: (proposedAt, doc) =>
+          this.renderProposed(doc.published, proposedAt || doc.createdAt)
       }
     ]
 
     if (canManage) {
       columns.splice(1, 0, {
         dataIndex: 'published',
-        render: (published, item, index) => (published ? (
-          <Icon type="eye" />
-        ) : (
-          <Icon type="eye-invisible" />
-        ))
+        render: (published, item, index) =>
+          published ? <Icon type="eye" /> : <Icon type="eye-invisible" />
       })
     }
 
@@ -267,18 +279,19 @@ export default class extends BaseComponent {
     )
 
     // no one can see this button
-    const createBtn = canManage && canCreateProposal && (
-      <Row type="flex" align="middle" justify="end">
-        <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
-          <StyledButton
-            onClick={this.createAndRedirect}
-            className="cr-btn cr-btn-primary"
-          >
-            {I18N.get('from.CVoteForm.button.add')}
-          </StyledButton>
-        </Col>
-      </Row>
-    )
+    const createBtn = canManage &&
+      canCreateProposal && (
+        <Row type="flex" align="middle" justify="end">
+          <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
+            <StyledButton
+              onClick={this.createAndRedirect}
+              className="cr-btn cr-btn-primary"
+            >
+              {I18N.get('from.CVoteForm.button.add')}
+            </StyledButton>
+          </Col>
+        </Row>
+      )
 
     const title = (
       <Col lg={8} md={8} sm={12} xs={24}>
@@ -383,18 +396,24 @@ export default class extends BaseComponent {
           {isVisitableFilter && filterPanel}
           <Row type="flex" align="middle" justify="end">
             {isSecretary && (
-              <CSVLink
-                data={this.state.alllist}
-                style={{ marginBottom: 16 }}>
+              <CSVLink data={this.state.alllist} style={{ marginBottom: 16 }}>
                 {I18N.get('elip.button.exportAsCSV')}
               </CSVLink>
             )}
+            {isSecretary && <SplitLabel />}
+            <ViewOldDataBtn
+              onClick={this.viewOldData}
+            >
+              {this.state.showOldData === false
+                ? I18N.get('proposal.btn.viewOldData')
+                : I18N.get('proposal.btn.viewNewData')}
+            </ViewOldDataBtn>
           </Row>
           <Table
             columns={columns}
             loading={loading}
             dataSource={list}
-            rowKey={record => record._id}
+            rowKey={(record) => record._id}
             pagination={{
               current: page,
               pageSize: 10,
@@ -448,6 +467,7 @@ export default class extends BaseComponent {
       endsDate,
       voteResult,
       search,
+      showOldData
     } = this.state
     const query = {}
     const formatStr = 'YYYY-MM-DD'
@@ -456,6 +476,9 @@ export default class extends BaseComponent {
     }
     if (!_.isEmpty(status)) {
       query.status = status
+    }
+    if (showOldData) {
+      query.old = true
     }
     if (!_.isEmpty(budgetRequested) && budgetRequested > 0) {
       const budget = BUDGET_REQUESTED_OPTIONS[budgetRequested]
@@ -503,7 +526,10 @@ export default class extends BaseComponent {
     const param = this.getQuery()
     const page = 1
     try {
-      const { list: allListData, total: allListTotal } = await listData(param, canManage)
+      const { list: allListData, total: allListTotal } = await listData(
+        param,
+        canManage
+      )
       const dataCSV = []
       dataCSV.push([
         I18N.get('council.voting.number'),
@@ -515,30 +541,33 @@ export default class extends BaseComponent {
         I18N.get('council.voting.status'),
         I18N.get('council.voting.proposedAt')
       ])
-      _.map(allListData, v => {
-        dataCSV.push(
-          [
-            v.vid,
-            v.title,
-            PROPOSAL_TYPE[v.type],
-            v.proposedBy,
-            this.renderEndsInForCSV(v),
-            this.voteDataByUserForCSV(v),
-            this.renderStatus(v.status),
-            _.replace(
-              this.renderProposed(v.published, v.proposedAt || v.createdAt) || '',
-              ',',
-              ' '
-            )
-          ]
-        )
+      _.map(allListData, (v) => {
+        dataCSV.push([
+          v.vid,
+          v.title,
+          PROPOSAL_TYPE[v.type],
+          v.proposedBy,
+          this.renderEndsInForCSV(v),
+          this.voteDataByUserForCSV(v),
+          this.renderStatus(v.status),
+          _.replace(
+            this.renderProposed(v.published, v.proposedAt || v.createdAt) || '',
+            ',',
+            ' '
+          )
+        ])
       })
 
       // const page = sessionStorage.getItem('proposalPage')
       param.page = page
       param.results = 10
-      const {list, total} = await listData(param, canManage)
-      this.setState({ list, alllist: dataCSV, total, page: (page && parseInt(page)) || 1 })
+      const { list, total } = await listData(param, canManage)
+      this.setState({
+        list,
+        alllist: dataCSV,
+        total,
+        page: (page && parseInt(page)) || 1
+      })
     } catch (error) {
       logger.error(error)
     }
@@ -555,7 +584,7 @@ export default class extends BaseComponent {
       results: pageSize
     }
     try {
-      const {list, total} = await listData(query, canManage)
+      const { list, total } = await listData(query, canManage)
       // const page = sessionStorage.getItem('proposalPage')
       this.setState({ list, total, page: (page && parseInt(page)) || 1 })
       sessionStorage.setItem('proposalPage', page)
@@ -565,7 +594,7 @@ export default class extends BaseComponent {
     this.ord_loading(false)
   }
 
-  searchChangedHandler = search => {
+  searchChangedHandler = (search) => {
     sessionStorage.removeItem('proposalPage')
     this.props.updateFilters({ search })
     this.setState({ search }, this.debouncedRefetch)
@@ -579,11 +608,11 @@ export default class extends BaseComponent {
     this.props.history.push(`/proposals/${id}/edit`)
   }
 
-  renderEndsIn = item => {
+  renderEndsIn = (item) => {
     return this.renderBaseEndsIn(item)
   }
 
-  renderEndsInForCSV = item => {
+  renderEndsInForCSV = (item) => {
     return this.renderBaseEndsIn(item, true)
   }
 
@@ -599,14 +628,18 @@ export default class extends BaseComponent {
       .as('days')
     if (item.status == CVOTE_STATUS.NOTIFICATION) {
       endsInFloat = moment
-      .duration(
-        moment(item.proposedAt || item.createdAt)
-          .add(14, 'd')
-          .diff(moment())
-      )
-      .as('days')
+        .duration(
+          moment(item.proposedAt || item.createdAt)
+            .add(14, 'd')
+            .diff(moment())
+        )
+        .as('days')
     }
-    if ((item.status !== CVOTE_STATUS.PROPOSED && item.status !== CVOTE_STATUS.NOTIFICATION) || endsInFloat <= 0) {
+    if (
+      (item.status !== CVOTE_STATUS.PROPOSED &&
+        item.status !== CVOTE_STATUS.NOTIFICATION) ||
+      endsInFloat <= 0
+    ) {
       return I18N.get('council.voting.votingEndsIn.ended')
     }
     if (endsInFloat > 0 && endsInFloat <= 1) {
@@ -618,7 +651,7 @@ export default class extends BaseComponent {
     )}`
   }
 
-  renderStatus = status => {
+  renderStatus = (status) => {
     return I18N.get(`cvoteStatus.${status}`) || ''
   }
 
@@ -628,11 +661,11 @@ export default class extends BaseComponent {
     return published && moment(createdAt).format(format)
   }
 
-  voteDataByUser = data => {
+  voteDataByUser = (data) => {
     return this.baseVoteDataByUser(data)
   }
 
-  voteDataByUserForCSV = data => {
+  voteDataByUserForCSV = (data) => {
     return this.baseVoteDataByUser(data, true)
   }
 
@@ -645,12 +678,12 @@ export default class extends BaseComponent {
     if (!_.isEmpty(voteResult)) {
       voteArr = _.map(
         voteResult,
-        item => CVOTE_RESULT[item.value.toUpperCase()]
+        (item) => CVOTE_RESULT[item.value.toUpperCase()]
       )
     } else if (!_.isEmpty(voteMap)) {
       voteArr = _.map(
         voteMap,
-        value => CVOTE_RESULT[value.toUpperCase()] || CVOTE_RESULT.UNDECIDED
+        (value) => CVOTE_RESULT[value.toUpperCase()] || CVOTE_RESULT.UNDECIDED
       )
     } else {
       return ''
@@ -703,7 +736,7 @@ export default class extends BaseComponent {
                   value={status}
                   onChange={this.handleStatusChange}
                 >
-                  {_.map(CVOTE_STATUS, value => (
+                  {_.map(CVOTE_STATUS, (value) => (
                     <Select.Option key={value} value={value}>
                       {I18N.get(`cvoteStatus.${value}`)}
                     </Select.Option>
