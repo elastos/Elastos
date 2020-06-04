@@ -42,7 +42,8 @@ export default {
     needAdvisory: '需要咨询',
     signSuggetion: '签名建议',
     associateDid: '绑定 DID',
-    viewOldData: '查看老数据'
+    viewOldData: '查看老数据',
+    viewNewData: '查看新数据'
   },
   status: {
     posted: '发布',

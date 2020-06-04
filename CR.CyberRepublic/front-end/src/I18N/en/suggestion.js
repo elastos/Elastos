@@ -42,7 +42,8 @@ export default {
     needAdvisory: 'Need Advisory',
     signSuggetion: 'Sign Suggestion',
     associateDid: 'Associate DID',
-    viewOldData: 'View old data'
+    viewOldData: 'View old data',
+    viewNewData: 'View new data'
   },
   status: {
     posted: 'Posted',

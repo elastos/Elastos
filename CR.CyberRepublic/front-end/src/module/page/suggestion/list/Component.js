@@ -279,7 +279,9 @@ export default class extends StandardPage {
                 className="btn-link"
                 onClick={this.viewOldData}
               >
-                {I18N.get('suggestion.btn.viewOldData')}
+                {this.state.showOldData === false
+                  ? I18N.get('suggestion.btn.viewOldData')
+                  : I18N.get('suggestion.btn.viewNewData')}
               </Button>
             </Col>
           </Row>
@@ -792,7 +794,7 @@ export default class extends StandardPage {
     }
 
     if (this.state.showOldData) {
-      query.status = 'OLD'
+      query.old = true
     }
 
     if (infoNeeded) {

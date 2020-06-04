@@ -248,8 +248,10 @@ export default class extends Base {
       'endDate',
       'author',
       'budgetLow',
-      'budgetHigh'
+      'budgetHigh',
+      'old'
     ])
+
     const {
       sortBy,
       sortOrder,
@@ -330,6 +332,15 @@ export default class extends Base {
     // status
     if (param.status && constant.SUGGESTION_STATUS[param.status]) {
       query.status = param.status
+    }
+
+    // old data
+    if (param.old) {
+      query.old = param.old
+    }
+
+    if (!param.old) {
+      query.old = { $exists: false }
     }
 
     // budget
