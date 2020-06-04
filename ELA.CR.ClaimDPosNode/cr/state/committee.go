@@ -297,7 +297,8 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		c.recordCurrentStageAmount(block.Height)
 		c.appropriationHistory.Commit(block.Height)
 	} else {
-		if c.CRAssetsAddressUTXOCount >= c.params.MaxCRAssetsAddressUTXOCount &&
+		if c.CRAssetsAddressUTXOCount >=
+			c.params.MaxCRAssetsAddressUTXOCount+c.params.CoinbaseMaturity &&
 			block.Height >= c.params.CRAssetsRectifyTransactionHeight {
 			c.createRectifyCRAssetsTransaction(block.Height)
 		}

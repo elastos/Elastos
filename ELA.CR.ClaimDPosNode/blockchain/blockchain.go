@@ -506,8 +506,11 @@ func (b *BlockChain) CreateCRAssetsRectifyTransaction() (*Transaction, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(utxos) < int(b.chainParams.MaxCRAssetsAddressUTXOCount) {
-		return nil, errors.New("Avaliable utxo is less than MaxCRAssetsAddressUTXOCount")
+	if len(utxos) < int(b.chainParams.MinCRAssetsAddressUTXOCount) {
+		return nil, errors.New("Avaliable utxo is less than MinCRAssetsAddressUTXOCount")
+	}
+	if len(utxos) > int(b.chainParams.MaxCRAssetsAddressUTXOCount) {
+		utxos = utxos[:b.chainParams.MaxCRAssetsAddressUTXOCount]
 	}
 	var crcFoundationBalance Fixed64
 	for i, u := range utxos {

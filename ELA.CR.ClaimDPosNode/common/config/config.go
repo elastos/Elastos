@@ -111,6 +111,7 @@ type CRConfiguration struct {
 	MaxProposalTrackingCount           uint8   `json:"MaxProposalTrackingCount"`
 	RegisterCRByDIDHeight              uint32  `json:"RegisterCRByDIDHeight"`
 	MaxCRAssetsAddressUTXOCount        uint32  `json:"MaxCRAssetsAddressUTXOCount"`
+	MinCRAssetsAddressUTXOCount        uint32  `json:"MinCRAssetsAddressUTXOCount"`
 	CRAssetsRectifyTransactionHeight   uint32  `json:"CRAssetsRectifyTransactionHeight"`
 	CRCProposalWithdrawPayloadV1Height uint32  `json:"CRCProposalWithdrawPayloadV1Height"`
 	CRCAddress                         string  `json:"CRCAddress"`
