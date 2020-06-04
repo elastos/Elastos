@@ -129,15 +129,13 @@ func NewReject(cmd string, err errors.ELAError) *Reject {
 		code = RejectInvalid
 	case errors.ErrP2pRejectObsolete:
 		code = RejectObsolete
-	case errors.ErrTxDuplicate:
-	case errors.ErrP2pRejectDuplicate:
+	case errors.ErrTxDuplicate,errors.ErrP2pRejectDuplicate:
 		code = RejectDuplicate
 	case errors.ErrP2pRejectNonstandard:
 		code = RejectNonstandard
 	case errors.ErrP2pRejectDust:
 		code = RejectDust
-	case errors.ErrTxBalance:
-	case errors.ErrP2pRejectInsufficientFee:
+	case errors.ErrTxBalance,errors.ErrP2pRejectInsufficientFee:
 		code = RejectInsufficientFee
 	case errors.ErrP2pRejectCheckpoint:
 		code = RejectCheckpoint
