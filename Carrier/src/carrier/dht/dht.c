@@ -764,7 +764,10 @@ int dht_new(const uint8_t *savedata, size_t datalen, bool udp_enabled, DHT *dht)
     options.log_callback = log_cb;
 
     if (savedata && datalen) {
-        options.savedata_type = TOX_SAVEDATA_TYPE_TOX_SAVE;
+        if (datalen == TOX_SECRET_KEY_SIZE)
+            options.savedata_type = TOX_SAVEDATA_TYPE_SECRET_KEY;
+        else
+            options.savedata_type = TOX_SAVEDATA_TYPE_TOX_SAVE;
         options.savedata_data = savedata;
         options.savedata_length = datalen;
     } else {

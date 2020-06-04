@@ -1213,9 +1213,13 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
     }
 
     memset(&data, 0, sizeof(data));
-    load_persistence_data(opts->persistent_location, &data);
+    rc = load_persistence_data(opts->persistent_location, &data);
 
-    rc = dht_new(data.dht_savedata, data.dht_savedata_len, w->pref.udp_enabled, &w->dht);
+    if (rc < 0 && opts->secret_key)
+        rc = dht_new(opts->secret_key, 32, w->pref.udp_enabled, &w->dht);
+    else
+        rc = dht_new(data.dht_savedata, data.dht_savedata_len, w->pref.udp_enabled, &w->dht);
+
     if (rc < 0) {
         free_persistence_data(&data);
         deref(w);
@@ -3445,7 +3449,7 @@ static int64_t send_friend_message_internal(ElaCarrier *w, const char *to,
         else
             msgid = send_bulk_message(w, friend_number, to, msg, len, ext_name);
 
-        rc = (msgid < 0 ? (int)msgid : 0); 
+        rc = (msgid < 0 ? (int)msgid : 0);
         if (rc == 0 && offline)
             *offline = false;
 
