@@ -41,7 +41,8 @@ export default {
     needDueDiligence: '需要尽职调查',
     needAdvisory: '需要咨询',
     signSuggetion: '签名建议',
-    associateDid: '绑定 DID'
+    associateDid: '绑定 DID',
+    viewOldData: '查看老数据'
   },
   status: {
     posted: '发布',

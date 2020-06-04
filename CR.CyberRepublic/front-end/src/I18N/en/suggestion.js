@@ -41,7 +41,8 @@ export default {
     needDueDiligence: 'Need Due Diligence',
     needAdvisory: 'Need Advisory',
     signSuggetion: 'Sign Suggestion',
-    associateDid: 'Associate DID'
+    associateDid: 'Associate DID',
+    viewOldData: 'View old data'
   },
   status: {
     posted: 'Posted',

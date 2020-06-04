@@ -80,7 +80,7 @@ export default class extends StandardPage {
       showForm: uri.hasQuery('create'),
       showArchived: false,
       showDidModal: uri.hasQuery('create'),
-
+      showOldData: false,
       // named status since we eventually want to use a struct of statuses to filter on
       referenceStatus,
       infoNeeded,
@@ -246,12 +246,12 @@ export default class extends StandardPage {
             align="middle"
             style={{ borderBottom: '1px solid #E5E5E5' }}
           >
-            <Col md={24} xl={18} style={{ paddingBottom: 24 }}>
+            <Col md={24} xl={12} style={{ paddingBottom: 24 }}>
               {sortActionsNode}
             </Col>
             <Col
               md={24}
-              xl={6}
+              xl={12}
               style={{ paddingBottom: 24, textAlign: 'right' }}
             >
               <Button
@@ -273,6 +273,14 @@ export default class extends StandardPage {
                   {I18N.get('elip.button.exportAsCSV')}
                 </Button>
               )}
+              <SplitLabel />
+              <Button
+                type="link"
+                className="btn-link"
+                onClick={this.viewOldData}
+              >
+                {I18N.get('suggestion.btn.viewOldData')}
+              </Button>
             </Col>
           </Row>
           <Row gutter={24} style={{ marginTop: 32 }}>
@@ -381,6 +389,18 @@ export default class extends StandardPage {
     await this.setState((prevState) => ({
       showArchived: !prevState.showArchived,
 
+      // go back to page 1 on toggle
+      page: 1,
+      results: 10,
+      total: 0
+    }))
+
+    this.refetch()
+  }
+
+  viewOldData = async () => {
+    await this.setState((state) => ({
+      showOldData: !state.showOldData,
       // go back to page 1 on toggle
       page: 1,
       results: 10,
@@ -769,6 +789,10 @@ export default class extends StandardPage {
 
     if (this.state.showArchived) {
       query.status = SUGGESTION_STATUS.ARCHIVED
+    }
+
+    if (this.state.showOldData) {
+      query.status = 'OLD'
     }
 
     if (infoNeeded) {
