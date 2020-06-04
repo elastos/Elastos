@@ -163,7 +163,7 @@ func getProposalTotalBudgetAmount(proposal payload.CRCProposal) common.Fixed64 {
 func getProposalUnusedBudgetAmount(proposalState *ProposalState) common.Fixed64 {
 	var budget common.Fixed64
 	for _, b := range proposalState.Proposal.Budgets {
-		if _, ok := proposalState.WithdrawnBudgets[b.Stage]; !ok {
+		if _, ok := proposalState.WithdrawableBudgets[b.Stage]; !ok {
 			budget += b.Amount
 		}
 	}
