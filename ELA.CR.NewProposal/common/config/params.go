@@ -215,7 +215,8 @@ var DefaultParams = Params{
 	}),
 	TxCacheVolume:                      100000,
 	CheckVoteCRCountHeight:             0,       // todo correct me later
-	MaxCRAssetsAddressUTXOCount:        3000,    // todo correct me later
+	MaxCRAssetsAddressUTXOCount:        1440,    // todo correct me later
+	MinCRAssetsAddressUTXOCount:        720,     // todo correct me later
 	CRAssetsRectifyTransactionHeight:   1000000, // todo correct me later
 	CRCProposalWithdrawPayloadV1Height: 1000000, // todo correct me later
 }
@@ -580,6 +581,10 @@ type Params struct {
 	// MaxCRAssetsAddressUTXOCount defines the max UTXOs count of CRFoundation
 	// address.
 	MaxCRAssetsAddressUTXOCount uint32
+
+	// MinCRAssetsAddressUTXOCount defines the min UTXOs count of CRFoundation
+	// address.
+	MinCRAssetsAddressUTXOCount uint32
 
 	// CRAssetsRectifyTransactionHeight defines the CR rectify transaction start height
 	CRAssetsRectifyTransactionHeight uint32

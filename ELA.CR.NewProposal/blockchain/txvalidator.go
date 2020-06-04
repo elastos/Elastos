@@ -2043,9 +2043,15 @@ func (b *BlockChain) checkCRCProposalRealWithdrawTransaction(txn *Transaction,
 func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 	references map[*Input]Output) error {
 	// Inputs count should be greater than or equal to MaxCRAssetsAddressUTXOCount
-	if len(txn.Inputs) < int(b.chainParams.MaxCRAssetsAddressUTXOCount) {
-		return errors.New("inputs count should be greater than or " +
+	if len(txn.Inputs) > int(b.chainParams.MaxCRAssetsAddressUTXOCount) {
+		return errors.New("inputs count should be less than or " +
 			"equal to MaxCRAssetsAddressUTXOCount")
+	}
+
+	// Inputs count should be less than or equal to MinCRAssetsAddressUTXOCount
+	if len(txn.Inputs) < int(b.chainParams.MinCRAssetsAddressUTXOCount) {
+		return errors.New("inputs count should be greater than or " +
+			"equal to MinCRAssetsAddressUTXOCount")
 	}
 
 	// Inputs need to only from CRC foundation

@@ -371,6 +371,10 @@ var (
 		Name:  "maxcrassetsaddressutxocount",
 		Usage: "defines the maximum number of utxo cr assets address can have ",
 	}
+	MinCRAssetsAddressUTXOCount = cli.StringFlag{
+		Name:  "mincrassetsaddressutxocount",
+		Usage: "defines the minimum number of utxo cr assets address can rectify",
+	}
 	CRAssetsRectifyTransactionHeight = cli.StringFlag{
 		Name:  "crassetsrectifytransactionheight",
 		Usage: "defines the cr rectify transaction start height",

@@ -857,6 +857,12 @@ func NewSettings() *Settings {
 		ParamName:    "MaxCRAssetsAddressUTXOCount"})
 
 	result.Add(&settingItem{
+		Flag:         cmdcom.MinCRAssetsAddressUTXOCount,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.MinCRAssetsAddressUTXOCount",
+		ParamName:    "MinCRAssetsAddressUTXOCount"})
+
+	result.Add(&settingItem{
 		Flag:         cmdcom.CRAssetsRectifyTransactionHeight,
 		DefaultValue: uint32(0),
 		ConfigPath:   "CRConfiguration.CRAssetsRectifyTransactionHeight",
