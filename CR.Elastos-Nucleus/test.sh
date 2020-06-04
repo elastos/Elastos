@@ -7,7 +7,7 @@ virtualenv -p `which python3` venv
 source venv/bin/activate
 
 # Install all the dependencies
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 
 # Run postgres server as a docker container
 cd tools
@@ -17,11 +17,9 @@ sleep 7
 
 # Migrate the database
 # Collect all static content
-sudo rm -rf www/
-python3 manage.py collectstatic --no-input
+python manage.py collectstatic --no-input --clear
 
-python3 manage.py makemigrations
-python3 manage.py migrate
+python manage.py makemigrations
+python manage.py migrate
 
-python3 manage.py test
-
+python manage.py test
