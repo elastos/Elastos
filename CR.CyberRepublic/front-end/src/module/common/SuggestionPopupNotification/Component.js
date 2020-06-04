@@ -1,7 +1,7 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 
-import {Modal, Row, Col, Form} from 'antd'
+import { Modal, Row, Col, Form } from 'antd'
 import I18N from '@/I18N'
 import './style.scss'
 
@@ -58,12 +58,12 @@ class C extends BaseComponent {
           <Col>
             <div className="right-col">
               <h1 className="komu-a title">{I18N.get('popup.suggestion.title')}</h1>
-              <p style={{forntSize: 20+'px'}}>{I18N.get('popup.suggestion.content')}</p>
+              <p style={{ forntSize: 20 + 'px' }}>{I18N.get('popup.suggestion.content')}</p>
               <p>
                 {I18N.get('popup.suggestion.thanks')}
-                <br/>
+                <br />
                 {I18N.get('popup.suggestion.team')
-              }</p>
+                }</p>
             </div>
           </Col>
         </Row>
