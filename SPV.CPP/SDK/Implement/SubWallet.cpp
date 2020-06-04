@@ -572,7 +572,7 @@ namespace Elastos {
 		}
 
 		void SubWallet::txPublished(const std::string &hash, const nlohmann::json &result) {
-			ArgInfo("{} {} hash: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), hash);
+			ArgInfo("{} {} hash: {} reason: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), hash, result.dump());
 
 			boost::mutex::scoped_lock scoped_lock(lock);
 

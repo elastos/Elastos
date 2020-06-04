@@ -1205,21 +1205,17 @@ namespace Elastos {
 				for (size_t i = _publishedTx.size(); i > 0; --i) { // see if tx is in list of published tx
 					if (_publishedTxHashes[i - 1] == txHash) {
 						pubTx = _publishedTx[i - 1];
-						if (code != 0x12) {
-							_publishedTx[i - 1].ResetCallback();
-							_publishedTx.erase(_publishedTx.begin() + (i - 1));
-							_publishedTxHashes.erase(_publishedTxHashes.begin() + (i - 1));
-							break;
-						}
+						_publishedTx[i - 1].ResetCallback();
+						_publishedTx.erase(_publishedTx.begin() + (i - 1));
+						_publishedTxHashes.erase(_publishedTxHashes.begin() + (i - 1));
+						break;
 					}
 				}
 
 				if (tx) {
 					if (RemovePeerFromList(peer, txHash, _txRelays) && tx->GetBlockHeight() == TX_UNCONFIRMED) {
 						// set timestamp 0 to mark tx as unverified
-						if (code != 0x12 && reason.find("Duplicate") == std::string::npos &&
-							reason.find("duplicate") == std::string::npos)
-							_wallet->UpdateTransactions({txHash}, TX_UNCONFIRMED, 0);
+						_wallet->UpdateTransactions({txHash}, TX_UNCONFIRMED, 0);
 					}
 
 					// if we get rejected for any reason other than double-spend, the peer is likely misconfigured
@@ -1242,10 +1238,6 @@ namespace Elastos {
 
 			FireTxStatusUpdate();
 			if (pubTx.HasCallback()) pubTx.FireCallback(code, reason);
-			if (tx != nullptr && code != 0x12 && reason.find("Duplicate") == std::string::npos &&
-				reason.find("duplicate") == std::string::npos) {
-				_wallet->RemoveTransaction(txHash);
-			}
 		}
 
 		void PeerManager::OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) {
