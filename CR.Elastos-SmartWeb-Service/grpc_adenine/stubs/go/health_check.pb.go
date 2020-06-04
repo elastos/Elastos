@@ -139,11 +139,13 @@ func init() {
 	proto.RegisterType((*HealthCheckResponse)(nil), "health_check.HealthCheckResponse")
 }
 
-func init() { proto.RegisterFile("health_check.proto", fileDescriptor_947d6a94f116b4f4) }
+func init() {
+	proto.RegisterFile("health_check.proto", fileDescriptor_947d6a94f116b4f4)
+}
 
 var fileDescriptor_947d6a94f116b4f4 = []byte{
 	// 226 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0xca, 0x48, 0x4d, 0xcc,
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0x12, 0xca, 0x48, 0x4d, 0xcc,
 	0x29, 0xc9, 0x88, 0x4f, 0xce, 0x48, 0x4d, 0xce, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2,
 	0x41, 0x16, 0x53, 0xd2, 0xe3, 0x12, 0xf2, 0x00, 0xf3, 0x9d, 0x41, 0xdc, 0xa0, 0xd4, 0xc2, 0xd2,
 	0xd4, 0xe2, 0x12, 0x21, 0x09, 0x2e, 0xf6, 0xe2, 0xd4, 0xa2, 0xb2, 0xcc, 0xe4, 0x54, 0x09, 0x46,
@@ -162,11 +164,11 @@ var fileDescriptor_947d6a94f116b4f4 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // HealthClient is the client API for Health service.
 //
@@ -177,10 +179,10 @@ type HealthClient interface {
 }
 
 type healthClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewHealthClient(cc *grpc.ClientConn) HealthClient {
+func NewHealthClient(cc grpc.ClientConnInterface) HealthClient {
 	return &healthClient{cc}
 }
 
