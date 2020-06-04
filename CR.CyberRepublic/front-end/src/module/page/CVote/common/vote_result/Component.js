@@ -5,6 +5,7 @@ import _ from 'lodash'
 import OnChain from '../../detail/OnChain'
 import Translation from '@/module/common/Translation/Container'
 import { Avatar } from 'antd'
+import { USER_AVATAR_DEFAULT } from '@/constant'
 import { Container, ResultRow, Reason, Label, List, Item, StyledAvatarIcon } from './style'
 
 const Component = (
@@ -36,7 +37,7 @@ const Component = (
     const avatarName = data.name.split(" ")
     const userNode = (
       <Item key={key}>
-        {data.avatar ? <Avatar size={64} src={data.avatar} shape="circle" alt="voter avatar" /> :
+        {data.avatar || avatarName[0] == 'undefined' ? <Avatar size={64} src={data.avatar || USER_AVATAR_DEFAULT}  alt="voter avatar" /> :
           <Avatar
             className="comment-avatar pull-left"
             style={{
