@@ -162,6 +162,7 @@ python3 -m grpc_tools.protoc --include_imports --include_source_info --proto_pat
 docker build -t cyberrepublic/elastos-smartweb-service .;
 docker tag cyberrepublic/elastos-smartweb-service gcr.io/careful-pillar-269322/elastos-smartweb-service:latest;
 docker push gcr.io/careful-pillar-269322/elastos-smartweb-service:latest;
+# Deploy the docker container going to https://console.cloud.google.com/run
 
 # Deploy Endpoints config
 gcloud config set project PROJECT_ID
