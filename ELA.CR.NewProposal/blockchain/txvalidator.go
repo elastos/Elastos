@@ -1925,7 +1925,7 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 	case payload.Progress:
 		result = b.checkCRCProposalProgressTracking(cptPayload, proposalState)
 	case payload.Rejected:
-		result = b.checkCRCProposalProgressTracking(cptPayload, proposalState)
+		result = b.checkCRCProposalRejectedTracking(cptPayload, proposalState)
 	case payload.Terminated:
 		result = b.checkCRCProposalTerminatedTracking(cptPayload, proposalState)
 	case payload.ChangeOwner:
@@ -2104,6 +2104,20 @@ func (b *BlockChain) checkCRCProposalProgressTracking(
 				return errors.New("imprest and final payment not allowed to withdraw")
 			}
 		}
+	}
+
+	// Check signature.
+	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
+}
+
+func (b *BlockChain) checkCRCProposalRejectedTracking(
+	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
+	// Check stage of proposal
+	if int(cptPayload.Stage) >= len(pState.Proposal.Budgets) {
+		return errors.New("invalid tracking Stage")
+	}
+	if _, ok := pState.WithdrawableBudgets[cptPayload.Stage]; ok {
+		return errors.New("invalid budgets with tracking budget")
 	}
 
 	// Check signature.
