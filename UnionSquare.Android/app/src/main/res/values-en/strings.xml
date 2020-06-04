@@ -660,7 +660,7 @@
 
     <string name="type">Type</string>
     <string name="common">Normal</string>
-    <string name="suggesthash">Suggestion Hash</string>
+    <string name="suggesthash">Submit a Suggestion</string>
     <string name="suggesterdid">Proposer DID</string>
     <string name="proposalmoneyacount">Fund Account of the Proposal</string>
     <string name="suggesterquota">Fund usage plan</string>
