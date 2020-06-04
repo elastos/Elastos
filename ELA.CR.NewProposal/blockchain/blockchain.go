@@ -40,12 +40,6 @@ const (
 
 	// irreversibleHeight defines the max height that the chain be reorganized
 	irreversibleHeight = 6
-
-	// RectifyTxFee defines the fee of cr rectify transaction
-	RectifyTxFee = 10000
-
-	// RealWithdrawSingleFee defines the single fee of cr real proposal withdraw transaction
-	RealWithdrawSingleFee = 10000
 )
 
 var (
@@ -493,12 +487,12 @@ func (b *BlockChain) CreateCRRealWithdrawTransaction(
 	}
 
 	for _, v := range outputs {
-		v.Amount -= RealWithdrawSingleFee
+		v.Amount -= b.chainParams.RealWithdrawSingleFee
 	}
 
 	var tx *Transaction
 	tx, err = b.createTransaction(payload, CRCProposalRealWithdraw,
-		b.chainParams.CRAsstesAddress, Fixed64(RealWithdrawSingleFee), uint32(0), utxos, outputs...)
+		b.chainParams.CRAsstesAddress, b.chainParams.RealWithdrawSingleFee, uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}
@@ -523,7 +517,7 @@ func (b *BlockChain) CreateCRAssetsRectifyTransaction() (*Transaction, error) {
 		}
 		crcFoundationBalance += u.Value
 	}
-	rectifyAmount := crcFoundationBalance - RectifyTxFee
+	rectifyAmount := crcFoundationBalance - b.chainParams.RectifyTxFee
 
 	log.Info("create CR assets rectify amount:", rectifyAmount)
 	if rectifyAmount <= 0 {
@@ -534,7 +528,7 @@ func (b *BlockChain) CreateCRAssetsRectifyTransaction() (*Transaction, error) {
 
 	var tx *Transaction
 	tx, err = b.createTransaction(&payload.CRAssetsRectify{}, CRAssetsRectify,
-		b.chainParams.CRAsstesAddress, Fixed64(RectifyTxFee), uint32(0), utxos, outputs...)
+		b.chainParams.CRAsstesAddress, b.chainParams.RectifyTxFee, uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}

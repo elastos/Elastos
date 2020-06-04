@@ -874,6 +874,18 @@ func NewSettings() *Settings {
 		ConfigPath:   "CRConfiguration.CRCProposalWithdrawPayloadV1Height",
 		ParamName:    "CRCProposalWithdrawPayloadV1Height"})
 
+	result.Add(&settingItem{
+		Flag:         cmdcom.RectifyTxFee,
+		DefaultValue: common.Fixed64(0),
+		ConfigPath:   "CRConfiguration.RectifyTxFee",
+		ParamName:    "RectifyTxFee"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.RealWithdrawSingleFee,
+		DefaultValue: common.Fixed64(0),
+		ConfigPath:   "CRConfiguration.RealWithdrawSingleFee",
+		ParamName:    "RealWithdrawSingleFee"})
+
 	return result
 }
 
