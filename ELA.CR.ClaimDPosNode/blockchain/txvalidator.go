@@ -2014,10 +2014,10 @@ func (b *BlockChain) checkCRCProposalRealWithdrawTransaction(txn *Transaction,
 		if !output.ProgramHash.IsEqual(txInfo.Recipient) {
 			return errors.New("invalid real withdraw output address")
 		}
-		if output.Value != txInfo.Amount-RealWithdrawSingleFee {
+		if output.Value != txInfo.Amount-b.chainParams.RealWithdrawSingleFee {
 			return errors.New(fmt.Sprintf("invalid real withdraw output "+
 				"amount:%s, need to be:%s",
-				output.Value, txInfo.Amount-RealWithdrawSingleFee))
+				output.Value, txInfo.Amount-b.chainParams.RealWithdrawSingleFee))
 		}
 		if _, ok := txsMap[hash]; ok {
 			return errors.New("duplicated real withdraw transactions hash")
@@ -2034,10 +2034,10 @@ func (b *BlockChain) checkCRCProposalRealWithdrawTransaction(txn *Transaction,
 	for _, o := range txn.Outputs {
 		outputAmount += o.Value
 	}
-	if inputAmount-outputAmount != RealWithdrawSingleFee*common.Fixed64(txsCount) {
+	if inputAmount-outputAmount != b.chainParams.RealWithdrawSingleFee*common.Fixed64(txsCount) {
 		return errors.New(fmt.Sprintf("invalid real withdraw transaction"+
 			" fee:%s, need to be:%s, txsCount:%d", inputAmount-outputAmount,
-			RealWithdrawSingleFee*common.Fixed64(txsCount), txsCount))
+			b.chainParams.RealWithdrawSingleFee*common.Fixed64(txsCount), txsCount))
 	}
 
 	return nil
@@ -2078,9 +2078,9 @@ func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 
 	// Inputs amount need equal to outputs amount
 	totalOutput := txn.Outputs[0].Value
-	if totalInput != totalOutput+RectifyTxFee {
-		return fmt.Errorf("inputs minus outputs does not match with 10000 sela fee , "+
-			"inputs:%s outputs:%s", totalInput, totalOutput)
+	if totalInput != totalOutput+b.chainParams.RectifyTxFee {
+		return fmt.Errorf("inputs minus outputs does not match with %d sela fee , "+
+			"inputs:%s outputs:%s", b.chainParams.RectifyTxFee, totalInput, totalOutput)
 	}
 
 	return nil

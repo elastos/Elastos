@@ -383,6 +383,14 @@ var (
 		Name:  "crcproposalwithdrawpayloadv1height",
 		Usage: "defines the crc withdraw proposal payload type v1 accept height",
 	}
+	RectifyTxFee = cli.StringFlag{
+		Name:  "rectifytxfee",
+		Usage: "defines the fee of cr rectify transaction",
+	}
+	RealWithdrawSingleFee = cli.StringFlag{
+		Name:  "realwithdrawsinglefee",
+		Usage: "defines the single fee of cr real proposal withdraw transaction",
+	}
 )
 
 // MoveRPCFlags finds the rpc argument and moves it to the front

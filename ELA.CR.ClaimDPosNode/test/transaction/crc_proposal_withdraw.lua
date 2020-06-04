@@ -40,7 +40,7 @@ local crcproposalwithdraw_payload =crcproposalwithdraw.new(proposal_hash, wallet
 local tx = transaction.new(9, 0x29, payloadversion, crcproposalwithdraw_payload, 0)
 print(tx:get())
 
-local using_addr = crcCommitteeAddress
+local using_addr = CRExpensesAddress
 if payloadversion == 1 then
     using_addr = addr
 end
@@ -52,6 +52,7 @@ local default_output = defaultoutput.new()
 local amount_output = output.new(asset_id, amount * 100000000-fee*
         100000000, recipient, 0, default_output)
 tx:appendtxout(amount_output)
+
 
 local charge_output = output.new(asset_id, charge, using_addr, 0, default_output)
 tx:appendtxout(charge_output)
