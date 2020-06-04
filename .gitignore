@@ -39,3 +39,6 @@ documents/user_files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# Tests
+.coverage

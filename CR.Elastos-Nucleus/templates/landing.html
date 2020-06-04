@@ -44,7 +44,7 @@
           <div class="row mx-n2" style="margin-top: 45px;">
             <div class="col-md px-2">
                 {% if request.session.logged_in != True %}
-                    <button class="login-button" data-toggle="modal" data-target="#myModal">
+                    <button class="login-button" data-toggle="modal" data-target="#myModal" id="login_button">
                             Login with Elastos DID
                     </button>
                 {% endif %}
@@ -59,12 +59,12 @@
                 <div class="modal-body">
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="nav-item active">
-                            <a class="nav-link active text-center" href="#elastOS" data-toggle="tab">
+                            <a class="nav-link active text-center" id="elastos_qr_code_tab" href="#elastOS" data-toggle="tab">
                                 elastOS
                             </a>
                         </li>
                         <li>
-                            <a class="nav-link text-center" href="#elephantWallet" data-toggle="tab">
+                            <a class="nav-link text-center" id="elephant_qr_code_tab" href="#elephantWallet" data-toggle="tab">
                                 Elephant Wallet
                             </a>
                         </li>
@@ -289,7 +289,7 @@
           </p>
           <div class="row mx-n2">
             <div class="col-md px-2">
-                <button class="login-button">
+                <button class="login-button" id="read_documentation_button">
                     <a class="login-text" href="https://developer.elastos.org/">
                         Read Documentation
                     </a>

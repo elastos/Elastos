@@ -119,7 +119,6 @@ def did_callback_elastos(request):
         req = data["req"].replace("elastos://credaccess/", "")
         appid = jwt.decode(req, verify=False)["appid"]
         data['RandomNumber'] = appid
-
         try:
             recently_created_time = timezone.now() - timedelta(minutes=1)
             did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
@@ -202,6 +201,7 @@ def send_email(request, to_email, user):
 
 
 def landing(request):
+
     did_login = config('DIDLOGIN', default=False, cast=bool)
     context = {}
     if not did_login:
@@ -264,7 +264,6 @@ def get_elastos_sign_in_url(request, random):
         }
     }
     jwt_token = jwt.encode(jwt_claims, SECRET_KEY, algorithm='HS256')
-
     url = 'elastos://credaccess/' + jwt_token.decode()
 
     return url
