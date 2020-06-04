@@ -615,7 +615,7 @@ export default class extends StandardPage {
       pollProposalState,
       isProposed
     } = this.props
-    const oldData = _.get(detial, 'old')
+    const oldData = _.get(detail, 'old')
     const signature = _.get(detail, 'signature.data')
     const makeIntoProposalPanel = this.renderMakeIntoProposalPanel()
 
