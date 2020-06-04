@@ -25,6 +25,7 @@ package org.elastos.did;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
+import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -99,6 +100,7 @@ public class Mnemonic {
     	if (mnemonic == null || mnemonic.isEmpty())
     		throw new IllegalArgumentException();
 
+    	mnemonic = Normalizer.normalize(mnemonic, Normalizer.Form.NFD);
 		List<String> words = Arrays.asList(mnemonic.split(" "));
 
     	try {
@@ -110,7 +112,10 @@ public class Mnemonic {
 	}
 
 	public static byte[] toSeed(String mnemonic, String passphrase) {
-    	List<String> words = Arrays.asList(mnemonic.split(" "));
+    	mnemonic = Normalizer.normalize(mnemonic, Normalizer.Form.NFD);
+    	passphrase = Normalizer.normalize(passphrase, Normalizer.Form.NFD);
+
+		List<String> words = Arrays.asList(mnemonic.split(" "));
 
     	return MnemonicCode.toSeed(words, passphrase);
 	}

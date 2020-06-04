@@ -59,4 +59,12 @@ public class MnemonicTest {
 			assertFalse(mc.isValid(mnemonic));
 		}
 	}
+
+	@Test
+	public void testFrenchMnemonic() throws DIDException {
+		String mnemonic = "remarque séduire massif boire horde céleste exact dribbler pulpe prouesse vagabond opale";
+
+		Mnemonic mc = Mnemonic.getInstance(Mnemonic.FRENCH);
+		assertTrue(mc.isValid(mnemonic));
+	}
 }
