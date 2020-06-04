@@ -52,7 +52,7 @@ if proposal_hash == "" then
 end
 
 if document_hash == "" then
-    print("document hash is nil, should use --MessageHash to set it.")
+    print("document hash is nil, should use --messagehash to set it.")
     return
 end
 

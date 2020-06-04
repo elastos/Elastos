@@ -397,7 +397,7 @@ func NewSettings() *Settings {
 			params.CRCAddress = *crcAddress
 			return nil
 		},
-		ConfigPath: "CRCAddress",
+		ConfigPath: "CRConfiguration.CRCAddress",
 		ParamName:  "CRCAddress"})
 
 	result.Add(&settingItem{
@@ -425,8 +425,8 @@ func NewSettings() *Settings {
 			params.CRAsstesAddress = *crcFoundation
 			return nil
 		},
-		ConfigPath: "crasstesaddress",
-		ParamName:  "crasstesaddress"})
+		ConfigPath: "CRConfiguration.CRAsstesAddress",
+		ParamName:  "CRAsstesAddress"})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.CRExpensesAddressFlag,
@@ -453,8 +453,8 @@ func NewSettings() *Settings {
 			params.CRExpensesAddress = *CRExpensesAddress
 			return nil
 		},
-		ConfigPath: "crexpensesaddress",
-		ParamName:  "crexpensesaddress"})
+		ConfigPath: "CRConfiguration.CRExpensesAddress",
+		ParamName:  "CRExpensesAddress"})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.VoteStartHeightFlag,
@@ -489,13 +489,13 @@ func NewSettings() *Settings {
 	result.Add(&settingItem{
 		Flag:         cmdcom.CRCommitteeStartHeightFlag,
 		DefaultValue: uint32(0),
-		ConfigPath:   "CRCommitteeStartHeight",
+		ConfigPath:   "CRConfiguration.CRCommitteeStartHeight",
 		ParamName:    "CRCommitteeStartHeight"})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.CRVotingStartHeightFlag,
 		DefaultValue: uint32(0),
-		ConfigPath:   "CRVotingStartHeight",
+		ConfigPath:   "CRConfiguration.CRVotingStartHeight",
 		ParamName:    "CRVotingStartHeight"})
 
 	result.Add(&settingItem{
