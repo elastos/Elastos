@@ -66,12 +66,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 		log.Warn("[TxPool CheckTransactionSanity] failed", tx.Hash())
 		return errCode
 	}
-	references, err := chain.UTXOCache.GetTxReference(tx)
-	if err != nil {
-		log.Warn("[CheckTransactionContext] get transaction reference failed")
-		return elaerr.Simple(elaerr.ErrTxUnknownReferredTx, nil)
-	}
-	if errCode := chain.CheckTransactionContext(bestHeight+1, tx, references, mp.proposalsUsedAmount); errCode != nil {
+	if _, errCode := chain.CheckTransactionContext(bestHeight+1, tx, mp.proposalsUsedAmount); errCode != nil {
 		log.Warn("[TxPool CheckTransactionContext] failed", tx.Hash())
 		return errCode
 	}
