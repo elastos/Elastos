@@ -430,7 +430,7 @@ namespace Elastos {
 					uint256 txHash(txid);
 					txFound = wallet->LoadTxn(txHash);
 				}
-				if (txFound && !txFound->IsCoinBase()) {
+				if (txFound) {
 					confirms = txFound->GetConfirms(wallet->LastBlockHeight());
 					jsonList.push_back(txFound->GetSummary(wallet, confirms, true));
 					j["Transactions"] = jsonList;
