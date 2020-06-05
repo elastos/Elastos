@@ -2458,3 +2458,33 @@ Response:
     }
 }
 ```
+
+### getcrrelatedstage
+
+Get CR related stage information.
+
+#### Example
+
+Request:
+```
+{
+  "method": "decoderawtransaction"
+}
+```
+
+Response:
+```
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "onduty":true,
+        "ondutystartheight":1000,
+        "ondutyendheight":2000,
+        "invoting":false,
+        "votingstartheight":0,
+        "votingendheight":0
+    }
+}
+```
