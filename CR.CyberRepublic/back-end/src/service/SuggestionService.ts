@@ -48,12 +48,9 @@ export default class extends Base {
   }
 
   public async create(param: any): Promise<Document> {
-    // const newSuggestionCount = await this.model.count({old:{$ne:true}})
-    // const displayId = newSuggestionCount + 1
     const doc = {
       ...param,
       version: 10,
-      // displayId,
       createdBy: _.get(this.currentUser, '_id'),
       contentType: constant.CONTENT_TYPE.MARKDOWN,
       // this is a hack for now, we should really be using aggregate pipeline + projection
