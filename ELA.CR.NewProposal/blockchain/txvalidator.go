@@ -2365,12 +2365,6 @@ func (b *BlockChain) checkSecretaryGeneralSign(crcProposal *payload.CRCProposal,
 	if err = common.WriteVarBytes(signedBuf, crcProposal.Signature); err != nil {
 		return errors.New("failed to write proposal owner signature")
 	}
-	if err := common.WriteVarBytes(signedBuf, crcProposal.SecretaryGeneralPublicKey); err != nil {
-		return errors.New("failed to serialize SecretaryGeneralPublicKey")
-	}
-	if err = crcProposal.SecretaryGeneralDID.Serialize(signedBuf); err != nil {
-		return errors.New("failed to write SecretaryGeneralDID")
-	}
 	if err = checkCRTransactionSignature(crcProposal.SecretaryGeneraSignature, code,
 		signedBuf.Bytes()); err != nil {
 		return errors.New("failed to check SecretaryGeneral signature")
