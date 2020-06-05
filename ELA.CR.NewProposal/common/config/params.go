@@ -137,7 +137,7 @@ var DefaultParams = Params{
 
 	Foundation:        mainNetFoundation,
 	CRCAddress:        mainNetCRCAddress,
-	CRAsstesAddress:   CRCAssetsAddress,
+	CRAssetsAddress:   CRCAssetsAddress,
 	CRExpensesAddress: CRCExpensesAddress,
 	DestroyELAAddress: DestroyELAAddress,
 	GenesisBlock:      GenesisBlock(&mainNetFoundation),
@@ -237,7 +237,7 @@ func (p *Params) TestNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
-	copy.CRAsstesAddress = CRCAssetsAddress
+	copy.CRAssetsAddress = CRCAssetsAddress
 	copy.CRExpensesAddress = CRCExpensesAddress
 	copy.DestroyELAAddress = DestroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
@@ -300,7 +300,7 @@ func (p *Params) RegNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
-	copy.CRAsstesAddress = CRCAssetsAddress
+	copy.CRAssetsAddress = CRCAssetsAddress
 	copy.CRExpensesAddress = CRCExpensesAddress
 	copy.DestroyELAAddress = DestroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
@@ -384,8 +384,8 @@ type Params struct {
 	// CRCAddress defines the CRC address which receiving mining rewards.
 	CRCAddress common.Uint168
 
-	// CRAsstesAddress defines the CRC foundation address.
-	CRAsstesAddress common.Uint168
+	// CRAssetsAddress defines the CRC foundation address.
+	CRAssetsAddress common.Uint168
 
 	// CRExpensesAddress defines the CR committee address which receiving
 	// appropriation from CRC foundation address.

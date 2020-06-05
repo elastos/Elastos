@@ -448,7 +448,7 @@ func (b *BlockChain) createInputs(fromAddress Uint168,
 }
 
 func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
-	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRAsstesAddress)
+	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRAssetsAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -468,7 +468,7 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
 
 	var tx *Transaction
 	tx, err = b.createTransaction(&payload.CRCAppropriation{}, CRCAppropriation,
-		b.chainParams.CRAsstesAddress, Fixed64(0), uint32(0), utxos, outputs...)
+		b.chainParams.CRAssetsAddress, Fixed64(0), uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}
@@ -492,7 +492,7 @@ func (b *BlockChain) CreateCRRealWithdrawTransaction(
 
 	var tx *Transaction
 	tx, err = b.createTransaction(payload, CRCProposalRealWithdraw,
-		b.chainParams.CRAsstesAddress, b.chainParams.RealWithdrawSingleFee, uint32(0), utxos, outputs...)
+		b.chainParams.CRAssetsAddress, b.chainParams.RealWithdrawSingleFee, uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}
@@ -500,7 +500,7 @@ func (b *BlockChain) CreateCRRealWithdrawTransaction(
 }
 
 func (b *BlockChain) CreateCRAssetsRectifyTransaction() (*Transaction, error) {
-	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRAsstesAddress)
+	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRAssetsAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -523,12 +523,12 @@ func (b *BlockChain) CreateCRAssetsRectifyTransaction() (*Transaction, error) {
 	if rectifyAmount <= 0 {
 		return nil, nil
 	}
-	outputs := []*OutputInfo{{b.chainParams.CRAsstesAddress,
+	outputs := []*OutputInfo{{b.chainParams.CRAssetsAddress,
 		rectifyAmount}}
 
 	var tx *Transaction
 	tx, err = b.createTransaction(&payload.CRAssetsRectify{}, CRAssetsRectify,
-		b.chainParams.CRAsstesAddress, b.chainParams.RectifyTxFee, uint32(0), utxos, outputs...)
+		b.chainParams.CRAssetsAddress, b.chainParams.RectifyTxFee, uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}
