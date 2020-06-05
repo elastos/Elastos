@@ -165,7 +165,7 @@ var DefaultParams = Params{
 		"02b95b000f087a97e988c24331bf6769b4a75e4b7d5d2a38105092a3aa841be33b",
 		"02a0aa9eac0e168f3474c2a0d04e50130833905740a5270e8a44d6c6e85cf6d98c",
 	},
-	SecretaryGeneral:            "", // todo correct me later
+	SecretaryGeneral:            "02712da531804d1c38d159a901313239d2100dfb5b693d71a2f76b15dec3f8fc32",
 	MaxProposalTrackingCount:    128,
 	PowLimit:                    powLimit,
 	PowLimitBits:                0x1f0008ff,
@@ -182,7 +182,7 @@ var DefaultParams = Params{
 	PublicDPOSHeight:            402680,
 	EnableActivateIllegalHeight: 439000,
 	CRVotingStartHeight:         537670,
-	CRCommitteeStartHeight:      2000000, // todo correct me when height has been confirmed
+	CRCommitteeStartHeight:      658930,
 	CheckRewardHeight:           436812,
 	VoteStatisticsHeight:        512881,
 	RegisterCRByDIDHeight:       598000,
@@ -214,7 +214,7 @@ var DefaultParams = Params{
 		NeedSave:           false,
 	}),
 	TxCacheVolume:                      100000,
-	CheckVoteCRCountHeight:             0,       // todo correct me later
+	CheckVoteCRCountHeight:             658930,
 	MaxCRAssetsAddressUTXOCount:        1440,    // todo correct me later
 	MinCRAssetsAddressUTXOCount:        720,     // todo correct me later
 	CRAssetsRectifyTransactionHeight:   1000000, // todo correct me later
@@ -264,15 +264,15 @@ func (p *Params) TestNet() *Params {
 		"02bf9e37b3db0cbe86acf76a76578c6b17b4146df101ec934a00045f7d201f06dd",
 		"03111f1247c66755d369a8c8b3a736dfd5cf464ca6735b659533cbe1268cd102a9",
 	}
-	copy.SecretaryGeneral = "" // todo correct me later
+	copy.SecretaryGeneral = "0349cb77a69aa35be0bcb044ffd41a616b8367136d3b339d515b1023cc0f302f87"
 	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 200000
 	copy.CRCOnlyDPOSHeight = 246700
 	copy.PublicDPOSHeight = 300000
 	copy.CRVotingStartHeight = 436900
-	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
-	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
+	copy.CRCommitteeStartHeight = 546500
+	copy.EnableActivateIllegalHeight = 546500
 	copy.CheckRewardHeight = 100
 	copy.VoteStatisticsHeight = 0
 	copy.RegisterCRByDIDHeight = 483500
@@ -281,7 +281,7 @@ func (p *Params) TestNet() *Params {
 	copy.CRCAppropriatePercentage = 10
 	copy.MaxCommitteeProposalCount = 128
 	copy.MaxNodePerHost = 10
-	copy.CheckVoteCRCountHeight = 0 // todo correct me later
+	copy.CheckVoteCRCountHeight = 546500
 
 	return &copy
 }
