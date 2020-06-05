@@ -1037,14 +1037,6 @@ func newSecretaryGeneralProposal(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		if err = common.WriteVarBytes(signBuf, crcProposal.SecretaryGeneralPublicKey); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		if err = crcProposal.SecretaryGeneralDID.Serialize(signBuf); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
 		secretaryGeneralsig, err := crypto.Sign(secretaryGeneralPrivateKey, signBuf.Bytes())
 		if err != nil {
 			fmt.Println(err)
