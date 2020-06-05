@@ -88,12 +88,6 @@ class C extends BaseComponent {
       const pItems = _.get(budget, 'paymentItems')
 
       if (amount || address || !_.isEmpty(pItems)) {
-        if (!amount) {
-          this.setState({ loading: false })
-          message.error(I18N.get('suggestion.form.error.amount'))
-          return
-        }
-
         if (!address) {
           this.setState({ loading: false })
           message.error(I18N.get('suggestion.form.error.address'))
@@ -106,7 +100,7 @@ class C extends BaseComponent {
         const completion = pItems.filter((item) => item.type === COMPLETION)
         if (
           milestone.length !== pItems.length ||
-          initiation.length !== 1 ||
+          initiation.length > 1 ||
           completion.length !== 1
         ) {
           this.setState({ loading: false })

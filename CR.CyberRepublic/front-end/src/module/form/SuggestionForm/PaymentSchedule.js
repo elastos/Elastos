@@ -13,7 +13,7 @@ class PaymentSchedule extends Component {
     const value = props.initialValue
     this.state = {
       visible: false,
-      total: (value && value.budgetAmount) || '',
+      total: value ? value.budgetAmount : '',
       address: (value && value.elaAddress) || '',
       paymentItems: (value && value.paymentItems) || [],
       errors: {}
