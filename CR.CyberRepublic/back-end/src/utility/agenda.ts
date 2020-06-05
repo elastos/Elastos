@@ -1,10 +1,17 @@
 import db from '../db'
 import { getProposalState } from '../utility'
 import CVoteServive from '../service/CVoteService'
+import CouncilService from '../service/CouncilService'
 const Agenda = require('agenda')
 const agenda = new Agenda({ db: { address: process.env.DB_URL } })
 
-agenda.define('make into proposal', async (job: any) => {
+const JOB_NAME = {
+  INTOPROPOSAL: 'make into proposal',
+  CVOTEJOB: 'cvote poll proposal',
+  COUNCILJOB: 'council poll change',
+}
+
+agenda.define(JOB_NAME.INTOPROPOSAL, async (job: any) => {
   try {
     const DB = await db.create()
     const cvote = await DB.getModel('CVote')
@@ -39,8 +46,32 @@ agenda.define('make into proposal', async (job: any) => {
     console.log('make into proposal cron job err...', err)
   }
 })
+agenda.define(JOB_NAME.CVOTEJOB, async (job: any) => {
+  try{
+    const DB = await db.create()
+    const cvoteService = new CVoteServive(DB, { user: undefined })
+    await cvoteService.pollProposal()
+    console.log(JOB_NAME.CVOTEJOB,"at working")
+  }catch (err) {
+    console.log('',err)
+  }
+})
+agenda.define(JOB_NAME.COUNCILJOB, async (job: any) => {
+  try{
+    const DB = await db.create()
+    const councilService = new CouncilService(DB, { user: undefined })
+    await councilService.eachSecretariatJob()
+    await councilService.eachCouncilJobPlus()
+    console.log(JOB_NAME.COUNCILJOB,"at working")
+  }catch (err) {
+    console.log('',err)
+  }
+})
 ;(async function () {
-  console.log('------make into proposal cron job starting------')
+  // console.log('------make into proposal cron job starting------')
+  console.log('------cron job starting------')
   await agenda.start()
-  await agenda.every('1 minutes', 'make into proposal')
+  await agenda.every('1 minutes', JOB_NAME.INTOPROPOSAL)
+  await agenda.every('1 minutes', JOB_NAME.COUNCILJOB)
+  await agenda.every('1 minutes', JOB_NAME.CVOTEJOB)
 })()
