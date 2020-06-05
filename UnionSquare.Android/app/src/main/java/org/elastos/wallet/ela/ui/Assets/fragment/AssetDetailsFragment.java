@@ -47,6 +47,8 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.adapter.TransferRecordRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
@@ -58,8 +60,11 @@ import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetTransactionPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonGetTransactionViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
 import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
 import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
 import org.elastos.wallet.ela.utils.Arith;
@@ -82,7 +87,7 @@ import butterknife.OnClick;
 /**
  * 资产详情
  */
-public class AssetDetailsFragment extends BaseFragment implements CommonRvListener, CommonGetTransactionViewData, OnRefreshListener, OnLoadMoreListener, CommonBalanceViewData, RegisteredProducerInfoViewData, RadioGroup.OnCheckedChangeListener, CommmonStringWithMethNameViewData {
+public class AssetDetailsFragment extends BaseFragment implements CommonRvListener, CommonGetTransactionViewData, OnRefreshListener, OnLoadMoreListener, CommonBalanceViewData, RegisteredProducerInfoViewData, RadioGroup.OnCheckedChangeListener, CommmonStringWithMethNameViewData, NewBaseViewData {
 
 
     @BindView(R.id.tv_title)
@@ -159,6 +164,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             viewLine.setVisibility(View.VISIBLE);
             tvTowhole.setVisibility(View.VISIBLE);
             new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), chainId, this);
+            new CRlistPresenter().getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
             if ("true".equals(subWallet.getFiled2())) {
                 assetDetailPresenter.getAllUTXOs(wallet.getWalletId(), chainId, 0, 1, "", this);
             }
@@ -397,19 +403,8 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     public void onGetRegisteredProducerInfo(String data) {
         JSONObject jsonObject = JSON.parseObject(data);
         String status = jsonObject.getString("Status");
-        if (!TextUtils.isEmpty(status)) {
-            switch (status) {
-                case "Unregistered":
-                    rbEarnRecorder.setVisibility(View.GONE);
-                    break;
-                case "ReturnDeposit"://取回押金
-                case "Canceled":
-                case "Registered":
-                    rbEarnRecorder.setVisibility(View.VISIBLE);
-                    break;
-
-            }
-
+        if (!"Unregistered".equals(status)) {
+            rbEarnRecorder.setVisibility(View.VISIBLE);
         }
     }
 
@@ -482,5 +477,18 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
             }
         });
+    }
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "getRegisteredCRInfo":
+                CrStatusBean crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
+                String status = crStatusBean.getStatus();
+                if (!"Unregistered".equals(status)) {
+                    rbEarnRecorder.setVisibility(View.VISIBLE);
+                }
+                break;
+        }
     }
 }

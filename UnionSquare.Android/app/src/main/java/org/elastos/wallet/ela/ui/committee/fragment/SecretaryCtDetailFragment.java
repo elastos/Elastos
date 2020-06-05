@@ -40,13 +40,11 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
 
-    private String id;
     private String did;
 
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
-        id = data.getString("id");
         did = data.getString("did");
     }
 
@@ -59,8 +57,7 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.secretarydetail));
         presenter = new CtDetailPresenter();
-
-        if (!AppUtlis.isNullOrEmpty(did) && did.equalsIgnoreCase(wallet.getDid())) {
+        if (!AppUtlis.isNullOrEmpty(did) && did.replace("did:elastos:", "").equalsIgnoreCase(wallet.getDid().replace("did:elastos:", ""))) {
             refreshDidLayout.setVisibility(View.VISIBLE);
             line.setVisibility(View.VISIBLE);
         } else {

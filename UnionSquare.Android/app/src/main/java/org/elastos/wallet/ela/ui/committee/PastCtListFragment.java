@@ -310,7 +310,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     public void onClick(View view) {
         Bundle bundle = new Bundle();
         bundle.putString("id", "");
-        bundle.putString("did", wallet.getDid().replace("did:elastos:", ""));
+        bundle.putString("did", wallet.getDid());
         start(SecretaryCtDetailFragment.class, bundle);
     }
 }
