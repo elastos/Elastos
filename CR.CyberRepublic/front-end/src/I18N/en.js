@@ -149,6 +149,11 @@ const en = {
   'popup.changes.2018-12-26.4': 'You can also automatically login to the forum through the link in the top right:',
   'popup.changes.2018-12-26.5': 'The updated CR website will be relaunched on January 15, 2019, more information can be found at',
   'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/2018/12/26/important-cyber-republic-announcement',
+  
+  'popup.suggestion.title': 'Important notice',
+  'popup.suggestion.member': 'Dear CR members:',
+  'popup.suggestion.content': 'The Cyber Republic Consensus will be launched at 10:00 am, June 10th, 2020, Beijing time. Accordingly the CR website will be upgraded recent days. The Suggestion function will be suspended and restarted when the new council is elected. Newly submitted suggestions will be handled by the new council.',
+  'popup.suggestion.team': 'CR website developer team',
 
   // LoginForm
   'login.label_username': 'Please input your email address or username',
