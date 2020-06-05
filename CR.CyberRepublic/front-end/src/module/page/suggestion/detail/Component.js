@@ -146,10 +146,12 @@ export default class extends StandardPage {
     const socialShareButtonsNode = this.renderSocialShareButtonsNode()
     const uri = URI(this.props.location.search || '')
     const signature = _.get(detail, 'signature.data')
+    const popupEndTime = new Date().setTime(1591718400000)
+    const nowDate = new Date().getTime()
 
     return (
       <div>
-        {/* <SuggestionPopupNotification/> */}
+        {/*{ popupEndTime < nowDate ? null : <SuggestionPopupNotification/>}*/}
         <Meta
           desc={detail.shortDesc}
           title={`${detail.title} - Suggestion Detail - Cyber Republic`}

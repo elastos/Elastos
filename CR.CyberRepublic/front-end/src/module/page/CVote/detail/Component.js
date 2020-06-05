@@ -168,13 +168,13 @@ class C extends StandardPage {
       )
     }
 
-    const currentVoted = _.find(data.voteResult,function(o){
-      if(o.votedBy != null){
-        if (o.votedBy._id == currentUserId ){
+    const currentVoted = _.find(data.voteResult, function (o) {
+      if (o.votedBy != null) {
+        if (o.votedBy._id == currentUserId) {
           return o
         }
       }
-    } )
+    })
     const isChaining = currentVoted && currentVoted.status == 'chaining'
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
@@ -204,7 +204,7 @@ class C extends StandardPage {
               {contentNode}
               {translationBtn}
               {notesNode}
-              { !isChaining ? voteActionsNode : null }
+              {!isChaining ? voteActionsNode : null}
               {voteDetailNode}
               {trackingNode}
               {summaryNode}
@@ -237,9 +237,9 @@ class C extends StandardPage {
           }
           const finalStyle = style
             ? {
-                ...style,
-                zIndex: 2
-              }
+              ...style,
+              zIndex: 2
+            }
             : style
           const isNotification = this.props.data.status == 'NOTIFICATION'
           return (
@@ -386,8 +386,8 @@ class C extends StandardPage {
         </span>
       </span>
     ) : (
-      I18N.get('proposal.fields.tracking')
-    )
+        I18N.get('proposal.fields.tracking')
+      )
     const summaryTitle = summaryStatus ? (
       <span>
         {I18N.get('proposal.fields.summary')}{' '}
@@ -396,8 +396,8 @@ class C extends StandardPage {
         </span>
       </span>
     ) : (
-      I18N.get('proposal.fields.summary')
-    )
+        I18N.get('proposal.fields.summary')
+      )
     const tracking = isShowFollowingUp && (
       <Anchor.Link href="#tracking" title={trackingTitle} key="tracking" />
     )

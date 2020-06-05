@@ -100,7 +100,6 @@ export const StyledButton = styled(Button)`
   > span {
     font-size: 12px !important;
     line-height: 12px !important;
-    display: block;
     margin-top: -4px;
   }
 `

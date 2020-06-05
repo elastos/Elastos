@@ -944,6 +944,9 @@ export default class extends Base {
         const db_cvote = this.getDBModel('CVote')
         const n = await db_cvote.count({})
         return n + 1
+        // new version, vid string from 1
+        // const n = await db_cvote.count({proposalHash:{$ne:null}})
+        // return n + 1
     }
 
     public isExpired(data: any, extraTime = 0): Boolean {
@@ -1594,6 +1597,8 @@ export default class extends Base {
             }
         }
 
+        query.old = {$ne:true}
+
         const fields = [
             'vid',
             'title',
@@ -1661,7 +1666,7 @@ export default class extends Base {
         ]
         const proposal = await db_cvote
             .getDBInstance()
-            .findOne({vid: id}, fields.join(' '))
+            .findOne({vid: id, old: {$ne : true}}, fields.join(' '))
             .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
             .populate('voteHistory.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
