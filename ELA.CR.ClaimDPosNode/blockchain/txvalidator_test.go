@@ -2084,7 +2084,7 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 
 func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	// Set CRC foundation and CRC committee address.
-	s.Chain.chainParams.CRAsstesAddress = *randomUint168()
+	s.Chain.chainParams.CRAssetsAddress = *randomUint168()
 	s.Chain.chainParams.CRExpensesAddress = *randomUint168()
 
 	// Set CRC foundation and CRC committee amount.
@@ -2102,7 +2102,7 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	}
 	refOutput := types.Output{
 		Value:       900 * 1e8,
-		ProgramHash: s.Chain.chainParams.CRAsstesAddress,
+		ProgramHash: s.Chain.chainParams.CRAssetsAddress,
 	}
 	refOutputErr := types.Output{
 		Value:       900 * 1e8,
@@ -2117,7 +2117,7 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	}
 	output2 := &types.Output{
 		Value:       810 * 1e8,
-		ProgramHash: s.Chain.chainParams.CRAsstesAddress,
+		ProgramHash: s.Chain.chainParams.CRAssetsAddress,
 	}
 	output1Err := &types.Output{
 		Value:       91 * 1e8,
@@ -2125,7 +2125,7 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	}
 	output2Err := &types.Output{
 		Value:       809 * 1e8,
-		ProgramHash: s.Chain.chainParams.CRAsstesAddress,
+		ProgramHash: s.Chain.chainParams.CRAssetsAddress,
 	}
 
 	// Check correct transaction.
@@ -4004,7 +4004,7 @@ func (s *txValidatorTestSuite) TestCreateCRCAppropriationTransaction() {
 	crAddress := "ERyUmNH51roR9qfru37Kqkaok2NghR7L5U"
 	crcFoundation, _ := common.Uint168FromAddress(crAddress)
 
-	s.Chain.chainParams.CRAsstesAddress = *crcFoundation
+	s.Chain.chainParams.CRAssetsAddress = *crcFoundation
 	crcCommiteeAddressStr := "ESq12oQrvGqHfTkEDYJyR9MxZj1NMnonjo"
 
 	crcCommiteeAddressHash, _ := common.Uint168FromAddress(crcCommiteeAddressStr)

@@ -405,11 +405,11 @@ func NewSettings() *Settings {
 		DefaultValue: "",
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
-			crcFoundation, err := common.Uint168FromAddress(conf.CRConfiguration.CRAsstesAddress)
+			crcFoundation, err := common.Uint168FromAddress(conf.CRConfiguration.CRAssetsAddress)
 			if err != nil {
 				return errors.New("invalid CRC foundation")
 			}
-			params.CRAsstesAddress = *crcFoundation
+			params.CRAssetsAddress = *crcFoundation
 			return nil
 		},
 		CliSetter: func(i interface{}, params *config.Params,
@@ -422,11 +422,11 @@ func NewSettings() *Settings {
 			if err != nil {
 				return errors.New("invalid CRC foundation")
 			}
-			params.CRAsstesAddress = *crcFoundation
+			params.CRAssetsAddress = *crcFoundation
 			return nil
 		},
-		ConfigPath: "CRConfiguration.CRAsstesAddress",
-		ParamName:  "CRAsstesAddress"})
+		ConfigPath: "CRConfiguration.CRAssetsAddress",
+		ParamName:  "CRAssetsAddress"})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.CRExpensesAddressFlag,

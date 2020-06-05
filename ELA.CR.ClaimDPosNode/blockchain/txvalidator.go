@@ -645,7 +645,7 @@ func (b *BlockChain) checkTransactionOutput(txn *Transaction,
 		}
 
 		if blockHeight >= b.chainParams.CRCommitteeStartHeight {
-			if !txn.Outputs[0].ProgramHash.IsEqual(b.chainParams.CRAsstesAddress) {
+			if !txn.Outputs[0].ProgramHash.IsEqual(b.chainParams.CRAssetsAddress) {
 				return errors.New("first output address should be CRC " +
 					"foundation address")
 			}
@@ -696,7 +696,7 @@ func (b *BlockChain) checkTransactionOutput(txn *Transaction,
 			return errors.New("new CRCAppropriation tx must have the first" +
 				"output to CRC committee address")
 		}
-		if !txn.Outputs[1].ProgramHash.IsEqual(b.chainParams.CRAsstesAddress) {
+		if !txn.Outputs[1].ProgramHash.IsEqual(b.chainParams.CRAssetsAddress) {
 			return errors.New("new CRCAppropriation tx must have the second" +
 				"output to CRC foundation")
 		}
@@ -1952,7 +1952,7 @@ func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
 	var totalInput common.Fixed64
 	for _, output := range references {
 		totalInput += output.Value
-		if !output.ProgramHash.IsEqual(b.chainParams.CRAsstesAddress) {
+		if !output.ProgramHash.IsEqual(b.chainParams.CRAssetsAddress) {
 			return errors.New("input does not from CRC foundation")
 		}
 	}
@@ -1968,11 +1968,11 @@ func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
 	}
 
 	// Check output amount to CRExpensesAddress:
-	// (CRAsstesAddress + CRExpensesAddress)*CRCAppropriatePercentage/100 -
+	// (CRAssetsAddress + CRExpensesAddress)*CRCAppropriatePercentage/100 -
 	// CRExpensesAddress + CRCCommitteeUsedAmount
 	//
 	// Outputs has check in CheckTransactionOutput function:
-	// first one to CRCommitteeAddress, second one to CRAsstesAddress
+	// first one to CRCommitteeAddress, second one to CRAssetsAddress
 	appropriationAmount := b.crCommittee.AppropriationAmount
 	if appropriationAmount != txn.Outputs[0].Value {
 		return fmt.Errorf("invalid appropriation amount %s, need to be %s",
@@ -2061,7 +2061,7 @@ func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 	var totalInput common.Fixed64
 	for _, output := range references {
 		totalInput += output.Value
-		if !output.ProgramHash.IsEqual(b.chainParams.CRAsstesAddress) {
+		if !output.ProgramHash.IsEqual(b.chainParams.CRAssetsAddress) {
 			return errors.New("input does not from CRAssetsAddress")
 		}
 	}
@@ -2072,7 +2072,7 @@ func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 	}
 
 	// Output should translate to CR Assets Address only
-	if !txn.Outputs[0].ProgramHash.IsEqual(b.chainParams.CRAsstesAddress) {
+	if !txn.Outputs[0].ProgramHash.IsEqual(b.chainParams.CRAssetsAddress) {
 		return errors.New("output does not to CRAssetsAddress")
 	}
 

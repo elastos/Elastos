@@ -115,7 +115,7 @@ type CRConfiguration struct {
 	CRAssetsRectifyTransactionHeight   uint32         `json:"CRAssetsRectifyTransactionHeight"`
 	CRCProposalWithdrawPayloadV1Height uint32         `json:"CRCProposalWithdrawPayloadV1Height"`
 	CRCAddress                         string         `json:"CRCAddress"`
-	CRAsstesAddress                    string         `json:"CRAsstesAddress"`
+	CRAssetsAddress                    string         `json:"CRAssetsAddress"`
 	CRExpensesAddress                  string         `json:"CRExpensesAddress"`
 	CRVotingStartHeight                uint32         `json:"CRVotingStartHeight"`
 	CRCommitteeStartHeight             uint32         `json:"CRCommitteeStartHeight"`
