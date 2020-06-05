@@ -117,6 +117,30 @@ func (c *Committee) IsInElectionPeriod() bool {
 	return c.InElectionPeriod
 }
 
+func (c *Committee) GetCROnDutyStartHeight() uint32 {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.LastCommitteeHeight
+}
+
+func (c *Committee) GetCROnDutyPeriod() uint32 {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.params.CRDutyPeriod
+}
+
+func (c *Committee) GetCRVotingStartHeight() uint32 {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.LastVotingStartHeight
+}
+
+func (c *Committee) GetCRVotingPeriod() uint32 {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.params.CRVotingPeriod
+}
+
 func (c *Committee) IsProposalAllowed(height uint32) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
