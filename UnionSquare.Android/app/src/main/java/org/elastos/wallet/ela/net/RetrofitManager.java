@@ -251,8 +251,12 @@ public class RetrofitManager {
         if (webApiService != null) {
             return webApiService;
         }
+        String baseUrl = WalletNet.WEBURlTEST;
+        if (MyApplication.currentWalletNet == WalletNet.ALPHAMAINNET || MyApplication.currentWalletNet == WalletNet.MAINNET) {
+            baseUrl = WalletNet.WEBURlPUBLIC;
+        }
         Retrofit retrofit;
-        Retrofit.Builder build = new Retrofit.Builder().baseUrl(WalletNet.WEBURl)
+        Retrofit.Builder build = new Retrofit.Builder().baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
         HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());

@@ -1342,10 +1342,15 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     }
                     break;
                 case "createproposal":
-                    //把建议->提案 判断身份  任意委员 发交易
+                    //把建议->提案 判断身份  任意委员但是要当前网站登陆者对用用户 发交易
                     curentJwtEntity = JSON.parseObject(payload, RecieveProposalJwtEntity.class);
-                    proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
-
+                    RecieveProposalJwtEntity.DataBean suggestData1 = ((RecieveProposalJwtEntity) curentJwtEntity).getData();
+                    if (suggestData1.getDid().equals(wallet.getDid()))
+                        proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
+                    else {
+                        restoreScanData();
+                        showToast(getString(R.string.didnotsame));
+                    }
                     break;
 
                 case "reviewproposal":
