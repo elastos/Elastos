@@ -43,7 +43,6 @@ import PaymentList from '@/module/form/SuggestionForm/PaymentList'
 import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
 import Milestones from '@/module/form/SuggestionForm/Milestones'
 import MilestonesReadonly from '@/module/form/SuggestionForm/MilestonesReadonly'
-import SuggestionPopupNotification from '@/module/common/SuggestionPopupNotification/Container'
 import {
   Container,
   Title,
@@ -140,12 +139,9 @@ export default class extends StandardPage {
     const editForm = this.renderEditForm()
     const commentNode = this.renderCommentNode()
     const socialShareButtonsNode = this.renderSocialShareButtonsNode()
-    const popupEndTime = new Date().setTime(1591718400000)
-    const nowDate = new Date().getTime()
-
+   
     return (
       <div>
-        { popupEndTime < nowDate ? null : <SuggestionPopupNotification />}
         <Meta
           desc={detail.shortDesc}
           title={`${detail.title} - Suggestion Detail - Cyber Republic`}

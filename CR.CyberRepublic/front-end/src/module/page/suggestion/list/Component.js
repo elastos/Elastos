@@ -33,6 +33,7 @@ import { ReactComponent as UpIcon } from '@/assets/images/icon-up.svg'
 import { ReactComponent as DownIcon } from '@/assets/images/icon-down.svg'
 import PageHeader from './PageHeader'
 import SearchBox from './SearchBox'
+import SuggestionPopupNotification from '@/module/common/SuggestionPopupNotification/Container'
 
 import './style.scss'
 
@@ -205,9 +206,12 @@ export default class extends StandardPage {
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
     const sortActionsNode = this.renderSortActions()
+    const popupEndTime = new Date().setTime(1591718400000)
+    const nowDate = new Date().getTime()
 
     return (
       <div>
+        { popupEndTime < nowDate ? null : <SuggestionPopupNotification />}
         <Meta title="Cyber Republic - Elastos" />
         <div className="suggestion-header">{headerNode}</div>
         <SuggestionContainer className="p_SuggestionList">
