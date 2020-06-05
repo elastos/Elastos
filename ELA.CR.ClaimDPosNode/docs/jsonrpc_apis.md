@@ -2468,7 +2468,7 @@ Get CR related stage information.
 Request:
 ```
 {
-  "method": "decoderawtransaction"
+  "method": "getcrrelatedstage"
 }
 ```
 
