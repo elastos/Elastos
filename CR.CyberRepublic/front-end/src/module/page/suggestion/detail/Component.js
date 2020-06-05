@@ -139,10 +139,12 @@ export default class extends StandardPage {
     const editForm = this.renderEditForm()
     const commentNode = this.renderCommentNode()
     const socialShareButtonsNode = this.renderSocialShareButtonsNode()
+    const popupEndTime = new Date().setTime(1591718400000)
+    const nowDate = new Date().getTime()
 
     return (
       <div>
-        { popupEndTime < nowDate ? null : <SuggestionPopupNotification/>}
+        { popupEndTime < nowDate ? null : <SuggestionPopupNotification />}
         <Meta
           desc={detail.shortDesc}
           title={`${detail.title} - Suggestion Detail - Cyber Republic`}
