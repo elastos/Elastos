@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package payload
 
@@ -78,8 +78,7 @@ func (b *BlockEvidence) Serialize(w io.Writer) error {
 
 func (b *BlockEvidence) DeserializeUnsigned(r io.Reader) error {
 	var err error
-	if b.Header, err = common.ReadVarBytes(r,
-		pact.MaxBlockContextSize+pact.MaxBlockHeaderSize,
+	if b.Header, err = common.ReadVarBytes(r, pact.MaxBlockContextSize,
 		"block data"); err != nil {
 		return err
 	}
@@ -87,8 +86,7 @@ func (b *BlockEvidence) DeserializeUnsigned(r io.Reader) error {
 }
 
 func (b *BlockEvidence) DeserializeOthers(r io.Reader) (err error) {
-	if b.BlockConfirm, err = common.ReadVarBytes(r,
-		pact.MaxBlockContextSize+pact.MaxBlockHeaderSize,
+	if b.BlockConfirm, err = common.ReadVarBytes(r, pact.MaxBlockHeaderSize,
 		"confirm data"); err != nil {
 		return err
 	}

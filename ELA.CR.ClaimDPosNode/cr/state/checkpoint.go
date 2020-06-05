@@ -47,12 +47,12 @@ func (c *Checkpoint) OnRollbackTo(height uint32) error {
 	keyFrame := NewKeyFrame()
 	if height < c.StartHeight() {
 		committee := &Committee{
-			state:                    NewState(c.committee.params),
-			params:                   c.committee.params,
-			KeyFrame:                 *keyFrame,
-			firstHistory:             utils.NewHistory(maxHistoryCapacity),
-			lastHistory:              utils.NewHistory(maxHistoryCapacity),
-			needAppropriationHistory: utils.NewHistory(maxHistoryCapacity),
+			state:                NewState(c.committee.params),
+			params:               c.committee.params,
+			KeyFrame:             *keyFrame,
+			firstHistory:         utils.NewHistory(maxHistoryCapacity),
+			lastHistory:          utils.NewHistory(maxHistoryCapacity),
+			appropriationHistory: utils.NewHistory(maxHistoryCapacity),
 		}
 		c.initFromCommittee(committee)
 		c.committee.Recover(c)

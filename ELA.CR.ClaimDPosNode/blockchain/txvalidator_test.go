@@ -1409,13 +1409,15 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	err = s.Chain.checkRegisterCRTransaction(txn2, registerCRByDIDHeight)
 	s.EqualError(err, "invalid did address")
 
+	did2, _ := getDIDFromCode(code2)
 	txn2 = s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1,
-		payload.CRInfoDIDVersion, getDIDFromCode(code2))
+		payload.CRInfoDIDVersion, did2)
 	err = s.Chain.checkRegisterCRTransaction(txn2, registerCRByDIDHeight)
 	s.EqualError(err, "invalid did address")
 
+	did1, _ := getDIDFromCode(code1)
 	txn2 = s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1,
-		payload.CRInfoDIDVersion, getDIDFromCode(code1))
+		payload.CRInfoDIDVersion, did1)
 	err = s.Chain.checkRegisterCRTransaction(txn2, registerCRByDIDHeight)
 	s.NoError(err)
 }
@@ -1604,7 +1606,7 @@ func (s *txValidatorTestSuite) getCRMember(publicKeyStr, privateKeyStr, nickName
 	privateKeyStr1 := privateKeyStr
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 	code1 := getCodeByPubKeyStr(publicKeyStr1)
-	did1 := getDIDFromCode(code1)
+	did1, _ := getDIDFromCode(code1)
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterCR
@@ -1642,10 +1644,11 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 
 	recipient := *randomUint168()
 	recipient[0] = uint8(contract.PrefixStandard)
+	did2, _ := getDIDFromCode(code2)
 	crcProposalPayload := &payload.CRCProposal{
 		ProposalType:       payload.Normal,
 		OwnerPublicKey:     publicKey1,
-		CRCouncilMemberDID: *getDIDFromCode(code2),
+		CRCouncilMemberDID: *did2,
 		DraftHash:          common.Hash(draftData),
 		Budgets:            createBudgets(3),
 		Recipient:          recipient,
@@ -1883,15 +1886,18 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 	cPayload.SerializeUnsigned(signBuf, payload.CRCProposalTrackingVersion)
 	sig, _ := crypto.Sign(ownerPrivateKey, signBuf.Bytes())
 	cPayload.OwnerSignature = sig
+	common.WriteVarBytes(signBuf, sig)
 
 	if newLeaderPublicKeyStr != "" && newLeaderPrivateKeyStr != "" {
-		common.WriteVarBytes(signBuf, sig)
 		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
 		cPayload.NewOwnerSignature = crSig
 		sig = crSig
+	} else {
+		sig = []byte{}
 	}
 
 	common.WriteVarBytes(signBuf, sig)
+	signBuf.Write([]byte{byte(cPayload.ProposalTrackingType)})
 	cPayload.SecretaryGeneralOpinionHash.Serialize(signBuf)
 	crSig, _ := crypto.Sign(sgPrivateKey, signBuf.Bytes())
 	cPayload.SecretaryGeneralSignature = crSig
@@ -1906,8 +1912,8 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	s.Chain.chainParams.CRCCommitteeAddress = *randomUint168()
 
 	// Set CRC foundation and CRC committee amount.
-	s.Chain.crCommittee.CRCFoundationBalance = common.Fixed64(990 * 1e8)
-	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(10 * 1e8)
+	s.Chain.crCommittee.CRCFoundationBalance = common.Fixed64(900 * 1e8)
+	s.Chain.crCommittee.AppropriationAmount = common.Fixed64(90 * 1e8)
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0 * 1e8)
 
 	// Create reference.
@@ -1919,11 +1925,11 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 		},
 	}
 	refOutput := types.Output{
-		Value:       990 * 1e8,
+		Value:       900 * 1e8,
 		ProgramHash: s.Chain.chainParams.CRCFoundation,
 	}
 	refOutputErr := types.Output{
-		Value:       990 * 1e8,
+		Value:       900 * 1e8,
 		ProgramHash: *randomUint168(),
 	}
 	reference[input] = refOutput
@@ -1934,7 +1940,7 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
 	}
 	output2 := &types.Output{
-		Value:       900 * 1e8,
+		Value:       810 * 1e8,
 		ProgramHash: s.Chain.chainParams.CRCFoundation,
 	}
 	output1Err := &types.Output{
@@ -1942,7 +1948,7 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
 	}
 	output2Err := &types.Output{
-		Value:       899 * 1e8,
+		Value:       809 * 1e8,
 		ProgramHash: s.Chain.chainParams.CRCFoundation,
 	}
 
@@ -1969,7 +1975,7 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	txn = s.getCRCAppropriationTx(input, output1, output2Err)
 	err = s.Chain.checkCRCAppropriationTransaction(txn, reference)
 	s.EqualError(err, "inputs does not equal to outputs "+
-		"amount, inputs:990 outputs:989")
+		"amount, inputs:900 outputs:899")
 
 	// Invalid CRC appropriation amount.
 	txn = s.getCRCAppropriationTx(input, output1Err, output2Err)
@@ -2221,10 +2227,11 @@ func (s *txValidatorTestSuite) getCRCProposalReviewTx(crPublicKeyStr,
 	txn := new(types.Transaction)
 	txn.TxType = types.CRCProposalReview
 	txn.Version = types.TxVersion09
+	did, _ := getDIDFromCode(code)
 	crcProposalReviewPayload := &payload.CRCProposalReview{
 		ProposalHash: *randomUint256(),
 		VoteResult:   payload.Approve,
-		DID:          *getDIDFromCode(code),
+		DID:          *did,
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -2500,12 +2507,12 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 
 	// ok
 	txn := s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
-	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.NoError(err)
 
 	// member status is not elected
 	member1.MemberState = crstate.MemberImpeached
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "CR Council Member should be an elected CR members")
 
 	// register cr proposal in voting period
@@ -2513,69 +2520,69 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	tenureHeight = config.DefaultParams.CRCommitteeStartHeight +
 		config.DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
 	s.Chain.crCommittee.InElectionPeriod = false
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "cr proposal tx must not during voting period")
 
 	// recipient is empty
 	s.Chain.crCommittee.InElectionPeriod = true
-	tenureHeight = config.DefaultParams.CRCommitteeStartHeight
+	tenureHeight = config.DefaultParams.CRCommitteeStartHeight + 1
 	txn.Payload.(*payload.CRCProposal).Recipient = common.Uint168{}
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "recipient is empty")
 
 	// invalid payload
 	txn.Payload = &payload.CRInfo{}
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "invalid payload")
 
 	// invalid proposal type
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x1000
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "type of proposal should be known")
 
 	// invalid outputs of ELIP.
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x0100
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "ELIP needs to have and only have two budget")
 
 	// invalid budgets.
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x0000
 	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(10 * 1e8)
 	s.Chain.crCommittee.CRCCurrentStageAmount = common.Fixed64(10 * 1e8)
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "budgets exceeds 10% of CRC committee balance")
 
 	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(100 * 1e8)
 	s.Chain.crCommittee.CRCCurrentStageAmount = common.Fixed64(100 * 1e8)
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(99 * 1e8)
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "budgets exceeds the balance of CRC committee")
 
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0)
 
 	// CRCouncilMemberSignature is not signed by CR member
 	txn = s.getCRCProposalTx(publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2)
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "CR Council Member should be one of the CR members")
 
 	// invalid owner
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	txn.Payload.(*payload.CRCProposal).OwnerPublicKey = []byte{}
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "invalid owner")
 
 	// invalid owner signature
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	txn.Payload.(*payload.CRCProposal).OwnerPublicKey = publicKey1
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "owner signature check failed")
 
 	// invalid CR owner signature
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	txn.Payload.(*payload.CRCProposal).CRCouncilMemberSignature = []byte{}
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "failed to check CR Council Member signature")
 	// proposals can not more than MaxCommitteeProposalCount
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
@@ -2586,7 +2593,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	}
 	s.Chain.crCommittee.GetProposalManager().ProposalHashes[crcProposal.
 		CRCouncilMemberDID] = proposalHashSet
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "proposal is full")
 }
 

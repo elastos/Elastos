@@ -32,11 +32,10 @@ type txPoolCheckpoint struct {
 	// transaction which have been verified will put into this map
 	txnList map[common.Uint256]*types.Transaction
 	txFees  *txFeeOrderedList
+	txPool  *TxPool
 
 	height              uint32
 	initConflictManager func(map[common.Uint256]*types.Transaction)
-	appendToTxPoolEvent AppendToTxPoolEvent
-	popBackEvent        PopBackEvent
 }
 
 func (c *txPoolCheckpoint) OnBlockSaved(*types.DposBlock) {
@@ -51,12 +50,15 @@ func (c *txPoolCheckpoint) Key() string {
 }
 
 func (c *txPoolCheckpoint) Snapshot() checkpoint.ICheckPoint {
+	c.txPool.Lock()
+	defer c.txPool.Unlock()
+
 	buf := bytes.Buffer{}
 	if err := c.Serialize(&buf); err != nil {
 		c.LogError(err)
 		return nil
 	}
-	result := newTxPoolCheckpoint(c.popBackEvent, c.initConflictManager, c.appendToTxPoolEvent)
+	result := newTxPoolCheckpoint(c.txPool, c.initConflictManager)
 	if err := result.Deserialize(&buf); err != nil {
 		c.LogError(err)
 		return nil
@@ -89,7 +91,7 @@ func (c *txPoolCheckpoint) Generator() func(buf []byte) checkpoint.ICheckPoint {
 		stream := bytes.Buffer{}
 		stream.Write(buf)
 
-		result := newTxPoolCheckpoint(c.popBackEvent, c.initConflictManager, c.appendToTxPoolEvent)
+		result := newTxPoolCheckpoint(c.txPool, c.initConflictManager)
 		if err := result.Deserialize(&stream); err != nil {
 			c.LogError(err)
 			return nil
@@ -150,21 +152,20 @@ func (c *txPoolCheckpoint) Deserialize(r io.Reader) (err error) {
 		if err = tx.Deserialize(r); err != nil {
 			return
 		}
-		c.appendToTxPoolEvent(tx)
+		c.txPool.appendToTxPool(tx)
 	}
 
-	c.txFees = newTxFeeOrderedList(c.popBackEvent, pact.MaxTxPoolSize)
+	c.txFees = newTxFeeOrderedList(c.txPool.onPopBack, pact.MaxTxPoolSize)
 	return c.txFees.Deserialize(r)
 }
 
-func newTxPoolCheckpoint(event PopBackEvent, initConflictManager func(
-	map[common.Uint256]*types.Transaction), appendToTxPoolEvent AppendToTxPoolEvent) *txPoolCheckpoint {
+func newTxPoolCheckpoint(txPool *TxPool, initConflictManager func(
+	map[common.Uint256]*types.Transaction)) *txPoolCheckpoint {
 	return &txPoolCheckpoint{
+		txPool:              txPool,
 		txnList:             map[common.Uint256]*types.Transaction{},
-		txFees:              newTxFeeOrderedList(event, pact.MaxTxPoolSize),
+		txFees:              newTxFeeOrderedList(txPool.onPopBack, pact.MaxTxPoolSize),
 		height:              0,
 		initConflictManager: initConflictManager,
-		popBackEvent:        event,
-		appendToTxPoolEvent: appendToTxPoolEvent,
 	}
 }
