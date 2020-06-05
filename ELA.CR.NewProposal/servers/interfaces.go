@@ -611,8 +611,8 @@ func getBlock(hash common.Uint256, verbose uint32) (interface{}, ServerErrCode) 
 }
 
 func getConfirm(hash common.Uint256, verbose uint32) (interface{}, ServerErrCode) {
-	block, err := Store.GetFFLDB().GetBlock(hash)
-	if err != nil {
+	block, _ := Store.GetFFLDB().GetBlock(hash)
+	if block == nil || !block.HaveConfirm {
 		return "", UnknownBlock
 	}
 	if verbose == 0 {
