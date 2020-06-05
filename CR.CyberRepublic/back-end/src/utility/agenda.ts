@@ -2,6 +2,7 @@ import db from '../db'
 import { getProposalState } from '../utility'
 import CVoteServive from '../service/CVoteService'
 import CouncilService from '../service/CouncilService'
+import UserService from '../service/UserService'
 const Agenda = require('agenda')
 const agenda = new Agenda({ db: { address: process.env.DB_URL } })
 
@@ -9,6 +10,7 @@ const JOB_NAME = {
   INTOPROPOSAL: 'make into proposal',
   CVOTEJOB: 'cvote poll proposal',
   COUNCILJOB: 'council poll change',
+  USERJOB: 'user poll did infomation'
 }
 
 agenda.define(JOB_NAME.INTOPROPOSAL, async (job: any) => {
@@ -67,11 +69,22 @@ agenda.define(JOB_NAME.COUNCILJOB, async (job: any) => {
     console.log('',err)
   }
 })
+agenda.define(JOB_NAME.USERJOB, async (job: any) => {
+  try{
+    const DB = await db.create()
+    const userService = new UserService(DB, { user: undefined })
+    await userService.eachJob()
+    console.log(JOB_NAME.USERJOB,"at working")
+  }catch (err) {
+    console.log('',err)
+  }
+})
 ;(async function () {
   // console.log('------make into proposal cron job starting------')
   console.log('------cron job starting------')
   await agenda.start()
   await agenda.every('1 minutes', JOB_NAME.INTOPROPOSAL)
-  await agenda.every('1 minutes', JOB_NAME.COUNCILJOB)
-  await agenda.every('1 minutes', JOB_NAME.CVOTEJOB)
+  await agenda.every('2 minutes', JOB_NAME.CVOTEJOB)
+  await agenda.every('5 minutes', JOB_NAME.COUNCILJOB)
+  await agenda.every('30 minutes', JOB_NAME.USERJOB)
 })()
