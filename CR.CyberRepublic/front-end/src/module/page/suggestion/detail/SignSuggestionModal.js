@@ -30,6 +30,7 @@ class SignSuggestionModal extends Component {
     if (rs && rs.success) {
       this.clearTimerList()
       this.setState({ visible: false })
+      return
     }
     if (rs && rs.success === false) {
       this.clearTimerList()
@@ -39,6 +40,7 @@ class SignSuggestionModal extends Component {
         message.error(I18N.get('suggestion.msg.exception'))
       }
       this.setState({ visible: false })
+      return
     }
      const timer = setTimeout(this.pollingSignature, 5000)
      this.timerOneList.push(timer)
