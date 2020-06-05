@@ -27,15 +27,22 @@
 
         <TextView
             android:id="@+id/tv_name"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:lines="1"
+            android:ellipsize="end"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:textColor="#ffffffff"
             android:textSize="13sp" />
 
         <TextView
+            android:layout_marginLeft="5dp"
             android:id="@+id/tv_time"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:lines="1"
+            android:ellipsize="end"
             android:layout_height="wrap_content"
             android:gravity="right"
             android:textColor="@color/whiter50"
@@ -74,7 +81,10 @@
 
             <TextView
                 android:id="@+id/tv_name1"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:lines="1"
+                android:ellipsize="end"
                 android:maxWidth="200dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
@@ -82,7 +92,8 @@
                 android:textSize="13sp" />
 
             <TextView
-                android:layout_marginLeft="5dp"
+                android:paddingLeft="1dp"
+                android:paddingRight="1dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/sc_stroke"
@@ -91,8 +102,10 @@
                 android:textSize="10sp" />
 
             <TextView
+                android:layout_marginLeft="5dp"
                 android:id="@+id/tv_time1"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:gravity="right"
                 android:textColor="@color/whiter50"

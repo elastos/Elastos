@@ -656,7 +656,7 @@
     <string name="todisagreeneedvote">Votes required to reject a Proposal</string>
     <string name="votedisagree">Vote Against</string>
     <string name="executeprocess">Schedule</string>
-    <string name="secretarygeneral">Secretary General</string>
+    <string name="secretarygeneral">SG</string>
 
     <string name="type">Type</string>
     <string name="common">Normal</string>
@@ -669,7 +669,7 @@
     <string name="suggest">Submit a Suggestion</string>
     <string name="signsendsuccess">Signature sent successfully</string>
     <string name="putproposal">Nominate Proposal</string>
-    <string name="thexprocess">The%1$spayment</string>
+    <string name="thexprocess">The %1$s payment</string>
     <string name="imprest">Advance Payments</string>
     <string name="finalpayment">End Payments</string>
     <string name="didnotsame">Wallet DID Doesn’t Match</string>
