@@ -51,9 +51,11 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.adapter.TransferRecordRecAdapetr;
+import org.elastos.wallet.ela.ui.Assets.bean.AddressListEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.TransferRecordEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
+import org.elastos.wallet.ela.ui.Assets.presenter.AddressListPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetDetailPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetsPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
@@ -62,6 +64,7 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonGetTransactionViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
@@ -87,7 +90,7 @@ import butterknife.OnClick;
 /**
  * 资产详情
  */
-public class AssetDetailsFragment extends BaseFragment implements CommonRvListener, CommonGetTransactionViewData, OnRefreshListener, OnLoadMoreListener, CommonBalanceViewData, RegisteredProducerInfoViewData, RadioGroup.OnCheckedChangeListener, CommmonStringWithMethNameViewData, NewBaseViewData {
+public class AssetDetailsFragment extends BaseFragment implements CommonRvListener, CommonGetTransactionViewData, OnRefreshListener, OnLoadMoreListener, CommonBalanceViewData, RegisteredProducerInfoViewData, RadioGroup.OnCheckedChangeListener, CommmonStringWithMethNameViewData, NewBaseViewData, CommmonStringViewData {
 
 
     @BindView(R.id.tv_title)
@@ -163,7 +166,6 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             tvChain.setText(getString(R.string.side_chain_top_up));
             viewLine.setVisibility(View.VISIBLE);
             tvTowhole.setVisibility(View.VISIBLE);
-            new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), chainId, this);
             new CRlistPresenter().getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
             if ("true".equals(subWallet.getFiled2())) {
                 assetDetailPresenter.getAllUTXOs(wallet.getWalletId(), chainId, 0, 1, "", this);
@@ -381,7 +383,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
-            bundle.putInt("transType",2);
+            bundle.putInt("transType", 2);
             start(SignFragment.class, bundle);
 
         }
@@ -391,7 +393,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
-            bundle.putInt("transType",2);
+            bundle.putInt("transType", 2);
             bundle.putBoolean("signStatus", true);
             start(SignFragment.class, bundle);
 
@@ -405,6 +407,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         String status = jsonObject.getString("Status");
         if (!"Unregistered".equals(status)) {
             rbEarnRecorder.setVisibility(View.VISIBLE);
+            assetDetailPresenter.getOwnerAddress(wallet.getWalletId(), chainId, this);
         }
     }
 
@@ -415,7 +418,6 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         switch (checkedId) {
             case R.id.rb_earn_recorder:
                 if (firstCheck) {
-                    assetDetailPresenter.getOwnerAddress(wallet.getWalletId(), chainId, this);
                     assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, startCount1, pageCount, "", this);
                     firstCheck = false;
                 }
@@ -453,7 +455,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 intent.putExtra("attributes", data);
                 intent.putExtra("chainId", chainId);
                 intent.putExtra("type", Constant.TOWHOL);
-                intent.putExtra("transType",2);
+                intent.putExtra("transType", 2);
                 startActivity(intent);
                 break;
             case "getAllCoinBaseTransaction":
@@ -487,8 +489,20 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 String status = crStatusBean.getStatus();
                 if (!"Unregistered".equals(status)) {
                     rbEarnRecorder.setVisibility(View.VISIBLE);
+                    new AddressListPresenter().getAllAddress(wallet.getWalletId(), MyWallet.ELA, 0, 1, this);
+                } else {
+                    new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), chainId, this);
                 }
                 break;
         }
+    }
+
+    @Override
+    public void onGetCommonData(String data) {
+        //获得钱包地址列表
+        AddressListEntity addressListEntity = JSON.parseObject(data, AddressListEntity.class);
+        List<String> addressList = addressListEntity.getAddresses();
+        tvAddress.setText(addressList.get(0));
+        new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), chainId, this);
     }
 }
