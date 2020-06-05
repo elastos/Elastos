@@ -43,6 +43,7 @@ import PaymentList from '@/module/form/SuggestionForm/PaymentList'
 import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
 import Milestones from '@/module/form/SuggestionForm/Milestones'
 import MilestonesReadonly from '@/module/form/SuggestionForm/MilestonesReadonly'
+import SuggestionPopupNotification from '@/module/common/SuggestionPopupNotification/Container'
 import {
   Container,
   Title,
