@@ -1,14 +1,14 @@
 Elastos ELA
 ===========
-|Travis CI|Go Report Card|
+|Actions CI|Go Report Card|
 |:-:|:-:|
-|[![Build Status](https://travis-ci.com/elastos/Elastos.ELA.svg?branch=master)](https://travis-ci.com/elastos/Elastos.ELA)|[![Code Report](https://goreportcard.com/badge/github.com/elastos/Elastos.ELA)](https://goreportcard.com/report/github.com/elastos/Elastos.ELA)|
+|[![Build Status()](https://github.com/elastos/Elastos.ELA/workflows/Go/badge.svg?branch=release_v0.4.3)](https://github.com/elastos/Elastos.ELA/actions?query=branch:release_v0.4.3) |[![Code Report()](https://goreportcard.com/badge/github.com/elastos/Elastos.ELA)](https://goreportcard.com/report/github.com/elastos/Elastos.ELA)|
 
 ## Introduction
 
 ELA is the digital currency solution within the Elastos ecosystem. It is merged mined with Bitcoin which means the existing bitcoin miners are able to merge mine both BTC and ELA at the same time without expending any additional resources or energy while also providing the enormous hashpower that comes with the bitcoin network.
 
-This project is the source code that can build a full node of ELA blockchain(main chain). 
+This project is the source code that can build a full node of ELA blockchain(main chain).
 
 ## Table of Contents
 - [Elastos ELA](#elastos-ela)
@@ -113,7 +113,7 @@ If you would like a simple config template, do the following:
 $ cp docs/mainnet_config.json.sample config.json
 ```
 
-Make sure to modify the parameters to what your own specification. 
+Make sure to modify the parameters to what your own specification.
 
 ## Build the node
 
@@ -241,6 +241,6 @@ We welcome contributions to the Elastos ELA Project.
 
 A sincere thank you to all teams and projects that we rely on directly or indirectly.
 
-## License 
+## License
 
 This project is licensed under the terms of the [MIT license](https://github.com/elastos/Elastos.ELA/blob/master/LICENSE).

@@ -255,7 +255,7 @@ func (s *Settings) initNetSetting() (err error) {
 
 	if s.conf.MaxBlockSize > 0 {
 		pact.MaxBlockContextSize = s.conf.MaxBlockSize
-	} else {
+	} else if !testNet {
 		pact.MaxBlockContextSize = 2000000
 	}
 
