@@ -3648,7 +3648,7 @@ static int64_t ela_send_message_with_receipt_internal(ElaCarrier *carrier, const
         pthread_mutex_unlock(&carrier->receipts_mutex);
         return -1;
     }
-    receipt->msgch = (is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
+    receipt->msgch = (*is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
     receipt->msgid = msgid;
     receipts_put(carrier->receipts, receipt);
     deref(receipt);
@@ -3660,11 +3660,15 @@ static int64_t ela_send_message_with_receipt_internal(ElaCarrier *carrier, const
 int ela_send_friend_message(ElaCarrier *w, const char *to,
                             const void *msg, size_t len, bool *is_offline)
 {
+    bool is_offline_tmp;
     int64_t msgid;
 
-    msgid = ela_send_message_with_receipt_internal(w, to, msg, len, NULL, NULL, is_offline);
+    msgid = ela_send_message_with_receipt_internal(w, to, msg, len, NULL, NULL, &is_offline_tmp);
     if(msgid < 0)
         return (int)msgid;
+
+    if(is_offline)
+        *is_offline = is_offline_tmp;
 
     return 0;
 }
