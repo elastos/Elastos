@@ -398,6 +398,7 @@ button {
   justify-content: center;
   align-items: center;
   border: none;
+  will-change: transform, opacity;
 }
 
 .next-button:active,
@@ -941,6 +942,10 @@ select, input {
   margin-right: 15px;
 }
 
+.marginright_auto {
+  margin-right: auto;
+}
+
 .margin_auto {
   margin: auto;
 }
@@ -1308,13 +1313,13 @@ select, input {
   justify-content: flex-end;
   align-items: center;
   padding-right: 87px;
+  padding-left: 50px;
 }
 
-.voting-row3 button {
+.voting-button {
   background: #E5A776;
   box-shadow: 0 3px 6px -2px rgba(25, 23, 41, 0.66);
   border-radius: 8px;
-  position: absolute;
   margin: 0;
   height: 50px;
   width: 140px;
@@ -1327,6 +1332,23 @@ select, input {
   align-items: center;
   border: none;
 }
+
+.votingselect-button {
+  background: rgba(151, 153, 166, 0.16);
+  border-radius: 8px;
+  height: 50px;
+  width: 141px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #FFFFFF;
+  letter-spacing: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  margin-left: 10px;
+}
+
 
 .voting-row4 {
   grid-area: row4;

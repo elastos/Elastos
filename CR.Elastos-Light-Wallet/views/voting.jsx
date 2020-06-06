@@ -112,7 +112,9 @@ module.exports = (props) => {
       </div>
 
       <div className="voting-row3">
-        <button  onClick={(e) => App.sendVoteTx()} className="scale-hover">Vote</button>
+        <button className='votingselect-button scale-hover' title="Select previous voting list" onClick={() => App.selectActiveVotes()} >Select Previous</button>
+        <button className='votingselect-button marginright_auto scale-hover' title='Clear Selection' onClick={() => App.clearSelection()}>Clear Selection</button>
+        <button  onClick={(e) => App.sendVoteTx()} className="scale-hover voting-button">Vote</button>
       </div>
 
       <div className="voting-row4">

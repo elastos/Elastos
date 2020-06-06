@@ -208,7 +208,7 @@ module.exports = (props) => {
         <QRCode value={App.getAddressOrBlank()} size={78} includeMargin={true} className="scale-hover"/>
       </button>
       <p className="scanqr-text">Scan
-        <strong>QR code</strong>
+        <strong> QR code </strong>
         to get
         <br/>ELA Address</p>
       <p className="howqr-text gradient-font">Click QR code to Enlarge</p>
