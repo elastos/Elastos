@@ -32,7 +32,7 @@ const UseLedgerButton = (props) => {
     App.getLedgerDeviceInfo()
     ? App.getLedgerDeviceInfo().enabled
     : false) {
-    return (<img src="artwork/ledgerconnected.svg" width="235px" height="198px" className="ledgercon dark-hover" onClick={(e) => useLedger()}></img>);
+    return (<img src="artwork/ledgerconnected.svg" width="235px" height="198px" className="ledgercon ledgeranimation dark-hover" onClick={(e) => useLedger()}></img>);
   } else {
     return (<img src="artwork/ledgernotconnected.svg" width="140px" height="36px" title="Not Connected" className="ledgernotcon dark-hover"></img>);
   }

@@ -534,6 +534,7 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     sendToAddressStatuses.push(message);
     bannerStatus = message;
     sendToAddressLinks.push(elt);
+    requestTransactionHistory();
   }
   GuiToggles.showAllBanners();
   setBlockchainLastActionHeight();
@@ -553,18 +554,11 @@ const clearSendData = () => {
   // mainConsole.log('SUCCESS clearSendData');
 };
 
-const updateAmountAndFees = () => {
-  // mainConsole.log('STARTED updateAmountAndFees');
 
+const validateInputs = () => {
   sendAmount = GuiUtils.getValue('sendAmount');
   sendToAddress = GuiUtils.getValue('sendToAddress');
-  feeAmountSats = GuiUtils.getValue('feeAmount');
 
-  // mainConsole.log('INTERIM updateAmountAndFees',
-  //   'sendAmount:', sendAmount,
-  //   'sendToAddress:', sendToAddress,
-  //   'feeAmountSats:', feeAmountSats,
-  // );
   if (sendToAddress.length == 0) {
     bannerStatus = `Address field is blank`;
     bannerClass = 'bg_red color_white banner-look';
@@ -580,8 +574,45 @@ const updateAmountAndFees = () => {
     renderApp();
     return false;
   }
+  const sendAmountSatsBn = BigNumber(sendAmount, 10).times(Asset.satoshis);
+  const feeAmountSatsBn = BigNumber(feeAmountSats, 10);
+  const balanceSatsBn = BigNumber(balance, 10).times(Asset.satoshis);
+  if (sendAmountSatsBn.plus(feeAmountSatsBn).isGreaterThanOrEqualTo(balanceSatsBn)) {
+    bannerStatus = `Amount: ${sendAmount} + Fees ${feeAmountSats} is greater than balance ${balance}`;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
+    renderApp();
+    return false;
+  }
+  // GuiToggles.hideAllBanners();
+  // renderApp();
+
+  feeAmountEla = BigNumber(feeAmountSats, 10).dividedBy(Asset.satoshis).toString();
+  // mainConsole.log('SUCCESS updateAmountAndFees');
+  return true;
+};
+
+const updateAmountAndFees = () => {
+  // mainConsole.log('STARTED updateAmountAndFees');
+
+  sendAmount = GuiUtils.getValue('sendAmount');
+  sendToAddress = GuiUtils.getValue('sendToAddress');
+  feeAmountSats = GuiUtils.getValue('feeAmount');
+
+  // mainConsole.log('INTERIM updateAmountAndFees',
+  //   'sendAmount:', sendAmount,
+  //   'sendToAddress:', sendToAddress,
+  //   'feeAmountSats:', feeAmountSats,
+  // );
   if (!isValidDecimal(feeAmountSats)) {
     bannerStatus = `Fees: ${feeAmountSats} is not a number`;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
+    renderApp();
+    return false;
+  }
+  if (parsedTransactionHistory[0].type == '*Sending') {
+    bannerStatus = `Please wait for previous transaction to confirm.`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     renderApp();
@@ -892,10 +923,27 @@ const sendVoteTx = () => {
     const unspentTransactionOutputs = parsedUnspentTransactionOutputs;
     // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
 
+    if (parsedTransactionHistory[0].type == '*Sending') {
+      bannerStatus = `Please wait for previous transaction to confirm.`;
+      bannerClass = 'bg_red color_white banner-look';
+      GuiToggles.showAllBanners();
+      renderApp();
+      return;
+    }
+
+    if (parsedProducerList.producersCandidateCount === 0) {
+      bannerStatus = 'No Candidates Selected.';
+      bannerClass = 'bg_red color_white banner-look';
+      GuiToggles.showAllBanners();
+      renderApp();
+      return;
+    }
+
     if (balance == 0) {
       bannerStatus = 'You have insufficient ELA balance to vote.';
       bannerClass = 'bg_red color_white banner-look';
       GuiToggles.showAllBanners();
+      renderApp();
       return;
     }
 
@@ -903,6 +951,7 @@ const sendVoteTx = () => {
       bannerStatus = `feeAmountSats ${feeAmountSats} is not a number`;
       bannerClass = 'bg_red color_white banner-look';
       GuiToggles.showAllBanners();
+      renderApp();
       return;
     }
 
@@ -1004,6 +1053,7 @@ const sendVoteReadyCallback = (transactionJson) => {
     candidateVoteListStatus = `Vote Success TX: ${transactionJson.Result}`;
     bannerStatus = candidateVoteListStatus;
     bannerClass = 'bg_green color_white banner-look';
+    requestTransactionHistory();
   }
   GuiToggles.showAllBanners();
   renderApp();
@@ -1534,3 +1584,4 @@ exports.verifyLedgerBanner = verifyLedgerBanner;
 exports.formatTxValue = formatTxValue;
 exports.selectActiveVotes = selectActiveVotes;
 exports.clearSelection = clearSelection;
+exports.validateInputs = validateInputs;

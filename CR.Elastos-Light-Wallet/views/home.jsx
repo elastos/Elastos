@@ -33,7 +33,7 @@ module.exports = (props) => {
 
   const sendIsNotFocus = () => {
     App.setSendHasFocus(false);
-    App.updateAmountAndFees();
+    // App.updateAmountAndFees();
   }
 
   const updateAmountAndFeesAndRenderApp = (e) => {
@@ -44,7 +44,7 @@ module.exports = (props) => {
   const showConfirmAndSeeFees = () => {
     // App.log('STARTED showConfirmAndSeeFees')
     App.setSendHasFocus(false);
-    const isValid = App.updateAmountAndFees();
+    const isValid = App.validateInputs();
     if (isValid) {
       App.setSendStep(2);
     }
