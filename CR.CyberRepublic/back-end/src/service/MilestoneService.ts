@@ -24,10 +24,8 @@ const { APPROVED, REJECTED } = constant.REVIEW_OPINION
 
 export default class extends Base {
   private model: any
-  private trackingModel: any
   protected init() {
     this.model = this.getDBModel('CVote')
-    this.trackingModel = this.getDBModel('CVote_Tracking')
   }
 
   public async applyPayment(param: any) {
