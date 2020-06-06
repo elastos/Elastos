@@ -75,7 +75,7 @@ public class IssuerTest {
 		DIDDocument issuerDoc = testData.loadTestIssuer();
 		DIDDocument.Builder db = issuerDoc.edit();
 
-		HDKey.DerivedKey key = TestData.generateKeypair();
+		HDKey key = TestData.generateKeypair();
 		DIDURL signKey = new DIDURL(issuerDoc.getSubject(), "testKey");
 		db.addAuthenticationKey(signKey, key.getPublicKeyBase58());
 

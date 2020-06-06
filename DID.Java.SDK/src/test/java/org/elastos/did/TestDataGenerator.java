@@ -98,8 +98,8 @@ public class TestDataGenerator {
 		store.storeCredential(vc, "Profile");
 
 		DIDURL id = issuer.getDefaultPublicKey();
-		byte[] binSk = store.loadPrivateKey(issuer.getSubject(), id, TestConfig.storePass);
-		writeTo("issuer." + id.getFragment() + ".sk", Base58.encode(binSk));
+		HDKey key = store.loadPrivateKey(issuer.getSubject(), id, TestConfig.storePass);
+		writeTo("issuer." + id.getFragment() + ".sk", key.serializeBase58());
 
 		String json = issuer.toString(true);
 		writeTo("issuer.normalized.json", json);
@@ -121,7 +121,7 @@ public class TestDataGenerator {
 
 		DIDDocument.Builder db = doc.edit();
 
-		HDKey.DerivedKey temp = TestData.generateKeypair();
+		HDKey temp = TestData.generateKeypair();
 		db.addAuthenticationKey("key2", temp.getPublicKeyBase58());
 		writeTo("document.key2.sk", Base58.encode(temp.serialize()));
 
@@ -177,8 +177,8 @@ public class TestDataGenerator {
 		store.storeCredential(vcEmail, "Email");
 
 		DIDURL id = test.getDefaultPublicKey();
-		byte[] binSk = store.loadPrivateKey(test.getSubject(), id, TestConfig.storePass);
-		writeTo("document." + id.getFragment() + ".sk", Base58.encode(binSk));
+		HDKey key = store.loadPrivateKey(test.getSubject(), id, TestConfig.storePass);
+		writeTo("document." + id.getFragment() + ".sk", key.serializeBase58());
 
 		String json = test.toString(true);
 		writeTo("document.normalized.json", json);

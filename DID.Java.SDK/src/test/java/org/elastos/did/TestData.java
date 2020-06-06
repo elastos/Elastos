@@ -389,14 +389,14 @@ public final class TestData {
 		return restoreMnemonic;
 	}
 
-	public static synchronized HDKey.DerivedKey generateKeypair()
+	public static synchronized HDKey generateKeypair()
 			throws DIDException {
 		if (rootKey == null) {
 	    	String mnemonic =  Mnemonic.getInstance().generate();
-	    	rootKey = HDKey.fromMnemonic(mnemonic, "");
+	    	rootKey = new HDKey(mnemonic, "");
 	    	index = 0;
 		}
 
-		return rootKey.derive(index++);
+		return rootKey.derive(HDKey.DERIVE_PATH_PREFIX + index++);
 	}
 }

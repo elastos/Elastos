@@ -47,22 +47,33 @@ public class HDKeyTest {
 		String expectedIDString = "iY4Ghz9tCuWvB5rNwvn4ngWvthZMNzEA7U";
 		String mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
 
-		HDKey root = HDKey.fromMnemonic(mnemonic, "");
-		HDKey.DerivedKey key = root.derive(0);
+		HDKey root = new HDKey(mnemonic, "");
+		HDKey key = root.derive(HDKey.DERIVE_PATH_PREFIX + '0');
 
 		assertEquals(expectedIDString, key.getAddress());
-	}
 
+		byte[] sk = HDKey.paddingToExtendedPrivateKey(key.getPrivateKeyBytes());
+		HDKey rk = HDKey.deserialize(sk);
+
+		assertEquals(key.getPrivateKeyBase58(), rk.getPrivateKeyBase58());
+		assertEquals(key.getPublicKeyBase58(), rk.getPublicKeyBase58());
+	}
 
 	@Test
 	public void test1() {
 		String expectedIDString = "iW3HU8fTmwkENeVT9UCEvvg3ddUD5oCxYA";
 		String mnemonic = "service illegal blossom voice three eagle grace agent service average knock round";
 
-		HDKey root = HDKey.fromMnemonic(mnemonic, "");
-		HDKey.DerivedKey key = root.derive(0);
+		HDKey root = new HDKey(mnemonic, "");
+		HDKey key = root.derive(HDKey.DERIVE_PATH_PREFIX + '0');
 
 		assertEquals(expectedIDString, key.getAddress());
+
+		byte[] sk = HDKey.paddingToExtendedPrivateKey(key.getPrivateKeyBytes());
+		HDKey rk = HDKey.deserialize(sk);
+
+		assertEquals(key.getPrivateKeyBase58(), rk.getPrivateKeyBase58());
+		assertEquals(key.getPublicKeyBase58(), rk.getPublicKeyBase58());
 	}
 
 	@Test
@@ -72,13 +83,13 @@ public class HDKeyTest {
 		// String seed = "98b9dde6ea5edba3c7808b8a342377bc8b08e8004667bb4be2a229f3bcda8e73b750101f3993272d971a4f50914a91d7221c9bbed964e4778081d9f4523b4525";
 		String key = "xprv9s21ZrQH143K4biiQbUq8369meTb1R8KnstYFAKtfwk3vF8uvFd1EC2s49bMQsbdbmdJxUWRkuC48CXPutFfynYFVGnoeq8LJZhfd9QjvUt";
 
-		HDKey root = HDKey.fromMnemonic(mnemonic, passphrase);
-		assertEquals(key, Base58.encode(root.serialize()));
-		byte[] keyBytes = root.getKeyBytes();
+		HDKey root = new HDKey(mnemonic, passphrase);
+		assertEquals(key, root.serializeBase58());
+		byte[] keyBytes = root.serialize();
 
 		root = HDKey.deserialize(Base58.decode(key));
-		assertEquals(key, Base58.encode(root.serialize()));
-		assertArrayEquals(keyBytes, root.getKeyBytes());
+		assertEquals(key, root.serializeBase58());
+		assertArrayEquals(keyBytes, root.serialize());
 	}
 
 	@Test
@@ -86,15 +97,16 @@ public class HDKeyTest {
 		String mnemonic = "pact reject sick voyage foster fence warm luggage cabbage any subject carbon";
 		String passphrase = "helloworld";
 
-		HDKey root = HDKey.fromMnemonic(mnemonic, passphrase);
+		HDKey root = new HDKey(mnemonic, passphrase);
 
-		String rootPubBase58 = root.serializePrederivedPubBase58();
-		HDKey rootPub = HDKey.deserializeBase58(rootPubBase58);
+		HDKey preDerivedKey = root.derive(HDKey.PRE_DERIVED_PUBLICKEY_PATH);
+		String preDerivedPubBase58 = preDerivedKey.serializePublicKeyBase58();
+		HDKey preDerivedPub = HDKey.deserializeBase58(preDerivedPubBase58);
 
 		for (int i = 0; i < 1000; i++) {
-			HDKey.DerivedKey key = root.derive(i);
+			HDKey key = root.derive(HDKey.DERIVE_PATH_PREFIX + i);
 
-			HDKey.DerivedKey keyPubOnly = rootPub.derive(i);
+			HDKey keyPubOnly = preDerivedPub.derive("0/" + i);
 
 			assertEquals(key.getPublicKeyBase58(), keyPubOnly.getPublicKeyBase58());
 			assertEquals(key.getAddress(), keyPubOnly.getAddress());
@@ -106,11 +118,10 @@ public class HDKeyTest {
 		byte[] input = "The quick brown fox jumps over the lazy dog.".getBytes();
 
 		for (int i = 0; i < 1000; i++) {
-			HDKey.DerivedKey key = TestData.generateKeypair();
+			HDKey key = TestData.generateKeypair();
 
 			// to JCE KeyPair
-			KeyPair jceKeyPair = HDKey.DerivedKey.getKeyPair(
-					key.getPublicKeyBytes(), key.getPrivateKeyBytes());
+			KeyPair jceKeyPair = key.getJCEKeyPair();
 			Signature jceSigner = Signature.getInstance("SHA256withECDSA");
 
 			byte[] didSig = key.sign(Sha256Hash.hash(input));
@@ -130,9 +141,8 @@ public class HDKeyTest {
 	@Test
 	public void testJwtES256() throws DIDException {
 		for (int i = 0; i < 1000; i++) {
-			HDKey.DerivedKey key = TestData.generateKeypair();
-			KeyPair keypair = HDKey.DerivedKey.getKeyPair(
-					key.getPublicKeyBytes(), key.getPrivateKeyBytes());
+			HDKey key = TestData.generateKeypair();
+			KeyPair keypair = key.getJCEKeyPair();
 
 	    	// Build and sign
 	    	String token = Jwts.builder()

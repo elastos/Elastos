@@ -44,7 +44,6 @@ import org.elastos.did.crypto.Base58;
 import org.elastos.did.crypto.Base64;
 import org.elastos.did.crypto.EcdsaSigner;
 import org.elastos.did.crypto.HDKey;
-import org.elastos.did.crypto.HDKey.DerivedKey;
 import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDNotFoundException;
 import org.elastos.did.exception.DIDObjectAlreadyExistException;
@@ -521,8 +520,7 @@ public class DIDDocument {
 			if (!pk.getController().equals(self))
 				continue;
 
-			String address = HDKey.DerivedKey.getAddress(
-					pk.getPublicKeyBytes());
+			String address = HDKey.toAddress(pk.getPublicKeyBytes());
 			if (address.equals(self.getMethodSpecificId()))
 				return pk.getId();
 		}
@@ -537,7 +535,25 @@ public class DIDDocument {
 		if (!hasPublicKey(id))
 			throw new InvalidKeyException("Key no exist");
 
-		return DerivedKey.getKeyPair(getPublicKey(id).getPublicKeyBytes(), null);
+		HDKey key = HDKey.deserialize(HDKey.paddingToExtendedPublicKey(
+				getPublicKey(id).getPublicKeyBytes()));
+
+		return key.getJCEKeyPair();
+	}
+
+	// The result is extended private key format, the real private key is
+	// 32 bytes long start from position 46.
+	public String derive(int index, String storepass) throws DIDStoreException {
+		if (storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException();
+
+		if (!getMeta().attachedStore())
+			throw new DIDStoreException("Not attached with DID store.");
+
+		HDKey key = getMeta().getStore().loadPrivateKey(getSubject(),
+				getDefaultPublicKey(), storepass);
+
+		return key.derive(index).serializeBase58();
 	}
 
 	public KeyPair getKeyPair(String id) throws InvalidKeyException {
@@ -559,8 +575,8 @@ public class DIDDocument {
 		if (!getMeta().getStore().containsPrivateKey(getSubject(), id))
 			throw new InvalidKeyException("Don't have private key");
 
-		return DerivedKey.getKeyPair(getPublicKey(id).getPublicKeyBytes(),
-				getMeta().getStore().loadPrivateKey(getSubject(), id, storepass));
+		HDKey key = getMeta().getStore().loadPrivateKey(getSubject(), id, storepass);
+		return key.getJCEKeyPair();
 	}
 
 	@SuppressWarnings("unused")

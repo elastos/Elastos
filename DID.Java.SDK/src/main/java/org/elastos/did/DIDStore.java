@@ -184,7 +184,7 @@ public final class DIDStore {
 		if (passphrase == null)
 			passphrase = "";
 
-		HDKey privateIdentity = HDKey.fromMnemonic(mnemonic, passphrase);
+		HDKey privateIdentity = new HDKey(mnemonic, passphrase);
 
 		initPrivateIdentity(privateIdentity, storepass);
 
@@ -228,11 +228,13 @@ public final class DIDStore {
 		storage.storePrivateIdentity(encryptedIdentity);
 
 		// Save pre-derived public key
-		storage.storePublicIdentity(privateIdentity.serializePrederivedPubBase58());
+		HDKey preDerivedKey = privateIdentity.derive(HDKey.PRE_DERIVED_PUBLICKEY_PATH);
+		storage.storePublicIdentity(preDerivedKey.serializePublicKeyBase58());
 
 		// Save index
 		storage.storePrivateIdentityIndex(0);
 
+		preDerivedKey.wipe();
 		privateIdentity.wipe();
 	}
 
@@ -260,12 +262,12 @@ public final class DIDStore {
 		if (keyData.length == HDKey.SEED_BYTES) {
 			// For backward compatible, convert to extended root private key
 			// TODO: Should be remove in the future
-			privateIdentity = HDKey.fromSeed(keyData);
+			privateIdentity = new HDKey(keyData);
 
 			String encryptedIdentity = encryptToBase64(
 					privateIdentity.serialize(), storepass);
 			storage.storePrivateIdentity(encryptedIdentity);
-		} else if (keyData.length == HDKey.EXTENDED_PRIVATE_BYTES){
+		} else if (keyData.length == HDKey.EXTENDED_PRIVATEKEY_BYTES){
 			privateIdentity = HDKey.deserialize(keyData);
 		} else {
 			throw new DIDStoreException("Invalid private identity.");
@@ -275,8 +277,10 @@ public final class DIDStore {
 
 		// For backward compatible, create pre-derived public key if not exist.
 		// TODO: Should be remove in the future
-		if (!storage.containsPublicIdentity())
-			storage.storePublicIdentity(privateIdentity.serializePrederivedPubBase58());
+		if (!storage.containsPublicIdentity()) {
+			HDKey preDerivedKey = privateIdentity.derive(HDKey.PRE_DERIVED_PUBLICKEY_PATH);
+			storage.storePublicIdentity(preDerivedKey.serializePublicKeyBase58());
+		}
 
 		return privateIdentity;
 	}
@@ -306,7 +310,7 @@ public final class DIDStore {
 			int i = 0;
 
 			while (i < nextIndex || blanks < 20) {
-				HDKey.DerivedKey key = privateIdentity.derive(i++);
+				HDKey key = privateIdentity.derive(HDKey.DERIVE_PATH_PREFIX + i++);
 				DID did = new DID(DID.METHOD, key.getAddress());
 
 				log.info("Synchronize {}/{}...", did.toString(), i);
@@ -406,7 +410,7 @@ public final class DIDStore {
 		if (privateIdentity == null)
 			throw new DIDStoreException("DID Store not contains private identity.");
 
-		HDKey.DerivedKey key = privateIdentity.derive(index);
+		HDKey key = privateIdentity.derive(HDKey.DERIVE_PATH_PREFIX + index);
 		try {
 			DID did = new DID(DID.METHOD, key.getAddress());
 			log.info("Creating new DID {} with index {}...", did.toString(), index);
@@ -454,7 +458,7 @@ public final class DIDStore {
 		if (publicIdentity == null)
 			throw new DIDStoreException("DID Store not contains private identity.");
 
-		HDKey.DerivedKey key = publicIdentity.derive(index);
+		HDKey key = publicIdentity.derive("0/" + index);
 		DID did = new DID(DID.METHOD, key.getAddress());
 		return did;
 	}
@@ -1435,10 +1439,37 @@ public final class DIDStore {
 		storePrivateKey(_did, _id, privateKey, storepass);
 	}
 
-	protected byte[] loadPrivateKey(DID did, DIDURL id, String storepass)
+	protected HDKey loadPrivateKey(DID did, DIDURL id, String storepass)
 			throws DIDStoreException {
 		String encryptedKey = storage.loadPrivateKey(did, id);
-		return decryptFromBase64(encryptedKey, storepass);
+		byte[] keyBytes = decryptFromBase64(encryptedKey, storepass);
+
+		// For backward compatible, convert to extended private key
+		// TODO: Should be remove in the future
+		byte[] extendedKeyBytes = null;
+		if (keyBytes.length == HDKey.PRIVATEKEY_BYTES) {
+			HDKey identity = loadPrivateIdentity(storepass);
+			if (identity != null) {
+				for (int i = 0; i < 100; i++) {
+					HDKey child = identity.derive(HDKey.DERIVE_PATH_PREFIX + i);
+					if (Arrays.equals(child.getPrivateKeyBytes(), keyBytes)) {
+						extendedKeyBytes = child.serialize();
+						break;
+					}
+					child.wipe();
+				}
+				identity.wipe();
+			}
+
+			if (extendedKeyBytes == null)
+				extendedKeyBytes = HDKey.paddingToExtendedPrivateKey(keyBytes);
+
+			storePrivateKey(did, id, extendedKeyBytes, storepass);
+		} else {
+			extendedKeyBytes = keyBytes;
+		}
+
+		return HDKey.deserialize(extendedKeyBytes);
 	}
 
 	public boolean containsPrivateKeys(DID did) throws DIDStoreException {
@@ -1515,13 +1546,9 @@ public final class DIDStore {
 			id = doc.getDefaultPublicKey();
 		}
 
-		byte[] binKey = loadPrivateKey(did, id, storepass);
-		HDKey.DerivedKey key = HDKey.DerivedKey.deserialize(binKey);
-
+		HDKey key = loadPrivateKey(did, id, storepass);
 		byte[] sig = EcdsaSigner.sign(key.getPrivateKeyBytes(), digest);
-
 		key.wipe();
-		Arrays.fill(binKey, (byte)0);
 
 		return Base64.encodeToString(sig,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);

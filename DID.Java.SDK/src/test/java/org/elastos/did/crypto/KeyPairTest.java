@@ -91,12 +91,12 @@ public class KeyPairTest {
 		byte[] input = "Hello World!".getBytes();
 
 		for (int i = 0; i < 1000; i++) {
-			HDKey.DerivedKey key = TestData.generateKeypair();
+			HDKey key = TestData.generateKeypair();
 
 			byte[] sig1 = key.sign(Sha256Hash.hash(input));
 			System.out.println(Base64.encodeToString(sig1));
 
-			KeyPair keyPair = HDKey.DerivedKey.getKeyPair(key.getPublicKeyBytes(), key.getPrivateKeyBytes());
+			KeyPair keyPair = key.getJCEKeyPair();
 			Signature s = Signature.getInstance("SHA256withECDSA");
 	        s.initSign(keyPair.getPrivate());
 	        s.update(input);

@@ -22,6 +22,7 @@
 
 package org.elastos.did;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -38,6 +39,7 @@ import java.util.Map;
 
 import org.elastos.did.DIDDocument.PublicKey;
 import org.elastos.did.DIDDocument.Service;
+import org.elastos.did.crypto.Base58;
 import org.elastos.did.crypto.HDKey;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDObjectAlreadyExistException;
@@ -139,7 +141,7 @@ public class DIDDocumentTest {
 
 		// Add 2 public keys
 		DIDURL id = new DIDURL(db.getSubject(), "test1");
-		HDKey.DerivedKey key = TestData.generateKeypair();
+		HDKey key = TestData.generateKeypair();
 		db.addPublicKey(id, db.getSubject(), key.getPublicKeyBase58());
 
 		key = TestData.generateKeypair();
@@ -299,7 +301,7 @@ public class DIDDocumentTest {
 
 		// Add 2 public keys for test.
 		DIDURL id = new DIDURL(db.getSubject(), "test1");
-		HDKey.DerivedKey key = TestData.generateKeypair();
+		HDKey key = TestData.generateKeypair();
 		db.addPublicKey(id, db.getSubject(), key.getPublicKeyBase58());
 
 		key = TestData.generateKeypair();
@@ -368,7 +370,7 @@ public class DIDDocumentTest {
 		DIDDocument.Builder db = doc.edit();
 
 		// Add 2 public keys for test
-		HDKey.DerivedKey key = TestData.generateKeypair();
+		HDKey key = TestData.generateKeypair();
 		db.addAuthenticationKey(
 				new DIDURL(doc.getSubject(), "test1"),
 				key.getPublicKeyBase58());
@@ -484,7 +486,7 @@ public class DIDDocumentTest {
 
 		// Add 2 public keys for test.
 		DIDURL id = new DIDURL(db.getSubject(), "test1");
-		HDKey.DerivedKey key = TestData.generateKeypair();
+		HDKey key = TestData.generateKeypair();
 		db.addPublicKey(id,
 				new DID(DID.METHOD, key.getAddress()),
 				key.getPublicKeyBase58());
@@ -560,7 +562,7 @@ public class DIDDocumentTest {
 
 		// Add 2 keys for test.
 		DIDURL id = new DIDURL(db.getSubject(), "test1");
-		HDKey.DerivedKey key = TestData.generateKeypair();
+		HDKey key = TestData.generateKeypair();
 		db.addAuthorizationKey(id,
 				new DID(DID.METHOD, key.getAddress()),
 				key.getPublicKeyBase58());
@@ -1057,6 +1059,28 @@ public class DIDDocumentTest {
 			data[0] = (byte) i;
 			result = doc.verify(sig, data);
 			assertFalse(result);
+		}
+	}
+
+	@Test
+	public void testDerive() throws DIDException, IOException {
+		TestData testData = new TestData();
+		testData.setup(true);
+		testData.initIdentity();
+
+		DIDDocument doc = testData.loadTestDocument();
+		assertNotNull(doc);
+		assertTrue(doc.isValid());
+
+		for (int i = 0; i < 1000; i++) {
+			String strKey = doc.derive(i, TestConfig.storePass);
+			HDKey key = HDKey.deserializeBase58(strKey);
+
+			byte[] binKey = Base58.decode(strKey);
+			byte[] sk = Arrays.copyOfRange(binKey, 46, 78);
+
+			assertEquals(key.getPrivateKeyBytes().length, sk.length);
+			assertArrayEquals(key.getPrivateKeyBytes(), sk);
 		}
 	}
 }

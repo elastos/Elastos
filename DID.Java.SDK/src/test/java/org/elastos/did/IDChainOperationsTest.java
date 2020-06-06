@@ -164,7 +164,7 @@ public class IDChainOperationsTest {
 
 		// Update
 		DIDDocument.Builder db = doc.edit();
-		HDKey.DerivedKey key = TestData.generateKeypair();
+		HDKey key = TestData.generateKeypair();
 		db.addAuthenticationKey("key1", key.getPublicKeyBase58());
 		doc = db.seal(TestConfig.storePass);
 		assertEquals(2, doc.getPublicKeyCount());
@@ -277,7 +277,7 @@ public class IDChainOperationsTest {
 
 		// Update
 		DIDDocument.Builder db = doc.edit();
-		HDKey.DerivedKey key = TestData.generateKeypair();
+		HDKey key = TestData.generateKeypair();
 		db.addAuthenticationKey("key1", key.getPublicKeyBase58());
 		doc = db.seal(TestConfig.storePass);
 		assertEquals(2, doc.getPublicKeyCount());

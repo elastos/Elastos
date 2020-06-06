@@ -37,15 +37,15 @@ public class EcdsaSignerTest {
 	private static final String plain = "The quick brown fox jumps over the lazy dog.";
 	private static final String nonce = "testcase";
 
-	private static HDKey.DerivedKey key;
+	private static HDKey key;
 	private static byte[] sig;
 
 	@BeforeAll
 	public static void setup() throws DIDException {
 		String mnemonic = Mnemonic.getInstance().generate();
 
-		HDKey root = HDKey.fromMnemonic(mnemonic, "");
-		key = root.derive(0);
+		HDKey root = new HDKey(mnemonic, "");
+		key = root.derive(HDKey.DERIVE_PATH_PREFIX + 0);
 
 		sig = EcdsaSigner.signData(key.getPrivateKeyBytes(), plain.getBytes(), nonce.getBytes());
 

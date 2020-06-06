@@ -305,7 +305,7 @@ public class DIDStoreTest {
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
     	doc = db.seal(TestConfig.storePass);
     	assertEquals(2, doc.getPublicKeyCount());
@@ -354,7 +354,7 @@ public class DIDStoreTest {
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
     	doc = db.seal(TestConfig.storePass);
     	assertEquals(2, doc.getPublicKeyCount());
@@ -407,7 +407,7 @@ public class DIDStoreTest {
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
     	doc = db.seal(TestConfig.storePass);
     	assertEquals(2, doc.getPublicKeyCount());
@@ -460,7 +460,7 @@ public class DIDStoreTest {
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
     	doc = db.seal(TestConfig.storePass);
     	assertEquals(2, doc.getPublicKeyCount());
@@ -495,7 +495,7 @@ public class DIDStoreTest {
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
     	doc = db.seal(TestConfig.storePass);
     	assertEquals(2, doc.getPublicKeyCount());
@@ -530,7 +530,7 @@ public class DIDStoreTest {
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
     	doc = db.seal(TestConfig.storePass);
     	assertEquals(2, doc.getPublicKeyCount());
@@ -564,7 +564,7 @@ public class DIDStoreTest {
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
     	doc = db.seal(TestConfig.storePass);
     	assertEquals(2, doc.getPublicKeyCount());
@@ -598,7 +598,7 @@ public class DIDStoreTest {
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
     	doc = db.seal(TestConfig.storePass);
     	assertEquals(2, doc.getPublicKeyCount());
@@ -633,7 +633,7 @@ public class DIDStoreTest {
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
     	doc = db.seal(TestConfig.storePass);
     	assertEquals(2, doc.getPublicKeyCount());
@@ -687,7 +687,7 @@ public class DIDStoreTest {
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
     	doc = db.seal(TestConfig.storePass);
     	assertEquals(2, doc.getPublicKeyCount());
@@ -754,7 +754,7 @@ public class DIDStoreTest {
 
     	DIDDocument doc = store.newDid(TestConfig.storePass);
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	DIDURL id = new DIDURL(doc.getSubject(), "key-2");
     	db.addAuthenticationKey(id, key.getPublicKeyBase58());
     	store.storePrivateKey(doc.getSubject(), id, key.getPrivateKeyBytes(),
@@ -802,7 +802,7 @@ public class DIDStoreTest {
 
     	DIDDocument doc = store.newDid(TestConfig.storePass);
     	DIDDocument.Builder db = doc.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	HDKey key = TestData.generateKeypair();
     	DIDURL id = new DIDURL(doc.getSubject(), "key-2");
     	db.addAuthenticationKey(id, key.getPublicKeyBase58());
     	store.storePrivateKey(doc.getSubject(), id, key.getPrivateKeyBytes(),
@@ -1236,8 +1236,11 @@ public class DIDStoreTest {
 
 	@Test
 	public void testCompatibility() throws DIDException {
+		byte[] data = "Hello World".getBytes();
+
 		URL url = this.getClass().getResource("/teststore");
 		File dir = new File(url.getPath());
+		System.out.println(url.getPath());
 
 		DummyAdapter adapter = new DummyAdapter();
 		DIDBackend.initialize(adapter, TestData.getResolverCacheDir());
@@ -1268,6 +1271,10 @@ public class DIDStoreTest {
        				assertNotNull(store.loadCredential(did, id));
        			}
        		}
+
+       		DIDDocument doc = store.loadDid(did);
+       		String sig = doc.sign(TestConfig.storePass, data);
+       		assertTrue(doc.verify(sig, data));
        	}
 	}
 
