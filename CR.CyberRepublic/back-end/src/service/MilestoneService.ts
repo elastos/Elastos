@@ -72,6 +72,9 @@ export default class extends Base {
 
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
       const trackingStatus = budget.type === 'COMPLETION' ? FINALIZED : PROGRESS
+
+      const initiation = _.find(proposal.budget, ['type', 'ADVANCE'])
+      const stage = parseInt(milestoneKey)
       // generate jwt url
       const jwtClaims = {
         iat: now,
@@ -82,7 +85,7 @@ export default class extends Base {
         data: {
           proposalhash: proposal.proposalHash,
           messagehash: messageHash,
-          stage: parseInt(milestoneKey),
+          stage: initiation ? stage : stage + 1,
           ownerpubkey: ownerPublicKey || proposal.ownerPublicKey,
           newownerpubkey: '',
           proposaltrackingtype: trackingStatus
