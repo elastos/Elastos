@@ -697,6 +697,15 @@ const requestListOfProducersErrorCallback = (response) => {
   renderApp();
 };
 
+const clearParsedProducerList = () => {
+  parsedProducerList = {
+    totalvotes: '-',
+    totalcounts: '-',
+    producersCandidateCount: 0,
+    producers: [],
+  };
+}
+
 const requestListOfProducersReadyCallback = (response, force) => {
   if (refreshCandiatesFlag) {
     producerListStatus = 'Producers Received';
@@ -712,12 +721,7 @@ const requestListOfProducersReadyCallback = (response, force) => {
   }
 
   // mainConsole.log('STARTED Producers Callback', response);
-  parsedProducerList = {
-    totalvotes: '-',
-    totalcounts: '-',
-    producersCandidateCount: 0,
-    producers: [],
-  };
+  clearParsedProducerList();
   if (response.status !== 200) {
     producerListStatus = `Producers Error: ${JSON.stringify(response)}`;
   } else {
@@ -786,7 +790,7 @@ const toggleProducerSelection = (item) => {
 };
 
 const selectActiveVotes = () => {
-  if (parsedCandidateVoteList.lastVote.length > 0 ) {
+  if (parsedCandidateVoteList.lastVote.length > 0) {
     let activeVotes = new Set(parsedCandidateVoteList.lastVote);
     // let activeVotes = new Set(parsedCandidateVoteList.candidateVotes.map(e => e.ownerpublickey));
     parsedProducerList.producers.map(e => {
@@ -884,7 +888,7 @@ const sendVoteTx = () => {
     const unspentTransactionOutputs = parsedUnspentTransactionOutputs;
     // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
 
-    if(balance == 0) {
+    if (balance == 0) {
       bannerStatus = 'You have insufficient ELA balance to vote.';
       bannerClass = 'bg_red color_white banner-look';
       GuiToggles.showAllBanners();
@@ -1216,6 +1220,8 @@ const clearGlobalData = () => {
 
   bannerStatus = '';
   bannerClass = '';
+
+  clearParsedProducerList();
 
   renderApp();
   // mainConsole.log('SUCCESS clearGlobalData');
