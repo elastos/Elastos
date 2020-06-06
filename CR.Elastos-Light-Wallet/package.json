@@ -1,6 +1,6 @@
 {
   "name": "elastos-light-wallet",
-  "version": "v1.0.0-RC32",
+  "version": "v1.0.0-RC33",
   "description": "elastos light wallet",
   "productName": "Elastos Light Wallet",
   "main": "index.js",
