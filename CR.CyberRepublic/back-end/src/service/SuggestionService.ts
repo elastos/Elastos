@@ -788,6 +788,11 @@ export default class extends Base {
     }
 
     const currVer = await this.model.getDBInstance().findOne({ _id: id })
+
+    if (_.get(currVer, 'signature.data')) {
+      throw 'This suggestion had been signed.'
+    }
+
     const rVer = await this.getDBModel('Suggestion_Edit_History')
       .getDBInstance()
       .findOne({ suggestion: id, version })
