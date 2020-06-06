@@ -34,17 +34,14 @@ class BudgetForm extends Component {
         error: I18N.get('suggestion.form.error.completion')
       }
     }
-    if (type === CONDITIONED && (activeKey === '0' || activeKey === `${max}`)) {
+    if (type === CONDITIONED && activeKey === `${max}`) {
       return {
         error: I18N.get('suggestion.form.error.conditioned')
       }
     }
     if (type === CONDITIONED && keys.includes(activeKey)) {
       // edit milestone payment
-      if (
-        paymentItems.length === milestone.length &&
-        item.milestoneKey === activeKey
-      ) {
+      if (item && item.milestoneKey === activeKey) {
         return {}
       }
       // add project milestone payment
@@ -62,6 +59,7 @@ class BudgetForm extends Component {
       if (!err) {
         const { activeKey } = this.state
         const rs = this.checkTypeMilestone(values.type)
+        console.log('rs.....', rs)
         if (rs && rs.error) {
           message.error(rs.error)
           return

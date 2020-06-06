@@ -96,8 +96,15 @@ class C extends BaseComponent {
 
         const plan = form.getFieldValue('plan')
         const milestone = _.get(plan, 'milestone')
-        const initiation = pItems.filter((item) => item.type === ADVANCE)
-        const completion = pItems.filter((item) => item.type === COMPLETION)
+        const initiation = pItems.filter(
+          (item) => item.type === ADVANCE && item.milestoneKey === '0'
+        )
+        const completion = pItems.filter(
+          (item) => {
+           return item.type === COMPLETION &&
+            item.milestoneKey === (milestone.length - 1).toString()
+          }
+        )
         if (
           milestone.length !== pItems.length ||
           initiation.length > 1 ||
