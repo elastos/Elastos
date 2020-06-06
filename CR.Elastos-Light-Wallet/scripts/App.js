@@ -828,13 +828,17 @@ const requestListOfCandidateVotesErrorCallback = (response) => {
   renderApp();
 };
 
+const clearParsedCandidateVoteList = () => {
+  parsedCandidateVoteList = {};
+  parsedCandidateVoteList.candidateVotes = [];
+  parsedCandidateVoteList.lastVote = [];
+}
+
 const requestListOfCandidateVotesReadyCallback = (response) => {
   candidateVoteListStatus = 'Candidate Votes Received';
 
   // mainConsole.log('STARTED Candidate Votes Callback', response);
-  parsedCandidateVoteList = {};
-  parsedCandidateVoteList.candidateVotes = [];
-  parsedCandidateVoteList.lastVote = [];
+  clearParsedCandidateVoteList();
 
   if (response.status !== 200) {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
@@ -1222,6 +1226,7 @@ const clearGlobalData = () => {
   bannerClass = '';
 
   clearParsedProducerList();
+  clearParsedCandidateVoteList();
 
   renderApp();
   // mainConsole.log('SUCCESS clearGlobalData');
