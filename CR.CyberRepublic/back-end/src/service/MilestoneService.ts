@@ -28,6 +28,12 @@ export default class extends Base {
     this.model = this.getDBModel('CVote')
   }
 
+  private paymentStage(budget: any, mKey: string) {
+    const initiation = _.find(budget, ['type', 'ADVANCE'])
+    const stage = parseInt(mKey)
+    return initiation ? stage : stage + 1
+  }
+
   public async applyPayment(param: any) {
     try {
       const { id, milestoneKey, message } = param
@@ -73,8 +79,6 @@ export default class extends Base {
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
       const trackingStatus = budget.type === 'COMPLETION' ? FINALIZED : PROGRESS
 
-      const initiation = _.find(proposal.budget, ['type', 'ADVANCE'])
-      const stage = parseInt(milestoneKey)
       // generate jwt url
       const jwtClaims = {
         iat: now,
@@ -85,7 +89,7 @@ export default class extends Base {
         data: {
           proposalhash: proposal.proposalHash,
           messagehash: messageHash,
-          stage: initiation ? stage : stage + 1,
+          stage: this.paymentStage(proposal.budget, milestoneKey),
           ownerpubkey: ownerPublicKey || proposal.ownerPublicKey,
           newownerpubkey: '',
           proposaltrackingtype: trackingStatus
@@ -302,7 +306,7 @@ export default class extends Base {
         data: {
           proposalhash: proposal.proposalHash,
           messagehash: history.messageHash,
-          stage: parseInt(milestoneKey),
+          stage: this.paymentStage(proposal.budget, milestoneKey),
           ownerpubkey: proposal.ownerPublicKey,
           newownerpubkey: '',
           ownersignature: history.signature,
