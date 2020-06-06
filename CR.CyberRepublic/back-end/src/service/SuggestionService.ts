@@ -733,7 +733,9 @@ export default class extends Base {
     if (did) {
       const proposers = _.get(doc, 'proposers')
       if (!_.isEmpty(proposers)) {
-        const curProposer = proposers.filter((item: any) => item.proposalHash && item.did === did)[0]
+        const curProposer = proposers.filter(
+          (item: any) => item.proposalHash && item.did === did
+        )[0]
         if (curProposer) {
           doc.curProposer = curProposer
         }
@@ -1226,12 +1228,15 @@ export default class extends Base {
       CONDITIONED: 'NormalPayment',
       COMPLETION: 'FinalPayment'
     }
-    const sortedBudget = _.sortBy(budget, 'milestoneKey')
-    const budgets = sortedBudget.map((item: BudgetItem) => ({
-      type: chainBudgetType[item.type],
-      stage: parseInt(item.milestoneKey),
-      amount: Big(`${item.amount}e+8`).toString()
-    }))
+    const initiation = _.find(budget, ['type', 'ADVANCE'])
+    const budgets = budget.map((item: BudgetItem) => {
+      const stage = parseInt(item.milestoneKey, 10)
+      return {
+        type: chainBudgetType[item.type],
+        stage: initiation ? stage : stage + 1,
+        amount: Big(`${item.amount}e+8`).toString()
+      }
+    })
     return budgets
   }
 
@@ -1277,7 +1282,7 @@ export default class extends Base {
       }
 
       if (_.get(suggestion, 'signature.data')) {
-        return { success: false, message: 'You had signed.'}
+        return { success: false, message: 'You had signed.' }
       }
 
       const did = _.get(this.currentUser, 'did.id')
