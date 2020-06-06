@@ -14,10 +14,6 @@ class Signature extends Component {
     this.mtimerList = []
   }
 
-  sleep = (ms) => {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
-
   clearTimerList = () => {
     if (this.mtimerList && this.mtimerList.length) {
       for (let timer of this.mtimerList) {
@@ -45,8 +41,7 @@ class Signature extends Component {
         })
         if (rs.success && rs.url) {
           this.setState({ url: rs.url, messageHash: rs.messageHash })
-          await this.sleep(5000)
-          this.pollingSignature()
+          setTimeout(this.pollingSignature, 5000)
         }
       }
     })
@@ -71,8 +66,7 @@ class Signature extends Component {
         const rs = await reviewApplication(proposalId, stage, data)
         if (rs.success && rs.url) {
           this.setState({ url: rs.url, messageHash: rs.messageHash })
-          await this.sleep(5000)
-          this.pollingSignature()
+          setTimeout(this.pollingSignature, 5000)
         }
         if (!rs.success && rs.message) {
           this.setState({ message: rs.message })
@@ -82,6 +76,9 @@ class Signature extends Component {
   }
 
   pollingSignature = async () => {
+    if (!this._isMounted) {
+      return
+    }
     const {
       proposalId,
       getPaymentSignature,
@@ -110,11 +107,18 @@ class Signature extends Component {
       }
       return
     }
-    const timer = setTimeout(this.pollingSignature, 5000)
-    this.mtimerList.push(timer)
+    if (this._isMounted === true) {
+      const timer = setTimeout(this.pollingSignature, 5000)
+      this.mtimerList.push(timer)
+    }
+  }
+
+  componentDidMount() {
+    this._isMounted = true
   }
 
   componentWillUnmount() {
+    this._isMounted = false
     this.clearTimerList()
   }
 

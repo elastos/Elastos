@@ -17,10 +17,6 @@ class CMSignSuggestionButton extends Component {
     this.timerList = []
   }
 
-  sleep = (ms) => {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
-
   clearTimerList = () => {
     if (this.timerList && this.timerList.length) {
       for (let timer of this.timerList) {
@@ -48,7 +44,7 @@ class CMSignSuggestionButton extends Component {
       )
     }
     if (isBound && message) {
-      return (<Content>{message}</Content>)
+      return <Content>{message}</Content>
     }
     return (
       <Content>
@@ -59,6 +55,9 @@ class CMSignSuggestionButton extends Component {
   }
 
   pollingProposalState = async () => {
+    if (!this._isMounted) {
+      return
+    }
     const { id, pollProposalState } = this.props
     const rs = await pollProposalState({ id })
     if (rs && rs.success && rs.toChain) {
@@ -79,8 +78,10 @@ class CMSignSuggestionButton extends Component {
       this.setState({ visible: false })
       return
     }
-    const timer = setTimeout(this.pollingProposalState, 5000)
-    this.timerList.push(timer)
+    if (this._isMounted === true) {
+      const timer = setTimeout(this.pollingProposalState, 3000)
+      this.timerList.push(timer)
+    }
   }
 
   handleSign = async () => {
@@ -94,14 +95,14 @@ class CMSignSuggestionButton extends Component {
       if (message) {
         return
       }
-      await this.sleep(5000)
-      this.pollingProposalState()
+      setTimeout(this.pollingProposalState, 5000)
     } else {
       this.setState({ isBound: false, visible: true })
     }
   }
 
   componentDidMount = async () => {
+    this._isMounted = true
     const { id, getCMSignatureUrl, isProposed } = this.props
     if (isProposed) {
       return
@@ -116,6 +117,7 @@ class CMSignSuggestionButton extends Component {
   }
 
   componentWillUnmount = () => {
+    this._isMounted = false
     this.clearTimerList()
   }
 

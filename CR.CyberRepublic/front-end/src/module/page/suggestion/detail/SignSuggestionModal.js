@@ -25,6 +25,9 @@ class SignSuggestionModal extends Component {
   }
 
   pollingSignature = async () => {
+    if (!this._isMounted) {
+      return
+    }
     const { id, getSignature } = this.props
     const rs = await getSignature(id)
     if (rs && rs.success) {
@@ -42,8 +45,10 @@ class SignSuggestionModal extends Component {
       this.setState({ visible: false })
       return
     }
-     const timer = setTimeout(this.pollingSignature, 5000)
-     this.timerOneList.push(timer)
+    if (this._isMounted === true) {
+      const timer = setTimeout(this.pollingSignature, 3000)
+      this.timerOneList.push(timer)
+    }
   }
 
   handleSign = async () => {
@@ -51,14 +56,19 @@ class SignSuggestionModal extends Component {
     const rs = await getSignatureUrl(id)
     if (rs && rs.success) {
       this.setState({ url: rs.url })
-      await this.pollingSignature()
+      setTimeout(this.pollingSignature, 3000)
     }
     if (rs && rs.success === false && rs.message) {
       this.setState({ message: rs.message })
     }
   }
 
+  componentDidMount = () => {
+    this._isMounted = true
+  }
+
   componentWillUnmount = () => {
+    this._isMounted = flase
     this.clearTimerList()
   }
 
@@ -73,11 +83,7 @@ class SignSuggestionModal extends Component {
 
   modalContent = (message) => {
     if (message) {
-      return (
-        <Content>
-          {message}
-        </Content>
-      )
+      return <Content>{message}</Content>
     }
     return (
       <Content>
@@ -91,7 +97,7 @@ class SignSuggestionModal extends Component {
           {I18N.get('suggestion.modal.signLater')}
         </Button>
         <Button
-          style={{marginLeft: 24}}
+          style={{ marginLeft: 24 }}
           className="cr-btn cr-btn-primary"
           onClick={this.handleSign}
         >
