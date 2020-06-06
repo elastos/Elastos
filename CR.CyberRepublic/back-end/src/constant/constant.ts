@@ -359,3 +359,9 @@ export const PROPOSAL_TRACKING_TYPE = {
   CHANGEOWNER: 'changeowner',
   FINALIZED: 'finalized'
 }
+
+export const SUGGESTION_BUDGET_TYPE = create([
+  'ADVANCE',
+  'COMPLETION',
+  'CONDITIONED'
+])
