@@ -744,7 +744,7 @@ const requestListOfProducersReadyCallback = (response, force) => {
     // mainConsole.log('INTERIM Producers Callback', response.result.producers[0]);
   }
   // mainConsole.log('SUCCESS Producers Callback');
-  
+
   renderApp();
 };
 
@@ -883,6 +883,13 @@ const sendVoteTx = () => {
     updateAmountAndFees();
     const unspentTransactionOutputs = parsedUnspentTransactionOutputs;
     // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
+
+    if(balance == 0) {
+      bannerStatus = 'You have insufficient ELA balance to vote.';
+      bannerClass = 'bg_red color_white banner-look';
+      GuiToggles.showAllBanners();
+      return;
+    }
 
     if (!isValidDecimal(feeAmountSats)) {
       bannerStatus = `feeAmountSats ${feeAmountSats} is not a number`;
