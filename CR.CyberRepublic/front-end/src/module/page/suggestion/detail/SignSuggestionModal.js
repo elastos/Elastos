@@ -68,7 +68,7 @@ class SignSuggestionModal extends Component {
   }
 
   componentWillUnmount = () => {
-    this._isMounted = flase
+    this._isMounted = false
     this.clearTimerList()
   }
 
