@@ -5,7 +5,7 @@
   find . -exec touch {} \;
   git add .;
   git commit -m "Initial commit";
-  git remote add origin https://github.com/coranos/elastos-light-wallet.git;
+  git remote add origin https://github.com/cyber-republic/elastos-light-wallet.git;
   git push -u --force origin master;
   git branch --set-upstream-to=origin/master master;
   git pull;git push;
