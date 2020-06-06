@@ -78,13 +78,17 @@ class PaymentSchedule extends Component {
     this.setState({ visible: true, index: -1 })
   }
 
+  sortPayments = (arr) => {
+    return _.sortBy(arr, (item) => parseInt(item.milestoneKey, 10))
+  }
+
   handleDelete = (index) => {
     const { paymentItems } = this.state
     const rs = [
       ...paymentItems.slice(0, index),
       ...paymentItems.slice(index + 1)
     ]
-    const sortedItems = _.sortBy(rs, 'milestoneKey')
+    const sortedItems = this.sortPayments(rs)
     const errors = this.validateFields('schedule', sortedItems)
     this.setState(
       {
@@ -110,15 +114,14 @@ class PaymentSchedule extends Component {
         }
         return item
       })
-      const sortedItems = _.sortBy(rs, 'milestoneKey')
+      const sortedItems = this.sortPayments(rs)
       this.setState({ paymentItems: sortedItems, visible: false }, () => {
         this.passDataToParent()
       })
       return
     }
     const rs = [...paymentItems, values]
-
-    const sortedItems = _.sortBy(rs, 'milestoneKey')
+    const sortedItems = this.sortPayments(rs)
     const errors = this.validateFields('schedule', sortedItems)
     this.setState(
       {
