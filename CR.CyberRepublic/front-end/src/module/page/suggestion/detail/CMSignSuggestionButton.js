@@ -102,9 +102,8 @@ class CMSignSuggestionButton extends Component {
   }
 
   componentDidMount = async () => {
-    const { id, getCMSignatureUrl, isProposed, curProposer } = this.props
-    if (isProposed && curProposer) {
-      this.pollingProposalState()
+    const { id, getCMSignatureUrl, isProposed } = this.props
+    if (isProposed) {
       return
     }
     const rs = await getCMSignatureUrl(id)
