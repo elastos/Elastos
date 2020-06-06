@@ -179,6 +179,27 @@ button {
   transition: 0.4s;
 }
 
+.ledgeranimation {
+  animation: Flash 1.5s 1 linear;
+
+}
+
+@-webkit-keyframes Flash {
+  0% {
+    background-color: inherit;
+    opacity: 1;
+  }
+
+  50% {
+    background-color: rgba(151, 153, 166, 0.16);
+  }
+
+  100%{
+    background-color: inherit;
+    opacity: 1;
+  }
+}
+
 .dark-hover2 {
   -webkit-app-region: no-drag;	
   transition: 0.4s;
@@ -988,6 +1009,10 @@ select, input {
 
 .w80pct {
   width: 80%;
+}
+
+.w70pct {
+  width: 70%;
 }
 
 .w50pct {
