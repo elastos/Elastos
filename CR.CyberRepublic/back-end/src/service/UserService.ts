@@ -825,7 +825,7 @@ export default class extends Base {
             }
             const message = _.get(user, 'did.message')
             if (message) {
-                await db_user.update({_id: userId}, {unset: {did: true}})
+                await db_user.update({_id: userId}, {$unset: {did: true}})
                 return {success: false, message}
             }
         } else {
