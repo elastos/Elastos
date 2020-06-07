@@ -249,6 +249,9 @@ export const getDidName = async (did: string) => {
     })
     if (res && res.data && res.data.result) {
       const base64 = _.get(res.data.result, 'transaction[0].operation.payload')
+      if (!base64) {
+        throw 'Can not get DID payload'
+      }
       const payload: any = base64url.decode(base64)
       const { verifiableCredential } = JSON.parse(payload)
       if (!_.isEmpty(verifiableCredential)) {
