@@ -384,7 +384,6 @@ export default class extends BaseService {
     const rs = await api_request({
       path: '/api/user/did'
     })
-    console.log('new active did....', rs)
     if (rs && rs.success) {
       const userRedux = this.store.getRedux('user')
       this.dispatch(userRedux.actions.did_update(rs.did))

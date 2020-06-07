@@ -25,35 +25,43 @@ class ProfileDid extends Component {
     )
   }
 
-  pollingDid = () => {
-    this.timerDid = setInterval(async () => {
-      const rs = await this.props.getNewActiveDid()
-      if (rs && rs.success) {
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        this.setState({ url: '', visible: false })
+  pollingDid = async () => {
+    if (!this._isMounted) {
+      return
+    }
+    const rs = await this.props.getNewActiveDid()
+    if (rs && rs.success) {
+      clearTimeout(this.timerDid)
+      this.timerDid = null
+      this.setState({ url: '', visible: false })
+      return
+    }
+    if (rs && rs.success === false) {
+      clearTimeout(this.timerDid)
+      this.timerDid = null
+      if (rs.message) {
+        message.error(rs.message)
+      } else {
+        message.error('Something went wrong')
       }
-      if (rs && rs.success === false) {
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        if (rs.message) {
-          message.error(rs.message)
-        } else {
-          message.error('Something went wrong')
-        }
-        this.setState({ visible: false })
-      }
-    }, 3000)
+      this.setState({ visible: false })
+      return
+    }
+    if (this._isMounted) {
+      clearTimeout(this.timerDid)
+      this.timerDid = setTimeout(this.pollingDid, 3000)
+    }
   }
 
-  handleAssociate = async () => {
+  handleAssociate = () => {
     if (this.timerDid) {
       return
     }
-    this.pollingDid()
+    this.timerDid = setTimeout(this.pollingDid, 3000)
   }
 
   componentDidMount = async () => {
+    this._isMounted = true
     const rs = await this.props.getElaUrl()
     if (rs && rs.success) {
       this.setState({ url: rs.url })
@@ -61,7 +69,9 @@ class ProfileDid extends Component {
   }
 
   componentWillUnmount() {
-    clearInterval(this.timerDid)
+    this._isMounted = false
+    clearTimeout(this.timerDid)
+    this.timerDid = null
   }
 
   handleVisibleChange = (visible) => {
