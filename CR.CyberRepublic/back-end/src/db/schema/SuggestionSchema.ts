@@ -105,5 +105,6 @@ export const Suggestion = {
     }
   ],
   proposed: Boolean,
+  chainHeight: String,
   old: Boolean // mark an old suggestion
 }

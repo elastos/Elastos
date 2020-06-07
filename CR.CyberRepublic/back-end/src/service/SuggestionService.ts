@@ -12,7 +12,8 @@ import {
   permissions,
   logger,
   getDidPublicKey,
-  utilCrypto
+  utilCrypto,
+  getCurrentHeight
 } from '../utility'
 const Big = require('big.js')
 
@@ -1569,6 +1570,14 @@ export default class extends Base {
           } else {
             const did = _.get(payload, 'data.did')
             const timestamp = _.get(payload, 'iat')
+            const fields: any = {
+              'proposers.$.proposalHash': decoded.data,
+              proposed: true,
+            }
+            const rs = await getCurrentHeight()
+            if (rs && rs.success) {
+              fields.chainHeight = rs.height
+            }
             try {
               await this.model.update(
                 {
@@ -1576,7 +1585,7 @@ export default class extends Base {
                   'proposers.did': did,
                   'proposers.timestamp': timestamp.toString()
                 },
-                { 'proposers.$.proposalHash': decoded.data, proposed: true }
+                fields
               )
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
