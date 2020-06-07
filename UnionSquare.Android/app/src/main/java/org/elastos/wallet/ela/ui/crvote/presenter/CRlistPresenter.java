@@ -61,13 +61,5 @@ public class CRlistPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void getActiveCRlist(int pageNum, int pageSize, BaseFragment baseFragment) {
-        Map<String, Object> map = new HashMap();
-        map.put("pageNum", pageNum);
-        map.put("pageSize", pageSize);
-        map.put("state", "all");
-        Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).getCRlist(map);
-        Observer observer = createObserver(baseFragment, "getActiveCRlist");
-        subscriberObservable(observer, observable, baseFragment);
-    }
+
 }

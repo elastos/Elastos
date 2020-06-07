@@ -156,8 +156,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         //获取公钥
         srl.setOnRefreshListener(this);
         srl.setOnLoadMoreListener(this);
-        new VoteListPresenter().getDepositVoteList("1", "all", this, false);
-        //获取选举状态
+         //获取选举状态
         presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
         addDIDPresenter = new AddDIDPresenter();
         registReceiver();
@@ -199,7 +198,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 break;
             case R.id.tv_myvote:
                 bundle = new Bundle();
-                bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
                 bundle.putSerializable("netList", netList);
                 start(CRMyVoteFragment.class, bundle);
                 break;
@@ -218,7 +216,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             case R.id.tv_going_to_vote:
                 bundle = new Bundle();
                 bundle.putSerializable("netList", netList);
-                bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
                 start(CRNodeCartFragment.class, bundle);
                 break;
             case R.id.tv_signupfor:
@@ -310,7 +307,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         Bundle bundle = new Bundle();
         bundle.putSerializable("curentBean", netList.get(position));
         bundle.putSerializable("netList", netList);
-        bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
         start(CRInformationFragment.class, bundle);
     }
 
@@ -422,7 +418,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         return drawable;
     }
 
-    JSONArray otherUnActiveVote = new JSONArray();//其他类型的unactive的投票
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
@@ -441,33 +436,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
                 }
                 addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
-                break;
-            case "getDepositVoteList":
-                List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
-                JSONObject depiositUnActiveVote = new JSONObject();
-                List<String> ownerpublickeyList = new ArrayList<>();
-                if (depositList != null && depositList.size() > 0) {
-                    for (int i = 0; i < depositList.size(); i++) {
-                        VoteListBean.DataBean.ResultBean.ProducersBean bean = depositList.get(i);
-                        if (!bean.getState().equals("Active")) {
-                            ownerpublickeyList.add(bean.getOwnerpublickey());
-                        }
-                    }
-                }
-                depiositUnActiveVote.put("Type", "Delegate");
-                depiositUnActiveVote.put("Candidates", JSON.toJSON(ownerpublickeyList));
-                boolean hasDelegate = false;
-                for (int i = 0; i < otherUnActiveVote.size(); i++) {
-                    JSONObject jsonObject = (JSONObject) otherUnActiveVote.get(i);
-                    if ("Delegate".equals(jsonObject.getString("Type"))) {
-                        hasDelegate = true;
-                        break;
-                    }
-
-                }
-                if (!hasDelegate) {
-                    otherUnActiveVote.add(depiositUnActiveVote);
-                }
                 break;
             case "getAllSubWallets":
                 ISubWalletListEntity subWalletListEntity = (ISubWalletListEntity) baseEntity;
@@ -565,8 +533,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         pageNum = 1;
         is = false;
         curentNode = null;
-        otherUnActiveVote.clear();
-        new VoteListPresenter().getDepositVoteList("1", "all", this, false);
         presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
     }
 

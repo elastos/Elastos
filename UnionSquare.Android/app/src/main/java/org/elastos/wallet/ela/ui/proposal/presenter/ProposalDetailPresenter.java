@@ -167,7 +167,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                     String type = jsonObject.getString("Type");
 
                     if (type.equals(remove)) {
-                        break;
+                        continue;
                     }
                     JSONObject votes = jsonObject.getJSONObject("Votes");
                     Iterator it = votes.keys();
@@ -178,7 +178,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                                 String key = (String) it.next();
                                 if (depositList == null || depositList.size() == 0) {
                                     candidates.put(key);
-                                    break;
+                                    continue;
                                 }
                                 for (VoteListBean.DataBean.ResultBean.ProducersBean bean : depositList) {
                                     if (bean.getOwnerpublickey().equals(key) && !bean.getState().equals("Active")) {
@@ -195,7 +195,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                                 String key = (String) it.next();
                                 if (crcList == null || crcList.size() == 0) {
                                     candidates.put(key);
-                                    break;
+                                   continue;
                                 }
                                 for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : crcList) {
                                     if (bean.getDid().equals(key) && !bean.getState().equals("Active")) {
@@ -211,7 +211,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                                 String key = (String) it.next();
                                 if (crcList == null || crcList.size() == 0) {
                                     candidates.put(key);
-                                    break;
+                                    continue;
                                 }
                                 for (ProposalSearchEntity.DataBean.ListBean bean : voteList) {
                                     if (bean.getProposalHash().equals(key)) {

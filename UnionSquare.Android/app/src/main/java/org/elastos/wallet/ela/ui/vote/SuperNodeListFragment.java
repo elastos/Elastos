@@ -36,9 +36,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.qmuiteam.qmui.layout.QMUILinearLayout;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
@@ -53,8 +50,6 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
-import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
-import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.ElectoralAffairsFragment;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
@@ -67,7 +62,6 @@ import org.elastos.wallet.ela.ui.vote.signupfor.SignUpForFragment;
 import org.elastos.wallet.ela.ui.vote.signupfor.SignUpPresenter;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
 
@@ -138,7 +132,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             //获取pk
             signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
         }
-        new CRlistPresenter().getCRlist(1, 1000, "all", this, false);
 
     }
 
@@ -151,7 +144,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 bundle = new Bundle();
                 bundle.putString("zb", zb);
                 bundle.putSerializable("netList", netList);
-                bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
                 start(MyVoteFragment.class, bundle);
                 break;
             case R.id.tv_title_right:
@@ -170,7 +162,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 bundle = new Bundle();
                 bundle.putString("zb", zb);
                 bundle.putSerializable("netList", netList);
-                bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
                 start(NodeCartFragment.class, bundle);
                 break;
             case R.id.tv_signupfor:
@@ -202,7 +193,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         bundle.putString("zb", zb);
         bundle.putSerializable("bean", netList.get(position));
         bundle.putSerializable("netList", netList);
-        bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
         start(NodeInformationFragment.class, bundle);
     }
 
@@ -276,39 +266,10 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     }
 
 
-    JSONArray otherUnActiveVote = new JSONArray();
-
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
-            case "getCRlist":
-                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
-                JSONObject depiositUnActiveVote = new JSONObject();
-                List<String> didList = new ArrayList<>();
-                if (crList != null && crList.size() > 0) {
-                    for (int i = 0; i < crList.size(); i++) {
-                        CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = crList.get(i);
-                        if (!bean.getState().equals("Active")) {
-                            didList.add(bean.getDid());
-                        }
-                    }
-                }
-                depiositUnActiveVote.put("Type", "CRC");
-                depiositUnActiveVote.put("Candidates", JSON.toJSON(didList));
-                boolean hasCRC = false;
-                for (int i = 0; i < otherUnActiveVote.size(); i++) {
-                    JSONObject jsonObject = (JSONObject) otherUnActiveVote.get(i);
-                    if ("CRC".equals(jsonObject.getString("Type"))) {
-                        hasCRC = true;
-                        break;
-                    }
 
-                }
-                if (!hasCRC) {
-                    otherUnActiveVote.add(depiositUnActiveVote);
-                }
-                Log.i("??", otherUnActiveVote.toString());
-                break;
             case "getDepositVoteList":
                 onGetDepositVoteList((VoteListBean) baseEntity);
                 break;
@@ -381,9 +342,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         onErrorRefreshLayout(srl);
         is = false;
         curentNode = null;
-        otherUnActiveVote.clear();
         new VoteListPresenter().getDepositVoteList("1", "all", this, true);
-        new CRlistPresenter().getCRlist(1, 1000, "all", this, false);
     }
 
 }

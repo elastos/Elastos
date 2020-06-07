@@ -338,8 +338,8 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                 } else if ("NOTIFICATION".equals(searchBean.getStatus())) {
                     //公示期 投票反对
                     proposalPresenter.proposalSearch(-1, -1, "NOTIFICATION", null, this);
-                    new VoteListPresenter().getDepositVoteList("1", "all", this, false);
-                    new CRlistPresenter().getCRlist(-1, -1, "all", this, false);
+                    new VoteListPresenter().getDepositVoteList("1", "active", this, false);
+                    new CRlistPresenter().getCRlist(-1, -1, "active", this, false);
                     new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
                 }
                 break;

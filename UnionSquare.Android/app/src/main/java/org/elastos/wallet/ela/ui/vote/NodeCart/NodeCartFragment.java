@@ -23,12 +23,8 @@
 package org.elastos.wallet.ela.ui.vote.NodeCart;
 
 
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.AppCompatTextView;
 import android.text.TextUtils;
@@ -62,13 +58,15 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalDetailPresenter;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
@@ -87,7 +85,7 @@ import butterknife.OnClick;
 /**
  * 节点购车车
  */
-public class NodeCartFragment extends BaseFragment implements CommonBalanceViewData, NewBaseViewData, AdapterView.OnItemClickListener, DialogInterface.OnCancelListener {
+public class NodeCartFragment extends BaseFragment implements CommonBalanceViewData, NewBaseViewData, AdapterView.OnItemClickListener {
 
 
     @BindView(R.id.iv_title_left)
@@ -145,11 +143,12 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList;
     int curentPage = 0;//0 首页 1已选择 2未选择
     private String maxBalance;
-    private JSONArray otherUnActiveVote;
-    private Dialog dialog;
-    Runnable runable;
-    Handler handler;
+
+    private List<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
+    private List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
     private int transType = 1001;
+    private ProposalDetailPresenter proposalDetailPresenter;
+    private org.json.JSONArray otherUnActiveVote;
 
     @Override
     protected int getLayoutId() {
@@ -168,10 +167,9 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         sb_suger.setProgress((int) (Double.parseDouble(data.getString("zb", "0")) * 100));
         //netList后期还承担未选择list
         netList = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
-        otherUnActiveVote = (JSONArray) data.getSerializable("otherUnActiveVote");
-        if (otherUnActiveVote == null) {
-            otherUnActiveVote = new JSONArray();
-        }
+        new ProposalPresenter().proposalSearch(-1, -1, "NOTIFICATION", null, this);
+        new CRlistPresenter().getCRlist(-1, -1, "active", this, true);
+
     }
 
     @Override
@@ -307,40 +305,11 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 //立即投票 删除 添加
                 switch (curentPage) {
                     case 0:
-                        if (otherUnActiveVote.size() < 1) {//1代表需要几种类型的其他列表 拓展做准备
-                            //有数据没请求到
-                            initProgressDialog(getBaseActivity());
-                            boolean hasCRC = false;
-                            for (int i = 0; i < otherUnActiveVote.size(); i++) {
-                                JSONObject jsonObject = (JSONObject) otherUnActiveVote.get(i);
-                                if ("CRC".equals(jsonObject.getString("Type"))) {
-                                    hasCRC = true;
-                                    break;
-                                }
-
-                            }
-                            if (!hasCRC) {
-                                new CRlistPresenter().getCRlist(1, 1000, "all", this, false);
-                            }
-
-                            if (handler == null) {
-                                handler = new Handler();
-                                runable = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (otherUnActiveVote.size() < 1 && dialog != null && dialog.isShowing()) {
-                                            dialog.dismiss();
-                                            doVote();
-                                        }
-                                    }
-                                };
-                            } else {
-                                handler.removeCallbacks(runable);
-                            }
-                            handler.postDelayed(runable, 30000);
-                            return;
+                        if (proposalDetailPresenter == null) {
+                            proposalDetailPresenter = new ProposalDetailPresenter();
                         }
-                        doVote();
+                        proposalDetailPresenter.getVoteInfo(wallet.getWalletId(), "", this);
+
                         break;
 
                     case 1:
@@ -471,6 +440,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             intent.putExtra("maxBalance", maxBalance);
         }
         intent.putExtra("type", Constant.SUPERNODEVOTE);
+        intent.putExtra("openType", this.getClass().getSimpleName());
         startActivity(intent);
     }
 
@@ -479,7 +449,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
-        if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
+        if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal() && getClass().getSimpleName().equals(result.getName())) {
             num = (String) result.getObj();
             String amount;
             if ("MAX".equals(num)) {
@@ -593,26 +563,25 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
 
     }
 
-    protected void initProgressDialog(Context context) {
-        dialog = new DialogUtil().getHttpDialog(context, "loading...");
-        dialog.setOnCancelListener(this);
-        if (!dialog.isShowing()) {
-            dialog.show();
-        }
-
-    }
-
-    @Override
-    public void onCancel(DialogInterface dialog) {
-        doVote();
-    }
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "proposalSearch":
+                searchBeanList = ((ProposalSearchEntity) baseEntity).getData().getList();
+                break;
+            case "getCRlist":
+                crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+                break;
+            case "getVoteInfo":
+                //剔除非公示期的
+                String voteInfo = ((CommmonStringEntity) baseEntity).getData();
+                otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("Delegate", voteInfo, netList, crList, searchBeanList);
+                doVote();
+                break;
 
-            //创建投票交易
             case "createVoteProducerTransaction":
+                //创建投票交易
                 String attributes = ((CommmonStringEntity) baseEntity).getData();
                 JSONObject attributesJson = JSON.parseObject(attributes);
                 String status = attributesJson.getString("DropVotes");
@@ -624,55 +593,8 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 transType = 1001;
                 goTransferActivity(attributes);
                 break;
-            case "getCRlist":
-                if (handler != null && runable != null) {
-                    handler.removeCallbacks(runable);
-                }
-                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
 
-                JSONObject depiositUnActiveVote = new JSONObject();
-                List<String> didList = new ArrayList<>();
-                if (crList != null && crList.size() > 0) {
-                    for (int i = 0; i < crList.size(); i++) {
-                        CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = crList.get(i);
-                        if (!bean.getState().equals("Active")) {
-                            didList.add(bean.getDid());
-                        }
-                    }
-                }
-                //判断是否包含
-                depiositUnActiveVote.put("Type", "CRC");
-                depiositUnActiveVote.put("Candidates", JSON.toJSON(didList));
-                boolean hasCRC = false;
-                for (int i = 0; i < otherUnActiveVote.size(); i++) {
-                    JSONObject jsonObject = (JSONObject) otherUnActiveVote.get(i);
-                    if ("CRC".equals(jsonObject.getString("Type"))) {
-                        hasCRC = true;
-                        break;
-                    }
-
-                }
-                if (!hasCRC) {
-                    otherUnActiveVote.add(depiositUnActiveVote);
-                }
-                Log.i("??", otherUnActiveVote.toString());
-                if (dialog != null && dialog.isShowing()) {
-                    dialog.dismiss();
-                    doVote();
-                }
-
-                break;
         }
     }
 
-    @Override
-    public void onDestroy() {
-        dialog = null;
-        if (handler != null && runable != null) {
-            handler.removeCallbacks(runable);
-            handler = null;
-            runable = null;
-        }
-        super.onDestroy();
-    }
 }
