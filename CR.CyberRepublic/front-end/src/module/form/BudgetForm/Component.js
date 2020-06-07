@@ -59,7 +59,6 @@ class BudgetForm extends Component {
       if (!err) {
         const { activeKey } = this.state
         const rs = this.checkTypeMilestone(values.type)
-        console.log('rs.....', rs)
         if (rs && rs.error) {
           message.error(rs.error)
           return
