@@ -24,39 +24,47 @@ class LoginWithDid extends Component {
     )
   }
 
-  polling = () => {
+  polling = async () => {
+    if (!this._isMounted) {
+      return
+    }
     const { url } = this.state
-    this.timerDid = setInterval(async () => {
-      const rs = await this.props.checkElaAuth(url)
-      if (rs && rs.success === true) {
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        if (rs.did) {
-          this.props.changeTab('register', rs.did)
-          this.setState({ visible: false })
-        }
-      }
-      if (rs && rs.success === false) {
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        if (rs.message) {
-          message.error(rs.message)
-        } else {
-          message.error('Something went wrong')
-        }
+    const rs = await this.props.checkElaAuth(url)
+    if (rs && rs.success === true) {
+      clearTimeout(this.timerDid)
+      this.timerDid = null
+      if (rs.did) {
+        this.props.changeTab('register', rs.did)
         this.setState({ visible: false })
       }
-    }, 3000)
+      return
+    }
+    if (rs && rs.success === false) {
+      clearTimeout(this.timerDid)
+      this.timerDid = null
+      if (rs.message) {
+        message.error(rs.message)
+      } else {
+        message.error('Something went wrong')
+      }
+      this.setState({ visible: false })
+      return
+    }
+    if (this._isMounted) {
+      clearTimeout(this.timerDid)
+      this.timerDid = setTimeout(this.polling, 3000)
+    }
   }
 
-  handleClick = async () => {
+  handleClick = () => {
     if (this.timerDid) {
       return
     }
-    this.polling()
+    this.timerDid = setTimeout(this.polling, 3000)
   }
 
   componentDidMount = async () => {
+    this._isMounted = true
     const rs = await this.props.loginElaUrl()
     if (rs && rs.success) {
       this.setState({ url: rs.url })
@@ -64,7 +72,9 @@ class LoginWithDid extends Component {
   }
 
   componentWillUnmount() {
-    clearInterval(this.timerDid)
+    this._isMounted = false
+    clearTimeout(this.timerDid)
+    this.timerDid = null
   }
 
   handleVisibleChange = (visible) => {
