@@ -42,5 +42,5 @@ agenda.define('make into proposal', async (job: any) => {
 ;(async function () {
   console.log('------make into proposal cron job starting------')
   await agenda.start()
-  await agenda.every('1 minutes', 'make into proposal')
+  await agenda.every('2 minutes', 'make into proposal')
 })()
