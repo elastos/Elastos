@@ -294,3 +294,26 @@ export const getVoteResultByTxid = async (txid: string) => {
     logger.error(err)
   }
 }
+
+export const getCurrentHeight = async () => {
+  const headers = {
+    'Content-Type': 'application/json'
+  }
+  const data = {
+    jsonrpc: '2.0',
+    method: 'getcurrentheight'
+  }
+  try {
+    const res = await axios.post(process.env.ELA_NODE_URL, data, {
+      headers
+    })
+    if (res) {
+      const height = _.get(res.data, 'result')
+      if (height) {
+        return { success: true, height }
+      }
+    }
+  } catch (err) {
+    logger.error(err)
+  }
+}
