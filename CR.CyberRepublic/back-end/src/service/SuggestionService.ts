@@ -729,6 +729,9 @@ export default class extends Base {
       doc.proposer = cvoteList.createdBy
     }
 
+    // deal with 7e-08
+    doc.budgetAmount = Big(doc.budgetAmount).toFixed() 
+
     if (doc && _.isEmpty(doc.comments)) return doc
 
     if (doc && doc.comments) {
