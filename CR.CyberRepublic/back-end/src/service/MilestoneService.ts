@@ -76,7 +76,6 @@ export default class extends Base {
         { $push: { withdrawalHistory: history } }
       )
 
-      const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
       const trackingStatus = budget.type === 'COMPLETION' ? FINALIZED : PROGRESS
 
       // generate jwt url
@@ -90,7 +89,7 @@ export default class extends Base {
           proposalhash: proposal.proposalHash,
           messagehash: messageHash,
           stage: this.paymentStage(proposal.budget, milestoneKey),
-          ownerpubkey: ownerPublicKey || proposal.ownerPublicKey,
+          ownerpubkey: proposal.ownerPublicKey,
           newownerpubkey: '',
           proposaltrackingtype: trackingStatus
         }
@@ -633,7 +632,6 @@ export default class extends Base {
       } catch (err) {
         return { success: false, message: 'Can not get total payment amount.' }
       }
-      const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
       const rs: any = await getUtxosByAmount(sum)
       if (!rs) {
         return { success: false }
@@ -654,7 +652,7 @@ export default class extends Base {
           proposalhash: proposal.proposalHash,
           amount: Big(`${sum}e+8`).toString(),
           recipient: proposal.elaAddress,
-          ownerpublickey: proposal.ownerPublicKey || ownerPublicKey,
+          ownerpublickey: proposal.ownerPublicKey,
           utxos: rs.utxos
         }
       }
