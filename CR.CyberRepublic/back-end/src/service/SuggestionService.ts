@@ -729,19 +729,6 @@ export default class extends Base {
       doc.proposer = cvoteList.createdBy
     }
 
-    const did = _.get(this.currentUser, 'did.id')
-    if (did) {
-      const proposers = _.get(doc, 'proposers')
-      if (!_.isEmpty(proposers)) {
-        const curProposer = proposers.filter(
-          (item: any) => item.proposalHash && item.did === did
-        )[0]
-        if (curProposer) {
-          doc.curProposer = curProposer
-        }
-      }
-    }
-
     if (doc && _.isEmpty(doc.comments)) return doc
 
     if (doc && doc.comments) {

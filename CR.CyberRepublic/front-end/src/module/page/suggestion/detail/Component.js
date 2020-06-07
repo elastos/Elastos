@@ -657,9 +657,7 @@ export default class extends StandardPage {
             id={detail._id}
             pollProposalState={pollProposalState}
             isProposed={isProposed}
-            curProposer={_.get(detail, 'curProposer')}
             user={this.props.user}
-            history={this.props.history}
           />
         </Col>
       )
