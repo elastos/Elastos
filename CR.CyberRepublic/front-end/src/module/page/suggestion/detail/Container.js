@@ -15,7 +15,7 @@ export default createContainer(
     } else if (/^\/profile/.test(state.router.location.pathname)) {
       page = 'LEADER'
     }
-
+    const detail = _.get(state.suggestion, 'detail')
     return {
       ...state.suggestion,
       page,
@@ -27,7 +27,7 @@ export default createContainer(
         state.suggestion.detail && state.suggestion.detail.reference
       ) || state.suggestion.reference_status,
       proposal: state.suggestion.reference,
-      isProposed: state.suggestion.detail.proposed || state.suggestion.proposed
+      isProposed: detail && detail.proposed || state.suggestion.proposed
     }
   },
   () => {

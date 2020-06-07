@@ -730,7 +730,9 @@ export default class extends Base {
     }
 
     // deal with 7e-08
-    doc.budgetAmount = Big(doc.budgetAmount).toFixed() 
+    if (doc.budgetAmount) {
+      doc.budgetAmount = Big(doc.budgetAmount).toFixed() 
+    }
 
     if (doc && _.isEmpty(doc.comments)) return doc
 

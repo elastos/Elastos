@@ -574,10 +574,13 @@ export default class extends Base {
     if (!rs) {
       return { success: true, empty: true }
     }
-    const doc = JSON.parse(JSON.stringify(rs))
-    // deal with 7e-08
-    doc.budgetAmount = Big(doc.budgetAmount).toFixed()
-    return doc
+    if (rs.budgetAmount) {
+      const doc = JSON.parse(JSON.stringify(rs))
+      // deal with 7e-08
+      doc.budgetAmount = Big(doc.budgetAmount).toFixed()
+      return doc
+    }
+    return rs
   }
 
   public async withdraw(param: any) {
