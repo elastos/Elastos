@@ -152,10 +152,10 @@ const zh = {
   'popup.changes.2018-12-26.5': '更新后的CR网站将于2019年1月15日重新上线，更多信息请参考：',
   'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/zh/2018/12/26/cyber-republic%E7%9A%84%E9%87%8D%E8%A6%81%E5%85%AC%E5%91%8A',
   
-  'popup.suggestion.title': '重要通知',
-  'popup.suggestion.content': '为了配合CRC发布，网站会进入维护状态，直到2020年6月10号，请在10号之后再提交您的建议。',
-  'popup.suggestion.thanks': '谢谢您的配合',
-  'popup.suggestion.team': 'CR团队',
+  'popup.suggestion.title': '关于 CR 网站升级的说明',
+  'popup.suggestion.member': '各 CR 成员：',
+  'popup.suggestion.content': 'CRC 共识将于 2020 年 6 月 10 日 10 时上线，为配合委员会职能，CR 网站近期将进行技术升级。建议提交功能将暂停并于2020年6月10日重启，新建议将交由首届CR委员会负责。',
+  'popup.suggestion.team': 'CR 网站技术团队',
 
   // LoginForm
   'login.label_username': '请输入用户名或邮箱',

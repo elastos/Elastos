@@ -57,13 +57,11 @@ class C extends BaseComponent {
         <Row>
           <Col>
             <div className="right-col">
-              <h1 className="komu-a title">{I18N.get('popup.suggestion.title')}</h1>
-              <p style={{ forntSize: 20 + 'px' }}>{I18N.get('popup.suggestion.content')}</p>
-              <p>
-                {I18N.get('popup.suggestion.thanks')}
-                <br />
-                {I18N.get('popup.suggestion.team')
-                }</p>
+              <h1 className="title">{I18N.get('popup.suggestion.title')}</h1>
+              <p>{I18N.get('popup.suggestion.member')}</p>
+              <p style={{ forntSize: 30 + 'px',textIndent:2+'em'}}>{I18N.get('popup.suggestion.content')}</p>
+              <br/>
+              <p>{I18N.get('popup.suggestion.team')}</p>
             </div>
           </Col>
         </Row>

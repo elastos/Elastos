@@ -948,11 +948,11 @@ export default class extends Base {
 
     public async getNewVid() {
         const db_cvote = this.getDBModel('CVote')
-        const n = await db_cvote.count({})
-        return n + 1
-        // new version, vid string from 1
-        // const n = await db_cvote.count({proposalHash:{$ne:null}})
+        // const n = await db_cvote.count({})
         // return n + 1
+        // new version, vid string from 1
+        const n = await db_cvote.count({old:{$ne:null}})
+        return n + 1
     }
 
     public isExpired(data: any, extraTime = 0): Boolean {

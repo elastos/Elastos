@@ -28,7 +28,7 @@ let tm = undefined
 
 export default class extends Base {
     protected async init() {
-        await this.cronJob()
+        // await this.cronJob()
     }
 
     /**

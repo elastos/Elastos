@@ -63,9 +63,6 @@ export const Suggestion = {
     type: Number,
     default: 0
   },
-  // displayId: {
-  //   type: Number
-  // },
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: 'users',

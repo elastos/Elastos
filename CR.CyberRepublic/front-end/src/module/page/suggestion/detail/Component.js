@@ -151,7 +151,7 @@ export default class extends StandardPage {
 
     return (
       <div>
-        {/*{ popupEndTime < nowDate ? null : <SuggestionPopupNotification/>}*/}
+        { popupEndTime < nowDate ? null : <SuggestionPopupNotification/>}
         <Meta
           desc={detail.shortDesc}
           title={`${detail.title} - Suggestion Detail - Cyber Republic`}
