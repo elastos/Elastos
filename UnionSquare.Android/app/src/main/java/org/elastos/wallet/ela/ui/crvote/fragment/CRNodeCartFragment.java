@@ -154,7 +154,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
         tvAvaliable.setText(getString(R.string.available) + "：" + "0 ELA");
         new ProposalPresenter().proposalSearch(-1, -1, "NOTIFICATION", null, this);
-        new VoteListPresenter().getDepositVoteList("1", "active", this, true);
+        new VoteListPresenter().getDepositVoteList("1", "all", this, true);
     }
 
 

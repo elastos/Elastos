@@ -168,7 +168,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         //netList后期还承担未选择list
         netList = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
         new ProposalPresenter().proposalSearch(-1, -1, "NOTIFICATION", null, this);
-        new CRlistPresenter().getCRlist(-1, -1, "active", this, true);
+        new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
 
     }
 
