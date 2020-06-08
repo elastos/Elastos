@@ -384,11 +384,11 @@ type Params struct {
 	// CRCAddress defines the CRC address which receiving mining rewards.
 	CRCAddress common.Uint168
 
-	// CRAssetsAddress defines the CRC foundation address.
+	// CRAssetsAddress defines the CR assets address address.
 	CRAssetsAddress common.Uint168
 
 	// CRExpensesAddress defines the CR committee address which receiving
-	// appropriation from CRC foundation address.
+	// appropriation from CR assets address.
 	CRExpensesAddress common.Uint168
 
 	// DestroyELAAddress defines address which receiving destroyed ELA.

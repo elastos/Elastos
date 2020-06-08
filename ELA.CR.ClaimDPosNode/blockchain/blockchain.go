@@ -482,7 +482,7 @@ func (b *BlockChain) CreateCRRealWithdrawTransaction(
 		return nil, err
 	}
 
-	payload := &payload.CRCProposalRealWithdraw{
+	wPayload := &payload.CRCProposalRealWithdraw{
 		WithdrawTransactionHashes: withdrawTransactionHashes,
 	}
 
@@ -492,7 +492,7 @@ func (b *BlockChain) CreateCRRealWithdrawTransaction(
 
 	txFee := b.chainParams.RealWithdrawSingleFee * Fixed64(len(withdrawTransactionHashes))
 	var tx *Transaction
-	tx, err = b.createTransaction(payload, CRCProposalRealWithdraw,
+	tx, err = b.createTransaction(wPayload, CRCProposalRealWithdraw,
 		b.chainParams.CRExpensesAddress, txFee, uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err

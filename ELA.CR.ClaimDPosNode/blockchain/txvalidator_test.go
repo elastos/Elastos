@@ -2084,11 +2084,11 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 }
 
 func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
-	// Set CRC foundation and CRC committee address.
+	// Set CR assets address and CRC committee address.
 	s.Chain.chainParams.CRAssetsAddress = *randomUint168()
 	s.Chain.chainParams.CRExpensesAddress = *randomUint168()
 
-	// Set CRC foundation and CRC committee amount.
+	// Set CR assets and CRC committee amount.
 	s.Chain.crCommittee.CRCFoundationBalance = common.Fixed64(900 * 1e8)
 	s.Chain.crCommittee.AppropriationAmount = common.Fixed64(90 * 1e8)
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0 * 1e8)
@@ -2140,12 +2140,12 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	err = s.Chain.checkCRCAppropriationTransaction(txn, reference)
 	s.EqualError(err, "should have no appropriation transaction")
 
-	// Input does not from CRC foundation
+	// Input does not from CRC assets address
 	s.Chain.crCommittee.NeedAppropriation = true
 	reference[input] = refOutputErr
 	txn = s.getCRCAppropriationTx(input, output1, output2)
 	err = s.Chain.checkCRCAppropriationTransaction(txn, reference)
-	s.EqualError(err, "input does not from CRC foundation")
+	s.EqualError(err, "input does not from CR assets address")
 
 	// Inputs total amount does not equal to outputs total amount.
 	reference[input] = refOutput

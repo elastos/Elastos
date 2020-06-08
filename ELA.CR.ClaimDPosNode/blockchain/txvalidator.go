@@ -698,7 +698,7 @@ func (b *BlockChain) checkTransactionOutput(txn *Transaction,
 		}
 		if !txn.Outputs[1].ProgramHash.IsEqual(b.chainParams.CRAssetsAddress) {
 			return errors.New("new CRCAppropriation tx must have the second" +
-				"output to CRC foundation")
+				"output to CR assets address")
 		}
 	}
 
@@ -1948,12 +1948,12 @@ func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
 		return errors.New("should have no appropriation transaction")
 	}
 
-	// Inputs need to only from CRC foundation
+	// Inputs need to only from CR assets address
 	var totalInput common.Fixed64
 	for _, output := range references {
 		totalInput += output.Value
 		if !output.ProgramHash.IsEqual(b.chainParams.CRAssetsAddress) {
-			return errors.New("input does not from CRC foundation")
+			return errors.New("input does not from CR assets address")
 		}
 	}
 
@@ -2045,19 +2045,19 @@ func (b *BlockChain) checkCRCProposalRealWithdrawTransaction(txn *Transaction,
 
 func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 	references map[*Input]Output) error {
-	// Inputs count should be greater than or equal to MaxCRAssetsAddressUTXOCount
+	// Inputs count should be less than or equal to MaxCRAssetsAddressUTXOCount
 	if len(txn.Inputs) > int(b.chainParams.MaxCRAssetsAddressUTXOCount) {
 		return errors.New("inputs count should be less than or " +
 			"equal to MaxCRAssetsAddressUTXOCount")
 	}
 
-	// Inputs count should be less than or equal to MinCRAssetsAddressUTXOCount
+	// Inputs count should be greater than or equal to MinCRAssetsAddressUTXOCount
 	if len(txn.Inputs) < int(b.chainParams.MinCRAssetsAddressUTXOCount) {
 		return errors.New("inputs count should be greater than or " +
 			"equal to MinCRAssetsAddressUTXOCount")
 	}
 
-	// Inputs need to only from CRC foundation
+	// Inputs need to only from CRC Assets address
 	var totalInput common.Fixed64
 	for _, output := range references {
 		totalInput += output.Value
