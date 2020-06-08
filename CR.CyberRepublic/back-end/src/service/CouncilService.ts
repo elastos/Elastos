@@ -251,7 +251,9 @@ export default class extends Base {
     }
 
     public async eachSecretariatJob() {
-        const secretariatPublicKey = '0349cb77a69aa35be0bcb044ffd41a616b8367136d3b339d515b1023cc0f302f87'
+        // const secretariatPublicKey = '0349cb77a69aa35be0bcb044ffd41a616b8367136d3b339d515b1023cc0f302f87'
+        const secretaryGeneral = await ela.getSecretaryGeneral()
+        const secretariatPublicKey = secretaryGeneral.secretarygeneral
         const secretariatDID = 'igCSy8ht7yDwV5qqcRzf5SGioMX8H9RXcj'
 
         const currentSecretariat = await this.secretariatModel.getDBInstance().findOne({status: constant.SECRETARIAT_STATUS.CURRENT})
