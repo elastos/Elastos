@@ -2481,8 +2481,11 @@ func (b *BlockChain) checkCloseProposal(proposal *payload.CRCProposal) error {
 	if proposal.Recipient != emptyUint168 {
 		return errors.New("CloseProposal recipient must be empty")
 	}
-	CRCouncilMember := b.crCommittee.GetMember(proposal.CRCouncilMemberDID)
-	return b.checkOwnerAndCRCouncilMemberSign(proposal, CRCouncilMember.Info.Code)
+	crMember := b.crCommittee.GetMember(proposal.CRCouncilMemberDID)
+	if crMember == nil {
+		return errors.New("CR Council Member should be one of the CR members")
+	}
+	return b.checkOwnerAndCRCouncilMemberSign(proposal, crMember.Info.Code)
 }
 
 func (b *BlockChain) checkChangeProposalOwner(proposal *payload.CRCProposal) error {
@@ -2525,6 +2528,9 @@ func (b *BlockChain) checkChangeProposalOwner(proposal *payload.CRCProposal) err
 		return errors.New("cr members should be elected")
 	}
 	crCouncilMember := b.crCommittee.GetMember(proposal.CRCouncilMemberDID)
+	if crCouncilMember == nil {
+		return errors.New("CR Council Member should be one of the CR members")
+	}
 	return b.checkOwnerAndCRCouncilMemberSign(proposal, crCouncilMember.Info.Code)
 }
 
