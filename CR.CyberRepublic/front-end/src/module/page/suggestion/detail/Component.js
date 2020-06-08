@@ -46,7 +46,6 @@ import Milestones from '@/module/form/SuggestionForm/Milestones'
 import MilestonesReadonly from '@/module/form/SuggestionForm/MilestonesReadonly'
 import SignSuggestionButton from './SignSuggetionButton'
 import CMSignSuggestionButton from './CMSignSuggestionButton'
-import SuggestionPopupNotification from '@/module/common/SuggestionPopupNotification/Container'
 import {
   Container,
   Title,
