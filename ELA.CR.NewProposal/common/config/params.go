@@ -105,9 +105,9 @@ var (
 	// ELAPrecision represents the precision of ELA coin.
 	ELAPrecision = byte(0x08)
 
-	// CRCAssetsAddress indicates the "CRASSETSXXXXXXXXXXXXXXXXXXXX2qDX5J"
-	// CRC assets address.
-	CRCAssetsAddress = common.Uint168{
+	// CRAssetsAddress indicates the "CRASSETSXXXXXXXXXXXXXXXXXXXX2qDX5J"
+	// CR assets address.
+	CRAssetsAddress = common.Uint168{
 		0x1c, 0x5f, 0x6c, 0x3e, 0x9f, 0x0c, 0x9a,
 		0x71, 0x10, 0xb8, 0xeb, 0x6e, 0x37, 0x02,
 		0x63, 0x0f, 0x71, 0x27, 0x4d, 0xf1, 0xc0,
@@ -137,7 +137,7 @@ var DefaultParams = Params{
 
 	Foundation:        mainNetFoundation,
 	CRCAddress:        mainNetCRCAddress,
-	CRAssetsAddress:   CRCAssetsAddress,
+	CRAssetsAddress:   CRAssetsAddress,
 	CRExpensesAddress: CRCExpensesAddress,
 	DestroyELAAddress: DestroyELAAddress,
 	GenesisBlock:      GenesisBlock(&mainNetFoundation),
@@ -237,7 +237,7 @@ func (p *Params) TestNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
-	copy.CRAssetsAddress = CRCAssetsAddress
+	copy.CRAssetsAddress = CRAssetsAddress
 	copy.CRExpensesAddress = CRCExpensesAddress
 	copy.DestroyELAAddress = DestroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
@@ -300,7 +300,7 @@ func (p *Params) RegNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
-	copy.CRAssetsAddress = CRCAssetsAddress
+	copy.CRAssetsAddress = CRAssetsAddress
 	copy.CRExpensesAddress = CRCExpensesAddress
 	copy.DestroyELAAddress = DestroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
