@@ -254,9 +254,9 @@ export default class extends Base {
         // const secretariatPublicKey = '0349cb77a69aa35be0bcb044ffd41a616b8367136d3b339d515b1023cc0f302f87'
         const secretaryGeneral = await ela.getSecretaryGeneral()
         const secretariatPublicKey = secretaryGeneral.secretarygeneral
-        const secretariatDID = 'igCSy8ht7yDwV5qqcRzf5SGioMX8H9RXcj'
 
         const currentSecretariat = await this.secretariatModel.getDBInstance().findOne({status: constant.SECRETARIAT_STATUS.CURRENT})
+        const secretariatDID = currentSecretariat.did
         const information: any = await getInformationByDid(DID_PREFIX + secretariatDID)
         const didName = await getDidName(DID_PREFIX + secretariatDID)
         const user = await this.userMode.getDBInstance().findOne({'did.id': DID_PREFIX + secretariatDID}, ['_id', 'did'])
