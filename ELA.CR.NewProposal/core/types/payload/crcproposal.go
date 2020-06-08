@@ -129,6 +129,9 @@ type CRCProposal struct {
 	// New public key of proposal owner.
 	NewOwnerPublicKey []byte
 
+	// The specified ELA address where the funds are to be sent.
+	NewRecipient common.Uint168
+
 	// Public key of SecretaryGeneral.
 	SecretaryGeneralPublicKey []byte
 
@@ -221,14 +224,14 @@ func (p *CRCProposal) SerializeUnsignedChangeProposalOwner(w io.Writer, version 
 	if err := p.DraftHash.Serialize(w); err != nil {
 		return errors.New("failed to serialize DraftHash")
 	}
-	if err := p.Recipient.Serialize(w); err != nil {
-		return errors.New("failed to serialize Recipient")
-	}
 	if err := p.TargetProposalHash.Serialize(w); err != nil {
 		return errors.New("failed to serialize TargetProposalHash")
 	}
 	if err := common.WriteVarBytes(w, p.NewOwnerPublicKey); err != nil {
 		return errors.New("failed to serialize NewOwnerPublicKey")
+	}
+	if err := p.NewRecipient.Serialize(w); err != nil {
+		return errors.New("failed to serialize Recipient")
 	}
 	return nil
 }
@@ -442,17 +445,18 @@ func (p *CRCProposal) DeserializeUnSignedChangeProposalOwner(r io.Reader, versio
 	if err = p.DraftHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize DraftHash")
 	}
-	if err = p.Recipient.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize Recipient")
-	}
 	if err = p.TargetProposalHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize TargetProposalHash")
 	}
 	if p.NewOwnerPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "owner"); err != nil {
 		return errors.New("failed to deserialize NewOwnerPublicKey")
 	}
+	if err = p.NewRecipient.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize Recipient")
+	}
 	return nil
 }
+
 func (p *CRCProposal) DeserializeUnSignedCloseProposal(r io.Reader, version byte) error {
 	var err error
 
@@ -476,6 +480,7 @@ func (p *CRCProposal) DeserializeUnSignedCloseProposal(r io.Reader, version byte
 
 	return nil
 }
+
 func (p *CRCProposal) DeserializeUnSignedChangeSecretaryGeneral(r io.Reader, version byte) error {
 	var err error
 	p.CategoryData, err = common.ReadVarString(r)
@@ -566,6 +571,7 @@ func (p *CRCProposal) DeserializeChangeProposalOwner(r io.Reader, version byte) 
 	p.CRCouncilMemberSignature = CRCouncilMemberSignature
 	return nil
 }
+
 func (p *CRCProposal) DeserializeCloseProposal(r io.Reader, version byte) error {
 
 	if err := p.DeserializeUnSigned(r, version); err != nil {
@@ -590,6 +596,7 @@ func (p *CRCProposal) DeserializeCloseProposal(r io.Reader, version byte) error 
 
 	return nil
 }
+
 func (p *CRCProposal) DeserializeChangeSecretaryGeneral(r io.Reader, version byte) error {
 
 	if err := p.DeserializeUnSignedChangeSecretaryGeneral(r, version); err != nil {

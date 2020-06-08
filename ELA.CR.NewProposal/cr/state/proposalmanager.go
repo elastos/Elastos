@@ -291,14 +291,15 @@ func (p *ProposalManager) dealProposal(proposalState *ProposalState, unusedAmoun
 	case payload.ChangeProposalOwner:
 		proposal := p.getProposal(proposalState.Proposal.TargetProposalHash)
 		originRecipient := proposal.Recipient
+		oriProposalOwner := proposalState.ProposalOwner
 		emptyUint168 := common.Uint168{}
 		p.history.Append(height, func() {
 			proposal.ProposalOwner = proposalState.Proposal.NewOwnerPublicKey
-			if proposalState.Proposal.Recipient != emptyUint168 {
-				proposal.Recipient = proposalState.Proposal.Recipient
+			if proposalState.Proposal.NewRecipient != emptyUint168 {
+				proposal.Recipient = proposalState.Proposal.NewRecipient
 			}
 		}, func() {
-			proposal.ProposalOwner = proposalState.Proposal.OwnerPublicKey
+			proposal.ProposalOwner = oriProposalOwner
 			proposal.Recipient = originRecipient
 		})
 	case payload.CloseProposal:

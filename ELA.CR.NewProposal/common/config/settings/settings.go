@@ -401,15 +401,15 @@ func NewSettings() *Settings {
 		ParamName:  "CRCAddress"})
 
 	result.Add(&settingItem{
-		Flag:         cmdcom.CRCFoundationFlag,
+		Flag:         cmdcom.CRAssetsAddressFlag,
 		DefaultValue: "",
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
-			crcFoundation, err := common.Uint168FromAddress(conf.CRConfiguration.CRAssetsAddress)
+			crAssetsAddress, err := common.Uint168FromAddress(conf.CRConfiguration.CRAssetsAddress)
 			if err != nil {
-				return errors.New("invalid CRC foundation")
+				return errors.New("invalid CR Assets Address")
 			}
-			params.CRAssetsAddress = *crcFoundation
+			params.CRAssetsAddress = *crAssetsAddress
 			return nil
 		},
 		CliSetter: func(i interface{}, params *config.Params,
@@ -418,11 +418,11 @@ func NewSettings() *Settings {
 			if !ok {
 				return errors.New("unknown foundation address type")
 			}
-			crcFoundation, err := common.Uint168FromAddress(value)
+			crAssetsAddress, err := common.Uint168FromAddress(value)
 			if err != nil {
-				return errors.New("invalid CRC foundation")
+				return errors.New("invalid CR assets address")
 			}
-			params.CRAssetsAddress = *crcFoundation
+			params.CRAssetsAddress = *crAssetsAddress
 			return nil
 		},
 		ConfigPath: "CRConfiguration.CRAssetsAddress",
