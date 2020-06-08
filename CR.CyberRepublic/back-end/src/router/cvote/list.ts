@@ -16,7 +16,7 @@ export default class extends Base {
     const param = this.getParam()
     const service = this.buildService(CVoteService)
 
-    service.cronjob()
+    // service.cronJob()
 
     if (param.search) {
       param.$or = [

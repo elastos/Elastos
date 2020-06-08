@@ -31,7 +31,7 @@ export const Item = styled.div`
   height: 10px;
   box-sizing: border-box;
   margin-right: 2px;
-  margin-left: ${props => (props.status === CVOTE_RESULT.SUPPORT ? 0 : '10px')}
+  margin-left: ${props => (props.status === CVOTE_RESULT.SUPPORT ? 0 : '10px')};
   background-color: ${props => CVOTE_RESULT_COLOR[props.status]};
 `
 
@@ -134,4 +134,22 @@ export const FilterItemLabel = styled.div`
 
 export const CheckboxText = styled.span`
   margin-left: 10px;
+`
+
+export const SplitLabel = styled.span`
+  padding: 0 16px;
+  margin-bottom: 16px;
+  color: rgba(3, 30, 40, 0.3);
+  :after {
+    content: '|';
+  }
+`
+
+export const ViewOldDataBtn = styled.div`
+  margin-bottom: 16px;
+  color: #43af92;
+  &:hover {
+    cursor: pointer;
+    color: #388582;
+  }
 `

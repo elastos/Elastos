@@ -42,7 +42,9 @@ export default {
     summary: {
       reject: '驳回 & 评论',
       approve: '批准 & 发布'
-    }
+    },
+    viewOldData: '查看老数据',
+    viewNewData: '查看新数据'
   },
   text: {
     tracking: {

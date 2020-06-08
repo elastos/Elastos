@@ -21,6 +21,8 @@ import Elip_Review from './Elip_Review'
 import Suggestion_Edit_History from './Suggestion_Edit_History'
 import Vid from './Vid'
 import Did from './Did'
+import Council from './Council'
+import Secretariat from './Secretariat'
 
 import Log from './Log'
 
@@ -117,6 +119,8 @@ export default class {
     this.db.Suggestion_Edit_History = new Suggestion_Edit_History(db)
     this.db.Vid = new Vid(db)
     this.db.Did = new Did(db)
+    this.db.Council = new Council(db)
+    this.db.Secretariat = new Secretariat(db)
   }
 
   public getModel(name: string) {

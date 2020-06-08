@@ -16,7 +16,7 @@ const store = createStore(
   compose(
     applyMiddleware(thunk.withExtraArgument({})),
     applyMiddleware(middleware),
-    window.devToolsExtension ? window.devToolsExtension() : f => f
+    // window.devToolsExtension ? window.devToolsExtension() : f => f
   )
 )
 store.history = history

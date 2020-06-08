@@ -2,7 +2,7 @@ import * as _ from 'lodash'
 
 const create = (constant_list: string[]): any => {
   const map = {}
-  _.each(constant_list, key => {
+  _.each(constant_list, (key) => {
     map[key] = key
   })
 
@@ -150,15 +150,28 @@ export const TASK_CANDIDATE_CATEGORY = {
   RSVP: 'RSVP'
 }
 
+export const TERM_COUNCIL_STATUS = create(['HISTORY', 'CURRENT', 'VOTING'])
+
+export const COUNCIL_STATUS = {
+  ELECTED: 'Elected',
+  IMPEACHED: 'Impeached',
+  RETURNED: 'Returned',
+  TERMINATED: 'Terminated'
+}
+
+export const SECRETARIAT_STATUS = create(['CURRENT', 'NON_CURRENT'])
+
 // ACTIVE === PASSED, currently 'published' flag is used for 'DRAFT'
 export const CVOTE_STATUS = create([
   'DRAFT',
   'PROPOSED',
+  'NOTIFICATION',
   'ACTIVE',
   'REJECT',
   'FINAL',
   'DEFERRED',
-  'INCOMPLETED'
+  'INCOMPLETED',
+  'VETOED'
 ])
 export const CVOTE_TRACKING_STATUS = create([
   'DRAFT',
@@ -184,8 +197,15 @@ export const ELIP_VOTE_RESULT = {
   ABSTENTION: 'abstention',
   UNDECIDED: 'undecided'
 }
+export const CVOTE_CHAIN_STATUS = {
+  CHAINED: 'chained',
+  UNCHAIN: 'unchain',
+  CHAINING: 'chaining',
+  FAILED: 'failed'
+}
 // expiration period: 7 days
-export const CVOTE_EXPIRATION = 1000 * 60 * 60 * 24 * 7
+export const CVOTE_EXPIRATION = 1000 * 60 * 60 * 24 * 14
+export const CVOTE_COUNCIL_EXPIRATION = 1000 * 60 * 60 * 24 * 7
 export const ELIP_EXPIRATION = 1000 * 60 * 60 * 24 * 7
 
 export const CONTENT_TYPE = create(['MARKDOWN', 'HTML'])
@@ -275,7 +295,7 @@ export const USER_PROFESSION = create([
   'MANAGEMENT'
 ])
 
-export const SUGGESTION_STATUS = create(['ACTIVE', 'ABUSED', 'ARCHIVED'])
+export const SUGGESTION_STATUS = create(['ACTIVE', 'ABUSED', 'ARCHIVED', 'PROPOSED'])
 
 export const SUGGESTION_ABUSED_STATUS = create(['REPORTED', 'HANDLED'])
 
@@ -296,8 +316,8 @@ export const DB_SELECTED_FIELDS = {
   USER: {
     NAME: 'profile.firstName profile.lastName username',
     NAME_EMAIL: 'profile.firstName profile.lastName username email',
-    NAME_AVATAR: 'profile.avatar profile.firstName profile.lastName username',
-    NAME_EMAIL_DID: 'profile.firstName profile.lastName username email dids',
+    NAME_AVATAR: 'profile.avatar profile.firstName profile.lastName username did.didName',
+    NAME_EMAIL_DID: 'profile.avatar profile.firstName profile.lastName username email did'
   },
   SUGGESTION: {
     ID: 'displayId'
@@ -319,13 +339,29 @@ export const ELIP_STATUS = create([
   'SUBMITTED_AS_PROPOSAL'
 ])
 
-export const ELIP_REVIEW_STATUS = create([
-  'APPROVED',
-  'REJECTED'
-])
+export const ELIP_REVIEW_STATUS = create(['APPROVED', 'REJECTED'])
 
-export const ELIP_TYPE = create([
-  'STANDARD_TRACK',
-  'PROCESS',
-  'INFORMATIONAL'
+export const ELIP_TYPE = create(['STANDARD_TRACK', 'PROCESS', 'INFORMATIONAL'])
+
+export const MILESTONE_STATUS = create([
+  'WAITING_FOR_REQUEST',
+  'REJECTED',
+  'WAITING_FOR_APPROVAL',
+  'WAITING_FOR_WITHDRAWAL',
+  'WITHDRAWN'
+])
+export const REVIEW_OPINION = create(['REJECTED', 'APPROVED'])
+
+export const PROPOSAL_TRACKING_TYPE = {
+  PROGRESS: 'progress',
+  REJECTED: 'rejected',
+  TERMINATED: 'terminated',
+  CHANGEOWNER: 'changeowner',
+  FINALIZED: 'finalized'
+}
+
+export const SUGGESTION_BUDGET_TYPE = create([
+  'ADVANCE',
+  'COMPLETION',
+  'CONDITIONED'
 ])

@@ -7,7 +7,7 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/base16-light.css'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import styled from 'styled-components'
-import UploadBase64Image from '@/module/common/UploadBase64Image'
+// import UploadBase64Image from '@/module/common/UploadBase64Image'
 import ToggleMarkdownPreview from '@/module/common/ToggleMarkdownPreview'
 
 class Component extends BaseComponent {
@@ -47,7 +47,7 @@ class Component extends BaseComponent {
     return (
       <Wrapper>
         <Toolbar>
-          <UploadBase64Image insertImage={this.insertImage} name={name} />
+          {/* <UploadBase64Image insertImage={this.insertImage} name={name} /> */}
           <ToggleMarkdownPreview togglePreview={this.togglePreview} />
         </Toolbar>
         {show === false ? (

@@ -4,6 +4,7 @@ import { api_request } from '@/util'
 export default class extends BaseService {
   constructor() {
     super()
+    this.suggRedux = this.store.getRedux('suggestion')
     this.selfRedux = this.store.getRedux('cvote')
     this.prefixPath = '/api/cvote'
   }
@@ -29,17 +30,6 @@ export default class extends BaseService {
 
   async createDraft(param) {
     const path = `${this.prefixPath}/create_draft`
-
-    const rs = await api_request({
-      path,
-      method: 'post',
-      data: param
-    })
-    return rs
-  }
-
-  async proposeSuggestion(param) {
-    const path = `${this.prefixPath}/propose_suggestion`
 
     const rs = await api_request({
       path,
@@ -158,5 +148,93 @@ export default class extends BaseService {
 
   async updateFilters(filters) {
     this.dispatch(this.selfRedux.actions.filters_update(filters))
+  }
+
+  async getReviewProposalUrl(id) {
+    const res = await api_request({
+      path: `${this.prefixPath}/reviewproposal-url`,
+      method: 'post',
+      data: { id }
+    })
+    return res
+  }
+
+  // signature
+  async getReviewProposal(id) {
+    const rs = await api_request({
+      path: `${this.prefixPath}/signature`,
+      method: 'post',
+      data: { id }
+    })
+    return rs
+  }
+
+  async updateProposal(data) {
+    this.dispatch(this.selfRedux.actions.data_update(data))
+  }
+
+  async getMemberVote(id) {
+    const rs = await api_request({
+      path: `${this.prefixPath}/member_vote`,
+      method: 'post',
+      data: { id }
+    })
+    return rs
+  }
+
+  async applyPayment(proposalId, stage, data) {
+    const rs = await api_request({
+      path: `/api/proposals/${proposalId}/milestones/${stage}`,
+      method: 'post',
+      data
+    })
+    return rs
+  }
+
+  async getPaymentSignature(data) {
+    const rs = await api_request({
+      path: `/api/proposals/milestones/signature`,
+      method: 'post',
+      data: {
+        id: data.proposalId,
+        messageHash: data.messageHash
+      }
+    })
+    if (rs && rs.success && rs.detail) {
+      this.dispatch(this.selfRedux.actions.data_update(rs.detail))
+    }
+    return rs
+  }
+
+  async reviewApplication(proposalId, stage, data) {
+    const rs = await api_request({
+      path: `/api/proposals/${proposalId}/milestones/${stage}/review`,
+      method: 'post',
+      data
+    })
+    return rs
+  }
+
+  async getReviewTxid(data) {
+    const rs = await api_request({
+      path: `/api/proposals/milestones/review/txid`,
+      method: 'post',
+      data: {
+        id: data.proposalId,
+        messageHash: data.messageHash
+      }
+    })
+    if (rs && rs.success && rs.detail) {
+      this.dispatch(this.selfRedux.actions.data_update(rs.detail))
+    }
+    return rs
+  }
+
+  async withdraw(proposalId, stage) {
+    const rs = await api_request({
+      path: `/api/proposals/${proposalId}/milestones/${stage}/withdraw`,
+      method: 'get'
+    })
+    return rs
   }
 }

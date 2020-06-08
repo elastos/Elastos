@@ -175,9 +175,9 @@ export default class extends BaseComponent {
         <CommentCol span={21} status={item.status}>
           <CommentContent>
             <div>
-              {item.comment.content.split('\n').map((item) => {
+              {item.comment.content.split('\n').map((item, key) => {
                 return (
-                  <span>
+                  <span key={key}>
                     {item}
                     <br/>
                   </span>

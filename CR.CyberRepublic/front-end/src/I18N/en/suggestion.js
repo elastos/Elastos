@@ -18,7 +18,8 @@ export default {
       creator: 'Creator',
       status: 'Status',
       created: 'Created',
-      updated: 'Updated'
+      updated: 'Updated',
+      signature: 'Signature'
     },
     abstract: 'Abstract',
     goal: 'Goal',
@@ -38,7 +39,11 @@ export default {
   btn: {
     makeIntoProposal: 'Make Into Proposal',
     needDueDiligence: 'Need Due Diligence',
-    needAdvisory: 'Need Advisory'
+    needAdvisory: 'Need Advisory',
+    signSuggetion: 'Sign Suggestion',
+    associateDid: 'Associate DID',
+    viewOldData: 'View old data',
+    viewNewData: 'View new data'
   },
   status: {
     posted: 'Posted',
@@ -92,7 +97,16 @@ export default {
       team: 'Implementation team is empty',
       amount: 'The amount is more than 30% of the total budget',
       previousMilestoneDate: 'The date must be later than the previous milestone.',
-      requirePayment: 'Project Completion Payment is required before completing a proposal.'
+      requirePayment: 'Project Completion Payment is required before completing a proposal.',
+      elaAddress: 'invalid address, please check your address',
+      amount: 'Total budget is empty.',
+      address: 'ELA receive address is emtpy.',
+      payment: ' Project Completion Payment is required, at most one Project Initiation Payment, and each payment must match one milestone.',
+      advance: 'Project initiation payment only apply to the first milestone.',
+      completion: 'Project completion payment only apply to the last milestone.',
+      conditioned: 'Project milestone payment can not apply to this milestone.',
+      isUsed: 'This milestone has been used.',
+      exception: 'Something went wrong'
     }
   },
   modal: {
@@ -101,7 +115,10 @@ export default {
     cancel: 'Cancel',
     pleaseUpdate: 'Please update the Suggestion with the requested info and notify the council/community through a comment.',
     commentsFromCouncil: 'Comments from Council/Admin:',
-    consideration: 'Are you sure to mark this suggestion as under council consideration?'
+    consideration: 'Are you sure to mark this suggestion as under council consideration?',
+    signNotice: 'Ready for council members to review? Please sign the suggestion now. A suggestion can not be edited if it was signed.',
+    signNow: 'Sign Now',
+    signLater: 'Later'
   },
   tag: {
     show: 'Show',
@@ -116,7 +133,12 @@ export default {
     notify: 'Email was sent to secretary.',
     archived: 'Suggestion archived successfully.',
     unarchived: 'Suggestion unarchived successfully.',
-    revertVersion: 'Suggestion reverted successfully.'
+    revertVersion: 'Suggestion reverted successfully.',
+    madeByOtherCM: 'This suggestion had been made into proposal by other council member.',
+    councilQRCode: 'Scan the QR code above to make this suggestion into proposal.',
+    toChain: 'Saving onto blockchain',
+    signQRCode: 'Scan the QR code above to sign your suggestion.',
+    associateDidFirst: 'Please associate your DID first.'
   },
   header: {
     suggestion: 'suggestion',

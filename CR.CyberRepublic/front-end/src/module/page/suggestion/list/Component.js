@@ -31,9 +31,9 @@ import { breakPoint } from '@/constants/breakPoint'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import { ReactComponent as UpIcon } from '@/assets/images/icon-up.svg'
 import { ReactComponent as DownIcon } from '@/assets/images/icon-down.svg'
+import SuggestionPopupNotification from '@/module/common/SuggestionPopupNotification/Container'
 import PageHeader from './PageHeader'
 import SearchBox from './SearchBox'
-import SuggestionPopupNotification from '@/module/common/SuggestionPopupNotification/Container'
 
 import './style.scss'
 
@@ -80,7 +80,8 @@ export default class extends StandardPage {
     this.state = {
       showForm: uri.hasQuery('create'),
       showArchived: false,
-
+      showDidModal: uri.hasQuery('create'),
+      showOldData: false,
       // named status since we eventually want to use a struct of statuses to filter on
       referenceStatus,
       infoNeeded,
@@ -96,7 +97,7 @@ export default class extends StandardPage {
       creationDate,
       author,
       type,
-      isVisitableFilter,
+      isVisitableFilter
     }
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
@@ -115,43 +116,43 @@ export default class extends StandardPage {
     this.setState({ isVisitableFilter: !isVisitableFilter })
   }
 
-  handleFilterChange = filter => {
+  handleFilterChange = (filter) => {
     this.setState({ filter })
   }
 
-  handleSearchChange = e => {
+  handleSearchChange = (e) => {
     this.setState({ search: e.target.value })
   }
 
-  handleStatusChange = status => {
+  handleStatusChange = (status) => {
     this.setState({ status })
   }
 
-  handleBudgetRequestedChange = budgetRequested => {
+  handleBudgetRequestedChange = (budgetRequested) => {
     this.setState({ budgetRequested })
   }
 
-  handleUnderConsiderationChange = e => {
+  handleUnderConsiderationChange = (e) => {
     this.setState({ underConsideration: e.target.checked })
   }
 
-  handleInfoNeededChange = e => {
+  handleInfoNeededChange = (e) => {
     this.setState({ infoNeeded: e.target.checked })
   }
 
-  handleReferenceStatusChange = e => {
+  handleReferenceStatusChange = (e) => {
     this.setState({ referenceStatus: e.target.checked })
   }
 
-  handleCreationDateChange = creationDate => {
+  handleCreationDateChange = (creationDate) => {
     this.setState({ creationDate })
   }
 
-  handleAuthorChange = e => {
+  handleAuthorChange = (e) => {
     this.setState({ author: e.target.value })
   }
 
-  handleTypeChange = type => {
+  handleTypeChange = (type) => {
     this.setState({ type })
   }
 
@@ -192,7 +193,7 @@ export default class extends StandardPage {
   handleExportAsCSV = () => {
     const { exportAsCSV } = this.props
     const query = this.getQuery()
-    exportAsCSV(query).then(response => {
+    exportAsCSV(query).then((response) => {
       window.location.href = URL.createObjectURL(response)
     })
   }
@@ -206,6 +207,8 @@ export default class extends StandardPage {
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
     const sortActionsNode = this.renderSortActions()
+    const didModal = this.renderDidModal()
+    const uri = URI(this.props.location.search || '')
     const popupEndTime = new Date().setTime(1591718400000)
     const nowDate = new Date().getTime()
 
@@ -247,12 +250,12 @@ export default class extends StandardPage {
             align="middle"
             style={{ borderBottom: '1px solid #E5E5E5' }}
           >
-            <Col md={24} xl={18} style={{ paddingBottom: 24 }}>
+            <Col md={24} xl={12} style={{ paddingBottom: 24 }}>
               {sortActionsNode}
             </Col>
             <Col
               md={24}
-              xl={6}
+              xl={12}
               style={{ paddingBottom: 24, textAlign: 'right' }}
             >
               <Button
@@ -274,11 +277,22 @@ export default class extends StandardPage {
                   {I18N.get('elip.button.exportAsCSV')}
                 </Button>
               )}
+              <SplitLabel />
+              <Button
+                type="link"
+                className="btn-link"
+                onClick={this.viewOldData}
+              >
+                {this.state.showOldData === false
+                  ? I18N.get('suggestion.btn.viewOldData')
+                  : I18N.get('suggestion.btn.viewNewData')}
+              </Button>
             </Col>
           </Row>
           <Row gutter={24} style={{ marginTop: 32 }}>
             <Col span={24}>{listNode}</Col>
           </Row>
+          {!uri.hasQuery('create') && didModal}
           {createForm}
         </SuggestionContainer>
         <Footer />
@@ -291,11 +305,13 @@ export default class extends StandardPage {
     this.setState({ search, filter }, this.debouncedRefetch)
   }
 
-  onFormSubmit = async param => {
+  onFormSubmit = async (param) => {
     try {
-      await this.props.create(param)
+      const rs = await this.props.create(param)
       this.setState({ showForm: false })
-      this.refetch()
+      if (rs && rs._id) {
+        this.props.history.push(`/suggestion/${rs._id}?new=true`)
+      }
     } catch (error) {
       logger.error(error)
     }
@@ -306,7 +322,10 @@ export default class extends StandardPage {
       onCancel: this.hideCreateForm,
       onSubmit: this.onFormSubmit
     }
-
+    const { isLogin, user } = this.props
+    if (isLogin && !_.get(user, 'did.id')) {
+      return this.renderDidModal()
+    }
     return (
       <Modal
         className="project-detail-nobar"
@@ -321,12 +340,48 @@ export default class extends StandardPage {
     )
   }
 
+  renderDidModal = () => {
+    const { history } = this.props
+    return (
+      <Modal
+        className="project-detail-nobar"
+        maskClosable={false}
+        visible={this.state.showDidModal}
+        onCancel={this.hideDidModal}
+        footer={null}
+        width={500}
+      >
+        <div style={{ textAlign: 'center', padding: 16 }}>
+          <div style={{ marginBottom: 24, fontSize: 16, color: '#000' }}>
+            {I18N.get('suggestion.msg.associateDidFirst')}
+          </div>
+          <Button
+            className="cr-btn cr-btn-primary"
+            onClick={() => {
+              history.push('/profile/info')
+            }}
+          >
+            {I18N.get('suggestion.btn.associateDid')}
+          </Button>
+        </div>
+      </Modal>
+    )
+  }
+
+  hideDidModal = () => {
+    this.setState({ showDidModal: false })
+  }
+
   showCreateForm = () => {
-    const { isLogin, history } = this.props
+    const { isLogin, history, user } = this.props
     if (!isLogin) {
       const query = { create: true }
       loginRedirectWithQuery({ query })
       history.push('/login')
+      return
+    }
+    if (isLogin && !_.get(user, 'did.id')) {
+      this.setState({ showDidModal: true })
       return
     }
     this.props.history.push('/suggestion/create')
@@ -337,9 +392,21 @@ export default class extends StandardPage {
   }
 
   toggleArchivedList = async () => {
-    await this.setState(prevState => ({
+    await this.setState((prevState) => ({
       showArchived: !prevState.showArchived,
 
+      // go back to page 1 on toggle
+      page: 1,
+      results: 10,
+      total: 0
+    }))
+
+    this.refetch()
+  }
+
+  viewOldData = async () => {
+    await this.setState((state) => ({
+      showOldData: !state.showOldData,
       // go back to page 1 on toggle
       page: 1,
       results: 10,
@@ -400,16 +467,14 @@ export default class extends StandardPage {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     return (
       <div>
-        {I18N.get('suggestion.sort')}
-:
-        {' '}
+        {I18N.get('suggestion.sort')}:{' '}
         <Select
           name="type"
           style={{ width: 200, marginLeft: 16 }}
           onChange={this.onSortByChanged}
           value={sortBy}
         >
-          {_.map(SORT_BY, value => (
+          {_.map(SORT_BY, (value) => (
             <Select.Option key={value} value={value}>
               {SORT_BY_TEXT[value]}
             </Select.Option>
@@ -472,7 +537,7 @@ export default class extends StandardPage {
                   value={status}
                   onChange={this.handleStatusChange}
                 >
-                  {_.map(SUGGESTION_STATUS, value => (
+                  {_.map(SUGGESTION_STATUS, (value) => (
                     <Select.Option key={value} value={value}>
                       {I18N.get(`suggestion.status.${value}`)}
                     </Select.Option>
@@ -587,7 +652,7 @@ export default class extends StandardPage {
     )
   }
 
-  onInfoNeededChange = async e => {
+  onInfoNeededChange = async (e) => {
     const { onTagsIncludedChanged, tagsIncluded, changePage } = this.props
     tagsIncluded.infoNeeded = e.target.checked
 
@@ -596,7 +661,7 @@ export default class extends StandardPage {
     await this.refetch()
   }
 
-  onUnderConsiderationChange = async e => {
+  onUnderConsiderationChange = async (e) => {
     const { onTagsIncludedChanged, tagsIncluded, changePage } = this.props
     tagsIncluded.underConsideration = e.target.checked
 
@@ -606,7 +671,7 @@ export default class extends StandardPage {
   }
 
   // checked = boolean
-  onReferenceStatusChange = async e => {
+  onReferenceStatusChange = async (e) => {
     const { onReferenceStatusChanged } = this.props
 
     // the first onReferenceStatusChanged is the props fn from Container
@@ -628,7 +693,7 @@ export default class extends StandardPage {
       if (_.isEmpty(dataList)) {
         result = <NoData>{I18N.get('suggestion.nodata')}</NoData>
       } else {
-        result = _.map(dataList, data => this.renderItem(data))
+        result = _.map(dataList, (data) => this.renderItem(data))
       }
     }
 
@@ -640,7 +705,7 @@ export default class extends StandardPage {
     )
   }
 
-  renderItem = data => {
+  renderItem = (data) => {
     const href = `/suggestion/${data._id}`
     const actionsNode = this.renderActionsNode(data, this.refetch)
     const metaNode = this.renderMetaNode(data)
@@ -654,7 +719,7 @@ export default class extends StandardPage {
         <ShortDesc>
           <MarkdownPreview content={data.abstract} />
           {_.isArray(data.link) &&
-            data.link.map(link => {
+            data.link.map((link) => {
               return (
                 <ItemLinkWrapper key={link}>
                   <a target="_blank" href={link}>
@@ -670,7 +735,7 @@ export default class extends StandardPage {
     )
   }
 
-  onPageChanged = page => {
+  onPageChanged = (page) => {
     const { changePage } = this.props
     changePage(page)
     this.loadPage(page)
@@ -688,17 +753,17 @@ export default class extends StandardPage {
     return <Pagination {...props} className="cr-pagination" />
   }
 
-  renderMetaNode = detail => (
+  renderMetaNode = (detail) => (
     <MetaContainer data={detail} user={this.props.user} />
   )
 
-  renderTagsNode = detail => <TagsContainer data={detail} />
+  renderTagsNode = (detail) => <TagsContainer data={detail} />
 
   renderActionsNode = (detail, refetch) => (
     <ActionsContainer data={detail} listRefetch={refetch} />
   )
 
-  onSortByChanged = async sortBy => {
+  onSortByChanged = async (sortBy) => {
     await this.props.onSortByChanged(sortBy)
     await this.refetch()
   }
@@ -730,6 +795,10 @@ export default class extends StandardPage {
 
     if (this.state.showArchived) {
       query.status = SUGGESTION_STATUS.ARCHIVED
+    }
+
+    if (this.state.showOldData) {
+      query.old = true
     }
 
     if (infoNeeded) {
@@ -799,7 +868,7 @@ export default class extends StandardPage {
     this.props.getList(query)
   }
 
-  loadPage = async page => {
+  loadPage = async (page) => {
     const query = {
       ...this.getQuery(),
       page,

@@ -17,7 +17,6 @@ import { convertFromHTML, ContentState, EditorState } from 'draft-js'
 import { MEDIUM_DRAFT_TOOLBAR_OPTIONS } from '@/config/constant'
 import { CONTENT_TYPE } from '@/constant'
 import { logger } from '@/util'
-import ImageSideButton from './ImageSideButton'
 import SeparatorSideButton from './SeparatorSideButton'
 
 // if using webpack
@@ -189,10 +188,6 @@ class Component extends BaseComponent {
         ref={this.refsEditor}
         placeholder=""
         sideButtons={[
-          {
-            title: 'Image',
-            component: ImageSideButton
-          },
           {
             title: 'Separator',
             component: SeparatorSideButton

@@ -6,6 +6,8 @@ import {
   message,
   Modal,
   Anchor,
+  Row,
+  Col,
   Popconfirm
 } from 'antd'
 import { Link } from 'react-router-dom'
@@ -21,6 +23,7 @@ import Translation from '@/module/common/Translation/Container'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import { StickyContainer, Sticky } from 'react-sticky'
 import VoteResultComponent from '../common/vote_result/Component'
+import MemberVoteQrCode from './MemberVoteQrCode'
 import Preamble from './Preamble'
 import ElipPreamble from './ElipPreamble'
 import Tracking from '../tracking/Container'
@@ -28,13 +31,14 @@ import Summary from '../summary/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import { logger } from '@/util'
+
 import {
   convertMarkdownToHtml,
   removeImageFromMarkdown,
   getPlanHtml,
   getBudgetHtml
 } from '@/util/markdown-it'
-import PaymentList from '@/module/form/SuggestionForm/PaymentList'
+import PaymentList from './PaymentList'
 import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
 import Milestones from '@/module/form/SuggestionForm/Milestones'
 import {
@@ -44,6 +48,7 @@ import {
   ContentTitle,
   StyledAnchor,
   FixedHeader,
+  FixedHeaderQrCode,
   Body,
   SubTitleHeading,
   SubTitleContainer,
@@ -60,13 +65,9 @@ import './style.scss'
 
 const { TextArea } = Input
 
-const renderRichContent = (data, key, title) => {
+const renderRichContent = (data, key, title, user, actions) => {
   let rc
-  if (
-    key === 'budget' &&
-    data.budget &&
-    typeof data.budget !== 'string'
-  ) {
+  if (key === 'budget' && data.budget && typeof data.budget !== 'string') {
     rc = (
       <div>
         <Subtitle>{`${I18N.get('suggestion.budget.total')} (ELA)`}</Subtitle>
@@ -74,34 +75,28 @@ const renderRichContent = (data, key, title) => {
         <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
         <Paragraph>{data.elaAddress}</Paragraph>
         <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
-        <PaymentList
-          list={data.budget}
-          milestone={data.plan.milestone}
-          editable={false}
-        />
+        <div className='budget-payment-list'>
+          <PaymentList
+            list={data.budget}
+            milestone={data.plan.milestone}
+            withdrawalHistory={data.withdrawalHistory}
+            user={user}
+            proposer={data.proposer}
+            proposalId={data._id}
+            actions={actions}
+            status={data.status}
+          />
+        </div>
+
       </div>
     )
-  } else if (
-    key === 'plan' &&
-    data.plan &&
-    typeof data.plan !== 'string'
-  ) {
+  } else if (key === 'plan' && data.plan && typeof data.plan !== 'string') {
     rc = (
       <div>
-        <Subtitle>
-          {I18N.get('suggestion.plan.milestones')}
-        </Subtitle>
-        <Milestones
-          initialValue={data.plan.milestone}
-          editable={false}
-        />
-        <Subtitle>
-          {I18N.get('suggestion.plan.teamInfo')}
-        </Subtitle>
-        <TeamInfoList
-          list={data.plan.teamInfo}
-          editable={false}
-        />
+        <Subtitle>{I18N.get('suggestion.plan.milestones')}</Subtitle>
+        <Milestones initialValue={data.plan.milestone} editable={false} />
+        <Subtitle>{I18N.get('suggestion.plan.teamInfo')}</Subtitle>
+        <TeamInfoList list={data.plan.teamInfo} editable={false} />
       </div>
     )
   } else {
@@ -110,9 +105,7 @@ const renderRichContent = (data, key, title) => {
   return (
     <div>
       {title && <ContentTitle id={key}>{title}</ContentTitle>}
-      <StyledRichContent>
-        {rc}
-      </StyledRichContent>
+      <StyledRichContent>{rc}</StyledRichContent>
     </div>
   )
 }
@@ -159,7 +152,7 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    const { data } = this.props
+    const { data, currentUserId } = this.props
     if (!data) {
       return (
         <div className="center">
@@ -174,6 +167,15 @@ class C extends StandardPage {
         </div>
       )
     }
+
+    const currentVoted = _.find(data.voteResult, function (o) {
+      if (o.votedBy != null) {
+        if (o.votedBy._id == currentUserId) {
+          return o
+        }
+      }
+    })
+    const isChaining = currentVoted && currentVoted.status == 'chaining'
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
@@ -202,7 +204,7 @@ class C extends StandardPage {
               {contentNode}
               {translationBtn}
               {notesNode}
-              {voteActionsNode}
+              {!isChaining ? voteActionsNode : null}
               {voteDetailNode}
               {trackingNode}
               {summaryNode}
@@ -222,6 +224,7 @@ class C extends StandardPage {
     const titleNode = this.renderTitle()
     const labelNode = this.renderLabelNode()
     const subTitleNode = this.renderSubTitle()
+    const memberVoteNode = this.renderMemberVoteQrCode()
     const { smallSpace } = this.state
     return (
       <Sticky>
@@ -238,19 +241,34 @@ class C extends StandardPage {
               zIndex: 2
             }
             : style
+          const isNotification = this.props.data.status == 'NOTIFICATION'
           return (
             <div style={finalStyle}>
-              <FixedHeader>
-                {metaNode}
-                {titleNode}
-                {labelNode}
-                {subTitleNode}
-              </FixedHeader>
+              <Row>
+                <Col span={isNotification ? 12 : 24}>
+                  <FixedHeader>
+                    {metaNode}
+                    {titleNode}
+                    {labelNode}
+                    {subTitleNode}
+                  </FixedHeader>
+                </Col>
+                {isNotification ? (
+                  <Col span={12}>
+                    <FixedHeader>{memberVoteNode}</FixedHeader>
+                  </Col>
+                ) : null}
+              </Row>
             </div>
           )
         }}
       </Sticky>
     )
+  }
+
+  renderMemberVoteQrCode() {
+    const { data, getMemberVoteUrl } = this.props
+    return <MemberVoteQrCode {...data} getMemberVoteUrl={getMemberVoteUrl} />
   }
 
   renderTranslationBtn() {
@@ -276,12 +294,16 @@ class C extends StandardPage {
         'referenceImplementation',
         'copyright'
       ]
-      result = sections.map(section => {
-        return `
+      result = sections
+        .map((section) => {
+          return `
           <h2>${I18N.get(`elip.fields.${section}`)}</h2>
-          <p>${convertMarkdownToHtml(removeImageFromMarkdown(data[section]))}</p>
+          <p>${convertMarkdownToHtml(
+            removeImageFromMarkdown(data[section])
+          )}</p>
         `
-      }).join('')
+        })
+        .join('')
     } else {
       sections = [
         'abstract',
@@ -291,13 +313,14 @@ class C extends StandardPage {
         'relevance',
         'budget'
       ]
-      result = sections.map(section => {
-        if (
-          section === 'budget' &&
-          data.budget &&
-          typeof data.budget !== 'string'
-        ) {
-          return `
+      result = sections
+        .map((section) => {
+          if (
+            section === 'budget' &&
+            data.budget &&
+            typeof data.budget !== 'string'
+          ) {
+            return `
             <h2>${I18N.get('proposal.fields.budget')}</h2>
             <p>${I18N.get('suggestion.budget.total')}</p>
             <p>${data.budgetAmount}</p>
@@ -305,22 +328,25 @@ class C extends StandardPage {
             <p>${data.elaAddress}</p>
             <p>${getBudgetHtml(data.budget)}</p>
           `
-        }
-        if (
-          section === 'plan' &&
-          data.plan &&
-          typeof data.plan !== 'string'
-        ) {
-          return `
+          }
+          if (
+            section === 'plan' &&
+            data.plan &&
+            typeof data.plan !== 'string'
+          ) {
+            return `
             <h2>${I18N.get('proposal.fields.plan')}</h2>
             <p>${getPlanHtml(data.plan.teamInfo)}</p>
           `
-        }
-        return `
+          }
+          return `
           <h2>${I18N.get(`proposal.fields.${section}`)}</h2>
-          <p>${convertMarkdownToHtml(removeImageFromMarkdown(data[section]))}</p>
+          <p>${convertMarkdownToHtml(
+            removeImageFromMarkdown(data[section])
+          )}</p>
         `
-      }).join('')
+        })
+        .join('')
     }
 
     text = `<h3>${title}</h3><br /><br/> ${result}`
@@ -354,35 +380,29 @@ class C extends StandardPage {
 
     const trackingTitle = trackingStatus ? (
       <span>
-        {I18N.get('proposal.fields.tracking')}
-        {' '}
+        {I18N.get('proposal.fields.tracking')}{' '}
         <span style={{ fontSize: 10, color: '#aaa' }}>
-          (
-          {I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)}
-)
+          ({I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)})
         </span>
       </span>
     ) : (
-      I18N.get('proposal.fields.tracking')
-    )
+        I18N.get('proposal.fields.tracking')
+      )
     const summaryTitle = summaryStatus ? (
       <span>
-        {I18N.get('proposal.fields.summary')}
-        {' '}
+        {I18N.get('proposal.fields.summary')}{' '}
         <span style={{ fontSize: 10, color: '#aaa' }}>
-          (
-          {I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)}
-)
+          ({I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)})
         </span>
       </span>
     ) : (
-      I18N.get('proposal.fields.summary')
-    )
+        I18N.get('proposal.fields.summary')
+      )
     const tracking = isShowFollowingUp && (
-      <Anchor.Link href="#tracking" title={trackingTitle} key="tracking"/>
+      <Anchor.Link href="#tracking" title={trackingTitle} key="tracking" />
     )
     const summary = isShowFollowingUp && (
-      <Anchor.Link href="#summary" title={summaryTitle} key="summary"/>
+      <Anchor.Link href="#summary" title={summaryTitle} key="summary" />
     )
     const commonLinks = [tracking, summary]
     return isElip
@@ -393,15 +413,27 @@ class C extends StandardPage {
   renderElipLinks(commonLinks) {
     return (
       <StyledAnchor offsetTop={300}>
-        <Anchor.Link href="#preamble" title={I18N.get('elip.fields.preamble')} />
-        <Anchor.Link href="#abstract" title={I18N.get('elip.fields.abstract')} />
+        <Anchor.Link
+          href="#preamble"
+          title={I18N.get('elip.fields.preamble')}
+        />
+        <Anchor.Link
+          href="#abstract"
+          title={I18N.get('elip.fields.abstract')}
+        />
         <LinkGroup marginTop={48}>
-          <Anchor.Link href="#motivation" title={I18N.get('elip.fields.motivation')} />
+          <Anchor.Link
+            href="#motivation"
+            title={I18N.get('elip.fields.motivation')}
+          />
           <Anchor.Link
             href="#specification"
             title={I18N.get('elip.fields.specification')}
           />
-          <Anchor.Link href="#rationale" title={I18N.get('elip.fields.rationale')} />
+          <Anchor.Link
+            href="#rationale"
+            title={I18N.get('elip.fields.rationale')}
+          />
         </LinkGroup>
         <LinkGroup marginTop={48}>
           <Anchor.Link
@@ -412,12 +444,15 @@ class C extends StandardPage {
             href="#referenceImplementation"
             title={I18N.get('elip.fields.referenceImplementation')}
           />
-          <Anchor.Link href="#copyright" title={I18N.get('elip.fields.copyright')} />
+          <Anchor.Link
+            href="#copyright"
+            title={I18N.get('elip.fields.copyright')}
+          />
         </LinkGroup>
         <LinkGroup marginTop={48}>
           <Anchor.Link href="#vote" title={I18N.get('proposal.fields.vote')} />
         </LinkGroup>
-        {_.each(commonLinks, (e) => (e))}
+        {_.each(commonLinks, (e) => e)}
       </StyledAnchor>
     )
   }
@@ -455,7 +490,7 @@ class C extends StandardPage {
         <LinkGroup marginTop={48}>
           <Anchor.Link href="#vote" title={I18N.get('proposal.fields.vote')} />
         </LinkGroup>
-        {_.each(commonLinks, e => e)}
+        {_.each(commonLinks, (e) => e)}
       </StyledAnchor>
     )
   }
@@ -467,11 +502,11 @@ class C extends StandardPage {
 
   renderSubTitle() {
     const status = this.renderStatus()
-    const btns = this.renderAdminActions()
+    // const btns = this.renderAdminActions()
     return (
       <SubTitleContainer>
         {status}
-        {btns}
+        {/* {btns} */}
       </SubTitleContainer>
     )
   }
@@ -494,7 +529,9 @@ class C extends StandardPage {
 
   renderLabelNode() {
     const { isElip } = this.props
-    const reference = isElip ? _.get(this.props.data, 'referenceElip') : _.get(this.props.data, 'reference')
+    const reference = isElip
+      ? _.get(this.props.data, 'referenceElip')
+      : _.get(this.props.data, 'reference')
     if (_.isEmpty(reference)) return null
     let linkText
     let linkUrl
@@ -549,12 +586,14 @@ class C extends StandardPage {
       ]
       return (
         <div>
-          <ElipPreamble {...data} user={user}/>
-          {_.map(sections, section => (
+          <ElipPreamble {...data} user={user} />
+          {_.map(sections, (section) => (
             <Part id={section.id} key={section.id}>
               <PartTitle>{I18N.get(`elip.fields.${section.id}`)}</PartTitle>
               <PartContent>
-                <MarkdownPreview content={data[section.valueKey] ? data[section.valueKey] : ''} />
+                <MarkdownPreview
+                  content={data[section.valueKey] ? data[section.valueKey] : ''}
+                />
               </PartContent>
             </Part>
           ))}
@@ -583,7 +622,19 @@ class C extends StandardPage {
           'relevance',
           I18N.get('proposal.fields.relevance')
         )}
-        {renderRichContent(data, 'budget', I18N.get('proposal.fields.budget'))}
+        {renderRichContent(
+          data,
+          'budget',
+          I18N.get('proposal.fields.budget'),
+          user,
+          {
+            applyPayment: this.props.applyPayment,
+            getPaymentSignature: this.props.getPaymentSignature,
+            reviewApplication: this.props.reviewApplication,
+            getReviewTxid: this.props.getReviewTxid,
+            withdraw: this.props.withdraw
+          }
+        )}
       </div>
     )
   }
@@ -665,8 +716,8 @@ class C extends StandardPage {
         requiredMsg={I18N.get('from.CVoteForm.reason.abstain.required')}
       />
     )
-
-    return (
+    const oldData = _.get(this.props.data, 'old')
+    return !oldData && (
       <VoteBtnGroup>
         {popOverYes}
         {popOverOppose}
@@ -688,28 +739,31 @@ class C extends StandardPage {
 
     if (!canManage || isCompleted) return null
 
-    const editProposalBtn = isSelf && canEdit && (
-      <Button onClick={this.gotoEditPage}>
-        {I18N.get('council.voting.btnText.editProposal')}
-      </Button>
-    )
-    const publishProposalBtn = isSelf && canEdit && (
-      <Button type="primary" onClick={this.publish}>
-        {I18N.get('council.voting.btnText.publish')}
-      </Button>
-    )
-    const deleteDraftProposalBtn = isSelf && canEdit && (
-      <Popconfirm
-        title={I18N.get('council.voting.modal.deleteDraft')}
-        onConfirm={() => this.deleteDraftProposal()}
-        okText={I18N.get('.yes')}
-        cancelText={I18N.get('.no')}
-      >
-        <Button type="danger">
-          {I18N.get('council.voting.btnText.delete')}
+    const editProposalBtn = isSelf &&
+      canEdit && (
+        <Button onClick={this.gotoEditPage}>
+          {I18N.get('council.voting.btnText.editProposal')}
         </Button>
-      </Popconfirm>
-    )
+      )
+    const publishProposalBtn = isSelf &&
+      canEdit && (
+        <Button type="primary" onClick={this.publish}>
+          {I18N.get('council.voting.btnText.publish')}
+        </Button>
+      )
+    const deleteDraftProposalBtn = isSelf &&
+      canEdit && (
+        <Popconfirm
+          title={I18N.get('council.voting.modal.deleteDraft')}
+          onConfirm={() => this.deleteDraftProposal()}
+          okText={I18N.get('.yes')}
+          cancelText={I18N.get('.no')}
+        >
+          <Button type="danger">
+            {I18N.get('council.voting.btnText.delete')}
+          </Button>
+        </Popconfirm>
+      )
     return (
       <div className="vote-btn-group">
         {editProposalBtn}
@@ -759,7 +813,7 @@ class C extends StandardPage {
     this.props.history.push(`/proposals/${id}/edit`)
   }
 
-  onNotesChanged = e => {
+  onNotesChanged = (e) => {
     this.setState({ notes: e.target.value })
   }
 
@@ -804,7 +858,6 @@ class C extends StandardPage {
     } = this.props.data
     const { avatar_map: avatarMap } = this.props
     let stats
-
     if (status === CVOTE_STATUS.DRAFT) return null
 
     if (!_.isEmpty(voteResult)) {
@@ -816,8 +869,11 @@ class C extends StandardPage {
               cur,
               'votedBy.profile.lastName'
             )} `,
+            didName: _.get(cur, 'votedBy.did.didName'),
             avatar: _.get(cur, 'votedBy.profile.avatar'),
-            reason: cur.reason
+            reason: cur.reason,
+            votedBy: _.get(cur, 'votedBy._id'),
+            status: _.get(cur, 'status')
           }
           if (prev[cur.value]) {
             prev[cur.value].push(item)
@@ -835,7 +891,8 @@ class C extends StandardPage {
           const item = {
             name: key,
             avatar: _.get(avatarMap, key),
-            reason: _.get(reasonMap, key)
+            reason: _.get(reasonMap, key),
+            status: key
           }
           if (prev[value]) {
             prev[value].push(item)
@@ -847,6 +904,22 @@ class C extends StandardPage {
       )
     }
 
+    const {
+      match,
+      getReviewProposalUrl,
+      getReviewProposal,
+      isCouncil,
+      data,
+      currentUserId,
+      updateProposal
+    } = this.props
+    const ownerVote = _.find(data.voteResult, (o) => {
+      if (o.votedBy && o.votedBy._id == currentUserId) {
+        return o
+      }
+    })
+    const id = _.get(match, 'params.id')
+    const isProposed = status == 'PROPOSED'
     const title = <h4>{I18N.get('council.voting.councilMembersVotes')}</h4>
     const detail = _.map(stats, (statArr, key) => {
       const type = CVOTE_RESULT[key.toUpperCase()] || CVOTE_RESULT.UNDECIDED
@@ -854,7 +927,15 @@ class C extends StandardPage {
       const props = {
         dataList: statArr,
         type,
-        label
+        label,
+        id,
+        getReviewProposal,
+        getReviewProposalUrl,
+        updateProposal,
+        isProposed,
+        isCouncil,
+        currentUserId,
+        ownerVote
       }
       return <VoteResultComponent {...props} key={key} />
     })
@@ -990,7 +1071,7 @@ class C extends StandardPage {
             this.refetch()
             this.ord_loading(false)
           })
-          .catch(e => {
+          .catch((e) => {
             this.ord_loading(false)
             message.error(e.message)
             logger.error(e)

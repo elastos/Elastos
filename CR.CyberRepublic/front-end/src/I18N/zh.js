@@ -8,6 +8,7 @@ import getting_started from './en/getting_started'
 import whitepaper from './zh/whitepaper'
 import elip from './zh/elip'
 import area from './zh/area'
+import milestone from './zh/milestone'
 
 const zh = {
   council,
@@ -19,6 +20,7 @@ const zh = {
   whitepaper,
   elip,
   area,
+  milestone,
   // Header
   '0000': 'ALPHA版本',
   '0001': '奖励计划',
@@ -742,6 +744,10 @@ const zh = {
   'council.voting.status': '状态',
   'council.voting.createdAt': '创建日期',
   'council.voting.proposedAt': '发布日期',
+  'council.voting.chainStatus.chained':'已上链',
+  'council.voting.chainStatus.chaining':'上链中',
+  'council.voting.chainStatus.unchain':'未上链',
+  'council.voting.chainStatus.failed':'上链失败',
 
   'council.voting.type.newMotion': '新动议',
   'council.voting.type.motionAgainst': '反对动议',
@@ -783,6 +789,8 @@ const zh = {
   'council.voting.voteResult.show': '显示',
   'council.voting.voteResult.all': '所有',
   'council.voting.voteResult.unvoted': '待投票',
+  
+  'council.voting.voteResult.onchain':'投票上链',
 
   // Landing
   'landing.cr': 'Cyber Republic',
@@ -936,6 +944,8 @@ const zh = {
   'profile.submission.table.title': '标题',
   'profile.submission.table.type': '类型',
   'profile.submission.table.created': '创建日期',
+
+  'profile.member.vote.qrcodeTip':'打开 ELA 钱包扫码投票',
 
   // Validate Form
   'ambassadors.form.required': '必填项目',
@@ -1514,5 +1524,8 @@ zh[`cvoteStatus.${CVOTE_STATUS.REJECT}`] = '已否决'
 zh[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = '已完成'
 zh[`cvoteStatus.${CVOTE_STATUS.INCOMPLETED}`] = '未完成'
 zh[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = '已过期'
+zh[`cvoteStatus.${CVOTE_STATUS.NOTIFICATION}`] = '公示期'
+zh[`cvoteStatus.${CVOTE_STATUS.VETOED}`] = '已否决'
+
 
 export default zh

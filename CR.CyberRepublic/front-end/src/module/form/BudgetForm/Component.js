@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Form, Input, Button, Tabs, Radio } from 'antd'
+import { Form, Input, Button, Tabs, Radio, message } from 'antd'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import I18N from '@/I18N'
 import moment from 'moment/moment'
@@ -9,22 +9,61 @@ import { SUGGESTION_BUDGET_TYPE } from '@/constant'
 
 const FormItem = Form.Item
 const { TabPane } = Tabs
-
+const { ADVANCE, COMPLETION, CONDITIONED } = SUGGESTION_BUDGET_TYPE
 class BudgetForm extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      activeKey: props.item && props.item.milestoneKey ? props.item.milestoneKey : '0'
+      activeKey:
+        props.item && props.item.milestoneKey ? props.item.milestoneKey : '0'
     }
   }
 
-  handleSubmit = e => {
+  checkTypeMilestone = (type) => {
+    const { activeKey } = this.state
+    const { milestone, paymentItems, item } = this.props
+    const keys = paymentItems.map((item) => item.milestoneKey)
+    const max = milestone.length - 1
+    if (type === ADVANCE && activeKey !== '0') {
+      return {
+        error: I18N.get('suggestion.form.error.advance')
+      }
+    }
+    if (type === COMPLETION && activeKey !== `${max}`) {
+      return {
+        error: I18N.get('suggestion.form.error.completion')
+      }
+    }
+    if (type === CONDITIONED && activeKey === `${max}`) {
+      return {
+        error: I18N.get('suggestion.form.error.conditioned')
+      }
+    }
+    if (type === CONDITIONED && keys.includes(activeKey)) {
+      // edit milestone payment
+      if (item && item.milestoneKey === activeKey) {
+        return {}
+      }
+      // add project milestone payment
+      return {
+        error: I18N.get('suggestion.form.error.isUsed')
+      }
+    }
+  }
+
+  handleSubmit = (e) => {
     e.stopPropagation() // prevent event bubbling
     e.preventDefault()
     const { form, onSubmit } = this.props
     form.validateFields((err, values) => {
       if (!err) {
-        values.milestoneKey = this.state.activeKey
+        const { activeKey } = this.state
+        const rs = this.checkTypeMilestone(values.type)
+        if (rs && rs.error) {
+          message.error(rs.error)
+          return
+        }
+        values.milestoneKey = activeKey
         onSubmit(values)
       }
     })
@@ -34,15 +73,15 @@ class BudgetForm extends Component {
     if (!value) {
       return cb(I18N.get('suggestion.form.error.required'))
     }
-    const reg = /^(0|[1-9][0-9]*)(\.[0-9]*)?$/
+    const reg = /^(0|[1-9][0-9]*)(\.[0-9]{1,8})?$/
     const isNumber = !isNaN(value) && reg.test(value)
     if (!isNumber) {
       return cb(I18N.get('suggestion.form.error.isNaN'))
-    } 
+    }
     return cb()
   }
 
-  handleTabChange = activeKey => {
+  handleTabChange = (activeKey) => {
     this.setState({ activeKey })
   }
 
@@ -58,10 +97,8 @@ class BudgetForm extends Component {
     const { item, types } = this.props
     return (
       <Radio.Group>
-        {Object.values(SUGGESTION_BUDGET_TYPE).map(el => {
-          const specialTypes = types.filter(
-            type => type !== SUGGESTION_BUDGET_TYPE.CONDITIONED
-          )
+        {Object.values(SUGGESTION_BUDGET_TYPE).map((el) => {
+          const specialTypes = types.filter((type) => type !== CONDITIONED)
           if (!item) {
             // add payment line
             return (
@@ -73,7 +110,7 @@ class BudgetForm extends Component {
             )
           } else {
             // edit payment line
-            const remained = specialTypes.filter(type => type !== item.type)
+            const remained = specialTypes.filter((type) => type !== item.type)
             return (
               !remained.includes(el) && (
                 <Radio value={el} key={el}>
@@ -228,7 +265,7 @@ const Label = styled.div`
   font-size: 17px;
   color: #000;
   display: block;
-  margin-bottom: ${props => (props.gutter ? props.gutter : 10)}px;
+  margin-bottom: ${(props) => (props.gutter ? props.gutter : 10)}px;
   > span {
     color: #ff0000;
   }

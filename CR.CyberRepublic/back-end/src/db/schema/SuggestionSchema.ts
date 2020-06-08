@@ -88,6 +88,20 @@ export const Suggestion = {
       ref: 'cvote'
     }
   ],
-  tags: [tag]
+  tags: [tag],
+  signature: { data: String, message: String },
+  draftHash: String,
+  ownerPublicKey: String,
+  proposalHash: String,
+  // council members make suggesiton into proposal
+  proposers: [
+    {
+      did: String,
+      proposalHash: String,
+      timestamp: String
+    }
+  ],
+  proposed: Boolean,
+  chainHeight: String,
+  old: Boolean // mark an old suggestion
 }
-

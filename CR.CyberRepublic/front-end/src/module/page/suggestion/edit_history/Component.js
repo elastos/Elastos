@@ -1,6 +1,6 @@
 import React from 'react'
 import _ from 'lodash'
-import { Spin, Layout, Card, Button } from 'antd'
+import { Spin, Layout, Button } from 'antd'
 import moment from 'moment/moment'
 import I18N from '@/I18N'
 import BackLink from '@/module/shared/BackLink/Component'
@@ -165,8 +165,9 @@ export default class extends DetailPage {
 
   renderTitleButton = () => {
     const { detail, currentUserId, isAdmin } = this.props
+    const signature = _.get(detail, 'signature.data')
     const isOwner = currentUserId === _.get(detail, 'createdBy._id') || isAdmin
-    return isOwner && (
+    return !signature && isOwner && (
       <Button
         onClick={this.handleRevertVersion}
         className="btn-create-suggestion"

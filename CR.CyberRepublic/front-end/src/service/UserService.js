@@ -3,7 +3,6 @@ import _ from 'lodash'
 import { api_request, permissions } from '@/util'
 
 export default class extends BaseService {
-
   async login(username, password, persist) {
     const userRedux = this.store.getRedux('user')
 
@@ -13,20 +12,21 @@ export default class extends BaseService {
       method: 'get',
       data: {
         username,
-        password,
-      },
+        password
+      }
     })
 
     if (!res) {
       // TODO: rethink if we want to hardcode the error msg here or let the caller handle it
-      throw new Error('Error logging in, please check your username and password')
+      throw new Error(
+        'Error logging in, please check your username and password'
+      )
     }
 
     const is_admin = permissions.isAdmin(res.user.role)
     const is_leader = permissions.isLeader(res.user.role)
     const is_council = permissions.isCouncil(res.user.role)
     const is_secretary = permissions.isSecretary(res.user.role)
-    const did = res.user.dids && res.user.dids.find(el => el.active === true)
 
     this.dispatch(userRedux.actions.is_leader_update(is_leader))
     this.dispatch(userRedux.actions.is_admin_update(is_admin))
@@ -36,13 +36,15 @@ export default class extends BaseService {
     this.dispatch(userRedux.actions.login_form_reset())
     this.dispatch(userRedux.actions.is_login_update(true))
 
-    this.dispatch(userRedux.actions.did_update(did))
+    this.dispatch(userRedux.actions.did_update(res.user.did))
     this.dispatch(userRedux.actions.email_update(res.user.email))
     this.dispatch(userRedux.actions.username_update(res.user.username))
     this.dispatch(userRedux.actions.profile_update(res.user.profile))
     this.dispatch(userRedux.actions.role_update(res.user.role))
     this.dispatch(userRedux.actions.circles_update(_.values(res.user.circles)))
-    this.dispatch(userRedux.actions.subscribers_update(_.values(res.user.subscribers)))
+    this.dispatch(
+      userRedux.actions.subscribers_update(_.values(res.user.subscribers))
+    )
     this.dispatch(userRedux.actions.current_user_id_update(res.user._id))
     this.dispatch(userRedux.actions.popup_update_update(res.user.popupUpdate))
     sessionStorage.setItem('api-token', res['api-token'])
@@ -55,23 +57,23 @@ export default class extends BaseService {
 
     return {
       success: true,
-      is_admin,
+      is_admin
     }
   }
 
   /**
-     * Check if username already exists
-     *
-     * @param username
-     * @returns {Promise<void>}
-     */
+   * Check if username already exists
+   *
+   * @param username
+   * @returns {Promise<void>}
+   */
   async checkUsername(username) {
     await api_request({
       path: '/api/user/check-username',
       method: 'post',
       data: {
-        username,
-      },
+        username
+      }
     })
   }
 
@@ -84,7 +86,7 @@ export default class extends BaseService {
         password,
         did,
         email
-      },
+      }
     })
     return this.login(username, password)
   }
@@ -94,8 +96,8 @@ export default class extends BaseService {
       path: '/api/user/forgot-password',
       method: 'post',
       data: {
-        email,
-      },
+        email
+      }
     })
   }
 
@@ -105,8 +107,8 @@ export default class extends BaseService {
       method: 'post',
       data: {
         resetToken,
-        password,
-      },
+        password
+      }
     })
   }
 
@@ -116,7 +118,7 @@ export default class extends BaseService {
     this.dispatch(userRedux.actions.avatar_loading_update(true))
 
     const data = await api_request({
-      path: '/api/user/current_user',
+      path: '/api/user/current_user'
     })
     const is_admin = permissions.isAdmin(data.role)
     const is_leader = permissions.isLeader(data.role)
@@ -160,7 +162,7 @@ export default class extends BaseService {
 
     const result = await api_request({
       path,
-      method: 'get',
+      method: 'get'
     })
 
     await this.dispatch(memberRedux.actions.detail_update(result))
@@ -184,7 +186,7 @@ export default class extends BaseService {
     const result = await api_request({
       path: `/api/user/${userId}`,
       method: 'put',
-      data: doc,
+      data: doc
     })
 
     await this.dispatch(memberRedux.actions.detail_update(result))
@@ -201,7 +203,7 @@ export default class extends BaseService {
     const result = await api_request({
       path: `/api/user/${userId}/updateRole`,
       method: 'put',
-      data: doc,
+      data: doc
     })
 
     await this.dispatch(memberRedux.actions.detail_update(result))
@@ -243,7 +245,7 @@ export default class extends BaseService {
   async getByIds(ids) {
     const result = await api_request({
       path: `/api/user/${ids}/users`,
-      method: 'get',
+      method: 'get'
     })
 
     return result
@@ -262,7 +264,7 @@ export default class extends BaseService {
         path,
         method: 'get',
         data: query,
-        signal: this.getAbortSignal(path),
+        signal: this.getAbortSignal(path)
       })
 
       await this.dispatch(memberRedux.actions.users_update(result.list))
@@ -282,8 +284,8 @@ export default class extends BaseService {
       data: {
         fromUserId,
         toUserId,
-        ...formData,
-      },
+        ...formData
+      }
     })
   }
 
@@ -293,8 +295,8 @@ export default class extends BaseService {
       method: 'post',
       data: {
         email,
-        code, // TODO dont send this in clear text
-      },
+        code // TODO dont send this in clear text
+      }
     })
   }
 
@@ -303,8 +305,8 @@ export default class extends BaseService {
       path: '/api/user/send-confirm',
       method: 'post',
       data: {
-        email,
-      },
+        email
+      }
     })
   }
 
@@ -323,19 +325,18 @@ export default class extends BaseService {
       method: 'post',
       data: { req: qrcodeStr }
     })
-    if (res && res.success === false) {
-      return res
+
+    const user = _.get(res, 'user')
+    if (!user) {
+      return user
     }
-    if (res && res.success && res.did) {
-      return res
-    }
+
     const userRedux = this.store.getRedux('user')
 
     const is_admin = permissions.isAdmin(res.user.role)
     const is_leader = permissions.isLeader(res.user.role)
     const is_council = permissions.isCouncil(res.user.role)
     const is_secretary = permissions.isSecretary(res.user.role)
-    const did = res.user.dids && res.user.dids.find(el => el.active === true)
 
     this.dispatch(userRedux.actions.is_leader_update(is_leader))
     this.dispatch(userRedux.actions.is_admin_update(is_admin))
@@ -345,13 +346,15 @@ export default class extends BaseService {
     this.dispatch(userRedux.actions.login_form_reset())
     this.dispatch(userRedux.actions.is_login_update(true))
 
-    this.dispatch(userRedux.actions.did_update(did))
+    this.dispatch(userRedux.actions.did_update(res.user.did))
     this.dispatch(userRedux.actions.email_update(res.user.email))
     this.dispatch(userRedux.actions.username_update(res.user.username))
     this.dispatch(userRedux.actions.profile_update(res.user.profile))
     this.dispatch(userRedux.actions.role_update(res.user.role))
     this.dispatch(userRedux.actions.circles_update(_.values(res.user.circles)))
-    this.dispatch(userRedux.actions.subscribers_update(_.values(res.user.subscribers)))
+    this.dispatch(
+      userRedux.actions.subscribers_update(_.values(res.user.subscribers))
+    )
     this.dispatch(userRedux.actions.current_user_id_update(res.user._id))
     this.dispatch(userRedux.actions.popup_update_update(res.user.popupUpdate))
     sessionStorage.setItem('api-token', res['api-token'])
@@ -381,7 +384,6 @@ export default class extends BaseService {
     const rs = await api_request({
       path: '/api/user/did'
     })
-
     if (rs && rs.success) {
       const userRedux = this.store.getRedux('user')
       this.dispatch(userRedux.actions.did_update(rs.did))

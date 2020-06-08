@@ -8,6 +8,7 @@ import getting_started from './en/getting_started'
 import whitepaper from './en/whitepaper'
 import elip from './en/elip'
 import area from './en/area'
+import milestone from './en/milestone'
 
 const en = {
   council,
@@ -19,6 +20,7 @@ const en = {
   elip,
   whitepaper,
   area,
+  milestone,
   // Header
   '0000': 'ALPHA',
   '0001': 'Bounty Programs',
@@ -766,6 +768,11 @@ const en = {
   'council.voting.status': 'Status',
   'council.voting.createdAt': 'Created',
   'council.voting.proposedAt': 'Proposed',
+  'council.voting.chainStatus.chained':'Chained',
+  'council.voting.chainStatus.chaining':'Chaining',
+  'council.voting.chainStatus.unchain':'UnChain',
+  'council.voting.chainStatus.failed':'Failed',
+
 
   'council.voting.type.newMotion': 'New Motion',
   'council.voting.type.motionAgainst': 'Motion Against',
@@ -810,6 +817,8 @@ const en = {
   'council.voting.voteResult.all': 'All',
   'council.voting.voteResult.unvoted': 'Unvoted by me',
 
+  'council.voting.voteResult.onchain':'Vote onchain',
+  
   // Landing
   'landing.cr': 'Cyber Republic',
   'landing.footer.note': 'Stay up to date with Cyber Republic',
@@ -968,6 +977,8 @@ const en = {
   'profile.submission.table.title': 'Title',
   'profile.submission.table.type': 'Type',
   'profile.submission.table.created': 'Created',
+
+  'profile.member.vote.qrcodeTip':'Open ELA wallet and scan vote',
 
   // Validate Form
   'ambassadors.form.required': 'This must be filled out',
@@ -1574,5 +1585,7 @@ en[`cvoteStatus.${CVOTE_STATUS.REJECT}`] = 'REJECTED'
 en[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = 'FINAL'
 en[`cvoteStatus.${CVOTE_STATUS.INCOMPLETED}`] = 'INCOMPLETED'
 en[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = 'DEFERRED'
+en[`cvoteStatus.${CVOTE_STATUS.NOTIFICATION}`] = 'NOTIFICATION'
+en[`cvoteStatus.${CVOTE_STATUS.VETOED}`] = 'VETOED'
 
 export default en

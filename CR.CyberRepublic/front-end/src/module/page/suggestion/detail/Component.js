@@ -29,6 +29,7 @@ import {
   getBudgetHtml
 } from '@/util/markdown-it'
 import { logger } from '@/util'
+import URI from 'urijs'
 import userUtil from '@/util/user'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
@@ -43,6 +44,8 @@ import PaymentList from '@/module/form/SuggestionForm/PaymentList'
 import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
 import Milestones from '@/module/form/SuggestionForm/Milestones'
 import MilestonesReadonly from '@/module/form/SuggestionForm/MilestonesReadonly'
+import SignSuggestionButton from './SignSuggetionButton'
+import CMSignSuggestionButton from './CMSignSuggestionButton'
 import {
   Container,
   Title,
@@ -63,6 +66,7 @@ import {
 } from './style'
 
 import './style.scss'
+import SignSuggestionModal from './SignSuggestionModal'
 
 const { TextArea } = Input
 
@@ -102,7 +106,7 @@ export default class extends StandardPage {
     ]
     return (
       <StyledAnchor offsetTop={420}>
-        {sections.map(section => {
+        {sections.map((section) => {
           return (
             <Anchor.Link
               key={section}
@@ -139,7 +143,10 @@ export default class extends StandardPage {
     const editForm = this.renderEditForm()
     const commentNode = this.renderCommentNode()
     const socialShareButtonsNode = this.renderSocialShareButtonsNode()
-   
+
+    const uri = URI(this.props.location.search || '')
+    const signature = _.get(detail, 'signature.data')
+
     return (
       <div>
         <Meta
@@ -186,6 +193,13 @@ export default class extends StandardPage {
             </Row>
           </MediaQuery>
           {editForm}
+          {uri.hasQuery('new') && !signature && (
+            <SignSuggestionModal
+              id={detail._id}
+              getSignatureUrl={this.props.getSignatureUrl}
+              getSignature={this.props.getSignature}
+            />
+          )}
         </Container>
         <Footer />
       </div>
@@ -206,7 +220,9 @@ export default class extends StandardPage {
         <Col span={6}>
           <ItemTitle>{header}</ItemTitle>
         </Col>
-        <Col span={18}>{text}</Col>
+        <Col span={18} style={{ wordBreak: 'break-all' }}>
+          {text}
+        </Col>
       </Item>
     )
   }
@@ -230,9 +246,11 @@ export default class extends StandardPage {
     let status = I18N.get('suggestion.status.posted')
     if (_.get(detail, 'reference.0.vid')) {
       status = <TagsContainer data={detail} />
-    } else if (_.some(detail.tags, tag => tag.type === 'INFO_NEEDED')) {
+    } else if (_.some(detail.tags, (tag) => tag.type === 'INFO_NEEDED')) {
       status = I18N.get('suggestion.status.moreInfoRequired')
-    } else if (_.some(detail.tags, tag => tag.type === 'UNDER_CONSIDERATION')) {
+    } else if (
+      _.some(detail.tags, (tag) => tag.type === 'UNDER_CONSIDERATION')
+    ) {
       status = I18N.get('suggestion.status.underConsideration')
     }
 
@@ -246,19 +264,22 @@ export default class extends StandardPage {
         <DescLabel id="preamble">
           {I18N.get('suggestion.fields.preamble')}
         </DescLabel>
-        {detail.displayId && this.renderPreambleItem(
-          I18N.get('suggestion.fields.preambleSub.suggestion'),
-          `#${detail.displayId}`
-        )}
+        {detail.displayId &&
+          this.renderPreambleItem(
+            I18N.get('suggestion.fields.preambleSub.suggestion'),
+            `#${detail.displayId}`
+          )}
         {this.renderPreambleItem(
           I18N.get('suggestion.fields.preambleSub.title'),
           detail.title
         )}
-        {detail.createdBy && detail.createdBy.username && this.renderPreambleItem(
-          I18N.get('suggestion.fields.preambleSub.creator'),
-          detail.createdBy.username,
-          'username'
-        )}
+        {detail.createdBy &&
+          detail.createdBy.username &&
+          this.renderPreambleItem(
+            I18N.get('suggestion.fields.preambleSub.creator'),
+            detail.createdBy.username,
+            'username'
+          )}
         {this.renderPreambleItem(
           I18N.get('suggestion.fields.preambleSub.status'),
           status
@@ -267,7 +288,13 @@ export default class extends StandardPage {
           I18N.get('suggestion.fields.preambleSub.created'),
           moment(detail.createdAt).format('MMM D, YYYY')
         )}
-        {sections.map(section => {
+        {_.get(detail, 'signature.data') &&
+          this.renderPreambleItem(
+            I18N.get('suggestion.fields.preambleSub.signature'),
+            detail.signature.data,
+            'signature'
+          )}
+        {sections.map((section) => {
           if (
             section === 'plan' &&
             detail.plan &&
@@ -281,14 +308,14 @@ export default class extends StandardPage {
                 <Subtitle>{I18N.get('suggestion.plan.milestones')}</Subtitle>
                 {typeof this.state.version !== 'number' ? (
                   <Milestones
-                   initialValue={detail.plan.milestone}
-                   editable={false}
-                 />
+                    initialValue={detail.plan.milestone}
+                    editable={false}
+                  />
                 ) : (
                   <MilestonesReadonly
-                   initialValue={detail.plan.milestone}
-                   editable={false}
-                 />
+                    initialValue={detail.plan.milestone}
+                    editable={false}
+                  />
                 )}
                 <Subtitle>{I18N.get('suggestion.plan.teamInfo')}</Subtitle>
                 <TeamInfoList list={detail.plan.teamInfo} editable={false} />
@@ -352,15 +379,17 @@ export default class extends StandardPage {
   renderTitleButton = () => {
     const { detail, currentUserId, isAdmin } = this.props
     const isOwner = currentUserId === _.get(detail, 'createdBy._id') || isAdmin
-    return isOwner && (
-      <Button
-        onClick={this.handleShowVersionHistory}
-        className="btn-create-suggestion"
-        htmlType="button"
-        style={{ position: 'relative', top: -5, marginRight: 10 }}
-      >
-        {I18N.get('suggestion.form.button.showVersion')}
-      </Button>
+    return (
+      isOwner && (
+        <Button
+          onClick={this.handleShowVersionHistory}
+          className="btn-create-suggestion"
+          htmlType="button"
+          style={{ position: 'relative', top: -5, marginRight: 10 }}
+        >
+          {I18N.get('suggestion.form.button.showVersion')}
+        </Button>
+      )
     )
   }
 
@@ -381,9 +410,18 @@ export default class extends StandardPage {
   }
 
   renderLabelNode() {
-    const reference = _.get(this.props.detail, 'reference')
-    if (_.isEmpty(reference)) return null
-    const { _id, vid, status } = _.last(reference)
+    const { isReference, proposal } = this.props
+    if (!isReference) {
+      return null
+    }
+    let result = _.get(this.props.detail, 'reference')
+    let reference
+    if (_.isEmpty(result)) {
+      reference = proposal
+    } else {
+      reference = _.last(result)
+    }
+    const { _id, vid, status } = reference
     // when proposal is draft, do not show the label
     if (status === CVOTE_STATUS.DRAFT) return null
     const linkText = `${I18N.get('council.voting.proposal')} #${vid}`
@@ -399,7 +437,7 @@ export default class extends StandardPage {
   renderTagsNode() {
     const tags = _.get(this.props.detail, 'tags')
     if (_.isEmpty(tags)) return null
-    const res = _.map(tags, tag => {
+    const res = _.map(tags, (tag) => {
       const { type, _id, desc } = tag
       if (type === SUGGESTION_TAG_TYPE.INFO_NEEDED) {
         return (
@@ -467,7 +505,7 @@ export default class extends StandardPage {
       'budget'
     ]
     const result = sections
-      .map(section => {
+      .map((section) => {
         if (
           section === 'plan' &&
           detail.plan &&
@@ -495,8 +533,8 @@ export default class extends StandardPage {
         return `
           <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
           <p>${convertMarkdownToHtml(
-    removeImageFromMarkdown(detail[section])
-  )}</p>
+            removeImageFromMarkdown(detail[section])
+          )}</p>
           `
       })
       .join('')
@@ -524,26 +562,62 @@ export default class extends StandardPage {
   }
 
   renderOwnerActionsNode() {
-    const { detail, currentUserId, isAdmin, draft } = this.props
-    const isOwner = currentUserId === _.get(detail, 'createdBy._id') || isAdmin
-    const editText = draft && draft.empty
-      ? I18N.get('suggestion.btnText.edit')
-      : I18N.get('suggestion.btnText.editDraft')
-    const res = isOwner && (
-      <StyledButton
-        type="ebp"
-        className="cr-btn cr-btn-default"
-        onClick={this.showEditForm}
-      >
-        {editText}
-      </StyledButton>
+    const {
+      detail,
+      currentUserId,
+      isAdmin,
+      draft,
+      getSignatureUrl,
+      getSignature
+    } = this.props
+    const oldData = _.get(detail, 'old')
+    const signature = _.get(detail, 'signature.data')
+    const isOwner = currentUserId === _.get(detail, 'createdBy._id')
+    const isEditable = (isOwner || isAdmin) && !signature
+    const editText =
+      draft && draft.empty
+        ? I18N.get('suggestion.btnText.edit')
+        : I18N.get('suggestion.btnText.editDraft')
+    const EditButton = isEditable && (
+      <div style={{ paddingRight: 16, display: 'inline-block' }}>
+        <StyledButton
+          type="ebp"
+          className="cr-btn cr-btn-default"
+          onClick={this.showEditForm}
+        >
+          {editText}
+        </StyledButton>
+      </div>
     )
-    return res
+    const isSignable = !signature && isOwner
+    return (
+      !oldData && (
+        <div>
+          {EditButton}
+          {isSignable && (
+            <SignSuggestionButton
+              getSignatureUrl={getSignatureUrl}
+              getSignature={getSignature}
+              id={detail._id}
+            />
+          )}
+        </div>
+      )
+    )
   }
 
   renderCouncilActionsNode() {
-    const { isCouncil, isAdmin, isReference } = this.props
-
+    const {
+      isCouncil,
+      isAdmin,
+      isReference,
+      detail,
+      getCMSignatureUrl,
+      pollProposalState,
+      isProposed
+    } = this.props
+    const oldData = _.get(detail, 'old')
+    const signature = _.get(detail, 'signature.data')
     const makeIntoProposalPanel = this.renderMakeIntoProposalPanel()
 
     const considerBtn = (isCouncil || isAdmin) && (
@@ -571,18 +645,19 @@ export default class extends StandardPage {
         </StyledButton>
       </Col>
     )
-    const createFormBtn = isCouncil && !isReference && (
-      <Col xs={24} sm={8}>
-        <StyledButton
-          type="ebp"
-          className="cr-btn cr-btn-default"
-          disabled={this.state.proposeLoading}
-          onClick={this.makeIntoPropose}
-        >
-          {I18N.get('suggestion.btn.makeIntoProposal')}
-        </StyledButton>
-      </Col>
-    )
+    const makeIntoProposalBtn = signature &&
+      isCouncil &&
+      !isReference && (
+        <Col xs={24} sm={8}>
+          <CMSignSuggestionButton
+            getCMSignatureUrl={getCMSignatureUrl}
+            id={detail._id}
+            pollProposalState={pollProposalState}
+            isProposed={isProposed}
+            user={this.props.user}
+          />
+        </Col>
+      )
     const needDueDiligenceBtn = isCouncil && (
       <Col xs={24} sm={8}>
         <StyledButton
@@ -612,7 +687,7 @@ export default class extends StandardPage {
         <Row type="flex" justify="start">
           {considerBtn}
           {needMoreInfoBtn}
-          {createFormBtn}
+          {makeIntoProposalBtn}
         </Row>
         <Row type="flex" justify="start">
           {needDueDiligenceBtn}
@@ -620,14 +695,18 @@ export default class extends StandardPage {
         </Row>
       </BtnGroup>
     )
-    return res
+    return !oldData && res
   }
 
   renderMakeIntoProposalPanel() {
-    const { isReference, detail } = this.props
+    const { isReference, detail, proposal } = this.props
     if (!isReference) return null
-    const reference = _.get(this.props.detail, 'reference')
-    const { _id, vid } = _.last(reference)
+    let result = _.get(this.props.detail, 'reference')
+    let reference = proposal
+    if (result && !_.isEmpty(result)) {
+      reference = _.last(result)
+    }
+    const { _id, vid, proposer } = reference
     return (
       <Row style={{ marginBottom: 30 }}>
         <Row type="flex" justify="center" style={{ marginBottom: 15 }}>
@@ -643,12 +722,10 @@ export default class extends StandardPage {
         <Row type="flex" justify="center">
           <Col span={24}>
             <CreateProposalText>
-              {`${userUtil.formatUsername(detail.proposer)} `}
+              {proposer ? proposer : userUtil.formatUsername(detail.proposer)}{' '}
               {I18N.get('suggestion.label.hasMadeIntoProposal')}
               <Link to={`/proposals/${_id}`}>
-                {` ${I18N.get(
-                  'council.voting.proposal'
-                )} #${vid}`}
+                {` ${I18N.get('council.voting.proposal')} #${vid}`}
               </Link>
             </CreateProposalText>
           </Col>
@@ -659,12 +736,13 @@ export default class extends StandardPage {
 
   renderCommentNode() {
     const { detail } = this.props
+    const oldData = _.get(detail, 'old')
     return (
       <Comments
         id="comments"
         type="suggestion"
         suggestion={detail}
-        canPost={true}
+        canPost={!oldData}
         model={detail._id}
         returnUrl={`/suggestion/${detail._id}`}
       />
@@ -710,11 +788,11 @@ export default class extends StandardPage {
     })
   }
 
-  onCommentChanged = e => {
+  onCommentChanged = (e) => {
     this.setState({ comment: e.target.value })
   }
 
-  onFormSubmit = async param => {
+  onFormSubmit = async (param) => {
     try {
       await this.props.update(param)
       this.showEditForm()
@@ -761,7 +839,7 @@ export default class extends StandardPage {
     })
   }
 
-  refetch = async incViewsNum => {
+  refetch = async (incViewsNum) => {
     const id = _.get(this.props, 'match.params.id')
     await this.props.resetDetail()
     this.props.getDetail({ id, incViewsNum: !!incViewsNum })
@@ -769,29 +847,6 @@ export default class extends StandardPage {
 
   linkSuggestionDetail(suggestionId) {
     this.props.history.push(`/suggestion/${suggestionId}`)
-  }
-
-  makeIntoPropose = async () => {
-    const id = _.get(this.props, 'match.params.id')
-    const { current_user_id, profile, history } = this.props.user
-    const fullName = `${profile.firstName} ${profile.lastName}`
-    const { proposeSuggestion } = this.props
-
-    const param = {
-      proposedBy: fullName,
-      proposer: current_user_id,
-      suggestionId: id
-    }
-
-    this.setState({ proposeLoading: true })
-
-    try {
-      const res = await proposeSuggestion(param)
-      this.props.history.push(`/proposals/${res._id}`)
-    } catch (error) {
-      this.setState({ proposeLoading: false })
-      logger.error(error)
-    }
   }
 
   needDueDiligence = async () => {

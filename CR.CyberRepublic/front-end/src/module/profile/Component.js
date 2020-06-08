@@ -3,7 +3,7 @@ import _ from 'lodash'
 import BaseComponent from '@/model/BaseComponent'
 import UserEditForm from '@/module/form/UserEditForm/Container'
 import I18N from '@/I18N'
-import { Col, Row, Icon, Spin, Modal, Upload } from 'antd'
+import {Col, Row, Icon, Spin, Modal, Upload, Avatar} from 'antd'
 import moment from 'moment-timezone'
 import { upload_file } from '@/util'
 import { getSafeUrl } from '@/util/url'
@@ -246,6 +246,35 @@ export default class extends BaseComponent {
       },
     }
 
+    const renderAvatar = () => {
+      const { avatar, firstName, lastName} = this.props.user.profile || {}
+
+      if (avatar || (!firstName && !lastName)) {
+        return (
+          <Avatar
+                src={avatar || USER_AVATAR_DEFAULT}
+                shape="square"
+                size={142}
+            />
+        )
+      }
+
+      if (firstName || lastName) {
+        return (
+          <Avatar
+                style={{
+                  backgroundColor: '#000',
+                  fontSize: 64
+                }}
+                shape="square"
+                size={142}
+            >
+            {`${firstName && firstName.toUpperCase().substr(0, 1)}${lastName && lastName.toUpperCase().substr(0, 1)}`}
+          </Avatar>
+        )
+      }
+    }
+
     return (
       <div
         className={`profile-avatar-container ${
@@ -264,9 +293,7 @@ export default class extends BaseComponent {
                 <Icon type="loading" />
               </div>
             ) : (
-              <img
-                src={this.getAvatarWithFallback(this.props.user.profile.avatar)}
-              />
+              renderAvatar()
             )}
           </Upload>
         </div>
@@ -343,7 +370,10 @@ export default class extends BaseComponent {
     return (
       <div className="skillset-container">
         {_.map(this.props.user.profile.skillset || [], (skillset) => (
-          <div key={skillset}>+ {I18N.get(`user.skillset.${skillset}`)}</div>
+          <div key={skillset}>
++
+            {I18N.get(`user.skillset.${skillset}`)}
+          </div>
         ))}
       </div>
     )
@@ -366,8 +396,13 @@ export default class extends BaseComponent {
               target="_blank"
               className="link-container"
             >
-              <Icon type="link" />{' '}
-              <span> {I18N.get('profile.portfolio')} </span>
+              <Icon type="link" />
+              {' '}
+              <span>
+                {' '}
+                {I18N.get('profile.portfolio')}
+                {' '}
+              </span>
             </a>
           </div>
         )}
@@ -400,7 +435,9 @@ export default class extends BaseComponent {
       >
         <Icon type="clock-circle" />
         <span>
-          {I18N.get('profile.localTime')} {localTime}
+          {I18N.get('profile.localTime')}
+          {' '}
+          {localTime}
         </span>
       </div>
     )

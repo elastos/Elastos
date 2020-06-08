@@ -15,6 +15,7 @@ export default class extends Base {
       model: this.getName(),
       field: 'displayId',
       startAt: 1,
+      unique: false
     }
     schema.plugin(autoIncrement, options)
     schema.index({ descUpdatedAt: -1 })

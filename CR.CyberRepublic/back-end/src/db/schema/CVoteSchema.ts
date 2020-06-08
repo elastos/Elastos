@@ -17,7 +17,17 @@ export const CVoteResultSchema = {
   reason: {
     type: String,
     default: ''
-  }
+  },
+  txid: {
+    type: String,
+    default: ''
+  },
+  status: {
+    type: String,
+    emnu: _.values(constant.CVOTE_CHAIN_STATUS),
+    default: constant.CVOTE_CHAIN_STATUS.UNCHAIN
+  },
+  signature: { data: String, message: String }
 }
 
 export const CVoteHistorySchema = {
@@ -26,6 +36,22 @@ export const CVoteHistorySchema = {
     type: Date,
     required: true,
     default: Date.now
+  }
+}
+
+const withdrawalHistorySchema = {
+  message: String,
+  messageHash: String,
+  milestoneKey: String,
+  signature: String,
+  createdAt: Date,
+  review: {
+    reason: String,
+    reasonHash: String,
+    opinion: String,
+    signature: String,
+    txid: String,
+    createdAt: Date
   }
 }
 
@@ -70,12 +96,6 @@ export const CVote = {
   plan: {
     type: Schema.Types.Mixed
   },
-  // tracking: {
-  //   type: String,
-  // },
-  // summary: {
-  //   type: String,
-  // },
   // name of proposer
   proposedBy: {
     type: String,
@@ -98,6 +118,7 @@ export const CVote = {
   avatar_map: Object,
   reason_map: Object,
   reason_zh_map: Object,
+  // council member
   createdBy: { type: Schema.Types.ObjectId, ref: 'users' },
 
   published: {
@@ -156,5 +177,24 @@ export const CVote = {
   },
   payment: {
     type: String
-  }
+  },
+  proposalHash: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  draftHash: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  ownerPublicKey: String,
+  rejectAmount: {
+    type: String
+  },
+  rejectThroughAmount: {
+    type: String
+  },
+  withdrawalHistory: [withdrawalHistorySchema],
+  old: Boolean // mark an old proposal
 }

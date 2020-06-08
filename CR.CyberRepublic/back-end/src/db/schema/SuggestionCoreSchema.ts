@@ -2,6 +2,36 @@ import { Schema } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../../constant'
 
+// plan data structure
+const planSchema = {
+  milestone: [
+    {
+      date: String,
+      version: String, // goal
+      milestoneKey: String
+    }
+  ],
+  teamInfo: [
+    {
+      member: String,
+      role: String,
+      responsibility: String,
+      info: String
+    }
+  ]
+}
+// budget data structure
+const budgetSchema = {
+  type: {
+    type: String,
+    enum: _.values(constant.SUGGESTION_BUDGET_TYPE)
+  },
+  amount: String,
+  reasons: String,
+  criteria: String,
+  milestoneKey: String
+}
+
 export const SuggestionCore = {
   title: {
     type: String

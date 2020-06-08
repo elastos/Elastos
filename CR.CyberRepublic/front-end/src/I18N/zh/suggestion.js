@@ -18,7 +18,8 @@ export default {
       creator: '创建人',
       status: '状态',
       created: '创建日期',
-      updated: '更新日期'
+      updated: '更新日期',
+      signature: '签名'
     },
     abstract: '摘要',
     goal: '目标',
@@ -38,7 +39,11 @@ export default {
   btn: {
     makeIntoProposal: '发布为提案',
     needDueDiligence: '需要尽职调查',
-    needAdvisory: '需要咨询'
+    needAdvisory: '需要咨询',
+    signSuggetion: '签名建议',
+    associateDid: '绑定 DID',
+    viewOldData: '查看老数据',
+    viewNewData: '查看新数据'
   },
   status: {
     posted: '发布',
@@ -92,7 +97,16 @@ export default {
       team: '实施团队为空',
       amount: '金额大于总金额的30%',
       previousMilestoneDate: '日期必须晚于前一个里程碑',
-      requirePayment: '在完成提案之前，需要填写项目的支付项。'
+      requirePayment: '在完成提案之前，需要填写项目的支付项。',
+      elaAddress: '地址无效，请核对',
+      amount: '总预算为空',
+      address: 'ELA 收款地址为空',
+      payment: '支付项和里程碑必须保持一致，必须有结项款，至多一项预付款',
+      advance: '预付款只能用于项目第一阶段',
+      completion: '结项款只能用于项目最后阶段.',
+      conditioned: '该阶段支付不能用于项目的这个阶段',
+      isUsed: '该项目阶段已被其它支付项使用了',
+      exception: '出错了'
     }
   },
   modal: {
@@ -101,7 +115,10 @@ export default {
     cancel: '取消',
     pleaseUpdate: '请按照需求更新建议，并通过评论通知委员或社区',
     commentsFromCouncil: '来自委员或管理员的评论:',
-    consideration: '您确定要将此建议标记为委员会正在审议中？'
+    consideration: '您确定要将此建议标记为委员会正在审议中？',
+    signNotice: '您的建议签名之后，才能被委员审核。您不能修改签名后的建议。',
+    signNow: '签名',
+    signLater: '稍后'
   },
   tag: {
     show: '展示',
@@ -116,7 +133,12 @@ export default {
     notify: '已给秘书发送邮件',
     archived: '建议已归档',
     unarchived: '建议已取消归档',
-    revertVersion: '已使用指定版本的内容'
+    revertVersion: '已使用指定版本的内容',
+    madeByOtherCM: '其他委员已经把这个建议转成提案了。',
+    councilQRCode: '扫描上面二维码把建议转成提案',
+    toChain: '正在上链中',
+    signQRCode: '扫描上面二维码签名建议',
+    associateDidFirst: '请先绑定您的 DID'
   },
   header: {
     suggestion: '建议',

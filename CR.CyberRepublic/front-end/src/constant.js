@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-const create = list => {
+const create = (list) => {
   return _.zipObject(list, list)
 }
 
@@ -219,7 +219,7 @@ export const TEAM_SUBCATEGORY = create([
   'DEVELOPER'
 ])
 // Images
-export const USER_AVATAR_DEFAULT = '/assets/images/user_blurred_white.png'
+export const USER_AVATAR_DEFAULT = '/assets/images/default_avatar.png'
 export const TASK_AVATAR_DEFAULT = '/assets/images/Elastos_Logo.png'
 export const TEAM_AVATAR_DEFAULT = '/assets/images/team_blurred.svg'
 
@@ -231,7 +231,9 @@ export const CVOTE_STATUS = create([
   'REJECT',
   'FINAL',
   'DEFERRED',
-  'INCOMPLETED'
+  'INCOMPLETED',
+  'NOTIFICATION',
+  'VETOED'
 ])
 
 export const CVOTE_STATUS_TEXT = {
@@ -242,6 +244,13 @@ export const CVOTE_STATUS_TEXT = {
   DEFERRED: 'DEFERRED',
   FINAL: 'FINAL',
   INCOMPLETED: 'INCOMPLETED'
+}
+
+export const CVOTE_CHAIN_STATUS = {
+  CHAINED: 'chained',
+  UNCHAIN: 'unchain',
+  CHAINING: 'chaining',
+  FAILED: 'failed'
 }
 
 export const CONTENT_TYPE = create(['MARKDOWN', 'HTML'])
@@ -423,3 +432,12 @@ export const ELIP_VOTE_STATUS_COLOR = {
 }
 export const ELIP_TYPE = create(['STANDARD_TRACK', 'PROCESS', 'INFORMATIONAL'])
 export const ELIP_NUMBER_TYPE = ['4', '5', '6']
+
+export const MILESTONE_STATUS = create([
+  'WAITING_FOR_REQUEST',
+  'REJECTED',
+  'WAITING_FOR_APPROVAL',
+  'WAITING_FOR_WITHDRAWAL',
+  'WITHDRAWN'
+])
+export const REVIEW_OPINION = create(['REJECTED', 'APPROVED'])

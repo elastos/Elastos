@@ -11,7 +11,7 @@ message.config({ top: 100 })
  */
 export default createContainer(
   Component,
-  state => {
+  (state) => {
     return {
       ...state.user.register_form,
       language: state.language

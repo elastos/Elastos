@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Popover, Spin } from 'antd'
+import { Popover, Spin, message } from 'antd'
 import I18N from '@/I18N'
 import QRCode from 'qrcode.react'
 import ExternalLinkSvg from './ExternalLinkSvg'
@@ -25,43 +25,43 @@ class ProfileDid extends Component {
     )
   }
 
-  pollingDid = () => {
-    this.timerDid = setInterval(async () => {
-      const rs = await this.props.getNewActiveDid()
-      if (rs && rs.success) {
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        this.setState({ url: '', visible: false })
-      }
-    }, 3000)
-  }
-
-  handleReassociate = async () => {
-    const { url } = this.state
-    if (url) {
-      if (this.timerDid) {
-        return
+  pollingDid = async () => {
+    if (!this._isMounted) {
+      return
+    }
+    const rs = await this.props.getNewActiveDid()
+    if (rs && rs.success) {
+      clearTimeout(this.timerDid)
+      this.timerDid = null
+      this.setState({ url: '', visible: false })
+      return
+    }
+    if (rs && rs.success === false) {
+      clearTimeout(this.timerDid)
+      this.timerDid = null
+      if (rs.message) {
+        message.error(rs.message)
       } else {
-        this.pollingDid()
+        message.error('Something went wrong')
       }
-    } else {
-      const rs = await this.props.getElaUrl()
-      if (rs && rs.success) {
-        this.setState({ url: rs.url }, () => {
-          this.pollingDid()
-        })
-      }
+      this.setState({ visible: false })
+      return
+    }
+    if (this._isMounted) {
+      clearTimeout(this.timerDid)
+      this.timerDid = setTimeout(this.pollingDid, 3000)
     }
   }
 
-  handleAssociate = async () => {
+  handleAssociate = () => {
     if (this.timerDid) {
       return
     }
-    this.pollingDid()
+    this.timerDid = setTimeout(this.pollingDid, 3000)
   }
 
   componentDidMount = async () => {
+    this._isMounted = true
     const rs = await this.props.getElaUrl()
     if (rs && rs.success) {
       this.setState({ url: rs.url })
@@ -69,10 +69,12 @@ class ProfileDid extends Component {
   }
 
   componentWillUnmount() {
-    clearInterval(this.timerDid)
+    this._isMounted = false
+    clearTimeout(this.timerDid)
+    this.timerDid = null
   }
 
-  handleVisibleChange = visible => {
+  handleVisibleChange = (visible) => {
     this.setState({ visible })
   }
 
@@ -87,17 +89,6 @@ class ProfileDid extends Component {
     if (did && did.id) {
       return (
         <Did>
-          <Popover
-            content={this.elaQrCode()}
-            trigger="click"
-            placement="top"
-            visible={this.state.visible}
-            onVisibleChange={this.handleVisibleChange}
-          >
-            <Reassociate onClick={this.handleReassociate}>
-              {I18N.get('profile.reassociateDid')}
-            </Reassociate>
-          </Popover>
           <span>DID:</span>
           <a
             href={`https://${domain}.elastos.org/address/${did.id.slice(
@@ -111,7 +102,13 @@ class ProfileDid extends Component {
       )
     } else {
       return (
-        <Popover content={this.elaQrCode()} trigger="click" placement="top">
+        <Popover
+          content={this.elaQrCode()}
+          trigger="click"
+          placement="top"
+          visible={this.state.visible}
+          onVisibleChange={this.handleVisibleChange}
+        >
           <Button onClick={this.handleAssociate}>
             {I18N.get('profile.associateDid')}
           </Button>
@@ -152,13 +149,4 @@ const Did = styled.div`
       text-decoration: none;
     }
   }
-`
-const Reassociate = styled.span`
-  display: inline-block;
-  font-size: 13px;
-  color: #008d85;
-  cursor: pointer;
-  border: 1px solid #008d85;
-  padding: 0 8px;
-  margin-bottom: 16px;
 `

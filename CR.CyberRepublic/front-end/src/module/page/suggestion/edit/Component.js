@@ -68,7 +68,9 @@ export default class extends StandardPage {
         </div>
       )
     }
-
+    if (_.get(this.state.data, 'signature.data')) {
+      return this.historyBack()
+    }
     return (
       <div>
         <Meta
