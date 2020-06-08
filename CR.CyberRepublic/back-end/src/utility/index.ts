@@ -209,7 +209,7 @@ export const getInformationByDid = async (did: string) => {
   }
   try {
     const res = await axios.post(
-      'http://cen.longrunweather.com:18080/api/dposnoderpc/check/jwtget',
+      `${process.env.UNIONSQUARE_URL}/api/dposnoderpc/check/jwtget`,
       data
     )
     const publicKeyObj: any = await getDidPublicKey(did)
