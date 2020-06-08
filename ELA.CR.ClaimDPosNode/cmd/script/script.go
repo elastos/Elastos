@@ -456,10 +456,6 @@ func NewCommand() *cli.Command {
 				Usage: "set the draft proposal hash",
 			},
 			cli.StringFlag{
-				Name:  "newownerpublickey",
-				Usage: "set the new owner public key",
-			},
-			cli.StringFlag{
 				Name:  "targethash",
 				Usage: "set the target proposal hash",
 			},
