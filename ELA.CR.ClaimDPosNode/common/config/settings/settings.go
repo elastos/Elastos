@@ -407,7 +407,7 @@ func NewSettings() *Settings {
 			conf *config.Configuration) error {
 			crAssetsAddress, err := common.Uint168FromAddress(conf.CRConfiguration.CRAssetsAddress)
 			if err != nil {
-				return errors.New("invalid CR Assets Address")
+				return errors.New("invalid CR assets address")
 			}
 			params.CRAssetsAddress = *crAssetsAddress
 			return nil
@@ -435,7 +435,7 @@ func NewSettings() *Settings {
 			conf *config.Configuration) error {
 			CRExpensesAddress, err := common.Uint168FromAddress(conf.CRConfiguration.CRExpensesAddress)
 			if err != nil {
-				return errors.New("invalid CRC committee address")
+				return errors.New("invalid CR expenses address")
 			}
 			params.CRExpensesAddress = *CRExpensesAddress
 			return nil
@@ -448,7 +448,7 @@ func NewSettings() *Settings {
 			}
 			CRExpensesAddress, err := common.Uint168FromAddress(value)
 			if err != nil {
-				return errors.New("invalid CRC committee address")
+				return errors.New("invalid CR expenses address")
 			}
 			params.CRExpensesAddress = *CRExpensesAddress
 			return nil

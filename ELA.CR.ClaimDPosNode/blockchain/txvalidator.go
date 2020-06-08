@@ -694,7 +694,7 @@ func (b *BlockChain) checkTransactionOutput(txn *Transaction,
 		}
 		if !txn.Outputs[0].ProgramHash.IsEqual(b.chainParams.CRExpensesAddress) {
 			return errors.New("new CRCAppropriation tx must have the first" +
-				"output to CRC committee address")
+				"output to CR expenses address")
 		}
 		if !txn.Outputs[1].ProgramHash.IsEqual(b.chainParams.CRAssetsAddress) {
 			return errors.New("new CRCAppropriation tx must have the second" +
@@ -765,7 +765,7 @@ func checkOutputProgramHash(height uint32, programHash common.Uint168) error {
 		if programHash.IsEqual(empty) {
 			return nil
 		}
-		if programHash.IsEqual(config.CRCAssetsAddress) {
+		if programHash.IsEqual(config.CRAssetsAddress) {
 			return nil
 		}
 		if programHash.IsEqual(config.CRCExpensesAddress) {
@@ -1113,11 +1113,13 @@ func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) 
 			return errors.New("not support before CRCommitteeStartHeight")
 		}
 		if txn.TxType == CRCProposalWithdraw {
-			if txn.PayloadVersion == payload.CRCProposalWithdrawDefault && blockHeight >= b.chainParams.CRCProposalWithdrawPayloadV1Height {
+			if txn.PayloadVersion == payload.CRCProposalWithdrawDefault &&
+				blockHeight >= b.chainParams.CRCProposalWithdrawPayloadV1Height {
 				return errors.New("not support after CRCProposalWithdrawPayloadV1Height")
 			}
 
-			if txn.PayloadVersion == payload.CRCProposalWithdrawVersion01 && blockHeight < b.chainParams.CRCProposalWithdrawPayloadV1Height {
+			if txn.PayloadVersion == payload.CRCProposalWithdrawVersion01 &&
+				blockHeight < b.chainParams.CRCProposalWithdrawPayloadV1Height {
 				return errors.New("not support before CRCProposalWithdrawPayloadV1Height")
 			}
 		}
@@ -1887,6 +1889,9 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 		if withdrawPayload.Amount+fee != withdrawAmount {
 			return errors.New("withdrawPayload.Amount + fee != withdrawAmount ")
 		}
+		if withdrawPayload.Amount < b.chainParams.RealWithdrawSingleFee {
+			return errors.New("withdraw amount is less than RealWithdrawSingleFee")
+		}
 	}
 
 	signedBuf := new(bytes.Buffer)
@@ -2057,7 +2062,7 @@ func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 			"equal to MinCRAssetsAddressUTXOCount")
 	}
 
-	// Inputs need to only from CRC Assets address
+	// Inputs need to only from CR assets address
 	var totalInput common.Fixed64
 	for _, output := range references {
 		totalInput += output.Value
@@ -2071,7 +2076,7 @@ func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 		return errors.New("outputs count should be only one")
 	}
 
-	// Output should translate to CR Assets Address only
+	// Output should translate to CR assets address only
 	if !txn.Outputs[0].ProgramHash.IsEqual(b.chainParams.CRAssetsAddress) {
 		return errors.New("output does not to CRAssetsAddress")
 	}

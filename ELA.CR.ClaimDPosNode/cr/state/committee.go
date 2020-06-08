@@ -291,7 +291,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		return
 	}
 
-	// Get UTXOs of CRC Assets Address and committee address.
+	// Get UTXOs of CR assets address and committee address.
 	c.recordCRCRelatedAddressOutputs(block)
 
 	// If reached the voting start height, record the last voting start height.

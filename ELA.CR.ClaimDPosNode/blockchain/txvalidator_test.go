@@ -2084,7 +2084,7 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 }
 
 func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
-	// Set CR assets address and CRC committee address.
+	// Set CR assets address and CR expenses address.
 	s.Chain.chainParams.CRAssetsAddress = *randomUint168()
 	s.Chain.chainParams.CRExpensesAddress = *randomUint168()
 
@@ -2140,7 +2140,7 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	err = s.Chain.checkCRCAppropriationTransaction(txn, reference)
 	s.EqualError(err, "should have no appropriation transaction")
 
-	// Input does not from CRC assets address
+	// Input does not from CR assets address
 	s.Chain.crCommittee.NeedAppropriation = true
 	reference[input] = refOutputErr
 	txn = s.getCRCAppropriationTx(input, output1, output2)
@@ -2349,7 +2349,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 }
 
 func (s *txValidatorTestSuite) TestCheckCRCProposalRealWithdrawTransaction() {
-	// Set CRC committee address.
+	// Set CR expenses address.
 	s.Chain.chainParams.CRExpensesAddress = *randomUint168()
 
 	// Set WithdrawableTxInfo
