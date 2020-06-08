@@ -37,6 +37,10 @@ local draft_hash = getDraftHash()
 
 local budgets = getBudgets()
 local recipient = getToAddr()
+
+local secretary_general_pubkey = getSecretaryGeneralPublickey()
+local secretary_general_privatekey = getSecretaryGeneralPrivkey()
+
 if fee == 0
     then
     fee = 0.1
@@ -47,19 +51,6 @@ if owner_pubkey == "" then
 end
 --print("proposal type:", proposal_type)
 print( proposal_type)
-
- if proposal_type ~= 0x0400 then
-    if draft_hash == "" then
-        print("draft_hash is nil, should use --draftHash to set it.")
-        return
-    end
-
-    if recipient == "" then
-        print("recipient is nil, should use --to to set it.")
-        return
-    end
-end
-
 
 
 if next(budgets) == nil then
@@ -75,6 +66,8 @@ print("owner_privatekey:", owner_privatekey)
 print("proposal type:", proposal_type)
 print("draft proposal hash:", draft_hash)
 print("budgets:")
+print("secretary_general_pubkey:", secretary_general_pubkey)
+print("secretary_general_privatekey:", secretary_general_privatekey)
 
 print("-----------------------")
 for i, v in pairs(budgets) do
@@ -83,12 +76,9 @@ end
 print("-----------------------")
 
 local cp_payload
--- crc proposal payload: crPublickey, proposalType, draftData, budgets, recipient, wallet
- cp_payload =crcproposal.new(owner_pubkey, proposal_type, draft_hash, budgets,
- recipient, wallet, cr_opinion_hash)
-
+ cp_payload =crcproposal.newsg(owner_pubkey,owner_privatekey, proposal_type, draft_hash,
+         secretary_general_pubkey,secretary_general_privatekey, wallet)
  print(cp_payload:get())
-
 
 local tx = transaction.new(9, 0x25, 0, cp_payload, 0)
 print(tx:get())

@@ -16,7 +16,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
-
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -1558,9 +1557,11 @@ func RegisterCRCProposalTrackingType(L *lua.LState) {
 
 // Constructor
 func newCRCProposalTracking(L *lua.LState) int {
+	fmt.Println("newCRCProposalTracking begin====")
 	proposalTrackingType := L.ToInt64(1)
 	proposalHashStr := L.ToString(2)
 	MessageHashStr := L.ToString(3)
+
 	stage := L.ToInt64(4)
 	ownerpublickeyStr := L.ToString(5)
 	ownerprivatekeyStr := L.ToString(6)
@@ -1571,6 +1572,7 @@ func newCRCProposalTracking(L *lua.LState) int {
 	proposalHash, _ := common.Uint256FromHexString(proposalHashStr)
 	MessageHash, _ := common.Uint256FromHexString(MessageHashStr)
 	opinionHash := &common.Uint256{}
+
 	if SecretaryGeneralOpinionHashStr != "" {
 		var err error
 		opinionHash, err = common.Uint256FromHexString(SecretaryGeneralOpinionHashStr)
@@ -1610,14 +1612,25 @@ func newCRCProposalTracking(L *lua.LState) int {
 	}
 
 	common.WriteVarBytes(signBuf, sig)
+
+	//w.Write([]byte{byte(p.ProposalTrackingType)})
+	if proposalTrackingType != int64(payload.ChangeOwner) {
+		err := common.WriteVarBytes(signBuf, cPayload.NewOwnerSignature)
+		if err != nil {
+			fmt.Println("WriteVarBytes NewOwnerSignature error", err)
+		}
+	}
+	signBuf.Write([]byte{byte(cPayload.ProposalTrackingType)})
 	cPayload.SecretaryGeneralOpinionHash.Serialize(signBuf)
+
 	crSig, _ := crypto.Sign(sgPrivateKey, signBuf.Bytes())
 	cPayload.SecretaryGeneralSignature = crSig
-
 	ud := L.NewUserData()
 	ud.Value = cPayload
 	L.SetMetatable(ud, L.GetTypeMetatable(luaCRCProposalTrackingName))
 	L.Push(ud)
+	fmt.Println("newCRCProposalTracking end====")
+
 	return 1
 }
 
