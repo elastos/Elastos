@@ -967,6 +967,7 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::GetVoteInfo(const std::string &type) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("type: {}", type);
 
 			WalletPtr wallet = _walletManager->GetWallet();
 			UTXOArray utxos = wallet->GetVoteUTXO();
