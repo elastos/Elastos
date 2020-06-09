@@ -224,7 +224,7 @@ func (p *Peer) SetStallHandler(handler StallHandler) {
 //
 // This function is safe for concurrent access.
 func (p *Peer) String() string {
-	return fmt.Sprintf("%s (%s)", p.addr, directionString(p.inbound))
+	return fmt.Sprintf("%s (%s) (%d %s)", p.addr, directionString(p.inbound), p.cfg.ProtocolVersion, p.cfg.NodeVersion)
 }
 
 // UpdateHeight updates the last known block for the peer.
@@ -1044,6 +1044,7 @@ func (p *Peer) localVersionMsg() (*msg.Version, error) {
 	if bestHeight >= p.cfg.NewVersionHeight {
 		nodeVersion = p.cfg.NodeVersion
 		ver = pact.CRProposalVersion
+		p.cfg.ProtocolVersion = ver
 	}
 	// Version message.
 	m = msg.NewVersion(ver, p.cfg.DefaultPort,

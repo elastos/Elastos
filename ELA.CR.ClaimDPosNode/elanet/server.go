@@ -138,6 +138,7 @@ func (sp *serverPeer) handleDisconnect() {
 // used to negotiate the protocol version details as well as kick start
 // the communications.
 func (sp *serverPeer) OnVersion(_ *peer.Peer, m *msg.Version) {
+
 	// Disconnect full node peers that do not support DPOS protocol.
 	if nodeFlag(m.Services) && sp.ProtocolVersion() < pact.DPOSStartVersion {
 		sp.Disconnect()
@@ -985,8 +986,13 @@ func NewServer(dataDir string, cfg *Config, nodeVersion string) (*server, error)
 		params.ListenAddrs = []string{fmt.Sprint(":", params.DefaultPort)}
 	}
 
+	var pver = pact.DPOSStartVersion
+	if cfg.Chain.GetHeight() >= uint32(params.NewVersionHeight) {
+		pver = pact.CRProposalVersion
+	}
+
 	svrCfg := svr.NewDefaultConfig(
-		params.Magic, pact.DPOSStartVersion, uint64(services),
+		params.Magic, pver, uint64(services),
 		params.DefaultPort, params.DNSSeeds, params.ListenAddrs,
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(cfg.Chain.GetHeight()) },

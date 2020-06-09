@@ -391,6 +391,7 @@ func (s *server) checkAddr(addr string) error {
 	if bestHeight >= s.cfg.NewVersionHeight {
 		nodeVersion = s.cfg.NodeVersion
 		ver = pact.CRProposalVersion
+		s.cfg.ProtocolVersion = ver
 	}
 	// Version message.
 	versionMsg = msg.NewVersion(ver, s.cfg.DefaultPort,

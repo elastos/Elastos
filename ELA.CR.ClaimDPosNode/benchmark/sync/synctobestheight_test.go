@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package sync
 
@@ -170,7 +170,7 @@ func startDstNode() {
 		TxMemPool:      txMemPool,
 		BlockMemPool:   blockMemPool,
 		Routes:         route,
-	})
+	}, "")
 	if err != nil {
 		logger.Error(err)
 		return

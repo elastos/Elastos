@@ -81,8 +81,14 @@ func handlePeer(p *peer.Peer) {
 
 // New creates and return a DNS instance.
 func New(dataDir string, magic uint32, port uint16, newVersionHeight uint64, nodeVersion string) (*DNS, error) {
+
+	var pver = pact.DPOSStartVersion
+	if bestHeight() >= newVersionHeight {
+		pver = pact.CRProposalVersion
+	}
+
 	svrCfg := server.NewDefaultConfig(
-		magic, pact.DPOSStartVersion, 0, port, nil,
+		magic, pver, 0, port, nil,
 		[]string{fmt.Sprintf(":%d", port)},
 		nil, nil, makeMessage, bestHeight, newVersionHeight, nodeVersion,
 	)

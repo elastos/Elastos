@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package dns
 
@@ -37,7 +37,7 @@ func haveNonce(ip net.IP, port int, nonce uint64) bool {
 
 // mockInboundPeer mocks a inbound peer by the given port.
 func mockInboundPeer(port int, pc chan *peer.Peer,
-	ac chan *p2p.NetAddress) error {
+	ac chan *p2p.NetAddress, newVersionHeight uint64, nodeVersion string) error {
 	// Configure peer to act as a simnet node that offers no services.
 	cfg := &peer.Config{
 		Magic:            123123,
@@ -60,6 +60,8 @@ func mockInboundPeer(port int, pc chan *peer.Peer,
 				}
 			}
 		},
+		NewVersionHeight: newVersionHeight,
+		NodeVersion:      nodeVersion,
 	}
 
 	conn, err := net.Dial("tcp", "localhost:20338")
@@ -84,7 +86,9 @@ func mockInboundPeer(port int, pc chan *peer.Peer,
 // automatically.
 func TestDNS(t *testing.T) {
 	test.SkipShort(t)
-	dns, err := New("./", 123123, 20338)
+	var newVersionHeight uint64 = 1000000
+	var nodeVersion = "v0.5.0"
+	dns, err := New("./", 123123, 20338, newVersionHeight, nodeVersion)
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
@@ -95,7 +99,7 @@ func TestDNS(t *testing.T) {
 	pc := make(chan *peer.Peer)
 	ac := make(chan *p2p.NetAddress)
 	for i := 0; i < 1000; i++ {
-		err = mockInboundPeer(port+i, pc, ac)
+		err = mockInboundPeer(port+i, pc, ac, newVersionHeight, nodeVersion)
 		if !assert.NoError(t, err) {
 			t.FailNow()
 		}
