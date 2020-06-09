@@ -114,6 +114,12 @@ export default class extends Base {
     public async councilInformation(param: any): Promise<any> {
         const {id, did} = param
 
+        if (!id && !did) {
+            return {
+                tyep: 'Other'
+            }
+        }
+
         // query council
         const fields = [
             'height',

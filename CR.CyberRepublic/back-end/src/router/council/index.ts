@@ -17,7 +17,7 @@ export default Base.setRouter([
         method: 'get'
     },
     {
-        path: '/information/:did/:id?',
+        path: '/information/:did?/:id?',
         router: council_information,
         method: 'get'
     },
