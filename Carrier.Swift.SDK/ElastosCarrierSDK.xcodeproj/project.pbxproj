@@ -21,21 +21,27 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		112CC13123346CEE0018F76C /* libcjson.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 112CC120233469BB0018F76C /* libcjson.a */; };
-		112CC13223346CEE0018F76C /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A4226F1C6300146D25 /* libcrystal.a */; };
-		112CC13323346CEE0018F76C /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 111E0C652302CB4300167953 /* libcurl.a */; };
-		112CC13423346CEE0018F76C /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A5226F1C6300146D25 /* libelacarrier.a */; };
-		112CC13523346CEE0018F76C /* libelafiletrans.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A1226F1C6300146D25 /* libelafiletrans.a */; };
-		112CC13623346CEE0018F76C /* libelasession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A2226F1C6300146D25 /* libelasession.a */; };
-		112CC13723346CEE0018F76C /* libflatccrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A09F226F1C6300146D25 /* libflatccrt.a */; };
-		112CC13823346CEE0018F76C /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A7226F1C6300146D25 /* libpj.a */; };
-		112CC13923346CEE0018F76C /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A6226F1C6300146D25 /* libpjlib-util.a */; };
-		112CC13A23346CEE0018F76C /* libpjmedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A09E226F1C6300146D25 /* libpjmedia.a */; };
-		112CC13B23346CEE0018F76C /* libpjnath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A8226F1C6300146D25 /* libpjnath.a */; };
-		112CC13C23346CEE0018F76C /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A3226F1C6300146D25 /* libsodium.a */; };
-		112CC13D23346CEE0018F76C /* libsrtp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0B4226F1CFD00146D25 /* libsrtp.a */; };
-		112CC13E23346CEE0018F76C /* libtoxcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A0226F1C6300146D25 /* libtoxcore.a */; };
-		112CC13F23346CEE0018F76C /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155A265230BE2C500381137 /* libz.a */; };
+		114A739B248F286400262228 /* libcjson.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 112CC120233469BB0018F76C /* libcjson.a */; };
+		114A739C248F286400262228 /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A4226F1C6300146D25 /* libcrystal.a */; };
+		114A739D248F286400262228 /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 111E0C652302CB4300167953 /* libcurl.a */; };
+		114A739E248F286400262228 /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A5226F1C6300146D25 /* libelacarrier.a */; };
+		114A739F248F286400262228 /* libelafiletrans.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A1226F1C6300146D25 /* libelafiletrans.a */; };
+		114A73A0248F286400262228 /* libelasession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A2226F1C6300146D25 /* libelasession.a */; };
+		114A73A1248F286400262228 /* libflatccrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A09F226F1C6300146D25 /* libflatccrt.a */; };
+		114A73A2248F286400262228 /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A7226F1C6300146D25 /* libpj.a */; };
+		114A73A3248F286400262228 /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A6226F1C6300146D25 /* libpjlib-util.a */; };
+		114A73A4248F286500262228 /* libpjmedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A09E226F1C6300146D25 /* libpjmedia.a */; };
+		114A73A5248F286500262228 /* libpjnath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A8226F1C6300146D25 /* libpjnath.a */; };
+		114A73A6248F286500262228 /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A3226F1C6300146D25 /* libsodium.a */; };
+		114A73A7248F286500262228 /* libsrtp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0B4226F1CFD00146D25 /* libsrtp.a */; };
+		114A73A8248F286500262228 /* libtoxcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A0226F1C6300146D25 /* libtoxcore.a */; };
+		114A73A9248F286500262228 /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155A265230BE2C500381137 /* libz.a */; };
+		114A73AD248F287400262228 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 114A73AC248F286600262228 /* libssl.a */; };
+		114A73AE248F288A00262228 /* extension.h in Headers */ = {isa = PBXBuildFile; fileRef = A30D528F2489E26300E07564 /* extension.h */; };
+		114A73AF248F288E00262228 /* ela_turnserver.h in Headers */ = {isa = PBXBuildFile; fileRef = A30D52932489E65800E07564 /* ela_turnserver.h */; };
+		114A73B0248F289700262228 /* CExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30D52912489E29400E07564 /* CExtension.swift */; };
+		114A73B1248F289A00262228 /* CTurnServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30D52972489E92200E07564 /* CTurnServer.swift */; };
+		114A73B2248F28DB00262228 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 114A73AA248F286600262228 /* libcrypto.a */; };
 		116061DB2268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 116061D92268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		116061DF2268AB6900BDCB9F /* CFileTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15B21BD43CF00AF4FE3 /* CFileTransfer.swift */; };
 		116061E02268AB6E00BDCB9F /* CCarrier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F32003779300420421 /* CCarrier.swift */; };
@@ -100,6 +106,14 @@
 		118B6E66247FB80500E0950F /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 118B6E64247FB64100E0950F /* libcrypto.a */; };
 		118B6F5B2480B90A00E0950F /* CarrierReceiptState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118B6F5A2480B90A00E0950F /* CarrierReceiptState.swift */; };
 		118B6F5C2480B90A00E0950F /* CarrierReceiptState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118B6F5A2480B90A00E0950F /* CarrierReceiptState.swift */; };
+		118B6F9B2489F94D00E0950F /* CarrierExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118B6F9A2489F94D00E0950F /* CarrierExtension.swift */; };
+		118B6F9C2489F94D00E0950F /* CarrierExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118B6F9A2489F94D00E0950F /* CarrierExtension.swift */; };
+		118B6F9E2489F96B00E0950F /* TurnServerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118B6F9D2489F96B00E0950F /* TurnServerInfo.swift */; };
+		118B6F9F2489F96B00E0950F /* TurnServerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118B6F9D2489F96B00E0950F /* TurnServerInfo.swift */; };
+		A30D52902489E26300E07564 /* extension.h in Headers */ = {isa = PBXBuildFile; fileRef = A30D528F2489E26300E07564 /* extension.h */; };
+		A30D52922489E29400E07564 /* CExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30D52912489E29400E07564 /* CExtension.swift */; };
+		A30D52942489E65800E07564 /* ela_turnserver.h in Headers */ = {isa = PBXBuildFile; fileRef = A30D52932489E65800E07564 /* ela_turnserver.h */; };
+		A30D52982489E92200E07564 /* CTurnServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30D52972489E92200E07564 /* CTurnServer.swift */; };
 		A35CE15221BB4F3C00AF4FE3 /* GroupPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15021BB4F3B00AF4FE3 /* GroupPeer.swift */; };
 		A35CE15321BB4F3C00AF4FE3 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15121BB4F3B00AF4FE3 /* Group.swift */; };
 		A35CE15521BBCDD200AF4FE3 /* CarrierGroupDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15421BBCDD200AF4FE3 /* CarrierGroupDelegate.swift */; };
@@ -170,6 +184,9 @@
 		112CC0FD233383770018F76C /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = "NativeDistributions/lib/-iphoneos/libcjson.a"; sourceTree = "<group>"; };
 		112CC0FE233383770018F76C /* libpjlib-util.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libpjlib-util.a"; path = "NativeDistributions/lib/-iphoneos/libpjlib-util.a"; sourceTree = "<group>"; };
 		112CC120233469BB0018F76C /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = NativeDistributions/lib/macosx/libcjson.a; sourceTree = "<group>"; };
+		114A73AA248F286600262228 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = NativeDistributions/lib/macosx/libcrypto.a; sourceTree = "<group>"; };
+		114A73AB248F286600262228 /* libtls.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtls.a; path = NativeDistributions/lib/macosx/libtls.a; sourceTree = "<group>"; };
+		114A73AC248F286600262228 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = NativeDistributions/lib/macosx/libssl.a; sourceTree = "<group>"; };
 		1155A264230BE2C500381137 /* libhive-api++.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libhive-api++.a"; path = "NativeDistributions/lib/macosx/libhive-api++.a"; sourceTree = "<group>"; };
 		1155A265230BE2C500381137 /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = NativeDistributions/lib/macosx/libz.a; sourceTree = "<group>"; };
 		1155A268230BE2CE00381137 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
@@ -207,7 +224,13 @@
 		118B6E63247FB64100E0950F /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "NativeDistributions/lib/-iphonesimulator/libssl.a"; sourceTree = "<group>"; };
 		118B6E64247FB64100E0950F /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "NativeDistributions/lib/-iphonesimulator/libcrypto.a"; sourceTree = "<group>"; };
 		118B6F5A2480B90A00E0950F /* CarrierReceiptState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CarrierReceiptState.swift; path = Carrier/CarrierReceiptState.swift; sourceTree = "<group>"; };
+		118B6F9A2489F94D00E0950F /* CarrierExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CarrierExtension.swift; path = Carrier/CarrierExtension.swift; sourceTree = "<group>"; };
+		118B6F9D2489F96B00E0950F /* TurnServerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TurnServerInfo.swift; path = Carrier/TurnServerInfo.swift; sourceTree = "<group>"; };
 		11A2088D247FB2900081A284 /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = "NativeDistributions/lib/-iphonesimulator/libcjson.a"; sourceTree = "<group>"; };
+		A30D528F2489E26300E07564 /* extension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = extension.h; path = NativeDistributions/include/extension.h; sourceTree = "<group>"; };
+		A30D52912489E29400E07564 /* CExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CExtension.swift; path = NativeDistributions/include/CExtension.swift; sourceTree = "<group>"; };
+		A30D52932489E65800E07564 /* ela_turnserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ela_turnserver.h; path = NativeDistributions/include/ela_turnserver.h; sourceTree = "<group>"; };
+		A30D52972489E92200E07564 /* CTurnServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CTurnServer.swift; path = NativeDistributions/include/CTurnServer.swift; sourceTree = "<group>"; };
 		A35CE15021BB4F3B00AF4FE3 /* GroupPeer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GroupPeer.swift; path = Carrier/GroupPeer.swift; sourceTree = "<group>"; };
 		A35CE15121BB4F3B00AF4FE3 /* Group.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Group.swift; path = Carrier/Group.swift; sourceTree = "<group>"; };
 		A35CE15421BBCDD200AF4FE3 /* CarrierGroupDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CarrierGroupDelegate.swift; path = Carrier/CarrierGroupDelegate.swift; sourceTree = "<group>"; };
@@ -291,21 +314,23 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				112CC13123346CEE0018F76C /* libcjson.a in Frameworks */,
-				112CC13223346CEE0018F76C /* libcrystal.a in Frameworks */,
-				112CC13323346CEE0018F76C /* libcurl.a in Frameworks */,
-				112CC13423346CEE0018F76C /* libelacarrier.a in Frameworks */,
-				112CC13523346CEE0018F76C /* libelafiletrans.a in Frameworks */,
-				112CC13623346CEE0018F76C /* libelasession.a in Frameworks */,
-				112CC13723346CEE0018F76C /* libflatccrt.a in Frameworks */,
-				112CC13823346CEE0018F76C /* libpj.a in Frameworks */,
-				112CC13923346CEE0018F76C /* libpjlib-util.a in Frameworks */,
-				112CC13A23346CEE0018F76C /* libpjmedia.a in Frameworks */,
-				112CC13B23346CEE0018F76C /* libpjnath.a in Frameworks */,
-				112CC13C23346CEE0018F76C /* libsodium.a in Frameworks */,
-				112CC13D23346CEE0018F76C /* libsrtp.a in Frameworks */,
-				112CC13E23346CEE0018F76C /* libtoxcore.a in Frameworks */,
-				112CC13F23346CEE0018F76C /* libz.a in Frameworks */,
+				114A73AD248F287400262228 /* libssl.a in Frameworks */,
+				114A73A9248F286500262228 /* libz.a in Frameworks */,
+				114A739F248F286400262228 /* libelafiletrans.a in Frameworks */,
+				114A73A0248F286400262228 /* libelasession.a in Frameworks */,
+				114A73B2248F28DB00262228 /* libcrypto.a in Frameworks */,
+				114A73A7248F286500262228 /* libsrtp.a in Frameworks */,
+				114A739C248F286400262228 /* libcrystal.a in Frameworks */,
+				114A73A3248F286400262228 /* libpjlib-util.a in Frameworks */,
+				114A739B248F286400262228 /* libcjson.a in Frameworks */,
+				114A73A8248F286500262228 /* libtoxcore.a in Frameworks */,
+				114A739D248F286400262228 /* libcurl.a in Frameworks */,
+				114A73A6248F286500262228 /* libsodium.a in Frameworks */,
+				114A73A1248F286400262228 /* libflatccrt.a in Frameworks */,
+				114A73A5248F286500262228 /* libpjnath.a in Frameworks */,
+				114A739E248F286400262228 /* libelacarrier.a in Frameworks */,
+				114A73A4248F286500262228 /* libpjmedia.a in Frameworks */,
+				114A73A2248F286400262228 /* libpj.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,6 +397,9 @@
 			children = (
 				118B6E64247FB64100E0950F /* libcrypto.a */,
 				118B6E63247FB64100E0950F /* libssl.a */,
+				114A73AA248F286600262228 /* libcrypto.a */,
+				114A73AC248F286600262228 /* libssl.a */,
+				114A73AB248F286600262228 /* libtls.a */,
 				112CC0FD233383770018F76C /* libcjson.a */,
 				112CC120233469BB0018F76C /* libcjson.a */,
 				11A2088D247FB2900081A284 /* libcjson.a */,
@@ -513,12 +541,16 @@
 		A3B497D42003757A00420421 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				A30D528F2489E26300E07564 /* extension.h */,
+				A30D52932489E65800E07564 /* ela_turnserver.h */,
 				11612D8622F1722D001179CD /* ela_carrier.h */,
 				11612D8822F1722D001179CD /* ela_filetransfer.h */,
 				11612D8722F1722D001179CD /* ela_session.h */,
 				A35CE15B21BD43CF00AF4FE3 /* CFileTransfer.swift */,
 				A3B497F32003779300420421 /* CCarrier.swift */,
 				A3B497F22003779300420421 /* CSession.swift */,
+				A30D52912489E29400E07564 /* CExtension.swift */,
+				A30D52972489E92200E07564 /* CTurnServer.swift */,
 			);
 			name = include;
 			sourceTree = "<group>";
@@ -540,6 +572,8 @@
 				A3B497E62003763500420421 /* CarrierDelegate.swift */,
 				A3B497E42003763500420421 /* CarrierOptions.swift */,
 				118B6F5A2480B90A00E0950F /* CarrierReceiptState.swift */,
+				118B6F9A2489F94D00E0950F /* CarrierExtension.swift */,
+				118B6F9D2489F96B00E0950F /* TurnServerInfo.swift */,
 			);
 			name = Carrier;
 			sourceTree = "<group>";
@@ -588,7 +622,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				11612D8A22F1722D001179CD /* ela_carrier.h in Headers */,
+				114A73AE248F288A00262228 /* extension.h in Headers */,
 				116061DB2268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h in Headers */,
+				114A73AF248F288E00262228 /* ela_turnserver.h in Headers */,
 				11612D8E22F1722D001179CD /* ela_filetransfer.h in Headers */,
 				11612D8C22F1722D001179CD /* ela_session.h in Headers */,
 			);
@@ -599,7 +635,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				11612D8922F1722D001179CD /* ela_carrier.h in Headers */,
+				A30D52902489E26300E07564 /* extension.h in Headers */,
 				A3B497C82003736300420421 /* ElastosCarrierSDK.h in Headers */,
+				A30D52942489E65800E07564 /* ela_turnserver.h in Headers */,
 				11612D8D22F1722D001179CD /* ela_filetransfer.h in Headers */,
 				11612D8B22F1722D001179CD /* ela_session.h in Headers */,
 			);
@@ -768,16 +806,19 @@
 				116061F42268ABD000BDCB9F /* CloseReason.swift in Sources */,
 				116061F22268ABC600BDCB9F /* CarrierOptions.swift in Sources */,
 				116061EE2268ABB400BDCB9F /* LogLevel.swift in Sources */,
+				118B6F9C2489F94D00E0950F /* CarrierExtension.swift in Sources */,
 				116061FA2268ABF300BDCB9F /* StreamDelegate.swift in Sources */,
 				116061DF2268AB6900BDCB9F /* CFileTransfer.swift in Sources */,
 				116061EB2268ABAA00BDCB9F /* Callbacks.swift in Sources */,
 				116061FE2268AC0400BDCB9F /* FileTransferConnectionState.swift in Sources */,
+				114A73B0248F289700262228 /* CExtension.swift in Sources */,
 				116061E72268AB9C00BDCB9F /* Group.swift in Sources */,
 				116062002268AC0B00BDCB9F /* FileTransfer.swift in Sources */,
 				116061E62268AB9800BDCB9F /* CarrierGroupDelegate.swift in Sources */,
 				116061E52268AB9300BDCB9F /* CarrierError.swift in Sources */,
 				116061F62268ABDE00BDCB9F /* PortForwardingProtocol.swift in Sources */,
 				116062042268AC1C00BDCB9F /* Log.swift in Sources */,
+				118B6F9F2489F96B00E0950F /* TurnServerInfo.swift in Sources */,
 				116061F52268ABDB00BDCB9F /* NetworkTopology.swift in Sources */,
 				116061FB2268ABF700BDCB9F /* StreamState.swift in Sources */,
 				116061F02268ABBC00BDCB9F /* Carrier.swift in Sources */,
@@ -787,6 +828,7 @@
 				116061FD2268ABFE00BDCB9F /* TransportInfo.swift in Sources */,
 				116062052268AC2000BDCB9F /* String.swift in Sources */,
 				116061F72268ABE200BDCB9F /* Session.swift in Sources */,
+				114A73B1248F289A00262228 /* CTurnServer.swift in Sources */,
 				116061EF2268ABB900BDCB9F /* UserInfo.swift in Sources */,
 				116061F32268ABCB00BDCB9F /* AddressInfo.swift in Sources */,
 				116062022268AC1300BDCB9F /* FileTransferManager.swift in Sources */,
@@ -811,11 +853,14 @@
 				118B6F5B2480B90A00E0950F /* CarrierReceiptState.swift in Sources */,
 				A35CE15821BD428B00AF4FE3 /* FileTransferManager.swift in Sources */,
 				A3B497EC2003763600420421 /* Callbacks.swift in Sources */,
+				A30D52922489E29400E07564 /* CExtension.swift in Sources */,
+				118B6F9B2489F94D00E0950F /* CarrierExtension.swift in Sources */,
 				A35CE16221BE41E500AF4FE3 /* FileTransferDelegate.swift in Sources */,
 				A3B498112003B3A500420421 /* StreamState.swift in Sources */,
 				A3B498122003B3A500420421 /* Session.swift in Sources */,
 				A3B497E82003763600420421 /* LogLevel.swift in Sources */,
 				A35CE16421BE45F300AF4FE3 /* FileTransferConnectionState.swift in Sources */,
+				A30D52982489E92200E07564 /* CTurnServer.swift in Sources */,
 				A360378020161AAF001A666E /* BootstrapNode.swift in Sources */,
 				A3B497F52003779300420421 /* CCarrier.swift in Sources */,
 				A35CE15221BB4F3C00AF4FE3 /* GroupPeer.swift in Sources */,
@@ -830,6 +875,7 @@
 				A35CE15E21BE0D7200AF4FE3 /* FileTransferInfo.swift in Sources */,
 				A35CE15321BB4F3C00AF4FE3 /* Group.swift in Sources */,
 				A3B4981920045F0A00420421 /* PresenceStatus.swift in Sources */,
+				118B6F9E2489F96B00E0950F /* TurnServerInfo.swift in Sources */,
 				A3B497F42003779300420421 /* CSession.swift in Sources */,
 				A3B497FB2003B39800420421 /* Base58.swift in Sources */,
 				A3B497ED2003763600420421 /* ConnectionStatus.swift in Sources */,

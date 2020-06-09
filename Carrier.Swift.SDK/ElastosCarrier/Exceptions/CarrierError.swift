@@ -29,6 +29,7 @@ public enum CarrierError: Error {
     case SystemError(ecode: Int)
     case ICEError(ecode: Int)
     case UnknowError(ecode: Int)
+    case IllegalState
 }
 
 @inline(__always) internal func getErrorString(_ errno: Int) -> String {
@@ -58,6 +59,8 @@ extension CarrierError: LocalizedError {
             return String(format: "ICE Error: \(getErrorString(errno))")
         case .UnknowError(let errno):
             return String(format: "Unknown Error 0x%x", errno)
+        case .IllegalState:
+            return "Illegal state"
         }
     }
 }
@@ -77,6 +80,8 @@ extension CarrierError: CustomNSError {
             return errno
         case .UnknowError(let errno):
             return errno
+        case .IllegalState:
+            return 2
         }
     }
 }
