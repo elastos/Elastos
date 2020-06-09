@@ -1047,9 +1047,9 @@ static void ela_destroy(void *argv)
     if (w->bulkmsgs)
         deref(w->bulkmsgs);
 
-    pthread_mutex_destroy(&w->receipts_mutex);
     if (w->receipts)
         deref(w->receipts);
+    pthread_mutex_destroy(&w->receipts_mutex);
 
     if (w->thistory)
         deref(w->thistory);
@@ -1243,14 +1243,6 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         return NULL;
     }
 
-    w->friend_msgs = list_create(1, NULL);
-    if (!w->friend_msgs) {
-        free_persistence_data(&data);
-        deref(w);
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return NULL;
-    }
-
     w->tcallbacks = transacted_callbacks_create(31);
     if (!w->tcallbacks) {
         free_persistence_data(&data);
@@ -1332,7 +1324,7 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
 
     w->connector = create_express_connector(w);
     if (!w->connector)
-        vlogW("Carrier: Creating express connector error (%s)", ela_get_error());
+        vlogW("Carrier: Creating express connector error (%d)", ela_get_error());
 
     apply_extra_data(w, data.extra_savedata, data.extra_savedata_len);
     free_persistence_data(&data);
@@ -3104,7 +3096,7 @@ int ela_add_friend(ElaCarrier *w, const char *address, const char *hello)
     if (w->connector) {
         rc = express_enqueue_post_request(w->connector, address, data, data_len);
         if (rc < 0)
-            vlogW("Carrier: Enqueue offline friend request error (%rc)", rc);
+            vlogW("Carrier: Enqueue offline friend request error (%d)", rc);
     }
 
     free(data);

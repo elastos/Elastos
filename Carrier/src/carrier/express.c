@@ -776,10 +776,7 @@ static void connector_releaser(void *arg)
         connector->task_list = NULL;
     }
 
-    if (connector->carrier) {
-        deref(connector->carrier);
-        connector->carrier = NULL;
-    }
+    connector->carrier = NULL;
 
     pthread_mutex_destroy(&connector->lock);
     pthread_cond_destroy (&connector->cond);
@@ -816,8 +813,8 @@ static void *connector_laundry(void *arg)
     }
     pthread_mutex_unlock(&connector->lock);
 
-    deref(connector);
     deref(connector->carrier);
+    deref(connector);
 
     vlogI("Express: Express connector exited gracefully.");
 
@@ -849,7 +846,7 @@ ExpressConnector *express_connector_create(ElaCarrier *carrier,
         return NULL;
     }
 
-    connector->carrier = ref(carrier);
+    connector->carrier = carrier;
     connector->on_msg_cb = on_msg_cb;
     connector->on_req_cb = on_req_cb;
     connector->on_stat_cb = on_stat_cb;
@@ -895,17 +892,17 @@ ExpressConnector *express_connector_create(ElaCarrier *carrier,
         return NULL;
     }
 
+    ref(connector);
+    ref(connector->carrier);
     rc = pthread_create(&tid, NULL, connector_laundry, connector);
     if (rc != 0) {
+        deref(connector->carrier);
+        deref(connector);
         deref(connector);
         ela_set_error(ELA_EXPRESS_ERROR(ELAERR_OUT_OF_MEMORY));
         return NULL;
     }
     pthread_detach(tid);
-
-    // ref for connector_laundry thread,
-    // and deref by connector_laundry
-    ref(connector);
 
     return connector;
 }

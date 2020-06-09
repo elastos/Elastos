@@ -145,7 +145,6 @@ struct ElaCarrier {
     DHTCallbacks dht_callbacks;
 
     list_t *friend_events; // for friend_added/removed.
-    list_t *friend_msgs;
     hashtable_t *friends;
 
     ExpressConnector *connector;
