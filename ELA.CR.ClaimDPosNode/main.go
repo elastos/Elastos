@@ -237,7 +237,7 @@ func startNode(c *cli.Context, st *settings.Settings) {
 		TxMemPool:      txMemPool,
 		BlockMemPool:   blockMemPool,
 		Routes:         route,
-	})
+	}, Version)
 	if err != nil {
 		printErrorAndExit(err)
 	}

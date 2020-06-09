@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package peer
 
@@ -9,6 +9,7 @@ import (
 	"container/list"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"io"
 	"math/rand"
 	"net"
@@ -110,6 +111,8 @@ type Config struct {
 	IsSelfConnection func(ip net.IP, port int, nonce uint64) bool
 	GetVersionNonce  func() uint64
 	MessageFunc      MessageFunc
+	NewVersionHeight uint64
+	NodeVersion      string
 }
 
 // minUint32 is a helper function to return the minimum of two uint32s.
@@ -1034,11 +1037,19 @@ func (p *Peer) localVersionMsg() (*msg.Version, error) {
 	// recently seen nonces.
 	nonce := p.cfg.GetVersionNonce()
 
+	var m *msg.Version
+	bestHeight := p.cfg.BestHeight()
+	var nodeVersion string
+	var ver = p.cfg.ProtocolVersion
+	if bestHeight >= p.cfg.NewVersionHeight {
+		nodeVersion = p.cfg.NodeVersion
+		ver = pact.CRProposalVersion
+	}
 	// Version message.
-	msg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.DefaultPort,
-		p.cfg.Services, nonce, p.cfg.BestHeight(), p.cfg.DisableRelayTx)
+	m = msg.NewVersion(ver, p.cfg.DefaultPort,
+		p.cfg.Services, nonce, bestHeight, p.cfg.DisableRelayTx, nodeVersion)
 
-	return msg, nil
+	return m, nil
 }
 
 // writeLocalVersionMsg writes our version message to the remote peer.

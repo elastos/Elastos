@@ -8,6 +8,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"math/rand"
 	"net"
 	"os"
@@ -383,8 +384,17 @@ func (s *server) checkAddr(addr string) error {
 	if err != nil {
 		return err
 	}
-	versionMsg := msg.NewVersion(s.cfg.ProtocolVersion, s.cfg.DefaultPort,
-		s.cfg.Services, uint64(rand.Int63()), s.cfg.BestHeight(), s.cfg.DisableRelayTx)
+	var versionMsg *msg.Version
+	var bestHeight = s.cfg.BestHeight()
+	var nodeVersion string
+	var ver = s.cfg.ProtocolVersion
+	if bestHeight >= s.cfg.NewVersionHeight {
+		nodeVersion = s.cfg.NodeVersion
+		ver = pact.CRProposalVersion
+	}
+	// Version message.
+	versionMsg = msg.NewVersion(ver, s.cfg.DefaultPort,
+		s.cfg.Services, uint64(rand.Int63()), bestHeight, s.cfg.DisableRelayTx, nodeVersion)
 
 	err = p2p.WriteMessage(
 		conn, s.cfg.MagicNumber, versionMsg, time.Second*2,
@@ -813,6 +823,8 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 
 			}
 		},
+		NewVersionHeight: sp.server.cfg.NewVersionHeight,
+		NodeVersion:      sp.server.cfg.NodeVersion,
 	}
 }
 

@@ -391,6 +391,10 @@ var (
 		Name:  "realwithdrawsinglefee",
 		Usage: "defines the single fee of cr real proposal withdraw transaction",
 	}
+	NewVersionHeight = cli.StringFlag{
+		Name:  "newversionheight",
+		Usage: "defines the new version message height",
+	}
 )
 
 // MoveRPCFlags finds the rpc argument and moves it to the front

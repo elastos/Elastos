@@ -972,7 +972,7 @@ func (s *server) Stop() error {
 // NewServer returns a new elanet server configured to listen on addr for the
 // network type specified by chainParams.  Use start to begin accepting
 // connections from peers.
-func NewServer(dataDir string, cfg *Config) (*server, error) {
+func NewServer(dataDir string, cfg *Config, nodeVersion string) (*server, error) {
 	services := defaultServices
 	params := cfg.ChainParams
 	if params.DisableTxFilters {
@@ -990,6 +990,7 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 		params.DefaultPort, params.DNSSeeds, params.ListenAddrs,
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(cfg.Chain.GetHeight()) },
+		params.NewVersionHeight, nodeVersion,
 	)
 	svrCfg.DataDir = dataDir
 	svrCfg.NAFilter = &naFilter{}

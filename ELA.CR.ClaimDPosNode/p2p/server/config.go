@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package server
 
@@ -105,6 +105,12 @@ type Config struct {
 	// NAFilter is a network address filter for peers to filter relayed
 	// addresses.
 	NAFilter p2p.NAFilter
+
+	// NewVersionHeight is the new version message height
+	NewVersionHeight uint64
+
+	// NodeVersion is the version of node
+	NodeVersion string
 }
 
 func (cfg *Config) normalize() {
@@ -193,7 +199,7 @@ func NewDefaultConfig(
 	onNewPeer func(IPeer) bool,
 	onDonePeer func(IPeer),
 	makeEmptyMessage func(string) (p2p.Message, error),
-	bestHeight func() uint64) *Config {
+	bestHeight func() uint64, newVersionHeight uint64, nodeVersion string) *Config {
 	return &Config{
 		MagicNumber:      magic,
 		ProtocolVersion:  pver,
@@ -217,5 +223,7 @@ func NewDefaultConfig(
 		BestHeight:       bestHeight,
 		PingNonce:        bestHeight,
 		PongNonce:        bestHeight,
+		NewVersionHeight: newVersionHeight,
+		NodeVersion:      nodeVersion,
 	}
 }

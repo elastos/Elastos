@@ -119,6 +119,12 @@ func (s *settingItem) getCliValue(c *cli.Context) (interface{}, error) {
 			return nil, err
 		}
 		return v, nil
+	case uint64:
+		v, err := strconv.ParseUint(value, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return v, nil
 	case bool:
 		v, err := strconv.ParseBool(value)
 		if err != nil {
@@ -885,6 +891,12 @@ func NewSettings() *Settings {
 		DefaultValue: common.Fixed64(0),
 		ConfigPath:   "CRConfiguration.RealWithdrawSingleFee",
 		ParamName:    "RealWithdrawSingleFee"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.NewVersionHeight,
+		DefaultValue: uint64(0),
+		ConfigPath:   "CRConfiguration.NewVersionHeight",
+		ParamName:    "NewVersionHeight"})
 
 	return result
 }

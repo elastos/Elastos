@@ -106,6 +106,8 @@ func (s *seed) newConfig(addrChan chan []*p2p.NetAddress) *peer.Config {
 
 			}
 		},
+		NewVersionHeight: s.cfg.NewVersionHeight,
+		NodeVersion:      s.cfg.NodeVersion,
 	}
 }
 

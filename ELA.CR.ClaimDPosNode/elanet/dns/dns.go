@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 /*
 DNS is a peer-to-peer network address distribute service.  It is a special
@@ -55,7 +55,7 @@ func makeMessage(cmd string) (p2p.Message, error) {
 func bestHeight() uint64 { return 0 }
 
 // onNewPeer handles the new connected peer.
-func onNewPeer(p server.IPeer)(bool) {
+func onNewPeer(p server.IPeer) bool {
 	log.Infof("New peer %s connected", p)
 	go handlePeer(p.ToPeer())
 	return true
@@ -80,11 +80,11 @@ func handlePeer(p *peer.Peer) {
 }
 
 // New creates and return a DNS instance.
-func New(dataDir string, magic uint32, port uint16) (*DNS, error) {
+func New(dataDir string, magic uint32, port uint16, newVersionHeight uint64, nodeVersion string) (*DNS, error) {
 	svrCfg := server.NewDefaultConfig(
 		magic, pact.DPOSStartVersion, 0, port, nil,
 		[]string{fmt.Sprintf(":%d", port)},
-		nil, nil, makeMessage, bestHeight,
+		nil, nil, makeMessage, bestHeight, newVersionHeight, nodeVersion,
 	)
 	svrCfg.DataDir = dataDir
 	svrCfg.MaxPeers = maxPeers

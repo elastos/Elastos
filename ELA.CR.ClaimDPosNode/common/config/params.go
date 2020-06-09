@@ -221,6 +221,7 @@ var DefaultParams = Params{
 	CRCProposalWithdrawPayloadV1Height: 1000000, // todo correct me later
 	RectifyTxFee:                       10000,
 	RealWithdrawSingleFee:              10000,
+	NewVersionHeight:                   1000000,
 }
 
 // TestNet returns the network parameters for the test network.
@@ -599,6 +600,9 @@ type Params struct {
 
 	// RealWithdrawSingleFee defines the single fee of cr real proposal withdraw transaction
 	RealWithdrawSingleFee common.Fixed64
+
+	// NewVersionHeight defines the new p2p protocol version message height
+	NewVersionHeight uint64
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time

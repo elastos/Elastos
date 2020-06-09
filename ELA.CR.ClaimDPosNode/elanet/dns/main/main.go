@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package main
 
@@ -88,7 +88,7 @@ func main() {
 	}
 
 	// Create the DNS instance.
-	dnsService, err := dns.New(dataDir, params.Magic, params.DefaultPort)
+	dnsService, err := dns.New(dataDir, params.Magic, params.DefaultPort, params.NewVersionHeight, Version)
 	if err != nil {
 		fmt.Fprint(os.Stderr, err.Error())
 		os.Exit(1)
