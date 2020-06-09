@@ -21,10 +21,12 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.committee.adaper.PastCtRecAdapter;
+import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
 import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.committee.fragment.CtListFragment;
 import org.elastos.wallet.ela.ui.committee.fragment.CtManagerFragment;
 import org.elastos.wallet.ela.ui.committee.fragment.SecretaryCtDetailFragment;
+import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
 import org.elastos.wallet.ela.ui.committee.presenter.CtManagePresenter;
 import org.elastos.wallet.ela.ui.committee.presenter.PastCtPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
@@ -33,22 +35,20 @@ import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRAgreementFragment;
-import org.elastos.wallet.ela.ui.crvote.fragment.CRManageFragment;
-import org.elastos.wallet.ela.ui.crvote.fragment.CRSignUpForFragment;
-import org.elastos.wallet.ela.ui.did.entity.AllPkEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 
 /**
- * List of past members
+ * List of past members 委员会的首页
  */
 public class PastCtListFragment extends BaseFragment implements NewBaseViewData, CommonRvListener, PastCtRecAdapter.ManagerListener, OnLoadMoreListener {
     @BindView(R.id.tv_title)
@@ -58,8 +58,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
     PastCtRecAdapter adapter;
-    List<PastCtBean.DataBean> list;
-    PastCtPresenter pastCtPresenter;
+    List<PastCtBean.DataBean> pastCtDataList;
     CtManagePresenter ctManagePresenter;
     private boolean isCrc = false;
     private boolean isVoting = false;
@@ -68,56 +67,32 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
 
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
+    private String did;
+    private String type;
+    private String name;
+    private String status;
+    private String cid;
+    private String depositAmount;
 
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_ct_past_list;
     }
 
-    String did;
-    String type;
-    String name;
-    String status;
-    String cid;
-    String depositAmount;
-
-    @Override
-    protected void setExtraData(Bundle data) {
-        super.setExtraData(data);
-        did = data.getString("did");
-        type = data.getString("type");
-        status = data.getString("status");
-        name = data.getString("name");
-        cid = data.getString("cid");
-        depositAmount = data.getString("depositAmount");
-    }
 
     @Override
     protected void initView(View view) {
         ivTitleRight.setImageResource(R.mipmap.found_ct_secretary_entrance);
         tvTitle.setText(mContext.getString(R.string.ctmemberlist));
-        pastCtPresenter = new PastCtPresenter();
         ctManagePresenter = new CtManagePresenter();
         addDIDPresenter = new AddDIDPresenter();
-        if (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("SecretaryGeneral")) {
-            ivTitleRight.setVisibility(View.VISIBLE);
-        } else if(!AppUtlis.isNullOrEmpty(type)
-                && (type.equalsIgnoreCase("UnelectedCouncilMember"))) {
-            isVoting = true;
-        } else if (!AppUtlis.isNullOrEmpty(type)
-                && type.equalsIgnoreCase("CouncilMember")
-                && !AppUtlis.isNullOrEmpty(depositAmount)
-                && !depositAmount.trim().equalsIgnoreCase("0")) {
-            isCrc = true;
-        } else {
-            ivTitleRight.setVisibility(View.GONE);
-        }
-        pastCtPresenter.getCouncilTerm(this);
+        new CtDetailPresenter().getCurrentCouncilInfo(this, wallet.getDid().replace("did:elastos:", ""), "crc");
+        new PastCtPresenter().getCouncilTerm(this);
     }
 
     private void setRecycleView() {
         if (adapter == null) {
-            adapter = new PastCtRecAdapter(getContext(), list, isCrc, isVoting);
+            adapter = new PastCtRecAdapter(getContext(), pastCtDataList, isCrc, isVoting);
             recyclerview.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             recyclerview.setAdapter(adapter);
             adapter.setCommonRvListener(this);
@@ -128,16 +103,17 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     }
 
     CrStatusBean crStatusBean = null;
-    private String publickey;
-    private String CID;
-    private String DID;
     CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode = null;
     ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> netList;
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "getCouncilTerm":
-                setRcViewData((PastCtBean) baseEntity);
+                pastCtDataList = ((PastCtBean) baseEntity).getData();
+                setRcViewData(pastCtDataList);
+                break;
+            case "getCurrentCouncilInfo":
+                setView((CtDetailBean) baseEntity);
                 break;
             case "getRegisteredCRInfo":
                 crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
@@ -159,6 +135,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
                         bundle.putString("cid", cid);
                         bundle.putString("depositAmount", depositAmount);
                         bundle.putString("type", type);
+                        bundle.putString("did", did);
                         start(CtManagerFragment.class, bundle);
                         return;
                     }
@@ -262,26 +239,16 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
                 });
     }
 
-    private void setRcViewData(PastCtBean pastCtBean) {
-        if (null == pastCtBean) return;
-        List<PastCtBean.DataBean> datas = pastCtBean.getData();
+    private void setRcViewData(List<PastCtBean.DataBean> datas) {
         if (datas == null || datas.size() <= 0) return;
-        if (null == list) {
-            list = new ArrayList<>();
-        } else {
-            list.clear();
-        }
-
-        for (int i = datas.size() - 1; i >= 0; i--) {
-            list.add(datas.get(i));
-        }
+        Collections.reverse(pastCtDataList);
         setRecycleView();
     }
 
     @Override
     public void onRvItemClick(int position, Object o) {
         Bundle bundle = new Bundle();
-        bundle.putInt("index", list.get(position).getIndex());
+        bundle.putInt("index", pastCtDataList.get(position).getIndex());
         start(CtListFragment.class, bundle);
     }
 
@@ -312,5 +279,29 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         bundle.putString("id", "");
         bundle.putString("did", wallet.getDid().replace("did:elastos:", ""));
         start(SecretaryCtDetailFragment.class, bundle);
+    }
+
+    private void setView(CtDetailBean ctDetailBean) {
+        CtDetailBean.DataBean dataBean = ctDetailBean.getData();
+        type = dataBean.getType();
+        name = dataBean.getDidName();
+        did = dataBean.getDid();
+        cid = dataBean.getCid();
+        status = dataBean.getStatus();
+        depositAmount = dataBean.getDepositAmount();
+        if (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("SecretaryGeneral")) {
+            ivTitleRight.setVisibility(View.VISIBLE);
+        } else if (!AppUtlis.isNullOrEmpty(type)
+                && (type.equalsIgnoreCase("UnelectedCouncilMember"))) {
+            isVoting = true;
+        } else if (!AppUtlis.isNullOrEmpty(type)
+                && type.equalsIgnoreCase("CouncilMember")
+                && !AppUtlis.isNullOrEmpty(depositAmount)
+                && !depositAmount.trim().equalsIgnoreCase("0")) {
+            isCrc = true;
+        } else {
+            ivTitleRight.setVisibility(View.GONE);
+        }
+
     }
 }

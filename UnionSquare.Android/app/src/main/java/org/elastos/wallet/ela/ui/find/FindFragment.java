@@ -36,10 +36,7 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.committee.PastCtListFragment;
-import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
 import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
-import org.elastos.wallet.ela.ui.committee.fragment.CtManagerFragment;
-import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
 import org.elastos.wallet.ela.ui.committee.presenter.PastCtPresenter;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.crvote.CRListFragment;
@@ -64,9 +61,6 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
     private FindListRecAdapter adapter;
     private List<FindListBean> list;
 
-    private RealmUtil realmUtil = new RealmUtil();
-    private Wallet wallet = realmUtil.queryDefauleWallet();
-
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_find;
@@ -84,27 +78,22 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
         setView();
     }
 
-    public void showCrVoteItem(PastCtBean pastCtBean) {
-        if (null == pastCtBean) return;
-        List<PastCtBean.DataBean> datas = pastCtBean.getData();
-        String status = null;
-        if(null!=datas && datas.size()>0) {
-            for(PastCtBean.DataBean dataBean : datas) {
-                status = dataBean.getStatus();
-                if(!AppUtlis.isNullOrEmpty(status) && status.equalsIgnoreCase("VOTING")) {
-                    FindListBean bean4 = new FindListBean();
-                    bean4.setResouceId(R.mipmap.found_cr_vote);
-                    bean4.setUpText(getString(R.string.findlistup4));
-                    bean4.setDownText(getString(R.string.findlistdown4));
-                    list.add(bean4);
-                    setRecycleView();
-                    return;
-                }
+    public void showCrVoteItem(List<PastCtBean.DataBean> datas) {
+        for (PastCtBean.DataBean dataBean : datas) {
+            String status = dataBean.getStatus();
+            if (!AppUtlis.isNullOrEmpty(status) && status.equalsIgnoreCase("VOTING")) {
+                FindListBean bean4 = new FindListBean();
+                bean4.setResouceId(R.mipmap.found_cr_vote);
+                bean4.setUpText(getString(R.string.findlistup4));
+                bean4.setDownText(getString(R.string.findlistdown4));
+                list.add(bean4);
+                setRecycleView();
+                return;
             }
         }
     }
 
-    private void setView(){
+    private void setView() {
         list = new ArrayList<>();
         FindListBean bean1 = new FindListBean();
         bean1.setResouceId(R.mipmap.found_dpos_icon);
@@ -130,14 +119,13 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
 //        presenter = new FindPresenter();
 //        presenter.getSupportedChains(wallet.getWalletId(), MyWallet.ELA, this);
         setRecycleView();
-    };
+    }
 
     private boolean hasRefresh = false;
 
     public void refreshView() {
-        if(!hasRefresh) {
+        if (!hasRefresh) {
             new PastCtPresenter().getCouncilTerm(this);
-            hasRefresh = true;
         }
     }
 
@@ -171,49 +159,14 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
             ((BaseFragment) getParentFragment()).start(SuperNodeListFragment.class);
         } else if (position == 1) {
             //社区提案
-             ((BaseFragment) getParentFragment()).start(ProposalFragment.class);
+            ((BaseFragment) getParentFragment()).start(ProposalFragment.class);
         } else if (position == 2) {
-            new CtDetailPresenter().getCurrentCouncilInfo(this, wallet.getDid().replace("did:elastos:", ""), "crc");
-        }else if (position == 3) {
+            ((BaseFragment) getParentFragment()).start(PastCtListFragment.class);
+        } else if (position == 3) {
             ((BaseFragment) getParentFragment()).start(CRListFragment.class);
         }
     }
 
-    private void go2(CtDetailBean ctDetailBean) {
-        CtDetailBean.DataBean dataBean = ctDetailBean.getData();
-        String type = dataBean.getType();
-        String name = dataBean.getDidName();
-        String did = dataBean.getDid();
-        String cid = dataBean.getCid();
-        String status = dataBean.getStatus();
-        String depositAmount = dataBean.getDepositAmount();
-
-        //cr委员会
-        if(dataBean != null) {
-            if(!AppUtlis.isNullOrEmpty(status)
-                    && !AppUtlis.isNullOrEmpty(depositAmount)
-                    && !depositAmount.equalsIgnoreCase("0")) {
-                if(status.equals("Terminated")
-                        || status.equals("Impeached")
-                        || status.equals("Returned")) {
-                    Bundle bundle = new Bundle();
-                    bundle.putString("did", did);
-                    bundle.putString("status", status);
-                    bundle.putString("depositAmount", depositAmount);
-                    ((BaseFragment) getParentFragment()).start(CtManagerFragment.class, bundle);
-                    return;
-                }
-            }
-        }
-        Bundle bundle = new Bundle();
-        bundle.putString("type", type);
-        bundle.putString("name", name);
-        bundle.putString("did", did);
-        bundle.putString("cid", cid);
-        bundle.putString("status", status);
-        bundle.putString("depositAmount", depositAmount);
-        ((BaseFragment) getParentFragment()).start(PastCtListFragment.class, bundle);
-    }
 
     /**
      * 处理回退事件
@@ -229,11 +182,13 @@ public class FindFragment extends BaseFragment implements CommonRvListener, NewB
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
-            case "getCurrentCouncilInfo":
-                go2((CtDetailBean) baseEntity);
-                break;
             case "getCouncilTerm":
-                showCrVoteItem((PastCtBean) baseEntity);
+                hasRefresh = true;
+                List<PastCtBean.DataBean> data = ((PastCtBean) baseEntity).getData();
+                if (data == null || data.size() == 0) {
+                    return;
+                }
+                showCrVoteItem(data);
                 break;
         }
     }

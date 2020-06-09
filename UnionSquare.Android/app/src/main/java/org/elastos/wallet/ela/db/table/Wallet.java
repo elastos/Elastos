@@ -44,7 +44,7 @@ public class Wallet extends RealmObject implements Parcelable {
     private boolean isDefault;//默認錢包 是否是默認的
     private boolean singleAddress;//是否单地址
     private RealmList<String> walletAddrList;//所有钱包地址*/
-    private int type=0;//0 普通单签 1单签只读 2普通多签 3多签只读
+    private int type = 0;//0 普通单签 1单签只读 2普通多签 3多签只读
     private String filed1;//
     private String filed2;//
     private String filed3;//
@@ -142,9 +142,9 @@ public class Wallet extends RealmObject implements Parcelable {
         this.mainWalletAddr = mainWalletAddr;
     }
 
-
+    //兼容没有did的情况  所以判空一定要用isEmpty
     public String getDid() {
-        return did;
+        return did + "";
     }
 
     public void setDid(String did) {
