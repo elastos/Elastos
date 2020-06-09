@@ -878,6 +878,10 @@ export default class extends Base {
         const { WITHDRAWN, WAITING_FOR_WITHDRAWAL } = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel('CVote')
         const proposal = await db_cvote.findOne(query)
+        // deal with old proposal data
+        if (!_.get(proposal, 'proposalHash')) {
+            return
+        }
         const last: any = _.last(proposal.budget)
         // proposal is final
         if (
@@ -889,25 +893,37 @@ export default class extends Base {
         }
         if (proposal.status === 'ACTIVE' || proposal.status === 'FINAL') {
             const result = await getProposalData(proposal.proposalHash)
+            if (!result) {
+                return
+            }
+            let isStatusUpdated = false
             const status = _.get(result, 'status')
             if (status && status.toLowerCase() === 'finished') {
                 proposal.status = constant.CVOTE_STATUS.FINAL
+                isStatusUpdated = true
             }
             const budgets = _.get(result, 'data.proposal.budgets')
+            let isBudgetUpdated = false
             if (budgets) {
                 const budget = proposal.budget.map((item, index) => {
                     const chainStatus = budgets[index].status.toLowerCase()
                     if (chainStatus === 'withdrawn') {
+                        isBudgetUpdated = true
                         return { ...item, status: WITHDRAWN }
                     }
                     if (chainStatus === 'withdrawable') {
+                        isBudgetUpdated = true
                         return { ...item, status: WAITING_FOR_WITHDRAWAL }
                     }
                     return item
                 })
-                proposal.budget = budget
+                if (isBudgetUpdated) {
+                    proposal.budget = budget
+                }
             }
-            await proposal.save()
+            if (isStatusUpdated || isBudgetUpdated) {
+                await proposal.save()
+            }
         }
     }
 
