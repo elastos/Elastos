@@ -39,6 +39,21 @@ const ela = {
             logger.error(err)
         }
     },
+    async getSecretaryGeneral() {
+        const data = {
+            'method': 'getsecretarygeneral'
+        }
+        try {
+            const res = await axios.post(process.env.ELA_NODE_URL, data, {
+                headers: DEFAULT_HEADERS
+            })
+            if (res && res.data && res.data.result) {
+                return res.data.result
+            }
+        } catch (err) {
+            logger.error(err)
+        }
+    },
     async circulatingSupply(height) {
         return 33000000
             + height * 5.02283105

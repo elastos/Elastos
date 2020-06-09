@@ -251,19 +251,22 @@ export default class extends Base {
     }
 
     public async eachSecretariatJob() {
-        const secretariatPublicKey = '0349cb77a69aa35be0bcb044ffd41a616b8367136d3b339d515b1023cc0f302f87'
-        const secretariatDID = 'igCSy8ht7yDwV5qqcRzf5SGioMX8H9RXcj'
+        // const secretariatPublicKey = '0349cb77a69aa35be0bcb044ffd41a616b8367136d3b339d515b1023cc0f302f87'
+        const secretaryGeneral = await ela.getSecretaryGeneral()
+        const { secretarygeneral: secretariatPublicKey } = secretaryGeneral || { secretarygeneral: null }
+        const secretariatDID = process.env.SECRETARIAT_DID
 
         const currentSecretariat = await this.secretariatModel.getDBInstance().findOne({status: constant.SECRETARIAT_STATUS.CURRENT})
-        const information: any = await getInformationByDid(DID_PREFIX + secretariatDID)
-        const didName = await getDidName(DID_PREFIX + secretariatDID)
-        const user = await this.userMode.getDBInstance().findOne({'did.id': DID_PREFIX + secretariatDID}, ['_id', 'did'])
+        const { did: currentSecretariatDID } = currentSecretariat || { did : secretariatDID }
+        const information: any = await getInformationByDid(DID_PREFIX + currentSecretariatDID)
+        const didName = await getDidName(DID_PREFIX + currentSecretariatDID)
+        const user = await this.userMode.getDBInstance().findOne({'did.id': DID_PREFIX + currentSecretariatDID}, ['_id', 'did'])
 
         if (!currentSecretariat) {
             const doc: any = this.filterNullField({
                 ...information,
                 user: user && user._id,
-                did: secretariatDID,
+                did: currentSecretariatDID,
                 didName,
                 startDate: new Date(),
                 status: constant.SECRETARIAT_STATUS.CURRENT
@@ -274,9 +277,9 @@ export default class extends Base {
         } else {
 
             // update secretariat
-            await this.secretariatModel.getDBInstance().update({$or: [{did: secretariatDID}, {did: DID_PREFIX + secretariatDID}]}, {
+            await this.secretariatModel.getDBInstance().update({$or: [{did: currentSecretariatDID}, {did: DID_PREFIX + currentSecretariatDID}]}, {
                 ...information,
-                did: secretariatDID,
+                did: currentSecretariatDID,
                 user: user && user._id,
             })
         }

@@ -106,7 +106,8 @@ export default {
       completion: 'Project completion payment only apply to the last milestone.',
       conditioned: 'Project milestone payment can not apply to this milestone.',
       isUsed: 'This milestone has been used.',
-      exception: 'Something went wrong'
+      exception: 'Something went wrong',
+      notEqual: 'The toal budget is not equal to the sum of each payment amount.'
     }
   },
   modal: {

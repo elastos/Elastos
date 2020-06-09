@@ -99,12 +99,12 @@ class C extends BaseComponent {
         const initiation = pItems.filter(
           (item) => item.type === ADVANCE && item.milestoneKey === '0'
         )
-        const completion = pItems.filter(
-          (item) => {
-           return item.type === COMPLETION &&
+        const completion = pItems.filter((item) => {
+          return (
+            item.type === COMPLETION &&
             item.milestoneKey === (milestone.length - 1).toString()
-          }
-        )
+          )
+        })
         if (
           milestone.length !== pItems.length ||
           initiation.length > 1 ||
@@ -112,6 +112,15 @@ class C extends BaseComponent {
         ) {
           this.setState({ loading: false })
           message.error(I18N.get('suggestion.form.error.payment'))
+          return
+        }
+
+        const sum = pItems.reduce((sum, item) => {
+          return (sum += parseFloat(item.amount))
+        }, 0.0)
+        if (amount !== sum) {
+          this.setState({ loading: false })
+          message.error(I18N.get('suggestion.form.error.notEqual'))
           return
         }
       }
