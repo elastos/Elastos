@@ -110,7 +110,6 @@ agenda.define(JOB_NAME.USERJOB, async (job: any) => {
   }
 })
 ;(async function () {
-  // console.log('------make into proposal cron job starting------')
   console.log('------cron job starting------')
   await agenda.start()
   await agenda.every('2 minutes', JOB_NAME.INTOPROPOSAL)
