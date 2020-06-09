@@ -106,7 +106,8 @@ export default {
       completion: '结项款只能用于项目最后阶段.',
       conditioned: '该阶段支付不能用于项目的这个阶段',
       isUsed: '该项目阶段已被其它支付项使用了',
-      exception: '出错了'
+      exception: '出错了',
+      notEqual: '支付项款之和与项目总金额不一致'
     }
   },
   modal: {
