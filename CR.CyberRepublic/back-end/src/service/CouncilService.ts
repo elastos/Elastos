@@ -335,8 +335,8 @@ export default class extends Base {
 
     public async temporaryChangeUpdateStatus() {
         const db_cvote = this.getDBModel('CVote')
-        const proposaedList = await db_cvote.find({status: constant.CVOTE_STATUS.PROPOSED})
-        const notificationList = await db_cvote.find({status: constant.CVOTE_STATUS.NOTIFICATION})
+        const proposaedList = await db_cvote.find({status: constant.CVOTE_STATUS.PROPOSED, old: {$ne: true}})
+        const notificationList = await db_cvote.find({status: constant.CVOTE_STATUS.NOTIFICATION, old: {$ne: true}})
         const idsProposaed = []
         const idsNotification = []
 
