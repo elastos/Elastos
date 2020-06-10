@@ -427,13 +427,14 @@ export default class extends Base {
             const didList = _.map(councilMembers, (o: any) => DID_PREFIX + o.did)
             const userList = await this.userMode.getDBInstance().find({'did.id': {$in: didList}}, ['_id', 'did.id'])
             const userByDID = _.keyBy(userList, (o: any) => o.did.id.replace(DID_PREFIX, ''))
+            const users = userList.map(o=>{return{did:o.did.id.split(DID_PREFIX)[1], userId :o._id}})
+            const userMap = _.groupBy(users, 'did')
+            const members = _.groupBy(councilMembers, 'did')
+            const councilsMap = _.map(_.merge(members,userMap),(o:any ,key:any) => {return o[0]})
             // add avatar nickname into user's did
-            await Promise.all(_.map(userList, async (o: any) => {
-                if (o && o.did && !o.did.id) {
-                    return
-                }
-                const information: any = await getInformationByDid(o.did.id)
-                const didName = await getDidName(o.did.id)
+            const councilsMember = await Promise.all(_.map(councilsMap, async (o: any) => {
+                const information: any = await getInformationByDid(o.did)
+                const didName = await getDidName(DID_PREFIX + o.did)
                 const did = this.filterNullField({
                     'did.avatar': _.get(information, 'avatar'),
                     'did.didName': didName,
@@ -441,20 +442,19 @@ export default class extends Base {
                 if (_.isEmpty(did)) {
                     return
                 }
-                await this.userMode.getDBInstance().update({_id: o._id}, {
+                await this.userMode.getDBInstance().update({_id: o.userId}, {
                     $set: did
                 })
-            }))
-            const councilMember = await Promise.all(_.map(councilMembers, async (o: any) => {
-                const information: any = await getInformationByDid(o.did)
-                o['didName'] = information.didName
-                o['avatar'] = information.avatar
-                return {
+                const data = {
                     ...o,
+                    ..._.omit(information,['did']),
+                }
+                return {
+                    ...data,
                     user: userByDID[o.did]
                 }
             }))
-            return councilMember
+            return councilsMember
         }
 
         const updateUserRoleToNewDid = async () => {
@@ -572,7 +572,6 @@ export default class extends Base {
             doc['councilMembers'] = councilMembers
             doc['height'] = height
             doc['circulatingSupply'] = circulatingSupply
-
             await this.model.getDBInstance().update({_id: data._id}, {...doc})
         }
 
