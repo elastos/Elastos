@@ -93,7 +93,7 @@ func (s *seed) newConfig(addrChan chan []*p2p.NetAddress) *peer.Config {
 		MakeEmptyMessage: func(cmd string) (p2p.Message, error) {
 			return nil, fmt.Errorf("unhandled message %s from DNS", cmd)
 		},
-		BestHeight:       func() uint64 { return 0 },
+		BestHeight:       s.cfg.BestHeight,
 		IsSelfConnection: func(net.IP, int, uint64) bool { return false },
 		GetVersionNonce:  func() uint64 { return uint64(rand.Int63()) },
 		MessageFunc: func(peer *peer.Peer, m p2p.Message) {

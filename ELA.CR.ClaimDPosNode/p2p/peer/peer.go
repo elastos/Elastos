@@ -171,14 +171,15 @@ type Peer struct {
 	messageFuncs []MessageFunc
 	stallHandle  StallHandler
 
-	flagsMtx           sync.Mutex // protects the peer flags below
-	na                 *p2p.NetAddress
-	id                 uint64
-	services           uint64
-	versionKnown       bool
-	advertisedProtoVer uint32 // protocol version advertised by remote
-	protocolVersion    uint32 // negotiated protocol version
-	verAckReceived     bool
+	flagsMtx               sync.Mutex // protects the peer flags below
+	na                     *p2p.NetAddress
+	id                     uint64
+	services               uint64
+	versionKnown           bool
+	advertisedProtoVer     uint32 // protocol version advertised by remote
+	protocolVersion        uint32 // negotiated protocol version
+	advertisedProtoNodeVer string // protocol node version advertised by remote
+	verAckReceived         bool
 
 	// These fields keep track of statistics for the peer and are protected
 	// by the statsMtx mutex.
@@ -224,7 +225,7 @@ func (p *Peer) SetStallHandler(handler StallHandler) {
 //
 // This function is safe for concurrent access.
 func (p *Peer) String() string {
-	return fmt.Sprintf("%s (%s) (%d %s)", p.addr, directionString(p.inbound), p.cfg.ProtocolVersion, p.cfg.NodeVersion)
+	return fmt.Sprintf("%s (%s) (%d %s)", p.addr, directionString(p.inbound), p.advertisedProtoVer, p.advertisedProtoNodeVer)
 }
 
 // UpdateHeight updates the last known block for the peer.
@@ -987,6 +988,7 @@ func (p *Peer) handleRemoteVersionMsg(msg *msg.Version) error {
 	// Negotiate the protocol version.
 	p.flagsMtx.Lock()
 	p.advertisedProtoVer = uint32(msg.Version)
+	p.advertisedProtoNodeVer = msg.NodeVersion
 	p.protocolVersion = minUint32(p.protocolVersion, p.advertisedProtoVer)
 	p.versionKnown = true
 	log.Debugf("Negotiated protocol version %d for peer %s", p.protocolVersion, p)
