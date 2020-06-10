@@ -1197,6 +1197,7 @@ func newCRChangeProposalOwner(L *lua.LState) int {
 	ownerPublicKeyStr := L.ToString(4)
 	ownerPrivateKeyStr := L.ToString(5)
 	newOwnerPublicKeyStr := L.ToString(6)
+	newOwnerPrivateKeyStr := L.ToString(7)
 
 	needSign := true
 	client, err := checkClient(L, 7)
@@ -1236,6 +1237,12 @@ func newCRChangeProposalOwner(L *lua.LState) int {
 		os.Exit(1)
 	}
 
+	newOwnerPrivateKey, err := common.HexStringToBytes(newOwnerPrivateKeyStr)
+	if err != nil {
+		fmt.Println("wrong new cr proposal owner private key")
+		os.Exit(1)
+	}
+
 	account := client.GetMainAccount()
 	CRCouncilMembercode := account.RedeemScript
 	CRCouncilMemberDID, _ := getDIDFromCode(CRCouncilMembercode)
@@ -1247,6 +1254,7 @@ func newCRChangeProposalOwner(L *lua.LState) int {
 	fmt.Println("ownerPublicKeyStr", ownerPublicKeyStr)
 	fmt.Println("ownerPrivateStr", ownerPrivateKeyStr)
 	fmt.Println("newOwnerPublicKeyStr", newOwnerPublicKeyStr)
+	fmt.Println("newOwnerPrivateKeyStr", newOwnerPrivateKeyStr)
 	fmt.Printf("account %+v\n", account)
 	fmt.Println("-----newCRChangeProposalOwner------")
 
@@ -1266,6 +1274,13 @@ func newCRChangeProposalOwner(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+
+		newOnwerSig, err := crypto.Sign(newOwnerPrivateKey, signBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crcProposal.Signature = newOnwerSig
 
 		sig, err := crypto.Sign(ownerPrivateKey, signBuf.Bytes())
 		if err != nil {
