@@ -36,7 +36,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -1612,20 +1611,27 @@ public final class DIDStore {
 
 		// Document
 		generator.writeFieldName("document");
+		generator.writeStartObject();
+
+		generator.writeFieldName("content");
 		doc.toJson(generator, false);
 		value = doc.toString(true);
 		bytes = value.getBytes();
 		sha256.update(bytes, 0, bytes.length);
 
 		DIDMeta didMeta = storage.loadDidMeta(did);
-		if (didMeta.isEmpty())
-			didMeta = null;
+		if (!didMeta.isEmpty()) {
+			generator.writeFieldName("meta");
+			value = didMeta.toString();
+			generator.writeRawValue(value);
+			bytes = value.getBytes();
+			sha256.update(bytes, 0, bytes.length);
+		}
+
+		generator.writeEndObject();
 
 		// Credential
-		LinkedHashMap<DIDURL, CredentialMeta> vcMetas = null;
 		if (storage.containsCredentials(did)) {
-			vcMetas = new LinkedHashMap<DIDURL, CredentialMeta>();
-
 			generator.writeFieldName("credential");
 			generator.writeStartArray();
 
@@ -1634,16 +1640,25 @@ public final class DIDStore {
 			for (DIDURL id : ids) {
 				log.debug("Exporting credential {}...", id.toString());
 
-				VerifiableCredential vc = storage.loadCredential(did, id);
+				generator.writeStartObject();
 
+				generator.writeFieldName("content");
+				VerifiableCredential vc = storage.loadCredential(did, id);
 				vc.toJson(generator, false);
 				value = vc.toString(true);
 				bytes = value.getBytes();
 				sha256.update(bytes, 0, bytes.length);
 
 				CredentialMeta meta = storage.loadCredentialMeta(did, id);
-				if (!meta.isEmpty())
-					vcMetas.put(id, meta);
+				if (!meta.isEmpty()) {
+					generator.writeFieldName("meta");
+					value = meta.toString();
+					generator.writeRawValue(value);
+					bytes = value.getBytes();
+					sha256.update(bytes, 0, bytes.length);
+				}
+
+				generator.writeEndObject();
 			}
 
 			generator.writeEndArray();
@@ -1682,44 +1697,6 @@ public final class DIDStore {
 			}
 
 			generator.writeEndArray();
-		}
-
-		// Metadata
-		if (didMeta != null || (vcMetas != null && !vcMetas.isEmpty())) {
-			generator.writeFieldName("metadata");
-			generator.writeStartObject();
-
-			if (didMeta != null) {
-				generator.writeFieldName("document");
-				value = didMeta.toString();
-				generator.writeRawValue(value);
-				bytes = value.getBytes();
-				sha256.update(bytes, 0, bytes.length);
-			}
-
-			if (vcMetas != null && !vcMetas.isEmpty()) {
-				generator.writeFieldName("credential");
-				generator.writeStartArray();
-
-				for (Map.Entry<DIDURL, CredentialMeta> meta : vcMetas.entrySet()) {
-					generator.writeStartObject();
-
-					value = meta.getKey().toString();
-					generator.writeStringField("id", value);
-					bytes = value.getBytes();
-					sha256.update(bytes, 0, bytes.length);
-
-					value = meta.getValue().toString();
-					generator.writeFieldName("metadata");
-					generator.writeRawValue(value);
-					bytes = value.getBytes();
-					sha256.update(bytes, 0, bytes.length);
-
-					generator.writeEndObject();
-				}
-				generator.writeEndArray();
-			}
-			generator.writeEndObject();
 		}
 
 		// Fingerprint
@@ -1861,9 +1838,15 @@ public final class DIDStore {
 			throw new DIDStoreException("Missing DID document in the export data");
 		}
 
+		JsonNode docNode = node.get("content");
+		if (docNode == null) {
+			log.error("Missing DID document content.");
+			throw new DIDStoreException("Missing DID document content in the export data");
+		}
+
 		DIDDocument doc = null;
 		try {
-			doc = DIDDocument.fromJson(node);
+			doc = DIDDocument.fromJson(docNode);
 		} catch (MalformedDocumentException e) {
 			log.error("Parse DID document error.", e);
 			throw new DIDStoreException("Invalid export data.", e);
@@ -1877,6 +1860,15 @@ public final class DIDStore {
 		bytes = doc.toString(true).getBytes();
 		sha256.update(bytes, 0, bytes.length);
 
+		JsonNode metaNode = node.get("meta");
+		if (metaNode != null) {
+			DIDMeta meta = DIDMeta.fromJson(metaNode, DIDMeta.class);
+			doc.setMeta(meta);
+
+			bytes = meta.toString().getBytes();
+			sha256.update(bytes, 0, bytes.length);
+		}
+
 		// Credential
 		HashMap<DIDURL, VerifiableCredential> vcs = null;
 		node = root.get("credential");
@@ -1889,10 +1881,16 @@ public final class DIDStore {
 			vcs = new HashMap<DIDURL, VerifiableCredential>(node.size());
 
 			for (int i = 0; i < node.size(); i++) {
+				JsonNode vcNode = node.get(i).get("content");
+				if (vcNode == null) {
+					log.error("Missing credential " + i + " content");
+					throw new DIDStoreException("Invalid export data.");
+				}
+
 				VerifiableCredential vc = null;
 
 				try {
-					vc = VerifiableCredential.fromJson(node.get(i), did);
+					vc = VerifiableCredential.fromJson(vcNode, did);
 				} catch (MalformedCredentialException e) {
 					log.error("Parse credential " + i + " error", e);
 					throw new DIDStoreException("Invalid export data.", e);
@@ -1905,6 +1903,16 @@ public final class DIDStore {
 
 				bytes = vc.toString(true).getBytes();
 				sha256.update(bytes, 0, bytes.length);
+
+				metaNode = node.get(i).get("meta");
+				if (metaNode != null) {
+					CredentialMeta meta = CredentialMeta.fromJson(
+							metaNode, CredentialMeta.class);
+
+					bytes = meta.toString().getBytes();
+					sha256.update(bytes, 0, bytes.length);
+					vc.setMeta(meta);
+				}
 
 				vcs.put(vc.getId(), vc);
 			}
@@ -1938,47 +1946,6 @@ public final class DIDStore {
 				Arrays.fill(sk, (byte)0);
 
 				sks.put(id, csk);
-			}
-		}
-
-		// Metadata
-		node = root.get("metadata");
-		if (node != null) {
-			JsonNode metaNode = node.get("document");
-			if (metaNode != null) {
-				DIDMeta meta = DIDMeta.fromJson(metaNode, DIDMeta.class);
-				doc.setMeta(meta);
-
-				bytes = meta.toString().getBytes();
-				sha256.update(bytes, 0, bytes.length);
-			}
-
-			metaNode = node.get("credential");
-			if (metaNode != null) {
-				if (!metaNode.isArray()) {
-					log.error("Credential's metadata should be an array.");
-					throw new DIDStoreException("Invalid export data, wrong metadata.");
-				}
-
-				for (int i = 0; i < metaNode.size(); i++) {
-					JsonNode n = metaNode.get(i);
-
-					DIDURL id = JsonHelper.getDidUrl(n, "id", false, null,
-							"credential id", exceptionClass);
-
-					bytes = id.toString().getBytes();
-					sha256.update(bytes, 0, bytes.length);
-
-					CredentialMeta meta = CredentialMeta.fromJson(
-							n.get("metadata"), CredentialMeta.class);
-
-					bytes = meta.toString().getBytes();
-					sha256.update(bytes, 0, bytes.length);
-
-					VerifiableCredential vc = vcs.get(id);
-					if (vc != null)
-						vc.setMeta(meta);
-				}
 			}
 		}
 
