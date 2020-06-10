@@ -2502,18 +2502,19 @@ func (b *BlockChain) checkChangeProposalOwner(proposal *payload.CRCProposal) err
 		return errors.New("proposal status is not VoterAgreed")
 	}
 
-	publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
+	_, err := crypto.DecodePoint(proposal.OwnerPublicKey)
 	if err != nil {
-		return errors.New("invalid owner")
+		return errors.New("invalid owner public key")
 	}
 
 	newPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
 	if err != nil {
-		return errors.New("invalid owner")
+		return errors.New("invalid new owner public key")
 	}
 
-	if newPublicKey == publicKey {
-		return errors.New("cr new did must be different from the previous one")
+	if bytes.Equal(proposal.NewOwnerPublicKey, proposalState.ProposalOwner) &&
+		proposal.NewRecipient.IsEqual(proposal.NewRecipient) {
+		return errors.New("new owner or recipient must be different from the previous one")
 	}
 
 	newCode, err := contract.CreateStandardRedeemScript(newPublicKey)
