@@ -29,6 +29,7 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
 import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalDetailPresenter;
 import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
@@ -88,11 +89,15 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
 
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
-    CtDetailPresenter presenter;
+    private CtDetailPresenter presenter;
+    private ProposalDetailPresenter proposalDetailPresenter;
 
     private String id;
     private String did;
     private String status;
+    private List<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
+    private List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
+    private List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
 
     @Override
     protected void setExtraData(Bundle data) {
@@ -111,11 +116,12 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     protected void initView(View view) {
         registReceiver();
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctdetail));
-        if(!AppUtlis.isNullOrEmpty(status) &&
+        if (!AppUtlis.isNullOrEmpty(status) &&
                 (status.equalsIgnoreCase("Impeached") || status.equalsIgnoreCase("Returned"))) {
             impeachLayout.setVisibility(View.INVISIBLE);
             line.setVisibility(View.INVISIBLE);
         }
+        proposalDetailPresenter = new ProposalDetailPresenter();
         presenter = new CtDetailPresenter();
         presenter.getCouncilInfo(this, id, did);
         experienceTitleTv.setText(String.format(getString(R.string.performancerecord), String.valueOf(0)));
@@ -140,7 +146,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     }
 
     private void setRecyclerView(List<CtDetailBean.Term> datas) {
-        if(datas==null || datas.size()<=0) return;
+        if (datas == null || datas.size() <= 0) return;
         norecord.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
         if (adapter == null) {
@@ -162,7 +168,6 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         experienceTitleTv.setText(String.format(getString(R.string.performancerecord), String.valueOf(list.size())));
     }
 
-    JSONArray otherUnActiveVote;
     @OnClick({R.id.tab1, R.id.tab2, R.id.impeachment_btn})
     public void onClick(View view) {
         switch (view.getId()) {
@@ -173,12 +178,9 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
                 selectExperience();
                 break;
             case R.id.impeachment_btn:
-                if (otherUnActiveVote == null) {
-                    otherUnActiveVote = new JSONArray();
-                }
-                new VoteListPresenter().getDepositVoteList("1", "all", this, false);
-                new CRlistPresenter().getCRlist(1, 1000, "all", this, false);
-                new ProposalPresenter().proposalSearch(1, 10000, "ALL", null, this);
+                new VoteListPresenter().getDepositVoteList("1", "all", this, true);
+                new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
+                new ProposalPresenter().proposalSearch(-1, -1, "ALL", null, this);
                 new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
                 break;
         }
@@ -186,6 +188,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     }
 
     String cid;
+
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
@@ -195,45 +198,30 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
                 setCtRecord((CtDetailBean) baseEntity);
                 break;
             case "getVoteInfo":
+                String voteInfo = ((CommmonStringEntity) baseEntity).getData();
+                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("CRCImpeachment", voteInfo, depositList, crList, searchBeanList, null);
                 try {
-                    String voteInfo = ((CommmonStringEntity) baseEntity).getData();
-                    JSONObject voteJson = presenter.conversVote(voteInfo);
-                    if ("CRC".equals(o)) {
-                        otherUnActiveVote.put(presenter.getCRLastVote(voteJson));
-                    } else if("CRCProposal".equals(o)) {
-                        otherUnActiveVote.put(presenter.getProposalLastVote(voteJson));
-                    }else if ("CRCImpeachment".equals(o)) {
-                        String amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
-                        JSONObject newVotes = new JSONObject();
-                        newVotes.put(cid, amount);
-                        presenter.createImpeachmentCRCTransaction(wallet.getWalletId(), MyWallet.ELA, "", newVotes.toString(), "", otherUnActiveVote.toString(), this);
-                    }
+                    //点击下一步 获得上次的投票后筛选数据
+                    String amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
+                    JSONObject newVotes = new JSONObject();
+                    newVotes.put(cid, amount);
+                    presenter.createImpeachmentCRCTransaction(wallet.getWalletId(), MyWallet.ELA, "", newVotes.toString(), "", otherUnActiveVote.toString(), this);
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                break;
-            case "getCRlist":
-                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
-                if (crList != null && crList.size() > 0) {
-                    otherUnActiveVote.put(presenter.getCRUnactiveData(crList));
-                } else {
-                    presenter.getVoteInfo(wallet.getWalletId(), "CRC", this);
-                }
-                break;
-            case "getDepositVoteList":
-                List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
-                if (depositList != null && depositList.size() > 0) {
-                    otherUnActiveVote.put(presenter.getDepositUnactiveData(depositList));
-                }
+
                 break;
             case "proposalSearch":
-                List<ProposalSearchEntity.DataBean.ListBean> proposalList = ((ProposalSearchEntity)baseEntity).getData().getList();
-                if(proposalList!=null && proposalList.size()>0) {
-                    otherUnActiveVote.put(presenter.getProposalUnactiveData(proposalList));
-                } else {
-                    presenter.getVoteInfo(wallet.getWalletId(), "CRCProposal", this);
-                }
+                searchBeanList = ((ProposalSearchEntity) baseEntity).getData().getList();
+                break;
+            case "getCRlist":
+                crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+
+                break;
+            case "getDepositVoteList":
+                depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
+
                 break;
             case "createImpeachmentCRCTransaction":
                 goTransferActivity(((CommmonStringEntity) baseEntity).getData());
@@ -265,6 +253,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     TextView impeachmentCount;
     @BindView(R.id.progress)
     CircleProgressView progress;
+
     private void setBaseInfo(CtDetailBean ctDetailBean) {
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         name.setText(dataBean.getDidName());
@@ -283,21 +272,22 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     TextView website;
     @BindView(R.id.introduction)
     TextView introduction;
+
     private void setCtInfo(CtDetailBean ctDetailBean) {
-        if(null == ctDetailBean) return;
+        if (null == ctDetailBean) return;
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         didTv.setText(dataBean.getDid());
-        if(AppUtlis.isNullOrEmpty(dataBean.getDid())) {
+        if (AppUtlis.isNullOrEmpty(dataBean.getDid())) {
             didTitle.setVisibility(View.GONE);
             didTv.setVisibility(View.GONE);
         }
         website.setText(dataBean.getAddress());
-        if(AppUtlis.isNullOrEmpty(dataBean.getAddress())) {
+        if (AppUtlis.isNullOrEmpty(dataBean.getAddress())) {
             website.setVisibility(View.GONE);
             websiteTitle.setVisibility(View.GONE);
         }
         introduction.setText(dataBean.getIntroduction());
-        if(AppUtlis.isNullOrEmpty(dataBean.getIntroduction())) {
+        if (AppUtlis.isNullOrEmpty(dataBean.getIntroduction())) {
             introduction.setVisibility(View.GONE);
             introducetionTitle.setVisibility(View.GONE);
         }
@@ -305,7 +295,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
 
     @SuppressLint("DefaultLocale")
     private void setCtRecord(CtDetailBean ctDetailBean) {
-        if(null == ctDetailBean) return;
+        if (null == ctDetailBean) return;
         List<CtDetailBean.Term> terms = ctDetailBean.getData().getTerm();
         setRecyclerView(terms);
     }
@@ -318,6 +308,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     TextView introducetionTitle;
 
     private String maxBalance;
+
     @Override
     public void onBalance(BalanceEntity data) {
         Intent intent = new Intent(getContext(), VoteActivity.class);
@@ -335,12 +326,13 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     }
 
     String num;//弹劾票数
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
             num = (String) result.getObj();
-            presenter.getVoteInfo(wallet.getWalletId(), "CRCImpeachment", this);
+            proposalDetailPresenter.getVoteInfo(wallet.getWalletId(), "", this);
         }
         if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
             new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {

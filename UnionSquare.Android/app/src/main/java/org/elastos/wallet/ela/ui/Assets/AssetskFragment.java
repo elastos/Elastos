@@ -87,6 +87,8 @@ import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresen
 import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
+import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
+import org.elastos.wallet.ela.ui.committee.presenter.CtListPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
@@ -174,6 +176,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private List<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
     private List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
     private List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
+    private List<CtListBean.Council> councilList;
 
     @Override
     protected int getLayoutId() {
@@ -1066,7 +1069,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             case "getVoteInfo":
                 //剔除非公示期的
                 String voteInfo = ((CommmonStringEntity) baseEntity).getData();
-                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("CRCProposal", voteInfo, depositList, crList, searchBeanList);
+                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("CRCProposal", voteInfo, depositList, crList, searchBeanList,councilList);
                 try {
                     JSONObject voteJson = proposalDetailPresenter.conversVote(voteInfo, "CRCProposal");//key value
                     //点击下一步 获得上次的投票后筛选数据
@@ -1084,6 +1087,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 break;
             case "proposalSearch":
                 searchBeanList = ((ProposalSearchEntity) baseEntity).getData().getList();
+                break;
+            case "getCouncilList":
+                councilList = ((CtListBean) baseEntity).getData().getCouncil();
                 break;
             case "getCRlist":
                 crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
@@ -1294,9 +1300,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 case "voteforproposal"://voteforproposal
                     //公示期谁都可以投票
                     curentJwtEntity = JSON.parseObject(payload, RecievePublishedVoteJwtEntity.class);
-                    proposalPresenter.proposalSearch(-1, -1, "NOTIFICATION", null, this);
+                    proposalPresenter.proposalSearch(-1, -1, "ALL", null, this);
                     new VoteListPresenter().getDepositVoteList("1", "all", this, false);
                     new CRlistPresenter().getCRlist(-1, -1, "all", this, false);
+                    new CtListPresenter().getCouncilList(this, String.valueOf(1));
                     commonGetBalancePresenter.getBalance(wallet.getWalletId(), MyWallet.ELA, this);
 
 
@@ -1456,6 +1463,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         crList = null;
         searchBeanList = null;
         depositList = null;
+        councilList=null;
         voteNum = null;
     }
 }

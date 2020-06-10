@@ -144,7 +144,9 @@ public class Wallet extends RealmObject implements Parcelable {
 
     //兼容没有did的情况  所以判空一定要用isEmpty
     public String getDid() {
-        return did + "";
+        if (did == null)
+            return "";
+        return did;
     }
 
     public void setDid(String did) {

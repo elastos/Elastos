@@ -8,6 +8,7 @@ import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
+import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
@@ -129,7 +130,6 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
     }
 
 
-
     public JSONObject conversVote(String voteInfo, String targetType) {
         if (!TextUtils.isEmpty(voteInfo) && !voteInfo.equals("null") && !voteInfo.equals("[]")) {
             try {
@@ -155,7 +155,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
     }
 
     public JSONArray conversUnactiveVote(String remove, String voteInfo, List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList,
-                                         List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crcList, List<ProposalSearchEntity.DataBean.ListBean> voteList) {
+                                         List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crcList, List<ProposalSearchEntity.DataBean.ListBean> voteList, List<CtListBean.Council> councilList) {
         JSONArray otherUnActiveVote = new JSONArray();
 
         if (!TextUtils.isEmpty(voteInfo) && !voteInfo.equals("null") && !voteInfo.equals("[]")) {
@@ -190,12 +190,11 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
 
                             break;
                         case "CRC":
-                        case "CRCImpeachment":
                             while (it.hasNext()) {
                                 String key = (String) it.next();
                                 if (crcList == null || crcList.size() == 0) {
                                     candidates.put(key);
-                                   continue;
+                                    continue;
                                 }
                                 for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : crcList) {
                                     if (bean.getDid().equals(key) && !bean.getState().equals("Active")) {
@@ -206,6 +205,21 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                             }
 
                             break;
+                        case "CRCImpeachment"://弹劾
+                            while (it.hasNext()) {
+                                String key = (String) it.next();
+                                if (councilList == null || councilList.size() == 0) {
+                                    candidates.put(key);
+                                    continue;
+                                }
+                                for (CtListBean.Council bean : councilList) {
+                                    if (bean.getDid().equals(key) && !bean.getStatus().equals("Elected")) {
+                                        candidates.put(key);
+                                        break;
+                                    }
+                                }
+                            }
+                            break;
                         case "CRCProposal":
                             while (it.hasNext()) {
                                 String key = (String) it.next();
@@ -214,7 +228,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                                     continue;
                                 }
                                 for (ProposalSearchEntity.DataBean.ListBean bean : voteList) {
-                                    if (bean.getProposalHash().equals(key)) {
+                                    if (bean.getProposalHash().equals(key) && !bean.getStatus().equals("NOTIFICATION")) {
                                         candidates.put(key);
                                         break;
                                     }

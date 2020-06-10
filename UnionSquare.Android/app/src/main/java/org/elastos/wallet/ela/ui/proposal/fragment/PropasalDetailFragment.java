@@ -28,6 +28,8 @@ import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveReviewJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
+import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
+import org.elastos.wallet.ela.ui.committee.presenter.CtListPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.fragment.WebViewFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
@@ -145,6 +147,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     private List<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
     private List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
     private List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
+    private List<CtListBean.Council> councilList;
 
     @Override
     protected int getLayoutId() {
@@ -340,6 +343,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                     proposalPresenter.proposalSearch(-1, -1, "NOTIFICATION", null, this);
                     new VoteListPresenter().getDepositVoteList("1", "all", this, true);
                     new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
+                    new CtListPresenter().getCouncilList(this, String.valueOf(1));
                     new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
                 }
                 break;
@@ -484,6 +488,9 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "getCouncilList":
+                councilList = ((CtListBean) baseEntity).getData().getCouncil();
+                break;
             case "getCurrentCouncilInfo":
                 CtDetailBean ctDetailBean = (CtDetailBean) baseEntity;
                 if ("CouncilMember".equals(ctDetailBean.getData().getType())
@@ -495,7 +502,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
             case "getVoteInfo":
                 //剔除非公示期的
                 String voteInfo = ((CommmonStringEntity) baseEntity).getData();
-                JSONArray otherUnActiveVote = presenter.conversUnactiveVote("CRCProposal", voteInfo, depositList, crList, searchBeanList);
+                JSONArray otherUnActiveVote = presenter.conversUnactiveVote("CRCProposal", voteInfo, depositList, crList, searchBeanList,councilList);
                 try {
                     JSONObject voteJson = presenter.conversVote(voteInfo, "CRCProposal");//key value
                     //点击下一步 获得上次的投票后筛选数据

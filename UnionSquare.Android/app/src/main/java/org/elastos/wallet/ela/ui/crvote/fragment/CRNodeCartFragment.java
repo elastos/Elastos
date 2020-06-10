@@ -52,6 +52,8 @@ import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
+import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
+import org.elastos.wallet.ela.ui.committee.presenter.CtListPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRNodeCartAdapter;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
@@ -124,6 +126,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     private int transType = 1001;
     private List<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
     private List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
+    private List<CtListBean.Council> councilList;
 
     @Override
     protected int getLayoutId() {
@@ -153,8 +156,9 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
 
         tvAvaliable.setText(getString(R.string.available) + "：" + "0 ELA");
-        new ProposalPresenter().proposalSearch(-1, -1, "NOTIFICATION", null, this);
+        new ProposalPresenter().proposalSearch(-1, -1, "ALL", null, this);
         new VoteListPresenter().getDepositVoteList("1", "all", this, true);
+        new CtListPresenter().getCouncilList(this, String.valueOf(1));
     }
 
 
@@ -395,6 +399,9 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "getCouncilList":
+                councilList = ((CtListBean) baseEntity).getData().getCouncil();
+                break;
             case "proposalSearch":
                 searchBeanList = ((ProposalSearchEntity) baseEntity).getData().getList();
                 break;
@@ -417,7 +424,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             case "getVoteInfo":
                 //剔除非公示期的
                 String voteInfo = ((CommmonStringEntity) baseEntity).getData();
-                otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("CRC", voteInfo, depositList, netList, searchBeanList);
+                otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("CRC", voteInfo, depositList, netList, searchBeanList, councilList);
                 doVote();
                 break;
 
