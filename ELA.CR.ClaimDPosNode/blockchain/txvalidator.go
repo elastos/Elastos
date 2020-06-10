@@ -2481,7 +2481,7 @@ func (b *BlockChain) checkChangeProposalOwner(proposal *payload.CRCProposal) err
 	}
 
 	if bytes.Equal(proposal.NewOwnerPublicKey, proposalState.ProposalOwner) &&
-		proposal.NewRecipient.IsEqual(proposal.NewRecipient) {
+		proposal.NewRecipient.IsEqual(proposalState.Recipient) {
 		return errors.New("new owner or recipient must be different from the previous one")
 	}
 
@@ -2489,7 +2489,60 @@ func (b *BlockChain) checkChangeProposalOwner(proposal *payload.CRCProposal) err
 	if crCouncilMember == nil {
 		return errors.New("CR Council Member should be one of the CR members")
 	}
-	return b.checkOwnerAndCRCouncilMemberSign(proposal, crCouncilMember.Info.Code)
+	return b.checkChangeOwnerSign(proposal, crCouncilMember.Info.Code)
+}
+
+func (b *BlockChain) checkChangeOwnerSign(proposal *payload.CRCProposal, crMemberCode []byte) error {
+	signedBuf := new(bytes.Buffer)
+	err := proposal.SerializeUnsigned(signedBuf, payload.CRCProposalVersion)
+	if err != nil {
+		return err
+	}
+	// Check signature of new owner.
+	newOwnerPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
+	}
+	newOwnerContract, err := contract.CreateStandardContract(newOwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
+	}
+
+	if err := checkCRTransactionSignature(proposal.NewOwnerSignature, newOwnerContract.Code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("new owner signature check failed")
+	}
+	// Serialize new owner signature.
+	if err = common.WriteVarBytes(signedBuf, proposal.NewOwnerSignature); err != nil {
+		return errors.New("failed to write proposal new owner signature")
+	}
+
+	// Check signature of owner.
+	publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
+	}
+	ownerContract, err := contract.CreateStandardContract(publicKey)
+	if err != nil {
+		return errors.New("invalid owner")
+	}
+	if err := checkCRTransactionSignature(proposal.Signature, ownerContract.Code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("owner signature check failed")
+	}
+
+	// Check signature of CR Council Member.
+	if err = common.WriteVarBytes(signedBuf, proposal.Signature); err != nil {
+		return errors.New("failed to write proposal owner signature")
+	}
+	if err = proposal.CRCouncilMemberDID.Serialize(signedBuf); err != nil {
+		return errors.New("failed to write CR Council Member's DID")
+	}
+	if err = checkCRTransactionSignature(proposal.CRCouncilMemberSignature, crMemberCode,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("failed to check CR Council Member signature")
+	}
+	return nil
 }
 
 func (b *BlockChain) checkOwnerAndCRCouncilMemberSign(proposal *payload.CRCProposal, crMemberCode []byte) error {

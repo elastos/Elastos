@@ -2903,9 +2903,6 @@ func (s *txValidatorTestSuite) TestCheckSecretaryGeneralProposalTransaction() {
 	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "CR Council Member should be one of the CR members")
 	memebers[memberCr.Info.DID] = memberCr
-
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
-	s.EqualError(err, "proposal OwnerPublicKey must be MemberElected cr member")
 	memebers[memberOwner.Info.DID] = memberOwner
 
 	//owner signature check failed
@@ -3071,8 +3068,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	s.Chain.crCommittee.GetProposalManager().Proposals[targetHash] = proposalState2
 	txn = s.getCRChangeProposalOwnerProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1,
 		newOwnerPublicKeyStr, targetHash)
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
-	s.EqualError(err, "proposal sponsors must be members")
 
 	s.Chain.crCommittee.InElectionPeriod = false
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
@@ -3085,9 +3080,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	s.Chain.crCommittee.GetProposalManager().Proposals[proposal3.Hash()] = proposalState3
 
 	txn = s.getCRCCloseProposalTxWithHash(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1, proposal.Hash())
-
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
-	s.EqualError(err, "CloseProposal owner should be one of the CR members")
 
 	// invalid closeProposalHash
 	txn = s.getCRCCloseProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
