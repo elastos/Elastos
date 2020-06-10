@@ -53,6 +53,8 @@ export default class extends Base {
     public async councilList(id: number): Promise<any> {
         const fields = [
             'status',
+            'councilMembers.didName',
+            'councilMembers.avatar',
             'councilMembers.did',
             'councilMembers.user.did',
             'councilMembers.location',
@@ -61,6 +63,8 @@ export default class extends Base {
 
         const secretariatFields = [
             'did',
+            'didName',
+            'avatar',
             'user.did',
             'location',
             'startDate',
@@ -125,6 +129,8 @@ export default class extends Base {
             'height',
             'circulatingSupply',
             'status',
+            'councilMembers.didName',
+            'councilMembers.avatar',
             'councilMembers.user.did',
             'councilMembers.cid',
             'councilMembers.did',
@@ -439,11 +445,16 @@ export default class extends Base {
                     $set: did
                 })
             }))
-
-            return _.map(councilMembers, (o: any) => ({
-                ...o,
-                user: userByDID[o.did]
+            const councilMember = await Promise.all(_.map(councilMembers, async (o: any) => {
+                const information: any = await getInformationByDid(o.did)
+                o['didName'] = information.didName
+                o['avatar'] = information.avatar
+                return {
+                    ...o,
+                    user: userByDID[o.did]
+                }
             }))
+            return councilMember
         }
 
         const updateUserRoleToNewDid = async () => {
