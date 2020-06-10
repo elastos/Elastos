@@ -32,8 +32,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	votes := c.Float64("votes")
 	toAddr := c.String("to")
 	amounts := c.String("amounts")
-	ownPubkey := c.String("ownerpublickey")
-	ownPrivatekey := c.String("ownerprivatekey")
+	ownPublicKey := c.String("ownerpublickey")
+	ownPrivateKey := c.String("ownerprivatekey")
 
 	nodePubkey := c.String("nodepublickey")
 	host := c.String("host")
@@ -98,11 +98,11 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		return 1
 	}
 	getOwnerPublicKey := func(L *lua.LState) int {
-		L.Push(lua.LString(ownPubkey))
+		L.Push(lua.LString(ownPublicKey))
 		return 1
 	}
 	getOwnerPrivateKey := func(L *lua.LState) int {
-		L.Push(lua.LString(ownPrivatekey))
+		L.Push(lua.LString(ownPrivateKey))
 		return 1
 	}
 
@@ -175,7 +175,6 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	SecretaryGeneralOpinionHash := c.String("secretarygeneralopinionhash")
 	stage := c.Int64("stage")
 	OwnerPublicKey := c.String("ownerpublickey")
-	newOwnerPublicKey := c.String("newownerpublickey")
 	leaderPrivkey := c.String("ownerprivatekey")
 	newLeaderPrivkey := c.String("newownerprivatekey")
 	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
@@ -240,7 +239,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		return 1
 	}
 	getNewOwnerPublicKey := func(L *lua.LState) int {
-		L.Push(lua.LString(newOwnerPublicKey))
+		L.Push(lua.LString(newProposalOwnerKey))
 		return 1
 	}
 	getLeaderPrivkey := func(L *lua.LState) int {
