@@ -2405,24 +2405,12 @@ func (b *BlockChain) checkProposalCRCouncilMemberSign(crcProposal *payload.CRCPr
 }
 func (b *BlockChain) checkChangeSecretaryGeneralProposalTx(crcProposal *payload.CRCProposal) error {
 	// The number of the proposals of the committee can not more than 128
-	var ownerCode []byte
-	var ownerDID *common.Uint168
-	var err error
-
 	if !b.isPublicKeyDIDMatch(crcProposal.SecretaryGeneralPublicKey, &crcProposal.SecretaryGeneralDID) {
 		return errors.New("SecretaryGeneral PublicKey and DID is not matching")
 	}
-	// get owner code
-	if ownerCode, err = getCode(crcProposal.OwnerPublicKey); err != nil {
-		return err
-	}
-	// get owner did
-	if ownerDID, err = getDIDFromCode(ownerCode); err != nil {
-		return err
-	}
-	//owner must MemberElected cr member
-	if !b.crCommittee.IsElectedCRMemberByDID(*ownerDID) {
-		return errors.New("proposal OwnerPublicKey must be MemberElected cr member")
+	// Check owner public key
+	if _, err := crypto.DecodePoint(crcProposal.OwnerPublicKey); err != nil {
+		return errors.New("invalid owner public key")
 	}
 
 	//CRCouncilMemberDID must MemberElected cr member
@@ -2452,27 +2440,9 @@ func (b *BlockChain) checkChangeSecretaryGeneralProposalTx(crcProposal *payload.
 }
 
 func (b *BlockChain) checkCloseProposal(proposal *payload.CRCProposal) error {
-	pk, err := crypto.DecodePoint(proposal.OwnerPublicKey)
+	_, err := crypto.DecodePoint(proposal.OwnerPublicKey)
 	if err != nil {
 		return errors.New("DecodePoint from OwnerPublicKey error")
-	}
-	redeemScript, err := contract.CreateStandardRedeemScript(pk)
-	if err != nil {
-		return errors.New("CreateStandardRedeemScript from OwnerPublicKey error")
-	}
-	didCode := append(redeemScript[:len(redeemScript)-1], common.DID)
-	ct, err := contract.CreateCRIDContractByCode(didCode)
-	if err != nil {
-		return errors.New("CreateCRIDContractByCode from OwnerPublicKey error")
-	}
-	ownerDid := ct.ToProgramHash()
-	ownerMember := b.crCommittee.GetMember(*ownerDid)
-
-	if ownerMember == nil {
-		return errors.New("CloseProposal owner should be one of the CR members")
-	}
-	if ownerMember.MemberState != crstate.MemberElected {
-		return errors.New("CloseProposal owner should be an of the elected CR members")
 	}
 	if ps := b.crCommittee.GetProposal(proposal.TargetProposalHash); ps == nil {
 		return errors.New("CloseProposalHash does not exist")
@@ -2502,13 +2472,11 @@ func (b *BlockChain) checkChangeProposalOwner(proposal *payload.CRCProposal) err
 		return errors.New("proposal status is not VoterAgreed")
 	}
 
-	_, err := crypto.DecodePoint(proposal.OwnerPublicKey)
-	if err != nil {
+	if _, err := crypto.DecodePoint(proposal.OwnerPublicKey); err != nil {
 		return errors.New("invalid owner public key")
 	}
 
-	newPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
-	if err != nil {
+	if _, err := crypto.DecodePoint(proposal.NewOwnerPublicKey); err != nil {
 		return errors.New("invalid new owner public key")
 	}
 
@@ -2517,22 +2485,6 @@ func (b *BlockChain) checkChangeProposalOwner(proposal *payload.CRCProposal) err
 		return errors.New("new owner or recipient must be different from the previous one")
 	}
 
-	newCode, err := contract.CreateStandardRedeemScript(newPublicKey)
-	if err != nil {
-		return errors.New("invalid owner")
-	}
-	did, err := getDIDByCode(newCode)
-	if err != nil {
-		return errors.New("invalid owner code")
-	}
-	crMember := b.crCommittee.GetMember(*did)
-	if crMember == nil {
-		return errors.New("proposal sponsors must be members")
-	}
-
-	if crMember.MemberState != crstate.MemberElected {
-		return errors.New("cr members should be elected")
-	}
 	crCouncilMember := b.crCommittee.GetMember(proposal.CRCouncilMemberDID)
 	if crCouncilMember == nil {
 		return errors.New("CR Council Member should be one of the CR members")
@@ -2705,7 +2657,6 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	default:
 		return b.checkNormalOrELIPProposal(proposal, proposalsUsedAmount)
 	}
-	return nil
 }
 
 func getDIDByCode(code []byte) (*common.Uint168, error) {
