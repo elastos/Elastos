@@ -116,9 +116,10 @@ class C extends BaseComponent {
         }
 
         const sum = pItems.reduce((sum, item) => {
-          return (sum += parseFloat(item.amount))
-        }, 0.0)
-        if (amount !== sum) {
+          return (sum += Number(item.amount))
+        }, 0)
+
+        if (Number(amount) !== sum) {
           this.setState({ loading: false })
           message.error(I18N.get('suggestion.form.error.notEqual'))
           return
