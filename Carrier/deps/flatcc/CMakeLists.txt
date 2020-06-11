@@ -8,9 +8,9 @@ ExternalProject_Add(
     flatcc
 
     PREFIX ${CARRIER_DEPS_BUILD_PREFIX}
-    URL "https://github.com/dvidelabs/flatcc/archive/v0.5.0.tar.gz"
-    URL_HASH SHA256=ef97a1c983b6d3a08572af535643600d03a6ff422f64b3dfa380a7193630695c
-    DOWNLOAD_NAME "flatcc-0.5.0.tar.gz"
+    URL "https://github.com/dvidelabs/flatcc/archive/v0.6.0.tar.gz"
+    URL_HASH SHA256=a92da3566d11e19bb807a83554b1a2c644a5bd91c9d9b088514456bb56e1c666
+    DOWNLOAD_NAME "flatcc-0.6.0.tar.gz"
     DOWNLOAD_DIR ${CARRIER_DEPS_TARBALL_DIR}
     DOWNLOAD_NO_PROGRESS 1
 
