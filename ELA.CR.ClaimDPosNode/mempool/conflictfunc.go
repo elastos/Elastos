@@ -94,6 +94,15 @@ func strProducerInfoNodePublicKey(tx *types.Transaction) (interface{}, error) {
 	return common.BytesToHexString(p.NodePublicKey), nil
 }
 
+func strCRManagementPublicKey(tx *types.Transaction) (interface{}, error) {
+	p, ok := tx.Payload.(*payload.CRDPOSManagement)
+	if !ok {
+		return nil, fmt.Errorf(
+			"cr dpos management payload cast failed, tx:%s", tx.Hash())
+	}
+	return common.BytesToHexString(p.CRManagementPublicKey), nil
+}
+
 func strProducerInfoNickname(tx *types.Transaction) (interface{}, error) {
 	p, err := comGetProducerInfo(tx)
 	if err != nil {

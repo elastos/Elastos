@@ -290,6 +290,12 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			log.Warn("[checkCRAssetsRectifyTransaction],", err)
 			return nil, elaerr.Simple(elaerr.ErrTxAssetsRectify, err)
 		}
+
+	case CRDPOSManagement:
+		if err := b.checkCRDPOSManagementTransaction(txn); err != nil {
+			log.Warn("[checkCRDPOSManagementTransaction],", err)
+			return nil, elaerr.Simple(elaerr.ErrTxCRDPOSManagement, err)
+		}
 	}
 
 	if err := b.checkTransactionFee(txn, references); err != nil {
@@ -2090,6 +2096,26 @@ func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 
 	return nil
 }
+
+func (b *BlockChain) checkCRDPOSManagementTransaction(txn *Transaction) error {
+	manager, ok := txn.Payload.(*payload.CRDPOSManagement)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+	did := manager.CRCommitteeDID
+	crMember := b.crCommittee.GetMember(did)
+	if crMember == nil {
+		return errors.New("the originator must be members")
+	}
+	publicKey, err := crypto.DecodePoint(manager.CRManagementPublicKey)
+	log.Debugf("operating public key: %s", *publicKey)
+	if err != nil {
+		return errors.New("invalid operating public key")
+	}
+
+	return nil
+}
+
 func (b *BlockChain) checkCRCProposalCommonTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal

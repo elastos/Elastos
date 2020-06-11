@@ -61,6 +61,7 @@ const (
 	CRCProposalWithdraw     TxType = 0x29
 	CRCProposalRealWithdraw TxType = 0x2a
 	CRAssetsRectify         TxType = 0x2b
+	CRDPOSManagement        TxType = 0x31
 )
 
 func (self TxType) Name() string {
@@ -127,6 +128,8 @@ func (self TxType) Name() string {
 		return "CRCProposalRealWithdraw"
 	case CRAssetsRectify:
 		return "CRAssetsRectify"
+	case CRDPOSManagement:
+		return "CRDPOSManagement"
 	default:
 		return "Unknown"
 	}
@@ -366,6 +369,10 @@ func (tx *Transaction) Hash() common.Uint256 {
 	return *tx.txHash
 }
 
+func (tx *Transaction) ISCRDPOSManagement() bool {
+	return tx.TxType == CRDPOSManagement
+}
+
 func (tx *Transaction) IsCRAssetsRectifyTx() bool {
 	return tx.TxType == CRAssetsRectify
 }
@@ -562,6 +569,8 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.CRAssetsRectify)
 	case CRCProposalRealWithdraw:
 		p = new(payload.CRCProposalRealWithdraw)
+	case CRDPOSManagement:
+		p = new(payload.CRDPOSManagement)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

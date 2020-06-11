@@ -29,6 +29,7 @@ const (
 	slotSpecialTxHash              = "SpecialTxHash"
 	slotSidechainTxHashes          = "SidechainTxHashes"
 	slotTxInputsReferKeys          = "TxInputsReferKeys"
+	slotCRManagementPublicKey      = "CRManagementPublicKey"
 )
 
 type conflict struct {
@@ -154,6 +155,15 @@ func newConflictManager() conflictManager {
 					keyTypeFuncPair{
 						Type: types.RegisterCR,
 						Func: strRegisterCRPublicKey,
+					},
+				),
+			},
+			{
+				name: slotCRManagementPublicKey,
+				slot: newConflictSlot(str,
+					keyTypeFuncPair{
+						Type: types.CRDPOSManagement,
+						Func: strCRManagementPublicKey,
 					},
 				),
 			},
