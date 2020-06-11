@@ -16,6 +16,10 @@ def get_elephant_url_fields():
 
 
 def get_elastos_jwt_token(random_num):
+    req = {
+        "appid": str(random_num)
+    }
+    req = jwt.encode(req, config('SECRET_KEY'), algorithm='HS256').decode('utf-8')
     json_dict = {'did': 'did:elastos:callbacktestdid', 'presentation': {'type': 'VerifiablePresentation',
                                                                         'proof': {'type': 'ECDSAsecp256r1',
                                                                                   'verificationMethod': 'did:elastos:callbacktestdid#primary',
@@ -54,7 +58,8 @@ def get_elastos_jwt_token(random_num):
                                                                                     'type': 'ECDSAsecp256r1',
                                                                                     'verificationMethod': 'did:elastos:callbacktestdid#primary',
                                                                                     'signature': 'W_X5zulKI86qxE-DSzuky3t-dvJskCmEu6ov-xyCZ0VV0wHikPjtKxcf1zTFOTVc6TUKmoyvyArlIxbNsDSO5g'}}]},
-                 'req': str(random_num), 'method': 'credaccess', 'iat': 1590243865,
+                 'req': req, 'method': 'credaccess', 'iat': 1590243865,
                  'aud': 'did:elastos:iq5zjqhroDsnvnyMNrr3tZWNdHAxuyRedj'}
+
     jwt_token = jwt.encode(json_dict , config('SECRET_KEY'), algorithm='HS256')
     return jwt_token.decode()

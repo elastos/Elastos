@@ -8,7 +8,6 @@ from decouple import config
 import os
 import time
 
-
 class LandingPageCase(LiveServerTestCase):
     def setUp(self):
         CookieConsentSettings.objects.create(cookie_policy_link="google.com")
