@@ -633,6 +633,8 @@ static int list(int argc, char *argv[]) {
 					if (lastBlockTime != 0) {
 						localtime_r(&lastBlockTime, &tm);
 						strftime(buf, sizeof(buf), "%F %T", &tm);
+					} else {
+						sprintf(buf, "-");
 					}
 
 					snprintf(info, sizeof(info), "%18.8lf  %3d%%  %19s", balance, progress, buf);

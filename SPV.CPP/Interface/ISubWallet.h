@@ -206,6 +206,13 @@ namespace Elastos {
 					const nlohmann::json &tx) = 0;
 
 			/**
+			 * Convert tx to raw transaction.
+			 * @param tx transaction json
+			 * @return  tx in hex string format.
+			 */
+			virtual std::string ConvertToRawTransaction(const nlohmann::json &tx)  = 0;
+
+			/**
 			 * Get all qualified normal transactions sorted by descent (newest first).
 			 * @param start specify start index of all transactions list.
 			 * @param count specify count of transactions we need.

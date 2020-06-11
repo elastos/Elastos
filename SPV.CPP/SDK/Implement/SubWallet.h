@@ -113,6 +113,8 @@ namespace Elastos {
 			virtual nlohmann::json PublishTransaction(
 				const nlohmann::json &tx);
 
+			virtual std::string ConvertToRawTransaction(const nlohmann::json &tx);
+
 			virtual nlohmann::json GetAllTransaction(
 				uint32_t start,
 				uint32_t count,

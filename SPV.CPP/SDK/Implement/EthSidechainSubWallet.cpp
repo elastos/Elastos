@@ -215,6 +215,14 @@ namespace Elastos {
 			return j;
 		}
 
+		std::string EthSidechainSubWallet::ConvertToRawTransaction(const nlohmann::json &tx) {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("tx: {}", tx.dump());
+
+			ArgInfo("r => ");
+			return "";
+		}
+
 		nlohmann::json EthSidechainSubWallet::GetAllTransaction(uint32_t start, uint32_t count,
 																const std::string &txid) const {
 			ArgInfo("{} {}", _walletID, GetFunName());

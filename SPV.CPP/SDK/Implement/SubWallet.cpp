@@ -357,6 +357,20 @@ namespace Elastos {
 			return result;
 		}
 
+		std::string SubWallet::ConvertToRawTransaction(const nlohmann::json &tx) {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("tx: {}", tx.dump());
+
+			TransactionPtr txn = DecodeTx(tx);
+			ByteStream stream;
+			txn->Serialize(stream, false);
+			std::string rawtx = stream.GetBytes().getHex();
+
+			ArgInfo("r => {}", rawtx);
+
+			return rawtx;
+		}
+
 		nlohmann::json SubWallet::GetAllUTXOs(uint32_t start, uint32_t count, const std::string &address) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("start: {}", start);
