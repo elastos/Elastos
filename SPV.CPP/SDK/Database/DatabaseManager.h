@@ -53,6 +53,8 @@ namespace Elastos {
 
 			~DatabaseManager();
 
+			void ClearData();
+
 			bool ReplaceTxns(const std::vector<TransactionPtr> &txConfirmed,
 							 const std::vector<TransactionPtr> &txPending,
 							 const std::vector<TransactionPtr> &txCoinbase);

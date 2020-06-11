@@ -94,6 +94,8 @@ namespace Elastos {
 
 			void CancelTimer();
 
+			void ClearData();
+
 			/**
 			* Disconnect from bitcoin peer-to-peer network (may cause syncFailed(), saveBlocks() or
 			* savePeers() callbacks to fire)
@@ -179,6 +181,8 @@ namespace Elastos {
 			virtual void OnThreadCleanup(const PeerPtr &peer);
 
 		private:
+			void InitBlocks(const std::vector<MerkleBlockPtr> &blocks);
+
 			void RemovePeer(const PeerPtr &peer);
 
 			Peer::ConnectStatus GetConnectStatusInternal() const;

@@ -51,6 +51,18 @@ namespace Elastos {
 			return *this;
 		}
 
+		void GroupedAsset::ClearData() {
+			_balance = 0;
+			_balanceVote = 0;
+			_balanceDeposit = 0;
+			_balanceLocked = 0;
+			_utxos.clear();
+			_utxosVote.clear();
+			_utxosCoinbase.clear();
+			_utxosDeposit.clear();
+			_utxosLocked.clear();
+		}
+
 		UTXOArray GroupedAsset::GetUTXOs(const std::string &addr) const {
 			UTXOArray result;
 

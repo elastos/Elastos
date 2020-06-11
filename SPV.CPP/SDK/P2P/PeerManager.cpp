@@ -168,7 +168,11 @@ namespace Elastos {
 			_blackPeers.insert(blackPeers.begin(), blackPeers.end());
 			SortPeers();
 
-			const std::vector<CheckPoint> &Checkpoints = params->Checkpoints();
+			InitBlocks(blocks);
+		}
+
+		void PeerManager::InitBlocks(const std::vector<MerkleBlockPtr> &blocks) {
+			const std::vector<CheckPoint> &Checkpoints = _chainParams->Checkpoints();
 			for (size_t i = 0; i < Checkpoints.size(); i++) {
 				MerkleBlockPtr checkBlock = Registry::Instance()->CreateMerkleBlock(_chainID);
 				checkBlock->SetHeight(Checkpoints[i].Height());
@@ -177,7 +181,7 @@ namespace Elastos {
 				checkBlock->SetTarget(Checkpoints[i].Target());
 				_checkpoints.Insert(checkBlock);
 				_blocks.Insert(checkBlock);
-				if (i == 0 || checkBlock->GetTimestamp() + 1 * 24 * 60 * 60 < earliestKeyTime)
+				if (i == 0 || checkBlock->GetTimestamp() + 1 * 24 * 60 * 60 < _earliestKeyTime)
 					_lastBlock = checkBlock;
 			}
 
@@ -352,6 +356,29 @@ namespace Elastos {
 			if (_reconnectTimer) {
 				_reconnectTimer->cancel();
 			}
+		}
+
+		void PeerManager::ClearData() {
+			_isConnected = 0;
+			_connectFailureCount = 0;
+			_misbehavinCount = 0;
+			_syncSucceeded = false;
+			_connectedPeers.clear();
+			_peers.clear();
+			_blackPeers.clear();
+			_connectedPeers.clear();
+			_syncStartHeight = 0;
+			_fpRate = 0;
+			_averageTxPerBlock = 1400;
+			_blocks.Clear();
+			_orphans.Clear();
+			_checkpoints.Clear();
+			_txRelays.clear();
+			_txRequests.clear();
+			_publishedTx.clear();
+			_publishedTxHashes.clear();
+
+			InitBlocks({});
 		}
 
 		void PeerManager::ReconnectLaster(time_t seconds) {

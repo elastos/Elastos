@@ -65,6 +65,19 @@ namespace Elastos {
 
 		DatabaseManager::~DatabaseManager() {}
 
+		void DatabaseManager::ClearData() {
+			_transactionCoinbase.DeleteAll();
+			_transactionNormal.DeleteAll();
+			_transactionPending.DeleteAll();
+			_merkleBlockDataSource.DeleteAllBlocks();
+			_utxoStore.DeleteAll();
+			_addressUsed.DeleteAll();
+			_txHashCRC.DeleteAll();
+			_txHashDPoS.DeleteAll();
+			_txHashProposal.DeleteAll();
+			_txHashDID.DeleteAll();
+		}
+
 		bool DatabaseManager::ReplaceTxns(const std::vector<TransactionPtr> &txConfirmed,
 										  const std::vector<TransactionPtr> &txPending,
 										  const std::vector<TransactionPtr> &txCoinbase) {

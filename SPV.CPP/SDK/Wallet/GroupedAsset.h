@@ -40,6 +40,8 @@ namespace Elastos {
 
 			GroupedAsset &operator=(const GroupedAsset &proto);
 
+			void ClearData();
+
 			UTXOArray GetUTXOs(const std::string &addr) const;
 
 			const UTXOSet &GetVoteUTXO() const;

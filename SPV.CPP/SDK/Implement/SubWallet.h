@@ -132,6 +132,8 @@ namespace Elastos {
 
 			virtual void SyncStop();
 
+			virtual void Resync();
+
 		protected: //implement Wallet::Listener
 			virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance);
 

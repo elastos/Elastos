@@ -187,6 +187,14 @@ namespace Elastos {
 		Wallet::~Wallet() {
 		}
 
+		void Wallet::ClearData() {
+			for (GroupedAssetMap::iterator it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
+				it->second->ClearData();
+			}
+			_spendingOutputs.clear();
+			_database.lock()->ClearData();
+		}
+
 		std::vector<UTXOPtr> Wallet::GetAllUTXO(const std::string &address) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			UTXOArray result;

@@ -84,6 +84,8 @@ namespace Elastos {
 
 			virtual ~Wallet();
 
+			void ClearData();
+
 			void GenerateCID();
 
 			nlohmann::json GetBasicInfo() const;

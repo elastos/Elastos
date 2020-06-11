@@ -256,6 +256,12 @@ namespace Elastos {
 			 */
 			virtual void SyncStop() = 0;
 
+			/**
+			 * Will delete all Merkle blocks and all transactions except the private key.
+			 * And then resync from the beginning.
+			 */
+			virtual void Resync() = 0;
+
 		};
 
 	}

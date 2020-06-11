@@ -1631,6 +1631,26 @@ static int _sync(int argc, char *argv[]) {
 	return 0;
 }
 
+// resync chainID
+static int _resync(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
+
+	std::string chainID = argv[1];
+
+	try {
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
+		subWallet->Resync();
+		masterWalletData[currentWallet->GetID()][chainID].SetSyncProgress(0);
+		masterWalletData[currentWallet->GetID()][chainID].SetLastBlockTime(0);
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+	return 0;
+}
+
 // fixpeer chainID ip port
 static int fixpeer(int argc, char *argv[]) {
 	checkParam(4);
@@ -2002,6 +2022,7 @@ struct command {
 	{"cid",        _cid,           "                                                 List cid of IDChain"},
 	{"publickeys", publickeys,     "                                                 List public keys of IDChain"},
 	{"sync",       _sync,          "chainID (start | stop)                           Start or stop sync of wallet"},
+	{"resync",     _resync,        "chainID                                          Clear all merkle blocks and transactions, and then resync from the beginning"},
 	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},
 	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},
 	{"tx",         _tx,            "chainID [coinbase]                               List all tx/coinbase tx records."},

@@ -117,6 +117,8 @@ namespace Elastos {
 
 			virtual void SyncStop();
 
+			virtual void Resync();
+
 			virtual void StartP2P();
 
 			virtual void StopP2P();

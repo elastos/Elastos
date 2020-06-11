@@ -263,6 +263,11 @@ namespace Elastos {
 			_client->_ewm->disconnect();
 		}
 
+		void EthSidechainSubWallet::Resync() {
+			ArgInfo("{} {}", _walletID, GetFunName());
+
+		}
+
 		void EthSidechainSubWallet::StartP2P() {
 			_client->_ewm->connect();
 		}

@@ -644,6 +644,14 @@ namespace Elastos {
 			_walletManager->SyncStop();
 		}
 
+		void SubWallet::Resync() {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			_walletManager->SyncStop();
+			_walletManager->GetWallet()->ClearData();
+			_walletManager->GetPeerManager()->ClearData();
+			_walletManager->SyncStart();
+		}
+
 		nlohmann::json SubWallet::GetBasicInfo() const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 
