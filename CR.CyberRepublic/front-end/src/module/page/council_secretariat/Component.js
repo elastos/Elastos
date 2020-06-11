@@ -137,10 +137,15 @@ export default class extends StandardPage {
                     </Popover>
                   </div>
                   <Email>
+                  <Popover 
+                      content={item.email}
+                      placement="topLeft"
+                  >
                     {I18N.get('cs.contact')}
                     :
                     {' '}
                     {item.email}
+                    </Popover>
                   </Email>
                 </div>
               </div>
@@ -285,4 +290,8 @@ const TabTitle = styled.div`
 const Email = styled.div`
   position: absolute;
   bottom: 17px;
+  width: 220px;
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis; 
 `
