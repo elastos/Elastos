@@ -435,6 +435,24 @@ static void JNICALL SyncStop(JNIEnv *env, jobject clazz, jlong jproxy) {
         ThrowWalletException(env, msgException.c_str());
 }
 
+#define JNI_Resync "(J)V"
+
+static void JNICALL Resync(JNIEnv *env, jobject clazz, jlong jproxy) {
+    bool exception = false;
+    std::string msgException;
+
+    try {
+        ISubWallet *subWallet = (ISubWallet *) jproxy;
+        subWallet->Resync();
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    if (exception)
+        ThrowWalletException(env, msgException.c_str());
+}
+
 #define JNI_GetAllCoinBaseTransaction "(JIILjava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL GetAllCoinBaseTransaction(JNIEnv *env, jobject clazz, jlong jSubProxy,
@@ -543,7 +561,8 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetAssetInfo),
         REGISTER_METHOD(SetFixedPeer),
         REGISTER_METHOD(SyncStart),
-        REGISTER_METHOD(SyncStop)
+        REGISTER_METHOD(SyncStop),
+        REGISTER_METHOD(Resync)
 };
 
 jint RegisterSubWallet(JNIEnv *env, const std::string &path) {

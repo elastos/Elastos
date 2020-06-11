@@ -138,6 +138,9 @@ public class SubWallet {
         SyncStop(mInstance);
     }
 
+    public void Resync() throws WalletException {
+        Resync(mInstance);
+    }
 
     public SubWallet(long instance) {
         mInstance = instance;
@@ -196,4 +199,6 @@ public class SubWallet {
     private native void SyncStart(long proxy);
 
     private native void SyncStop(long proxy);
+
+    private native void Resync(long proxy);
 }
