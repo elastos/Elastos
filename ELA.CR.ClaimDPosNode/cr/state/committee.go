@@ -752,8 +752,7 @@ func (c *Committee) GetDepositAmountByID(
 	if !exist {
 		return 0, 0, errors.New("ID does not exist")
 	}
-	refundable := c.IsRefundable(*cid)
-	return c.state.getDepositAmountByCID(*cid, refundable)
+	return c.state.getDepositAmountByCID(*cid)
 }
 
 func (c *Committee) GetAvailableDepositAmount(cid common.Uint168) common.Fixed64 {
@@ -1151,12 +1150,6 @@ func (c *Committee) Exist(cid common.Uint168) bool {
 	defer c.mtx.RUnlock()
 
 	return c.state.exist(cid)
-}
-
-func (c *Committee) IsRefundable(cid common.Uint168) bool {
-	c.mtx.RLock()
-	defer c.mtx.RUnlock()
-	return c.state.isRefundable(cid)
 }
 
 func (c *Committee) GetAllCandidates() []*Candidate {

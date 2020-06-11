@@ -2845,12 +2845,6 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 		if p == nil {
 			return errors.New("signer must be producer")
 		}
-		if p.State() != state.Canceled {
-			return errors.New("producer must be canceled before return deposit coin")
-		}
-		if currentHeight-p.CancelHeight() < b.chainParams.CRDepositLockupBlocks {
-			return errors.New("return deposit does not meet the lockup limit")
-		}
 		penalty += p.Penalty()
 		depositAmount += p.DepositAmount()
 	}
@@ -2902,9 +2896,6 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 		cid := ct.ToProgramHash()
 		if !b.crCommittee.Exist(*cid) {
 			return errors.New("signer must be candidate or member")
-		}
-		if !b.crCommittee.IsRefundable(*cid) {
-			return errors.New("signer must be refundable")
 		}
 
 		availableValue += b.crCommittee.GetAvailableDepositAmount(*cid)

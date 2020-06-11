@@ -123,7 +123,7 @@ func getRegisterProducerTx(ownerPublicKey, nodePublicKey []byte,
 		Payload: &payload.ProducerInfo{
 			OwnerPublicKey: ownerPublicKey,
 			NodePublicKey:  nodePublicKey,
-			NickName: nickName,
+			NickName:       nickName,
 		},
 		Outputs: []*types.Output{
 			{

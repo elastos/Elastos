@@ -3267,7 +3267,7 @@ func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 	canceledHeight := uint32(8)
 	err := s.Chain.checkReturnDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight)
-	s.EqualError(err, "producer must be canceled before return deposit coin")
+	s.NoError(err)
 
 	// cancel CR
 	s.Chain.state.ProcessBlock(&types.Block{
@@ -3301,7 +3301,7 @@ func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 	rdTx.Programs[0].Code = code1
 	err = s.Chain.checkReturnDepositCoinTransaction(
 		rdTx, references, 2159+canceledHeight)
-	s.EqualError(err, "return deposit does not meet the lockup limit")
+	s.NoError(err)
 
 	// check a return deposit coin transaction with wrong output amount.
 	rdTx.Outputs[0].Value = 5000 * 100000000
@@ -3389,12 +3389,6 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	}
 	canceledHeight := uint32(8)
 
-	// check a return cr deposit coin transaction when not unregistered in
-	// voting period.
-	err := s.Chain.checkReturnCRDepositCoinTransaction(
-		rdTx, references, 2160+canceledHeight)
-	s.EqualError(err, "signer must be refundable")
-
 	// unregister CR
 	s.Chain.crCommittee.ProcessBlock(&types.Block{
 		Header: types.Header{
@@ -3417,14 +3411,6 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	pubkey2, _ := crypto.DecodePoint(pubKeyBytes2)
 	code2, _ := contract.CreateStandardRedeemScript(pubkey2)
 
-	// check a return cr deposit coin transaction when not reached the
-	// count of DepositLockupBlocks in voting period.
-	rdTx.Programs[0].Code = code
-	s.CurrentHeight = 2159 + canceledHeight
-	err = s.Chain.checkReturnCRDepositCoinTransaction(
-		rdTx, references, 2159+canceledHeight)
-	s.EqualError(err, "signer must be refundable")
-
 	s.CurrentHeight = 2160 + canceledHeight
 	s.Chain.crCommittee.ProcessBlock(&types.Block{
 		Header: types.Header{
@@ -3435,7 +3421,7 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 
 	// check a return cr deposit coin transaction with wrong code in voting period.
 	rdTx.Programs[0].Code = code2
-	err = s.Chain.checkReturnCRDepositCoinTransaction(
+	err := s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight)
 	s.EqualError(err, "signer must be candidate or member")
 
@@ -3469,7 +3455,7 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	// check a return cr deposit coin transaction with the amount has returned.
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight)
-	s.EqualError(err, "signer must be refundable")
+	s.NoError(err)
 
 }
 
