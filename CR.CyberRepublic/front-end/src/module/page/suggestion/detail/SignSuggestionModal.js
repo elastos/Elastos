@@ -10,18 +10,10 @@ class SignSuggestionModal extends Component {
     this.state = {
       url: '',
       visible: true,
-      message: ''
+      message: '',
+      signNow: false
     }
-    this.timerOneList = []
-  }
-
-  clearTimerList = () => {
-    if (this.timerOneList && this.timerOneList.length) {
-      for (let timer of this.timerOneList) {
-        clearTimeout(timer)
-      }
-      this.timerOneList = []
-    }
+    this.timer = null
   }
 
   pollingSignature = async () => {
@@ -31,12 +23,14 @@ class SignSuggestionModal extends Component {
     const { id, getSignature } = this.props
     const rs = await getSignature(id)
     if (rs && rs.success) {
-      this.clearTimerList()
+      clearTimeout(this.timer)
+      this.timer = null
       this.setState({ visible: false })
       return
     }
     if (rs && rs.success === false) {
-      this.clearTimerList()
+      clearTimeout(this.timer)
+      this.timer = null
       if (rs.message) {
         message.error(rs.message)
       } else {
@@ -46,17 +40,18 @@ class SignSuggestionModal extends Component {
       return
     }
     if (this._isMounted === true) {
-      const timer = setTimeout(this.pollingSignature, 3000)
-      this.timerOneList.push(timer)
+      clearTimeout(this.timer)
+      this.timer = setTimeout(this.pollingSignature, 3000)
     }
   }
 
   handleSign = async () => {
+    this.setState({ signNow: true })
     const { id, getSignatureUrl } = this.props
     const rs = await getSignatureUrl(id)
     if (rs && rs.success) {
       this.setState({ url: rs.url })
-      setTimeout(this.pollingSignature, 3000)
+      this.timer = setTimeout(this.pollingSignature, 3000)
     }
     if (rs && rs.success === false && rs.message) {
       this.setState({ message: rs.message })
@@ -69,10 +64,12 @@ class SignSuggestionModal extends Component {
 
   componentWillUnmount = () => {
     this._isMounted = false
-    this.clearTimerList()
+    clearTimeout(this.timer)
+    this.timer = null
   }
 
-  elaQrCode = (url) => {
+  elaQrCode = () => {
+    const { url } = this.state
     return (
       <Content>
         {url ? <QRCode value={url} size={400} /> : <Spin />}
@@ -81,9 +78,13 @@ class SignSuggestionModal extends Component {
     )
   }
 
-  modalContent = (message) => {
+  modalContent = () => {
+    const { message, signNow } = this.state
     if (message) {
       return <Content>{message}</Content>
+    }
+    if (signNow) {
+      return <Content>{this.elaQrCode()}</Content>
     }
     return (
       <Content>
@@ -112,7 +113,7 @@ class SignSuggestionModal extends Component {
   }
 
   render() {
-    const { visible, url, message } = this.state
+    const { visible } = this.state
     return (
       <Modal
         maskClosable={false}
@@ -121,7 +122,7 @@ class SignSuggestionModal extends Component {
         footer={null}
         width={500}
       >
-        {url ? this.elaQrCode(url) : this.modalContent(message)}
+        {this.modalContent()}
       </Modal>
     )
   }
@@ -130,7 +131,7 @@ class SignSuggestionModal extends Component {
 export default SignSuggestionModal
 
 const Content = styled.div`
-  padding: 16px;
+  padding: 8px 0;
   text-align: center;
 `
 const Tip = styled.div`

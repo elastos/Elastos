@@ -13,6 +13,9 @@ export default createContainer(Component, state => ({
     },
     async getCandidates(param) {
       return councilService.getCandidates(param)
+    },
+    async getCouncilsAndSecretariat() {
+      return councilService.getCouncilsAndSecretariat()
     }
   }
 })

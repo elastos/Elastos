@@ -12,7 +12,7 @@ class SignSuggestionButton extends Component {
       url: '',
       visible: false
     }
-    this.timerDid = null
+    this.timer = null
   }
 
   elaQrCode = () => {
@@ -25,36 +25,44 @@ class SignSuggestionButton extends Component {
     )
   }
 
-  pollingSignature = () => {
+  pollingSignature = async () => {
+    if (!this._isMounted) {
+      return
+    }
     const { id, getSignature } = this.props
-    this.timerDid = setInterval(async () => {
-      const rs = await getSignature(id)
-      if (rs && rs.success) {
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        this.setState({ url: '', visible: false })
+    const rs = await getSignature(id)
+    if (rs && rs.success) {
+      clearTimeout(this.timer)
+      this.timer = null
+      this.setState({ visible: false })
+      return
+    }
+    if (rs && rs.success === false) {
+      clearTimeout(this.timer)
+      this.timer = null
+      if (rs.message) {
+        message.error(rs.message)
+      } else {
+        message.error(I18N.get('suggestion.msg.exception'))
       }
-      if (rs && rs.success === false) {
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        if (rs.message) {
-          message.error(rs.message)
-        } else {
-          message.error(I18N.get('suggestion.msg.exception'))
-        }
-        this.setState({ visible: false })
-      }
-    }, 3000)
+      this.setState({ visible: false })
+      return
+    }
+    if (this._isMounted === true) {
+      clearTimeout(this.timer)
+      this.timer = setTimeout(this.pollingSignature, 3000)
+    }
   }
 
   handleSign = async () => {
-    if (this.timerDid) {
+    if (this.timer) {
       return
     }
-    this.pollingSignature()
+    this.timer = setTimeout(this.pollingSignature, 3000)
   }
 
   componentDidMount = async () => {
+    this._isMounted = true
     const { id, getSignatureUrl } = this.props
     const rs = await getSignatureUrl(id)
     if (rs && rs.success) {
@@ -66,7 +74,9 @@ class SignSuggestionButton extends Component {
   }
 
   componentWillUnmount() {
-    clearInterval(this.timerDid)
+    this._isMounted = false
+    clearTimeout(this.timer)
+    this.timer = null
   }
 
   handleVisibleChange = (visible) => {

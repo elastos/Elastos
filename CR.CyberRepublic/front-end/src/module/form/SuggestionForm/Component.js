@@ -116,9 +116,10 @@ class C extends BaseComponent {
         }
 
         const sum = pItems.reduce((sum, item) => {
-          return (sum += parseFloat(item.amount))
-        }, 0.0)
-        if (amount !== sum) {
+          return (sum += Number(item.amount))
+        }, 0)
+
+        if (Number(amount) !== sum) {
           this.setState({ loading: false })
           message.error(I18N.get('suggestion.form.error.notEqual'))
           return
@@ -175,7 +176,7 @@ class C extends BaseComponent {
       }
       const index = TAB_KEYS.findIndex((item) => item === this.state.activeKey)
       if (index === TAB_KEYS.length - 1) {
-        this.handleSubmit({ preventDefault: () => {} })
+        // this.handleSubmit({ preventDefault: () => {} })
       } else {
         this.setState({ activeKey: TAB_KEYS[index + 1] })
       }
