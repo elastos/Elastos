@@ -247,13 +247,13 @@ int DIDMeta_Merge(DIDMeta *meta, DIDMeta *frommeta)
     assert(meta && frommeta);
 
     strcpy(meta->alias, frommeta->alias);
-    if (*frommeta->txid)
+    if (!*meta->txid)
         strcpy(meta->txid, frommeta->txid);
-    if (*frommeta->signatureValue)
+    if (!*meta->signatureValue)
         strcpy(meta->signatureValue, frommeta->signatureValue);
-    if (!meta->deactived)
+    if (frommeta->deactived)
         meta->deactived = frommeta->deactived;
-    if (!frommeta->timestamp)
+    if (frommeta->timestamp > 0)
         meta->timestamp = frommeta->timestamp;
     return 0;
 }

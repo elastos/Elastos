@@ -45,6 +45,7 @@ static void test_idchain_publishdid_and_resolve(void)
     printf("\n------------------------------------------------------------\n-- publish begin(create), waiting....\n");
     successed = DIDStore_PublishDID(store, storepass, &did, signkey, false);
     CU_ASSERT_TRUE_FATAL(successed);
+    DIDDocument_Destroy(doc);
     printf("-- publish result:\n   did = %s\n -- resolve begin(create)", did.idstring);
 
     while(!resolvedoc) {
@@ -52,10 +53,8 @@ static void test_idchain_publishdid_and_resolve(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
 
@@ -71,6 +70,9 @@ static void test_idchain_publishdid_and_resolve(void)
     resolvedoc = NULL;
 
     //update
+    doc = DIDStore_LoadDID(store, &did);
+    CU_ASSERT_PTR_NOT_NULL(doc);
+
     DIDDocumentBuilder *builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
     DIDDocument_Destroy(doc);
@@ -114,10 +116,8 @@ static void test_idchain_publishdid_and_resolve(void)
         }
 
         ++i;
-        if (i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -175,10 +175,8 @@ static void test_idchain_publishdid_and_resolve(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -223,10 +221,8 @@ static void test_idchain_publishdid_with_credential(void)
             printf(".");
             sleep(30);
             ++i;
-            if (i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -287,10 +283,8 @@ static void test_idchain_publishdid_with_credential(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
 
     printf("\n   txid = %s\n-- resolve result: successfully!\n------------------------------------------------------------\n", txid);

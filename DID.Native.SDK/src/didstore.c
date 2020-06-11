@@ -902,10 +902,9 @@ static DIDDocument *create_document(DIDStore *store, DID *did, const char *key,
     }
 
     document = DIDDocumentBuilder_Seal(builder, storepass);
-    if (!document) {
-        DIDDocumentBuilder_Destroy(builder);
+    DIDDocumentBuilder_Destroy(builder);
+    if (!document)
         return NULL;
-    }
 
     if (DIDMeta_Init(&document->meta, alias, NULL,
             document->proof.signatureValue, false, 0) == -1) {
@@ -1037,13 +1036,13 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
         alias = DIDMeta_GetAlias(&meta);
     strcpy(document->meta.alias, alias);
 
-    if (!*document->meta.txid)
+    /*if (!*document->meta.txid)
         strcpy(document->meta.txid, meta.txid);
     if (!document->meta.deactived)
         document->meta.deactived = meta.deactived;
     if (!document->meta.timestamp)
-        document->meta.timestamp = meta.timestamp;
-
+        document->meta.timestamp = meta.timestamp;*/
+    DIDMeta_Merge(&meta, &document->meta);
     DIDDocument_SetStore(document, store);
 
 	data = DIDDocument_ToJson(document, true);
@@ -1064,7 +1063,7 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
         goto errorExit;
     }
 
-    strcpy(meta.alias, document->meta.alias);
+    //strcpy(meta.alias, document->meta.alias);
     if (store_didmeta(store, &meta, &document->did) == -1)
         goto errorExit;
 

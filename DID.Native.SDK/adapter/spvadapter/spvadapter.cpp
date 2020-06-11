@@ -378,18 +378,20 @@ bool SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
     if (!memo)
         memo = "";
 
-    TransactionResult tr;
+    try {
+        auto payloadJson = nlohmann::json::parse(payload);
 
-    return SpvDidAdapter_CreateIdTransactionEx(adapter, payload, memo, 1,
-        TransactionCallback, &tr, password);
-    /*tr.wait();
-    if (tr.getStatus() != 0)
+        auto tx = adapter->idWallet->CreateIDTransaction(payloadJson, memo);
+        tx = adapter->idWallet->SignTransaction(tx, password);
+        adapter->idWallet->PublishTransaction(tx);
+    } catch (...) {
         return false;
-    else
-        return true;*/
+    }
+
+    return true;
 }
 
-bool SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
+void SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
         const char *payload, const char *memo, int confirms,
         SpvTransactionCallback *txCallback, void *context,
         const char *password)
@@ -404,18 +406,11 @@ bool SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
         tx = adapter->idWallet->SignTransaction(tx, password);
         tx = adapter->idWallet->PublishTransaction(tx);
         std::string txid = tx["TxHash"];
-        /*if (txid.empty())
-            return true;
-
-        return false;*/
-        //adapter->callback->RegisterTransactionCallback(txid,
-                //confirms, txCallback, context);
+        adapter->callback->RegisterTransactionCallback(txid,
+                confirms, txCallback, context);
     } catch (...) {
         txCallback(NULL, -1, "SPV adapter internal error.", context);
-        return false;
     }
-
-    return true;
 }
 
 void SpvDidAdapter_FreeMemory(SpvDidAdapter *adapter, void *mem)

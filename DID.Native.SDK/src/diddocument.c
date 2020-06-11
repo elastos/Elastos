@@ -52,18 +52,14 @@ typedef enum KeyType {
 
 static void PublicKey_Destroy(PublicKey *publickey)
 {
-    if(!publickey)
-        return;
-
-    free(publickey);
+    if(publickey)
+        free(publickey);
 }
 
 static void Service_Destroy(Service *service)
 {
-    if (!service)
-        return;
-
-    free(service);
+    if (service)
+        free(service);
 }
 
 static
@@ -1231,12 +1227,9 @@ void DIDDocumentBuilder_Destroy(DIDDocumentBuilder *builder)
     if (!builder)
         return;
 
-    if (!builder->document) {
-        free(builder);
-        return;
-    }
+    if (builder->document)
+        DIDDocument_Destroy(builder->document);
 
-    DIDDocument_Destroy(builder->document);
     free(builder);
 }
 
@@ -1299,6 +1292,7 @@ PublicKey *create_publickey(DIDURL *id, DID *controller, const char *publickey,
     DID_Copy(&pk->controller, controller);
 
     strcpy(pk->type, ProofType);
+    assert(strlen(publickey) < sizeof(pk->publicKeyBase58));
     strcpy(pk->publicKeyBase58, publickey);
 
     if (type == KeyType_Authentication)

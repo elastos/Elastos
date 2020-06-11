@@ -254,7 +254,7 @@ typedef DIDDocument* DIDStore_MergeCallback(DIDDocument *chaincopy, DIDDocument 
 struct DIDAdapter {
 /**
  * \~English
- * User need to realize 'createIdTransaction' function.
+ * User need to implement 'createIdTransaction' function.
  * An application-defined function that create id transaction to chain.
  * @param
  *      adapter              [in] A handle to DIDAdapter.
@@ -271,7 +271,7 @@ struct DIDAdapter {
 /**
  * \~English
  * DIDResolver is support method to resolve did document from chain.
- * User need to realize 'resolve' function.
+ * User need to implement 'resolve' function.
  */
 struct DIDResolver {
     /**

@@ -48,6 +48,7 @@ static void test_idchain_publishdid(void)
     printf("\n------------------------------------------------------------\n-- publish begin(create), waiting....\n");
     successed = DIDStore_PublishDID(store, storepass, &did, signkey, false);
     CU_ASSERT_TRUE_FATAL(successed);
+    DIDDocument_Destroy(doc);
     printf("-- publish result:\n   did = %s\n-- resolve begin(create)", did.idstring);
 
     while(!resolvedoc) {
@@ -55,10 +56,8 @@ static void test_idchain_publishdid(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
@@ -73,6 +72,9 @@ static void test_idchain_publishdid(void)
     resolvedoc = NULL;
 
     //update
+    doc = DIDStore_LoadDID(store, &did);
+    CU_ASSERT_PTR_NOT_NULL(doc);
+
     DIDDocumentBuilder *builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
     DIDDocument_Destroy(doc);
@@ -94,6 +96,7 @@ static void test_idchain_publishdid(void)
     rc = DIDStore_StoreDID(store, doc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     CU_ASSERT_STRING_EQUAL(alias, DIDDocument_GetAlias(doc));
+    DIDDocument_Destroy(doc);
 
     successed = DIDStore_PublishDID(store, storepass, &did, NULL, false);
     CU_ASSERT_TRUE_FATAL(successed);
@@ -114,10 +117,8 @@ static void test_idchain_publishdid(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -129,6 +130,9 @@ static void test_idchain_publishdid(void)
     resolvedoc = NULL;
 
     //update again
+    doc = DIDStore_LoadDID(store, &did);
+    CU_ASSERT_PTR_NOT_NULL(doc);
+
     builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
     DIDDocument_Destroy(doc);
@@ -171,10 +175,8 @@ static void test_idchain_publishdid(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -189,7 +191,7 @@ static void test_idchain_publishdid_without_txid(void)
 {
     DIDURL *signkey;
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     DIDDocument *resolvedoc = NULL, *doc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
     bool successed;
@@ -206,14 +208,14 @@ static void test_idchain_publishdid_without_txid(void)
     CU_ASSERT_PTR_NOT_NULL(doc);
 
     signkey = DIDDocument_GetDefaultPublicKey(doc);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
+    CU_ASSERT_PTR_NOT_NULL(signkey);
 
     DID_Copy(&did, DIDDocument_GetSubject(doc));
-    DIDDocument_Destroy(doc);
 
     printf("\n------------------------------------------------------------\n-- publish begin(create), waiting....\n");
     successed = DIDStore_PublishDID(store, storepass, &did, signkey, false);
     CU_ASSERT_TRUE_FATAL(successed);
+    DIDDocument_Destroy(doc);
     printf("-- publish result:\n   did = %s\n -- resolve begin(create)", did.idstring);
 
     while(!resolvedoc) {
@@ -221,10 +223,8 @@ static void test_idchain_publishdid_without_txid(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -289,10 +289,8 @@ static void test_idchain_publishdid_without_txid(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
     strcpy(previous_txid, txid);
 
@@ -353,10 +351,8 @@ static void test_idchain_publishdid_without_txid(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -371,7 +367,7 @@ static void test_idchain_publishdid_without_signature(void)
 {
     DIDURL *signkey;
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     DIDDocument *resolvedoc = NULL, *doc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
     bool successed;
@@ -391,11 +387,12 @@ static void test_idchain_publishdid_without_signature(void)
     CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
 
     DID_Copy(&did, DIDDocument_GetSubject(doc));
-    DIDDocument_Destroy(doc);
 
     printf("\n------------------------------------------------------------\n-- publish begin(create), waiting....\n");
     successed = DIDStore_PublishDID(store, storepass, &did, signkey, false);
     CU_ASSERT_TRUE_FATAL(successed);
+    DIDDocument_Destroy(doc);
+
     printf("-- publish result:\n   did = %s\n -- resolve begin(create)", did.idstring);
 
     while(!resolvedoc) {
@@ -403,10 +400,8 @@ static void test_idchain_publishdid_without_signature(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -466,10 +461,8 @@ static void test_idchain_publishdid_without_signature(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
     strcpy(previous_txid, txid);
 
@@ -531,10 +524,8 @@ static void test_idchain_publishdid_without_signature(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -548,7 +539,7 @@ static void test_idchain_publishdid_without_signature(void)
 static void test_idchain_publishdid_without_txid_and_signature(void)
 {
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN], _path[PATH_MAX];
+    char previous_txid[ELA_MAX_TXID_LEN], _path[PATH_MAX];
     DIDDocument *resolvedoc = NULL, *doc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
     bool successed;
@@ -578,10 +569,8 @@ static void test_idchain_publishdid_without_txid_and_signature(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -637,7 +626,7 @@ static void test_force_updatedid_without_txid_and_signature(void)
 {
     DIDURL *signkey;
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     DIDDocument *resolvedoc = NULL, *doc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
     bool successed;
@@ -666,10 +655,8 @@ static void test_force_updatedid_without_txid_and_signature(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -734,10 +721,8 @@ static void test_force_updatedid_without_txid_and_signature(void)
             txid = resolvedoc->meta.txid;
             printf(".");
         }
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
 
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
@@ -752,7 +737,7 @@ static void test_force_updatedid_without_txid_and_signature(void)
 static void test_updatedid_with_difftxid_only(void)
 {
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN], _path[PATH_MAX];
+    char previous_txid[ELA_MAX_TXID_LEN], _path[PATH_MAX];
     DIDDocument *resolvedoc = NULL, *doc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
     bool successed;
@@ -782,10 +767,8 @@ static void test_updatedid_with_difftxid_only(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -849,10 +832,8 @@ static void test_updatedid_with_difftxid_only(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
 
     CU_ASSERT_NOT_EQUAL(previous_txid, txid);
@@ -865,7 +846,7 @@ static void test_updatedid_with_difftxid_only(void)
 static void test_updatedid_with_diffsignature_only(void)
 {
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN], _path[PATH_MAX];
+    char previous_txid[ELA_MAX_TXID_LEN], _path[PATH_MAX];
     DIDDocument *resolvedoc = NULL, *doc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
     bool successed;
@@ -895,10 +876,8 @@ static void test_updatedid_with_diffsignature_only(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -956,10 +935,8 @@ static void test_updatedid_with_diffsignature_only(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
     strcpy(previous_txid, txid);
 
@@ -1022,10 +999,8 @@ static void test_updatedid_with_diffsignature_only(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -1039,7 +1014,7 @@ static void test_updatedid_with_diffsignature_only(void)
 static void test_updatedid_with_diff_txidsignature(void)
 {
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN], _path[PATH_MAX];
+    char previous_txid[ELA_MAX_TXID_LEN], _path[PATH_MAX];
     DIDDocument *resolvedoc = NULL, *doc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
     bool successed;
@@ -1069,10 +1044,8 @@ static void test_updatedid_with_diff_txidsignature(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -1127,7 +1100,7 @@ static void test_updatedid_with_diff_txidsignature(void)
 static void test_force_updatedid_with_wrongtxid(void)
 {
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     DIDDocument *resolvedoc = NULL, *doc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
     bool successed;
@@ -1156,10 +1129,8 @@ static void test_force_updatedid_with_wrongtxid(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -1223,10 +1194,8 @@ static void test_force_updatedid_with_wrongtxid(void)
             txid = resolvedoc->meta.txid;
             printf(".");
         }
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
 
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
@@ -1241,7 +1210,7 @@ static void test_force_updatedid_with_wrongtxid(void)
 static void test_force_updatedid_with_wrongsignature(void)
 {
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     DIDDocument *resolvedoc = NULL, *doc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
     bool successed;
@@ -1270,10 +1239,8 @@ static void test_force_updatedid_with_wrongsignature(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -1338,10 +1305,8 @@ static void test_force_updatedid_with_wrongsignature(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
 
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
@@ -1356,7 +1321,7 @@ static void test_force_updatedid_with_wrongsignature(void)
 static void test_idchain_publishdid_with_credential(void)
 {
     DIDDocument *resolvedoc = NULL, *doc;
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     const char *mnemonic, *txid;
     Credential *cred;
     bool successed;
@@ -1384,10 +1349,8 @@ static void test_idchain_publishdid_with_credential(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -1449,10 +1412,8 @@ static void test_idchain_publishdid_with_credential(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
 
     printf("\n-- resolve result: successfully!\n------------------------------------------------------------\n");
@@ -1467,7 +1428,7 @@ static void test_idchain_publishdid_with_credential(void)
 static void test_idchain_deactivedid_after_create(void)
 {
     DIDDocument *resolvedoc = NULL, *doc;
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     const char *mnemonic, *txid;
     Credential *cred;
     bool successed;
@@ -1494,10 +1455,8 @@ static void test_idchain_deactivedid_after_create(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -1526,10 +1485,8 @@ static void test_idchain_deactivedid_after_create(void)
             sleep(30);
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
 
     printf("\n-- resolve result: successfully!\n------------------------------------------------------------\n");
@@ -1541,7 +1498,7 @@ static void test_idchain_deactivedid_after_update(void)
 {
     DIDURL *signkey;
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     DIDDocument *resolvedoc = NULL, *doc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
     bool successed;
@@ -1565,6 +1522,7 @@ static void test_idchain_deactivedid_after_update(void)
     printf("\n------------------------------------------------------------\n-- publish begin(create), waiting....\n");
     successed = DIDStore_PublishDID(store, storepass, &did, signkey, false);
     CU_ASSERT_TRUE_FATAL(successed);
+    DIDDocument_Destroy(doc);
     printf("-- publish result:\n   did = %s\n -- resolve begin(create)", did.idstring);
 
     while(!resolvedoc) {
@@ -1572,10 +1530,8 @@ static void test_idchain_deactivedid_after_update(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
@@ -1592,6 +1548,9 @@ static void test_idchain_deactivedid_after_update(void)
     resolvedoc = NULL;
 
     //update
+    doc = DIDStore_LoadDID(store, &did);
+    CU_ASSERT_PTR_NOT_NULL(doc);
+
     DIDDocumentBuilder *builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
     DIDDocument_Destroy(doc);
@@ -1613,6 +1572,7 @@ static void test_idchain_deactivedid_after_update(void)
     rc = DIDStore_StoreDID(store, doc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     CU_ASSERT_STRING_EQUAL(alias, DIDDocument_GetAlias(doc));
+    DIDDocument_Destroy(doc);
 
     successed = DIDStore_PublishDID(store, storepass, &did, NULL, false);
     CU_ASSERT_TRUE_FATAL(successed);
@@ -1633,10 +1593,8 @@ static void test_idchain_deactivedid_after_update(void)
             printf(".");
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -1665,10 +1623,8 @@ static void test_idchain_deactivedid_after_update(void)
             sleep(30);
         }
 
-        if (++i >= 20) {
-            printf("publish did timeout!!!!\n");
-            break;
-        }
+        if (++i >= 20)
+            CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
 
     printf("\n-- resolve result: successfully!\n------------------------------------------------------------\n");
@@ -1678,7 +1634,7 @@ static void test_idchain_deactivedid_after_update(void)
 
 static void test_idchain_deactivedid_with_authorization1(void)
 {
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     DIDDocument *resolvedoc = NULL, *doc, *targetdoc;
     const char *mnemonic, *txid, *alias = "littlefish";
     DID controller, did;
@@ -1707,10 +1663,8 @@ static void test_idchain_deactivedid_with_authorization1(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -1761,10 +1715,8 @@ static void test_idchain_deactivedid_with_authorization1(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -1792,10 +1744,8 @@ static void test_idchain_deactivedid_with_authorization1(void)
             txid = resolvedoc->meta.txid;
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
 
@@ -1807,7 +1757,7 @@ static void test_idchain_deactivedid_with_authorization1(void)
 static void test_idchain_deactivedid_with_authorization2(void)
 {
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     DIDDocument *resolvedoc = NULL, *doc, *targetdoc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
     DerivedKey _dkey, *dkey;
@@ -1866,10 +1816,8 @@ static void test_idchain_deactivedid_with_authorization2(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -1921,10 +1869,8 @@ static void test_idchain_deactivedid_with_authorization2(void)
         if (!resolvedoc) {
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
     txid = resolvedoc->meta.txid;
@@ -1949,10 +1895,8 @@ static void test_idchain_deactivedid_with_authorization2(void)
             txid = resolvedoc->meta.txid;
             printf(".");
             sleep(30);
-            if (++i >= 20) {
-                printf("publish did timeout!!!!\n");
-                break;
-            }
+            if (++i >= 20)
+                CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
 

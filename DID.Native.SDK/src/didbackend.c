@@ -112,12 +112,12 @@ bool DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
 
     if (!DIDMeta_AttachedStore(&document->meta)) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
-        return NULL;
+        return false;
     }
 
     reqstring = DIDRequest_Sign(RequestType_Create, document, signkey, storepass);
     if (!reqstring)
-        return NULL;
+        return false;
 
    successed =  backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
@@ -140,12 +140,12 @@ bool DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signk
 
     if (!DIDMeta_AttachedStore(&document->meta)) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
-        return NULL;
+        return false;
     }
 
     reqstring = DIDRequest_Sign(RequestType_Update, document, signkey, storepass);
     if (!reqstring)
-        return NULL;
+        return false;
 
     successed = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
@@ -169,17 +169,17 @@ bool DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signkey,
 
     if (!DIDMeta_AttachedStore(&did->meta)) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
-        return NULL;
+        return false;
     }
 
     document = DIDStore_LoadDID(did->meta.store, did);
     if (!document)
-        return NULL;
+        return false;
 
     reqstring = DIDRequest_Sign(RequestType_Deactivate, document, signkey, storepass);
     DIDDocument_Destroy(document);
     if (!reqstring)
-        return NULL;
+        return false;
 
     successed = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
