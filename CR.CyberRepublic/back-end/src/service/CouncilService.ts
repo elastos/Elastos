@@ -427,30 +427,27 @@ export default class extends Base {
             const didList = _.map(councilMembers, (o: any) => DID_PREFIX + o.did)
             const userList = await this.userMode.getDBInstance().find({'did.id': {$in: didList}}, ['_id', 'did.id'])
             const userByDID = _.keyBy(userList, (o: any) => o.did.id.replace(DID_PREFIX, ''))
-            const users = userList.map(o=>{return{did:o.did.id.split(DID_PREFIX)[1], userId :o._id}})
-            const userMap = _.groupBy(users, 'did')
-            const members = _.groupBy(councilMembers, 'did')
-            const councilsMap = _.map(_.merge(members,userMap),(o:any ,key:any) => {return o[0]})
+
             // add avatar nickname into user's did
-            const councilsMember = await Promise.all(_.map(councilsMap, async (o: any) => {
+            const councilsMember = await Promise.all(_.map(councilMembers, async (o: any) => {
                 const information: any = await getInformationByDid(o.did)
                 const didName = await getDidName(DID_PREFIX + o.did)
                 const did = this.filterNullField({
                     'did.avatar': _.get(information, 'avatar'),
                     'did.didName': didName,
                 })
-                if (_.isEmpty(did)) {
-                    return
+                if (!_.isEmpty(did) && userByDID[o.did]) {
+                    await this.userMode.getDBInstance().update({_id: userByDID[o.did]._id}, {
+                        $set: did
+                    })
                 }
-                await this.userMode.getDBInstance().update({_id: o.userId}, {
-                    $set: did
-                })
                 const data = {
                     ...o,
                     ..._.omit(information,['did']),
                 }
                 return {
                     ...data,
+                    didName,
                     user: userByDID[o.did]
                 }
             }))
