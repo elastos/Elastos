@@ -323,35 +323,35 @@ namespace Elastos {
 			return result;
 		}
 
-		nlohmann::json SubWallet::SignTransaction(const nlohmann::json &createdTx,
+		nlohmann::json SubWallet::SignTransaction(const nlohmann::json &tx,
 												  const std::string &payPassword) const {
 
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("tx: {}", createdTx.dump());
+			ArgInfo("tx: {}", tx.dump());
 			ArgInfo("passwd: *");
 
-			TransactionPtr tx = DecodeTx(createdTx);
+			TransactionPtr txn = DecodeTx(tx);
 
-			_walletManager->GetWallet()->SignTransaction(tx, payPassword);
+			_walletManager->GetWallet()->SignTransaction(txn, payPassword);
 
 			nlohmann::json result;
-			EncodeTx(result, tx);
+			EncodeTx(result, txn);
 
 			ArgInfo("r => {}", result.dump());
 			return result;
 		}
 
-		nlohmann::json SubWallet::PublishTransaction(const nlohmann::json &signedTx) {
+		nlohmann::json SubWallet::PublishTransaction(const nlohmann::json &tx) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("tx: {}", signedTx.dump());
+			ArgInfo("tx: {}", tx.dump());
 
-			TransactionPtr tx = DecodeTx(signedTx);
+			TransactionPtr txn = DecodeTx(tx);
 
-			publishTransaction(tx);
+			publishTransaction(txn);
 
 			nlohmann::json result;
-			result["TxHash"] = tx->GetHash().GetHex();
-			result["Fee"] = tx->GetFee();
+			result["TxHash"] = txn->GetHash().GetHex();
+			result["Fee"] = txn->GetFee();
 
 			ArgInfo("r => {}", result.dump());
 			return result;

@@ -88,11 +88,11 @@
 // will get announcements of new blocks.  When a transaction is submitted we'll submit it to *all*
 // active nodes.  We will need multiple active nodes for submissions as we *routinely* see nodes
 // simply dropping submission outright, quietly.
-#define LES_ACTIVE_NODE_COUNT 3
+#define LES_ACTIVE_NODE_COUNT 1
 
 // When discovering nodes (on UDP) don't allow more then LES_ACTIVE_NODE_UDP_LIMIT nodes to be
 // actively discovering at once.
-#define LES_ACTIVE_NODE_UDP_LIMIT 3
+#define LES_ACTIVE_NODE_UDP_LIMIT 1
 
 // The number of nodes that should be available.  We'll discover nodes until we reach this count.
 // Note that this doesn mean that the nodes are LESv2 or PIPv1 nodes - they are just nodes.  As

@@ -22,6 +22,7 @@
 #include "MasterWallet.h"
 #include "EthSidechainSubWallet.h"
 #include <Ethereum/EthereumClient.h>
+#include <WalletCore/CoinInfo.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -35,8 +36,12 @@ namespace Elastos {
 													 const std::string &netType) :
 			SubWallet(netType, parent, config, info) {
 
+			_walletID = _parent->GetID() + ":" + info->GetChainID();
+
+			// TODO: fixme later
 			std::string mnemonic = "boring head harsh green empty clip fatal typical found crane dinner timber";
 			EthereumNetworkPtr network(new EthereumNetwork(netType));
+
 			// TODO: save public key to coininfo
 			_client = ClientPtr(new EthereumClient(network, parent->GetDataPath(), mnemonic));
 			EthereumWalletPtr wallet = _client->_ewm->getWallet();
@@ -57,99 +62,213 @@ namespace Elastos {
 		}
 
 		nlohmann::json EthSidechainSubWallet::GetBasicInfo() const {
-			return nlohmann::json();
+			ArgInfo("{} {}", _walletID, GetFunName());
+
+			nlohmann::json j;
+			j["Info"] = nlohmann::json();
+			j["ChainID"] = _info->GetChainID();
+
+			ArgInfo("r => {}", j.dump());
+			return j;
 		}
 
 		nlohmann::json EthSidechainSubWallet::GetBalanceInfo() const {
-			return nlohmann::json();
+			ArgInfo("{} {}", _walletID, GetFunName());
+
+			nlohmann::json j;
+			j["Info"] = "not ready";
+			j["Summary"] = nlohmann::json();
+
+			ArgInfo("r => {}", j.dump());
+			return j;
 		}
 
 		std::string EthSidechainSubWallet::GetBalance() const {
-			return "0";
+			ArgInfo("{} {}", _walletID, GetFunName());
+
+			std::string balance = _client->_ewm->getWallet()->getBalance();
+
+			ArgInfo("r => {}", balance);
+			return balance;
 		}
 
 		std::string EthSidechainSubWallet::GetBalanceWithAddress(const std::string &address) const {
-			return "";
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("addr: {}", address);
+
+			std::string balance = "0";
+
+			ArgInfo("r => {}", balance);
+			return balance;
 		}
 
 		std::string EthSidechainSubWallet::CreateAddress() {
-			return "";
+			ArgInfo("{} {}", _walletID, GetFunName());
+
+			std::string addr = "";
+
+			ArgInfo("r => {}", addr);
+			return addr;
 		}
 
 		nlohmann::json EthSidechainSubWallet::GetAllAddress(uint32_t start, uint32_t count, bool internal) const {
-			return nlohmann::json();
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("start: {}", start);
+			ArgInfo("count: {}", count);
+			ArgInfo("internal: {}", internal);
+
+			nlohmann::json j;
+
+			ArgInfo("r => {}", j.dump());
+			return j;
 		}
 
 		nlohmann::json EthSidechainSubWallet::GetAllPublicKeys(uint32_t start, uint32_t count) const {
-			return nlohmann::json();
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("s: {}", start);
+			ArgInfo("c: {}", count);
+			nlohmann::json j;
+
+			ArgInfo("r => {}", j.dump());
+			return j;
 		}
 
 		void EthSidechainSubWallet::AddCallback(ISubWalletCallback *subCallback) {
-
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("callback: *");
 		}
 
 		void EthSidechainSubWallet::RemoveCallback() {
-
+			ArgInfo("{} {}", _walletID, GetFunName());
 		}
 
 		nlohmann::json EthSidechainSubWallet::CreateTransaction(const std::string &fromAddress,
 																const std::string &toAddress,
 																const std::string &amount,
 																const std::string &memo) {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("from: {}", fromAddress);
+			ArgInfo("to: {}", toAddress);
+			ArgInfo("amount: {}", amount);
+			ArgInfo("memo: {}", memo);
 
-			return nlohmann::json();
+			nlohmann::json j;
+
+			ArgInfo("r => {}", j.dump());
+
+			return j;
 		}
 
 		nlohmann::json EthSidechainSubWallet::GetAllUTXOs(uint32_t start, uint32_t count,
 														  const std::string &address) const {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("start: {}", start);
+			ArgInfo("cnt: {}", count);
+			ArgInfo("addr: {}", address);
 
-			return nlohmann::json();
+			nlohmann::json j;
+
+			ArgInfo("r => {}", j.dump());
+
+			return j;
 		}
 
 		nlohmann::json EthSidechainSubWallet::CreateConsolidateTransaction(const std::string &memo) {
-			return nlohmann::json();
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("memo: {}", memo);
+
+			nlohmann::json j;
+
+			ArgInfo("r => {}", j.dump());
+			return j;
 		}
 
-		nlohmann::json EthSidechainSubWallet::SignTransaction(const nlohmann::json &createdTx,
+		nlohmann::json EthSidechainSubWallet::SignTransaction(const nlohmann::json &tx,
 															  const std::string &payPassword) const {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("tx: {}", tx.dump());
+			ArgInfo("passwd: *");
 
-			return nlohmann::json();
+			nlohmann::json j;
+
+			ArgInfo("r => {}", j.dump());
+			return j;
 		}
 
 		nlohmann::json EthSidechainSubWallet::GetTransactionSignedInfo(const nlohmann::json &tx) const {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("tx: {}", tx.dump());
 
-			return nlohmann::json();
+			nlohmann::json j;
+
+			ArgInfo("r => {}", j.dump());
+
+			return j;
 		}
 
-		nlohmann::json EthSidechainSubWallet::PublishTransaction(const nlohmann::json &signedTx) {
-			return nlohmann::json();
+		nlohmann::json EthSidechainSubWallet::PublishTransaction(const nlohmann::json &tx) {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("tx: {}", tx.dump());
+
+			nlohmann::json j;
+			ArgInfo("r => {}", j.dump());
+			return j;
 		}
 
 		nlohmann::json EthSidechainSubWallet::GetAllTransaction(uint32_t start, uint32_t count,
 																const std::string &txid) const {
-			return nlohmann::json();
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("start: {}, cnt: {}, txid: {}", start, count, txid);
+
+			nlohmann::json j;
+
+			ArgInfo("r => {}", j.dump());
+
+			return j;
 		}
 
 		nlohmann::json EthSidechainSubWallet::GetAllCoinBaseTransaction(uint32_t start, uint32_t count,
 																		const std::string &txID) const {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("start: {}, cnt: {}, txid: {}", start, count, txID);
 
 			return nlohmann::json();
 		}
 
 		nlohmann::json EthSidechainSubWallet::GetAssetInfo(const std::string &assetID) const {
-			return nlohmann::json();
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("asset: {}", assetID);
+
+			nlohmann::json j;
+
+			ArgInfo("r => {}", j.dump());
+			return j;
 		}
 
 		bool EthSidechainSubWallet::SetFixedPeer(const std::string &address, uint16_t port) {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("addr: {}, port: {}", address, port);
+
+			ArgInfo("r => false");
 			return false;
 		}
 
 		void EthSidechainSubWallet::SyncStart() {
+			ArgInfo("{} {}", _walletID, GetFunName());
 			_client->_ewm->connect();
 		}
 
 		void EthSidechainSubWallet::SyncStop() {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			_client->_ewm->disconnect();
+		}
 
+		void EthSidechainSubWallet::StartP2P() {
+			_client->_ewm->connect();
+		}
+
+		void EthSidechainSubWallet::StopP2P() {
+			_client->_ewm->disconnect();
 		}
 
 	}

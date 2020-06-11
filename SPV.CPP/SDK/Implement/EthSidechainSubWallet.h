@@ -89,14 +89,14 @@ namespace Elastos {
 				const std::string &memo);
 
 			virtual nlohmann::json SignTransaction(
-				const nlohmann::json &createdTx,
+				const nlohmann::json &tx,
 				const std::string &payPassword) const;
 
 			virtual nlohmann::json GetTransactionSignedInfo(
 				const nlohmann::json &tx) const;
 
 			virtual nlohmann::json PublishTransaction(
-				const nlohmann::json &signedTx);
+				const nlohmann::json &tx);
 
 			virtual nlohmann::json GetAllTransaction(
 				uint32_t start,
@@ -117,6 +117,10 @@ namespace Elastos {
 
 			virtual void SyncStop();
 
+			virtual void StartP2P();
+
+			virtual void StopP2P();
+
 		protected:
 			friend class MasterWallet;
 
@@ -127,6 +131,7 @@ namespace Elastos {
 
 
 		protected:
+			std::string _walletID;
 			ClientPtr _client;
 		};
 

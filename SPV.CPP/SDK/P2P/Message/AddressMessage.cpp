@@ -67,27 +67,26 @@ namespace Elastos {
 					PeerInfo p(address, port, timestamp, services);
 
 					if ((p.Services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
-						_peer->warn("peers[{}] = {}:{} timestamp = {}, services = {} dropped: don't carry full blocks",
-									i, p.GetHost(), p.Port, p.Timestamp, p.Services);
+						_peer->warn("p[{}]: t: {} s: {} {}:{} dropped: don't carry full blocks",
+									i, p.Timestamp, p.Services, p.GetHost(), p.Port);
 						continue; // skip peers that don't carry full blocks
 					}
 
 					if ((p.Services & SERVICES_NODE_BLOOM) != SERVICES_NODE_BLOOM) {
-						_peer->warn("peers[{}] = {}:{} timestamp = {}, services = {} dropped: don't support bloom filter",
-									i, p.GetHost(), p.Port, p.Timestamp, p.Services);
+						_peer->warn("p[{}]: t: {} s: {} {}:{} dropped: don't support bloom filter",
+									i, p.Timestamp, p.Services, p.GetHost(), p.Port);
 						continue;
 					}
 
 					if (!p.IsIPv4() || p.Port == 0 || (p.IsIPv4() &&
 						p.Address.begin()[12] == 127 && p.Address.begin()[13] == 0 &&
 						p.Address.begin()[14] == 0 && p.Address.begin()[15] == 1)) {
-						_peer->warn("peers[{}] = {}:{} timestamp = {}, services = {} dropped",
-									i, p.GetHost(), p.Port, p.Timestamp, p.Services);
+						_peer->warn("p[{}]: t: {} s: {} {}:{} dropped",
+									i, p.Timestamp, p.Services, p.GetHost(), p.Port);
 						continue;
 					}
 
-					PEER_INFO(_peer, "peers[{}] = {}:{} timestamp = {}, services = {}",
-								i, p.GetHost(), p.Port, p.Timestamp, p.Services);
+					PEER_INFO(_peer, "p[{}]: t: {} s: {} {}:{}", i, p.Timestamp, p.Services, p.GetHost(), p.Port);
 
 
 					// if address time is more than 10 min in the future or unknown, set to 5 days old

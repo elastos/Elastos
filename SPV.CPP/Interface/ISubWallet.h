@@ -176,12 +176,12 @@ namespace Elastos {
 
 			/**
 			 * Sign a transaction or append sign to a multi-sign transaction and return the content of transaction in json format.
-			 * @param createdTx content of transaction in json format.
+			 * @param tx transaction created by Create*Transaction().
 			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @return If success return the content of transaction in json format.
 			 */
 			virtual nlohmann::json SignTransaction(
-					const nlohmann::json &createdTx,
+					const nlohmann::json &tx,
 					const std::string &payPassword) const = 0;
 
 			/**
@@ -199,11 +199,11 @@ namespace Elastos {
 
 			/**
 			 * Publish a transaction to p2p network.
-			 * @param signedTx content of transaction in json format.
+			 * @param tx signed transaction.
 			 * @return Sent result in json format.
 			 */
 			virtual nlohmann::json PublishTransaction(
-					const nlohmann::json &signedTx) = 0;
+					const nlohmann::json &tx) = 0;
 
 			/**
 			 * Get all qualified normal transactions sorted by descent (newest first).
