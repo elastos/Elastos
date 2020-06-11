@@ -1663,10 +1663,10 @@ func (s *txValidatorTestSuite) getSecretaryGeneralCRCProposalTx(ownerPublicKeySt
 	sig, _ := crypto.Sign(ownerPrivateKey, signBuf.Bytes())
 	crcProposalPayload.Signature = sig
 
-	common.WriteVarBytes(signBuf, sig)
 	secretaryGeneralSig, _ := crypto.Sign(secretaryGeneralPrivateKey, signBuf.Bytes())
 	crcProposalPayload.SecretaryGeneraSignature = secretaryGeneralSig
 
+	common.WriteVarBytes(signBuf, sig)
 	common.WriteVarBytes(signBuf, secretaryGeneralSig)
 	crcProposalPayload.CRCouncilMemberDID.Serialize(signBuf)
 	crSig, _ := crypto.Sign(crPrivateKey, signBuf.Bytes())

@@ -2376,9 +2376,6 @@ func (b *BlockChain) checkSecretaryGeneralSign(crcProposal *payload.CRCProposal,
 	if code, err = getCode(crcProposal.SecretaryGeneralPublicKey); err != nil {
 		return err
 	}
-	if err = common.WriteVarBytes(signedBuf, crcProposal.Signature); err != nil {
-		return errors.New("failed to write proposal owner signature")
-	}
 	if err = checkCRTransactionSignature(crcProposal.SecretaryGeneraSignature, code,
 		signedBuf.Bytes()); err != nil {
 		return errors.New("failed to check SecretaryGeneral signature")
@@ -2390,6 +2387,9 @@ func (b *BlockChain) checkProposalCRCouncilMemberSign(crcProposal *payload.CRCPr
 	signedBuf *bytes.Buffer) error {
 
 	// Check signature of CR Council Member.
+	if err := common.WriteVarBytes(signedBuf, crcProposal.Signature); err != nil {
+		return errors.New("failed to write proposal owner signature")
+	}
 	if err := common.WriteVarBytes(signedBuf, crcProposal.SecretaryGeneraSignature); err != nil {
 		return errors.New("failed to write SecretaryGenera Signature")
 	}
@@ -2512,10 +2512,6 @@ func (b *BlockChain) checkChangeOwnerSign(proposal *payload.CRCProposal, crMembe
 		signedBuf.Bytes()); err != nil {
 		return errors.New("new owner signature check failed")
 	}
-	// Serialize new owner signature.
-	if err = common.WriteVarBytes(signedBuf, proposal.NewOwnerSignature); err != nil {
-		return errors.New("failed to write proposal new owner signature")
-	}
 
 	// Check signature of owner.
 	publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
@@ -2532,6 +2528,9 @@ func (b *BlockChain) checkChangeOwnerSign(proposal *payload.CRCProposal, crMembe
 	}
 
 	// Check signature of CR Council Member.
+	if err = common.WriteVarBytes(signedBuf, proposal.NewOwnerSignature); err != nil {
+		return errors.New("failed to write proposal new owner signature")
+	}
 	if err = common.WriteVarBytes(signedBuf, proposal.Signature); err != nil {
 		return errors.New("failed to write proposal owner signature")
 	}
@@ -2542,6 +2541,7 @@ func (b *BlockChain) checkChangeOwnerSign(proposal *payload.CRCProposal, crMembe
 		signedBuf.Bytes()); err != nil {
 		return errors.New("failed to check CR Council Member signature")
 	}
+
 	return nil
 }
 

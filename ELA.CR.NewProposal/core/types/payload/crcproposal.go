@@ -132,9 +132,6 @@ type CRCProposal struct {
 	// The specified ELA address where the funds are to be sent.
 	NewRecipient common.Uint168
 
-	// New proposal owner signature.
-	NewOwnerSignature []byte
-
 	// Public key of SecretaryGeneral.
 	SecretaryGeneralPublicKey []byte
 
@@ -143,6 +140,9 @@ type CRCProposal struct {
 
 	// The signature of proposal's owner.
 	Signature []byte
+
+	// New proposal owner signature.
+	NewOwnerSignature []byte
 
 	// The signature of SecretaryGeneral.
 	SecretaryGeneraSignature []byte
@@ -323,11 +323,11 @@ func (p *CRCProposal) SerializeChangeProposalOwner(w io.Writer, version byte) er
 	if err := p.SerializeUnsigned(w, version); err != nil {
 		return err
 	}
-	if err := common.WriteVarBytes(w, p.NewOwnerSignature); err != nil {
-		return errors.New("failed to serialize NewOwnerSignature")
-	}
 	if err := common.WriteVarBytes(w, p.Signature); err != nil {
 		return errors.New("failed to serialize Signature")
+	}
+	if err := common.WriteVarBytes(w, p.NewOwnerSignature); err != nil {
+		return errors.New("failed to serialize NewOwnerSignature")
 	}
 	if err := p.CRCouncilMemberDID.Serialize(w); err != nil {
 		return errors.New("failed to serialize CRCouncilMemberDID")
@@ -559,19 +559,19 @@ func (p *CRCProposal) DeserializeChangeProposalOwner(r io.Reader, version byte) 
 		return err
 	}
 
-	// new owner signature
-	newOwnerSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "sign data")
-	if err != nil {
-		return err
-	}
-	p.NewOwnerSignature = newOwnerSign
-
 	// owner signature
 	sign, err := common.ReadVarBytes(r, crypto.SignatureLength, "sign data")
 	if err != nil {
 		return err
 	}
 	p.Signature = sign
+
+	// new owner signature
+	newOwnerSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "sign data")
+	if err != nil {
+		return err
+	}
+	p.NewOwnerSignature = newOwnerSign
 
 	if err := p.CRCouncilMemberDID.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize CRCouncilMemberDID")
