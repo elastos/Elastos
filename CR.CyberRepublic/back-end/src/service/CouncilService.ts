@@ -53,6 +53,8 @@ export default class extends Base {
     public async councilList(id: number): Promise<any> {
         const fields = [
             'status',
+            'councilMembers.didName',
+            'councilMembers.avatar',
             'councilMembers.did',
             'councilMembers.user.did',
             'councilMembers.location',
@@ -61,6 +63,8 @@ export default class extends Base {
 
         const secretariatFields = [
             'did',
+            'didName',
+            'avatar',
             'user.did',
             'location',
             'startDate',
@@ -125,6 +129,8 @@ export default class extends Base {
             'height',
             'circulatingSupply',
             'status',
+            'councilMembers.didName',
+            'councilMembers.avatar',
             'councilMembers.user.did',
             'councilMembers.cid',
             'councilMembers.did',
@@ -335,8 +341,8 @@ export default class extends Base {
 
     public async temporaryChangeUpdateStatus() {
         const db_cvote = this.getDBModel('CVote')
-        const proposaedList = await db_cvote.find({status: constant.CVOTE_STATUS.PROPOSED})
-        const notificationList = await db_cvote.find({status: constant.CVOTE_STATUS.NOTIFICATION})
+        const proposaedList = await db_cvote.find({status: constant.CVOTE_STATUS.PROPOSED, old: {$ne: true}})
+        const notificationList = await db_cvote.find({status: constant.CVOTE_STATUS.NOTIFICATION, old: {$ne: true}})
         const idsProposaed = []
         const idsNotification = []
 
@@ -421,29 +427,31 @@ export default class extends Base {
             const didList = _.map(councilMembers, (o: any) => DID_PREFIX + o.did)
             const userList = await this.userMode.getDBInstance().find({'did.id': {$in: didList}}, ['_id', 'did.id'])
             const userByDID = _.keyBy(userList, (o: any) => o.did.id.replace(DID_PREFIX, ''))
+
             // add avatar nickname into user's did
-            await Promise.all(_.map(userList, async (o: any) => {
-                if (o && o.did && !o.did.id) {
-                    return
-                }
-                const information: any = await getInformationByDid(o.did.id)
-                const didName = await getDidName(o.did.id)
+            const councilsMember = await Promise.all(_.map(councilMembers, async (o: any) => {
+                const information: any = await getInformationByDid(o.did)
+                const didName = await getDidName(DID_PREFIX + o.did)
                 const did = this.filterNullField({
                     'did.avatar': _.get(information, 'avatar'),
                     'did.didName': didName,
                 })
-                if (_.isEmpty(did)) {
-                    return
+                if (!_.isEmpty(did) && userByDID[o.did]) {
+                    await this.userMode.getDBInstance().update({_id: userByDID[o.did]._id}, {
+                        $set: did
+                    })
                 }
-                await this.userMode.getDBInstance().update({_id: o._id}, {
-                    $set: did
-                })
+                const data = {
+                    ...o,
+                    ..._.omit(information,['did']),
+                }
+                return {
+                    ...data,
+                    didName,
+                    user: userByDID[o.did]
+                }
             }))
-
-            return _.map(councilMembers, (o: any) => ({
-                ...o,
-                user: userByDID[o.did]
-            }))
+            return councilsMember
         }
 
         const updateUserRoleToNewDid = async () => {
@@ -561,7 +569,6 @@ export default class extends Base {
             doc['councilMembers'] = councilMembers
             doc['height'] = height
             doc['circulatingSupply'] = circulatingSupply
-
             await this.model.getDBInstance().update({_id: data._id}, {...doc})
         }
 
@@ -600,6 +607,15 @@ export default class extends Base {
             if (!votingCds) {
                 await updateInformation(null, null, null)
             }
+        }
+    }
+
+    public async getCouncilSecretariat() {
+        const councils = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.CURRENT})
+        const secretariat = await this.secretariatModel.getDBInstance().findOne()
+        return {
+            councils:councils._doc,
+            secretariat:secretariat._doc
         }
     }
 }

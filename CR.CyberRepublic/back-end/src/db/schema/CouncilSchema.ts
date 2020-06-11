@@ -19,6 +19,9 @@ export const CouncilMembers = {
     didName: {
         type: String,
     },
+    email: {
+        type: String
+    },
     avatar: {
         type: String,
     },
