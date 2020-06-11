@@ -99,10 +99,11 @@ int DIDBackend_Initialize(DIDResolver *resolver, const char *cachedir)
     return 0;
 }
 
-const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
+bool DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
         DIDURL *signkey, const char *storepass)
 {
-    const char *txid, *reqstring;
+    const char *reqstring;
+    bool successed;
 
     assert(backend && backend->adapter);
     assert(document);
@@ -118,18 +119,19 @@ const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
     if (!reqstring)
         return NULL;
 
-    txid = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
+   successed =  backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
-    if (!txid)
+    if (!successed)
         DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(create) failed.");
 
-    return txid;
+    return successed;
 }
 
-const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signkey,
+bool DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signkey,
         const char *storepass)
 {
-    const char *txid, *reqstring;
+    const char *reqstring;
+    bool successed;
 
     assert(backend && backend->adapter);
     assert(document);
@@ -145,19 +147,20 @@ const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL
     if (!reqstring)
         return NULL;
 
-    txid = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
+    successed = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
-    if (!txid)
+    if (!successed)
         DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(update) failed.");
 
-    return txid;
+    return successed;
 }
 
-const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signkey,
+bool DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signkey,
         const char *storepass)
 {
-    const char *txid, *reqstring;
+    const char *reqstring;
     DIDDocument *document;
+    bool successed;
 
     assert(backend && backend->adapter);
     assert(did);
@@ -178,12 +181,12 @@ const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signkey
     if (!reqstring)
         return NULL;
 
-    txid = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
+    successed = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
-    if (!txid)
+    if (!successed)
         DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(deactivated) failed.");
 
-    return txid;
+    return successed;
 }
 
 static int resolve_from_backend(ResolveResult *result, DID *did, bool all)

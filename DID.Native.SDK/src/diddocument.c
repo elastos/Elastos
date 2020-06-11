@@ -889,16 +889,6 @@ const char *DIDDocument_GetAlias(DIDDocument *document)
     return DIDMeta_GetAlias(&document->meta);
 }
 
-const char *DIDDocument_GetTxid(DIDDocument *document)
-{
-    if (!document) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return NULL;
-    }
-
-    return DIDMeta_GetTxid(&document->meta);
-}
-
 time_t DIDDocument_GetLastTransactionTimestamp(DIDDocument *document)
 {
     if (!document) {
@@ -951,12 +941,27 @@ const char *DIDDocument_GetProofSignature(DIDDocument *document)
 
 bool DIDDocument_IsDeactivated(DIDDocument *document)
 {
+    DIDDocument *resolvedoc;
+    bool isdeactived;
+
     if (!document) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return true;
     }
 
-    return DIDMeta_GetDeactived(&document->meta);
+    isdeactived = DIDMeta_GetDeactived(&document->meta);
+    if (isdeactived)
+        return isdeactived;
+
+    resolvedoc = DID_Resolve(&document->did, true);
+    if (!resolvedoc)
+        return false;
+
+    //todo: check the flow
+    if (isdeactived != resolvedoc->meta.deactived)
+        DIDStore_StoreDID(document->meta.store, resolvedoc, NULL);
+
+    return resolvedoc->meta.deactived;
 }
 
 bool DIDDocument_IsGenuine(DIDDocument *document)

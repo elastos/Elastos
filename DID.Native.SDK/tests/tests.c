@@ -66,6 +66,9 @@ int main(int argc, char *argv[])
         return CU_get_error();
     }
 
+    getchar();
+    getchar();
+
     TestData_Init();
     for (ts = suites; ts->fileName != NULL; ts++) {
         CU_SuiteInfo *si = ts->getSuiteInfo();

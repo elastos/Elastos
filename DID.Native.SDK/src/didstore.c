@@ -1020,6 +1020,7 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
 {
     char path[PATH_MAX];
     const char *data, *root;
+    char txid[ELA_MAX_TXID_LEN];
     DIDMeta meta;
     ssize_t count;
     int rc;
@@ -1032,12 +1033,16 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
     if (load_didmeta(store, &meta, document->did.idstring) == -1)
         return -1;
 
-    if (alias && (DIDMeta_SetAlias(&document->meta, alias) == -1 ||
-            DIDMeta_Merge(&meta, &document->meta) == -1))
-        return -1;
+    if (!alias)
+        alias = DIDMeta_GetAlias(&meta);
+    strcpy(document->meta.alias, alias);
 
-    if (!DIDMeta_IsEmpty(&meta))
-        memcpy(&document->meta, &meta, sizeof(DIDMeta));
+    if (!*document->meta.txid)
+        strcpy(document->meta.txid, meta.txid);
+    if (!document->meta.deactived)
+        document->meta.deactived = meta.deactived;
+    if (!document->meta.timestamp)
+        document->meta.timestamp = meta.timestamp;
 
     DIDDocument_SetStore(document, store);
 
@@ -1059,7 +1064,8 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
         goto errorExit;
     }
 
-    if (store_didmeta(store, &document->meta, &document->did) == -1)
+    strcpy(meta.alias, document->meta.alias);
+    if (store_didmeta(store, &meta, &document->did) == -1)
         goto errorExit;
 
     count = DIDDocument_GetCredentialCount(document);
@@ -2114,22 +2120,23 @@ int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
     return 0;
 }
 
-const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
+bool DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
         DIDURL *signkey, bool force)
 {
     const char *local_txid, *last_txid;
     const char *local_signature, *resolve_signature;
     DIDDocument *doc = NULL, *resolve_doc = NULL;
     int rc = -1;
+    bool successed;
 
     if (!store || !storepass || !*storepass || !did) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return NULL;
+        return false;
     }
 
     doc = DIDStore_LoadDID(store, did);
     if (!doc)
-        return NULL;
+        return false;
 
     if (DIDDocument_IsDeactivated(doc)) {
         DIDError_Set(DIDERR_DID_DEACTIVATED, "Did is already deactivated.");
@@ -2146,14 +2153,14 @@ const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did
 
     resolve_doc = DID_Resolve(did, true);
     if (!resolve_doc) {
-        last_txid = DIDBackend_Create(&store->backend, doc, signkey, storepass);
+        successed = DIDBackend_Create(&store->backend, doc, signkey, storepass);
     } else {
         if (DIDDocument_IsDeactivated(resolve_doc)) {
             DIDError_Set(DIDERR_EXPIRED, "Did already deactivated.");
             goto errorExit;
         }
 
-        last_txid = DIDDocument_GetTxid(resolve_doc);
+        last_txid = resolve_doc->meta.txid;
         if (!last_txid || !*last_txid) {
             DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing last transaction id.");
             goto errorExit;
@@ -2174,7 +2181,7 @@ const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did
                 goto errorExit;
             }
 
-            if ((*local_txid && strcmp(local_txid, last_txid)) ||
+            if ((*local_txid && strcmp(local_txid, last_txid)) &&
                     (*local_signature && strcmp(local_signature, resolve_signature))) {
                 DIDError_Set(DIDERR_DIDSTORE_ERROR,
                         "Current copy not based on the lastest on-chain copy, txid mismatch.");
@@ -2185,13 +2192,13 @@ const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did
         DIDMeta_SetTxid(&doc->did.meta, last_txid);
         DIDMeta_SetTxid(&doc->meta, last_txid);
 
-        last_txid = DIDBackend_Update(&store->backend, doc, signkey, storepass);
+        successed = DIDBackend_Update(&store->backend, doc, signkey, storepass);
     }
 
-    if (!last_txid || !*last_txid)
+    if (!successed)
         goto errorExit;
 
-    DIDMeta_SetTxid(&doc->meta, last_txid);
+    //Meta stores the resolved txid and local signature.
     DIDMeta_SetSignature(&doc->meta, DIDDocument_GetProofSignature(doc));
     rc = store_didmeta(store, &doc->meta, &doc->did);
 
@@ -2200,20 +2207,21 @@ errorExit:
         DIDDocument_Destroy(resolve_doc);
     if (doc)
         DIDDocument_Destroy(doc);
-    return rc == -1 ? NULL : last_txid;
+    return rc == -1 ? false : true;
 }
 
-const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
+bool DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         DID *did, DIDURL *signkey)
 {
     const char *txid;
     DIDDocument *doc;
     bool localcopy = false;
     int rc = 0;
+    bool successed;
 
     if (!store || !storepass || !*storepass || !did) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return NULL;
+        return false;
     }
 
     doc = DID_Resolve(did, true);
@@ -2221,7 +2229,7 @@ const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         doc = DIDStore_LoadDID(store, did);
         if (!doc) {
             DIDError_Set(DIDERR_NOT_EXISTS, "No this did.");
-            return NULL;
+            return false;
         } else {
             localcopy = true;
         }
@@ -2236,25 +2244,19 @@ const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         if (!signkey) {
             DIDDocument_Destroy(doc);
             DIDError_Set(DIDERR_INVALID_KEY, "Not default key.");
-            return NULL;
+            return false;
         }
     } else {
         if (!DIDDocument_IsAuthenticationKey(doc, signkey)) {
             DIDDocument_Destroy(doc);
             DIDError_Set(DIDERR_INVALID_KEY, "Invalid authentication key.");
-            return NULL;
+            return false;
         }
     }
 
-    txid = DIDBackend_Deactivate(&store->backend, did, signkey, storepass);
-
-    if (localcopy) {
-        DIDMeta_SetDeactived(&doc->meta, true);
-        rc = store_didmeta(store, &doc->meta, &doc->did);
-    }
-
+    successed = DIDBackend_Deactivate(&store->backend, did, signkey, storepass);
     DIDDocument_Destroy(doc);
-    return rc == 0 ? txid : NULL;
+    return successed;
 }
 
 static bool need_reencrypt(const char *path)

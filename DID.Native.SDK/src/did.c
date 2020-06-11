@@ -510,16 +510,6 @@ const char *DID_GetAlias(DID *did)
     return DIDMeta_GetAlias(&did->meta);
 }
 
-const char *DID_GetTxid(DID *did)
-{
-    if (!did) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return NULL;
-    }
-
-    return DIDMeta_GetTxid(&did->meta);
-}
-
 bool DID_GetDeactived(DID *did)
 {
     if (!did) {

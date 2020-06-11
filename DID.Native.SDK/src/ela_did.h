@@ -252,22 +252,21 @@ typedef DIDDocument* DIDStore_MergeCallback(DIDDocument *chaincopy, DIDDocument 
  * DIDAdapter is support method to create did transaction.
  */
 struct DIDAdapter {
-    /**
-     * \~English
-     * User need to implement 'createIdTransaction' function.
-     * An application-defined function that create id transaction to chain.
-     * @param
-     *      adapter              [in] A handle to DIDAdapter.
-     * @param
-     *      payload              [in] The content of id transaction to publish.
-     * @param
-     *      memo                 [in] Memo string.
-     * @return
-     *      If no error occurs, return transaction id.
-     *      Otherwise, return NULL.
-     */
-    const char* (*createIdTransaction) (DIDAdapter *adapter, const char *payload,
-            const char *memo);
+/**
+ * \~English
+ * User need to realize 'createIdTransaction' function.
+ * An application-defined function that create id transaction to chain.
+ * @param
+ *      adapter              [in] A handle to DIDAdapter.
+ * @param
+ *      payload              [in] The content of id transaction to publish.
+ * @param
+ *      memo                 [in] Memo string.
+ * @return
+ *      If no error occurs, return true. Otherwise, return false.
+ */
+    bool (*createIdTransaction) (DIDAdapter *adapter,
+            const char *payload, const char *memo);
 };
 /**
  * \~English
@@ -535,18 +534,6 @@ DID_API int DID_SetAlias(DID *did, const char *alias);
  *      Otherwise, return NULL.
  */
 DID_API const char *DID_GetAlias(DID *did);
-
-/**
- * \~English
- * Get transaction id of did.
- *
- * @param
- *      did                         [in] The handle of DID.
- * @return
- *      If no error occurs, return transaction string.
- *      Otherwise, return NULL.
- */
-DID_API const char *DID_GetTxid(DID *did);
 
 /**
  * \~English
@@ -1570,17 +1557,6 @@ DID_API const char *DIDDocument_GetAlias(DIDDocument *document);
 
 /**
  * \~English
- * Get transaction id of the latest updated DID Document.
- *
- * @param
- *      document                     [in] The handle to DIDDocument.
- * @return
- *      If no error occurs, return 0. Otherwise, return -1.
- */
-DID_API const char *DIDDocument_GetTxid(DIDDocument *document);
-
-/**
- * \~English
  * Get timestamp of the latest transaction.
  *
  * @param
@@ -2597,9 +2573,9 @@ DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid)
  * @param
  *      force                    [in] Force document into chain.
  * @return
- *      0 on success, -1 if an error occurred. Caller should free the returned value.
+ *      true on success, false if an error occurred. Caller should free the returned value.
  */
-DID_API const char *DIDStore_PublishDID(DIDStore *store, const char *storepass,
+DID_API bool DIDStore_PublishDID(DIDStore *store, const char *storepass,
         DID *did, DIDURL *signkey, bool force);
 
 /**
@@ -2615,9 +2591,9 @@ DID_API const char *DIDStore_PublishDID(DIDStore *store, const char *storepass,
  * @param
  *      signkey                  [in] The public key to sign.
  * @return
- *      0 on success, -1 if an error occurred. Caller should free the returned value.
+ *      true on success, false if an error occurred. Caller should free the returned value.
  */
-DID_API const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
+DID_API bool DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         DID *did, DIDURL *signkey);
 
 /**

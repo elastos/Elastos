@@ -33,13 +33,13 @@ typedef struct DIDBackend {
     DIDAdapter *adapter;
 } DIDBackend;
 
-const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
+bool DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
         DIDURL *signkey, const char *storepass);
 
-const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document,
+bool DIDBackend_Update(DIDBackend *backend, DIDDocument *document,
         DIDURL *signkey, const char *storepass);
 
-const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did,
+bool DIDBackend_Deactivate(DIDBackend *backend, DID *did,
         DIDURL *signkey, const char *storepass);
 
 DIDDocument *DIDBackend_Resolve(DID *did, bool force);

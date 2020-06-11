@@ -4,7 +4,6 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <crystal.h>
 #include <CUnit/Basic.h>
 #include <limits.h>
 
@@ -22,9 +21,10 @@ static void test_idchain_publishdid_and_resolve(void)
 {
     DIDURL *signkey;
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     DIDDocument *resolvedoc = NULL, *doc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
+    bool successed;
     DID did;
     int i = 0, rc;
 
@@ -43,31 +43,32 @@ static void test_idchain_publishdid_and_resolve(void)
     DID_Copy(&did, DIDDocument_GetSubject(doc));
 
     printf("\n------------------------------------------------------------\n-- publish begin(create), waiting....\n");
-    txid = (char *)DIDStore_PublishDID(store, storepass, &did, signkey, false);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(txid);
-    strcpy(publish_txid, txid);
-    free((char*)txid);
-    printf("-- publish result:\n   did = %s\n   txid = %s\n-- resolve begin(create)", did.idstring, publish_txid);
+    successed = DIDStore_PublishDID(store, storepass, &did, signkey, false);
+    CU_ASSERT_TRUE_FATAL(successed);
+    printf("-- publish result:\n   did = %s\n -- resolve begin(create)", did.idstring);
 
     while(!resolvedoc) {
         resolvedoc = DID_Resolve(&did, true);
         if (!resolvedoc) {
-            ++i;
             printf(".");
             sleep(30);
+            if (++i >= 20) {
+                printf("publish did timeout!!!!\n");
+                break;
+            }
         }
     }
+
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
-    txid = DIDDocument_GetTxid(resolvedoc);
+    txid = resolvedoc->meta.txid;
     CU_ASSERT_PTR_NOT_NULL(txid);
-    CU_ASSERT_STRING_EQUAL(txid, publish_txid);
-    strcpy(previous_txid, publish_txid);
+    strcpy(previous_txid, txid);
     CU_ASSERT_STRING_EQUAL(alias, DIDDocument_GetAlias(resolvedoc));
     CU_ASSERT_STRING_EQUAL(DIDDocument_GetProofSignature(doc), DIDDocument_GetProofSignature(resolvedoc));
+    printf("\n   txid = %s\n-- resolve result: successfully!\n-- publish begin(update), waiting...\n", txid);
     DIDDocument_Destroy(resolvedoc);
     resolvedoc = NULL;
-    printf("\n-- resolve result: successfully!\n-- publish begin(update), waiting...\n");
 
     //update
     DIDDocumentBuilder *builder = DIDDocument_Edit(doc);
@@ -91,42 +92,47 @@ static void test_idchain_publishdid_and_resolve(void)
     rc = DIDStore_StoreDID(store, doc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     CU_ASSERT_STRING_EQUAL(alias, DIDDocument_GetAlias(doc));
+    DIDDocument_Destroy(doc);
 
-    txid = (char *)DIDStore_PublishDID(store, storepass, &did, NULL, false);
-    CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
-    strcpy(publish_txid, txid);
-    free((char*)txid);
-    txid = publish_txid;
-    printf("-- publish result:\n   did = %s\n   txid = %s\n-- resolve begin(update)", did.idstring, publish_txid);
+    successed = DIDStore_PublishDID(store, storepass, &did, NULL, false);
+    CU_ASSERT_TRUE_FATAL(successed);
+    printf("-- publish result:\n   did = %s\n -- resolve begin(update)", did.idstring);
 
+    i = 0;
+    txid = previous_txid;
     while(!resolvedoc || !strcmp(previous_txid, txid)) {
         if (resolvedoc)
             DIDDocument_Destroy(resolvedoc);
 
+        sleep(30);
         resolvedoc = DID_Resolve(&did, true);
         if (!resolvedoc) {
-            ++i;
+            break;
+        } else {
+            txid = resolvedoc->meta.txid;
             printf(".");
-            sleep(30);
-            continue;
         }
-        else {
-            txid = DIDDocument_GetTxid(resolvedoc);
-            printf(".");
-            continue;
+
+        ++i;
+        if (i >= 20) {
+            printf("publish did timeout!!!!\n");
+            break;
         }
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
-    CU_ASSERT_STRING_EQUAL(txid, publish_txid);
-    strcpy(previous_txid, publish_txid);
+    CU_ASSERT_NOT_EQUAL_FATAL(previous_txid, txid);
+    strcpy(previous_txid, txid);
     CU_ASSERT_EQUAL(2, DIDDocument_GetPublicKeyCount(resolvedoc));
     CU_ASSERT_EQUAL(2, DIDDocument_GetAuthenticationCount(resolvedoc));
+    printf("\n   txid = %s\n-- resolve result: successfully!\n-- publish begin(update) again, waiting...\n", txid);
     DIDDocument_Destroy(resolvedoc);
     resolvedoc = NULL;
-    printf("\n-- resolve result: successfully!\n-- publish begin(update) again, waiting...\n");
 
     //update again
+    doc = DIDStore_LoadDID(store, &did);
+    CU_ASSERT_PTR_NOT_NULL(doc);
+
     builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
     DIDDocument_Destroy(doc);
@@ -150,47 +156,48 @@ static void test_idchain_publishdid_and_resolve(void)
     CU_ASSERT_STRING_EQUAL(alias, DIDDocument_GetAlias(doc));
     DIDDocument_Destroy(doc);
 
-    txid = (char *)DIDStore_PublishDID(store, storepass, &did, NULL, false);
-    CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
-    strcpy(publish_txid, txid);
-    free((char*)txid);
-    txid = publish_txid;
-    printf("-- publish result:\n   did = %s\n   txid = %s\n-- resolve begin(update) again", did.idstring, publish_txid);
+    successed = DIDStore_PublishDID(store, storepass, &did, NULL, false);
+    CU_ASSERT_TRUE_FATAL(successed);
+    printf("-- publish result:\n   did = %s\n -- resolve begin(update) again", did.idstring);
 
+    i = 0;
+    txid = previous_txid;
     while(!resolvedoc || !strcmp(previous_txid, txid)) {
         if (resolvedoc)
             DIDDocument_Destroy(resolvedoc);
 
+        sleep(30);
         resolvedoc = DID_Resolve(&did, true);
         if (!resolvedoc) {
-            ++i;
+            break;
+        } else {
+            txid = resolvedoc->meta.txid;
             printf(".");
-            sleep(30);
-            continue;
         }
-        else {
-            txid = DIDDocument_GetTxid(resolvedoc);
-            printf(".");
-            continue;
+
+        if (++i >= 20) {
+            printf("publish did timeout!!!!\n");
+            break;
         }
     }
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
-    CU_ASSERT_STRING_EQUAL(txid, publish_txid);
+    CU_ASSERT_NOT_EQUAL_FATAL(previous_txid, txid);
     CU_ASSERT_EQUAL(3, DIDDocument_GetPublicKeyCount(resolvedoc));
     CU_ASSERT_EQUAL(3, DIDDocument_GetAuthenticationCount(resolvedoc));
 
+    printf("\n   txid = %s\n-- resolve result: successfully!\n------------------------------------------------------------\n", txid);
     DIDDocument_Destroy(resolvedoc);
-    printf("\n-- resolve result: successfully!\n------------------------------------------------------------\n");
 }
 
 static void test_idchain_publishdid_with_credential(void)
 {
     DIDURL *signkey;
     DIDDocument *resolvedoc = NULL, *doc;
-    char publish_txid[ELA_MAX_TXID_LEN], previous_txid[ELA_MAX_TXID_LEN];
+    char previous_txid[ELA_MAX_TXID_LEN];
     const char *mnemonic, *txid;
     Credential *cred;
+    bool successed;
     DID did;
     int i = 0, rc;
 
@@ -206,32 +213,32 @@ static void test_idchain_publishdid_with_credential(void)
     DIDDocument_Destroy(doc);
 
     printf("\n------------------------------------------------------------\n-- publish begin(create), waiting....\n");
-    txid = (char *)DIDStore_PublishDID(store, storepass, &did, NULL, false);
-    CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
-    strcpy(publish_txid, txid);
-    free((char*)txid);
-    txid = NULL;
-    printf("-- publish result:\n   did = %s\n   txid = %s\n-- resolve begin(create)", did.idstring, publish_txid);
+    successed = DIDStore_PublishDID(store, storepass, &did, NULL, false);
+    CU_ASSERT_TRUE_FATAL(successed);
+    printf("-- publish result:\n   did = %s\n -- resolve begin(create)", did.idstring);
 
     while(!resolvedoc) {
         resolvedoc = DID_Resolve(&did, true);
         if (!resolvedoc) {
-            ++i;
             printf(".");
             sleep(30);
+            ++i;
+            if (i >= 20) {
+                printf("publish did timeout!!!!\n");
+                break;
+            }
         }
     }
-    txid = DIDDocument_GetTxid(resolvedoc);
+    txid = resolvedoc->meta.txid;
     CU_ASSERT_PTR_NOT_NULL_FATAL(txid);
-    CU_ASSERT_STRING_EQUAL(txid, publish_txid);
-    strcpy(previous_txid, publish_txid);
+    strcpy(previous_txid, txid);
 
     rc = DIDStore_StoreDID(store, resolvedoc, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
+    printf("\n   txid = %s\n-- resolve result: successfully!\n-- publish begin(update), waiting...\n", txid);
     DIDDocument_Destroy(resolvedoc);
     resolvedoc = NULL;
-    printf("\n-- resolve result: successfully!\n-- publish begin(update), waiting...\n");
 
     doc = DIDStore_LoadDID(store, &did);
     CU_ASSERT_PTR_NOT_NULL(doc);
@@ -261,33 +268,32 @@ static void test_idchain_publishdid_with_credential(void)
     cred = DIDDocument_GetCredential(doc, credid);
     CU_ASSERT_PTR_NOT_NULL(cred);
 
-    txid = (char *)DIDStore_PublishDID(store, storepass, &did, NULL, true);
-    CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
-    strcpy(publish_txid, txid);
-    free((char*)txid);
-    txid = publish_txid;
-    printf("-- publish result:\n   did = %s\n   txid = %s\n-- resolve begin(update)", did.idstring, publish_txid);
+    successed = DIDStore_PublishDID(store, storepass, &did, NULL, true);
+    CU_ASSERT_TRUE_FATAL(successed);
+    printf("-- publish result:\n   did = %s\n -- resolve begin(update)", did.idstring);
 
+    i = 0;
+    txid = previous_txid;
     while(!resolvedoc || !strcmp(previous_txid, txid)) {
         if (resolvedoc)
             DIDDocument_Destroy(resolvedoc);
 
+        sleep(30);
         resolvedoc = DID_Resolve(&did, true);
         if (!resolvedoc) {
-            ++i;
+            break;
+        } else {
+            txid = resolvedoc->meta.txid;
             printf(".");
-            sleep(30);
-            continue;
         }
-        else {
-            txid = DIDDocument_GetTxid(resolvedoc);
-            printf(".");
-            continue;
+
+        if (++i >= 20) {
+            printf("publish did timeout!!!!\n");
+            break;
         }
     }
 
-    printf("\n-- resolve result: successfully!\n------------------------------------------------------------\n");
-    CU_ASSERT_STRING_EQUAL(txid, publish_txid);
+    printf("\n   txid = %s\n-- resolve result: successfully!\n------------------------------------------------------------\n", txid);
 
     cred = DIDDocument_GetCredential(resolvedoc, credid);
     CU_ASSERT_PTR_NOT_NULL(cred);

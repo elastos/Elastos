@@ -310,14 +310,14 @@ static HDKey *hdkey_from_extendedprvkey(const uint8_t *extendedkey, size_t size,
     memcpy(hdkey->privatekey, secret.u8, sizeof(hdkey->privatekey));
     memcpy(&tmpsecret, &secret, sizeof(UInt256));
 
-    // Calculate the parent key and the fingerprint  path:m/44/0'/0'
+    // Calculate the parent key and the fingerprint  path:m/44'/0'/0'
     BRBIP32PrivKeyPathFromRoot(&key, &chaincode,
             &tmpsecret, 2, 44 | BIP32_HARD, 0 | BIP32_HARD);
     getPubKeyFromPrivKey(publickey, &(key.secret));
     BRHash160(md20, publickey, sizeof(publickey));
     hdkey->fingerPrint = md20[0] << 24 | md20[1] << 16 | md20[2] << 8 | md20[3] << 0;
 
-    // Pre derived key    path: m/44/0'/0'/0'
+    // Pre derived key    path: m/44'/0'/0'/0'
     BRBIP32PrivKeyPathFromRoot(&key, (UInt256*)hdkey->pubChainCode,
             &secret, 3, 44 | BIP32_HARD, 0 | BIP32_HARD, 0 | BIP32_HARD);
     getPubKeyFromPrivKey(publickey, &(key.secret));

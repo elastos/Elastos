@@ -369,28 +369,27 @@ static void TransactionCallback(const char *txid, int status,
     tr->update(txid, status, msg);
 }
 
-const char *SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
+bool SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
         const char *payload, const char *memo, const char *password)
 {
     if (!adapter || !payload || !password)
-        return NULL;
+        return false;
 
     if (!memo)
         memo = "";
 
     TransactionResult tr;
 
-    SpvDidAdapter_CreateIdTransactionEx(adapter, payload, memo, 1,
+    return SpvDidAdapter_CreateIdTransactionEx(adapter, payload, memo, 1,
         TransactionCallback, &tr, password);
-
-    tr.wait();
+    /*tr.wait();
     if (tr.getStatus() != 0)
-        return NULL;
+        return false;
     else
-        return strdup(tr.getTxid());
+        return true;*/
 }
 
-void SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
+bool SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
         const char *payload, const char *memo, int confirms,
         SpvTransactionCallback *txCallback, void *context,
         const char *password)
@@ -405,11 +404,18 @@ void SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
         tx = adapter->idWallet->SignTransaction(tx, password);
         tx = adapter->idWallet->PublishTransaction(tx);
         std::string txid = tx["TxHash"];
-        adapter->callback->RegisterTransactionCallback(txid,
-                confirms, txCallback, context);
+        /*if (txid.empty())
+            return true;
+
+        return false;*/
+        //adapter->callback->RegisterTransactionCallback(txid,
+                //confirms, txCallback, context);
     } catch (...) {
         txCallback(NULL, -1, "SPV adapter internal error.", context);
+        return false;
     }
+
+    return true;
 }
 
 void SpvDidAdapter_FreeMemory(SpvDidAdapter *adapter, void *mem)

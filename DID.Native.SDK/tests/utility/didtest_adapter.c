@@ -17,7 +17,7 @@ typedef struct TestDIDAdaptor {
     char *walletId;
 } TestDIDAdaptor;
 
-static const char *TestDIDAdaptor_CreateIdTransaction(DIDAdapter *_adapter, const char *payload, const char *memo)
+static bool TestDIDAdaptor_CreateIdTransaction(DIDAdapter *_adapter, const char *payload, const char *memo)
 {
     TestDIDAdaptor *adapter = (TestDIDAdaptor*)_adapter;
     const char *password;

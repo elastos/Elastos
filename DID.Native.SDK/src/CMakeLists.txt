@@ -73,6 +73,10 @@ if(ENABLE_TESTS)
         "_DummyAdapter_Create")
     set(DUMMYADAPTER_DESTROY
         "_DummyAdapter_Destroy")
+    set(DIDSTORE_STOREDIDMETA
+        "_DIDStore_StoreDIDMeta")
+    set(DIDSTORE_LOADDIDMETA
+        "_DIDStore_LoadDIDMeta")
 endif()
 
 configure_file(

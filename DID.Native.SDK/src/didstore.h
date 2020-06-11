@@ -43,9 +43,9 @@ struct DIDStore {
     DIDBackend backend;
 };
 
-int DIDStore_StoreDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
+DID_API int DIDStore_StoreDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
 
-int DIDStore_LoadDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
+DID_API int DIDStore_LoadDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
 
 int DIDStore_StoreCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
 

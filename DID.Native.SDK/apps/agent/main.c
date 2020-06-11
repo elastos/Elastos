@@ -436,11 +436,11 @@ static void usage(void)
     fprintf(stdout, "\n");
 }
 
-const char *create_id_transaction(DIDAdapter *adapter,
+bool create_id_transaction(DIDAdapter *adapter,
                                   const char *payload, const char *memo)
 {
     // TODO:
-    return NULL;
+    return true;
 }
 
 static int gen_priv_identity(struct AgentCtx *ctx)

@@ -51,7 +51,7 @@ static DIDTransactionInfo *get_lasttransaction(DID *did)
     return NULL;
 }
 
-static const char *DummyAdapter_CreateIdTransaction(DIDAdapter *_adapter, const char *payload, const char *memo)
+static bool DummyAdapter_CreateIdTransaction(DIDAdapter *_adapter, const char *payload, const char *memo)
 {
     DIDTransactionInfo *info = NULL, *lastinfo;
     cJSON *root = NULL;
@@ -61,19 +61,19 @@ static const char *DummyAdapter_CreateIdTransaction(DIDAdapter *_adapter, const 
 
     if (num >= sizeof(infos)) {
         DIDError_Set(DIDERR_OUT_OF_MEMORY, "The DIDTransactionInfo array should be larger.");
-        return NULL;
+        return false;
     }
 
     root = cJSON_Parse(payload);
     if (!root) {
         DIDError_Set(DIDERR_TRANSACTION_ERROR, "Get payload json failed.");
-        return NULL;
+        return false;
     }
 
     info = (DIDTransactionInfo*)calloc(1, sizeof(DIDTransactionInfo));
     if (!info) {
         DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for DIDTransactionInfo failed.");
-        return NULL;
+        return false;
     }
 
     DIDDocument *doc = DIDRequest_FromJson(&info->request, root);
@@ -126,7 +126,7 @@ static const char *DummyAdapter_CreateIdTransaction(DIDAdapter *_adapter, const 
     info->timestamp = time(NULL);
     infos[num++] = info;
     cJSON_Delete(root);
-    return strdup(info->txid);
+    return true;
 
 errorExit:
     if (info)
@@ -134,7 +134,7 @@ errorExit:
     if (root)
         cJSON_Delete(root);
 
-    return NULL;
+    return false;
 }
 
 static int result_tojson(JsonGenerator *gen, DIDTransactionInfo *info)

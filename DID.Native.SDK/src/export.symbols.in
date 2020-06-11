@@ -11,7 +11,6 @@ _DID_Compare
 _DID_Destroy
 _DID_SetAlias
 _DID_GetAlias
-_DID_GetTxid
 _DID_GetDeactived
 _DID_GetLastTransactionTimestamp
 _DID_Resolve
@@ -83,7 +82,6 @@ _DIDDocument_SelectServices
 _DIDDocument_GetServiceCount
 _DIDDocument_SetAlias
 _DIDDocument_GetAlias
-_DIDDocument_GetTxid
 _DIDDocument_GetLastTransactionTimestamp
 _DIDDocument_GetProofType
 _DIDDocument_GetProofCreater
@@ -240,4 +238,11 @@ _JWS_GetIssuedAt
 # DummyAdapter
 @DUMMYADAPTER_CREATE@
 @DUMMYADAPTER_DESTROY@
+
+# DIDMeta
+@DIDSTORE_STOREDIDMETA@
+@DIDSTORE_LOADDIDMETA@
+
+
+
 

@@ -37,10 +37,10 @@ DID_API void SpvDidAdapter_Destroy(SpvDidAdapter *adapter);
 
 DID_API int SpvDidAdapter_IsAvailable(SpvDidAdapter *adapter);
 
-DID_API const char *SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
+DID_API bool SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
         const char *payload, const char *memo, const char *password);
 
-DID_API void SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
+DID_API bool SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
         const char *payload, const char *memo, int confirms,
         SpvTransactionCallback *txCallback, void *context,
         const char *password);
