@@ -27,7 +27,6 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
-import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -161,6 +160,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     private void showFirstLayout() {
         firstLayout.setVisibility(View.VISIBLE);
         secondLayout.setVisibility(View.GONE);
+        if(AppUtlis.isNullOrEmpty(status)) return;
         switch (status) {
             case "Terminated":
                 promptTv.setText(getString(R.string.completedialoghint));
@@ -241,12 +241,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
-            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
-                @Override
-                public void affireBtnClick(View view) {
-                    popBackFragment();
-                }
-            });
+            new DialogUtil().showTransferSucess(getBaseActivity(), view -> popBackFragment());
         }
     }
 

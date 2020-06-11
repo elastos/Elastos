@@ -32,7 +32,6 @@ import org.elastos.wallet.ela.ui.committee.presenter.PastCtPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
-import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRAgreementFragment;
 import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
@@ -87,7 +86,6 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         ctManagePresenter = new CtManagePresenter();
         addDIDPresenter = new AddDIDPresenter();
         new CtDetailPresenter().getCurrentCouncilInfo(this, wallet.getDid().replace("did:elastos:", ""), "crc");
-        new PastCtPresenter().getCouncilTerm(this);
     }
 
     private void setRecycleView() {
@@ -103,8 +101,6 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     }
 
     CrStatusBean crStatusBean = null;
-    CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode = null;
-    ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> netList;
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
@@ -113,7 +109,9 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
                 setRcViewData(pastCtDataList);
                 break;
             case "getCurrentCouncilInfo":
+                needDraw((CtDetailBean) baseEntity);
                 setView((CtDetailBean) baseEntity);
+                new PastCtPresenter().getCouncilTerm(this);
                 break;
             case "getRegisteredCRInfo":
                 crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
@@ -144,82 +142,47 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
                 break;
 
             case "getAllPublicKeys":
-//                AllPkEntity allPkEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), AllPkEntity.class);
-//
-//                if (allPkEntity.getPublicKeys() == null || allPkEntity.getPublicKeys().size() == 0) {
-//                    return;
-//                }
-//                publickey = allPkEntity.getPublicKeys().get(0);
-//                ctManagePresenter.getDIDByPublicKey(wallet.getWalletId(), publickey, this);
                 break;
-
-//            case "getCIDByPublicKey":
-//                CID = ((CommmonStringEntity) baseEntity).getData();
-//                ctManagePresenter.getCRlist(1, 1000, "all", this, true);
-//                break;
-
-//            case "getDIDByPublicKey":
-//                DID = ((CommmonStringEntity) baseEntity).getData();
-//                ctManagePresenter.getCRlist(1, 1000, "all", this, true);
-//                break;
-
-//            case "getCRlist":
-//                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> curentAllList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
-//                if (null!=curentAllList && !AppUtlis.isNullOrEmpty(DID)) {
-//                    for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : curentAllList) {
-//                        if (DID.equalsIgnoreCase(bean.getDid())) {
-//                            curentNode = bean;
-//                        }
-//                    }
-//                }
-//                onGetVoteList(curentAllList);
-//                Bundle bundle = new Bundle();
-//                bundle.putParcelable("wallet", wallet);
-//                if (crStatusBean.getStatus().equals("Unregistered")) {
-//                    bundle.putString("CID", CID);
-//                    bundle.putString("publickey", publickey);
-//                    bundle.putSerializable("netList", netList);
-//                    start(CRSignUpForFragment.class, bundle);
-//                } else {
-//                    bundle.putParcelable("crStatusBean", crStatusBean);
-//                    bundle.putParcelable("curentNode", curentNode);
-//                    start(CRManageFragment.class, bundle);
-//                }
-//                break;
         }
     }
 
-    private int pageNum = 1;
-    private final int pageSize = 1000;//基本没分页了
-    boolean is = false;//是否有自已的选举
-    public void onGetVoteList(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data) {
-        if (netList == null) {
-            netList = new ArrayList<>();
-        }
-        if (pageNum == 1) {
-            netList.clear();
-        } else if (data == null || data.size() == 0) {
-            showToastMessage(getString(R.string.loadall));
-            return;
-        }
-        if (data != null && data.size() != 0) {
-            netList.addAll(data);
-            //pos==-1表示未移除过 先移除  并获得移除的位置  待添加
-            //!curentNode.getState().equals("Active")的已经移除了
-            int pos = netList.indexOf(curentNode);
-            if (curentNode != null && curentNode.getState().equals("Active") && pos != -1 && pos != 0) {
-                //curentNode还在netList中 直接contaion耗费内存
-                netList.remove(curentNode);
-            }
-            //只有active  并且Registered时候添加
-            if (!is && curentNode != null && crStatusBean.getStatus().equals("Registered") && curentNode.getState().equals("Active")) {
-                if (netList.indexOf(curentNode) != 0) {
-                    netList.add(0, curentNode);
+    private void needDraw(CtDetailBean ctDetailBean) {
+        CtDetailBean.DataBean dataBean = ctDetailBean.getData();
+        String type = dataBean.getType();
+        String name = dataBean.getDidName();
+        String did = dataBean.getDid();
+        String cid = dataBean.getCid();
+        String status = dataBean.getStatus();
+        String depositAmount = dataBean.getDepositAmount();
+
+        // 需要提取质押金的情况
+        if(dataBean != null) {
+            if(!AppUtlis.isNullOrEmpty(status)
+                    && !AppUtlis.isNullOrEmpty(depositAmount)
+                    && !depositAmount.equalsIgnoreCase("0")) {
+                if(status.equals("Terminated")
+                        || status.equals("Impeached")
+                        || status.equals("Returned")) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("type", type);
+                    bundle.putString("name", name);
+                    bundle.putString("did", did);
+                    bundle.putString("cid", cid);
+                    bundle.putString("status", status);
+                    bundle.putString("depositAmount", depositAmount);
+                    start(CtManagerFragment.class, bundle);
                 }
-                is = true;
             }
         }
-        pageNum++;
+
+//        Bundle bundle = new Bundle();
+//        bundle.putString("type", "other");
+//        bundle.putString("name", "test");
+//        bundle.putString("did", "xxxxxxxxxxxxxxxx");
+//        bundle.putString("cid", "xxxxxxxxxxxxxxxx");
+//        bundle.putString("status", "Impeached");
+//        bundle.putString("depositAmount", "10000");
+//        start(CtManagerFragment.class, bundle);
     }
 
     private void showOpenDIDWarm(ISubWalletListEntity subWalletListEntity) {
@@ -260,15 +223,6 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     @Override
     public void onManagerClick(int position, String type) {
         if (AppUtlis.isNullOrEmpty(type)) return;
-//        if (type.equalsIgnoreCase("VOTING")) {
-//            ctManagePresenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
-//        } else {
-//            Bundle bundle = new Bundle();
-//            bundle.putString("status", status);
-//            bundle.putString("cid", cid);
-//            bundle.putString("type", type);
-//            start(CtManagerFragment.class, bundle);
-//        }
         this.type = type;
         ctManagePresenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
     }

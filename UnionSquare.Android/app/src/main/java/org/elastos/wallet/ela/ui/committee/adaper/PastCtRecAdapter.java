@@ -22,6 +22,7 @@ import butterknife.ButterKnife;
 
 public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.ViewHolder>{
 
+
     public PastCtRecAdapter(Context context, List<PastCtBean.DataBean> list, boolean isCRC, boolean isVoting) {
         this.context = context;
         this.list = list;
@@ -33,7 +34,7 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View v;
-        if(i==0) {
+        if(i==NORMAL_ITEM) {
             v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_ct_past_normal, viewGroup, false);
         } else {
             v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_ct_past_manager, viewGroup, false);
@@ -81,13 +82,22 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
         }
     }
 
+    private static final int NORMAL_ITEM = 0;
+    private static final int CARD_ITEM = 1;
     @Override
     public int getItemViewType(int position) {
         String status = list.get(position).getStatus();
-        if(!AppUtlis.isNullOrEmpty(status) && !status.equalsIgnoreCase("HISTORY")) {
-            return 1;
+        if(!AppUtlis.isNullOrEmpty(status)) {
+            if(isCRC && status.equalsIgnoreCase("CURRENT")) {
+                return CARD_ITEM;
+            }
+
+            if(isVoting || status.equalsIgnoreCase("VOTING")) {
+                return CARD_ITEM;
+            }
         }
-        return 0;
+
+        return NORMAL_ITEM;
     }
 
     @Override
