@@ -1771,6 +1771,31 @@ static int _tx(int argc, char *argv[]) {
 	return 0;
 }
 
+// tx chainID
+static int _rawtx(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
+
+	std::string chainID = argv[1];
+	try {
+		std::cout << "Enter tx to convert: ";
+		std::string tx;
+		struct termios told = enableLongInput();
+		std::getline(std::cin, tx);
+		recoveryTTYSetting(&told);
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
+
+		std::string rawtx = subWallet->ConvertToRawTransaction(tx);
+		std::cout << rawtx << std::endl;
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+
+	return 0;
+}
+
 // consolidate chainID
 static int consolidate(int argc, char *argv[]) {
 	checkParam(2);
@@ -2028,6 +2053,7 @@ struct command {
 	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},
 	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},
 	{"tx",         _tx,            "chainID [coinbase]                               List all tx/coinbase tx records."},
+	{"rawtx",      _rawtx,         "chainID                                          Convert spv tx to rawtx"},
 	{"consolidate",consolidate,    "chainID                                          Consolidate fragmentary utxo"},
 	{"signtx",     signtx,         "chainID                                          Sign tx"},
 	{"publishtx",  publishtx,      "chainID                                          Publish tx"},
