@@ -14,7 +14,23 @@
 #include "BRUtilHex.h"
 #include "BRUtilMath.h"
 
+#if 0
 #define eth_log(topic, formatter, ...)   _eth_log("ETH: %s: " formatter "\n", (topic), __VA_ARGS__)
+#else
+
+#ifdef __cplusplus
+extern "C" void ElastosElaWalletLog(const char *s);
+#else
+void ElastosElaWalletLog(const char *s);
+#endif
+
+#define eth_log(topic, formatter, ...)   do { \
+	char buf[2048]; \
+	snprintf(buf, sizeof(buf), "ETH: %s: " formatter, (topic), __VA_ARGS__); \
+	ElastosElaWalletLog(buf); \
+} while (0)
+
+#endif
 
 #if defined(TARGET_OS_MAC)
 //#  include <Foundation/Foundation.h>
