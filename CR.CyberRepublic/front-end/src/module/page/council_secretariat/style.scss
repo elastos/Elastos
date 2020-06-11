@@ -165,11 +165,13 @@ $maxWithContent: 888px;
         
         .self-intro {
           font-family: 'synthese', sans-serif;
-          overflow:hidden; 
-          text-overflow:ellipsis; 
-          display:-webkit-box; 
-          -webkit-box-orient:vertical; 
-          -webkit-line-clamp:3; 
+          display: -webkit-box;
+          /*!autoprefixer:off*/
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 3;
+          /*autoprefixer:on*/
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
       }
     }
