@@ -1424,7 +1424,7 @@ const zh = {
   cs: {
     candidates: '候选人',
     incumbent: '现任委员',
-    council: 'CYBER REPUBLIC 筹委会',
+    council: 'CR 委员会',
     intro: '简介',
     voting: '选举',
     secretariat: {
