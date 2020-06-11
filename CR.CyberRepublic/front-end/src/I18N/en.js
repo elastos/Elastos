@@ -1479,7 +1479,7 @@ const en = {
   cs: {
     candidates: 'CANDIDATES',
     incumbent: 'INCUMBENT',
-    council: 'CYBER REPUBLIC INTERIM COUNCIL',
+    council: 'CYBER REPUBLIC COUNCIL',
     intro: 'INTRODUCTION',
     voting: 'VOTING',
     secretariat: {
