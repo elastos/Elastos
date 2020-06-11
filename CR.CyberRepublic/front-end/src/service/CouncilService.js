@@ -49,4 +49,15 @@ export default class extends BaseService {
     })
     return JSON.parse(rs).data.result
   }
+
+  async getCouncilsAndSecretariat() {
+    const path = '/api/council/council_secretariat'
+
+    const rs = await api_request({
+      path,
+      method: 'get'
+    })
+    
+    return rs
+  }
 }

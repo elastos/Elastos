@@ -612,4 +612,13 @@ export default class extends Base {
             }
         }
     }
+
+    public async getCouncilSecretariat() {
+        const councils = await this.model.getDBInstance().findOne({status: constant.TERM_COUNCIL_STATUS.CURRENT})
+        const secretariat = await this.secretariatModel.getDBInstance().findOne()
+        return {
+            councils:councils._doc,
+            secretariat:secretariat._doc
+        }
+    }
 }

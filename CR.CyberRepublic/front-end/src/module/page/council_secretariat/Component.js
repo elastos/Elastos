@@ -1,5 +1,5 @@
 import React from 'react'
-import { Col, Row, Avatar, Tabs, Button } from 'antd'
+import { Col, Row, Avatar, Tabs, Button, Popover } from 'antd'
 import styled from 'styled-components'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
@@ -22,8 +22,14 @@ export default class extends StandardPage {
     }
   }
 
+  
   linkToRule() {
     this.props.history.push('/whitepaper')
+  }
+
+  async componentWillMount() {
+    const data = await this.props.getCouncilsAndSecretariat()
+    this.setState({councils: data.councils, secretariat: data.secretariat})
   }
 
   ord_renderContent() {
@@ -73,15 +79,18 @@ export default class extends StandardPage {
   }
 
   buildIncumbent() {
+    const {councils} = this.state
+    const lang = localStorage.getItem('lang') || 'en'
+    
     return (
       <div className="incumbent">
         <div className="title">{I18N.get('cs.incumbent')}</div>
         <Row className="members">
-          {[1, 2, 3].map(item => (
-            <Col lg={8} md={8} sm={24} className="member" key={item}>
+          { councils !== undefined ? councils.councilMembers.map(item => (
+            <Col lg={8} md={8} sm={24} className="member" key={item.index}>
               <div className="small-rect">
                 <Avatar
-                  src={`/assets/images/council/council-no${item}.jpeg`}
+                  src={item.avatar}
                   shape="square"
                   size={220}
                   icon="user"
@@ -90,26 +99,60 @@ export default class extends StandardPage {
 
               <div className="big-rect">
                 <div className="content">
-                  <h3 className="name">{I18N.get(`cs.no${item}.name`)}</h3>
-                  <div className="self-intro">
-                    {I18N.get(`cs.no${item}.intro`)}
+                  <h3 className="name">{item.didName}</h3>
+                  
+                  <div className="self-intro" >
+                    <Popover 
+                      content={
+                        lang === 'en' ? item.introduction ?
+                        item.introduction.split('\n').length > 1 ? 
+                        item.introduction.split('\n')[0]
+                        : 
+                        item.introduction.split('\n')[0]
+                        : null
+                        :
+                        item.introduction ?
+                        item.introduction.split('\n').length > 1 ? 
+                        item.introduction.split('\n')[1]
+                        : 
+                        item.introduction.split('\n')[0]
+                        : null}
+                        title={I18N.get('cs.intro')}
+                        overlayStyle={{width: 400+'px', padding: 10+'px',wordBreak: 'keep-all'}}
+                    >
+                      { lang === 'en' ? item.introduction ?
+                        item.introduction.split('\n').length > 1 ? 
+                        item.introduction.split('\n')[0]
+                        : 
+                        item.introduction.split('\n')[0]
+                        : null
+                        :
+                        item.introduction ?
+                        item.introduction.split('\n').length > 1 ? 
+                        item.introduction.split('\n')[1]
+                        : 
+                        item.introduction.split('\n')[0]
+                        : null
+                      }
+                    </Popover>
                   </div>
                   <Email>
                     {I18N.get('cs.contact')}
-:
+                    :
                     {' '}
-                    {I18N.get(`cs.no${item}.email`)}
+                    {item.email}
                   </Email>
                 </div>
               </div>
             </Col>
-          ))}
+          )) : null}
         </Row>
       </div>
     )
   }
 
   buildSecretariat() {
+    const secretariat = this.state.secretariat
     return (
       <div className="secretariat">
         <div className="title">{I18N.get('cs.secretariat.general')}</div>
