@@ -74,6 +74,58 @@ public class Header {
         return headers[key] as Any
     }
 
+    public func size() -> Int {
+        return headers.count
+    }
+
+    public func isEmpty() -> Bool {
+        return headers.isEmpty
+    }
+
+    public func containsKey(key: String) -> Bool {
+        return headers[key] != nil
+    }
+
+    public func containsValue(value: Any) -> Bool {
+        for v in headers.values {
+            if v as AnyObject === value as AnyObject {
+                return true
+            }
+        }
+        return false
+    }
+
+    public func get(key: String) -> Any? {
+        return headers[key]
+    }
+
+    public func put(key: String, value: String) {
+        headers[key] = value
+    }
+
+    public func remove(key: String) -> Any? {
+        let value = headers[key]
+        headers.removeValue(forKey: key)
+
+        return value
+    }
+
+    public func putAll(dic: [String: Any]) {
+        headers.merge(dict: dic)
+    }
+
+    public func clear() {
+        headers.removeAll()
+    }
+
+    public func values() -> [Any] {
+        var values = [Any]()
+        headers.forEach { k, v in
+            values.append(v)
+        }
+        return values
+    }
+
     func encode() throws -> String  {
         let data = try JSONSerialization.data(withJSONObject: headers, options: [])
 //        print(String(data: data, encoding: .utf8))

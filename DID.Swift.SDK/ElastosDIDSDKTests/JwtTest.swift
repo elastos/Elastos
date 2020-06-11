@@ -1,6 +1,6 @@
 
 import XCTest
-import ElastosDIDSDK
+@testable import ElastosDIDSDK
 
 class JwtTest: XCTestCase {
 
@@ -65,7 +65,7 @@ class JwtTest: XCTestCase {
             XCTAssertEqual(iat, c.getIssuedAt())
             XCTAssertEqual(exp, c.getExpiration())
             XCTAssertEqual(nbf, c.getNotBefore())
-            XCTAssertEqual("bar", c.getValue(key: "foo") as! String)
+            XCTAssertEqual("bar", c.get(key: "foo") as! String)
 
         } catch {
             print(error)
@@ -137,7 +137,7 @@ class JwtTest: XCTestCase {
             XCTAssertEqual(iat, c.getIssuedAt())
             XCTAssertEqual(exp, c.getExpiration())
             XCTAssertEqual(nbf, c.getNotBefore())
-            XCTAssertEqual("bar", c.getValue(key: "foo") as! String)
+            XCTAssertEqual("bar", c.get(key: "foo") as! String)
 
             let s = jwt.signature
             XCTAssertNotNil(s)
@@ -170,17 +170,17 @@ class JwtTest: XCTestCase {
             let nbf = iat! - 10
 
             let token = try doc.jwtBuilder()
-                .appendHeader(key: Header.TYPE, value: Header.JWT_TYPE)
-                .appendHeader(key: Header.CONTENT_TYPE, value: "json")
-                .appendHeader(key: "library", value: "Elastos DID")
-                .appendHeader(key: "version", value: "1.0")
+                .addHeader(key: Header.TYPE, value: Header.JWT_TYPE)
+                .addHeader(key: Header.CONTENT_TYPE, value: "json")
+                .addHeader(key: "library", value: "Elastos DID")
+                .addHeader(key: "version", value: "1.0")
                 .setSubject(sub: "JwtTest")
                 .setId(id: "0")
                 .setAudience(audience: "Test cases")
                 .setIssuedAt(issuedAt: iat!)
                 .setExpiration(expiration: exp)
                 .setNotBefore(nbf: nbf)
-                .claims(key: "foo", value: "bar")
+                .claim(name: "foo", value: "bar")
                 .sign(withKey: "#key2", using: storePass)
                 .compact()
             XCTAssertNotNil(token)
@@ -205,7 +205,7 @@ class JwtTest: XCTestCase {
             XCTAssertEqual(iat, c.getIssuedAt())
             XCTAssertEqual(exp, c.getExpiration())
             XCTAssertEqual(nbf, c.getNotBefore())
-            XCTAssertEqual("bar", c.getValue(key: "foo") as? String)
+            XCTAssertEqual("bar", c.get(key: "foo") as? String)
             let s = jwt.signature
             XCTAssertNotNil(s)
         } catch {
@@ -237,17 +237,17 @@ class JwtTest: XCTestCase {
             let nbf = iat! - 10
 
             let token = try doc.jwtBuilder()
-                    .appendHeader(key: Header.TYPE, value: Header.JWT_TYPE)
-                    .appendHeader(key: Header.CONTENT_TYPE, value: "json")
-                    .appendHeader(key: "library", value: "Elastos DID")
-                    .appendHeader(key: "version", value: "1.0")
+                    .addHeader(key: Header.TYPE, value: Header.JWT_TYPE)
+                    .addHeader(key: Header.CONTENT_TYPE, value: "json")
+                    .addHeader(key: "library", value: "Elastos DID")
+                    .addHeader(key: "version", value: "1.0")
                     .setSubject(sub: "JwtTest")
                     .setId(id: "0")
                     .setAudience(audience: "Test cases")
                     .setIssuedAt(issuedAt: iat!)
                     .setExpiration(expiration: exp)
                     .setNotBefore(nbf: nbf)
-                    .claims(key: "foo", value: "bar")
+                    .claim(name: "foo", value: "bar")
                     .sign(withKey: "#key2", using: storePass)
                     .compact()
 
@@ -274,7 +274,7 @@ class JwtTest: XCTestCase {
             XCTAssertEqual(iat, c.getIssuedAt())
             XCTAssertEqual(exp, c.getExpiration())
             XCTAssertEqual(nbf, c.getNotBefore())
-            XCTAssertEqual("bar", c.getValue(key: "foo") as? String)
+            XCTAssertEqual("bar", c.get(key: "foo") as? String)
             let s = jwt.signature
             XCTAssertNotNil(s)
         } catch {
@@ -308,18 +308,18 @@ class JwtTest: XCTestCase {
             let dic: [String: Any]? = try JSONSerialization.jsonObject(with: node.data(using: .utf8)!, options: []) as? [String: Any]
 
             let token = try doc.jwtBuilder()
-                .appendHeader(key: Header.TYPE, value: Header.JWT_TYPE)
-                .appendHeader(key: Header.CONTENT_TYPE, value: "json")
-                .appendHeader(key: "library", value: "Elastos DID")
-                .appendHeader(key: "version", value: "1.0")
+                .addHeader(key: Header.TYPE, value: Header.JWT_TYPE)
+                .addHeader(key: Header.CONTENT_TYPE, value: "json")
+                .addHeader(key: "library", value: "Elastos DID")
+                .addHeader(key: "version", value: "1.0")
                 .setSubject(sub: "JwtTest")
                 .setId(id: "0")
                 .setAudience(audience: "Test cases")
                 .setIssuedAt(issuedAt: iat!)
                 .setExpiration(expiration: exp)
                 .setNotBefore(nbf: nbf)
-                .claims(key: "foo", value: "bar")
-                .claims(key: "vc", value: dic as Any)
+                .claim(name: "foo", value: "bar")
+                .claim(name: "vc", value: dic as Any)
                 .sign(withKey: "#key2", using: storePass)
                 .compact()
             XCTAssertNotNil(token)
@@ -345,10 +345,10 @@ class JwtTest: XCTestCase {
             XCTAssertEqual(iat, c.getIssuedAt())
             XCTAssertEqual(exp, c.getExpiration())
             XCTAssertEqual(nbf, c.getNotBefore())
-            XCTAssertEqual("bar", c.getValue(key: "foo") as? String)
+            XCTAssertEqual("bar", c.get(key: "foo") as? String)
             let s = jwt.signature
             XCTAssertNotNil(s)
-            let d = c.getValue(key: "vc") as? [String: Any]
+            let d = c.get(key: "vc") as? [String: Any]
             XCTAssertNotNil(d)
             XCTAssertEqual(try testData.loadEmailCredential().getId().description, d!["id"] as? String)
         } catch {
@@ -381,18 +381,18 @@ class JwtTest: XCTestCase {
 
             let jsonValue = try testData.loadEmailVcNormalizedJson()
             let token = try doc.jwtBuilder()
-                    .appendHeader(key: Header.TYPE, value: Header.JWT_TYPE)
-                    .appendHeader(key: Header.CONTENT_TYPE, value: "json")
-                    .appendHeader(key: "library", value: "Elastos DID")
-                    .appendHeader(key: "version", value: "1.0")
+                    .addHeader(key: Header.TYPE, value: Header.JWT_TYPE)
+                    .addHeader(key: Header.CONTENT_TYPE, value: "json")
+                    .addHeader(key: "library", value: "Elastos DID")
+                    .addHeader(key: "version", value: "1.0")
                     .setSubject(sub: "JwtTest")
                     .setId(id: "0")
                     .setAudience(audience: "Test cases")
                     .setIssuedAt(issuedAt: iat!)
                     .setExpiration(expiration: exp)
                     .setNotBefore(nbf: nbf)
-                    .claims(key: "foo", value: "bar")
-                    .claimWithJson(key: "vc", value: jsonValue)
+                    .claim(name: "foo", value: "bar")
+                    .claimWithJson(name: "vc", jsonValue: jsonValue)
                     .sign(withKey: "#key2", using: storePass)
                     .compact()
             XCTAssertNotNil(token)
@@ -417,10 +417,10 @@ class JwtTest: XCTestCase {
             XCTAssertEqual(iat, c.getIssuedAt())
             XCTAssertEqual(exp, c.getExpiration())
             XCTAssertEqual(nbf, c.getNotBefore())
-            XCTAssertEqual("bar", c.getValue(key: "foo") as? String)
+            XCTAssertEqual("bar", c.get(key: "foo") as? String)
             let s = jwt.signature
             XCTAssertNotNil(s)
-            let d = c.getValue(key: "vc") as? [String: Any]
+            let d = c.get(key: "vc") as? [String: Any]
             XCTAssertNotNil(d)
             XCTAssertEqual(try testData.loadEmailCredential().getId().description, d!["id"] as? String)
         } catch {
@@ -461,13 +461,13 @@ class JwtTest: XCTestCase {
                     "    \"test\":true\n" +
                     "  }\n" +
                     "}"
-            let dic: [String: Any]? = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: []) as? [String: Any]
+            let jsonNode = JsonNode(json)
             let token = try doc.jwtBuilder()
-                    .appendHeader(key: Header.TYPE, value: Header.JWT_TYPE)
-                    .appendHeader(key: Header.CONTENT_TYPE, value: "json")
-                    .appendHeader(key: "library", value: "Elastos DID")
-                    .appendHeader(key: "version", value: "1.0")
-                    .claim(claim: dic!)
+                    .addHeader(key: Header.TYPE, value: Header.JWT_TYPE)
+                    .addHeader(key: Header.CONTENT_TYPE, value: "json")
+                    .addHeader(key: "library", value: "Elastos DID")
+                    .addHeader(key: "version", value: "1.0")
+                    .setClaims(claims: jsonNode)
                     .setIssuedAt(issuedAt: iat!)
                     .setExpiration(expiration: exp)
                     .setNotBefore(nbf: nbf)
@@ -496,7 +496,7 @@ class JwtTest: XCTestCase {
             XCTAssertEqual(iat, c.getIssuedAt())
             XCTAssertEqual(exp, c.getExpiration())
             XCTAssertEqual(nbf, c.getNotBefore())
-            XCTAssertEqual("bar", c.getValue(key: "foo") as? String)
+            XCTAssertEqual("bar", c.get(key: "foo") as? String)
             let s = jwt.signature
             XCTAssertNotNil(s)
         } catch {
@@ -538,11 +538,11 @@ class JwtTest: XCTestCase {
                     "  }\n" +
                     "}"
             let token = try doc.jwtBuilder()
-                    .appendHeader(key: Header.TYPE, value: Header.JWT_TYPE)
-                    .appendHeader(key: Header.CONTENT_TYPE, value: "json")
-                    .appendHeader(key: "library", value: "Elastos DID")
-                    .appendHeader(key: "version", value: "1.0")
-                    .claimWithJson(value: json)
+                    .addHeader(key: Header.TYPE, value: Header.JWT_TYPE)
+                    .addHeader(key: Header.CONTENT_TYPE, value: "json")
+                    .addHeader(key: "library", value: "Elastos DID")
+                    .addHeader(key: "version", value: "1.0")
+                    .setClaimsWithJson(value: json)
                     .setIssuedAt(issuedAt: iat!)
                     .setExpiration(expiration: exp)
                     .setNotBefore(nbf: nbf)
@@ -571,7 +571,7 @@ class JwtTest: XCTestCase {
             XCTAssertEqual(iat, c.getIssuedAt())
             XCTAssertEqual(exp, c.getExpiration())
             XCTAssertEqual(nbf, c.getNotBefore())
-            XCTAssertEqual("bar", c.getValue(key: "foo") as? String)
+            XCTAssertEqual("bar", c.get(key: "foo") as? String)
             let s = jwt.signature
             XCTAssertNotNil(s)
 
@@ -612,16 +612,16 @@ class JwtTest: XCTestCase {
                     "    \"test\":true\n" +
                     "  }\n" +
                     "}"
-            let dic: [String: Any]? = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: []) as? [String: Any]
+            let node = JsonNode(json)
             let token = try doc.jwtBuilder()
-                    .appendHeader(key: Header.TYPE, value: Header.JWT_TYPE)
-                    .appendHeader(key: Header.CONTENT_TYPE, value: "json")
-                    .appendHeader(key: "library", value: "Elastos DID")
-                    .appendHeader(key: "version", value: "1.0")
-                    .claim(claim: dic!)
+                    .addHeader(key: Header.TYPE, value: Header.JWT_TYPE)
+                    .addHeader(key: Header.CONTENT_TYPE, value: "json")
+                    .addHeader(key: "library", value: "Elastos DID")
+                    .addHeader(key: "version", value: "1.0")
                     .setIssuedAt(issuedAt: iat!)
                     .setExpiration(expiration: exp)
                     .setNotBefore(nbf: nbf)
+                    .addClaims(claims: node)
                     .sign(withKey: "#key2", using: storePass)
                     .compact()
             XCTAssertNotNil(token)
@@ -647,7 +647,7 @@ class JwtTest: XCTestCase {
             XCTAssertEqual(iat, c.getIssuedAt())
             XCTAssertEqual(exp, c.getExpiration())
             XCTAssertEqual(nbf, c.getNotBefore())
-            XCTAssertEqual("bar", c.getValue(key: "foo") as? String)
+            XCTAssertEqual("bar", c.get(key: "foo") as? String)
             let s = jwt.signature
             XCTAssertNotNil(s)
         } catch {
@@ -688,14 +688,14 @@ class JwtTest: XCTestCase {
                     "  }\n" +
                     "}"
             let token = try doc.jwtBuilder()
-                    .appendHeader(key: Header.TYPE, value: Header.JWT_TYPE)
-                    .appendHeader(key: Header.CONTENT_TYPE, value: "json")
-                    .appendHeader(key: "library", value: "Elastos DID")
-                    .appendHeader(key: "version", value: "1.0")
-                    .claimWithJson(value: json)
+                    .addHeader(key: Header.TYPE, value: Header.JWT_TYPE)
+                    .addHeader(key: Header.CONTENT_TYPE, value: "json")
+                    .addHeader(key: "library", value: "Elastos DID")
+                    .addHeader(key: "version", value: "1.0")
                     .setIssuedAt(issuedAt: iat!)
                     .setExpiration(expiration: exp)
                     .setNotBefore(nbf: nbf)
+                    .addClaimsWithJson(jsonClaims: json)
                     .sign(withKey: "#key2", using: storePass)
                     .compact()
             XCTAssertNotNil(token)
@@ -721,7 +721,7 @@ class JwtTest: XCTestCase {
             XCTAssertEqual(iat, c.getIssuedAt())
             XCTAssertEqual(exp, c.getExpiration())
             XCTAssertEqual(nbf, c.getNotBefore())
-            XCTAssertEqual("bar", c.getValue(key: "foo") as? String)
+            XCTAssertEqual("bar", c.get(key: "foo") as? String)
             let s = jwt.signature
             XCTAssertNotNil(s)
         } catch {

@@ -72,7 +72,7 @@
 		11C3EC712476734B00DF1B4F /* JwtTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C3EC702476734B00DF1B4F /* JwtTest.swift */; };
 		11C3ECE02477807300DF1B4F /* Claims.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C3ECCF2477807300DF1B4F /* Claims.swift */; };
 		11C3ECE12477807300DF1B4F /* RSAKeyType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C3ECD02477807300DF1B4F /* RSAKeyType.swift */; };
-		11C3ECE22477807300DF1B4F /* Header.swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C3ECD12477807300DF1B4F /* Header.swift.swift */; };
+		11C3ECE22477807300DF1B4F /* Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C3ECD12477807300DF1B4F /* Header.swift */; };
 		11C3ECE32477807300DF1B4F /* JWTVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C3ECD22477807300DF1B4F /* JWTVerifier.swift */; };
 		11C3ECE42477807300DF1B4F /* JWTSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C3ECD32477807300DF1B4F /* JWTSigner.swift */; };
 		11C3ECE52477807300DF1B4F /* JWT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C3ECD42477807300DF1B4F /* JWT.swift */; };
@@ -299,7 +299,7 @@
 		11C3EC702476734B00DF1B4F /* JwtTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JwtTest.swift; sourceTree = "<group>"; };
 		11C3ECCF2477807300DF1B4F /* Claims.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Claims.swift; sourceTree = "<group>"; };
 		11C3ECD02477807300DF1B4F /* RSAKeyType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RSAKeyType.swift; sourceTree = "<group>"; };
-		11C3ECD12477807300DF1B4F /* Header.swift.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Header.swift.swift; sourceTree = "<group>"; };
+		11C3ECD12477807300DF1B4F /* Header.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Header.swift; sourceTree = "<group>"; };
 		11C3ECD22477807300DF1B4F /* JWTVerifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JWTVerifier.swift; sourceTree = "<group>"; };
 		11C3ECD32477807300DF1B4F /* JWTSigner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JWTSigner.swift; sourceTree = "<group>"; };
 		11C3ECD42477807300DF1B4F /* JWT.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JWT.swift; sourceTree = "<group>"; };
@@ -543,6 +543,18 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		114A73C22490A4FB00262228 /* jwt */ = {
+			isa = PBXGroup;
+			children = (
+				11C3EC6524765D0F00DF1B4F /* JwtParserBuilder.swift */,
+				11C3EC6424765D0F00DF1B4F /* JwtBuilder.swift */,
+				11C3ECD42477807300DF1B4F /* JWT.swift */,
+				11C3ECD12477807300DF1B4F /* Header.swift */,
+				11C3ECCF2477807300DF1B4F /* Claims.swift */,
+			);
+			path = jwt;
+			sourceTree = "<group>";
+		};
 		1155D9472352FACE00DF8C9D /* ElastosDIDSDKTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -599,12 +611,9 @@
 		11C3ECCE2477807300DF1B4F /* SwiftJWT */ = {
 			isa = PBXGroup;
 			children = (
-				11C3ECCF2477807300DF1B4F /* Claims.swift */,
 				11C3ECD02477807300DF1B4F /* RSAKeyType.swift */,
-				11C3ECD12477807300DF1B4F /* Header.swift.swift */,
 				11C3ECD22477807300DF1B4F /* JWTVerifier.swift */,
 				11C3ECD32477807300DF1B4F /* JWTSigner.swift */,
-				11C3ECD42477807300DF1B4F /* JWT.swift */,
 				11C3ECD52477807300DF1B4F /* JWTError.swift */,
 				11C3ECD62477807300DF1B4F /* BlueECDSA.swift */,
 				11C3ECD72477807300DF1B4F /* ValidateClaimsResult.swift */,
@@ -712,14 +721,13 @@
 		11F262AC23260CF40009C103 /* ElastosDIDSDK */ = {
 			isa = PBXGroup;
 			children = (
+				114A73C22490A4FB00262228 /* jwt */,
 				A336846A242205820049126D /* Log */,
 				A31ACE4223F19A29008EC032 /* Parser */,
 				A31ACE2923F19A10008EC032 /* Utils */,
 				A31ACE2423F199F7008EC032 /* Error */,
 				A31ACE5B23F19A3F008EC032 /* Meta */,
 				A31ACE6223F19A58008EC032 /* Backend */,
-				11C3EC6424765D0F00DF1B4F /* JwtBuilder.swift */,
-				11C3EC6524765D0F00DF1B4F /* JwtParserBuilder.swift */,
 				A31ACDFE23F199AE008EC032 /* Constants.swift */,
 				A31801A8240277180087E074 /* JsonNode.swift */,
 				1147721023F6976800C7C36F /* Mnemonic.swift */,
@@ -1153,7 +1161,7 @@
 				11782AD0242130C4009A1F5A /* ParserHelper.swift in Sources */,
 				A31ACE2723F19A04008EC032 /* DIDError.swift in Sources */,
 				11C3ECEE2477807300DF1B4F /* SignerAlgorithm.swift in Sources */,
-				11C3ECE22477807300DF1B4F /* Header.swift.swift in Sources */,
+				11C3ECE22477807300DF1B4F /* Header.swift in Sources */,
 				11C3ECE82477807300DF1B4F /* ValidateClaimsResult.swift in Sources */,
 				A31ACE0923F199AE008EC032 /* DIDStorage.swift in Sources */,
 				A31ACE2323F199BA008EC032 /* VerifiableCredential.swift in Sources */,

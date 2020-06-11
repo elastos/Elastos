@@ -88,6 +88,15 @@ public class Claims {
 
     public init() { }
 
+    public func getIssuer() -> String? {
+        return claims[Claims.iss] as? String
+    }
+
+    public func setIssuer(issuer: String) -> Claims {
+        claims[Claims.iss] = issuer
+        return self
+    }
+
     public func setSubject(subject: String) -> Claims {
         claims[Claims.sub] = subject
         return self
@@ -97,22 +106,8 @@ public class Claims {
         return claims[Claims.sub] as? String
     }
 
-    public func setId(id: String) -> Claims {
-        claims[Claims.jti] = id
-        return self
-    }
-
-    public func getId() -> String? {
-        return claims[Claims.jti] as? String
-    }
-
-    public func setIssuer(issuer: String) -> Claims {
-        claims[Claims.iss] = issuer
-        return self
-    }
-
-    public func getIssuer() -> String? {
-        return claims[Claims.iss] as? String
+    public func getAudience() -> String? {
+        return claims[Claims.aud] as? String
     }
 
     public func setAudience(audience: String) -> Claims {
@@ -120,18 +115,8 @@ public class Claims {
         return self
     }
 
-    public func getAudience() -> String? {
-        return claims[Claims.aud] as? String
-    }
-
-    public func setIssuedAt(issuedAt: Date) -> Claims {
-        claims[Claims.iat] = DateHelper.formateDate(issuedAt)
-        return self
-    }
-
-    public func getIssuedAt() -> Date? {
-
-        return DateFormatter.convertToUTCDateFromString((claims[Claims.iat] as? String)!)
+    public func getExpiration() -> Date? {
+        return DateFormatter.convertToUTCDateFromString((claims[Claims.exp] as? String)!)
     }
 
     public func setExpiration(expiration: Date) -> Claims {
@@ -139,8 +124,8 @@ public class Claims {
         return self
     }
 
-    public func getExpiration() -> Date? {
-        return DateFormatter.convertToUTCDateFromString((claims[Claims.exp] as? String)!)
+    public func getNotBefore() -> Date? {
+        return DateFormatter.convertToUTCDateFromString((claims[Claims.nbf] as? String)!)
     }
 
     public func setNotBefore(notBefore: Date) -> Claims {
@@ -148,21 +133,102 @@ public class Claims {
         return self
     }
 
-    public func getNotBefore() -> Date? {
-        return DateFormatter.convertToUTCDateFromString((claims[Claims.nbf] as? String)!)
+    public func getIssuedAt() -> Date? {
+        
+        return DateFormatter.convertToUTCDateFromString((claims[Claims.iat] as? String)!)
+    }
+
+    public func setIssuedAt(issuedAt: Date) -> Claims {
+        claims[Claims.iat] = DateHelper.formateDate(issuedAt)
+        return self
+    }
+
+    public func getId() -> String? {
+        return claims[Claims.jti] as? String
+    }
+
+    public func setId(id: String) -> Claims {
+        claims[Claims.jti] = id
+        return self
+    }
+
+    public func size() -> Int {
+        return claims.count
+    }
+
+    public func isEmpty() -> Bool {
+        return claims.isEmpty
+    }
+
+    public func containsKey(key: String) -> Bool {
+        return claims[key] != nil
+    }
+
+    public func containsValue(value: Any) -> Bool {
+        for v in claims.values {
+            if v as AnyObject === value as AnyObject {
+                return true
+            }
+        }
+        return false
+    }
+
+    public func get(key: String) -> Any {
+        return claims[key] as Any
+    }
+
+    public func getAsJson(key: String) throws -> String {
+        let v = claims[key]
+        if !(v is String) && v != nil {
+            let data = try JSONSerialization.data(withJSONObject: v as Any, options: [])
+            return (String(data: data, encoding: .utf8)!)
+        }
+        throw DIDError.illegalArgument("TODO")
+    }
+
+    public func put(key: String, value: Any) {
+        claims[key] = value
+    }
+
+    public func putWithJson(key: String, value: String) throws {
+        let dic = try JSONSerialization.jsonObject(with: value.data(using: .utf8)!, options: [])
+        claims[key] = dic
+    }
+
+    public func remove(key: String) -> Any? {
+        let value = claims[key]
+        claims.removeValue(forKey: key)
+
+        return value
+    }
+
+    public func putAll(dic: [String: Any]) {
+        claims.merge(dict: dic)
+    }
+
+    public func putAllWithJson(json: String) throws {
+        let dic = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: []) as? [String : Any]
+        guard dic != nil else {
+            throw DIDError.illegalArgument("TODO")
+        }
+        putAll(dic: dic!)
+    }
+
+    public func clear() {
+        claims.removeAll()
+    }
+
+    public func values() -> [Any] {
+        var values = [Any]()
+        claims.forEach { k, v in
+            values.append(v)
+        }
+        return values
     }
 
     public func setValue(key: String, value: Any) -> Claims {
         claims[key] = value
         return self
-    }
-
-    public func getValue(key: String) -> Any {
-        return claims[key] as Any
-    }
-
-    public func containsKey(key: String) -> Bool {
-        return claims[key] != nil
     }
 }
 
