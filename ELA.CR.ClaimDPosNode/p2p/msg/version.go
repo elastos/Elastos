@@ -6,11 +6,11 @@
 package msg
 
 import (
-	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"io"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/p2p"
 )
 

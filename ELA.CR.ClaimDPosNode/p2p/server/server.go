@@ -8,7 +8,6 @@ package server
 import (
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"math/rand"
 	"net"
 	"os"
@@ -20,6 +19,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
