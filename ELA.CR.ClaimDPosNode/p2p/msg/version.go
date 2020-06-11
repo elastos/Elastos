@@ -6,6 +6,7 @@
 package msg
 
 import (
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"io"
 	"time"
 
@@ -42,7 +43,7 @@ func (msg *Version) Serialize(w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	if msg.NodeVersion != "" {
+	if msg.Version > pact.DPOSStartVersion {
 		return common.WriteVarString(w, msg.NodeVersion)
 	}
 	return nil
@@ -56,9 +57,11 @@ func (msg *Version) Deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	msg.NodeVersion, err = common.ReadVarString(r)
-	if err != io.EOF {
-		return err
+	if msg.Version > pact.DPOSStartVersion {
+		msg.NodeVersion, err = common.ReadVarString(r)
+		if err != nil {
+			return err
+		}
 	}
 	msg.Timestamp = time.Unix(int64(timestamp), 0)
 	return nil
