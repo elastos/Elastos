@@ -212,12 +212,18 @@ func GetNodeState(param Params) map[string]interface{} {
 			LastBlock:      snap.LastBlock,
 			LastPingTime:   snap.LastPingTime.String(),
 			LastPingMicros: snap.LastPingMicros,
+			NodeVersion:    snap.NodeVersion,
 		})
+	}
+	height := Chain.GetHeight()
+	ver := pact.DPOSStartVersion
+	if height > uint32(ChainParams.NewVersionHeight) {
+		ver = pact.CRProposalVersion
 	}
 	return ResponsePack(Success, ServerInfo{
 		Compile:   Compile,
-		Height:    Chain.GetHeight(),
-		Version:   pact.DPOSStartVersion,
+		Height:    height,
+		Version:   ver,
 		Services:  Server.Services().String(),
 		Port:      Config.NodePort,
 		RPCPort:   uint16(Config.HttpJsonPort),

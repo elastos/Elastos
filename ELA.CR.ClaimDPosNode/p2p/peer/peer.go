@@ -93,6 +93,7 @@ type StatsSnap struct {
 	LastBlock      uint32
 	LastPingTime   time.Time
 	LastPingMicros int64
+	NodeVersion    string
 }
 
 // MessageFunc is a message handler in peer's configuration
@@ -248,6 +249,7 @@ func (p *Peer) StatsSnapshot() *StatsSnap {
 	addr := p.addr
 	services := p.services
 	protocolVersion := p.advertisedProtoVer
+	nodeVersion := p.advertisedProtoNodeVer
 	p.flagsMtx.Unlock()
 
 	// Get a copy of all relevant flags and stats.
@@ -265,6 +267,7 @@ func (p *Peer) StatsSnapshot() *StatsSnap {
 		LastBlock:      p.height,
 		LastPingMicros: p.lastPingMicros,
 		LastPingTime:   p.lastPingTime,
+		NodeVersion:    nodeVersion,
 	}
 
 	p.statsMtx.RUnlock()

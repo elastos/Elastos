@@ -144,6 +144,7 @@ type PeerInfo struct {
 	LastBlock      uint32 `json:"lastblock"`
 	LastPingTime   string `json:"lastpingtime"`
 	LastPingMicros int64  `json:"lastpingmicros"`
+	NodeVersion    string `json:"nodeversion"`
 }
 
 type ArbitratorGroupInfo struct {
