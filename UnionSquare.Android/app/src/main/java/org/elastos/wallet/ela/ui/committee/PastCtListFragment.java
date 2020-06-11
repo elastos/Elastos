@@ -106,6 +106,25 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         switch (methodName) {
             case "getCouncilTerm":
                 pastCtDataList = ((PastCtBean) baseEntity).getData();
+                //TODO test code
+//                PastCtBean.DataBean bean2 = new PastCtBean.DataBean();
+//                bean2.setStatus("VOTING");
+//                bean2.setId("2");
+//                bean2.setEndDate("1111111111");
+//                bean2.setIndex(2);
+//                bean2.setStartDate("2222222");
+//                pastCtDataList.add(bean2);
+//
+//                PastCtBean.DataBean bean3 = new PastCtBean.DataBean();
+//                bean3.setStatus("CURRENT");
+//                bean3.setId("3");
+//                bean3.setEndDate("1111111111");
+//                bean3.setIndex(3);
+//                bean3.setStartDate("2222222");
+//                pastCtDataList.add(bean3);
+//
+//                isVoting = true;
+
                 setRcViewData(pastCtDataList);
                 break;
             case "getCurrentCouncilInfo":
@@ -175,6 +194,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
             }
         }
 
+        //TODO test code
 //        Bundle bundle = new Bundle();
 //        bundle.putString("type", "other");
 //        bundle.putString("name", "test");

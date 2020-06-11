@@ -62,14 +62,15 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
             isVoting = true;
             viewHolder.manager.setVisibility(View.VISIBLE);
             viewHolder.manager.setText(context.getString(R.string.votemanager));
-            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+context.getString(R.string.voting)+")"));
+            viewHolder.title.setText(String.format(context.getString(R.string.amember), String.valueOf(data.getIndex())));
         } else {
             viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), ""));
         }
 
-        if(isVoting) {
+        if(isVoting && i==0) {
             viewHolder.manager.setVisibility(View.VISIBLE);
             viewHolder.manager.setText(context.getString(R.string.votemanager));
+            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), context.getString(R.string.voting)));
         }
 
         if(null != managerListener) {
@@ -92,7 +93,7 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
                 return CARD_ITEM;
             }
 
-            if(isVoting || status.equalsIgnoreCase("VOTING")) {
+            if((isVoting&&(0==position)) || status.equalsIgnoreCase("VOTING")) {
                 return CARD_ITEM;
             }
         }
