@@ -1032,17 +1032,18 @@ func newSecretaryGeneralProposal(L *lua.LState) int {
 		}
 		crcProposal.Signature = sig
 
-		if err = common.WriteVarBytes(signBuf, sig); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		secretaryGeneralsig, err := crypto.Sign(secretaryGeneralPrivateKey, signBuf.Bytes())
+		secretaryGeneralSig, err := crypto.Sign(secretaryGeneralPrivateKey, signBuf.Bytes())
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		crcProposal.SecretaryGeneraSignature = secretaryGeneralsig
-		if err = common.WriteVarBytes(signBuf, secretaryGeneralsig); err != nil {
+		crcProposal.SecretaryGeneraSignature = secretaryGeneralSig
+
+		if err = common.WriteVarBytes(signBuf, sig); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if err = common.WriteVarBytes(signBuf, secretaryGeneralSig); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -1275,20 +1276,25 @@ func newCRChangeProposalOwner(L *lua.LState) int {
 			os.Exit(1)
 		}
 
-		newOnwerSig, err := crypto.Sign(newOwnerPrivateKey, signBuf.Bytes())
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		crcProposal.Signature = newOnwerSig
-
 		sig, err := crypto.Sign(ownerPrivateKey, signBuf.Bytes())
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 		crcProposal.Signature = sig
+
+		newOwnerSig, err := crypto.Sign(newOwnerPrivateKey, signBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crcProposal.NewOwnerSignature = newOwnerSig
+
 		if err = common.WriteVarBytes(signBuf, sig); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if err = common.WriteVarBytes(signBuf, newOwnerSig); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
