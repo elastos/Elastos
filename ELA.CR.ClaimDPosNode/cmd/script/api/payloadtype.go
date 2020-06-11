@@ -38,6 +38,7 @@ const (
 	luaCRCProposalReviewName     = "crcproposalreview"
 	luaCRCProposalTrackingName   = "crcproposaltracking"
 	luaCRCProposalWithdrawName   = "crcproposalwithdraw"
+	luaCRDPOSManagementName      = "crdposmanagement"
 )
 
 func RegisterCoinBaseType(L *lua.LState) {
@@ -1652,6 +1653,16 @@ func RegisterCRCProposalWithdrawType(L *lua.LState) {
 		crcProposalWithdrawMethods))
 }
 
+func RegisterCRDPOSManagementType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaCRDPOSManagementName)
+	L.SetGlobal("crdposmanagement", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newCRDPOSManagement))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(),
+		crDPOSManagementMethods))
+}
+
 func getPublicKeyFromCode(code []byte) []byte {
 	return code[1 : len(code)-1]
 }
@@ -1705,13 +1716,29 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 	return 1
 }
 
+func newCRDPOSManagement(L *lua.LState) int {
+	//TODO: fix me
+	return 1
+}
+
 var crcProposalWithdrawMethods = map[string]lua.LGFunction{
 	"get": crcProposalWithdrawGet,
+}
+
+var crDPOSManagementMethods = map[string]lua.LGFunction{
+	"get": crDPOSManagementGet,
 }
 
 // Getter and setter for the Person#Name
 func crcProposalWithdrawGet(L *lua.LState) int {
 	p := checkCRCProposalWithdraw(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+func crDPOSManagementGet(L *lua.LState) int {
+	p := checkCRDPOSManagement(L, 1)
 	fmt.Println(p)
 
 	return 0
@@ -1723,5 +1750,14 @@ func checkCRCProposalWithdraw(L *lua.LState, idx int) *payload.CRCProposalWithdr
 		return v
 	}
 	L.ArgError(1, "CRCProposalWithdraw expected")
+	return nil
+}
+
+func checkCRDPOSManagement(L *lua.LState, idx int) *payload.CRDPOSManagement {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.CRDPOSManagement); ok {
+		return v
+	}
+	L.ArgError(1, "CRDPOSManagement expected")
 	return nil
 }

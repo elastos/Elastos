@@ -46,7 +46,7 @@ func (p *CRDPOSManagement) SerializeUnsigned(w io.Writer, version byte) error {
 	case CRManagement:
 		return p.SerializeUnsignedCRManagement(w, version)
 	default:
-		return p.SerializeUnsignedCRManagement(w, version)
+		return errors.New("SerializeUnsigned error")
 	}
 }
 
@@ -71,7 +71,7 @@ func (p *CRDPOSManagement) Serialize(w io.Writer, version byte) error {
 	case CRManagement:
 		return p.SerializeCRManagement(w, version)
 	default:
-		return p.SerializeCRManagement(w, version)
+		return errors.New("Serialize error")
 	}
 }
 
@@ -79,11 +79,11 @@ func (p *CRDPOSManagement) SerializeCRManagement(w io.Writer, version byte) erro
 	if err := p.SerializeUnsigned(w, version); err != nil {
 		return err
 	}
-	if err := common.WriteVarBytes(w, p.Signature); err != nil {
-		return err
-	}
 	if err := p.CRCommitteeDID.Serialize(w); err != nil {
 		return errors.New("failed to serialize CRCommitteeDID")
+	}
+	if err := common.WriteVarBytes(w, p.Signature); err != nil {
+		return err
 	}
 	return nil
 }
@@ -97,7 +97,7 @@ func (p *CRDPOSManagement) Deserialize(r io.Reader, version byte) error {
 	case CRManagement:
 		return p.DeserializeCRManagement(r, version)
 	default:
-		return p.DeserializeCRManagement(r, version)
+		return errors.New("Deserialize error")
 	}
 }
 
@@ -105,23 +105,12 @@ func (p *CRDPOSManagement) DeserializeCRManagement(r io.Reader, version byte) er
 	if err := p.DeserializeUnSigned(r, version); err != nil {
 		return err
 	}
-
-	// owner signature
 	sign, err := common.ReadVarBytes(r, crypto.SignatureLength, "sign data")
 	if err != nil {
 		return err
 	}
 	p.Signature = sign
 
-	if err := p.CRCommitteeDID.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize CRCommitteeDID")
-	}
-	// cr signature
-	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
-	if err != nil {
-		return err
-	}
-	p.Signature = crSign
 	return nil
 }
 
@@ -130,27 +119,18 @@ func (p *CRDPOSManagement) DeserializeUnSigned(r io.Reader, version byte) error 
 	case CRManagement:
 		return p.DeserializeUnSignedCRManagement(r, version)
 	default:
-		return p.DeserializeUnSignedCRManagement(r, version)
+		return errors.New("DeserializeUnSigned error")
 	}
 }
 
 func (p *CRDPOSManagement) DeserializeUnSignedCRManagement(r io.Reader, version byte) error {
-	err := common.ReadElement(r, &p.ManagementType)
-	if err != nil {
-		return errors.New("[CRDPOSManagement], ManagementType deserialize failed")
-	}
+	var err error
 	p.CRManagementPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "CRManagementPublicKey")
 	if err != nil {
 		return errors.New("failed to deserialize CRManagementPublicKey")
 	}
-
 	if err = p.CRCommitteeDID.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize CRCommitteeDID")
-	}
-
-	p.Signature, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "Signature")
-	if err != nil {
-		return errors.New("failed to deserialize Signature")
 	}
 
 	return nil

@@ -626,6 +626,19 @@ func (s *transactionSuite) TestCRCProposal_Deserialize() {
 
 }
 
+func (s *transactionSuite) TestCRDPOSManagement_SerializeDeserialize() {
+	crDPOSManagementPayload1 := createCRDPOSManagementPayload(payload.CRManagement)
+	buf := new(bytes.Buffer)
+	crDPOSManagementPayload1.Serialize(buf, payload.CRManagementVersion)
+	fmt.Printf("crDPOSManagementPayload1: %v\n", crDPOSManagementPayload1)
+
+	crDPOSManagementPayload2 := &payload.CRDPOSManagement{}
+	crDPOSManagementPayload2.Deserialize(buf, payload.CRManagementVersion)
+	fmt.Printf("crDPOSManagementPayload2: %v\n", crDPOSManagementPayload2)
+
+	s.True(crDPOSManagementEqual(crDPOSManagementPayload1, crDPOSManagementPayload2))
+}
+
 func crpPayloadEqual(payload1 *payload.CRCProposal, payload2 *payload.CRCProposal) bool {
 	return payload1.ProposalType == payload2.ProposalType &&
 		bytes.Equal(payload1.OwnerPublicKey, payload2.OwnerPublicKey) &&
@@ -655,6 +668,13 @@ func crpPayloadCloseProposalEqual(payload1 *payload.CRCProposal, payload2 *paylo
 		payload1.TargetProposalHash.IsEqual(payload2.TargetProposalHash) &&
 		bytes.Equal(payload1.Signature, payload2.Signature) &&
 		bytes.Equal(payload1.CRCouncilMemberSignature, payload2.CRCouncilMemberSignature)
+}
+
+func crDPOSManagementEqual(payload1 *payload.CRDPOSManagement, payload2 *payload.CRDPOSManagement) bool {
+	return payload1.ManagementType == payload2.ManagementType &&
+		bytes.Equal(payload1.CRManagementPublicKey, payload2.CRManagementPublicKey) &&
+		payload1.CRCommitteeDID.IsEqual(payload2.CRCommitteeDID) &&
+		bytes.Equal(payload1.Signature, payload2.Signature)
 }
 
 func budgetsEqual(budgets1 []common.Fixed64, budgets2 []common.Fixed64) bool {
@@ -880,6 +900,15 @@ func createCRCProposalPayload(proposalType payload.CRCProposalType) *payload.CRC
 		Budgets:                  randomBudgets(3),
 		Signature:                randomBytes(64),
 		CRCouncilMemberSignature: randomBytes(64),
+	}
+}
+
+func createCRDPOSManagementPayload(managementType payload.DPOSManagementType) *payload.CRDPOSManagement {
+	return &payload.CRDPOSManagement{
+		ManagementType:        managementType,
+		CRManagementPublicKey: randomBytes(33),
+		CRCommitteeDID:        *randomUint168(),
+		Signature:             randomBytes(64),
 	}
 }
 
