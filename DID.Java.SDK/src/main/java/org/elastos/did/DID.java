@@ -93,7 +93,7 @@ public class DID implements Comparable<DID> {
 		if (name == null || name.isEmpty())
 			throw new IllegalArgumentException();
 
-		getMeta().setExtra(name, value);
+		getMeta().put(name, value);
 
 		if (getMeta().attachedStore())
 			getMeta().getStore().storeDidMeta(this, meta);
@@ -103,7 +103,7 @@ public class DID implements Comparable<DID> {
 		if (name == null || name.isEmpty())
 			throw new IllegalArgumentException();
 
-		return getMeta().getExtra(name);
+		return (String)getMeta().get(name);
 	}
 
 	public void setAlias(String alias) throws DIDStoreException {
@@ -121,8 +121,8 @@ public class DID implements Comparable<DID> {
 		return getMeta().getTransactionId();
 	}
 
-	public Date getUpdated() {
-		return getMeta().getUpdated();
+	public Date getPublished() {
+		return getMeta().getPublished();
 	}
 
 	public boolean isDeactivated() {

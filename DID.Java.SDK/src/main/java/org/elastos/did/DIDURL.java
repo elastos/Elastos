@@ -179,7 +179,7 @@ public class DIDURL implements Comparable<DIDURL> {
 		if (name == null || name.isEmpty())
 			throw new IllegalArgumentException();
 
-		getMeta().setExtra(name, value);
+		getMeta().put(name, value);
 
 		if (getMeta().attachedStore())
 			getMeta().getStore().storeCredentialMeta(this.getDid(), this, meta);
@@ -189,7 +189,7 @@ public class DIDURL implements Comparable<DIDURL> {
 		if (name == null || name.isEmpty())
 			throw new IllegalArgumentException();
 
-		return getMeta().getExtra(name);
+		return (String)getMeta().get(name);
 	}
 
 	// when alias is null value, mean to clean alias

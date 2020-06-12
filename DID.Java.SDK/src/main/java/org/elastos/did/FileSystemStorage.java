@@ -410,14 +410,15 @@ class FileSystemStorage implements DIDStorage {
 
 	@Override
 	public DIDMeta loadDidMeta(DID did) throws DIDStorageException {
+		DIDMeta meta = new DIDMeta();
+
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(), META_FILE);
-			return DIDMeta.fromJson(readText(file));
-		} catch (FileNotFoundException e) {
-			return new DIDMeta();
-		} catch (MalformedMetaException | IOException e) {
-			throw new DIDStorageException("Load DID metadata error.", e);
+			meta.load(new FileReader(file));
+		} catch (FileNotFoundException | MalformedMetaException ignore) {
 		}
+
+		return meta;
 	}
 
 	@Override
@@ -426,7 +427,7 @@ class FileSystemStorage implements DIDStorage {
 			File file = getFile(true, DID_DIR,
 					doc.getSubject().getMethodSpecificId(), DOCUMENT_FILE);
 
-			doc.toJson(new FileOutputStream(file), DEFAULT_CHARSET, true);
+			doc.toJson(new FileWriter(file), true);
 		} catch (IOException e) {
 			throw new DIDStorageException("Store DIDDocument error.", e);
 		}
@@ -440,7 +441,7 @@ class FileSystemStorage implements DIDStorage {
 			if (!file.exists())
 				return null;
 
-			return DIDDocument.fromJson(new FileInputStream(file));
+			return DIDDocument.fromJson(new FileReader(file));
 		} catch (MalformedDocumentException | IOException e) {
 			throw new DIDStorageException("Load DIDDocument error.", e);
 		}
@@ -527,15 +528,16 @@ class FileSystemStorage implements DIDStorage {
 	@Override
 	public CredentialMeta loadCredentialMeta(DID did, DIDURL id)
 			throws DIDStorageException {
+		CredentialMeta meta = new CredentialMeta();
+
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), META_FILE);
-			return CredentialMeta.fromJson(readText(file));
-		} catch (FileNotFoundException e) {
-			return new CredentialMeta();
-		} catch (MalformedMetaException | IOException e) {
-			throw new DIDStorageException("Load credential metadata error.", e);
+			meta.load(new FileReader(file));
+		} catch (FileNotFoundException | MalformedMetaException ignore) {
 		}
+
+		return meta;
 	}
 
 	@Override
@@ -547,7 +549,7 @@ class FileSystemStorage implements DIDStorage {
 					CREDENTIALS_DIR, credential.getId().getFragment(),
 					CREDENTIAL_FILE);
 
-			credential.toJson(new FileOutputStream(file), true);
+			credential.toJson(new FileWriter(file), true);
 		} catch (IOException e) {
 			throw new DIDStorageException("Store credential error.", e);
 		}
@@ -562,7 +564,7 @@ class FileSystemStorage implements DIDStorage {
 			if (!file.exists())
 				return null;
 
-			return VerifiableCredential.fromJson(new FileInputStream(file));
+			return VerifiableCredential.fromJson(new FileReader(file));
 		} catch (MalformedCredentialException | IOException e) {
 			throw new DIDStorageException("Load VerifiableCredential error.", e);
 		}

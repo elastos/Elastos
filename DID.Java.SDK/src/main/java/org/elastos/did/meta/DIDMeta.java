@@ -25,150 +25,59 @@ package org.elastos.did.meta;
 import java.text.ParseException;
 import java.util.Date;
 
-import org.elastos.did.exception.MalformedMetaException;
 import org.elastos.did.util.JsonHelper;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 public class DIDMeta extends Metadata {
-	private final static String TXID = "txid";
-	private final static String SIGNATURE = "signature";
-	private final static String TIMESTAMP = "timestamp";
-	private final static String ALIAS = "alias";
-	private final static String DEACTIVATED = "deactivated";
+	private static final long serialVersionUID = -6074640560591492115L;
 
-	private boolean deactivated;
-	private Date updated;
-	private String txid;
-	private String signature;
-	private String alias;
+	private final static String TXID = RESERVED_PREFIX + "txid";
+	private final static String SIGNATURE = RESERVED_PREFIX + "signature";
+	private final static String PUBLISHED = RESERVED_PREFIX + "published";
+	private final static String ALIAS = RESERVED_PREFIX + "alias";
+	private final static String DEACTIVATED = RESERVED_PREFIX + "deactivated";
 
 	public void setAlias(String alias) {
-		this.alias = alias;
+		put(ALIAS, alias);
 	}
 
 	public String getAlias() {
-		return alias;
+		return (String)get(ALIAS);
 	}
 
 	public void setTransactionId(String txid) {
-		this.txid = txid;
+		put(TXID, txid);
 	}
 
 	public String getTransactionId() {
-		return txid;
+		return (String)get(TXID);
 	}
 
 	public void setSignature(String signature) {
-		this.signature = signature;
+		put(SIGNATURE, signature);
 	}
 
 	public String getSignature() {
-		return signature;
+		return (String)get(SIGNATURE);
 	}
 
-	public void setUpdated(Date updated) {
-		this.updated = updated;
+	public void setPublished(Date timestamp) {
+		put(PUBLISHED, JsonHelper.formatDate(timestamp));
 	}
 
-	public Date getUpdated() {
-		return updated;
-	}
-
-	public void setDeactivated(boolean deactivated) {
-		this.deactivated = deactivated;
-	}
-
-	public boolean isDeactivated( ) {
-		return deactivated;
-	}
-
-	public static DIDMeta fromJson(String metadata)
-			throws MalformedMetaException {
-		return fromJson(metadata, DIDMeta.class);
-	}
-
-	@Override
-	protected void fromNode(JsonNode node) throws MalformedMetaException {
-		JsonNode value = node.get(ALIAS);
-		if (value != null)
-			setAlias(value.asText());
-
-		value = node.get(DEACTIVATED);
-		if (value != null)
-			setDeactivated(value.asBoolean());
-
-		value = node.get(TXID);
-		if (value != null)
-			setTransactionId(value.asText());
-
-		value = node.get(SIGNATURE);
-		if (value != null)
-			setSignature(value.asText());
-
-		value = node.get(TIMESTAMP);
-		if (value != null) {
-			try {
-				Date updated = JsonHelper.parseDate(value.asText());
-				setUpdated(updated);
-			} catch (ParseException ignore) {
-			}
+	public Date getPublished() {
+		try {
+			return JsonHelper.parseDate((String)get(PUBLISHED));
+		} catch (ParseException e) {
+			return null;
 		}
 	}
 
-	@Override
-	protected void toNode(ObjectNode node) {
-		if (alias != null)
-			node.put(ALIAS, alias);
-
-		if (deactivated)
-			node.put(DEACTIVATED, true);
-
-		if (txid != null)
-			node.put(TXID, txid);
-
-		if (signature != null)
-			node.put(SIGNATURE, signature);
-
-		if (updated != null)
-			node.put(TIMESTAMP, JsonHelper.formatDate(updated));
+	public void setDeactivated(boolean deactivated) {
+		put(DEACTIVATED, deactivated);
 	}
 
-	@Override
-	public void merge(Metadata meta) {
-		if (meta == null)
-			return;
-
-		if (!(meta instanceof DIDMeta))
-			throw new IllegalArgumentException();
-
-		DIDMeta m = (DIDMeta)meta;
-
-		if (m.alias != null)
-			alias = m.alias;
-
-		if (!deactivated)
-			deactivated = m.deactivated;
-
-		if (m.txid != null)
-			txid = m.txid;
-
-		if (m.signature != null)
-			signature = m.signature;
-
-		if (m.updated != null)
-			updated = m.updated;
-
-		super.merge(meta);
-	}
-
-	@Override
-	public boolean isEmpty() {
-		if (alias != null || deactivated || txid != null ||
-				signature != null || updated != null)
-			return false;
-
-		return super.isEmpty();
+	public boolean isDeactivated( ) {
+		Boolean v = (Boolean)get(DEACTIVATED);
+		return v == null ? false : v;
 	}
 }

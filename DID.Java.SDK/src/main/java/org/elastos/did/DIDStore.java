@@ -1015,11 +1015,10 @@ public final class DIDStore {
 		storage.storeDid(doc);
 
 		DIDMeta meta = loadDidMeta(doc.getSubject());
-		meta.merge(doc.getMeta());
-		meta.setStore(this);
-		doc.setMeta(meta);
+		doc.getMeta().merge(meta);
+		doc.getMeta().setStore(this);
 
-		storage.storeDidMeta(doc.getSubject(), meta);
+		storage.storeDidMeta(doc.getSubject(), doc.getMeta());
 
 		for (VerifiableCredential vc : doc.getCredentials())
 			storeCredential(vc);
@@ -1182,13 +1181,11 @@ public final class DIDStore {
 
 		CredentialMeta meta = loadCredentialMeta(
 				credential.getSubject().getId(), credential.getId());
-		meta.merge(credential.getMeta());
-		meta.setStore(this);
-		credential.setMeta(meta);
-
+		credential.getMeta().merge(meta);
 		credential.getMeta().setStore(this);
+
 		storage.storeCredentialMeta(credential.getSubject().getId(),
-				credential.getId(), meta);
+				credential.getId(), credential.getMeta());
 
 		if (vcCache != null)
 			vcCache.put(credential.getId(), credential);
@@ -1862,7 +1859,8 @@ public final class DIDStore {
 
 		JsonNode metaNode = node.get("meta");
 		if (metaNode != null) {
-			DIDMeta meta = DIDMeta.fromJson(metaNode, DIDMeta.class);
+			DIDMeta meta = new DIDMeta();
+			meta.load(metaNode);
 			doc.setMeta(meta);
 
 			bytes = meta.toString().getBytes();
@@ -1906,8 +1904,8 @@ public final class DIDStore {
 
 				metaNode = node.get(i).get("meta");
 				if (metaNode != null) {
-					CredentialMeta meta = CredentialMeta.fromJson(
-							metaNode, CredentialMeta.class);
+					CredentialMeta meta = new CredentialMeta();
+					meta.load(metaNode);
 
 					bytes = meta.toString().getBytes();
 					sha256.update(bytes, 0, bytes.length);

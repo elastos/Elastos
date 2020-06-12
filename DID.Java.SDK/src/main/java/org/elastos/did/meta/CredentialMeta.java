@@ -22,63 +22,16 @@
 
 package org.elastos.did.meta;
 
-import org.elastos.did.exception.MalformedMetaException;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 public class CredentialMeta extends Metadata {
-	private final static String ALIAS = "alias";
+	private static final long serialVersionUID = 725815452175234592L;
 
-	private String alias;
+	private final static String ALIAS = RESERVED_PREFIX + "alias";
 
 	public void setAlias(String alias) {
-		this.alias = alias;
+		put(ALIAS, alias);
 	}
 
 	public String getAlias() {
-		return alias;
-	}
-
-	public static CredentialMeta fromJson(String metadata)
-			throws MalformedMetaException {
-		return fromJson(metadata, CredentialMeta.class);
-	}
-
-	@Override
-	protected void fromNode(JsonNode node) throws MalformedMetaException {
-		JsonNode value = node.get(ALIAS);
-		if (value != null)
-			setAlias(value.asText());
-	}
-
-	@Override
-	protected void toNode(ObjectNode node) {
-		if (alias != null)
-			node.put(ALIAS, alias);
-	}
-
-	@Override
-	public void merge(Metadata meta) {
-		if (meta == null)
-			return;
-
-		if (!(meta instanceof CredentialMeta))
-			throw new IllegalArgumentException();
-
-		CredentialMeta m = (CredentialMeta)meta;
-
-		if (m.alias != null)
-			alias = m.alias;
-
-		super.merge(meta);
-	}
-
-	@Override
-	public boolean isEmpty() {
-		if (alias != null)
-			return false;
-
-		return super.isEmpty();
+		return (String)get(ALIAS);
 	}
 }

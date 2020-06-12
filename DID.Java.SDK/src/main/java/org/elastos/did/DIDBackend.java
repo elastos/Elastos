@@ -339,7 +339,7 @@ public class DIDBackend {
 			DIDMeta meta = new DIDMeta();
 			meta.setTransactionId(ti.getTransactionId());
 			meta.setSignature(doc.getProof().getSignature());
-			meta.setUpdated(ti.getTimestamp());
+			meta.setPublished(ti.getTimestamp());
 			doc.setMeta(meta);
 			return doc;
 		}

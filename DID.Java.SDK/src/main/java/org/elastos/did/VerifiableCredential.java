@@ -327,7 +327,7 @@ public class VerifiableCredential extends DIDObject {
 		if (name == null || name.isEmpty())
 			throw new IllegalArgumentException();
 
-		getMeta().setExtra(name, value);
+		getMeta().put(name, value);
 
 		if (getMeta().attachedStore())
 			getMeta().getStore().storeCredentialMeta(getSubject().getId(),
@@ -338,7 +338,7 @@ public class VerifiableCredential extends DIDObject {
 		if (name == null || name.isEmpty())
 			throw new IllegalArgumentException();
 
-		return getMeta().getExtra(name);
+		return (String)getMeta().get(name);
 	}
 
 	public void setAlias(String alias) throws DIDStoreException {
