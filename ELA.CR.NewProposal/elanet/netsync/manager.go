@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package netsync
 
@@ -785,6 +785,10 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 		blockHash := block.Hash()
 		iv := msg.NewInvVect(msg.InvTypeConfirmedBlock, &blockHash)
 		sm.peerNotifier.RelayInventory(iv, block.Header)
+
+	case events.ETBlockProcessed:
+		// check all transactions in pool.
+		sm.txMemPool.CheckAndCleanAllTransactions()
 
 		// A block has been connected to the main block chain.
 	case events.ETBlockConnected:
