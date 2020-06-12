@@ -70,11 +70,23 @@ const char *get_time_string(char *timestring, size_t len, time_t *p_time)
 int parse_time(time_t *time, const char *string)
 {
     struct tm tm;
+    char buffer[DOC_BUFFER_LEN];
+    char *pos;
 
     if (!time || !string)
         return -1;
 
-    memset(&tm, 0, sizeof(tm));
+    pos = strchr(string, '.');
+    if (pos) {
+        size_t len = pos - string;
+        if (len > 20)
+            return -1;
+
+        strncpy(buffer, string, len);
+        buffer[len] = 'Z';
+        buffer[len + 1] = 0;
+        string = buffer;
+    }
 
     if (!strptime(string, "%Y-%m-%dT%H:%M:%SZ", &tm))
         return -1;
