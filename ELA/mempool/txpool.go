@@ -144,6 +144,7 @@ func (mp *TxPool) CleanSubmittedTransactions(block *Block) {
 	if err := mp.cleanCanceledProducerAndCR(block.Transactions); err != nil {
 		log.Warn("error occurred when clean canceled producer and cr", err)
 	}
+	mp.checkAndCleanAllTransactions()
 	mp.Unlock()
 }
 
@@ -226,6 +227,33 @@ func (mp *TxPool) cleanCanceledProducerAndCR(txs []*Transaction) error {
 	}
 
 	return nil
+}
+
+func (mp *TxPool) checkAndCleanAllTransactions() {
+	chain := blockchain.DefaultLedger.Blockchain
+	bestHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
+
+	txCount := len(mp.txnList)
+	var deleteCount int
+	for _, tx := range mp.txnList {
+		references, err := chain.UTXOCache.GetTxReference(tx)
+		if err != nil {
+			log.Warn("[checkAndCleanAllTransactions] get transaction reference failed")
+			mp.doRemoveTransaction(tx)
+			deleteCount++
+			continue
+		}
+		err = chain.CheckTransactionContext(bestHeight+1, tx, references, 0)
+		if err != nil {
+			log.Warn("[checkAndCleanAllTransactions] check transaction context failed,", err)
+			deleteCount++
+			mp.doRemoveTransaction(tx)
+		}
+	}
+
+	log.Debug(fmt.Sprintf("[checkAndCleanAllTransactions],transaction %d "+
+		"in transaction pool before, %d deleted. Remains %d in TxPool", txCount,
+		deleteCount, txCount-deleteCount))
 }
 
 func (mp *TxPool) cleanVoteAndUpdateProducer(ownerPublicKey []byte) error {
