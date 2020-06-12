@@ -144,6 +144,11 @@ func (mp *TxPool) CleanSubmittedTransactions(block *Block) {
 	if err := mp.cleanCanceledProducerAndCR(block.Transactions); err != nil {
 		log.Warn("error occurred when clean canceled producer and cr", err)
 	}
+	mp.Unlock()
+}
+
+func (mp *TxPool) CheckAndCleanAllTransactions() {
+	mp.Lock()
 	mp.checkAndCleanAllTransactions()
 	mp.Unlock()
 }
