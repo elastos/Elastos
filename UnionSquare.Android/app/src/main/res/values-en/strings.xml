@@ -749,4 +749,9 @@
     <string name="votingfinishhint">This election is over. Unfortunately, you have not been elected this time. Thank you for your participation</string>
     <string name="repalcecardlist">Overwrite Current Candidate List?</string>
     <string name="proposalhashnotsame"> Proposal hash doesn’t match</string>
+    <string name="resetsync">重置同步数据</string>
+    <string name="surereset">确认重置</string>
+    <string name="selectreset">选择重置范围</string>
+    <string name="plzselectreset">请选择重置范围</string>
+    <string name="deletesyncornot">是否清除并重新同步数据？</string>
 </resources>

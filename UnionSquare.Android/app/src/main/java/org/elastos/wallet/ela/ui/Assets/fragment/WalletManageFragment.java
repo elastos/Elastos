@@ -161,11 +161,16 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
     }
 
     @OnClick({R.id.tv_delete, R.id.ll_updatename, R.id.ll_updatepwd, R.id.ll_exportkeystore, R.id.ll_exportmnemonic,
-            R.id.ll_sign, R.id.ll_exportreadonly, R.id.ll_showmulpublickey, R.id.ll_showwalletpublickey, R.id.ll_nodeconect, R.id.ll_did})
+            R.id.ll_sign, R.id.ll_exportreadonly, R.id.ll_showmulpublickey, R.id.ll_showwalletpublickey,
+            R.id.ll_nodeconect, R.id.ll_did, R.id.ll_sync})
     public void onViewClicked(View view) {
         Bundle bundle = null;
         dialogAction = null;
         switch (view.getId()) {
+            case R.id.ll_sync:
+                //重置同步数据
+                start(SyncResetFragment.class, getArguments());
+                break;
             case R.id.tv_delete:
                 //删除钱包弹框
                 dialogUtil.showWarmPrompt1(getBaseActivity(), getString(R.string.deletewallletornot), new WarmPromptListener() {

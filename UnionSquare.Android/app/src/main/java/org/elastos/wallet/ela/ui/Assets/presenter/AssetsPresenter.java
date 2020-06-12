@@ -74,16 +74,4 @@ public class AssetsPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void setFixedPeer(String walletId, String chainId, String address, int port, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "setFixedPeer");
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().setFixedPeer(walletId, chainId, address, port);
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
-
-
 }

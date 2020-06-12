@@ -1847,6 +1847,20 @@ public class MyWallet {
         }
     }
 
+    public BaseEntity resync(String masterWalletID, String chainID) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+            subWallet.Resync();
+            return new CommmonStringEntity(SUCCESSCODE, "");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "resync " + formatWalletName(masterWalletID, chainID));
+        }
+    }
+
     public BaseEntity getTransactionSignedInfo(String masterWalletID, String chainID, String rawTransaction) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
