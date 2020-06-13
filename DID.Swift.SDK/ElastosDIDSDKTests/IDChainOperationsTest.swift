@@ -23,9 +23,9 @@ class IDChainOperationsTest: XCTestCase {
             // Resolve new DID document
             try testData.waitForWalletAvaliable()
             let resolved = try did.resolve(true)
-            XCTAssertEqual(did, resolved.subject)
-            XCTAssertTrue(resolved.isValid)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(did, resolved!.subject)
+            XCTAssertTrue(resolved!.isValid)
+            XCTAssertEqual(doc.toString(), resolved!.toString())
         } catch {
             XCTFail()
         }
@@ -376,12 +376,12 @@ class IDChainOperationsTest: XCTestCase {
             XCTAssertNotNil(txid)
 
             try! testData.waitForWalletAvaliable()
-            var resolved: DIDDocument = try! did.resolve(true)
-            XCTAssertEqual(did, resolved.subject)
-            XCTAssertTrue(resolved.isValid)
-            XCTAssertEqual(doc.toString(true), resolved.toString(true))
+            var resolved: DIDDocument? = try did.resolve(true)
+            XCTAssertEqual(did, resolved!.subject)
+            XCTAssertTrue(resolved!.isValid)
+            XCTAssertEqual(doc.toString(true), resolved!.toString(true))
 
-            var lastTxid = resolved.transactionId
+            var lastTxid = resolved!.transactionId
             print("Last transaction id: \(lastTxid)")
 
             // Update
@@ -410,13 +410,13 @@ class IDChainOperationsTest: XCTestCase {
             XCTAssertNotNil(txid)
 
             try! testData.waitForWalletAvaliable()
-            resolved = try! did.resolve(true)
-            XCTAssertEqual(did, resolved.subject)
-            XCTAssertNotEqual(lastTxid, resolved.transactionId)
-            XCTAssertTrue(resolved.isValid)
-            XCTAssertEqual(doc.toString(true), resolved.toString(true))
+            resolved = try did.resolve(true)!
+            XCTAssertEqual(did, resolved!.subject)
+            XCTAssertNotEqual(lastTxid, resolved?.transactionId)
+            XCTAssertTrue(resolved!.isValid)
+            XCTAssertEqual(doc.toString(true), resolved!.toString(true))
 
-            lastTxid = resolved.transactionId
+            lastTxid = resolved?.transactionId
             print("Last transaction id: \(lastTxid)")
 
             // Update again
@@ -447,12 +447,12 @@ class IDChainOperationsTest: XCTestCase {
             XCTAssertNotNil(txid)
 
             try! testData.waitForWalletAvaliable()
-            resolved = try! did.resolve(true)
-            XCTAssertEqual(did, resolved.subject)
-            XCTAssertNotEqual(lastTxid, resolved.transactionId)
-            XCTAssertTrue(resolved.isValid)
-            XCTAssertEqual(doc.toString(true), resolved.toString(true))
-            lastTxid = resolved.transactionId
+            resolved = try did.resolve(true)!
+            XCTAssertEqual(did, resolved!.subject)
+            XCTAssertNotEqual(lastTxid, resolved?.transactionId)
+            XCTAssertTrue(resolved!.isValid)
+            XCTAssertEqual(doc.toString(true), resolved!.toString(true))
+            lastTxid = resolved?.transactionId
             print("Last transaction id: \(lastTxid)")
         } catch {
             XCTFail()

@@ -104,22 +104,21 @@ public class DID {
         return getMeta().isDeactivated
     }
 
-    public func resolve(_ force: Bool) throws -> DIDDocument {
+    public func resolve(_ force: Bool) throws -> DIDDocument? {
         let doc = try DIDBackend.resolve(self, force)
-        guard let _ = doc else {
-            throw DIDError.notFoundError()
+        if doc != nil {
+            setMeta(doc!.getMeta())
         }
 
-        setMeta(doc!.getMeta())
-        return doc!
+        return doc
     }
     
-    public func resolve() throws -> DIDDocument {
+    public func resolve() throws -> DIDDocument? {
         return try resolve(false)
     }
 
-    public func resolveAsync(_ force: Bool) -> Promise<DIDDocument> {
-        return Promise<DIDDocument> { resolver in
+    public func resolveAsync(_ force: Bool) -> Promise<DIDDocument?> {
+        return Promise<DIDDocument?> { resolver in
             do {
                 resolver.fulfill(try resolve(force))
             } catch let error  {
@@ -128,7 +127,7 @@ public class DID {
         }
     }
 
-    public func resolveAsync() -> Promise<DIDDocument> {
+    public func resolveAsync() -> Promise<DIDDocument?> {
         return resolveAsync(false)
     }
 

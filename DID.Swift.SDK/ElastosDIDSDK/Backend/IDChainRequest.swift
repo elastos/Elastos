@@ -233,20 +233,23 @@ class IDChainRequest: NSObject {
         // internally using builder pattern "create/update/deactivate" to create
         // new IDChainRequest object.
         // Always be sure have "_doc/_signKey/_storePass" in the object.
-        var doc: DIDDocument
+        var doc: DIDDocument?
         if self._operation != .DEACTIVATE {
             doc = self._doc!
-            guard doc.containsAuthenticationKey(forId: _signKey!) else {
+            guard doc!.containsAuthenticationKey(forId: _signKey!) else {
                 return false
             }
         } else {
             do {
                 doc = try self._did!.resolve()
+                guard let _ = doc else {
+                    return false
+                }
             } catch {
                 return false
             }
-            guard doc.containsAuthenticationKey(forId: _signKey!) ||
-                  doc.containsAuthorizationKey (forId: _signKey!) else {
+            guard doc!.containsAuthenticationKey(forId: _signKey!) ||
+                  doc!.containsAuthorizationKey (forId: _signKey!) else {
                 return false
             }
         }
@@ -266,7 +269,7 @@ class IDChainRequest: NSObject {
             inputs.append(data)
         }
 
-        return try doc.verify(_signKey!, _signature!, inputs)
+        return try doc!.verify(_signKey!, _signature!, inputs)
     }
 
     var isValid: Bool {

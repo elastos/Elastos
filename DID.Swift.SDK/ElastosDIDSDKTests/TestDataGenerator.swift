@@ -346,9 +346,14 @@ class TestDataGenerator: XCTestCase {
                     wait(interval: 30)
                     do {
                         let d = try doc.subject.resolve(true)
-                        try store.storeDid(using: d)
-                        print(" OK")
-                        break
+                        if d == nil {
+                            print(".")
+                        }
+                        else {
+                            try store.storeDid(using: d!)
+                            print(" OK")
+                            break
+                        }
                     } catch {
                         print(".")
                     }

@@ -511,7 +511,7 @@ public class DIDStore: NSObject {
         }
 
         var lastTransactionId: String? = nil
-        let resolvedDoc = try? did.resolve()
+        let resolvedDoc = try did.resolve()
 
         if resolvedDoc != nil {
             guard !resolvedDoc!.isDeactivated else {

@@ -133,7 +133,7 @@ class DIDStoreTests: XCTestCase {
             let doc: DIDDocument = try store.newDid(withAlias: alias, using: storePass)
             XCTAssertTrue(doc.isValid)
             
-            var resolved = try? doc.subject.resolve()
+            var resolved = try doc.subject.resolve()
             XCTAssertNil(resolved)
             
             _ = try store.publishDid(for: doc.subject, using: storePass)
@@ -169,7 +169,7 @@ class DIDStoreTests: XCTestCase {
             let doc: DIDDocument = try store.newDid(using: storePass)
             XCTAssertTrue(doc.isValid)
             
-            var resolved = try? doc.subject.resolve(true)
+            var resolved = try doc.subject.resolve(true)
             XCTAssertNil(resolved)
             
             _ = try store.publishDid(for: doc.subject, using: storePass)
@@ -247,10 +247,10 @@ class DIDStoreTests: XCTestCase {
             
             var resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            try store.storeDid(using: resolved)
+            try store.storeDid(using: resolved!)
             
             // Update
-            var db: DIDDocumentBuilder = resolved.editing()
+            var db: DIDDocumentBuilder = resolved!.editing()
             var key = try TestData.generateKeypair()
             _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
             var newDoc = try db.sealed(using: storePass)
@@ -263,11 +263,11 @@ class DIDStoreTests: XCTestCase {
             resolved = try doc.subject.resolve(true)
 
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(newDoc.description, resolved.description)
-            try store.storeDid(using: resolved)
+            XCTAssertEqual(newDoc.description, resolved!.description)
+            try store.storeDid(using: resolved!)
 
             // Update again
-            db = resolved.editing()
+            db = resolved!.editing()
             key = try TestData.generateKeypair()
             _ = try db.appendAuthenticationKey(with: "key2", keyBase58: key.getPublicKeyBase58())
             newDoc = try db.sealed(using: storePass)
@@ -278,7 +278,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(newDoc.description, resolved.description)
+            XCTAssertEqual(newDoc.description, resolved!.description)
         } catch {
             XCTFail()
         }
@@ -298,7 +298,7 @@ class DIDStoreTests: XCTestCase {
 
             var resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
             doc.getMeta().setTransactionId(nil)
             try store.storeDidMeta(doc.getMeta(), for: doc.subject)
@@ -316,7 +316,7 @@ class DIDStoreTests: XCTestCase {
 
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
             doc.getMeta().setTransactionId(nil)
             try store.storeDidMeta(doc.getMeta(), for: doc.subject)
@@ -333,7 +333,7 @@ class DIDStoreTests: XCTestCase {
             _ = try store.publishDid(for: doc.subject, using: storePass)
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
         } catch {
             XCTFail()
         }
@@ -352,7 +352,7 @@ class DIDStoreTests: XCTestCase {
 
             var resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
 //            doc.getMeta().setSignature(nil) // seeting Signature withour storepass
             try store.storeDidMeta(doc.getMeta(), for: doc.subject)
@@ -370,7 +370,7 @@ class DIDStoreTests: XCTestCase {
 
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
 //            doc.getMeta().setSignature(nil)
             try store.storeDidMeta(doc.getMeta(), for: doc.subject)
@@ -388,7 +388,7 @@ class DIDStoreTests: XCTestCase {
 
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
         } catch {
             XCTFail()
         }
@@ -407,7 +407,7 @@ class DIDStoreTests: XCTestCase {
 
             let resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
             doc.getMeta().setTransactionId(nil)
 //            doc.getMeta().setSignature(nil)
@@ -450,7 +450,7 @@ class DIDStoreTests: XCTestCase {
 
             var resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
             doc.getMeta().setTransactionId(nil)
 //            doc.getMeta().setSignature(nil)
@@ -469,7 +469,7 @@ class DIDStoreTests: XCTestCase {
 
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
         } catch {
             XCTFail()
@@ -489,7 +489,7 @@ class DIDStoreTests: XCTestCase {
 
             let resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
             doc.getMeta().setTransactionId("1234567890")
             try store.storeDidMeta(doc.getMeta(), for: doc.subject)
@@ -531,7 +531,7 @@ class DIDStoreTests: XCTestCase {
 
             let resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
             doc.getMeta().setSignature("1234567890")
             try store.storeDidMeta(doc.getMeta(), for: doc.subject)
@@ -572,7 +572,7 @@ class DIDStoreTests: XCTestCase {
 
             var resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
             doc.getMeta().setTransactionId("1234567890")
             try store.storeDidMeta(doc.getMeta(), for: doc.subject)
@@ -589,7 +589,7 @@ class DIDStoreTests: XCTestCase {
             _ = try store.publishDid(for: doc.subject, waitForConfirms: 1, using: doc.defaultPublicKey, storePassword: storePass, true)
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
         } catch {
             XCTFail()
         }
@@ -608,7 +608,7 @@ class DIDStoreTests: XCTestCase {
 
             var resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
             doc.getMeta().setSignature("1234567890")
             try store.storeDidMeta(doc.getMeta(), for: doc.subject)
@@ -626,7 +626,7 @@ class DIDStoreTests: XCTestCase {
 
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
         } catch {
             XCTFail()
         }
@@ -642,7 +642,7 @@ class DIDStoreTests: XCTestCase {
             XCTAssertTrue(doc.isValid)
             
             _ = try store.publishDid(for: doc.subject, using: storePass)
-            let resolved: DIDDocument = try doc.subject.resolve(true)
+            let resolved: DIDDocument = try doc.subject.resolve(true)!
             XCTAssertNotNil(resolved)
             
             _ = try store.deactivateDid(for: doc.subject, using: storePass)
@@ -673,7 +673,7 @@ class DIDStoreTests: XCTestCase {
             
             var resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
 
             // update
             let db = doc.editing()
@@ -688,7 +688,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
             _ = try store.deactivateDid(for: doc.subject, using: storePass)
             let did = doc.subject
 
@@ -716,7 +716,7 @@ class DIDStoreTests: XCTestCase {
             
             _ = try store.publishDid(for: doc.subject, using: storePass)
             
-            var resolved: DIDDocument = try doc.subject.resolve(true)
+            var resolved: DIDDocument = try doc.subject.resolve(true)!
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), resolved.toString())
             
@@ -730,7 +730,7 @@ class DIDStoreTests: XCTestCase {
 
             try store.storeDid(using: target)
             _ = try store.publishDid(for: target.subject, using: storePass)
-            resolved = try target.subject.resolve()
+            resolved = try target.subject.resolve()!
             XCTAssertNotNil(resolved)
             XCTAssertEqual(target.toString(), resolved.toString())
             _ = try store.deactivateDid(for: target.subject, withAuthroizationDid: doc.subject, storePassword: storePass)
@@ -767,7 +767,7 @@ class DIDStoreTests: XCTestCase {
             try store.storeDid(using: doc)
             
             _ = try store.publishDid(for: doc.subject, using: storePass)
-            var resolved: DIDDocument = try doc.subject.resolve(true)
+            var resolved: DIDDocument? = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), doc.toString())
             
@@ -785,7 +785,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try target.subject.resolve()
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(target.toString(), resolved.toString())
+            XCTAssertEqual(target.toString(), resolved!.toString())
             
             _ = try store.deactivateDid(for: target.subject, withAuthroizationDid: doc.subject, using: id, storePassword: storePass)
             let did = target.subject
@@ -824,9 +824,9 @@ class DIDStoreTests: XCTestCase {
             
             _ = try store.publishDid(for: doc.subject, using: storePass)
             
-            var resolved: DIDDocument = try doc.subject.resolve(true)
+            var resolved: DIDDocument? = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved.toString())
+            XCTAssertEqual(doc.toString(), resolved!.toString())
             
             var target = try store.newDid(using: storePass)
             db = target.editing()
@@ -842,7 +842,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try target.subject.resolve()
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(target.toString(), resolved.toString())
+            XCTAssertEqual(target.toString(), resolved!.toString())
             
             _ = try store.deactivateDid(for: target.subject, withAuthroizationDid: doc.subject, storePassword: storePass)
             let did = target.subject
@@ -870,7 +870,7 @@ class DIDStoreTests: XCTestCase {
                 let doc: DIDDocument = try! store.newDid(withAlias: alias, using: storePass )
                 XCTAssertTrue(doc.isValid)
                 
-                var resolved = try? doc.subject.resolve(true)
+                var resolved = try doc.subject.resolve(true)
                 XCTAssertNil(resolved)
                 
                 _ = try store.publishDid(for: doc.subject, using: storePass)
@@ -1350,7 +1350,7 @@ class DIDStoreTests: XCTestCase {
                 let alias: String = "my did \(i)"
                 let doc = try store.newDid(withAlias: alias, using: storePass)
                 XCTAssertTrue(doc.isValid)
-                var resolved = try? doc.subject.resolve(true)
+                var resolved = try doc.subject.resolve(true)
                 XCTAssertNil(resolved)
                 _ = try store.publishDid(for: doc.subject, using: storePass)
                 var path: String = storeRoot + "/ids/" + doc.subject.methodSpecificId + "/document"
@@ -1403,7 +1403,7 @@ class DIDStoreTests: XCTestCase {
                 let alias = "my did \(i)"
                 let doc = try store.newDid(withAlias: alias, using: storePass)
                 XCTAssertTrue(doc.isValid)
-                var resolved = try? doc.subject.resolve(true)
+                var resolved = try doc.subject.resolve(true)
                 XCTAssertNil(resolved)
                 _ = try store.publishDid(for: doc.subject, using: storePass)
                 var path: String = storeRoot + "/ids/" + doc.subject.methodSpecificId + "/document"

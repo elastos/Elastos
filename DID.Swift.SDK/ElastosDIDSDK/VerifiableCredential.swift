@@ -236,8 +236,11 @@ public class VerifiableCredential: DIDObject {
     private func checkGenuine() throws -> Bool {
         let doc = try issuer.resolve()
 
+        guard let _ = doc else {
+            return false
+        }
         // Credential should signed by authentication key.
-        guard doc.containsAuthenticationKey(forId: proof.verificationMethod) else {
+        guard doc!.containsAuthenticationKey(forId: proof.verificationMethod) else {
             return false
         }
         // Unsupported public key type;
@@ -248,7 +251,7 @@ public class VerifiableCredential: DIDObject {
         guard let data = toJson(true, true).data(using: .utf8) else {
             throw DIDError.illegalArgument("credential is nil")
         }
-        return try doc.verify(proof.verificationMethod, proof.signature, [data])
+        return try doc!.verify(proof.verificationMethod, proof.signature, [data])
     }
 
     public var isGenuine: Bool {

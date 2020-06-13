@@ -229,20 +229,24 @@ public class DIDDocumentBuilder {
             throw DIDError.illegalArgument()
         }
 
-        let controllerDoc: DIDDocument
+        let controllerDoc: DIDDocument?
         do {
             controllerDoc = try controller.resolve()
         } catch {
             throw DIDError.didResolveError("Can not resolve \(controller) DID.")
         }
 
+        guard let _ = controllerDoc else {
+            throw DIDError.notFoundError(id.toString())
+        }
+
         var usedKey: DIDURL? = key
         if  usedKey == nil {
-            usedKey = controllerDoc.defaultPublicKey
+            usedKey = controllerDoc!.defaultPublicKey
         }
 
         // Check the key should be a authentication key
-        let targetKey = controllerDoc.authenticationKey(ofId: usedKey!)
+        let targetKey = controllerDoc!.authenticationKey(ofId: usedKey!)
         guard let _ = targetKey else {
             throw DIDError.illegalArgument()
         }
