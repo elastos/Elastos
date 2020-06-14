@@ -162,7 +162,7 @@ services:
 
   privnet-sidechain-did-node:
     container_name: privnet-sidechain-did-node
-    image: cyberrepublic/elastos-sidechain-did-node:privnet-v0.6
+    image: cyberrepublic/elastos-sidechain-did-node:privnet-v0.7
     user: "${UID}:${GID}"
     volumes:
       - /data/volumes/elastos-privnet/did-node/elastos_did:/did/elastos_did
