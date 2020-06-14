@@ -7,11 +7,11 @@
 
 {% block content %}
     <div class="row flex-xl-nowrap browser">
-        <main class="col-12 col-xl-12 bd-content" role="main">
-        {% block browsertitle %}{% endblock %}
-        <div class="card-body">
-          {% block browser %}{% endblock %}
-        </div>
+      <main class="col-12 col-xl-12 bd-content" role="main">
+          <div class="browser-content"> 
+            {% block browsertitle %}{% endblock %}
+            {% block browser %}{% endblock %}
+          </div>
       </main>
     </div>
 {% endblock content %}
