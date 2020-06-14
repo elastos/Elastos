@@ -44,7 +44,7 @@
           <div class="row mx-n2" style="margin-top: 45px;">
             <div class="col-md px-2">
                 {% if request.session.logged_in != True %}
-                    <button class="login-button" data-toggle="modal" data-target="#myModal" id="login_button">
+                    <button class="login-button" data-toggle="modal" data-target="#myModal" id="login_button" onclick="ela_auth()">
                             Login with Elastos DID
                     </button>
                 {% endif %}

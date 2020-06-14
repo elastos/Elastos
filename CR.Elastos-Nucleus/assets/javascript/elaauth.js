@@ -1,4 +1,5 @@
-window.addEventListener('DOMContentLoaded', function() {
+
+function ela_auth(){
     let retryTimer;
     function ajax_get(url, callback) {
         var xmlhttp = new XMLHttpRequest();
@@ -28,4 +29,5 @@ window.addEventListener('DOMContentLoaded', function() {
         retryTimer = setTimeout(__ela_checkAuth, 2000);
     }
     __ela_checkAuth();
-}, false);
+}
+
