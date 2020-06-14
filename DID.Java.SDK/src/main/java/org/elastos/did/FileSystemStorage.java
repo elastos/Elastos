@@ -98,8 +98,6 @@ class FileSystemStorage implements DIDStorage {
 	private static final String JOURNAL_SUFFIX = ".journal";
 	private static final String DEPRECATED_SUFFIX = ".deprecated";
 
-	private static final String DEFAULT_CHARSET = "UTF-8";
-
 	private File storeRoot;
 
 	FileSystemStorage(String dir) throws DIDStorageException {

@@ -72,60 +72,6 @@ public class DIDBackend {
 
 	private static final Logger log = LoggerFactory.getLogger(DIDBackend.class);
 
-	class TransactionResult {
-		private String txid;
-		private int status;
-		private String message;
-		private boolean filled;
-
-		public TransactionResult() {
-		}
-
-		public void update(String txid, int status, String message) {
-			this.txid = txid;
-			this.status = status;
-			this.message = message;
-			this.filled = true;
-
-			synchronized(this) {
-				notifyAll();
-			}
-		}
-
-		public void update(String txid) {
-			update(txid, 0, null);
-		}
-
-		public String getTxid() {
-			return txid;
-		}
-
-		public int getStatus() {
-			return status;
-		}
-
-		public String getMessage() {
-			return message;
-		}
-
-		public boolean isEmpty() {
-			return !filled;
-		}
-
-		@Override
-		public String toString() {
-			StringBuilder sb = new StringBuilder(256);
-
-			sb.append("txid: ").append(txid).append(", ")
-				.append("status: ").append(status);
-
-			if (status != 0)
-				sb.append(", ").append("message: ").append(message);
-
-			return sb.toString();
-		}
-	}
-
 	static class DefaultResolver implements DIDResolver {
 		private URL url;
 
@@ -353,92 +299,45 @@ public class DIDBackend {
 		return adapter;
 	}
 
-	private String createTransaction(String payload, String memo, int confirms)
+	private void createTransaction(String payload, String memo)
 			throws DIDTransactionException {
-		TransactionResult tr = new TransactionResult();
-
 		log.info("Create ID transaction...");
-		log.trace("Transaction paload: '{}', memo: {}, confirms: {}",
-				payload, memo, confirms);
+		log.trace("Transaction paload: '{}', memo: {}", payload, memo);
 
-		adapter.createIdTransaction(payload, memo, confirms,
-				(txid, status, message) -> {
-					tr.update(txid, status, message);
-				});
+		adapter.createIdTransaction(payload, memo);
 
-		synchronized(tr) {
-			if (tr.isEmpty()) {
-				try {
-					tr.wait();
-				} catch (InterruptedException e) {
-					throw new DIDTransactionException(e);
-				}
-			}
-		}
-
-		log.info("ID transaction complete. {}", tr.toString());
-
-		if (tr.getStatus() != 0)
-			throw new DIDTransactionException(
-					"Create transaction failed(" + tr.getStatus() + "): "
-					+ tr.getMessage());
-
-		return tr.getTxid();
+		log.info("ID transaction complete.");
 	}
 
-	protected String create(DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
-		return create(doc, 0, signKey, storepass);
-	}
-
-	protected String create(DIDDocument doc, int confirms, DIDURL signKey,
-			String storepass)
+	protected void create(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		IDChainRequest request = IDChainRequest.create(doc, signKey, storepass);
 		String json = request.toJson(true);
-		return createTransaction(json, null, confirms);
+		createTransaction(json, null);
 	}
 
-	protected String update(DIDDocument doc, String previousTxid,
-			DIDURL signKey, String storepass)
-			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
-		return update(doc, previousTxid, 0, signKey, storepass);
-	}
-
-	protected String update(DIDDocument doc, String previousTxid, int confirms,
+	protected void update(DIDDocument doc, String previousTxid,
 			DIDURL signKey, String storepass)
 			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		IDChainRequest request = IDChainRequest.update(doc, previousTxid,
 				signKey, storepass);
 		String json = request.toJson(true);
-		return createTransaction(json, null, confirms);
+		createTransaction(json, null);
 	}
 
-	protected String deactivate(DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
-		return deactivate(doc, 0, signKey, storepass);
-	}
-
-	protected String deactivate(DIDDocument doc, int confirms,
-			DIDURL signKey, String storepass)
+	protected void deactivate(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		IDChainRequest request = IDChainRequest.deactivate(doc, signKey, storepass);
 		String json = request.toJson(true);
-		return createTransaction(json, null, confirms);
+		createTransaction(json, null);
 	}
 
-	protected String deactivate(DID target, DIDURL targetSignKey,
+	protected void deactivate(DID target, DIDURL targetSignKey,
 			DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
-		return deactivate(target, targetSignKey, doc, 0, signKey, storepass);
-	}
-
-	protected String deactivate(DID target, DIDURL targetSignKey,
-			DIDDocument doc, int confirms, DIDURL signKey, String storepass)
 			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		IDChainRequest request = IDChainRequest.deactivate(target,
 				targetSignKey, doc, signKey, storepass);
 		String json = request.toJson(true);
-		return createTransaction(json, null, confirms);
+		createTransaction(json, null);
 	}
 }

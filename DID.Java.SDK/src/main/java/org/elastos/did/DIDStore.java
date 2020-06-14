@@ -462,8 +462,7 @@ public final class DIDStore {
 		return did;
 	}
 
-	public String publishDid(DID did, int confirms,
-			DIDURL signKey, boolean force, String storepass)
+	public void publishDid(DID did, DIDURL signKey, boolean force, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
 		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
@@ -491,31 +490,31 @@ public final class DIDStore {
 		DIDDocument resolvedDoc = did.resolve();
 		if (resolvedDoc != null) {
 			if (resolvedDoc.isDeactivated()) {
+				doc.getMeta().setDeactivated(true);
+				storage.storeDidMeta(doc.getSubject(), doc.getMeta());
+
 				log.error("{} already deactivated.", did.toString());
 				throw new DIDStoreException("DID already deactivated.");
 			}
 
 			if (!force) {
-				String localTxid = doc.getMeta().getTransactionId();
+				String localPrevTxid = doc.getMeta().getPreviousTransactionId();
 				String localSignature = doc.getMeta().getSignature();
 
 				String resolvedTxid = resolvedDoc.getTransactionId();
 				String reolvedSignautre = resolvedDoc.getProof().getSignature();
 
-				if (localTxid == null && localSignature == null) {
-					log.error("Missing last transaction id and signature, " +
+				if (localPrevTxid == null && localSignature == null) {
+					log.error("Missing transaction id and signature, " +
 							"DID SDK dosen't know how to handle it, " +
 							"use force mode to ignore checks.");
 					throw new DIDStoreException("DID document not up-to-date");
 				}
 
-				if (localTxid != null && !localTxid.isEmpty() && !localTxid.equals(resolvedTxid)) {
-					log.error("Current copy not based on the lastest on-chain copy, txid mismatch.");
-					throw new DIDStoreException("DID document not up-to-date");
-				}
 
-				if (localSignature != null && !localSignature.equals(reolvedSignautre)) {
-					log.error("Current copy not based on the lastest on-chain copy, signature mismatch");
+				if ((localSignature != null && !localSignature.equals(reolvedSignautre)) &&
+					(localPrevTxid != null && !localPrevTxid.equals(resolvedTxid))) {
+					log.error("Current copy not based on the lastest on-chain copy, txid mismatch.");
 					throw new DIDStoreException("DID document not up-to-date");
 				}
 			}
@@ -528,30 +527,23 @@ public final class DIDStore {
 
 		if (lastTxid == null || lastTxid.isEmpty()) {
 			log.info("Try to publish[create] {}...", did.toString());
-			lastTxid = backend.create(doc, confirms,
-					signKey, storepass);
+			backend.create(doc, signKey, storepass);
 		} else {
 			log.info("Try to publish[update] {}...", did.toString());
-			lastTxid = backend.update(doc, lastTxid, confirms,
-					signKey, storepass);
+			backend.update(doc, lastTxid, signKey, storepass);
 		}
 
-		if (lastTxid != null)
-			doc.getMeta().setTransactionId(lastTxid);
+		doc.getMeta().setPreviousTransactionId(lastTxid);
 		doc.getMeta().setSignature(doc.getProof().getSignature());
 		storage.storeDidMeta(doc.getSubject(), doc.getMeta());
-
-		return lastTxid;
 	}
 
-	public String publishDid(DID did, int confirms,
-			DIDURL signKey, String storepass)
+	public void publishDid(DID did, DIDURL signKey, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
-		return publishDid(did, confirms, signKey, false, storepass);
+		publishDid(did, signKey, false, storepass);
 	}
 
-	public String publishDid(String did, int confirms,
-			String signKey, boolean force, String storepass)
+	public void publishDid(String did, String signKey, boolean force, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
 		DID _did = null;
 		DIDURL _signKey = null;
@@ -563,66 +555,37 @@ public final class DIDStore {
 			throw new IllegalArgumentException(e);
 		}
 
-		return publishDid(_did, confirms, _signKey, force, storepass);
+		publishDid(_did, _signKey, force, storepass);
 	}
 
-	public String publishDid(String did, int confirms,
-			String signKey, String storepass)
+	public void publishDid(String did, String signKey, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
-		return publishDid(did, confirms, signKey, false, storepass);
+		publishDid(did, signKey, false, storepass);
 	}
 
-	public String publishDid(DID did, DIDURL signKey, String storepass)
-			throws DIDBackendException, DIDStoreException, InvalidKeyException {
-		return publishDid(did, 0, signKey, storepass);
-	}
-
-	public String publishDid(String did, String signKey, String storepass)
-			throws DIDBackendException, DIDStoreException, InvalidKeyException {
-		return publishDid(did, 0, signKey, storepass);
-	}
-
-	public String publishDid(DID did, int confirms, String storepass)
+	public void publishDid(DID did, String storepass)
 			throws DIDBackendException, DIDStoreException {
 		try {
-			return publishDid(did, confirms, null, storepass);
+			publishDid(did, null, storepass);
 		} catch (InvalidKeyException ignore) {
-			return null; // Dead code.
+			// Dead code.
 		}
 	}
 
-	public String publishDid(String did, int confirms, String storepass)
+	public void publishDid(String did, String storepass)
 			throws DIDBackendException, DIDStoreException {
 		try {
-			return publishDid(did, confirms, null, storepass);
+			publishDid(did, null, storepass);
 		} catch (InvalidKeyException ignore) {
-			return null; // Dead code.
+			// Dead code.
 		}
 	}
 
-	public String publishDid(DID did, String storepass)
-			throws DIDBackendException, DIDStoreException {
-		try {
-			return publishDid(did, 0, null, storepass);
-		} catch (InvalidKeyException ignore) {
-			return null; // Dead code.
-		}
-	}
-
-	public String publishDid(String did, String storepass)
-			throws DIDBackendException, DIDStoreException {
-		try {
-			return publishDid(did, 0, null, storepass);
-		} catch (InvalidKeyException ignore) {
-			return null; // Dead code.
-		}
-	}
-
-	public CompletableFuture<String> publishDidAsync(DID did, int confirms,
+	public CompletableFuture<Void> publishDidAsync(DID did,
 			DIDURL signKey, boolean force, String storepass) {
-		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			try {
-				return publishDid(did, confirms, signKey, force, storepass);
+				publishDid(did, signKey, force, storepass);
 			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
 				throw new CompletionException(e);
 			}
@@ -631,11 +594,11 @@ public final class DIDStore {
 		return future;
 	}
 
-	public CompletableFuture<String> publishDidAsync(String did, int confirms,
+	public CompletableFuture<Void> publishDidAsync(String did,
 			String signKey, boolean force, String storepass) {
-		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			try {
-				return publishDid(did, confirms, signKey, force, storepass);
+				publishDid(did, signKey, force, storepass);
 			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
 				throw new CompletionException(e);
 			}
@@ -644,47 +607,27 @@ public final class DIDStore {
 		return future;
 	}
 
-	public CompletableFuture<String> publishDidAsync(DID did, int confirms,
+	public CompletableFuture<Void> publishDidAsync(DID did,
 			DIDURL signKey, String storepass) {
-		return publishDidAsync(did, confirms, signKey, false, storepass);
+		return publishDidAsync(did, signKey, false, storepass);
 	}
 
-	public CompletableFuture<String> publishDidAsync(String did, int confirms,
+	public CompletableFuture<Void> publishDidAsync(String did,
 			String signKey, String storepass) {
-		return publishDidAsync(did, confirms, signKey, false, storepass);
+		return publishDidAsync(did, signKey, false, storepass);
 	}
 
-	public CompletableFuture<String> publishDidAsync(DID did,
-			DIDURL signKey, String storepass) {
-		return publishDidAsync(did, 0, signKey, storepass);
+	public CompletableFuture<Void> publishDidAsync(DID did, String storepass) {
+		return publishDidAsync(did, null, storepass);
 	}
 
-	public CompletableFuture<String> publishDidAsync(String did,
-			String signKey, String storepass) {
-		return publishDidAsync(did, 0, signKey, storepass);
-	}
-
-	public CompletableFuture<String> publishDidAsync(DID did,
-			int confirms, String storepass) {
-		return publishDidAsync(did, confirms, null, storepass);
-	}
-
-	public CompletableFuture<String> publishDidAsync(String did,
-			int confirms, String storepass) {
-		return publishDidAsync(did, confirms, null, storepass);
-	}
-
-	public CompletableFuture<String> publishDidAsync(DID did, String storepass) {
-		return publishDidAsync(did, 0, null, storepass);
-	}
-
-	public CompletableFuture<String> publishDidAsync(String did, String storepass) {
-		return publishDidAsync(did, 0, null, storepass);
+	public CompletableFuture<Void> publishDidAsync(String did,
+			String storepass) {
+		return publishDidAsync(did, null, storepass);
 	}
 
 	// Deactivate self use authentication keys
-	public String deactivateDid(DID did, int confirms,
-			DIDURL signKey, String storepass)
+	public void deactivateDid(DID did, DIDURL signKey, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
 		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
@@ -710,20 +653,16 @@ public final class DIDStore {
 				throw new InvalidKeyException("Not an authentication key.");
 		}
 
-		String txid = backend.deactivate(doc,
-				confirms, signKey, storepass);
+		backend.deactivate(doc, signKey, storepass);
 
 		// Save deactivated status to DID metadata
 		if (localCopy) {
 			doc.getMeta().setDeactivated(true);
 			storage.storeDidMeta(did, doc.getMeta());
 		}
-
-		return txid;
 	}
 
-	public String deactivateDid(String did, int confirms,
-			String signKey, String storepass)
+	public void deactivateDid(String did, String signKey, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
 		DID _did = null;
 		DIDURL _signKey = null;
@@ -734,114 +673,63 @@ public final class DIDStore {
 			throw new IllegalArgumentException(e);
 		}
 
-		return deactivateDid(_did, confirms, _signKey, storepass);
+		deactivateDid(_did, _signKey, storepass);
 	}
 
-	public String deactivateDid(DID did, DIDURL signKey, String storepass)
-			throws DIDBackendException, DIDStoreException, InvalidKeyException {
-		return deactivateDid(did, 0, signKey, storepass);
-	}
-
-	public String deactivateDid(String did, String signKey, String storepass)
-			throws DIDBackendException, DIDStoreException, InvalidKeyException {
-		return deactivateDid(did, 0, signKey, storepass);
-	}
-
-	public String deactivateDid(DID did, int confirms, String storepass)
+	public void deactivateDid(DID did, String storepass)
 			throws DIDBackendException, DIDStoreException {
 		try {
-			return deactivateDid(did, confirms, null, storepass);
+			deactivateDid(did, (DIDURL)null, storepass);
 		} catch (InvalidKeyException ignore) {
-			return null; // Dead code.
+			// Dead code.
 		}
 	}
 
-	public String deactivateDid(String did, int confirms, String storepass)
+	public void deactivateDid(String did, String storepass)
 			throws DIDBackendException, DIDStoreException {
 		try {
-			return deactivateDid(did, confirms, null, storepass);
+			deactivateDid(did, null, storepass);
 		} catch (InvalidKeyException ignore) {
-			return null; // Dead code.
+			// Dead code.
 		}
 	}
 
-	public String deactivateDid(DID did, String storepass)
-			throws DIDBackendException, DIDStoreException {
-		try {
-			return deactivateDid(did, 0, null, storepass);
-		} catch (InvalidKeyException ignore) {
-			return null; // Dead code.
-		}
-	}
-
-	public String deactivateDid(String did, String storepass)
-			throws DIDBackendException, DIDStoreException {
-		try {
-			return deactivateDid(did, 0, null, storepass);
-		} catch (InvalidKeyException ignore) {
-			return null; // Dead code
-		}
-	}
-
-	public CompletableFuture<String> deactivateDidAsync(DID did,
-			int confirms, DIDURL signKey, String storepass) {
-		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-			try {
-				return deactivateDid(did, confirms, signKey, storepass);
-			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
-				throw new CompletionException(e);
-			}
-		});
-
-		return future;
-	}
-
-	public CompletableFuture<String> deactivateDidAsync(String did,
-			int confirms, String signKey, String storepass) {
-		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-			try {
-				return deactivateDid(did, confirms, signKey, storepass);
-			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
-				throw new CompletionException(e);
-			}
-		});
-
-		return future;
-	}
-
-	public CompletableFuture<String> deactivateDidAsync(DID did,
+	public CompletableFuture<Void> deactivateDidAsync(DID did,
 			DIDURL signKey, String storepass) {
-		return deactivateDidAsync(did, 0, signKey, storepass);
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			try {
+				deactivateDid(did, signKey, storepass);
+			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
 	}
 
-	public CompletableFuture<String> deactivateDidAsync(String did,
+	public CompletableFuture<Void> deactivateDidAsync(String did,
 			String signKey, String storepass) {
-		return deactivateDidAsync(did, 0, signKey, storepass);
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			try {
+				deactivateDid(did, signKey, storepass);
+			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
 	}
 
-	public CompletableFuture<String> deactivateDidAsync(DID did,
-			int confirms, String storepass) {
-		return deactivateDidAsync(did, confirms, null, storepass);
+	public CompletableFuture<Void> deactivateDidAsync(DID did, String storepass) {
+		return deactivateDidAsync(did, (DIDURL)null, storepass);
 	}
 
-	public CompletableFuture<String> deactivateDidAsync(String did,
-			int confirms, String storepass) {
-		return deactivateDidAsync(did, confirms, null, storepass);
-	}
-
-	public CompletableFuture<String> deactivateDidAsync(DID did,
-			String storepass) {
-		return deactivateDidAsync(did, 0, null, storepass);
-	}
-
-	public CompletableFuture<String> deactivateDidAsync(String did,
-			String storepass) {
-		return deactivateDidAsync(did, 0, null, storepass);
+	public CompletableFuture<Void> deactivateDidAsync(String did, String storepass) {
+		return deactivateDidAsync(did, null, storepass);
 	}
 
 	// Deactivate target DID with authorization
-	public String deactivateDid(DID target, DID did, int confirms, DIDURL signKey,
-			String storepass)
+	public void deactivateDid(DID target, DID did, DIDURL signKey, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
 		if (target == null || did == null ||
 				storepass == null || storepass.isEmpty())
@@ -902,11 +790,10 @@ public final class DIDStore {
 		if (targetSignKey == null)
 			throw new InvalidKeyException("No matched authorization key.");
 
-		return backend.deactivate(target, targetSignKey,
-				doc, confirms, signKey, storepass);
+		backend.deactivate(target, targetSignKey, doc, signKey, storepass);
 	}
 
-	public String deactivateDid(String target, String did, int confirms,
+	public void deactivateDid(String target, String did,
 			String signKey, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
 		DID _target = null;
@@ -920,88 +807,63 @@ public final class DIDStore {
 			throw new IllegalArgumentException(e);
 		}
 
-		return deactivateDid(_target, _did, confirms, _signKey, storepass);
+		deactivateDid(_target, _did, _signKey, storepass);
 	}
 
-	public String deactivateDid(DID target, DID did, DIDURL signKey,
-			String storepass)
+	public void deactivateDid(DID target, DID did, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
-		return deactivateDid(target, did, 0, signKey, storepass);
+		deactivateDid(target, did, null, storepass);
 	}
 
-	public String deactivateDid(String target, String did, String signKey,
-			String storepass)
+	/*
+	public void deactivateDid(String target, String did, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
-		return deactivateDid(target, did, 0, signKey, storepass);
+		deactivateDid(target, did, null, storepass);
 	}
+	*/
 
-	public String deactivateDid(DID target, DID did, int confirms,
-			String storepass)
-			throws DIDBackendException, DIDStoreException, InvalidKeyException {
-		return deactivateDid(target, did, confirms, null, storepass);
-	}
-
-	public String deactivateDid(String target, String did, int confirms,
-			String storepass)
-			throws DIDBackendException, DIDStoreException, InvalidKeyException {
-		return deactivateDid(target, did, confirms, null, storepass);
-	}
-
-	public String deactivateDid(DID target, DID did, String storepass)
-			throws DIDBackendException, DIDStoreException, InvalidKeyException {
-		return deactivateDid(target, did, 0, null, storepass);
-	}
-
-	public CompletableFuture<String> deactivateDidAsync(DID target, DID did,
-			int confirms, DIDURL signKey, String storepass) {
-		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-			try {
-				return deactivateDid(target, did, confirms, signKey, storepass);
-			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
-				throw new CompletionException(e);
-			}
-		});
-
-		return future;
-	}
-
-	public CompletableFuture<String> deactivateDidAsync(String target,
-			String did, int confirms, String signKey, String storepass) {
-		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-			try {
-				return deactivateDid(target, did, confirms, signKey, storepass);
-			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
-				throw new CompletionException(e);
-			}
-		});
-
-		return future;
-	}
-
-	public CompletableFuture<String> deactivateDidAsync(DID target, DID did,
+	public CompletableFuture<Void> deactivateDidAsync(DID target, DID did,
 			DIDURL signKey, String storepass) {
-		return deactivateDidAsync(target, did, 0, signKey, storepass);
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			try {
+				deactivateDid(target, did, signKey, storepass);
+			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
 	}
 
-	public CompletableFuture<String> deactivateDidAsync(String target,
+	public CompletableFuture<Void> deactivateDidAsync(String target,
+			String did, int confirms, String signKey, String storepass) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			try {
+				deactivateDid(target, did, signKey, storepass);
+			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
+	public CompletableFuture<Void> deactivateDidAsync(String target,
 			String did, String signKey, String storepass) {
-		return deactivateDidAsync(target, did, 0, signKey, storepass);
+		return deactivateDidAsync(target, did, signKey, storepass);
 	}
 
-	public CompletableFuture<String> deactivateDidAsync(DID target, DID did,
-			int confirms, String storepass) {
+	public CompletableFuture<Void> deactivateDidAsync(DID target, DID did,
+			String storepass) {
+		return deactivateDidAsync(target, did, null, storepass);
+	}
+
+	/*
+	public CompletableFuture<Void> deactivateDidAsync(String target,
+			String did, String storepass) {
 		return deactivateDidAsync(target, did, confirms, null, storepass);
 	}
-
-	public CompletableFuture<String> deactivateDidAsync(String target,
-			String did, int confirms, String storepass) {
-		return deactivateDidAsync(target, did, confirms, null, storepass);
-	}
-
-	public CompletableFuture<String> deactivateDidAsync(DID target,
-			DID did, String storepass) {
-		return deactivateDidAsync(target, did, 0, null, storepass);
-	}
+	*/
 
 	public void storeDid(DIDDocument doc, String alias) throws DIDStoreException {
 		doc.getMeta().setAlias(alias);

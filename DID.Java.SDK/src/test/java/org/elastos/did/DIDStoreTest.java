@@ -349,9 +349,6 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setTransactionId(null);
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
-
     	// Update
     	DIDDocument.Builder db = doc.edit();
     	HDKey key = TestData.generateKeypair();
@@ -367,7 +364,7 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setTransactionId(null);
+    	doc.getMeta().setPreviousTransactionId(null);
     	store.storeDidMeta(doc.getSubject(), doc.getMeta());
 
     	// Update again
@@ -401,9 +398,6 @@ public class DIDStoreTest {
     	DIDDocument resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
-
-    	doc.getMeta().setSignature(null);
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
@@ -454,7 +448,7 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setTransactionId(null);
+    	doc.getMeta().setPreviousTransactionId(null);
     	doc.getMeta().setSignature(null);
     	store.storeDidMeta(doc.getSubject(), doc.getMeta());
 
@@ -489,7 +483,7 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setTransactionId(null);
+    	doc.getMeta().setPreviousTransactionId(null);
     	doc.getMeta().setSignature(null);
     	store.storeDidMeta(doc.getSubject(), doc.getMeta());
 
@@ -502,7 +496,7 @@ public class DIDStoreTest {
     	assertEquals(2, doc.getAuthenticationKeyCount());
     	store.storeDid(doc);
 
-    	store.publishDid(doc.getSubject(), 1, doc.getDefaultPublicKey(),
+    	store.publishDid(doc.getSubject(), doc.getDefaultPublicKey(),
     			true, TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
@@ -525,9 +519,6 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setTransactionId("1234567890");
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
-
     	// Update
     	DIDDocument.Builder db = doc.edit();
     	HDKey key = TestData.generateKeypair();
@@ -537,11 +528,29 @@ public class DIDStoreTest {
     	assertEquals(2, doc.getAuthenticationKeyCount());
     	store.storeDid(doc);
 
-    	DID did = doc.getSubject();
-    	Exception e = assertThrows(DIDStoreException.class, () -> {
-    		store.publishDid(did, TestConfig.storePass);
-    	});
-    	assertEquals("DID document not up-to-date", e.getMessage());
+		store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setPreviousTransactionId("1234567890");
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update
+    	db = doc.edit();
+    	key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key2", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(3, doc.getPublicKeyCount());
+    	assertEquals(3, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+		store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
 	}
 
 	@Test
@@ -559,9 +568,6 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setSignature("1234567890");
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
-
     	// Update
     	DIDDocument.Builder db = doc.edit();
     	HDKey key = TestData.generateKeypair();
@@ -569,6 +575,24 @@ public class DIDStoreTest {
     	doc = db.seal(TestConfig.storePass);
     	assertEquals(2, doc.getPublicKeyCount());
     	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+   		store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setSignature("1234567890");
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update
+    	db = doc.edit();
+    	key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key2", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(3, doc.getPublicKeyCount());
+    	assertEquals(3, doc.getAuthenticationKeyCount());
     	store.storeDid(doc);
 
     	DID did = doc.getSubject();
@@ -593,7 +617,7 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setTransactionId("1234567890");
+    	doc.getMeta().setPreviousTransactionId("1234567890");
     	store.storeDidMeta(doc.getSubject(), doc.getMeta());
 
     	// Update
@@ -605,7 +629,7 @@ public class DIDStoreTest {
     	assertEquals(2, doc.getAuthenticationKeyCount());
     	store.storeDid(doc);
 
-    	store.publishDid(doc.getSubject(), 1, doc.getDefaultPublicKey(),
+    	store.publishDid(doc.getSubject(), doc.getDefaultPublicKey(),
     			true, TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
@@ -640,7 +664,7 @@ public class DIDStoreTest {
     	assertEquals(2, doc.getAuthenticationKeyCount());
     	store.storeDid(doc);
 
-    	store.publishDid(doc.getSubject(), 1, doc.getDefaultPublicKey(),
+    	store.publishDid(doc.getSubject(), doc.getDefaultPublicKey(),
     			true, TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);

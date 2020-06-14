@@ -131,15 +131,15 @@ public final class TestData {
 			System.out.print("Waiting for wallet available...");
 			long start = System.currentTimeMillis();
 			while (true) {
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
+
 				if (spvAdapter.isAvailable()) {
 					long duration = (System.currentTimeMillis() - start + 500) / 1000;
 					System.out.println("OK(" + duration + "s)");
 					break;
-				}
-
-				try {
-					Thread.sleep(30000);
-				} catch (InterruptedException ignore) {
 				}
 			}
 		}

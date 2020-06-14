@@ -22,12 +22,9 @@
 
 package org.elastos.did;
 
-public interface DIDAdapter {
-	@FunctionalInterface
-	public interface TransactionCallback {
-	    void accept(String txid, int status, String msg);
-	}
+import org.elastos.did.exception.DIDTransactionException;
 
-	public void createIdTransaction(String payload, String memo,
-			int confirms, TransactionCallback callback);
+public interface DIDAdapter {
+	public void createIdTransaction(String payload, String memo)
+		throws DIDTransactionException;
 }

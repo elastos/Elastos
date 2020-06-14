@@ -76,7 +76,8 @@ public class DummyAdapter implements DIDAdapter, DIDResolver {
 		return null;
 	}
 
-	private String createIdTransaction(String payload, String memo)
+	@Override
+	public void createIdTransaction(String payload, String memo)
 			throws DIDTransactionException {
 		IDChainRequest request = IDChainRequest.fromJson(payload);
 
@@ -131,19 +132,6 @@ public class DummyAdapter implements DIDAdapter, DIDResolver {
 		ti = new IDChainTransaction(generateTxid(),
 				Calendar.getInstance(Constants.UTC).getTime(), request);
 		idtxs.add(0, ti);
-
-		return ti.getTransactionId();
-	}
-
-	@Override
-	public void createIdTransaction(String payload, String memo,
-			int confirms, TransactionCallback callback) {
-		try {
-			String txid = createIdTransaction(payload, memo);
-			callback.accept(txid, 0, null);
-		} catch (Exception e) {
-			callback.accept(null, -1, e.getMessage());
-		}
 	}
 
 	@Override
