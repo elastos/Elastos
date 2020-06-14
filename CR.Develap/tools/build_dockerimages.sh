@@ -32,7 +32,7 @@ CURRENT_DIR=$(pwd)
 
 function build_binary_and_docker {
     BRANCH="${1}"
-    REPO="${GOPATH}/src/${2}"
+    REPO="../../../${2}"
     WORKDIR="${3}"
     DOCKERIMAGE="${4}"
     GITHUB_PULL="${5}"
@@ -93,8 +93,8 @@ function build_docker {
 }
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "ela" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "v0.4.2" "github.com/elastos/Elastos.ELA" "ela" \
-        "cyberrepublic/elastos-mainchain-node" "yes" "v0.4.3"
+    build_binary_and_docker "v0.5.0" "github.com/elastos/Elastos.ELA" "ela" \
+        "cyberrepublic/elastos-mainchain-node" "yes" "v0.5.0"
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "arbitrator" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
@@ -103,8 +103,8 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.did" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "v0.1.3" "github.com/elastos/Elastos.ELA.SideChain.ID" "sidechain.did" \
-        "cyberrepublic/elastos-sidechain-did-node" "yes" "v0.1.4"
+    build_binary_and_docker "v0.1.5" "github.com/elastos/Elastos.ELA.SideChain.ID" "sidechain.did" \
+        "cyberrepublic/elastos-sidechain-did-node" "yes" "v0.1.5"
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.token" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
@@ -138,8 +138,8 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "elaphant" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "v0.3.4" "github.com/elaphantapp/ElaphantNode" "elaphant" \
-        "cyberrepublic/elastos-elaphant-node" "yes" "v0.3.5"
+    build_binary_and_docker "v0.4.0" "github.com/elaphantapp/ElaphantNode" "elaphant" \
+        "cyberrepublic/elastos-elaphant-node" "yes" "v0.4.0"
 fi
 
 cd $CURRENT_DIR
