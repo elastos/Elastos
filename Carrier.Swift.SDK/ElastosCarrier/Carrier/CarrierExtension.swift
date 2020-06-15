@@ -34,12 +34,12 @@ open class CarrierExtension: NSObject {
         return TurnServerInfo.convertCTurnServerToTurnServerInfo(cinfo)
     }
 
-    @objc (inviteFriend:::error:)
-    public func inviteFriend(_ to: String, _ data: String, _ handler: @escaping CarrierExtensionInviteReplyCallback) throws {
-        guard !to.isEmpty else {
+    @objc(sendInviteFriendRequest:data:responseHandler:error:)
+    public func sendInviteFriendRequest(to target: String, withData data: String, _ responseHandler: @escaping CarrierExtensionInviteReplyCallback) throws {
+        guard !target.isEmpty else {
             throw CarrierError.InvalidArgument
         }
-        Log.d(TAG, "Inviting friend " + to + "with greet data " + data)
+        Log.d(TAG, "Inviting friend " + target + "with greet data " + data)
         let cb: CExtensionInviteReplyCallback = {
 
             (_, cfrom, cstatus, creason, cdata, clen, cctxt) in
@@ -64,11 +64,11 @@ open class CarrierExtension: NSObject {
             handler(carrier, from, status, reason, _data)
         }
 
-        let econtext: [AnyObject?] = [self, handler as AnyObject]
+        let econtext: [AnyObject?] = [self, responseHandler as AnyObject]
         let unmanaged = Unmanaged.passRetained(econtext as AnyObject)
         let cctxt = unmanaged.toOpaque()
         
-        let result = to.withCString { (cto) -> Int32 in
+        let result = target.withCString { (cto) -> Int32 in
             return data.withCString { (cdata) -> Int32 in
                 let len = data.utf8CString.count
                 return extension_invite_friend(carrier.ccarrier!, cto, cdata, len, cb, cctxt)
@@ -77,30 +77,30 @@ open class CarrierExtension: NSObject {
         guard result >= 0 else {
             unmanaged.release()
             let errno = getErrorCode()
-            Log.e(TAG, "Invite friend to \(to) error: 0x%X", errno)
+            Log.e(TAG, "Invite friend to \(target) error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
 
-        Log.d(TAG, "Sended friend invite request to \(to).")
+        Log.d(TAG, "Sended friend invite request to \(target).")
     }
 
-    @objc (replyFriendInvite::::error:)
-    public func replyFriendInvite(_ to: String, _ status: Int, _ reason: String?, _ data: String?) throws {
-        guard !to.isEmpty else {
+    @objc(replyFriendInviteRequest:status:resson:data:error:)
+    public func replyFriendInviteRequest(to target: String, withStatus status: Int, _ reason: String?, _ data: String?) throws {
+        guard !target.isEmpty else {
             throw CarrierError.InvalidArgument
         }
         if status == 0 {
-            Log.d(TAG, "Attempt to confirm friend invite to " + to + "with data \(data)")
+            Log.d(TAG, "Attempt to confirm friend invite to " + target + "with data \(data)")
         }
         else {
-            Log.d(TAG, "Attempt to confirm friend invite to " + to + "with status \(data)" + "and reason \(reason)")
+            Log.d(TAG, "Attempt to confirm friend invite to " + target + "with status \(data)" + "and reason \(reason)")
         }
 
         var creason: UnsafeMutablePointer<Int8>?
         var cdata: UnsafeMutablePointer<Int8>?
         var len: Int = 0
 
-        let result = to.withCString { (cto) -> Int32 in
+        let result = target.withCString { (cto) -> Int32 in
             if status != 0 {
                 creason = reason!.withCString() { (ptr) in
                     return strdup(ptr)
@@ -129,10 +129,10 @@ open class CarrierExtension: NSObject {
         }
 
         if status == 0 {
-            Log.d(TAG, "Confirmed friend invite to " + to + "with data \(data)")
+            Log.d(TAG, "Confirmed friend invite to " + target + "with data \(data)")
         }
         else {
-            Log.d(TAG, "Refused friend invite to " + to + "with status \(data)" + "and reason \(reason)")
+            Log.d(TAG, "Refused friend invite to " + target + "with status \(data)" + "and reason \(reason)")
         }
     }
 
