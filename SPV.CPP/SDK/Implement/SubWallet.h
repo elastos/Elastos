@@ -37,6 +37,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 #define SELA_PER_ELA 100000000
+#define DEPOSIT_OR_WITHDRAW_FEE 10000
 
 		class MasterWallet;
 
@@ -65,7 +66,7 @@ namespace Elastos {
 
 			virtual void StopP2P();
 
-			void FlushData();
+			virtual void FlushData();
 
 			time_t GetFirstTxnTimestamp() const;
 

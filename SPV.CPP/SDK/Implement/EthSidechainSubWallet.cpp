@@ -284,5 +284,9 @@ namespace Elastos {
 			_client->_ewm->disconnect();
 		}
 
+		void EthSidechainSubWallet::FlushData() {
+
+		}
+
 	}
 }

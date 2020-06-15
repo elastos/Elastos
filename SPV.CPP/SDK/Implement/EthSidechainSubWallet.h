@@ -125,6 +125,7 @@ namespace Elastos {
 
 			virtual void StopP2P();
 
+			virtual void FlushData();
 		protected:
 			friend class MasterWallet;
 

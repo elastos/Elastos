@@ -87,7 +87,7 @@ namespace Elastos {
 			ChainConfigPtr configPtr =  _parent->GetChainConfig(sideChainID);
 			OutputArray outputs;
 			Address receiveAddr(configPtr->GenesisAddress());
-			outputs.emplace_back(OutputPtr(new TransactionOutput(value + _config->MinFee(), receiveAddr)));
+			outputs.emplace_back(OutputPtr(new TransactionOutput(value + DEPOSIT_OR_WITHDRAW_FEE, receiveAddr)));
 			AddressPtr fromAddr(new Address(fromAddress));
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::transferCrossChainAsset, payload, fromAddr, outputs, memo);

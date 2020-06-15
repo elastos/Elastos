@@ -74,7 +74,7 @@ namespace Elastos {
 			}
 
 			std::vector<OutputPtr> outputs;
-			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount + _config->MinFee(), Address(ELA_SIDECHAIN_DESTROY_ADDR))));
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount + DEPOSIT_OR_WITHDRAW_FEE, Address(ELA_SIDECHAIN_DESTROY_ADDR))));
 			AddressPtr fromAddr(new Address(fromAddress));
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::transferCrossChainAsset, payload, fromAddr, outputs, memo);
