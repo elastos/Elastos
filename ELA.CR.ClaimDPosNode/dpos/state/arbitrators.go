@@ -935,13 +935,40 @@ func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32)
 			return errors.New("CRC members count mismatch with CRC arbiters")
 		}
 
-		crcArbiters := map[common.Uint168]ArbiterMember{}
-		for i, v := range a.chainParams.CRCArbiters {
-			pk, err := common.HexStringToBytes(v)
-			if err != nil {
-				return err
+		// get public key map
+		crPublicKeysMap := make(map[string]struct{})
+		for _, cr := range crMembers {
+			if cr.DPOSPublicKey != nil {
+				crPublicKeysMap[common.BytesToHexString(cr.DPOSPublicKey)] = struct{}{}
 			}
-			ar, err := NewCRCArbiter(pk, crMembers[i])
+		}
+		arbitersPublicKeysMap := make(map[string]struct{})
+		for _, ar := range a.chainParams.CRCArbiters {
+			arbitersPublicKeysMap[ar] = struct{}{}
+		}
+
+		// get unclaimed arbiter keys list
+		unclaimedArbiterKeys := make([]string, 0)
+		for k, _ := range arbitersPublicKeysMap {
+			if _, ok := crPublicKeysMap[k]; !ok {
+				unclaimedArbiterKeys = append(unclaimedArbiterKeys, k)
+			}
+		}
+
+		crcArbiters := map[common.Uint168]ArbiterMember{}
+		for _, cr := range crMembers {
+			var pk []byte
+			if cr.DPOSPublicKey == nil {
+				var err error
+				pk, err = common.HexStringToBytes(unclaimedArbiterKeys[0])
+				if err != nil {
+					return err
+				}
+				unclaimedArbiterKeys = unclaimedArbiterKeys[1:]
+			} else {
+				pk = cr.DPOSPublicKey
+			}
+			ar, err := NewCRCArbiter(pk, cr)
 			if err != nil {
 				return err
 			}
