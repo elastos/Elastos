@@ -176,17 +176,7 @@ static void test_openstore_newdid_with_wrongpw(void)
 
 static int didstore_openstore_test_suite_init(void)
 {
-    char _path[PATH_MAX];
-    const char *walletDir, *path;
-
-    walletDir = get_wallet_path(_path, walletdir);
-    adapter = TestData_GetAdapter(false);
-    if (!adapter)
-        return -1;
-
-    path = get_file_path(_path, PATH_MAX, 9, "..", PATH_STEP, "etc", PATH_STEP,
-            "did", PATH_STEP, "resources", PATH_STEP, "teststore");
-    store = DIDStore_Open(path, adapter);
+    store = TestData_SetupTestStore(false);
     if (!store)
         return -1;
 
@@ -195,7 +185,7 @@ static int didstore_openstore_test_suite_init(void)
 
 static int didstore_openstore_test_suite_cleanup(void)
 {
-    DIDStore_Close(store);
+    TestData_Free();
     return 0;
 }
 

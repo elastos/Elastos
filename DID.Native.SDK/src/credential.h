@@ -77,6 +77,9 @@ const char* Credential_ToJson_ForSign(Credential *cred, bool compact, bool forsi
 
 int Credential_Verify(Credential *cred);
 
+int Credential_ToJson_Internal(JsonGenerator *gen, Credential *cred, DID *did,
+        bool compact, bool forsign);
+
 #ifdef __cplusplus
 }
 #endif

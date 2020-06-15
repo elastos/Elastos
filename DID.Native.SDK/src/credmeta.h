@@ -26,6 +26,7 @@
 #include <cjson/cJSON.h>
 
 #include "ela_did.h"
+#include "JsonGenerator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,7 +40,11 @@ typedef struct CredentialMeta
 
 int CredentialMeta_Init(CredentialMeta *meta, const char *alias);
 
+int CredentialMeta_ToJson_Internal(CredentialMeta *meta, JsonGenerator *gen);
+
 const char *CredentialMeta_ToJson(CredentialMeta *meta);
+
+int CredentialMeta_FromJson_Internal(CredentialMeta *meta, cJSON *json);
 
 int CredentialMeta_FromJson(CredentialMeta *meta, const char *json);
 

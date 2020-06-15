@@ -27,6 +27,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <sys/types.h>
+#include <openssl/ossl_typ.h>
+#include <openssl/evp.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,6 +36,10 @@ extern "C" {
 
 #define SIGNATURE_BYTES         64
 #define SHA256_BYTES            32
+
+typedef struct Sha256_Digest {
+    EVP_MD_CTX ctx;
+} Sha256_Digest;
 
 // TODO: not a safe design, caller should provide large enough buffer
 //        to receive the result
@@ -49,6 +55,16 @@ ssize_t base64_url_decode(uint8_t *buffer, const char *base64);
 ssize_t base58_encode(char *base58, size_t base58_len, uint8_t *input, size_t len);
 
 ssize_t base58_decode(uint8_t *data, size_t len, const char *base58);
+
+int sha256_digest_init(Sha256_Digest *sha256_digest);
+
+int sha256_digest_update(Sha256_Digest *sha256_digest, int count, ...);
+
+int sha256v_digest_update(Sha256_Digest *sha256_digest, int count, va_list inputs);
+
+ssize_t sha256_digest_final(Sha256_Digest *sha256_digest, uint8_t *digest);
+
+void sha256_digest_cleanup(Sha256_Digest *sha256_digest);
 
 ssize_t sha256_digest(uint8_t *digest, int count, ...);
 

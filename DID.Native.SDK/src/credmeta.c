@@ -37,10 +37,10 @@ int CredentialMeta_Init(CredentialMeta *meta, const char *alias)
     return CredentialMeta_SetAlias(meta, alias);
 }
 
-static int CredentialMeta_ToJson_Internal(JsonGenerator *gen, CredentialMeta *meta)
+int CredentialMeta_ToJson_Internal(CredentialMeta *meta, JsonGenerator *gen)
 {
-    assert(gen);
     assert(meta);
+    assert(gen);
 
     CHECK(JsonGenerator_WriteStartObject(gen));
     if (*meta->alias)
@@ -61,7 +61,7 @@ const char *CredentialMeta_ToJson(CredentialMeta *meta)
         return NULL;
     }
 
-    if (CredentialMeta_ToJson_Internal(gen, meta) == -1) {
+    if (CredentialMeta_ToJson_Internal(meta, gen) == -1) {
         DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize credential meta to json failed.");
         JsonGenerator_Destroy(gen);
         return NULL;
@@ -70,9 +70,32 @@ const char *CredentialMeta_ToJson(CredentialMeta *meta)
     return JsonGenerator_Finish(gen);
 }
 
+int CredentialMeta_FromJson_Internal(CredentialMeta *meta, cJSON *json)
+{
+    cJSON *item;
+
+    assert(meta);
+    assert(json);
+
+    item = cJSON_GetObjectItem(json, "alias");
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_META, "Invalid meta without alias field.");
+        return -1;
+    }
+
+    if (cJSON_IsString(item) &&
+            CredentialMeta_SetAlias(meta, cJSON_GetStringValue(item)) == -1) {
+        DIDError_Set(DIDERR_MALFORMED_META, "Set alias failed.");
+        return -1;
+    }
+
+    return 0;
+}
+
 int CredentialMeta_FromJson(CredentialMeta *meta, const char *json)
 {
-    cJSON *root, *item;
+    cJSON *root;
+    int rc;
 
     assert(meta);
     assert(json);
@@ -85,22 +108,9 @@ int CredentialMeta_FromJson(CredentialMeta *meta, const char *json)
         return -1;
     }
 
-    item = cJSON_GetObjectItem(root, "alias");
-    if (!item) {
-        DIDError_Set(DIDERR_MALFORMED_META, "Invalid meta without alias field.");
-        cJSON_Delete(root);
-        return -1;
-    }
-
-    if (cJSON_IsString(item) &&
-            CredentialMeta_SetAlias(meta, cJSON_GetStringValue(item)) == -1) {
-        DIDError_Set(DIDERR_MALFORMED_META, "Set alias failed.");
-        cJSON_Delete(root);
-        return -1;
-    }
-
+    rc = CredentialMeta_FromJson_Internal(meta, root);
     cJSON_Delete(root);
-    return 0;
+    return rc;
 }
 
 void CredentialMeta_Destroy(CredentialMeta *meta)

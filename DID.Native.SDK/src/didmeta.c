@@ -46,13 +46,13 @@ int DIDMeta_Init(DIDMeta *meta, const char *alias, char *txid,
     return 0;
 }
 
-static int DIDMeta_ToJson_Internal(JsonGenerator *gen, DIDMeta *meta)
+int DIDMeta_ToJson_Internal(DIDMeta *meta, JsonGenerator *gen)
 {
     const char *deactivedstr;
     char _timestring[DOC_BUFFER_LEN];
 
-    assert(gen);
     assert(meta);
+    assert(gen);
 
     CHECK(JsonGenerator_WriteStartObject(gen));
     if (*meta->alias)
@@ -82,7 +82,7 @@ const char *DIDMeta_ToJson(DIDMeta *meta)
         return NULL;
     }
 
-    if (DIDMeta_ToJson_Internal(gen, meta) == -1) {
+    if (DIDMeta_ToJson_Internal(meta, gen) == -1) {
         DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize DID meta to json failed.");
         JsonGenerator_Destroy(gen);
         return NULL;
@@ -91,11 +91,48 @@ const char *DIDMeta_ToJson(DIDMeta *meta)
     return JsonGenerator_Finish(gen);
 }
 
+int DIDMeta_FromJson_Internal(DIDMeta *meta, cJSON *json)
+{
+    cJSON *item;
+    bool deactived;
+    time_t timestamp;
+
+    assert(meta);
+    assert(json);
+
+    item = cJSON_GetObjectItem(json, "alias");
+    if (item && cJSON_IsString(item) &&
+            DIDMeta_SetAlias(meta, cJSON_GetStringValue(item)) == -1)
+        return -1;
+
+    item = cJSON_GetObjectItem(json, "deactived");
+    if (item && cJSON_IsString(item)) {
+        deactived = !strcmp(item->valuestring, "true") ? true : false;
+        if (DIDMeta_SetDeactived(meta, deactived) == -1)
+            return -1;
+    }
+
+    item = cJSON_GetObjectItem(json, "txid");
+    if (item && cJSON_IsString(item) &&
+            DIDMeta_SetTxid(meta, cJSON_GetStringValue(item)) == -1)
+        return -1;
+
+    item = cJSON_GetObjectItem(json, "signature");
+    if (item && cJSON_IsString(item) &&
+            DIDMeta_SetSignature(meta, cJSON_GetStringValue(item)) == -1)
+        return -1;
+
+    item = cJSON_GetObjectItem(json, "timestamp");
+    if (item && cJSON_IsString(item) && (parse_time(&timestamp, item->valuestring) == -1 ||
+            DIDMeta_SetTimestamp(meta, timestamp) == -1))
+        return -1;
+
+    return 0;
+}
+
 int DIDMeta_FromJson(DIDMeta *meta, const char *json)
 {
     cJSON *root, *item;
-    bool deactived;
-    time_t timestamp;
     int rc;
 
     assert(meta);
@@ -109,39 +146,9 @@ int DIDMeta_FromJson(DIDMeta *meta, const char *json)
         return -1;
     }
 
-    item = cJSON_GetObjectItem(root, "alias");
-    if (item && cJSON_IsString(item) &&
-            DIDMeta_SetAlias(meta, cJSON_GetStringValue(item)) == -1)
-        goto errorExit;
-
-    item = cJSON_GetObjectItem(root, "deactived");
-    if (item && cJSON_IsString(item)) {
-        deactived = !strcmp(item->valuestring, "true") ? true : false;
-        if (DIDMeta_SetDeactived(meta, deactived) == -1)
-            goto errorExit;
-    }
-
-    item = cJSON_GetObjectItem(root, "txid");
-    if (item && cJSON_IsString(item) &&
-            DIDMeta_SetTxid(meta, cJSON_GetStringValue(item)) == -1)
-        goto errorExit;
-
-    item = cJSON_GetObjectItem(root, "signature");
-    if (item && cJSON_IsString(item) &&
-            DIDMeta_SetSignature(meta, cJSON_GetStringValue(item)) == -1)
-        goto errorExit;
-
-    item = cJSON_GetObjectItem(root, "timestamp");
-    if (item && cJSON_IsString(item) && (parse_time(&timestamp, item->valuestring) == -1 ||
-            DIDMeta_SetTimestamp(meta, timestamp) == -1))
-        goto errorExit;
-
+    rc = DIDMeta_FromJson_Internal(meta, root);
     cJSON_Delete(root);
-    return 0;
-
-errorExit:
-    cJSON_Delete(root);
-    return -1;
+    return rc;
 }
 
 void DIDMeta_Destroy(DIDMeta *meta)

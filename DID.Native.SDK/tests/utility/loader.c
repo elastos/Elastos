@@ -114,22 +114,16 @@ char *get_path(char *path, const char *file)
     return path;
 }
 
-static char *load_file(const char *file)
+char *load_file(const char *file)
 {
-    char _path[PATH_MAX];
-    char *readstring = NULL, *path;
+    char *readstring = NULL;
     size_t reclen, bufferlen;
     struct stat st;
     int fd;
 
-    assert(file);
-    assert(*file);
+    assert(file && *file);
 
-    path = get_path(_path, file);
-    if (!path)
-        return NULL;
-
-    fd = open(path, O_RDONLY);
+    fd = open(file, O_RDONLY);
     if (fd == -1)
         return NULL;
 
@@ -149,6 +143,20 @@ static char *load_file(const char *file)
 
     close(fd);
     return readstring;
+}
+
+static char *load_testdata_file(const char *file)
+{
+    char _path[PATH_MAX];
+    char *readstring = NULL, *path;
+
+    assert(file && *file);
+
+    path = get_path(_path, file);
+    if (!path)
+        return NULL;
+
+    return load_file(path);
 }
 
 static const char *getpassword(const char *walletDir, const char *walletId)
@@ -290,7 +298,7 @@ static Credential *store_credential(const char *file, const char *alias)
     const char *data;
     DIDStore *store;
 
-    data = load_file(file);
+    data = load_testdata_file(file);
     if (!data)
         return NULL;
 
@@ -313,7 +321,7 @@ static DIDDocument *store_document(const char *file, const char *alias)
     const char *string;
     DIDStore *store;
 
-    string = load_file(file);
+    string = load_testdata_file(file);
     if (!string)
         return NULL;
 
@@ -349,7 +357,7 @@ static int import_privatekey(DIDURL *id, const char *storepass, const char *file
     if (!id || !file || !*file)
         return -1;
 
-    skbase = load_file(file);
+    skbase = load_testdata_file(file);
     if (!skbase || !*skbase)
         return -1;
 
@@ -414,16 +422,13 @@ DIDAdapter *TestData_GetAdapter(bool dummybackend)
     return adapter;
 }
 
-DIDStore *TestData_SetupStore(bool dummybackend, const char *root)
+static DIDStore *setup_store(bool dummybackend, const char *root)
 {
     char cachedir[PATH_MAX];
 
-    if (!root || !*root)
-        return NULL;
+    assert(root);
 
     sprintf(cachedir, "%s%s", getenv("HOME"), "/.cache.did.elastos");
-
-    delete_file(root);
     if (dummybackend) {
         dummyadapter->reset(dummyadapter);
         testdata.store = DIDStore_Open(root, &dummyadapter->adapter);
@@ -433,6 +438,28 @@ DIDStore *TestData_SetupStore(bool dummybackend, const char *root)
         DIDBackend_InitializeDefault(resolver, cachedir);
     }
     return testdata.store;
+}
+
+DIDStore *TestData_SetupStore(bool dummybackend, const char *root)
+{
+    if (!root || !*root)
+        return NULL;
+
+    delete_file(root);
+    return setup_store(dummybackend, root);
+}
+
+DIDStore *TestData_SetupTestStore(bool dummybackend)
+{
+    char _path[PATH_MAX];
+    const char *path;
+
+    path = get_file_path(_path, PATH_MAX, 9, "..", PATH_STEP, "etc", PATH_STEP,
+        "did", PATH_STEP, "resources", PATH_STEP, "teststore");
+    if (!path)
+        return NULL;
+
+    return setup_store(dummybackend, path);
 }
 
 int TestData_InitIdentity(DIDStore *store)
@@ -450,7 +477,7 @@ int TestData_InitIdentity(DIDStore *store)
 const char *TestData_LoadIssuerJson(void)
 {
     if (!testdata.issuerJson)
-        testdata.issuerJson = load_file("issuer.json");
+        testdata.issuerJson = load_testdata_file("issuer.json");
 
     return testdata.issuerJson;
 }
@@ -458,7 +485,7 @@ const char *TestData_LoadIssuerJson(void)
 const char *TestData_LoadIssuerCompJson(void)
 {
     if (!testdata.issuerCompactJson)
-        testdata.issuerCompactJson = load_file("issuer.compact.json");
+        testdata.issuerCompactJson = load_testdata_file("issuer.compact.json");
 
     return testdata.issuerCompactJson;
 }
@@ -466,7 +493,7 @@ const char *TestData_LoadIssuerCompJson(void)
 const char *TestData_LoadIssuerNormJson(void)
 {
     if (!testdata.issuerNormalizedJson)
-        testdata.issuerNormalizedJson = load_file("issuer.normalized.json");
+        testdata.issuerNormalizedJson = load_testdata_file("issuer.normalized.json");
 
     return testdata.issuerNormalizedJson;
 }
@@ -474,7 +501,7 @@ const char *TestData_LoadIssuerNormJson(void)
 const char *TestData_LoadDocJson(void)
 {
     if (!testdata.docJson)
-        testdata.docJson = load_file("document.json");
+        testdata.docJson = load_testdata_file("document.json");
 
     return testdata.docJson;
 }
@@ -482,7 +509,7 @@ const char *TestData_LoadDocJson(void)
 const char *TestData_LoadDocCompJson(void)
 {
     if (!testdata.docCompactJson)
-        testdata.docCompactJson = load_file("document.compact.json");
+        testdata.docCompactJson = load_testdata_file("document.compact.json");
 
     return testdata.docCompactJson;
 }
@@ -490,7 +517,7 @@ const char *TestData_LoadDocCompJson(void)
 const char *TestData_LoadDocNormJson(void)
 {
     if (!testdata.docNormalizedJson)
-        testdata.docNormalizedJson = load_file("document.normalized.json");
+        testdata.docNormalizedJson = load_testdata_file("document.normalized.json");
 
     return testdata.docNormalizedJson;
 }
@@ -506,7 +533,7 @@ Credential *TestData_LoadProfileVc(void)
 const char *TestData_LoadProfileVcCompJson(void)
 {
     if (!testdata.profileVcCompactJson)
-        testdata.profileVcCompactJson = load_file("vc-profile.compact.json");
+        testdata.profileVcCompactJson = load_testdata_file("vc-profile.compact.json");
 
     return testdata.profileVcCompactJson;
 }
@@ -514,7 +541,7 @@ const char *TestData_LoadProfileVcCompJson(void)
 const char *TestData_LoadProfileVcNormJson(void)
 {
     if (!testdata.profileVcNormalizedJson)
-        testdata.profileVcNormalizedJson = load_file("vc-profile.normalized.json");
+        testdata.profileVcNormalizedJson = load_testdata_file("vc-profile.normalized.json");
 
     return testdata.profileVcNormalizedJson;
 }
@@ -530,7 +557,7 @@ Credential *TestData_LoadEmailVc(void)
 const char *TestData_LoadEmailVcCompJson(void)
 {
     if (!testdata.emailVcCompactJson)
-        testdata.emailVcCompactJson = load_file("vc-email.compact.json");
+        testdata.emailVcCompactJson = load_testdata_file("vc-email.compact.json");
 
     return testdata.emailVcCompactJson;
 }
@@ -538,7 +565,7 @@ const char *TestData_LoadEmailVcCompJson(void)
 const char *TestData_LoadEmailVcNormJson(void)
 {
     if (!testdata.emailVcNormalizedJson)
-        testdata.emailVcNormalizedJson = load_file("vc-email.normalized.json");
+        testdata.emailVcNormalizedJson = load_testdata_file("vc-email.normalized.json");
 
     return testdata.emailVcNormalizedJson;
 }
@@ -554,7 +581,7 @@ Credential *TestData_LoadPassportVc(void)
 const char *TestData_LoadPassportVcCompJson(void)
 {
     if (!testdata.passportVcCompactJson)
-        testdata.passportVcCompactJson = load_file("vc-passport.compact.json");
+        testdata.passportVcCompactJson = load_testdata_file("vc-passport.compact.json");
 
     return testdata.passportVcCompactJson;
 }
@@ -562,7 +589,7 @@ const char *TestData_LoadPassportVcCompJson(void)
 const char *TestData_LoadPassportVcNormJson(void)
 {
     if (!testdata.passportVcNormalizedJson)
-        testdata.passportVcNormalizedJson = load_file("vc-passport.normalized.json");
+        testdata.passportVcNormalizedJson = load_testdata_file("vc-passport.normalized.json");
 
     return testdata.passportVcNormalizedJson;
 }
@@ -578,7 +605,7 @@ Credential *TestData_LoadTwitterVc(void)
 const char *TestData_LoadTwitterVcCompJson(void)
 {
     if (!testdata.twitterVcCompactJson)
-        testdata.twitterVcCompactJson = load_file("vc-twitter.compact.json");
+        testdata.twitterVcCompactJson = load_testdata_file("vc-twitter.compact.json");
 
     return testdata.twitterVcCompactJson;
 }
@@ -586,7 +613,7 @@ const char *TestData_LoadTwitterVcCompJson(void)
 const char *TestData_LoadTwitterVcNormJson(void)
 {
     if (!testdata.twitterVcNormalizedJson)
-        testdata.twitterVcNormalizedJson = load_file("vc-twitter.normalized.json");
+        testdata.twitterVcNormalizedJson = load_testdata_file("vc-twitter.normalized.json");
 
     return testdata.twitterVcNormalizedJson;
 }
@@ -602,7 +629,7 @@ Credential *TestData_LoadVc(void)
 const char *TestData_LoadVcCompJson(void)
 {
     if (!testdata.VcCompactJson)
-        testdata.VcCompactJson = load_file("vc-json.compact.json");
+        testdata.VcCompactJson = load_testdata_file("vc-json.compact.json");
 
     return testdata.VcCompactJson;
 }
@@ -610,14 +637,14 @@ const char *TestData_LoadVcCompJson(void)
 const char *TestData_LoadVcNormJson(void)
 {
     if (!testdata.VcNormalizedJson)
-        testdata.VcNormalizedJson = load_file("vc-json.normalized.json");
+        testdata.VcNormalizedJson = load_testdata_file("vc-json.normalized.json");
 
     return testdata.VcNormalizedJson;
 }
 
 Presentation *TestData_LoadVp(void)
 {
-    const char *data = load_file("vp.json");
+    const char *data = load_testdata_file("vp.json");
     if (!data)
         return NULL;
 
@@ -629,7 +656,7 @@ Presentation *TestData_LoadVp(void)
 const char *TestData_LoadVpNormJson(void)
 {
     if (!testdata.vpNormalizedJson)
-        testdata.vpNormalizedJson = load_file("vp.normalized.json");
+        testdata.vpNormalizedJson = load_testdata_file("vp.normalized.json");
 
     return testdata.vpNormalizedJson;
 }
@@ -662,9 +689,9 @@ DIDDocument *TestData_LoadDoc(void)
     if (rc)
         return NULL;
 
-    if (!DID_Resolve(subject, true) &&
+    /*if (!DID_Resolve(subject, true) &&
             !DIDStore_PublishDID(testdata.store, storepass, subject, NULL, false))
-        return NULL;
+        return NULL;*/
 
     return testdata.doc;
 }
@@ -695,7 +722,7 @@ DIDDocument *TestData_LoadIssuerDoc(void)
 const char *TestData_LoadRestoreMnemonic(void)
 {
     if (!testdata.restoreMnemonic)
-        testdata.restoreMnemonic = load_file("mnemonic.restore");
+        testdata.restoreMnemonic = load_testdata_file("mnemonic.restore");
 
     return testdata.restoreMnemonic;
 }

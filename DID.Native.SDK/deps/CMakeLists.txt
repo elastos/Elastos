@@ -9,6 +9,8 @@ add_submodule(libcrystal
     DEPENDS platform-specific)
 add_submodule(CUnit
     DEPENDS platform-specific)
+add_submodule(libzip
+    DEPENDS platform-specific)
 add_submodule(libcurl
     DEPENDS libressl platform-specific)
 add_submodule(libjansson
@@ -17,6 +19,7 @@ add_submodule(libjansson
 add_submodule(libcjose
     DIRECTORY cjose
     DEPENDS libjansson libressl platform-specific)
+
 
 if (ENABLE_SPVADAPTER)
     add_submodule(libspvsdk

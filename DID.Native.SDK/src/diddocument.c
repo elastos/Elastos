@@ -617,28 +617,16 @@ int DIDDocument_SetStore(DIDDocument *document, DIDStore *store)
 }
 
 ////////////////////////////////Document/////////////////////////////////////
-DIDDocument *DIDDocument_FromJson(const char *json)
+DIDDocument *DIDDocument_FromJson_Internal(cJSON *root)
 {
     DIDDocument *doc;
-    cJSON *root;
     cJSON *item;
-    int code;
 
-    if (!json) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return NULL;
-    }
-
-    root = cJSON_Parse(json);
-    if (!root) {
-        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Deserialize document from json failed.");
-        return NULL;
-    }
+    assert(root);
 
     doc = (DIDDocument*)calloc(1, sizeof(DIDDocument));
     if (!doc) {
         DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for document failed.");
-        cJSON_Delete(root);
         return NULL;
     }
 
@@ -736,17 +724,35 @@ DIDDocument *DIDDocument_FromJson(const char *json)
     if (Parse_Proof(doc, item) == -1)
         goto errorExit;
 
-    cJSON_Delete(root);
     return doc;
 
 errorExit:
     DIDDocument_Destroy(doc);
-    cJSON_Delete(root);
-
     return NULL;
 }
 
-static int diddocument_tojson_internal(JsonGenerator *gen, DIDDocument *doc,
+DIDDocument *DIDDocument_FromJson(const char *json)
+{
+    DIDDocument *doc;
+    cJSON *root;
+
+    if (!json) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return NULL;
+    }
+
+    root = cJSON_Parse(json);
+    if (!root) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Deserialize document from json failed.");
+        return NULL;
+    }
+
+    doc = DIDDocument_FromJson_Internal(root);
+    cJSON_Delete(root);
+    return doc;
+}
+
+int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc,
         bool compact, bool forsign)
 {
     char id[ELA_MAX_DIDURL_LEN];
@@ -812,7 +818,7 @@ static const char *diddocument_tojson_forsign(DIDDocument *document, bool compac
         return NULL;
     }
 
-    if (diddocument_tojson_internal(gen, document, compact, forsign) < 0) {
+    if (DIDDocument_ToJson_Internal(gen, document, compact, forsign) < 0) {
         DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize DID document to json failed.");
         JsonGenerator_Destroy(gen);
         return NULL;

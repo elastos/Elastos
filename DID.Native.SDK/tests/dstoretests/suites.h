@@ -28,12 +28,16 @@ DECL_TESTSUITE(didstore_openstore_test);
 DECL_TESTSUITE(didstore_did_op_test);
 DECL_TESTSUITE(didstore_vc_op_test);
 DECL_TESTSUITE(didstore_change_password_test);
+DECL_TESTSUITE(didstore_export_store_test);
 
 #define DEFINE_DSTORE_TESTSUITES \
     DEFINE_TESTSUITE(didstore_change_password_test), \
     DEFINE_TESTSUITE(didstore_did_op_test), \
     DEFINE_TESTSUITE(didstore_initial_test), \
     DEFINE_TESTSUITE(didstore_openstore_test), \
-    DEFINE_TESTSUITE(didstore_vc_op_test)
+    DEFINE_TESTSUITE(didstore_vc_op_test), \
+    DEFINE_TESTSUITE(didstore_export_store_test)
 
 #endif /* __DSTORE_TEST_SUITES_H__ */
+
+

@@ -29,12 +29,28 @@
 #include <sys/stat.h>
 #include <cjson/cJSON.h>
 
+#include "diderror.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define DOC_BUFFER_LEN   512
-#define CHECK(func)        do { if (func == -1) return -1; } while(0)
+#define CHECK(func)                    do { if (func < 0) return -1; } while(0)
+#define CHECK_TO_ERROREXIT(func)       do { if (func < 0) goto errorExit;} while(0)
+#define CHECK_TO_MSG(func, code, msg)              do {   \
+    if (func < 0) {                                       \
+        DIDError_Set(code, msg);                          \
+        return -1;                                        \
+    }                                                     \
+} while(0)
+
+#define CHECK_TO_MSG_ERROREXIT(func, code, msg)    do {   \
+    if (func < 0) {                                       \
+        DIDError_Set(code, msg);                          \
+        goto errorExit;                                   \
+    }                                                     \
+} while(0)
 
 const char *get_time_string(char *timestring, size_t len, time_t *p_time);
 

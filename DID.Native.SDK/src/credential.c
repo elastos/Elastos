@@ -176,7 +176,7 @@ static int proof_toJson(JsonGenerator *generator, Credential *cred, int compact)
     return 0;
 }
 
-static int credential_tojson_internal(JsonGenerator *gen, Credential *cred, DID *did,
+int Credential_ToJson_Internal(JsonGenerator *gen, Credential *cred, DID *did,
         bool compact, bool forsign)
 {
     char id[ELA_MAX_DIDURL_LEN];
@@ -707,7 +707,7 @@ int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds, size_t size,
 
     CHECK(JsonGenerator_WriteStartArray(gen));
     for ( i = 0; i < size; i++ )
-        CHECK(credential_tojson_internal(gen, creds[i], did, compact, false));
+        CHECK(Credential_ToJson_Internal(gen, creds[i], did, compact, false));
     CHECK(JsonGenerator_WriteEndArray(gen));
 
     return 0;
@@ -728,7 +728,7 @@ const char* Credential_ToJson_ForSign(Credential *cred, bool compact, bool forsi
         return NULL;
     }
 
-    if (credential_tojson_internal(gen, cred, NULL, compact, forsign) < 0) {
+    if (Credential_ToJson_Internal(gen, cred, NULL, compact, forsign) < 0) {
         DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize credential to json failed.");
         JsonGenerator_Destroy(gen);
         return NULL;

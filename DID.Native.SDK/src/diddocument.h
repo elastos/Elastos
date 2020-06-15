@@ -92,6 +92,11 @@ DIDMeta *DIDDocument_GetMeta(DIDDocument *document);
 
 int DIDDocument_SetStore(DIDDocument *document, DIDStore *store);
 
+int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc,
+        bool compact, bool forsign);
+
+DIDDocument *DIDDocument_FromJson_Internal(cJSON *root);
+
 #ifdef __cplusplus
 }
 #endif

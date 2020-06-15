@@ -303,38 +303,87 @@ ssize_t base58_decode(uint8_t *data, size_t len, const char *base58)
     return BRBase58Decode(data, size, base58);
 }
 
-ssize_t sha256v_digest(uint8_t *digest, int count, va_list inputs)
+int sha256_digest_init(Sha256_Digest *sha256_digest)
 {
-    EVP_MD_CTX ctx;
-    unsigned int digest_size;
-    int i, rc;
-
-    assert(count > 0);
-
-    EVP_MD_CTX_init(&ctx);
-    //EVP_MD_CTX_set_flags(&ctx, EVP_MD_CTX_FLAG_ONESHOT);
-    if ( !EVP_DigestInit_ex(&ctx, EVP_sha256(), NULL))
+    if (!sha256_digest)
         return -1;
 
-    for (i = 0; i < count; i++) {
+    EVP_MD_CTX_init(&sha256_digest->ctx);
+    if (!EVP_DigestInit_ex(&sha256_digest->ctx, EVP_sha256(), NULL))
+        return -1;
+
+    return 0;
+}
+
+int sha256v_digest_update(Sha256_Digest *sha256_digest, int count, va_list inputs)
+{
+    assert(sha256_digest);
+    assert(count > 0);
+
+    for (int i = 0; i < count; i++) {
         const void *input = va_arg(inputs, const void *);
         size_t len = va_arg(inputs, size_t);
 
         if (!input)
             continue;
 
-        if (!EVP_DigestUpdate(&ctx, input, len)) {
+        if (!EVP_DigestUpdate(&sha256_digest->ctx, input, len)) {
             return -1;
         }
     }
+    return 0;
+}
 
-    assert(EVP_MD_size(EVP_sha256()) == SHA256_BYTES);
-    digest_size = SHA256_BYTES;
-    rc = EVP_DigestFinal_ex(&ctx, digest, &digest_size);
-    assert(digest_size == SHA256_BYTES);
+int sha256_digest_update(Sha256_Digest *sha256_digest, int count, ...)
+{
+    va_list inputs;
+    int rc;
 
-    EVP_MD_CTX_cleanup(&ctx);
+    if (!sha256_digest || count <= 0)
+        return -1;
+
+    va_start(inputs, count);
+    rc = sha256v_digest_update(sha256_digest, count, inputs);
+    va_end(inputs);
+
+    return rc;
+}
+
+ssize_t sha256_digest_final(Sha256_Digest *sha256_digest, uint8_t *digest)
+{
+    unsigned int size = SHA256_BYTES;
+    int rc;
+
+    if (!sha256_digest || !digest)
+        return -1;
+
+    rc = EVP_DigestFinal_ex(&sha256_digest->ctx, digest, &size);
+    assert(size == SHA256_BYTES);
+
+    EVP_MD_CTX_cleanup(&sha256_digest->ctx);
     return rc == 1 ? SHA256_BYTES : -1;
+}
+
+void sha256_digest_cleanup(Sha256_Digest *sha256_digest)
+{
+    if (sha256_digest)
+        EVP_MD_CTX_cleanup(&sha256_digest->ctx);
+}
+
+ssize_t sha256v_digest(uint8_t *digest, int count, va_list inputs)
+{
+    EVP_MD_CTX ctx;
+    unsigned int digest_size;
+    int i, rc;
+    Sha256_Digest sha256_digest;
+
+    assert(count > 0);
+
+    if (sha256_digest_init(&sha256_digest) < 0 ||
+            sha256v_digest_update(&sha256_digest, count, inputs) < 0)
+        return -1;
+
+    return sha256_digest_final(&sha256_digest, digest);
 }
 
 /*

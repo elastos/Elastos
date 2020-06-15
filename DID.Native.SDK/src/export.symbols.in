@@ -153,6 +153,12 @@ _DIDStore_DeactivateDID
 _DIDStore_ExportMnemonic
 _DIDStore_Synchronize
 _DIDStore_ChangePassword
+_DIDStore_ExportDID
+_DIDStore_ImportDID
+_DIDStore_ExportPrivateIdentity
+_DIDStore_ImportPrivateIdentity
+_DIDStore_ExportStore
+_DIDStore_ImportStore
 
 # Backend
 _DIDBackend_InitializeDefault

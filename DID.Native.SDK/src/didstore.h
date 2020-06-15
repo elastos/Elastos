@@ -57,6 +57,8 @@ int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
 int DIDStore_LoadPrivateKey(DIDStore *store, const char *storepass, DID *did,
         DIDURL *key, uint8_t *privatekey);
 
+int DIDStore_StorePrvKey(DIDStore *store, DID *did, DIDURL *id, const char *prvkey);
+
 #ifdef __cplusplus
 }
 #endif

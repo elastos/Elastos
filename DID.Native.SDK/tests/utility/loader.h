@@ -44,6 +44,8 @@ bool dir_exist(const char* path);
 
 void delete_file(const char *path);
 
+char *load_file(const char *file);
+
 const char *Generater_Publickey(char *publickeybase58, size_t size);
 
 DerivedKey *Generater_KeyPair(DerivedKey *dkey);
@@ -64,6 +66,8 @@ void TestData_Deinit(void);
 DIDAdapter *TestData_GetAdapter(bool dummybackend);
 
 DIDStore *TestData_SetupStore(bool dummybackend, const char *root);
+
+DIDStore *TestData_SetupTestStore(bool dummybackend);
 
 void TestData_Free(void);
 

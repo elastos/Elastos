@@ -1757,7 +1757,7 @@ DID_API const char *Service_GetType(Service *service);
  *      finishing use.
  *      Otherwise, return NULL.
  */
-DID_API const char* Credential_ToJson(Credential *cred, bool normalized);
+DID_API const char *Credential_ToJson(Credential *cred, bool normalized);
 
 /**
  * \~English
@@ -2611,6 +2611,120 @@ DID_API bool DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
  */
 DID_API int DIDStore_ChangePassword(DIDStore *store, const char *new, const char *old);
 
+/**
+ * \~English
+ * Export DID information into file with json format. The json content include document,
+ * credentials, private keys and meta.
+ *
+ * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
+ *      storepass               [in] Password for DIDStore.
+ * @param
+ *      did                     [in] The handle to DID.
+ * @param
+ *      file                    [in] Export file.
+ * @param
+ *      password                [in] Password to encrypt.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDStore_ExportDID(DIDStore *store, const char *storepass, DID *did,
+        const char *file, const char *password);
+
+/**
+ * \~English
+ * Import DID information by file.
+ *
+ * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
+ *      storepass               [in] Password for DIDStore.
+ * @param
+ *      file                    [in] Export file.
+ * @param
+ *      password                [in] Password to encrypt.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDStore_ImportDID(DIDStore *store, const char *storepass,
+        const char *file, const char *password);
+
+/**
+ * \~English
+ * Export private identity information into file with json format.
+ * The json content include mnemonic(encrypted), extended private key(encrypted),
+ * extended public key(if has it, dont't encrypted) and index.
+ *
+ * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
+ *      storepass               [in] Password for DIDStore.
+ * @param
+ *      file                    [in] Export file.
+ * @param
+ *      password                [in] Password to encrypt.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDStore_ExportPrivateIdentity(DIDStore *store, const char *storepass,
+        const char *file, const char *password);
+
+/**
+ * \~English
+ * Import private identity by file.
+ *
+ * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
+ *      storepass               [in] Password for DIDStore.
+ * @param
+ *      did                     [in] The handle to DID.
+ * @param
+ *      file                    [in] Export file.
+ * @param
+ *      password                [in] Password to encrypt.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDStore_ImportPrivateIdentity(DIDStore *store, const char *storepass,
+        const char *file, const char *password);
+/**
+ * \~English
+ * Export whole store information into zip file.
+ *
+ * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
+ *      storepass               [in] Password for DIDStore.
+ * @param
+ *      zipfile                 [in] Zip file to export.
+ * @param
+ *      password                [in] Password to encrypt.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDStore_ExportStore(DIDStore *store, const char *storepass,
+        const char *zipfile, const char *password);
+
+/**
+ * \~English
+ * Import zip file into new DIDStore.
+ *
+ * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
+ *      storepass               [in] Password for DIDStore.
+ * @param
+ *      zipfile                 [in] zip file to import.
+ * @param
+ *      password                [in] Password to encrypt.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDStore_ImportStore(DIDStore *store, const char *storepass,
+        const char *zipfile, const char *password);
+
 /******************************************************************************
  * Mnemonic
  *****************************************************************************/
@@ -3011,6 +3125,11 @@ DID_API void DIDBackend_SetTTL(long ttl);
  * JWT error.
  */
 #define DIDERR_JWT                                  0x8D000017
+/**
+ * \~English
+ * JWT error.
+ */
+#define DIDERR_MALFORMED_EXPORTDID                  0x8D000018
 /**
  * \~English
  * Unknown error.

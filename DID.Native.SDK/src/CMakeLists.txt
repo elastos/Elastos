@@ -129,7 +129,8 @@ set(LIBS
     crypto
     z
     jansson
-    cjose)
+    cjose
+    zip)
 
 if(WIN32)
     set(LIBS
@@ -141,7 +142,7 @@ add_definitions(-DDID_BUILD)
 
 add_custom_target(ela-did)
 
-set(ELADID_DEPENDS libressl libcurl cJSON hdkey libjansson libcjose)
+set(ELADID_DEPENDS libressl libcurl cJSON hdkey libjansson libcjose libzip)
 
 if(WIN32)
     set(ELADID_DEPENDS

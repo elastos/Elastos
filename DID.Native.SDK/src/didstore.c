@@ -40,6 +40,7 @@
 #include <sys/stat.h>
 #include <openssl/opensslv.h>
 #include <cjson/cJSON.h>
+#include <zip.h>
 
 #include "ela_did.h"
 #include "diderror.h"
@@ -80,6 +81,8 @@ static const char *KEY_PATH = "/private/key";
 static const char *MNEMONIC_PATH = "/private/mnemonic";
 static const char *POST_PASSWORD = "postChangePassword";
 
+static const char *DID_EXPORT = "did.elastos.export/1.0";
+
 extern const char *ProofType;
 
 typedef struct DID_List_Helper {
@@ -103,6 +106,25 @@ typedef struct Dir_Copy_Helper {
     const char *oldpassword;
     const char *newpassword;
 } Dir_Copy_Helper;
+
+typedef struct Cred_Export_Helper {
+    DIDStore *store;
+    JsonGenerator *gen;
+    Sha256_Digest *digest;
+} Cred_Export_Helper;
+
+typedef struct Prvkey_Export {
+    DIDURL keyid;
+    char key[512];
+} Prvkey_Export;
+
+typedef struct DID_Export {
+    DIDStore *store;
+    const char *storepass;
+    const char *password;
+    const char *tmpdir;
+    zip_t *zip;
+} DID_Export;
 
 static int store_didmeta(DIDStore *store, DIDMeta *meta, DID *did)
 {
@@ -388,7 +410,7 @@ static int create_store(DIDStore *store)
 #pragma GCC diagnostic ignored "-Wformat-overflow="
 #endif
 
-static int postChangePassword(DIDStore *store)
+static int postchange_password(DIDStore *store)
 {
     char post_file[PATH_MAX];
     char private_dir[PATH_MAX], private_journal[PATH_MAX], private_deprecated[PATH_MAX];
@@ -478,7 +500,7 @@ static int check_store(DIDStore *store)
 
     close(fd);
 
-    return postChangePassword(store);
+    return postchange_password(store);
 }
 
 static int store_extendedprvkey(DIDStore *store, uint8_t *extendedkey,
@@ -492,6 +514,7 @@ static int store_extendedprvkey(DIDStore *store, uint8_t *extendedkey,
     assert(storepass);
     assert(*storepass);
 
+    memset(base64, 0, sizeof(base64));
     if (encrypt_to_base64((char *)base64, storepass, extendedkey, size) == -1) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Encrypt extended private key failed.");
         return -1;
@@ -541,10 +564,28 @@ static ssize_t load_extendedprvkey(DIDStore *store, uint8_t *extendedkey, size_t
     return len;
 }
 
+static int store_pubkey(DIDStore *store, const char *keybase58)
+{
+    char path[PATH_MAX];
+
+    assert(store);
+    assert(keybase58);
+
+    if (get_file(path, 1, 3, store->root, PRIVATE_DIR, HDPUBKEY_FILE) == -1) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create file for extended public key failed.");
+        return -1;
+    }
+
+    if (store_file(path, (const char *)keybase58) == -1) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Store extended public key failed.");
+        return -1;
+    }
+    return 0;
+}
+
 static int store_extendedpubkey(DIDStore *store, uint8_t *extendedkey, size_t size)
 {
     char publickeybase58[MAX_PUBKEY_BASE58];
-    char path[PATH_MAX];
 
     assert(store);
     assert(extendedkey && size > 0);
@@ -554,38 +595,41 @@ static int store_extendedpubkey(DIDStore *store, uint8_t *extendedkey, size_t si
         return -1;
     }
 
-    if (get_file(path, 1, 3, store->root, PRIVATE_DIR, HDPUBKEY_FILE) == -1) {
-        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create file for extended public key failed.");
-        return -1;
-    }
-
-    if (store_file(path, (const char *)publickeybase58) == -1) {
-        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Store extended public key failed.");
-        return -1;
-    }
-
-    return 0;
+    return store_pubkey(store, publickeybase58);
 }
 
-static ssize_t load_extendedpubkey(DIDStore *store, uint8_t *extendedkey, size_t size)
+static const char *load_pubkey_file(DIDStore *store)
 {
     const char *string;
     char path[PATH_MAX];
-    ssize_t len;
 
     assert(store);
-    assert(extendedkey && size >= EXTENDEDKEY_BYTES);
 
     if (get_file(path, 0, 3, store->root, PRIVATE_DIR, HDPUBKEY_FILE) == -1) {
         DIDError_Set(DIDERR_NOT_EXISTS, "Extended public key don't exist.");
-        return -1;
+        return NULL;
     }
 
     string = load_file(path);
     if (!string) {
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Load extended public key failed.");
-        return -1;
+        return NULL;
     }
+
+    return string;
+}
+
+static ssize_t load_extendedpubkey(DIDStore *store, uint8_t *extendedkey, size_t size)
+{
+    const char *string;
+    ssize_t len;
+
+    assert(store);
+    assert(extendedkey && size >= EXTENDEDKEY_BYTES);
+
+    string = load_pubkey_file(store);
+    if (!string)
+        return -1;
 
     len = base58_decode(extendedkey, size, string);
     free((char*)string);
@@ -595,16 +639,18 @@ static ssize_t load_extendedpubkey(DIDStore *store, uint8_t *extendedkey, size_t
     return len;
 }
 
-static int store_mnemonic(DIDStore *store, const char *storepass, const char *mnemonic)
+static int store_mnemonic(DIDStore *store, const char *storepass, const uint8_t *mnemonic,
+        size_t size)
 {
     char base64[512];
     char path[PATH_MAX];
 
     assert(store);
     assert(mnemonic);
-    assert(*mnemonic);
+    assert(size > 0);
 
-    if (encrypt_to_base64(base64, storepass, (const uint8_t*)mnemonic, strlen(mnemonic)) == -1) {
+    memset(base64, 0, sizeof(base64));
+    if (encrypt_to_base64(base64, storepass, mnemonic, size) == -1) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Encrypt mnemonic failed.");
         return -1;
     }
@@ -649,6 +695,8 @@ static ssize_t load_mnemonic(DIDStore *store, const char *storepass,
     if (len < 0)
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Decrypt mnemonic failed.");
 
+    mnemonic[len++] = 0;
+
     return len;
 }
 
@@ -676,9 +724,27 @@ static int load_index(DIDStore *store)
     return index;
 }
 
-static int store_index(DIDStore *store, int index)
+static int store_index_string(DIDStore *store, const char *index)
 {
     char path[PATH_MAX];
+
+    assert(store);
+    assert(index && *index);
+
+    if (get_file(path, 1, 3, store->root, PRIVATE_DIR, INDEX_FILE) == -1) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create file for index failed.");
+        return -1;
+    }
+
+    if (store_file(path, index) == -1) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Store index failed.");
+        return -1;
+    }
+    return 0;
+}
+
+static int store_index(DIDStore *store, int index)
+{
     char string[32];
     int len;
 
@@ -690,18 +756,7 @@ static int store_index(DIDStore *store, int index)
         DIDError_Set(DIDERR_UNKNOWN, "Unknown error.");
         return -1;
     }
-
-    if (get_file(path, 1, 3, store->root, PRIVATE_DIR, INDEX_FILE) == -1) {
-        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create file for index failed.");
-        return -1;
-    }
-
-    if (store_file(path, string) == -1) {
-        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Store index failed.");
-        return -1;
-    }
-
-    return 0;
+    return store_index_string(store, string);
 }
 
 static int list_did_helper(const char *path, void *context)
@@ -990,7 +1045,7 @@ DIDStore* DIDStore_Open(const char *root, DIDAdapter *adapter)
     if (get_dir(path, 0, 1, root) == 0 && !check_store(didstore))
         return didstore;
 
-    if (get_dir(path, 1, 1, root) == 0 && !create_store(didstore))
+    if (mkdirs(root, S_IRWXU) == 0 && !create_store(didstore))
         return didstore;
 
     DIDError_Set(DIDERR_DIDSTORE_ERROR, "Open DIDStore failed.");
@@ -1032,16 +1087,9 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
     if (load_didmeta(store, &meta, document->did.idstring) == -1)
         return -1;
 
-    if (!alias)
-        alias = DIDMeta_GetAlias(&meta);
-    strcpy(document->meta.alias, alias);
+    if (alias)
+        strcpy(document->meta.alias, alias);
 
-    /*if (!*document->meta.txid)
-        strcpy(document->meta.txid, meta.txid);
-    if (!document->meta.deactived)
-        document->meta.deactived = meta.deactived;
-    if (!document->meta.timestamp)
-        document->meta.timestamp = meta.timestamp;*/
     DIDMeta_Merge(&meta, &document->meta);
     DIDDocument_SetStore(document, store);
 
@@ -1236,6 +1284,7 @@ int DIDStore_ListDIDs(DIDStore *store, ELA_DID_FILTER filter,
 int DIDStore_StoreCredential(DIDStore *store, Credential *credential, const char *alias)
 {
     CredentialMeta meta;
+    char _alias[ELA_MAX_ALIAS_LEN];
     DIDURL *id;
 
     if (!store || !credential) {
@@ -1247,8 +1296,17 @@ int DIDStore_StoreCredential(DIDStore *store, Credential *credential, const char
     if (!id)
         return -1;
 
-    if (load_credmeta(store, &meta, id->did.idstring, id->fragment) == -1 ||
-            CredentialMeta_SetAlias(&credential->meta, alias) == -1 ||
+    if (load_credmeta(store, &meta, id->did.idstring, id->fragment) == -1)
+        return -1;
+
+    if (!alias) {
+        strcpy(_alias, meta.alias);
+        if (!*_alias)
+            strcpy(_alias, credential->meta.alias);
+        alias = _alias;
+    }
+
+    if (CredentialMeta_SetAlias(&credential->meta, alias) == -1 ||
             CredentialMeta_Merge(&meta, &credential->meta) == -1)
         return -1;
 
@@ -1569,10 +1627,37 @@ bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *id)
     return true;
 }
 
+int DIDStore_StorePrvKey(DIDStore *store, DID *did, DIDURL *id, const char *prvkey)
+{
+    char path[PATH_MAX];
+
+    if (!store || !did || !id || !prvkey || !*prvkey) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return -1;
+    }
+
+    if (!DID_Equals(DIDURL_GetDid(id), did)) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Private key does not match with did.");
+        return -1;
+    }
+
+    if (get_file(path, 1, 5, store->root, DID_DIR, did->idstring,
+            PRIVATEKEYS_DIR, id->fragment) == -1) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create private key file failed.");
+        return -1;
+    }
+
+    if (!store_file(path, prvkey))
+        return 0;
+
+    DIDError_Set(DIDERR_DIDSTORE_ERROR, "Store private key error: %s", path);
+    delete_file(path);
+    return -1;
+}
+
 int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass, DID *did,
         DIDURL *id, const uint8_t *privatekey)
 {
-    char path[PATH_MAX];
     char base64[MAX_PRIVATEKEY_BASE64];
 
     if (!store || !storepass || !*storepass || !did || !id || !privatekey) {
@@ -1590,18 +1675,7 @@ int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass, DID *did,
         return -1;
     }
 
-    if (get_file(path, 1, 5, store->root, DID_DIR, did->idstring,
-            PRIVATEKEYS_DIR, id->fragment) == -1) {
-        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create private key file failed.");
-        return -1;
-    }
-
-    if (!store_file(path, base64))
-        return 0;
-
-    DIDError_Set(DIDERR_DIDSTORE_ERROR, "Store private key error: %s", path);
-    delete_file(path);
-    return -1;
+    return DIDStore_StorePrvKey(store, did, id, base64);
 }
 
 void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *id)
@@ -1864,7 +1938,7 @@ int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
     if (store_extendedpubkey(store, extendedkey, size) == -1)
         return -1;
 
-    if (store_mnemonic(store, storepass, mnemonic) == -1)
+    if (store_mnemonic(store, storepass, (uint8_t *)mnemonic, strlen(mnemonic)) == -1)
         return -1;
 
     if (store_index(store, 0) == -1)
@@ -2385,7 +2459,7 @@ int dir_copy(const char *dst, const char *src, const char *new, const char *old)
     return rc;
 }
 
-static int changepassword(DIDStore *store, const char *new, const char *old)
+static int change_password(DIDStore *store, const char *new, const char *old)
 {
     char private_dir[PATH_MAX] = {0}, private_journal[PATH_MAX]= {0};
     char did_dir[PATH_MAX]= {0}, did_journal[PATH_MAX]= {0};
@@ -2454,11 +2528,1467 @@ static int changepassword(DIDStore *store, const char *new, const char *old)
 
 int DIDStore_ChangePassword(DIDStore *store, const char *new, const char *old)
 {
-    if (!store || !old || !*old || !new || !*new)
+    if (!store || !old || !*old || !new || !*new) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return -1;
+    }
+
+    if (change_password(store, new, old) == -1)
         return -1;
 
-    if (changepassword(store, new, old) == -1)
+    return postchange_password(store);
+}
+
+//--------export and import store
+static int write_credentials(DIDURL *id, void *context)
+{
+    Cred_Export_Helper *ch = (Cred_Export_Helper*)context;
+
+    Credential *cred = NULL;
+    const char *vc_string = NULL, *meta_string = NULL;
+    DID *creddid;
+    int rc = -1;
+
+    if (!id) {
+        return 0;
+    }
+
+    creddid = DIDURL_GetDid(id);
+    if (!creddid)
         return -1;
 
-    return postChangePassword(store);
+    cred = DIDStore_LoadCredential(ch->store, creddid, id);
+    if (!cred)
+        return -1;
+
+    CHECK_TO_MSG_ERROREXIT(JsonGenerator_WriteStartObject(ch->gen),
+            DIDERR_OUT_OF_MEMORY, "Start 'credential' object failed.");
+    CHECK_TO_MSG_ERROREXIT(JsonGenerator_WriteFieldName(ch->gen, "content"),
+            DIDERR_OUT_OF_MEMORY, "Write 'vc' failed.");
+    CHECK_TO_MSG_ERROREXIT(Credential_ToJson_Internal(ch->gen, cred, creddid, true, false),
+            DIDERR_OUT_OF_MEMORY, "Write credential failed.");
+    CHECK_TO_MSG_ERROREXIT(JsonGenerator_WriteFieldName(ch->gen, "meta"),
+            DIDERR_OUT_OF_MEMORY, "Write 'meta' failed.");
+    CHECK_TO_MSG_ERROREXIT(CredentialMeta_ToJson_Internal(&cred->meta, ch->gen),
+            DIDERR_OUT_OF_MEMORY, "Write credential meta failed.");
+    CHECK_TO_MSG_ERROREXIT(JsonGenerator_WriteEndObject(ch->gen),
+            DIDERR_OUT_OF_MEMORY, "End 'credential' object failed.");
+    vc_string = Credential_ToJson(cred, true);
+    if (!vc_string)
+        goto errorExit;
+
+    meta_string = CredentialMeta_ToJson(&cred->meta);
+    if (!meta_string)
+        goto errorExit;
+
+    rc = sha256_digest_update(ch->digest, 2, vc_string, strlen(vc_string),
+            meta_string, strlen(meta_string));
+
+errorExit:
+    if (cred)
+        Credential_Destroy(cred);
+    if (vc_string)
+        free((char*)vc_string);
+    if (meta_string)
+        free((char*)meta_string);
+
+    return rc;
+}
+
+static int export_type(JsonGenerator *gen, Sha256_Digest *digest)
+{
+    assert(gen);
+    assert(digest);
+
+    CHECK_TO_MSG(JsonGenerator_WriteStringField(gen, "type", DID_EXPORT),
+            DIDERR_OUT_OF_MEMORY, "Write 'type' failed.");
+    CHECK_TO_MSG(sha256_digest_update(digest, 1, DID_EXPORT, strlen(DID_EXPORT)),
+            DIDERR_CRYPTO_ERROR, "Sha256 'type' failed.");
+
+    return 0;
+}
+
+static int export_id(JsonGenerator *gen, DID *did, Sha256_Digest *digest)
+{
+    char idstring[ELA_MAX_DID_LEN];
+    const char *value;
+
+    assert(gen);
+    assert(did);
+    assert(digest);
+
+    value = DID_ToString(did, idstring, sizeof(idstring));
+    if (!value)
+        return -1;
+
+    CHECK_TO_MSG(JsonGenerator_WriteStringField(gen, "id", value),
+            DIDERR_OUT_OF_MEMORY, "Write 'id' failed.");
+    CHECK_TO_MSG(sha256_digest_update(digest, 1, value, strlen(value)),
+            DIDERR_CRYPTO_ERROR, "Sha256 'id' failed.");
+
+    return 0;
+}
+
+static int export_created(JsonGenerator *gen, Sha256_Digest *digest)
+{
+    char timestring[DOC_BUFFER_LEN];
+    const char *value;
+    time_t created = 0;
+
+    assert(gen);
+    assert(digest);
+
+    value = get_time_string(timestring, sizeof(timestring), &created);
+    if(!value) {
+        DIDError_Set(DIDERR_UNKNOWN, "Get current time failed.");
+        return -1;
+    }
+
+    CHECK_TO_MSG(JsonGenerator_WriteStringField(gen, "created", value),
+            DIDERR_OUT_OF_MEMORY, "Write 'created' failed.");
+    CHECK_TO_MSG(sha256_digest_update(digest, 1, value, strlen(value)),
+            DIDERR_CRYPTO_ERROR, "Sha256 'created' failed.");
+
+    return 0;
+}
+
+static int export_document(JsonGenerator *gen, DIDDocument *doc, Sha256_Digest *digest)
+{
+    const char *docstring, *meta;
+    int rc;
+
+    assert(gen);
+    assert(doc);
+
+    CHECK(JsonGenerator_WriteFieldName(gen, "document"));
+    CHECK(JsonGenerator_WriteStartObject(gen));
+    CHECK(JsonGenerator_WriteFieldName(gen, "content"));
+    CHECK(DIDDocument_ToJson_Internal(gen, doc, true, false));
+    CHECK(JsonGenerator_WriteFieldName(gen, "meta"));
+    CHECK(DIDMeta_ToJson_Internal(&doc->meta, gen));
+    CHECK(JsonGenerator_WriteEndObject(gen));
+
+    docstring = DIDDocument_ToJson(doc, true);
+    if (!docstring)
+        return -1;
+
+    meta = DIDMeta_ToJson(&doc->meta);
+    if (!meta) {
+        free((char*)docstring);
+        return -1;
+    }
+
+    rc = sha256_digest_update(digest, 2, docstring, strlen(docstring), meta, strlen(meta));
+    free((char*)docstring);
+    free((char*)meta);
+
+    return rc;
+}
+
+static int export_creds(JsonGenerator *gen, DIDStore *store, DID *did, Sha256_Digest *digest)
+{
+    Cred_Export_Helper ch;
+
+    assert(gen);
+    assert(store);
+    assert(did);
+
+    if (DIDStore_ContainsCredentials(store, did)) {
+        CHECK_TO_MSG(JsonGenerator_WriteFieldName(gen, "credential"),
+                DIDERR_OUT_OF_MEMORY, "Write 'document' failed.");
+        CHECK_TO_MSG(JsonGenerator_WriteStartArray(gen),
+                DIDERR_OUT_OF_MEMORY, "Start credential array failed.");
+
+        ch.store = store;
+        ch.gen = gen;
+        ch.digest = digest;
+        CHECK(DIDStore_ListCredentials(store, did, write_credentials, (void*)&ch));
+        CHECK_TO_MSG(JsonGenerator_WriteEndArray(gen),
+                DIDERR_OUT_OF_MEMORY, "End credential array failed.");
+    }
+
+    return 0;
+}
+
+static int export_privatekey(JsonGenerator *gen, DIDStore *store, const char *storepass,
+        const char *password, DIDDocument *doc, Sha256_Digest *digest)
+{
+    ssize_t size;
+    int rc;
+    DID *did;
+    DIDURL *keyid;
+    char _idstring[ELA_MAX_DIDURL_LEN], *idstring;
+
+    assert(gen);
+    assert(store);
+    assert(digest);
+
+    did = &doc->did;
+    if (DIDSotre_ContainsPrivateKeys(store, did)) {
+        size = DIDDocument_GetPublicKeyCount(doc);
+        if (size == -1)
+            return -1;
+
+        PublicKey **pks = (PublicKey**)alloca(size * sizeof(PublicKey*));
+        if (!pks)
+            return -1;
+
+        rc = DIDDocument_GetPublicKeys(doc, pks, size);
+        if (rc < 0)
+            return -1;
+
+        CHECK_TO_MSG(JsonGenerator_WriteFieldName(gen, "privatekey"),
+                DIDERR_OUT_OF_MEMORY, "Write 'privatekey' failed.");
+        CHECK_TO_MSG(JsonGenerator_WriteStartArray(gen),
+                DIDERR_OUT_OF_MEMORY, "Start 'privatekey' array failed.");
+
+        for (int i = 0; i < size; i++) {
+            char base64[512];
+            uint8_t privatekey[PRIVATEKEY_BYTES];
+            keyid = &pks[i]->id;
+            if (DIDStore_ContainsPrivateKey(store, did, keyid)) {
+                if (DIDStore_LoadPrivateKey(store, storepass, did, keyid, privatekey) == -1)
+                    return -1;
+
+                rc = encrypt_to_base64(base64, password, privatekey, sizeof(privatekey));
+                memset(privatekey, 0, sizeof(privatekey));
+                if (rc < 0)
+                    return -1;
+
+                CHECK_TO_MSG(JsonGenerator_WriteStartObject(gen),
+                        DIDERR_OUT_OF_MEMORY, "Start 'privatekey' failed.");
+                idstring = DIDURL_ToString(keyid, _idstring, sizeof(_idstring), false);
+                CHECK_TO_MSG(JsonGenerator_WriteStringField(gen, "id", idstring),
+                        DIDERR_OUT_OF_MEMORY, "Write 'id' failed.");
+                CHECK_TO_MSG(JsonGenerator_WriteStringField(gen, "key", (char*)base64),
+                        DIDERR_OUT_OF_MEMORY, "Write 'key' failed.");
+                CHECK_TO_MSG(JsonGenerator_WriteEndObject(gen),
+                        DIDERR_OUT_OF_MEMORY, "End 'privatekey' failed.");
+
+                CHECK_TO_MSG(sha256_digest_update(digest, 2, idstring, strlen(idstring), base64, strlen(base64)),
+                        DIDERR_CRYPTO_ERROR, "Update digest with privatekey failed.");
+            }
+        }
+
+        CHECK_TO_MSG(JsonGenerator_WriteEndArray(gen),
+                DIDERR_OUT_OF_MEMORY, "End 'privatekey' array failed.");
+    }
+
+    return 0;
+}
+
+static int export_init(JsonGenerator *gen, const char *password, Sha256_Digest *digest)
+{
+    assert(gen);
+    assert(digest);
+
+    CHECK_TO_MSG(sha256_digest_init(digest),
+            DIDERR_CRYPTO_ERROR, "Init sha256 digest failed.");
+    CHECK_TO_MSG(sha256_digest_update(digest, 1, password, strlen(password)),
+            DIDERR_CRYPTO_ERROR, "Sha256 password failed.");
+    CHECK_TO_MSG(JsonGenerator_WriteStartObject(gen),
+            DIDERR_OUT_OF_MEMORY, "Write object failed.");
+
+    return 0;
+}
+
+static int export_final(JsonGenerator *gen, Sha256_Digest *digest)
+{
+    char base64[512];
+    uint8_t final_digest[SHA256_BYTES];
+    ssize_t size;
+
+    assert(gen);
+    assert(digest);
+
+    size = sha256_digest_final(digest, final_digest);
+    if (size < 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Final sha256 digest failed.");
+        return -1;
+    }
+
+    CHECK_TO_MSG(base64_url_encode(base64, final_digest, size),
+            DIDERR_CRYPTO_ERROR, "Final sha256 digest failed.");
+    CHECK_TO_MSG(JsonGenerator_WriteStringField(gen, "fingerprint", base64),
+            DIDERR_OUT_OF_MEMORY, "Write 'fingerprint' failed.");
+    CHECK_TO_MSG(JsonGenerator_WriteEndObject(gen),
+            DIDERR_OUT_OF_MEMORY, "End export object failed.");
+
+    return 0;
+}
+
+static int exportdid_internal(JsonGenerator *gen, DIDStore *store, const char * storepass,
+        DID *did, const char *password)
+{
+    Sha256_Digest digest;
+    DIDDocument *doc;
+    int rc = -1;
+
+    assert(gen);
+    assert(did);
+
+    doc = DIDStore_LoadDID(store, did);
+    if (!doc) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Export DID failed, not exist.");
+        return rc;
+    }
+
+    if (export_init(gen, password, &digest) < 0 ||
+            export_type(gen, &digest) < 0 ||
+            export_id(gen, did, &digest) < 0 ||
+            export_created(gen, &digest) < 0 ||
+            export_document(gen, doc, &digest) < 0 ||
+            export_creds(gen, store, did, &digest) < 0 ||
+            export_privatekey(gen, store, storepass, password, doc, &digest) < 0 ||
+            export_final(gen, &digest) < 0)
+        goto errorExit;
+
+    rc = 0;
+
+errorExit:
+    sha256_digest_cleanup(&digest);
+
+    if (doc)
+        DIDDocument_Destroy(doc);
+
+    return rc;
+}
+
+static int check_file(const char *file)
+{
+    char *path;
+
+    assert(file && *file);
+
+    if (test_path(file) > 0)
+        delete_file(file);
+
+    path = alloca(strlen(file) + 1);
+    strcpy(path, file);
+
+    char *pos = strrchr(path, '/');
+    if (!pos) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid file path.");
+        return -1;
+    }
+
+    *pos = 0;
+    if (mkdirs(path, S_IRWXU) == -1) {
+        DIDError_Set(DIDERR_IO_ERROR, "Create the directory of file failed.");
+        return -1;
+    }
+    *path = '/';
+    return 0;
+}
+
+int DIDStore_ExportDID(DIDStore *store, const char *storepass, DID *did,
+        const char *file, const char *password)
+{
+    JsonGenerator g, *gen;
+    const char *data;
+    int rc;
+
+    if (!store || !storepass || !*storepass || !did || !file || !*file ||
+            !password || !*password) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return -1;
+    }
+
+    //check file
+    if (check_file(file) < 0)
+        return -1;
+
+    //generate did export string
+    gen = JsonGenerator_Initialize(&g);
+    if (!gen) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Json generator initialize failed.");
+        return -1;;
+    }
+
+    if (exportdid_internal(gen, store, storepass, did, password) < 0) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize exporting did to json failed.");
+        JsonGenerator_Destroy(gen);
+        return -1;
+    }
+
+    data = JsonGenerator_Finish(gen);
+    rc = store_file(file, data);
+    free((char*)data);
+    if (rc < 0) {
+        DIDError_Set(DIDERR_IO_ERROR, "write exporting did string into file failed.");
+        return -1;
+    }
+
+    return 0;
+}
+
+static int import_type(cJSON *json, Sha256_Digest *digest)
+{
+    cJSON *item;
+
+    assert(json);
+    assert(digest);
+
+    item = cJSON_GetObjectItem(json, "type");
+    if (!item) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing export did type.");
+        return -1;
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid export did type.");
+        return -1;
+    }
+
+    if (strcmp(item->valuestring, DID_EXPORT)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid export data, unknown type.");
+        return -1;
+    }
+
+    CHECK_TO_MSG(sha256_digest_update(digest, 1, item->valuestring, strlen(item->valuestring)),
+            DIDERR_CRYPTO_ERROR, "Sha256 'type' failed.");
+
+    return 0;
+}
+
+static DID *import_id(cJSON *json, Sha256_Digest *digest)
+{
+    cJSON *item;
+
+    assert(json);
+    assert(digest);
+
+    item = cJSON_GetObjectItem(json, "id");
+    if (!item) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing export did.");
+        return NULL;
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid export did.");
+        return NULL;
+    }
+
+    if (sha256_digest_update(digest, 1, item->valuestring, strlen(item->valuestring)) < 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Sha256 'id' failed.");
+        return NULL;
+    }
+
+    return DID_FromString(item->valuestring);
+}
+
+static int import_created(cJSON *json, Sha256_Digest *digest)
+{
+    cJSON *item;
+
+    assert(json);
+    assert(digest);
+
+    item = cJSON_GetObjectItem(json, "created");
+    if (!item) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing created time.");
+        return -1;
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid created time.");
+        return -1;
+    }
+
+    if (sha256_digest_update(digest, 1, item->valuestring, strlen(item->valuestring)) < 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Sha256 'created' failed.");
+        return -1;
+    }
+
+    return 0;
+}
+
+static DIDDocument *import_document(cJSON *json, DID *did, Sha256_Digest *digest)
+{
+    cJSON *item, *field;
+    DIDDocument *doc = NULL;
+    const char *docstring = NULL, *metastring = NULL;
+    int rc;
+
+    assert(json);
+    assert(did);
+    assert(digest);
+
+    item = cJSON_GetObjectItem(json, "document");
+    if (!item) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing created time.");
+        return NULL;
+    }
+    if (!cJSON_IsObject(item)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'document'.");
+        return NULL;
+    }
+
+    field = cJSON_GetObjectItem(item, "content");
+    if (!field) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing document 'content'.");
+        return NULL;
+    }
+    if (!cJSON_IsObject(field)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid document 'content'.");
+        return NULL;
+    }
+
+    doc = DIDDocument_FromJson_Internal(field);
+    if (!doc)
+        return NULL;
+
+    if (!DID_Equals(&doc->did, did) || !DIDDocument_IsGenuine(doc)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid DID document in the export data.");
+        goto errorExit;
+    }
+
+    docstring = DIDDocument_ToJson(doc, true);
+    if (!docstring)
+        goto errorExit;
+
+    field = cJSON_GetObjectItem(item, "meta");
+    if (!field) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'meta'.");
+        goto errorExit;
+    }
+    if (!cJSON_IsObject(field)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'meta'.");
+        goto errorExit;
+    }
+
+    if (DIDMeta_FromJson_Internal(&doc->meta, field) < 0)
+        goto errorExit;
+
+    DIDMeta_Copy(&doc->did.meta, &doc->meta);
+    metastring = DIDMeta_ToJson(&doc->meta);
+    if (!metastring)
+        goto errorExit;
+
+    rc = sha256_digest_update(digest, 2, docstring, strlen(docstring), metastring, strlen(metastring));
+    free((char*)docstring);
+    free((char*)metastring);
+    if (rc < 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Sha256 'document' failed.");
+        DIDDocument_Destroy(doc);
+        return NULL;
+    }
+
+    return doc;
+
+errorExit:
+    if (doc)
+        DIDDocument_Destroy(doc);
+    if (docstring)
+        free((char*)docstring);
+    if (metastring)
+        free((char*)metastring);
+
+    return NULL;
+}
+
+static int import_creds_count(cJSON *json)
+{
+    cJSON *item;
+
+    assert(json);
+
+    item = cJSON_GetObjectItem(json, "credential");
+    if (!item)
+        return 0;
+
+    if (!cJSON_IsArray(item)) {
+        DIDError_Set(DIDERR_UNKNOWN, "Unknown credential.");
+        return -1;
+    }
+
+    return cJSON_GetArraySize(item);
+}
+
+static ssize_t import_creds(cJSON *json, DID *did, Credential **creds, size_t size,
+        Sha256_Digest *digest)
+{
+    cJSON *item, *field, *child_field;
+    ssize_t count;
+    int i, rc;
+
+    assert(json);
+    assert(creds);
+    assert(size > 0);
+
+    item = cJSON_GetObjectItem(json, "credential");
+    if (!item)
+        return 0;
+
+    if (!cJSON_IsArray(item)) {
+        DIDError_Set(DIDERR_UNKNOWN, "Unknown 'credential'.");
+        return -1;
+    }
+
+    count = cJSON_GetArraySize(item);
+    if (count == 0 || count > size) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'credential'.");
+        return -1;
+    }
+
+    for (i = 0; i < count; i++) {
+        field = cJSON_GetArrayItem(item, i);
+        child_field = cJSON_GetObjectItem(field, "content");
+        if (!child_field) {
+            DIDError_Set(DIDERR_NOT_EXISTS, "Missing credential 'content'.");
+            goto errorExit;
+        }
+        if (!cJSON_IsObject(child_field)) {
+            DIDError_Set(DIDERR_UNSUPPOTED, "Invalid credential 'content'.");
+            goto errorExit;
+        }
+
+        Credential *cred = Parse_Credential(child_field, did);
+        if (!cred)
+            goto errorExit;
+
+        child_field = cJSON_GetObjectItem(field, "meta");
+        if (!child_field) {
+            DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'meta'.");
+            goto errorExit;
+        }
+        if (!cJSON_IsObject(child_field)) {
+            DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'meta'.");
+            goto errorExit;
+        }
+        if (CredentialMeta_FromJson_Internal(&cred->meta, child_field) < 0)
+            goto errorExit;
+
+        const char *credstring = Credential_ToJson(cred, true);
+        if (!credstring)
+            goto errorExit;
+
+        const char *metastring = CredentialMeta_ToJson(&cred->meta);
+        if (!metastring) {
+            free((char*)credstring);
+            goto errorExit;
+        }
+
+        rc = sha256_digest_update(digest, 2, credstring, strlen(credstring), metastring, strlen(metastring));
+        free((char*)credstring);
+        free((char*)metastring);
+        if (rc < 0)
+            goto errorExit;
+
+        creds[i] = cred;
+    }
+
+    return i;
+
+errorExit:
+    if (i > 0) {
+        for (int j = 0; j < i; j++)
+            Credential_Destroy(creds[j]);
+    }
+
+    return -1;
+}
+
+static ssize_t import_privatekey_count(cJSON *json)
+{
+    cJSON *item;
+
+    assert(json);
+
+    item = cJSON_GetObjectItem(json, "privatekey");
+    if (!item) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'privatekey'.");
+        return -1;
+    }
+    if (!cJSON_IsArray(item)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'privatekey'.");
+        return -1;
+    }
+
+    return cJSON_GetArraySize(item);
+}
+
+static ssize_t import_privatekey(cJSON *json, const char *storepass, const char *password,
+       DID *did, Prvkey_Export *prvs, size_t size, Sha256_Digest *digest)
+{
+    cJSON *item, *field, *id_field, *key_field;
+    ssize_t count;
+    uint8_t binkey[PRIVATEKEY_BYTES];
+    char privatekey[512];
+    size_t keysize;
+    int i = 0;
+
+    assert(json);
+    assert(storepass && *storepass);
+    assert(password && *password);
+    assert(did);
+    assert(prvs);
+    assert(size > 0);
+    assert(digest);
+
+    item = cJSON_GetObjectItem(json, "privatekey");
+    if (!item) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'privatekey'.");
+        return -1;
+    }
+    if (!cJSON_IsArray(item)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'privatekey' array.");
+        return -1;
+    }
+
+    count = cJSON_GetArraySize(item);
+    if (count == 0) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'privatekey' array.");
+        return -1;
+    }
+    if (count > size) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Please give larger buffer for private keys.");
+        return -1;
+    }
+
+    for (i = 0; i < count; i++) {
+        field = cJSON_GetArrayItem(item, i);
+        if (!field) {
+            DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'privatekey' item.");
+            return -1;
+        }
+        if (!cJSON_IsObject(field)) {
+            DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'privatekey'.");
+            return -1;
+        }
+        id_field = cJSON_GetObjectItem(field, "id");
+        if (!id_field) {
+            DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'id' in 'privatekey' failed.");
+            return -1;
+        }
+        if (!cJSON_IsString(id_field)) {
+            DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'id' in 'privatekey' failed.");
+            return -1;
+        }
+
+        DIDURL *id = DIDURL_FromString(id_field->valuestring, did);
+        if (!id)
+            return -1;
+
+        DIDURL_Copy(&prvs[i].keyid, id);
+        DIDURL_Destroy(id);
+
+        key_field = cJSON_GetObjectItem(field, "key");
+        if (!key_field) {
+            DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'key' in 'privatekey'.");
+            return -1;
+        }
+        if (!cJSON_IsString(key_field)) {
+            DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'key' in 'privatekey'.");
+            return -1;
+        }
+
+        keysize = decrypt_from_base64(binkey, password, key_field->valuestring);
+        if (keysize < 0) {
+            DIDError_Set(DIDERR_CRYPTO_ERROR, "Decrypt private key failed.");
+            return -1;
+        }
+
+        keysize = encrypt_to_base64(privatekey, storepass, binkey, keysize);
+        memset(binkey, 0, sizeof(binkey));
+        if (keysize < 0) {
+            DIDError_Set(DIDERR_CRYPTO_ERROR, "Encrypt private key failed.");
+            return -1;
+        }
+        memcpy(prvs[i].key, privatekey, keysize);
+
+        if (sha256_digest_update(digest, 2, id_field->valuestring, strlen(id_field->valuestring),
+                    key_field->valuestring, strlen(key_field->valuestring)) < 0) {
+            DIDError_Set(DIDERR_CRYPTO_ERROR, "Sha256 'key' in 'privatekey' failed.");
+            return -1;
+        }
+    }
+    return i;
+}
+
+static int import_fingerprint(cJSON *json, Sha256_Digest *digest)
+{
+    cJSON *item;
+    uint8_t final_digest[SHA256_BYTES];
+    char base64[512];
+    ssize_t size;
+
+    assert(json);
+    assert(digest);
+
+    item = cJSON_GetObjectItem(json, "fingerprint");
+    if (!item) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'fingerprint'.");
+        return -1;
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'fingerprint'.");
+        return -1;
+    }
+
+    size = sha256_digest_final(digest, final_digest);
+    if (size < 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Final sha256 digest failed.");
+        return -1;
+    }
+
+    if (base64_url_encode(base64, final_digest, size) < 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Encrypt digest failed.");
+        return -1;
+    }
+    if (strcmp(base64, item->valuestring)) {
+        DIDError_Set(DIDERR_MALFORMED_EXPORTDID, "Invalid export data, the fingerprint mismatch.");
+        return -1;
+    }
+
+    return 0;
+}
+
+static int import_init(const char *password, Sha256_Digest *digest)
+{
+    CHECK_TO_MSG(sha256_digest_init(digest),
+            DIDERR_CRYPTO_ERROR, "Init sha256 digest failed.");
+    CHECK_TO_MSG(sha256_digest_update(digest, 1, password, strlen(password)),
+            DIDERR_CRYPTO_ERROR, "Sha256 password failed.");
+    return 0;
+}
+
+int DIDStore_ImportDID(DIDStore *store, const char *storepass,
+        const char *file, const char *password)
+{
+    const char *string = NULL;
+    cJSON *root = NULL;
+    Sha256_Digest digest;
+    DID *did = NULL;
+    DIDDocument *doc = NULL;
+    Credential **creds = NULL;
+    Prvkey_Export *prvs;
+    int rc = -1;
+
+    if (!store || !storepass || !*storepass || !file || !*file ||
+            !password || !*password) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return -1;
+    }
+
+    if (test_path(file) != S_IFREG)
+        return -1;
+
+    string = load_file(file);
+    if (!string) {
+        DIDError_Set(DIDERR_IO_ERROR, "Load export did file failed.");
+        return -1;
+    }
+
+    root = cJSON_Parse(string);
+    free((char*)string);
+    if (!root) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Deserialize export file from json failed.");
+        return -1;
+    }
+
+    if (import_init(password, &digest) < 0)
+        goto errorExit;
+
+    //type
+    if (import_type(root, &digest) < 0)
+        goto errorExit;
+
+    //id
+    did = import_id(root, &digest);
+    if (!did)
+        goto errorExit;
+
+    //created
+    if (import_created(root, &digest) < 0)
+        goto errorExit;
+
+    //document
+    doc = import_document(root, did, &digest);
+    if (!doc)
+        goto errorExit;
+
+    //credential
+    size_t cred_size = import_creds_count(root);
+    if (cred_size < 0)
+        goto errorExit;
+    if (cred_size > 0) {
+        creds = (Credential**)alloca(cred_size * sizeof(Credential*));
+        cred_size = import_creds(root, did, creds, cred_size, &digest);
+        if (cred_size < 0)
+            goto errorExit;
+    }
+
+    //privatekey
+    size_t prv_size = import_privatekey_count(root);
+    if (prv_size < 0)
+        goto errorExit;
+    if (prv_size > 0) {
+        prvs = (Prvkey_Export*)alloca(prv_size * sizeof(Prvkey_Export));
+        memset(prvs, 0, prv_size * sizeof(Prvkey_Export));
+        prv_size = import_privatekey(root, storepass, password, did, prvs, prv_size, &digest);
+        if (prv_size < 0)
+            goto errorExit;
+    }
+
+    //fingerprint
+    if (import_fingerprint(root, &digest) < 0)
+        goto errorExit;
+
+    //save all files
+    if (DIDStore_StoreDID(store, doc, NULL) < 0)
+        goto errorExit;
+
+    for (int i = 0; i < cred_size; i++) {
+        if (DIDStore_StoreCredential(store, creds[i], NULL) < 0)
+            goto errorExit;
+    }
+
+    for (int i = 0; i < prv_size; i++) {
+        if (DIDStore_StorePrvKey(store, did, &prvs[i].keyid, prvs[i].key) < 0)
+            goto errorExit;
+    }
+
+    rc = 0;
+
+errorExit:
+    if (rc == -1)
+        sha256_digest_cleanup(&digest);
+    if (root)
+        cJSON_Delete(root);
+    if (did)
+        DID_Destroy(did);
+    if (doc)
+        DIDDocument_Destroy(doc);
+    if (creds) {
+        for (int i = 0; i < cred_size; i++)
+            Credential_Destroy(creds[i]);
+    }
+
+    return rc;
+}
+
+static int export_prvkey(JsonGenerator *gen, DIDStore *store, const char *storepass,
+        const char *password, Sha256_Digest *digest)
+{
+    uint8_t extendedkey[EXTENDEDKEY_BYTES];
+    char encryptedKey[512];
+    ssize_t size;
+
+    assert(gen);
+    assert(store);
+    assert(storepass && *storepass);
+    assert(password && *password);
+    assert(digest);
+
+    size = load_extendedprvkey(store, extendedkey, sizeof(extendedkey), storepass);
+    if (size < 0)
+        return -1;
+
+    size = encrypt_to_base64(encryptedKey, password, extendedkey, size);
+    memset(extendedkey, 0, sizeof(extendedkey));
+    if (size < 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Encrypt extended private identity failed.");
+        return -1;
+    }
+
+    CHECK_TO_MSG(JsonGenerator_WriteStringField(gen, "key", encryptedKey),
+        DIDERR_OUT_OF_MEMORY, "Write 'key' failed.");
+    CHECK_TO_MSG(sha256_digest_update(digest, 1, encryptedKey, strlen(encryptedKey)),
+        DIDERR_CRYPTO_ERROR, "Sha256 'key' failed.");
+
+    return 0;
+}
+
+static int export_mnemonic(JsonGenerator *gen, DIDStore *store, const char *storepass,
+        const char *password, Sha256_Digest *digest)
+{
+    char mnemonic[ELA_MAX_MNEMONIC_LEN], encryptedmnemonic[512];
+    ssize_t size;
+
+    assert(gen);
+    assert(store);
+    assert(storepass && *storepass);
+    assert(password && *password);
+    assert(digest);
+
+    size = load_mnemonic(store, storepass, mnemonic, sizeof(mnemonic));
+    if (size < 0)
+        return -1;
+
+    size = encrypt_to_base64(encryptedmnemonic, password, (uint8_t*)mnemonic, size - 1);
+    memset(mnemonic, 0, sizeof(mnemonic));
+    if (size < 0)
+        return -1;
+
+    CHECK_TO_MSG(JsonGenerator_WriteStringField(gen, "mnemonic", encryptedmnemonic),
+            DIDERR_OUT_OF_MEMORY, "Write 'mnemonic' failed.");
+    CHECK_TO_MSG(sha256_digest_update(digest, 1, encryptedmnemonic, strlen(encryptedmnemonic)),
+           DIDERR_CRYPTO_ERROR, "Sha256 'mnemonic' failed.");
+
+    return 0;
+}
+
+static int export_pubkey(JsonGenerator *gen, DIDStore *store, Sha256_Digest *digest)
+{
+    const char *pubKey = NULL;
+    int rc = -1;
+
+    assert(gen);
+    assert(store);
+    assert(digest);
+
+    pubKey = load_pubkey_file(store);
+    if (!pubKey)
+        return 0;
+
+    CHECK_TO_MSG(JsonGenerator_WriteStringField(gen, "key.pub", pubKey),
+            DIDERR_OUT_OF_MEMORY, "Write 'key.pub' failed.");
+    CHECK_TO_MSG(sha256_digest_update(digest, 1, pubKey, strlen(pubKey)),
+            DIDERR_CRYPTO_ERROR, "Sha256 'key.pub' failed.");
+
+    rc = 0;
+
+errorExit:
+    if (pubKey)
+        free((char*)pubKey);
+
+    return rc;
+}
+
+static int export_index(JsonGenerator *gen, DIDStore *store, Sha256_Digest *digest)
+{
+    char string[32];
+    int len, index;
+
+    assert(gen);
+    assert(store);
+    assert(digest);
+
+    index = load_index(store);
+    len = snprintf(string, sizeof(string), "%d", index);
+    if (len < 0 || len > sizeof(string))
+        return -1;
+
+    CHECK_TO_MSG(JsonGenerator_WriteStringField(gen, "index", string),
+            DIDERR_OUT_OF_MEMORY, "Write 'index' failed.");
+    CHECK_TO_MSG(sha256_digest_update(digest, 1, string, strlen(string)),
+            DIDERR_CRYPTO_ERROR, "Sha256 'index' failed.");
+
+    return 0;
+}
+
+int DIDStore_ExportPrivateIdentity(DIDStore *store, const char *storepass,
+        const char *file, const char *password)
+{
+    Sha256_Digest digest;
+
+    const char *pubKey = NULL, *data;
+    ssize_t size;
+    int index, len, rc = -1;
+    JsonGenerator g, *gen;
+
+    if (!store || !storepass || !*storepass || !file || !*file ||
+            !password || !*password) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return -1;
+    }
+
+    if (check_file(file) < 0)
+        return -1;
+
+    gen = JsonGenerator_Initialize(&g);
+    if (!gen) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Json generator initialize failed.");
+        goto errorExit;
+    }
+
+    if (export_init(gen, password, &digest) < 0 || export_type(gen, &digest) < 0)
+        goto errorExit;
+
+    //private extended key
+    if (export_mnemonic(gen, store, storepass, password, &digest) < 0 ||
+            export_prvkey(gen, store, storepass, password, &digest) < 0 ||
+            export_pubkey(gen, store, &digest) < 0 ||
+            export_index(gen, store, &digest) < 0)
+        return -1;
+
+    if (export_final(gen, &digest) < 0)
+        goto errorExit;
+
+    data = JsonGenerator_Finish(gen);
+    rc = store_file(file, data);
+    free((char*)data);
+    if (rc < 0) {
+        DIDError_Set(DIDERR_IO_ERROR, "write exporting did string into file failed.");
+        goto errorExit;
+    }
+
+    rc = 0;
+
+errorExit:
+    if (pubKey)
+       free((char*)pubKey);
+
+    return rc;
+}
+
+int DIDStore_ImportPrivateIdentity(DIDStore *store, const char *storepass,
+        const char *file, const char *password)
+{
+    cJSON *root = NULL, *item;
+    const char *string = NULL;
+    uint8_t mnemonic[ELA_MAX_MNEMONIC_LEN], extendedkey[EXTENDEDKEY_BYTES];
+    uint8_t final_digest[SHA256_BYTES];
+    ssize_t size;
+    char base64[512];
+    Sha256_Digest digest;
+    int rc = -1;
+
+    if (!store || !storepass || !*storepass || !file || !*file ||
+            !password || !*password) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return -1;
+    }
+
+    if (test_path(file) != S_IFREG)
+        return -1;
+
+    string = load_file(file);
+    if (!string) {
+        DIDError_Set(DIDERR_IO_ERROR, "Load export did file failed.");
+        return -1;
+    }
+
+    root = cJSON_Parse(string);
+    free((char*)string);
+    if (!root) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Deserialize export file from json failed.");
+        return -1;
+    }
+
+    if (import_init(password, &digest) < 0 || import_type(root, &digest) < 0)
+        return -1;
+
+    //mnemonic
+    item = cJSON_GetObjectItem(root, "mnemonic");
+    if (!item) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'mnemonic'.");
+        return -1;
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_UNKNOWN, "Invalid 'mnemonic'.");
+        return -1;
+    }
+
+    size = decrypt_from_base64(mnemonic, password, item->valuestring);
+    if (size < 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Decrypt mnemonic failed.");
+        return -1;
+    }
+
+    CHECK_TO_ERROREXIT(store_mnemonic(store, storepass, mnemonic, size));
+    CHECK_TO_MSG_ERROREXIT(sha256_digest_update(&digest, 1, item->valuestring, strlen(item->valuestring)),
+            DIDERR_CRYPTO_ERROR, "Sha256 'mnemonic' failed.");
+
+    //prvkey
+    item = cJSON_GetObjectItem(root, "key");
+    if (!item) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'key'.");
+        return -1;
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'key'.");
+        return -1;
+    }
+    memset(extendedkey, 0, sizeof(extendedkey));
+    size = decrypt_from_base64(extendedkey, password, item->valuestring);
+    if (size < 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Decrypt 'key' failed.");
+        return -1;
+    }
+
+    CHECK_TO_ERROREXIT(store_extendedprvkey(store, extendedkey, size, storepass));
+    memset(extendedkey, 0, sizeof(extendedkey));
+    CHECK_TO_MSG_ERROREXIT(sha256_digest_update(&digest, 1, item->valuestring, strlen(item->valuestring)),
+            DIDERR_CRYPTO_ERROR, "Sha256 'key' failed.");
+
+    //pubkey
+    item = cJSON_GetObjectItem(root, "key.pub");
+    if (item) {
+        if (!cJSON_IsString(item)) {
+            DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'key.pub'.");
+            return -1;
+        }
+
+        CHECK_TO_ERROREXIT(store_pubkey(store, item->valuestring));
+        CHECK_TO_MSG_ERROREXIT(sha256_digest_update(&digest, 1, item->valuestring, strlen(item->valuestring)),
+                DIDERR_CRYPTO_ERROR, "Sha256 'key.pub' failed.");
+    }
+
+    //index
+    item = cJSON_GetObjectItem(root, "index");
+    if (!item) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'index'.");
+        return -1;
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'index'.");
+        return -1;
+    }
+    CHECK_TO_ERROREXIT(store_index_string(store, item->valuestring));
+    CHECK_TO_MSG_ERROREXIT(sha256_digest_update(&digest, 1, item->valuestring, strlen(item->valuestring)),
+            DIDERR_CRYPTO_ERROR, "Sha256 'index' failed.");
+
+    //fingerprint
+    item = cJSON_GetObjectItem(root, "fingerprint");
+    if (!item) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Missing 'fingerprint'.");
+        return -1;
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'fingerprint'.");
+        return -1;
+    }
+
+    CHECK_TO_MSG_ERROREXIT(sha256_digest_final(&digest, final_digest),
+            DIDERR_CRYPTO_ERROR, "Sha256 final failed.");
+    CHECK_TO_MSG(base64_url_encode(base64, final_digest, sizeof(final_digest)),
+            DIDERR_CRYPTO_ERROR, "Final sha256 digest failed.");
+    if (strcmp(base64, item->valuestring)) {
+        DIDError_Set(DIDERR_MALFORMED_EXPORTDID, "Invalid export data, the fingerprint mismatch.");
+        goto errorExit;
+    }
+
+    rc = 0;
+errorExit:
+    if (root)
+       cJSON_Delete(root);
+
+   return rc;
+}
+
+static zip_t *create_zip(const char *file)
+{
+    int err;
+    zip_t *zip;
+
+    assert(file && *file);
+
+    if ((zip = zip_open(file, ZIP_CREATE | ZIP_TRUNCATE, &err)) == NULL) {
+        zip_error_t error;
+        zip_error_init_with_code(&error, err);
+        DIDError_Set(DIDERR_MALFORMED_EXPORTDID, "Can't open zip archive '%s': %s", file, zip_error_strerror(&error));
+        zip_error_fini(&error);
+    }
+
+    return zip;
+}
+
+static int did_to_zip(DID *did, void *context)
+{
+    DID_Export *export = (DID_Export*)context;
+    char tmpfile[PATH_MAX];
+
+    if (!did)
+        return 0;
+
+    sprintf(tmpfile, "%s/%s.json", export->tmpdir, did->idstring);
+    delete_file(tmpfile);
+    if (DIDStore_ExportDID(export->store, export->storepass, did, tmpfile, export->password) < 0)
+       return -1;
+
+    zip_source_t *did_source = zip_source_file(export->zip, tmpfile, 0, 0);
+
+    if (!did_source) {
+        DIDError_Set(DIDERR_MALFORMED_EXPORTDID, "Get source file failed.");
+        return -1;
+    }
+
+    if (zip_file_add(export->zip, did->idstring, did_source, 0) < 0) {
+        zip_source_free(did_source);
+        DIDError_Set(DIDERR_MALFORMED_EXPORTDID, "Add source file failed.");
+        return -1;
+    }
+
+    return 0;
+}
+
+static int exportdid_to_zip(DIDStore *store, const char *storepass, zip_t *zip,
+        const char *password, const char *tmpdir)
+{
+    DID_Export export;
+
+    assert(store);
+    assert(storepass && *storepass);
+    assert(zip);
+    assert(password && *password);
+
+    export.store = store;
+    export.storepass = storepass;
+    export.password = password;
+    export.zip = zip;
+    export.tmpdir = tmpdir;
+
+    return DIDStore_ListDIDs(store, 0, did_to_zip, (void*)&export);
+}
+
+static int exportprv_to_zip(DIDStore *store, const char *storepass, zip_t *zip,
+        const char *password, const char *tmpdir)
+{
+    char tmpfile[PATH_MAX];
+    zip_source_t *prv_source = NULL;
+
+    assert(store);
+    assert(storepass && *storepass);
+    assert(zip);
+    assert(password && *password);
+
+    sprintf(tmpfile, "%s/prvexport.json", tmpdir);
+    delete_file(tmpfile);
+    if (DIDStore_ExportPrivateIdentity(store, storepass, tmpfile, password) < 0)
+        goto errorExit;
+
+    prv_source = zip_source_file(zip, tmpfile, 0, 0);
+    if (!prv_source) {
+        DIDError_Set(DIDERR_MALFORMED_EXPORTDID, "Get source file failed.");
+        goto errorExit;
+    }
+
+    if (zip_file_add(zip, "privateIdentity", prv_source, 0) < 0) {
+        DIDError_Set(DIDERR_MALFORMED_EXPORTDID, "Add source file failed.");
+        goto errorExit;
+    }
+
+    return 0;
+errorExit:
+    if (prv_source)
+        zip_source_free(prv_source);
+
+    return -1;
+}
+
+int DIDStore_ExportStore(DIDStore *store, const char *storepass,
+        const char *zipfile, const char *password)
+{
+    zip_t *zip = NULL;
+    char tmpdir[PATH_MAX];
+    int rc = -1;
+
+    if (!store || !storepass || !*storepass || !zipfile || !*zipfile ||
+            !password || !*password) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return -1;
+    }
+
+    zip = create_zip(zipfile);
+    if (!zip)
+        return -1;
+
+    //create temp dir
+    sprintf(tmpdir, "%s/didexport", getenv("TMPDIR"));
+    mkdirs(tmpdir, S_IRWXU);
+
+    if (exportdid_to_zip(store, storepass, zip, password, tmpdir) < 0 ||
+            exportprv_to_zip(store, storepass, zip, password, tmpdir) < 0)
+        goto errorExit;
+
+    rc = 0;
+
+errorExit:
+    if (zip)
+        zip_close(zip);
+
+    delete_file(tmpdir);
+    return rc;
+}
+
+static zip_t *open_zip(const char *file)
+{
+    int err;
+    zip_t *zip;
+
+    assert(file && *file);
+
+    if ((zip = zip_open(file, ZIP_RDONLY, &err)) == NULL) {
+        zip_error_t error;
+        zip_error_init_with_code(&error, err);
+        DIDError_Set(DIDERR_MALFORMED_EXPORTDID, "Can't open zip archive '%s': %s", file, zip_error_strerror(&error));
+        zip_error_fini(&error);
+    }
+
+    return zip;
+}
+
+int DIDStore_ImportStore(DIDStore *store, const char *storepass, const char *zipfile,
+        const char *password)
+{
+    zip_t *zip = NULL;
+    zip_int64_t count;
+    zip_stat_t stat;
+    int rc = -1;
+    char *filename = "/tmp/storeexport.json";
+
+    if (!store || !storepass || !*storepass || !zipfile || !*zipfile ||
+            !password || !*password) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return -1;
+    }
+
+    zip = open_zip(zipfile);
+    if (!zip)
+        return -1;
+
+    count = zip_get_num_entries(zip, ZIP_FL_UNCHANGED);
+    if (count == 0)
+        goto errorExit;
+
+    for (int i = 0; i < count; i++) {
+        zip_int64_t readed;
+        int code;
+        zip_stat_init(&stat);
+        if (zip_stat_index(zip, (zip_uint64_t)i, ZIP_FL_UNCHANGED, &stat) < 0)
+            goto errorExit;
+
+        zip_file_t *zip_file = zip_fopen_index(zip, (zip_uint64_t)i, ZIP_FL_UNCHANGED);
+        if (!zip_file)
+            goto errorExit;
+
+        char *buffer = (char*)malloc(sizeof(zip_int64_t) * stat.size);
+        if (!buffer) {
+            zip_fclose(zip_file);
+            goto errorExit;
+        }
+
+        readed = zip_fread(zip_file, buffer, stat.size);
+        zip_fclose(zip_file);
+        if (readed < 0)
+            goto errorExit;
+
+        delete_file(filename);
+        const char *file = mktemp(filename);
+        code = store_file(file, buffer);
+        free(buffer);
+        if (code < 0)
+            goto errorExit;
+
+        if (!strcmp(stat.name, "privateIdentity")) {
+            if (DIDStore_ImportPrivateIdentity(store, storepass, file, password) < 0) {
+                goto errorExit;
+            }
+        } else {
+            DID * did = DID_New(stat.name);
+            if (!did)
+                goto errorExit;
+
+            code = DIDStore_ImportDID(store, storepass, file, password);
+            DID_Destroy(did);
+            if (code < 0)
+                goto errorExit;
+        }
+    }
+    rc = 0;
+
+errorExit:
+    if (zip)
+        zip_close(zip);
+
+    return rc;
 }

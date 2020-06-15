@@ -26,6 +26,7 @@
 #include <cjson/cJSON.h>
 
 #include "ela_did.h"
+#include "JsonGenerator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,7 +48,11 @@ int DIDMeta_Init(DIDMeta *meta, const char *alias, char *txid,
 
 const char *DIDMeta_ToJson(DIDMeta *meta);
 
+int DIDMeta_ToJson_Internal(DIDMeta *meta, JsonGenerator *gen);
+
 int DIDMeta_FromJson(DIDMeta *meta, const char *json);
+
+int DIDMeta_FromJson_Internal(DIDMeta *meta, cJSON *json);
 
 void DIDMeta_Destroy(DIDMeta *meta);
 
