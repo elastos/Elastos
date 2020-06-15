@@ -74,9 +74,6 @@ public class VerifiablePresentationBuilder {
         guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
-        guard presentation!.cedentialCount > 0 else {
-            throw DIDError.illegalArgument()
-        }
         guard _realm != nil && _nonce != nil else {
             throw DIDError.invalidState("Missing realm and nonce")
         }
