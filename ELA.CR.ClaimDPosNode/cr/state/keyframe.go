@@ -95,6 +95,7 @@ type CRMember struct {
 	ImpeachmentVotes common.Fixed64
 	DepositHash      common.Uint168
 	MemberState      MemberState
+	DPOSPublicKey    []byte
 }
 
 // StateKeyFrame holds necessary state about CR committee.

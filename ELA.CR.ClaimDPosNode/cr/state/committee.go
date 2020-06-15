@@ -732,6 +732,21 @@ func (c *Committee) processCRCRealWithdraw(tx *types.Transaction,
 	})
 }
 
+func (c *Committee) processCRDPOSManagement(tx *types.Transaction,
+	height uint32, history *utils.History) {
+	dposManagementPayload := tx.Payload.(*payload.CRDPOSManagement)
+	cr := c.getMember(dposManagementPayload.CRCommitteeDID)
+	if cr == nil {
+		return
+	}
+	oriPublicKey := cr.DPOSPublicKey
+	history.Append(height, func() {
+		cr.DPOSPublicKey = dposManagementPayload.CRManagementPublicKey
+	}, func() {
+		cr.DPOSPublicKey = oriPublicKey
+	})
+}
+
 func (c *Committee) GetDepositAmountByPublicKey(
 	publicKey string) (common.Fixed64, common.Fixed64, error) {
 	c.mtx.RLock()
