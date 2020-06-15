@@ -491,7 +491,7 @@ public class VerifiableCredential: DIDObject {
 }
 
 extension VerifiableCredential: CustomStringConvertible {
-    func toString(_ normalized: Bool) -> String {
+    public func toString(_ normalized: Bool) -> String {
         return toJson(normalized, false)
     }
 
