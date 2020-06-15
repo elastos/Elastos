@@ -350,8 +350,8 @@ export default class extends BaseComponent {
   renderProfileToast() {
     const isShow =
       !this.state.dismissed &&
+      !this.isPermanentlyDismissed() &&
       this.props.isLogin && _.isEmpty(this.props.user.did)
-      // !this.isPermanentlyDismissed() &&
       // this.hasIncompleteProfile()
     return (
       isShow && (
