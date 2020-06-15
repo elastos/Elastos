@@ -175,6 +175,39 @@ static void test_vp_create(void)
     CU_ASSERT_TRUE(Presentation_IsValid(vp));
 }
 
+static void test_vp_create_without_creds(void)
+{
+    Presentation *vp;
+    DID *did;
+    Credential *creds[4], **cred;
+    bool isEqual;
+    ssize_t size;
+    DID *signer;
+
+    did = DIDDocument_GetSubject(testdoc);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(did);
+
+    vp = Presentation_Create(did, NULL, store, storepass, "873172f58701a9ee686f0630204fee59",
+            "https://example.com/", 0);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(vp);
+
+    CU_ASSERT_NOT_EQUAL_FATAL(Presentation_GetType(vp), PresentationType);
+    isEqual = DID_Equals(did, Presentation_GetSigner(vp));
+    CU_ASSERT_TRUE(isEqual);
+
+    size = Presentation_GetCredentialCount(vp);
+    CU_ASSERT_EQUAL(size, 0);
+
+    size = Presentation_GetCredentials(vp, creds, sizeof(creds));
+    CU_ASSERT_EQUAL(size, 0);
+
+    signer = Presentation_GetSigner(vp);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(signer);
+
+    CU_ASSERT_TRUE(Presentation_IsGenuine(vp));
+    CU_ASSERT_TRUE(Presentation_IsValid(vp));
+}
+
 static int vp_test_suite_init(void)
 {
     char _path[PATH_MAX];
@@ -213,10 +246,11 @@ static int vp_test_suite_cleanup(void)
 }
 
 static CU_TestInfo cases[] = {
-    { "test_vp_getelem",            test_vp_getelem    },
-    { "test_vp_parse",              test_vp_parse      },
-    { "test_vp_create",             test_vp_create     },
-    { NULL,                         NULL               }
+    { "test_vp_getelem",                          test_vp_getelem                  },
+    { "test_vp_parse",                            test_vp_parse                    },
+    { "test_vp_create",                           test_vp_create                   },
+    { "test_vp_create_without_creds",             test_vp_create_without_creds     },
+    { NULL,                                       NULL                             }
 };
 
 static CU_SuiteInfo suite[] = {

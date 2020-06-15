@@ -701,12 +701,11 @@ int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds, size_t size,
 
     assert(gen);
     assert(gen->buffer);
-    assert(creds);
 
     qsort(creds, size, sizeof(Credential*), didurl_func);
 
     CHECK(JsonGenerator_WriteStartArray(gen));
-    for ( i = 0; i < size; i++ )
+    for (i = 0; i < size; i++)
         CHECK(Credential_ToJson_Internal(gen, creds[i], did, compact, false));
     CHECK(JsonGenerator_WriteEndArray(gen));
 

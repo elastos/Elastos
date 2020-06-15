@@ -89,24 +89,26 @@ static int presentation_tojson_internal(JsonGenerator *gen, Presentation *pre,
 static int parse_credentials_inpre(DID *signer, Presentation *pre, cJSON *json)
 {
     size_t size = 0;
+    Credential **credentials = NULL;
 
     assert(pre);
     assert(json);
 
     size = cJSON_GetArraySize(json);
-    if (size <= 0)
+    if (size < 0)
         return -1;
 
-    Credential **credentials = (Credential**)calloc(size, sizeof(Credential*));
-    if (!credentials)
-        return -1;
+    if (size > 0) {
+        credentials = (Credential**)calloc(size, sizeof(Credential*));
+        if (!credentials)
+            return -1;
 
-    size = Parse_Credentials(signer, credentials, size, json);
-    if (size <= 0) {
-        free(credentials);
-        return -1;
+        size = Parse_Credentials(signer, credentials, size, json);
+        if (size <= 0) {
+            free(credentials);
+            return -1;
+        }
     }
-
     pre->credentials.credentials = credentials;
     pre->credentials.size = size;
 
@@ -313,10 +315,11 @@ Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *store,
     DIDDocument *doc;
     const char *data;
     char signature[SIGNATURE_BYTES * 2 + 16];
+    Credential **creds = NULL;
     int rc;
 
     if (!did || !store || !storepass || !*storepass || !nonce || !*nonce ||
-            !realm || !*realm || count <= 0) {
+            !realm || !*realm || count < 0) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
     }
@@ -349,32 +352,34 @@ Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *store,
     strcpy(pre->type, PresentationType);
     time(&pre->created);
 
-    Credential **creds = (Credential**)calloc(count, sizeof(Credential*));
-    if (!creds) {
-        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for credentials failed.");
-        goto errorExit;
-    }
-
-    va_start(list, count);
-    for (int i = 0; i < count; i++) {
-        cred = va_arg(list, Credential*);
-        if (Credential_Verify(cred) == -1) {
-            DIDError_Set(DIDERR_NOT_GENUINE, "Credential is invalid.");
-            free(creds);
-            va_end(list);
+    if (count > 0) {
+        creds = (Credential**)calloc(count, sizeof(Credential*));
+        if (!creds) {
+            DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for credentials failed.");
             goto errorExit;
         }
 
-        if (Credential_IsExpired(cred)) {
-            DIDError_Set(DIDERR_EXPIRED, "Credential is expired.");
-            free(creds);
-            va_end(list);
-            goto errorExit;
-        }
+        va_start(list, count);
+        for (int i = 0; i < count; i++) {
+            cred = va_arg(list, Credential*);
+            if (Credential_Verify(cred) == -1) {
+                DIDError_Set(DIDERR_NOT_GENUINE, "Credential is invalid.");
+                free(creds);
+                va_end(list);
+                goto errorExit;
+            }
 
-        add_credential(creds, i, cred);
+            if (Credential_IsExpired(cred)) {
+                DIDError_Set(DIDERR_EXPIRED, "Credential is expired.");
+                free(creds);
+                va_end(list);
+                goto errorExit;
+            }
+
+            add_credential(creds, i, cred);
+        }
+        va_end(list);
     }
-    va_end(list);
 
     pre->credentials.credentials = creds;
     pre->credentials.size = count;
@@ -434,7 +439,7 @@ int Presentation_Verify(Presentation *pre)
         return -1;
     }
 
-    if (pre->credentials.size <= 0) {
+    if (pre->credentials.size < 0) {
         DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid presentation.");
         return -1;
     }
@@ -442,6 +447,11 @@ int Presentation_Verify(Presentation *pre)
     signer = Presentation_GetSigner(pre);
     if (!signer) {
         DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "No signer.");
+        return -1;
+    }
+
+    if (pre->credentials.size > 0 && !pre->credentials.credentials) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing credentials.");
         return -1;
     }
 
@@ -549,12 +559,15 @@ ssize_t Presentation_GetCredentials(Presentation *pre, Credential **creds, size_
 {
     size_t actual_size;
 
-    if (!pre || !creds || size <= 0) {
+    if (!pre || !creds || size < 0) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
     }
 
     actual_size = pre->credentials.size;
+    if (actual_size == 0)
+        return 0;
+
     if (actual_size > size) {
         DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
         return -1;
@@ -675,7 +688,7 @@ bool Presentation_IsGenuine(Presentation *pre)
         goto errorExit;
     }
 
-    if (!pre->credentials.credentials) {
+    if (pre->credentials.size > 0 && !pre->credentials.credentials) {
         DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing credentials.");
         goto errorExit;
     }
@@ -739,7 +752,7 @@ bool Presentation_IsValid(Presentation *pre)
         goto errorExit;
     }
 
-    if (!pre->credentials.credentials) {
+    if (pre->credentials.size > 0 && !pre->credentials.credentials) {
         DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing credentials.");
         goto errorExit;
     }
