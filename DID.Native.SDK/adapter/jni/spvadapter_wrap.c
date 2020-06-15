@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "spvadapter.h"
 
@@ -47,8 +48,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-static JavaVM *jvm;
 
 /* Contract support */
 #define contract_assert(nullreturn, expr, msg)                        \
@@ -114,9 +113,6 @@ static void JavaThrowException(JNIEnv *jenv, JavaExceptionCodes code,
 JNI_EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
     JNIEnv *env = NULL;
-
-    // Hold global jvm reference.
-    jvm = vm;
 
     if ((*vm)->GetEnv(vm, (void **)&env, JNI_VERSION_1_8) == JNI_OK)
       return JNI_VERSION_1_8;
@@ -197,47 +193,14 @@ JNI_EXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_isAvailable(
     }
 
     result = SpvDidAdapter_IsAvailable(handle);
-    return (jboolean)(result != 0);
-}
-
-typedef struct {
-    JNIEnv *env;
-    jobject obj;
-    jmethodID method;
-} JavaMethodContext;
-
-static void TransactionCallbackWrapper(const char *txid, int status,
-        const char *msg, void *context)
-{
-    JavaMethodContext *ctx = (JavaMethodContext *)context;
-    JNIEnv *env;
-    jstring jTxid;
-    jstring jMsg = NULL;
-
-    if (!ctx)
-      return;
-
-    // TODO: CHECKME!!! use which env object?!
-    (*jvm)->AttachCurrentThread(jvm, (void **)&env, NULL);
-
-    jTxid = (*env)->NewStringUTF(env, txid);
-    if (msg)
-        jMsg = (*env)->NewStringUTF(env, msg);
-
-    (*env)->CallVoidMethod(env, ctx->obj, ctx->method, jTxid, status, jMsg);
-
-    (*jvm)->DetachCurrentThread(jvm);
-    (*(ctx->env))->DeleteGlobalRef(ctx->env, ctx->obj);
-
-    free(context);
+    return (jboolean)(result != false);
 }
 
 JNI_EXPORT void JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransaction(
         JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jPayload,
-        jstring jMemo, jint jConfirms, jobject jCallback, jstring jPassword)
+        jstring jMemo, jstring jPassword)
 {
     SpvDidAdapter *handle = (SpvDidAdapter *)jHandle;
-    JavaMethodContext *ctx = NULL;
     const char *payload = NULL;
     const char *memo = NULL;
     const char *password = NULL;
@@ -264,42 +227,14 @@ JNI_EXPORT void JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransact
     if (jMemo)
         memo = (*jenv)->GetStringUTFChars(jenv, jMemo, 0);
 
-    if (jCallback) {
-        jclass cls = (*jenv)->FindClass(jenv,
-                "org/elastos/did/DIDAdapter$TransactionCallback");
-        if (!cls) {
-            if (memo) (*jenv)->ReleaseStringUTFChars(jenv, jMemo, memo);
-            (*jenv)->ReleaseStringUTFChars(jenv, jPassword, password);
-            (*jenv)->ReleaseStringUTFChars(jenv, jPayload, payload);
-
-            JavaThrowException(jenv, JavaClassNotFoundException, "Can not find TransactionCallback class");
-            return;
-        }
-
-        jmethodID method = (*jenv)->GetMethodID(jenv, cls, "accept",
-                "(Ljava/lang/String;ILjava/lang/String;)V");
-
-        ctx = malloc(sizeof(JavaMethodContext));
-        if (!ctx) {
-            if (memo) (*jenv)->ReleaseStringUTFChars(jenv, jMemo, memo);
-            (*jenv)->ReleaseStringUTFChars(jenv, jPassword, password);
-            (*jenv)->ReleaseStringUTFChars(jenv, jPayload, payload);
-
-            JavaThrowException(jenv, JavaOutOfMemoryError, "Out of memory");
-            return;
-        }
-
-        ctx->env = jenv;
-        ctx->obj = (*jenv)->NewGlobalRef(jenv, jCallback);
-        ctx->method = method;
-    }
-
-    SpvDidAdapter_CreateIdTransactionEx(handle, payload, memo,
-            (int)jConfirms, TransactionCallbackWrapper, ctx, password);
+    bool success = SpvDidAdapter_CreateIdTransaction(handle, payload, memo, password);
 
     if (memo) (*jenv)->ReleaseStringUTFChars(jenv, jMemo, memo);
     (*jenv)->ReleaseStringUTFChars(jenv, jPassword, password);
     (*jenv)->ReleaseStringUTFChars(jenv, jPayload, payload);
+
+    if (!success)
+        JavaThrowException(jenv, DIDTransactionException, "SPV create transaction failed.");
 }
 
 #ifdef __cplusplus
