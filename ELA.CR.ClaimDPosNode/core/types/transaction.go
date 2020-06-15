@@ -48,6 +48,7 @@ const (
 	IllegalSidechainEvidence TxType = 0x11
 	InactiveArbitrators      TxType = 0x12
 	UpdateVersion            TxType = 0x13
+	NextTurnDPOSInfo         TxType = 0x14
 
 	RegisterCR          TxType = 0x21
 	UnregisterCR        TxType = 0x22
@@ -130,6 +131,8 @@ func (self TxType) Name() string {
 		return "CRAssetsRectify"
 	case CRDPOSManagement:
 		return "CRDPOSManagement"
+	case NextTurnDPOSInfo:
+		return "NextTurnDPOSInfo"
 	default:
 		return "Unknown"
 	}
@@ -381,6 +384,10 @@ func (tx *Transaction) IsCRCAppropriationTx() bool {
 	return tx.TxType == CRCAppropriation
 }
 
+func (tx *Transaction) IsNextTurnDPOSInfoTx() bool {
+	return tx.TxType == NextTurnDPOSInfo
+}
+
 func (tx *Transaction) IsCRCProposalRealWithdrawTx() bool {
 	return tx.TxType == CRCProposalRealWithdraw
 }
@@ -571,6 +578,8 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.CRCProposalRealWithdraw)
 	case CRDPOSManagement:
 		p = new(payload.CRDPOSManagement)
+	case NextTurnDPOSInfo:
+		p = new(payload.NextTurnDPOSInfo)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

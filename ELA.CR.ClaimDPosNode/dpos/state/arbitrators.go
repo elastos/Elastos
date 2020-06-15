@@ -18,6 +18,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/cr/state"
@@ -68,11 +69,15 @@ type arbitrators struct {
 	CurrentReward RewardData
 	NextReward    RewardData
 
-	currentArbitrators         []ArbiterMember
-	currentCandidates          []ArbiterMember
-	nextArbitrators            []ArbiterMember
-	nextCandidates             []ArbiterMember
-	crcArbiters                map[common.Uint168]ArbiterMember
+	currentArbitrators []ArbiterMember
+	currentCandidates  []ArbiterMember
+	nextArbitrators    []ArbiterMember
+	nextCandidates     []ArbiterMember
+	//current cr arbiters
+	crcArbiters map[common.Uint168]ArbiterMember
+	//next cr arbiters
+	nextCRCArbiters []ArbiterMember
+
 	crcChangedHeight           uint32
 	accumulativeReward         common.Fixed64
 	finalRoundChange           common.Fixed64
@@ -102,6 +107,17 @@ func (a *arbitrators) RegisterFunction(bestHeight func() uint32,
 	a.bestHeight = bestHeight
 	a.getBlockByHeight = getBlockByHeight
 	a.getTxReference = getTxReference
+}
+
+func (a *arbitrators) IsNeedNextTurnDPOSInfo() bool {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+	return a.NeedNextTurnDposInfo
+}
+func (a *arbitrators) SetNeedNextTurnDPOSInfo(isNeed bool) {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+	a.NeedNextTurnDposInfo = isNeed
 }
 
 func (a *arbitrators) RecoverFromCheckPoints(point *CheckPoint) {
@@ -157,6 +173,32 @@ func (a *arbitrators) CheckDPOSIllegalTx(block *types.Block) error {
 			return errors.New("expect an illegal blocks transaction in this block")
 		}
 	}
+	return nil
+}
+
+func (a *arbitrators) CheckNextTurnDPOSInfoTx(block *types.Block) error {
+	a.mtx.Lock()
+	needNextTurnDposInfo := a.NeedNextTurnDposInfo
+	a.mtx.Unlock()
+
+	var nextTurnDPOSInfoTxCount uint32
+	for _, tx := range block.Transactions {
+		if tx.IsNextTurnDPOSInfoTx() {
+			nextTurnDPOSInfoTxCount++
+		}
+	}
+
+	var needNextTurnDPOSInfoCount uint32
+	if needNextTurnDposInfo {
+		needNextTurnDPOSInfoCount = 1
+	}
+
+	if nextTurnDPOSInfoTxCount != needNextTurnDPOSInfoCount {
+		return fmt.Errorf("current block height %d, NextTurnDPOSInfo "+
+			"transaction count should be %d, current block contains %d",
+			block.Height, needNextTurnDPOSInfoCount, nextTurnDPOSInfoTxCount)
+	}
+
 	return nil
 }
 
@@ -306,13 +348,35 @@ func (a *arbitrators) normalChange(height uint32) error {
 		log.Warn("[NormalChange] change current arbiters error: ", err)
 		return err
 	}
-
 	if err := a.updateNextArbitrators(height+1, height); err != nil {
 		log.Warn("[NormalChange] update next arbiters error: ", err)
 		return err
 	}
 
 	return nil
+}
+
+func (a *arbitrators) notifyNextTurnDPOSInfoTx(blockHeight, versionHeight uint32) {
+	count := a.chainParams.GeneralArbiters
+	votedProducers := a.State.GetVotedProducers()
+	sort.Slice(votedProducers, func(i, j int) bool {
+		if votedProducers[i].votes == votedProducers[j].votes {
+			return bytes.Compare(votedProducers[i].info.NodePublicKey,
+				votedProducers[j].NodePublicKey()) < 0
+		}
+		return votedProducers[i].Votes() > votedProducers[j].Votes()
+	})
+
+	producers, err := a.GetNormalArbitratorsDesc(versionHeight, count,
+		votedProducers)
+	if err == nil {
+		sort.Slice(producers, func(i, j int) bool {
+			return bytes.Compare(producers[i].GetNodePublicKey(), producers[j].GetNodePublicKey()) < 0
+		})
+		workingHeight := blockHeight + uint32(len(a.currentArbitrators))
+		nextTurnDPOSInfoTx := a.createNextTurnDPOSInfoTransaction(a.nextCRCArbiters, producers, workingHeight)
+		go events.Notify(events.ETAppendTxToTxPool, nextTurnDPOSInfoTx)
+	}
 }
 
 func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
@@ -360,7 +424,9 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 	if block.Height > a.bestHeight()-MaxSnapshotLength {
 		a.snapshot(block.Height)
 	}
-
+	if a.NeedNextTurnDposInfo {
+		a.notifyNextTurnDPOSInfoTx(block.Height, versionHeight)
+	}
 	a.mtx.Unlock()
 
 	if a.started && notify {
@@ -733,6 +799,15 @@ func (a *arbitrators) isCRCArbitrator(pk []byte) bool {
 	return false
 }
 
+func (a *arbitrators) IsNextCRCArbier(pk []byte) bool {
+	for _, v := range a.nextCRCArbiters {
+		if bytes.Equal(v.GetNodePublicKey(), pk) {
+			return true
+		}
+	}
+	return false
+}
+
 func (a *arbitrators) IsActiveProducer(pk []byte) bool {
 	return a.State.IsActiveProducer(pk)
 }
@@ -929,6 +1004,48 @@ func (a *arbitrators) changeCurrentArbitrators(height uint32) error {
 	return nil
 }
 
+func (a *arbitrators) IsSameWithNextArbitrators() bool {
+
+	if len(a.nextArbitrators) != len(a.currentArbitrators) {
+		return false
+	}
+	for index, v := range a.currentArbitrators {
+		if bytes.Equal(v.GetNodePublicKey(), a.nextArbitrators[index].GetNodePublicKey()) {
+			return false
+		}
+	}
+	return true
+}
+func (a *arbitrators) ConvertToArbitersStr(arbiters [][]byte) []string {
+	var arbitersStr []string
+	for _, v := range arbiters {
+		arbitersStr = append(arbitersStr, common.BytesToHexString(v))
+	}
+	return arbitersStr
+}
+func (a *arbitrators) createNextTurnDPOSInfoTransaction(crcArbiters, normalDPOSArbiters []ArbiterMember, WorkingHeight uint32) *types.Transaction {
+
+	var nextTurnDPOSInfo payload.NextTurnDPOSInfo
+	nextTurnDPOSInfo.WorkingHeight = WorkingHeight
+	for _, v := range crcArbiters {
+		nextTurnDPOSInfo.CRPublickeys = append(nextTurnDPOSInfo.CRPublickeys, v.GetNodePublicKey())
+	}
+	for _, v := range normalDPOSArbiters {
+		nextTurnDPOSInfo.DPOSPublicKeys = append(nextTurnDPOSInfo.DPOSPublicKeys, v.GetNodePublicKey())
+	}
+	log.Debugf("[createNextTurnDPOSInfoTransaction] CRPublickeys %v, DPOSPublicKeys%v\n",
+		a.ConvertToArbitersStr(nextTurnDPOSInfo.CRPublickeys), a.ConvertToArbitersStr(nextTurnDPOSInfo.DPOSPublicKeys))
+
+	return &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.NextTurnDPOSInfo,
+		Payload:    &nextTurnDPOSInfo,
+		Attributes: []*types.Attribute{},
+		Programs:   []*program.Program{},
+		LockTime:   0,
+	}
+}
+
 func (a *arbitrators) updateNextArbitrators(versionHeight, height uint32) error {
 	_, recover := a.InactiveModeSwitch(versionHeight, a.IsAbleToRecoverFromInactiveMode)
 	if recover {
@@ -966,10 +1083,27 @@ func (a *arbitrators) updateNextArbitrators(versionHeight, height uint32) error 
 				a.nextCandidates = oriNextCandidates
 			})
 		} else {
+			oriNeedNextTurnDposInfo := a.NeedNextTurnDposInfo
+			oriNextCRCArbiters := a.nextCRCArbiters
 			a.history.Append(height, func() {
+				nextCRCArbiters := a.nextArbitrators
 				a.nextArbitrators = append(a.nextArbitrators, producers...)
+				sort.Slice(a.nextArbitrators, func(i, j int) bool {
+					return bytes.Compare(a.nextArbitrators[i].GetNodePublicKey(), a.nextArbitrators[j].GetNodePublicKey()) < 0
+				})
+				if height >= a.chainParams.CRClaimDPOSNodeStartHeight {
+					a.NeedNextTurnDposInfo = true
+					//need sent a NextTurnDPOSInfo tx into mempool
+					sort.Slice(nextCRCArbiters, func(i, j int) bool {
+						return bytes.Compare(nextCRCArbiters[i].GetNodePublicKey(), nextCRCArbiters[j].GetNodePublicKey()) < 0
+					})
+					a.nextCRCArbiters = copyByteList(nextCRCArbiters)
+				}
 			}, func() {
 				// next arbitrators will rollback in resetNextArbiterByCRC
+				a.NeedNextTurnDposInfo = oriNeedNextTurnDposInfo
+				a.nextCRCArbiters = oriNextCRCArbiters
+
 			})
 
 			candidates, err := a.GetCandidatesDesc(versionHeight, count,

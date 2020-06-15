@@ -182,6 +182,12 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
+	case NextTurnDPOSInfo:
+		if err := b.checkNextTurnDPOSInfoTransaction(txn); err != nil {
+			log.Warn("[checkNextTurnDPOSInfoTransaction],", err)
+			return nil, elaerr.Simple(elaerr.ErrTxPayload, err)
+		}
+		return references, nil
 	case CancelProducer:
 		if err := b.checkCancelProducerTransaction(txn); err != nil {
 			log.Warn("[CheckCancelProducerTransaction],", err)
@@ -578,7 +584,7 @@ func checkTransactionInput(txn *Transaction) error {
 
 	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() ||
 		txn.IsNewSideChainPowTx() || txn.IsUpdateVersion() ||
-		txn.IsActivateProducerTx() {
+		txn.IsActivateProducerTx() || txn.IsNextTurnDPOSInfoTx() {
 		if len(txn.Inputs) != 0 {
 			return errors.New("no cost transactions must has no input")
 		}
@@ -686,7 +692,7 @@ func (b *BlockChain) checkTransactionOutput(txn *Transaction,
 	}
 
 	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() ||
-		txn.IsUpdateVersion() || txn.IsActivateProducerTx() {
+		txn.IsUpdateVersion() || txn.IsActivateProducerTx() || txn.IsNextTurnDPOSInfoTx() {
 		if len(txn.Outputs) != 0 {
 			return errors.New("no cost transactions should have no output")
 		}
@@ -948,7 +954,7 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 		}
 		return nil
 	case IllegalSidechainEvidence, IllegalProposalEvidence, IllegalVoteEvidence,
-		ActivateProducer:
+		ActivateProducer, NextTurnDPOSInfo:
 		if len(tx.Programs) != 0 || len(tx.Attributes) != 0 {
 			return errors.New("zero cost tx should have no attributes and programs")
 		}
@@ -1026,7 +1032,8 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 
 func checkTransactionSignature(tx *Transaction, references map[*Input]Output) error {
 	programHashes, err := GetTxProgramHashes(tx, references)
-	if (tx.IsCRCProposalWithdrawTx() && tx.PayloadVersion == payload.CRCProposalWithdrawDefault) || tx.IsCRAssetsRectifyTx() || tx.IsCRCProposalRealWithdrawTx() {
+	if (tx.IsCRCProposalWithdrawTx() && tx.PayloadVersion == payload.CRCProposalWithdrawDefault) ||
+		tx.IsCRAssetsRectifyTx() || tx.IsCRCProposalRealWithdrawTx() || tx.IsNextTurnDPOSInfoTx() {
 		return nil
 	}
 	if err != nil {
@@ -1079,6 +1086,8 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.CRCAppropriation:
 	case *payload.CRAssetsRectify:
 	case *payload.CRCProposalRealWithdraw:
+	case *payload.NextTurnDPOSInfo:
+
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -1303,6 +1312,61 @@ func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, r
 
 	if totalInput-totalOutput < b.chainParams.MinCrossChainTxFee {
 		return errors.New("Invalid transaction fee")
+	}
+	return nil
+}
+
+func (b *BlockChain) IsNextArbtratorsSame(nextTurnDPOSInfo *payload.NextTurnDPOSInfo, curNodeNextArbitrators [][]byte) bool {
+	if len(nextTurnDPOSInfo.CRPublickeys)+len(nextTurnDPOSInfo.DPOSPublicKeys) != len(curNodeNextArbitrators) {
+		log.Warn("IsNextArbtratorsSame curNodeArbitrators len ", len(curNodeNextArbitrators))
+		return false
+	}
+	crindex := 0
+	dposIndex := 0
+	for _, v := range curNodeNextArbitrators {
+		if DefaultLedger.Arbitrators.IsNextCRCArbier(v) {
+			if bytes.Equal(v, nextTurnDPOSInfo.CRPublickeys[crindex]) {
+				crindex++
+				continue
+			} else {
+				return false
+			}
+		} else {
+			if bytes.Equal(v, nextTurnDPOSInfo.DPOSPublicKeys[dposIndex]) {
+				dposIndex++
+				continue
+			} else {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func (b *BlockChain) ConvertToArbitersStr(arbiters [][]byte) []string {
+	var arbitersStr []string
+	for _, v := range arbiters {
+		arbitersStr = append(arbitersStr, common.BytesToHexString(v))
+	}
+	return arbitersStr
+}
+
+func (b *BlockChain) checkNextTurnDPOSInfoTransaction(txn *Transaction) error {
+	nextTurnDPOSInfo, ok := txn.Payload.(*payload.NextTurnDPOSInfo)
+	if !ok {
+		return errors.New("invalid NextTurnDPOSInfo payload")
+	}
+	log.Warnf("[checkNextTurnDPOSInfoTransaction] CRPublickeys %v, DPOSPublicKeys%v\n",
+		b.ConvertToArbitersStr(nextTurnDPOSInfo.CRPublickeys), b.ConvertToArbitersStr(nextTurnDPOSInfo.DPOSPublicKeys))
+
+	if !DefaultLedger.Arbitrators.IsNeedNextTurnDPOSInfo() {
+		log.Warn("[checkNextTurnDPOSInfoTransaction] !IsNeedNextTurnDPOSInfo")
+		return errors.New("should not have next turn dpos info transaction")
+	}
+	curNodeNextArbitrators := DefaultLedger.Arbitrators.GetNextArbitrators()
+
+	if !b.IsNextArbtratorsSame(nextTurnDPOSInfo, curNodeNextArbitrators) {
+		return errors.New("checkNextTurnDPOSInfoTransaction nextTurnDPOSInfo was wrong")
 	}
 	return nil
 }

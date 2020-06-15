@@ -251,7 +251,7 @@ func (pow *Service) GenerateBlock(minerAddr string,
 		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() ||
 			tx.IsSideChainPowTx() || tx.IsUpdateVersion() ||
 			tx.IsActivateProducerTx() || tx.IsCRCAppropriationTx() ||
-			tx.IsCRAssetsRectifyTx() {
+			tx.IsCRAssetsRectifyTx() || tx.IsNextTurnDPOSInfoTx() {
 			return true
 		}
 		return false
@@ -268,6 +268,7 @@ func (pow *Service) GenerateBlock(minerAddr string,
 	})
 
 	for _, tx := range txs {
+
 		size := totalTxsSize + tx.GetSize()
 		if size > int(pact.MaxBlockContextSize) {
 			continue

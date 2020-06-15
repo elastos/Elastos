@@ -6,7 +6,11 @@
 package state
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
+	"testing"
+
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
@@ -15,8 +19,8 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
+
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 var abt *arbitrators
@@ -660,6 +664,81 @@ func TestArbitrators_RollbackLastBlockOfARound(t *testing.T) {
 	arbiterStateD3 := abt.Snapshot()
 
 	checkResult(t, arbiterStateA3, arbiterStateB3, arbiterStateC3, arbiterStateD3)
+}
+
+func TestArbitrators_NextTurnDposInfoTX(t *testing.T) {
+	initArbiters()
+
+	currentHeight := abt.chainParams.VoteStartHeight
+	block1 := &types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			getRegisterProducerTx(abtList[0], abtList[0], "p1"),
+			getRegisterProducerTx(abtList[1], abtList[1], "p2"),
+			getRegisterProducerTx(abtList[2], abtList[2], "p3"),
+			getRegisterProducerTx(abtList[3], abtList[3], "p4"),
+		},
+	}
+
+	abt.ProcessBlock(block1, nil)
+
+	for i := uint32(0); i < 5; i++ {
+		currentHeight++
+		blockEx := &types.Block{Header: types.Header{Height: currentHeight}}
+		abt.ProcessBlock(blockEx, nil)
+	}
+	assert.Equal(t, 4, len(abt.ActivityProducers))
+
+	// vote producer
+	voteProducerTx := getVoteProducerTx(10,
+		[]outputpayload.CandidateVotes{
+			{Candidate: abtList[0], Votes: 5},
+			{Candidate: abtList[1], Votes: 4},
+			{Candidate: abtList[2], Votes: 3},
+			{Candidate: abtList[3], Votes: 2},
+		})
+
+	currentHeight++
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{voteProducerTx}}, nil)
+
+	// set general arbiters count
+	abt.chainParams.GeneralArbiters = 2
+	//arbiterStateA := abt.Snapshot()
+
+	// update next arbiters
+	currentHeight = abt.chainParams.PublicDPOSHeight -
+		abt.chainParams.PreConnectOffset - 1
+
+	//here generate next turn dpos info tx
+	abt.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	//arbiterStateB := abt.Snapshot()
+
+	rawTxStr := "091400022103e435ccd6073813917c2d841a0815d21301ec3286bc1412bb5b099178c68a10b621038a1829b4b2bee784a99b" +
+		"ebabbfecfec53f33dadeeeff21b460f8b4fc7c2ca7710221023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19" +
+		"bbc77a21030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be90000000000000000"
+	data, err2 := common.HexStringToBytes(rawTxStr)
+	if err2 != nil {
+		fmt.Println("HexStringToBytes err2", err2)
+	}
+	var nextTurnDPOSInfoTx types.Transaction
+	reader2 := bytes.NewReader(data)
+	err2 = nextTurnDPOSInfoTx.Deserialize(reader2)
+	if err2 != nil {
+		fmt.Println("txn2.Deserialize err2", err2)
+	}
+
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{&nextTurnDPOSInfoTx}}, nil)
+
+	currentHeight++
+	abt.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
 }
 
 func TestArbitrators_RollbackRewardBlock(t *testing.T) {

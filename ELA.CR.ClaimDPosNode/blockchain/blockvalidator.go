@@ -313,6 +313,9 @@ func (b *BlockChain) CheckBlockContext(block *Block, prevNode *BlockNode) error 
 	if err := DefaultLedger.Arbitrators.CheckCRCAppropriationTx(block); err != nil {
 		return err
 	}
+	if err := DefaultLedger.Arbitrators.CheckNextTurnDPOSInfoTx(block); err != nil {
+		return err
+	}
 
 	return b.checkTxsContext(block)
 }

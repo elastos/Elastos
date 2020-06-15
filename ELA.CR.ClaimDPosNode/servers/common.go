@@ -282,6 +282,12 @@ type CRCProposalWithdrawInfo struct {
 	Signature      string `json:"signature"`
 }
 
+type NextTurnDPOSPayloadInfo struct {
+	WorkingHeight  uint32   `json:"workingheight"`
+	CRPublickeys   []string `json:"crpublickeys"`
+	DPOSPublicKeys []string `json:"dpospublickeys"`
+}
+
 type UTXOInfo struct {
 	TxType        byte   `json:"txtype"`
 	TxID          string `json:"txid"`

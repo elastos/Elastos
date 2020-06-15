@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -142,8 +142,16 @@ func (a *ArbitratorsMock) CheckCRCAppropriationTx(block *types.Block) error {
 	return nil
 }
 
+func (a *ArbitratorsMock) CheckNextTurnDPOSInfoTx(block *types.Block) error {
+	return nil
+}
+
 func (a *ArbitratorsMock) GetNeedConnectArbiters() []peer.PID {
 	panic("implement me")
+}
+
+func (a *ArbitratorsMock) IsNeedNextTurnDPOSInfo() bool {
+	return false
 }
 
 func (a *ArbitratorsMock) IsArbitrator(pk []byte) bool {
@@ -198,6 +206,10 @@ func (a *ArbitratorsMock) GetCrossChainArbiters() [][]byte {
 
 func (a *ArbitratorsMock) GetDutyChangeCount() int {
 	return a.DutyChangedCount
+}
+
+func (a *ArbitratorsMock) IsNextCRCArbier(pk []byte) bool {
+	return false
 }
 
 func (a *ArbitratorsMock) SetDutyChangeCount(count int) {

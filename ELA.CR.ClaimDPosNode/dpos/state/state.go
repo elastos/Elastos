@@ -802,6 +802,9 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.UpdateVersion:
 		s.updateVersion(tx, height)
+
+	case types.NextTurnDPOSInfo:
+		s.processNextTurnDPOSInfo(tx, height)
 	}
 
 	s.processCancelVotes(tx, height)
@@ -1181,6 +1184,21 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 			returnAction(producer)
 		}
 	}
+}
+
+// processNextTurnDPOSInfo change NeedNextTurnDposInfo  status
+func (s *State) processNextTurnDPOSInfo(tx *types.Transaction, height uint32) {
+	_, ok := tx.Payload.(*payload.NextTurnDPOSInfo)
+	if !ok {
+		return
+	}
+	log.Warnf("processNextTurnDPOSInfo tx: %s, %d", tx.Hash().String(), height)
+	oriNeedNextTurnDposInfo := s.NeedNextTurnDposInfo
+	s.history.Append(height, func() {
+		s.NeedNextTurnDposInfo = false
+	}, func() {
+		s.NeedNextTurnDposInfo = oriNeedNextTurnDposInfo
+	})
 }
 
 // updateVersion record the update period during that inactive arbitrators

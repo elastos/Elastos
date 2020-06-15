@@ -2364,6 +2364,22 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
+
+	case *payload.NextTurnDPOSInfo:
+		obj := new(NextTurnDPOSPayloadInfo)
+		var crPublicKeysString []string
+		var dposPublicKeysString []string
+		for _, v := range object.CRPublickeys {
+			crPublicKeysString = append(crPublicKeysString, common.BytesToHexString(v))
+		}
+		for _, v := range object.DPOSPublicKeys {
+			dposPublicKeysString = append(dposPublicKeysString, common.BytesToHexString(v))
+		}
+		obj.WorkingHeight = object.WorkingHeight
+		obj.CRPublickeys = crPublicKeysString
+		obj.DPOSPublicKeys = dposPublicKeysString
+
+		return obj
 	}
 	return nil
 }

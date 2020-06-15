@@ -164,7 +164,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 			continue
 		}
 
-		if blockTx.IsNewSideChainPowTx() || blockTx.IsUpdateVersion() {
+		if blockTx.IsNewSideChainPowTx() || blockTx.IsUpdateVersion() || blockTx.IsNextTurnDPOSInfoTx() {
 			if _, ok := mp.txnList[blockTx.Hash()]; ok {
 				mp.doRemoveTransaction(blockTx)
 				deleteCount++

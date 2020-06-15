@@ -2870,7 +2870,61 @@ func (s *txValidatorTestSuite) getCRChangeProposalOwnerProposalTx(publicKeyStr, 
 	return txn
 }
 
+func (s *txValidatorTestSuite) TestGenrateTxFromRawTxStr() {
+	rawTxStr := "0925000004033131312102f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a51f06ed7688f2b6e445f6579ca802fd1b6425b1e02a1944a8df714301f629363521031e12374bae471aa09ad479f66c2306f4bcc4ca5b754609a82a1839b94b4721b967e7bbc540fab57abb2dc9ba1e6cdbf9ae3979e3cb40a83441dea2934a24287233dcbe994bc67f4b9001ccf907a04080ef7b884ff1653853c51d955c0ea7ec62f1d871e834c6da65e5863c47f67fc0fc0449c3ffefda4028d1440852764247bc90c71cb946b545501c08a4d72813b8481bb48b1f95cb6997192e463862469f1729acb403fc8f64dcee80e6dbd9d0f59a136003585a0da3670993d2b44ca80090642ab67053a90918f1dbedf24016b130872665b86dfa57500bced7bd87c1f5be313d46f49907c41e07ec032ad8c28810fc2a6564dc18d20cafb526250434f14c6359b4c060b6d5e0f7750d55a6000000000000000100232102f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5ac"
+	data, err := common.HexStringToBytes(rawTxStr)
+	if err != nil {
+		fmt.Println("err", err)
+		return
+
+	}
+	var tx types.Transaction
+	reader := bytes.NewReader(data)
+	err2 := tx.Deserialize(reader)
+	if err2 != nil {
+		fmt.Println("err2", err2)
+		return
+	}
+
+	buf2 := new(bytes.Buffer)
+	tx.Serialize(buf2)
+	rawTxStr2 := common.BytesToHexString(buf2.Bytes())
+	s.Equal(rawTxStr2, rawTxStr)
+	s.Equal("dc327a5ef958385a23082e8c73b2fa7c330793ad601587db84ecec3977989b33", tx.Hash().String())
+}
+
+func (s *txValidatorTestSuite) TestGenerateRawTransactionStr() {
+	//generate raw tx str
+	ownerPublicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	ownerPrivateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+	crPublicKeyStr := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	crPrivateKeyStr := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+	secretaryPublicKeyStr := "031e12374bae471aa09ad479f66c2306f4bcc4ca5b754609a82a1839b94b4721b9"
+	secretaryPrivateKeyStr := "94396a69462208b8fd96d83842855b867d3b0e663203cb31d0dfaec0362ec034"
+	//recipent, draftData are all random data so hash is changing all the time
+	txn := s.getSecretaryGeneralCRCProposalTx(ownerPublicKeyStr1, ownerPrivateKeyStr1, crPublicKeyStr, crPrivateKeyStr,
+		secretaryPublicKeyStr, secretaryPrivateKeyStr)
+	buf := new(bytes.Buffer)
+	txn.Serialize(buf)
+
+	rawTxStr := common.BytesToHexString(buf.Bytes())
+
+	data, err2 := common.HexStringToBytes(rawTxStr)
+	if err2 != nil {
+		fmt.Println("HexStringToBytes err2", err2)
+	}
+	var txn2 types.Transaction
+	reader2 := bytes.NewReader(data)
+	err2 = txn2.Deserialize(reader2)
+	if err2 != nil {
+		fmt.Println("txn2.Deserialize err2", err2)
+	}
+	s.Equal(txn2.Hash().String(), txn.Hash().String())
+
+}
+
 func (s *txValidatorTestSuite) TestCheckSecretaryGeneralProposalTransaction() {
+
 	ownerPublicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	ownerPrivateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
 
@@ -4089,3 +4143,59 @@ func newCoinBaseTransaction(coinBasePayload *payload.CoinBase,
 		Programs:   []*program.Program{},
 	}
 }
+
+func (a *txValidatorTestSuite) createNextTurnDPOSInfoTransaction(crcArbiters, normalDPOSArbiters [][]byte) *types.Transaction {
+
+	var nextTurnDPOSInfo payload.NextTurnDPOSInfo
+	for _, v := range crcArbiters {
+		nextTurnDPOSInfo.CRPublickeys = append(nextTurnDPOSInfo.CRPublickeys, v)
+	}
+	for _, v := range normalDPOSArbiters {
+		nextTurnDPOSInfo.DPOSPublicKeys = append(nextTurnDPOSInfo.DPOSPublicKeys, v)
+	}
+	return &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.NextTurnDPOSInfo,
+		Payload:    &nextTurnDPOSInfo,
+		Attributes: []*types.Attribute{},
+		Programs:   []*program.Program{},
+		LockTime:   0,
+	}
+}
+
+//func (s *txValidatorTestSuite) TestCheckNextTurnDPOSInfoTx() {
+//	//var nextTurnDPOSInfo payload.NextTurnDPOSInfo
+//	crc1PubKey, _ := common.HexStringToBytes("03e435ccd6073813917c2d841a0815d21301ec3286bc1412bb5b099178c68a10b6")
+//	crc2PubKey, _ := common.HexStringToBytes("038a1829b4b2bee784a99bebabbfecfec53f33dadeeeff21b460f8b4fc7c2ca771")
+//
+//	normalArbitratorsStr := []string{
+//		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
+//		"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
+//		"0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7",
+//		"03e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd",
+//		"0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0",
+//	}
+//	normal1PubKey, _ := common.HexStringToBytes(normalArbitratorsStr[0])
+//	normal2PubKey, _ := common.HexStringToBytes(normalArbitratorsStr[1])
+//
+//	crcArbiters := [][]byte{
+//		crc1PubKey,
+//		crc2PubKey,
+//	}
+//
+//	normalDPOSArbiters := [][]byte{
+//		normal1PubKey,
+//		normal2PubKey,
+//	}
+//	nextTurnDPOSInfoTx := s.createNextTurnDPOSInfoTransaction(crcArbiters, normalDPOSArbiters)
+//	// Check correct transaction.
+//	//DefaultLedger.Arbitrators.SetNeedNextTurnDPOSInfo(true)
+//	err := s.Chain.checkNextTurnDPOSInfoTransaction(nextTurnDPOSInfoTx)
+//	s.NoError(err)
+//
+//	// Appropriation transaction already exist.
+//	s.Chain.crCommittee.NeedAppropriation = false
+//	err = s.Chain.checkNextTurnDPOSInfoTransaction(nextTurnDPOSInfoTx)
+//	s.EqualError(err, "should have no appropriation transaction")
+//
+//}
