@@ -77,7 +77,7 @@ public class Copyright {
                 " * SOFTWARE.\n" +
                 " */\n";
         // 存放java文件的文件夹,必须是文件夹
-        String folder = "D:/AndroidStudioProjects/ela/Elastos.App.UnionSquare.Android/app/src/main/java/org/elastos/wallet/ela";
+        String folder = "./app/src/main/java/org/elastos/wallet/ela";
 
         new Copyright(folder, copyright).process();
 

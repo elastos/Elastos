@@ -38,6 +38,7 @@ import org.elastos.wallet.ela.ui.Assets.adapter.SyncReSetRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.presenter.ResetSyncPresenter;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 
 import java.util.ArrayList;
@@ -96,8 +97,8 @@ public class SyncResetFragment extends BaseFragment implements CommonRvListener,
                             subWallet.setFiled2("false");
                             subWallet.setBytesPerSecond(0);
                             subWallet.setDownloadPeer(null);
-
                         }
+                        post(RxEnum.UPDATAPROGRESS.ordinal(), null, null);
                         popBackFragment();
                     }
                 });
