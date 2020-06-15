@@ -350,14 +350,13 @@ export default class extends BaseComponent {
   renderProfileToast() {
     const isShow =
       !this.state.dismissed &&
-      !this.isPermanentlyDismissed() &&
-      this.props.isLogin &&
-      this.hasIncompleteProfile()
-
+      this.props.isLogin && _.isEmpty(this.props.user.did)
+      // !this.isPermanentlyDismissed() &&
+      // this.hasIncompleteProfile()
     return (
       isShow && (
         <div className="top-toast">
-          <a onClick={this.completeProfile}>
+          <a onClick={()=> this.props.history.push("/profile/info")}>
             {I18N.get('profile.complete')}
             <Icon type="right" style={{ marginLeft: 8 }} />
           </a>
