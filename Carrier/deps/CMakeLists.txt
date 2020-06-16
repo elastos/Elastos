@@ -17,7 +17,8 @@ add_submodule(zlib
     DEPENDS platform-specific)
 add_submodule(libressl
     DEPENDS platform-specific)
-add_submodule(libcurl
+add_submodule(curl
+    DIRECTORY libcurl
     DEPENDS platform-specific libressl zlib)
 add_submodule(cJSON
     DEPENDS platform-specific)
