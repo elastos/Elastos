@@ -266,6 +266,7 @@ func (pow *Service) GenerateBlock(minerAddr string,
 		return txs[i].FeePerKB > txs[j].FeePerKB
 	})
 
+	var proposalsUsedAmount common.Fixed64
 	for _, tx := range txs {
 		size := totalTxsSize + tx.GetSize()
 		if size > int(pact.MaxBlockContextSize) {
@@ -285,13 +286,16 @@ func (pow *Service) GenerateBlock(minerAddr string,
 			log.Warn("check transaction context failed, get transaction reference failed")
 			break
 		}
-		errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx, references, 0)
+		errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx, references, proposalsUsedAmount)
 		if errCode != nil {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue
 		}
 		msgBlock.Transactions = append(msgBlock.Transactions, tx)
 		totalTxFee += tx.Fee
+		if tx.IsCRCProposalTx() {
+			blockchain.RecordCRCProposalAmount(&proposalsUsedAmount, tx)
+		}
 		txCount++
 	}
 
