@@ -1,4 +1,6 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ARG USER_NAME=elastos
 ARG USER_UID=1000
@@ -39,7 +41,8 @@ RUN set -ex                                                                     
         gdbserver \
         bash-completion \
         cmake \
-        python \
+        python3 \
+        python3-distutils \
         doxygen \
         python-sphinx \
         graphviz \
@@ -47,14 +50,10 @@ RUN set -ex                                                                     
         curl \
         libssl-dev \
         libncurses5-dev                                                             && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3 10        && \
     curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py                 && \
     python /tmp/get-pip.py                                                          && \
     pip install breathe                                                             && \
-    curl -L -o /tmp/flatcc-0.5.0.tar.gz https://github.com/dvidelabs/flatcc/archive/v0.5.0.tar.gz && \
-    cd /tmp && tar xzvf flatcc-0.5.0.tar.gz                                         && \
-    mkdir -p /tmp/flatcc-0.5.0/build/install                                        && \
-    cd /tmp/flatcc-0.5.0/build/install && cmake ../.. -DFLATCC_INSTALL=on           && \
-    cd /tmp/flatcc-0.5.0/build/install && make install                              && \
     rm -rf /tmp/*                                                                   && \
     rm -rf /var/lib/apt/list/*
 
