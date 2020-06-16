@@ -116,30 +116,30 @@ public class Claims {
     }
 
     public func getExpiration() -> Date? {
-        return DateFormatter.convertToUTCDateFromString((claims[Claims.exp] as? String)!)
+        return DateHelper.getDateFromTimeStamp(claims[Claims.exp] as? Int)
     }
 
     public func setExpiration(expiration: Date) -> Claims {
-        claims[Claims.exp] = DateHelper.formateDate(expiration)
+        claims[Claims.exp] = DateHelper.getTimeStamp(expiration)
         return self
     }
 
     public func getNotBefore() -> Date? {
-        return DateFormatter.convertToUTCDateFromString((claims[Claims.nbf] as? String)!)
+        return DateHelper.getDateFromTimeStamp(claims[Claims.nbf] as? Int)
     }
 
     public func setNotBefore(notBefore: Date) -> Claims {
-        claims[Claims.nbf] = DateHelper.formateDate(notBefore)
+        claims[Claims.nbf] = DateHelper.getTimeStamp(notBefore)
         return self
     }
 
     public func getIssuedAt() -> Date? {
         
-        return DateFormatter.convertToUTCDateFromString((claims[Claims.iat] as? String)!)
+        return DateHelper.getDateFromTimeStamp(claims[Claims.iat] as? Int)
     }
 
     public func setIssuedAt(issuedAt: Date) -> Claims {
-        claims[Claims.iat] = DateHelper.formateDate(issuedAt)
+        claims[Claims.iat] = DateHelper.getTimeStamp(issuedAt)
         return self
     }
 

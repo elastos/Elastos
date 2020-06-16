@@ -27,6 +27,20 @@ class DateHelper {
         return localDate
     }
 
+    class func getTimeStamp(_ date: Date) -> Int {
+
+        return Int(date.timeIntervalSince1970)
+    }
+
+    class func getDateFromTimeStamp(_ timeStamp: Int?) -> Date? {
+        guard timeStamp != nil else {
+            return nil
+        }
+        let interval = TimeInterval.init(timeStamp!)
+
+        return Date(timeIntervalSince1970: interval)
+    }
+
     class func isExipired(_ date: Date) -> Bool {
         return isExpired(DateHelper.currentDate(), date)
     }
