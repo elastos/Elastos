@@ -183,6 +183,8 @@ var DefaultParams = Params{
 	EnableActivateIllegalHeight: 439000,
 	CRVotingStartHeight:         537670,
 	CRCommitteeStartHeight:      658930,
+	CRClaimDPOSNodeStartHeight:  1000000, // todo complete me later
+	CRClaimDPOSNodePeriod:       720 * 7, // todo complete me later
 	CheckRewardHeight:           436812,
 	VoteStatisticsHeight:        512881,
 	RegisterCRByDIDHeight:       598000,
@@ -273,6 +275,8 @@ func (p *Params) TestNet() *Params {
 	copy.PublicDPOSHeight = 300000
 	copy.CRVotingStartHeight = 436900
 	copy.CRCommitteeStartHeight = 546500
+	copy.CRClaimDPOSNodeStartHeight = 1000000 // todo complete me later
+	copy.CRClaimDPOSNodePeriod = 720 * 7      // todo complete me later
 	copy.EnableActivateIllegalHeight = 546500
 	copy.CheckRewardHeight = 100
 	copy.VoteStatisticsHeight = 0
@@ -336,6 +340,8 @@ func (p *Params) RegNet() *Params {
 	copy.PublicDPOSHeight = 231500
 	copy.CRVotingStartHeight = 292000
 	copy.CRCommitteeStartHeight = 442000
+	copy.CRClaimDPOSNodeStartHeight = 1000000 // todo complete me later
+	copy.CRClaimDPOSNodePeriod = 720 * 7      // todo complete me later
 	copy.EnableActivateIllegalHeight = 256000
 	copy.CheckRewardHeight = 280000
 	copy.VoteStatisticsHeight = 0
@@ -461,6 +467,12 @@ type Params struct {
 
 	// CRCommitteeStartHeight defines the height of CR Committee started.
 	CRCommitteeStartHeight uint32
+
+	// CRClaimDPOSNodeStartHeight defines the height of CR claim DPOS node started.
+	CRClaimDPOSNodeStartHeight uint32
+
+	// CRClaimDPOSNodePeriod defines the period of CR claim DPOS node.
+	CRClaimDPOSNodePeriod uint32
 
 	// PublicDPOSHeight defines the start height to enable activate illegal
 	// producer though activate tx.

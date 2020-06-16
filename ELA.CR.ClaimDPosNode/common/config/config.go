@@ -119,6 +119,8 @@ type CRConfiguration struct {
 	CRExpensesAddress                  string         `json:"CRExpensesAddress"`
 	CRVotingStartHeight                uint32         `json:"CRVotingStartHeight"`
 	CRCommitteeStartHeight             uint32         `json:"CRCommitteeStartHeight"`
+	CRClaimDPOSNodeStartHeight         uint32         `json:"CRClaimDPOSNodeStartHeight"`
+	CRClaimDPOSNodePeriod              uint32         `json:"CRClaimDPOSNodePeriod"`
 	RectifyTxFee                       common.Fixed64 `json:"RectifyTxFee"`
 	RealWithdrawSingleFee              common.Fixed64 `json:"RealWithdrawSingleFee"`
 	NewVersionHeight                   uint64         `json:"NewVersionHeight"`

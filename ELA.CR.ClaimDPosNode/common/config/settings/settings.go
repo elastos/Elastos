@@ -499,6 +499,18 @@ func NewSettings() *Settings {
 		ParamName:    "CRCommitteeStartHeight"})
 
 	result.Add(&settingItem{
+		Flag:         cmdcom.CRClaimDPOSNodeStartHeightFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.CRClaimDPOSNodeStartHeight",
+		ParamName:    "CRCommitteeStartHeight"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.CRClaimDPOSNodePeriodFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.CRClaimDPOSNodePeriod",
+		ParamName:    "CRCommitteeStartHeight"})
+
+	result.Add(&settingItem{
 		Flag:         cmdcom.CRVotingStartHeightFlag,
 		DefaultValue: uint32(0),
 		ConfigPath:   "CRConfiguration.CRVotingStartHeight",

@@ -230,6 +230,14 @@ var (
 		Name:  "crcommitteestartheight",
 		Usage: "defines the height of CR Committee started",
 	}
+	CRClaimDPOSNodeStartHeightFlag = cli.StringFlag{
+		Name:  "crclaimdposnodestartheight",
+		Usage: "defines the height of CR claim DPOS node started",
+	}
+	CRClaimDPOSNodePeriodFlag = cli.StringFlag{
+		Name:  "crclaimdposnodeperiod",
+		Usage: "defines the period of CR claim DPOS node",
+	}
 	CRVotingStartHeightFlag = cli.StringFlag{
 		Name:  "crvotingstartheight",
 		Usage: "defines the height of CR voting started",
