@@ -28,7 +28,7 @@ public interface DIDMetadata {
 	public void setAlias(String alias);
 	public String getAlias();
 	public String getTransactionId();
-	public String getPreviousTransactionId();
+	public String getPreviousSignature();
 	public String getSignature();
 	public Date getPublished();
 	public boolean isDeactivated();

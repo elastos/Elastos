@@ -487,6 +487,7 @@ public final class DIDStore {
 		}
 
 		String lastTxid = null;
+		String reolvedSignautre = null;
 		DIDDocument resolvedDoc = did.resolve();
 		if (resolvedDoc != null) {
 			if (resolvedDoc.isDeactivated()) {
@@ -497,15 +498,14 @@ public final class DIDStore {
 				throw new DIDStoreException("DID already deactivated.");
 			}
 
+			reolvedSignautre = resolvedDoc.getProof().getSignature();
+
 			if (!force) {
-				String localPrevTxid = doc.getMetadata().getPreviousTransactionId();
+				String localPrevSignature = doc.getMetadata().getPreviousSignature();
 				String localSignature = doc.getMetadata().getSignature();
 
-				String resolvedTxid = resolvedDoc.getMetadata().getTransactionId();
-				String reolvedSignautre = resolvedDoc.getProof().getSignature();
-
-				if (localPrevTxid == null && localSignature == null) {
-					log.error("Missing transaction id and signature, " +
+				if (localPrevSignature == null && localSignature == null) {
+					log.error("Missing signatures information, " +
 							"DID SDK dosen't know how to handle it, " +
 							"use force mode to ignore checks.");
 					throw new DIDStoreException("DID document not up-to-date");
@@ -513,7 +513,7 @@ public final class DIDStore {
 
 
 				if ((localSignature != null && !localSignature.equals(reolvedSignautre)) &&
-					(localPrevTxid != null && !localPrevTxid.equals(resolvedTxid))) {
+					(localPrevSignature != null && !localPrevSignature.equals(reolvedSignautre))) {
 					log.error("Current copy not based on the lastest on-chain copy, txid mismatch.");
 					throw new DIDStoreException("DID document not up-to-date");
 				}
@@ -533,7 +533,7 @@ public final class DIDStore {
 			backend.update(doc, lastTxid, signKey, storepass);
 		}
 
-		doc.getMetadataImpl().setPreviousTransactionId(lastTxid);
+		doc.getMetadataImpl().setPreviousSignature(reolvedSignautre);
 		doc.getMetadataImpl().setSignature(doc.getProof().getSignature());
 		storage.storeDidMetadata(doc.getSubject(), doc.getMetadataImpl());
 	}

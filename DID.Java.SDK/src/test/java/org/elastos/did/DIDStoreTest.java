@@ -335,7 +335,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void testUpdateDidWithoutTxid() throws DIDException {
+	public void testUpdateDidWithoutPrevSignature() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
     	testData.initIdentity();
@@ -364,7 +364,7 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMetadataImpl().setPreviousTransactionId(null);
+    	doc.getMetadataImpl().setPreviousSignature(null);
     	doc.saveMetadata();
 
     	// Update again
@@ -434,7 +434,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void testUpdateDidWithoutTxidAndSignature() throws DIDException {
+	public void testUpdateDidWithoutAllSignatures() throws DIDException {
 		TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
     	testData.initIdentity();
@@ -448,7 +448,7 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMetadataImpl().setPreviousTransactionId(null);
+    	doc.getMetadataImpl().setPreviousSignature(null);
     	doc.getMetadataImpl().setSignature(null);
     	doc.saveMetadata();
 
@@ -469,7 +469,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void testForceUpdateDidWithoutTxidAndSignature() throws DIDException {
+	public void testForceUpdateDidWithoutAllSignatures() throws DIDException {
 		TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
     	testData.initIdentity();
@@ -483,7 +483,7 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMetadataImpl().setPreviousTransactionId(null);
+    	doc.getMetadataImpl().setPreviousSignature(null);
     	doc.getMetadataImpl().setSignature(null);
     	doc.saveMetadata();
 
@@ -505,7 +505,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void testUpdateDidWithWrongTxid() throws DIDException {
+	public void testUpdateDidWithWrongPrevSignature() throws DIDException {
 		TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
     	testData.initIdentity();
@@ -534,7 +534,7 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMetadataImpl().setPreviousTransactionId("1234567890");
+    	doc.getMetadataImpl().setPreviousSignature("1234567890");
     	doc.saveMetadata();
 
     	// Update
@@ -603,7 +603,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void testForceUpdateDidWithWrongTxid() throws DIDException {
+	public void testForceUpdateDidWithWrongPrevSignature() throws DIDException {
 		TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
     	testData.initIdentity();
@@ -617,7 +617,7 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMetadataImpl().setPreviousTransactionId("1234567890");
+    	doc.getMetadataImpl().setPreviousSignature("1234567890");
     	doc.saveMetadata();
 
     	// Update

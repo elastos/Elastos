@@ -33,7 +33,7 @@ public class DIDMetadataImpl extends AbstractMetadata implements DIDMetadata {
 	private static final long serialVersionUID = -6074640560591492115L;
 
 	private final static String TXID = RESERVED_PREFIX + "txid";
-	private final static String PREV_TXID = RESERVED_PREFIX + "prevTxid";
+	private final static String PREV_SIGNATURE = RESERVED_PREFIX + "prevSignature";
 	private final static String SIGNATURE = RESERVED_PREFIX + "signature";
 	private final static String PUBLISHED = RESERVED_PREFIX + "published";
 	private final static String ALIAS = RESERVED_PREFIX + "alias";
@@ -66,13 +66,13 @@ public class DIDMetadataImpl extends AbstractMetadata implements DIDMetadata {
 		return (String)get(TXID);
 	}
 
-	public void setPreviousTransactionId(String txid) {
-		put(PREV_TXID, txid);
+	public void setPreviousSignature(String txid) {
+		put(PREV_SIGNATURE, txid);
 	}
 
 	@Override
-	public String getPreviousTransactionId() {
-		return (String)get(PREV_TXID);
+	public String getPreviousSignature() {
+		return (String)get(PREV_SIGNATURE);
 	}
 
 	public void setSignature(String signature) {
