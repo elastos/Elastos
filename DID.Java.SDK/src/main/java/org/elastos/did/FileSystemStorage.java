@@ -43,8 +43,8 @@ import org.elastos.did.exception.DIDStoreVersionMismatch;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDocumentException;
 import org.elastos.did.exception.MalformedMetaException;
-import org.elastos.did.meta.CredentialMeta;
-import org.elastos.did.meta.DIDMeta;
+import org.elastos.did.metadata.CredentialMetadataImpl;
+import org.elastos.did.metadata.DIDMetadataImpl;
 
 /*
  * FileSystem DID Store: storage layout
@@ -391,32 +391,30 @@ class FileSystemStorage implements DIDStorage {
 
 
 	@Override
-	public void storeDidMeta(DID did, DIDMeta meta) throws DIDStorageException {
+	public void storeDidMetadata(DID did, DIDMetadataImpl metadata) throws DIDStorageException {
 		try {
 			File file = getFile(true, DID_DIR, did.getMethodSpecificId(), META_FILE);
-			String metadata = (meta != null && !meta.isEmpty()) ?
-					meta.toString() : null;
 
 			if (metadata == null || metadata.isEmpty())
 				file.delete();
 			else
-				writeText(file, metadata);
+				metadata.save(new FileWriter(file));
 		} catch (IOException e) {
 			throw new DIDStorageException("Store DID metadata error.", e);
 		}
 	}
 
 	@Override
-	public DIDMeta loadDidMeta(DID did) throws DIDStorageException {
-		DIDMeta meta = new DIDMeta();
+	public DIDMetadataImpl loadDidMetadata(DID did) throws DIDStorageException {
+		DIDMetadataImpl metadata = new DIDMetadataImpl();
 
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(), META_FILE);
-			meta.load(new FileReader(file));
+			metadata.load(new FileReader(file));
 		} catch (FileNotFoundException | MalformedMetaException ignore) {
 		}
 
-		return meta;
+		return metadata;
 	}
 
 	@Override
@@ -506,36 +504,34 @@ class FileSystemStorage implements DIDStorage {
 	}
 
 	@Override
-	public void storeCredentialMeta(DID did, DIDURL id, CredentialMeta meta)
+	public void storeCredentialMetadata(DID did, DIDURL id, CredentialMetadataImpl metadata)
 			throws DIDStorageException {
 		try {
 			File file = getFile(true, DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), META_FILE);
-			String metadata = (meta != null && !meta.isEmpty()) ?
-					meta.toString() : null;
 
 			if (metadata == null || metadata.isEmpty())
 				file.delete();
 			else
-				writeText(file, metadata);
+				metadata.save(new FileWriter(file));
 		} catch (IOException e) {
 			throw new DIDStorageException("Store credential metadata error.", e);
 		}
 	}
 
 	@Override
-	public CredentialMeta loadCredentialMeta(DID did, DIDURL id)
+	public CredentialMetadataImpl loadCredentialMetadata(DID did, DIDURL id)
 			throws DIDStorageException {
-		CredentialMeta meta = new CredentialMeta();
+		CredentialMetadataImpl metadata = new CredentialMetadataImpl();
 
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), META_FILE);
-			meta.load(new FileReader(file));
+			metadata.load(new FileReader(file));
 		} catch (FileNotFoundException | MalformedMetaException ignore) {
 		}
 
-		return meta;
+		return metadata;
 	}
 
 	@Override

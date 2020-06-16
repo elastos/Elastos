@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedDIDURLException;
-import org.elastos.did.meta.CredentialMeta;
+import org.elastos.did.metadata.CredentialMetadataImpl;
 import org.elastos.did.parser.DIDURLBaseListener;
 import org.elastos.did.parser.DIDURLParser;
 import org.elastos.did.parser.ParserHelper;
@@ -39,7 +39,7 @@ public class DIDURL implements Comparable<DIDURL> {
 	private Map<String, String> query;
 	private String fragment;
 
-	private CredentialMeta meta;
+	private CredentialMetadataImpl metadata;
 
 	public DIDURL(DID base, String url) {
 		if (base == null || url == null || url.isEmpty())
@@ -164,45 +164,22 @@ public class DIDURL implements Comparable<DIDURL> {
 		this.fragment = fragment;
 	}
 
-	protected void setMeta(CredentialMeta meta) {
-		this.meta = meta;
+	protected void setMetadata(CredentialMetadataImpl metadata) {
+		this.metadata = metadata;
 	}
 
-	protected CredentialMeta getMeta() {
-		if (meta == null)
-			meta = new CredentialMeta();
+	public CredentialMetadata getMetadata() {
+		if (metadata == null)
+			metadata = new CredentialMetadataImpl();
 
-		return meta;
+		return metadata;
 	}
 
-	public void setExtra(String name, String value) throws DIDStoreException {
-		if (name == null || name.isEmpty())
-			throw new IllegalArgumentException();
-
-		getMeta().put(name, value);
-
-		if (getMeta().attachedStore())
-			getMeta().getStore().storeCredentialMeta(this.getDid(), this, meta);
+	public void saveMetadata() throws DIDStoreException {
+		if (metadata != null && metadata.attachedStore())
+			metadata.getStore().storeCredentialMetadata(this.getDid(), this, metadata);
 	}
 
-	public String getExtra(String name) {
-		if (name == null || name.isEmpty())
-			throw new IllegalArgumentException();
-
-		return (String)getMeta().get(name);
-	}
-
-	// when alias is null value, mean to clean alias
-	public void setAlias(String alias) throws DIDStoreException {
-		getMeta().setAlias(alias);
-
-		if (getMeta().attachedStore())
-			getMeta().getStore().storeCredentialMeta(this.getDid(), this, meta);
-	}
-
-	public String getAlias() {
-		return getMeta().getAlias();
-	}
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(512);

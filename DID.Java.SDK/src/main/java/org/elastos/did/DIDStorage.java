@@ -26,8 +26,8 @@ import java.util.List;
 
 import org.elastos.did.exception.DIDStorageException;
 import org.elastos.did.exception.DIDStoreException;
-import org.elastos.did.meta.CredentialMeta;
-import org.elastos.did.meta.DIDMeta;
+import org.elastos.did.metadata.CredentialMetadataImpl;
+import org.elastos.did.metadata.DIDMetadataImpl;
 
 public interface DIDStorage {
 	public interface ReEncryptor {
@@ -58,9 +58,9 @@ public interface DIDStorage {
 	public String loadMnemonic() throws DIDStorageException;
 
 	// DIDs
-	public void storeDidMeta(DID did, DIDMeta meta) throws DIDStorageException;
+	public void storeDidMetadata(DID did, DIDMetadataImpl metadata) throws DIDStorageException;
 
-	public DIDMeta loadDidMeta(DID did) throws DIDStorageException;
+	public DIDMetadataImpl loadDidMetadata(DID did) throws DIDStorageException;
 
 	public void storeDid(DIDDocument doc) throws DIDStorageException;
 
@@ -73,10 +73,10 @@ public interface DIDStorage {
 	public List<DID> listDids(int filter) throws DIDStorageException;
 
 	// Credentials
-	public void storeCredentialMeta(DID did, DIDURL id, CredentialMeta meta)
+	public void storeCredentialMetadata(DID did, DIDURL id, CredentialMetadataImpl metadata)
 			throws DIDStorageException;
 
-	public CredentialMeta loadCredentialMeta(DID did, DIDURL id)
+	public CredentialMetadataImpl loadCredentialMetadata(DID did, DIDURL id)
 			throws DIDStorageException;
 
 	public void storeCredential(VerifiableCredential credential)

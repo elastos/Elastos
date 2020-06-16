@@ -20,17 +20,30 @@
  * SOFTWARE.
  */
 
-package org.elastos.did.meta;
+package org.elastos.did.metadata;
 
-public class CredentialMeta extends Metadata {
+import org.elastos.did.CredentialMetadata;
+import org.elastos.did.DIDStore;
+
+public class CredentialMetadataImpl extends AbstractMetadata implements CredentialMetadata {
 	private static final long serialVersionUID = 725815452175234592L;
 
 	private final static String ALIAS = RESERVED_PREFIX + "alias";
 
+	public CredentialMetadataImpl() {
+		this(null);
+	}
+
+	public CredentialMetadataImpl(DIDStore store) {
+		super(store);
+	}
+
+	@Override
 	public void setAlias(String alias) {
 		put(ALIAS, alias);
 	}
 
+	@Override
 	public String getAlias() {
 		return (String)get(ALIAS);
 	}

@@ -57,7 +57,7 @@ import org.elastos.did.exception.MalformedDocumentException;
 import org.elastos.did.jwt.JwtBuilder;
 import org.elastos.did.jwt.JwtParserBuilder;
 import org.elastos.did.jwt.KeyProvider;
-import org.elastos.did.meta.DIDMeta;
+import org.elastos.did.metadata.DIDMetadataImpl;
 import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -92,7 +92,7 @@ public class DIDDocument {
 	private Date expires;
 	private Proof proof;
 
-	private DIDMeta meta;
+	private DIDMetadataImpl metadata;
 
 	public static class PublicKey extends DIDObject {
 		private DID controller;
@@ -374,7 +374,7 @@ public class DIDDocument {
 
 		this.expires = doc.expires;
 		this.proof = doc.proof;
-		this.meta = doc.meta;
+		this.metadata = doc.metadata;
 	}
 
 	private <K, V extends DIDObject> int getEntryCount(Map<K, V> entries,
@@ -502,10 +502,10 @@ public class DIDDocument {
 		if (getEntry(publicKeys, id) == null)
 			return false;
 
-		if (!getMeta().attachedStore())
+		if (!getMetadataImpl().attachedStore())
 			return false;
 
-		return getMeta().getStore().containsPrivateKey(getSubject(), id);
+		return getMetadataImpl().getStore().containsPrivateKey(getSubject(), id);
 	}
 
 	public boolean hasPrivateKey(String id) throws DIDStoreException {
@@ -547,10 +547,10 @@ public class DIDDocument {
 		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
-		if (!getMeta().attachedStore())
-			throw new DIDStoreException("Not attached with DID store.");
+		if (!getMetadataImpl().attachedStore())
+			throw new DIDStoreException("Not attached with a DID store.");
 
-		HDKey key = getMeta().getStore().loadPrivateKey(getSubject(),
+		HDKey key = getMetadataImpl().getStore().loadPrivateKey(getSubject(),
 				getDefaultPublicKey(), storepass);
 
 		return key.derive(index).serializeBase58();
@@ -569,13 +569,13 @@ public class DIDDocument {
 		if (!hasPublicKey(id))
 			throw new InvalidKeyException("Key no exist");
 
-		if (!getMeta().attachedStore())
-			throw new DIDStoreException("Not attached with DID store.");
+		if (!getMetadataImpl().attachedStore())
+			throw new DIDStoreException("Not attached with a DID store.");
 
-		if (!getMeta().getStore().containsPrivateKey(getSubject(), id))
+		if (!getMetadataImpl().getStore().containsPrivateKey(getSubject(), id))
 			throw new InvalidKeyException("Don't have private key");
 
-		HDKey key = getMeta().getStore().loadPrivateKey(getSubject(), id, storepass);
+		HDKey key = getMetadataImpl().getStore().loadPrivateKey(getSubject(), id, storepass);
 		return key.getJCEKeyPair();
 	}
 
@@ -623,8 +623,8 @@ public class DIDDocument {
 
 		removeEntry(publicKeys, id);
 		try {
-			if (getMeta().attachedStore())
-				getMeta().getStore().deletePrivateKey(getSubject(), id);
+			if (getMetadataImpl().attachedStore())
+				getMetadataImpl().getStore().deletePrivateKey(getSubject(), id);
 		} catch (DIDStoreException ignore) {
 			// TODO: CHECKME!
 		}
@@ -927,58 +927,27 @@ public class DIDDocument {
 		this.proof = proof;
 	}
 
-	protected void setMeta(DIDMeta meta) {
-		this.meta = meta;
-		subject.setMeta(meta);
+	protected void setMetadata(DIDMetadataImpl metadata) {
+		this.metadata = metadata;
+		subject.setMetadata(metadata);
 	}
 
-	protected DIDMeta getMeta() {
-		if (meta == null) {
-			meta = new DIDMeta();
-			subject.setMeta(meta);
+	protected DIDMetadataImpl getMetadataImpl() {
+		if (metadata == null) {
+			metadata = new DIDMetadataImpl();
+			subject.setMetadata(metadata);
 		}
 
-		return meta;
+		return metadata;
 	}
 
-	public void setExtra(String name, String value) throws DIDStoreException {
-		if (name == null || name.isEmpty())
-			throw new IllegalArgumentException();
-
-		getMeta().put(name, value);
-
-		if (getMeta().attachedStore())
-			getMeta().getStore().storeDidMeta(getSubject(), meta);
+	public DIDMetadata getMetadata() {
+		return getMetadataImpl();
 	}
 
-	public String getExtra(String name) {
-		if (name == null || name.isEmpty())
-			throw new IllegalArgumentException();
-
-		return (String)getMeta().get(name);
-	}
-
-	public void setAlias(String alias) throws DIDStoreException {
-		getMeta().setAlias(alias);
-
-		if (getMeta().attachedStore())
-			getMeta().getStore().storeDidMeta(getSubject(), meta);
-	}
-
-	public String getAlias() {
-		return getMeta().getAlias();
-	}
-
-	public String getTransactionId() {
-		return getMeta().getTransactionId();
-	}
-
-	public Date getPublished() {
-		return getMeta().getPublished();
-	}
-
-	public boolean isDeactivated() {
-		return getMeta().isDeactivated();
+	public void saveMetadata() throws DIDStoreException {
+		if (metadata != null && metadata.attachedStore())
+			metadata.getStore().storeDidMetadata(getSubject(), metadata);
 	}
 
 	public boolean isExpired() {
@@ -1001,6 +970,10 @@ public class DIDDocument {
 
 		String json = toJson(true, true);
 		return verify(proof.getCreator(), proof.getSignature(), json.getBytes());
+	}
+
+	public boolean isDeactivated() {
+		return getMetadata().isDeactivated();
 	}
 
 	public boolean isValid() {
@@ -1038,10 +1011,10 @@ public class DIDDocument {
 		if (id == null || digest == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
-		if (!getMeta().attachedStore())
-			throw new DIDStoreException("Not attached with DID store.");
+		if (!getMetadataImpl().attachedStore())
+			throw new DIDStoreException("Not attached with a DID store.");
 
-		return getMeta().getStore().sign(getSubject(), id, storepass, digest);
+		return getMetadataImpl().getStore().sign(getSubject(), id, storepass, digest);
 	}
 
 	public String signDigest(String id, String storepass, byte[] digest)
@@ -1535,7 +1508,7 @@ public class DIDDocument {
 
 		protected Builder(DID did, DIDStore store) {
 			this.document = new DIDDocument(did);
-			this.document.getMeta().setStore(store);
+			this.document.getMetadataImpl().setStore(store);
 		}
 
 		protected Builder(DIDDocument doc) {

@@ -68,7 +68,7 @@ public class DIDStoreTest {
     	DIDStore store = testData.setup(true);
 
     	assertThrows(DIDStoreException.class, () -> {
-    		store.newDid("this will be fail", TestConfig.storePass);
+    		store.newDid(TestConfig.storePass);
     	});
 	}
 
@@ -208,7 +208,7 @@ public class DIDStoreTest {
 
     	// test alias
     	store.storeDid(resolved);
-    	assertEquals(alias, resolved.getAlias());
+    	assertEquals(alias, resolved.getMetadata().getAlias());
     	assertEquals(doc.getSubject(), resolved.getSubject());
     	assertEquals(doc.getProof().getSignature(),
     			resolved.getProof().getSignature());
@@ -364,8 +364,8 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setPreviousTransactionId(null);
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+    	doc.getMetadataImpl().setPreviousTransactionId(null);
+    	doc.saveMetadata();
 
     	// Update again
     	db = doc.edit();
@@ -414,8 +414,8 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setSignature(null);
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+    	doc.getMetadataImpl().setSignature(null);
+    	doc.saveMetadata();
 
     	// Update again
     	db = doc.edit();
@@ -448,9 +448,9 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setPreviousTransactionId(null);
-    	doc.getMeta().setSignature(null);
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+    	doc.getMetadataImpl().setPreviousTransactionId(null);
+    	doc.getMetadataImpl().setSignature(null);
+    	doc.saveMetadata();
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
@@ -483,9 +483,9 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setPreviousTransactionId(null);
-    	doc.getMeta().setSignature(null);
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+    	doc.getMetadataImpl().setPreviousTransactionId(null);
+    	doc.getMetadataImpl().setSignature(null);
+    	doc.saveMetadata();
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
@@ -534,8 +534,8 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setPreviousTransactionId("1234567890");
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+    	doc.getMetadataImpl().setPreviousTransactionId("1234567890");
+    	doc.saveMetadata();
 
     	// Update
     	db = doc.edit();
@@ -583,8 +583,8 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setSignature("1234567890");
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+    	doc.getMetadataImpl().setSignature("1234567890");
+    	doc.saveMetadata();
 
     	// Update
     	db = doc.edit();
@@ -617,8 +617,8 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setPreviousTransactionId("1234567890");
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+    	doc.getMetadataImpl().setPreviousTransactionId("1234567890");
+    	doc.saveMetadata();
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
@@ -652,8 +652,8 @@ public class DIDStoreTest {
     	assertNotNull(resolved);
     	assertEquals(doc.toString(), resolved.toString());
 
-    	doc.getMeta().setSignature("1234567890");
-    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+    	doc.getMetadataImpl().setSignature("1234567890");
+    	doc.saveMetadata();
 
     	// Update
     	DIDDocument.Builder db = doc.edit();
@@ -897,7 +897,7 @@ public class DIDStoreTest {
         	resolved = doc.getSubject().resolve(true);
         	assertNotNull(resolved);
         	store.storeDid(resolved);
-        	assertEquals(alias, resolved.getAlias());
+        	assertEquals(alias, resolved.getMetadata().getAlias());
         	assertEquals(doc.getSubject(), resolved.getSubject());
         	assertEquals(doc.getProof().getSignature(),
         			resolved.getProof().getSignature());
@@ -998,18 +998,18 @@ public class DIDStoreTest {
     	testData.loadTestIssuer();
     	DIDDocument test = testData.loadTestDocument();
     	VerifiableCredential vc = testData.loadProfileCredential();
-    	vc.setAlias("MyProfile");
+    	vc.getMetadata().setAlias("MyProfile");
     	vc = testData.loadEmailCredential();
-    	vc.setAlias("Email");
+    	vc.getMetadata().setAlias("Email");
     	vc = testData.loadTwitterCredential();
-    	vc.setAlias("Twitter");
+    	vc.getMetadata().setAlias("Twitter");
     	vc = testData.loadPassportCredential();
-    	vc.setAlias("Passport");
+    	vc.getMetadata().setAlias("Passport");
 
     	DIDURL id = new DIDURL(test.getSubject(), "profile");
     	vc = store.loadCredential(test.getSubject(), id);
     	assertNotNull(vc);
-    	assertEquals("MyProfile", vc.getAlias());
+    	assertEquals("MyProfile", vc.getMetadata().getAlias());
     	assertEquals(test.getSubject(), vc.getSubject().getId());
     	assertEquals(id, vc.getId());
     	assertTrue(vc.isValid());
@@ -1017,7 +1017,7 @@ public class DIDStoreTest {
     	// try with full id string
     	vc = store.loadCredential(test.getSubject().toString(), id.toString());
     	assertNotNull(vc);
-    	assertEquals("MyProfile", vc.getAlias());
+    	assertEquals("MyProfile", vc.getMetadata().getAlias());
     	assertEquals(test.getSubject(), vc.getSubject().getId());
     	assertEquals(id, vc.getId());
     	assertTrue(vc.isValid());
@@ -1025,7 +1025,7 @@ public class DIDStoreTest {
     	id = new DIDURL(test.getSubject(), "twitter");
     	vc = store.loadCredential(test.getSubject().toString(), "twitter");
     	assertNotNull(vc);
-    	assertEquals("Twitter", vc.getAlias());
+    	assertEquals("Twitter", vc.getMetadata().getAlias());
     	assertEquals(test.getSubject(), vc.getSubject().getId());
     	assertEquals(id, vc.getId());
     	assertTrue(vc.isValid());
@@ -1049,13 +1049,13 @@ public class DIDStoreTest {
     	testData.loadTestIssuer();
     	DIDDocument test = testData.loadTestDocument();
     	VerifiableCredential vc = testData.loadProfileCredential();
-    	vc.setAlias("MyProfile");
+    	vc.getMetadata().setAlias("MyProfile");
     	vc = testData.loadEmailCredential();
-    	vc.setAlias("Email");
+    	vc.getMetadata().setAlias("Email");
     	vc = testData.loadTwitterCredential();
-    	vc.setAlias("Twitter");
+    	vc.getMetadata().setAlias("Twitter");
     	vc = testData.loadPassportCredential();
-    	vc.setAlias("Passport");
+    	vc.getMetadata().setAlias("Passport");
 
     	List<DIDURL> vcs = store.listCredentials(test.getSubject());
 		assertEquals(4, vcs.size());
@@ -1066,10 +1066,10 @@ public class DIDStoreTest {
 					|| id.getFragment().equals("twitter")
 					|| id.getFragment().equals("passport"));
 
-			assertTrue(id.getAlias().equals("MyProfile")
-					|| id.getAlias().equals("Email")
-					|| id.getAlias().equals("Twitter")
-					|| id.getAlias().equals("Passport"));
+			assertTrue(id.getMetadata().getAlias().equals("MyProfile")
+					|| id.getMetadata().getAlias().equals("Email")
+					|| id.getMetadata().getAlias().equals("Twitter")
+					|| id.getMetadata().getAlias().equals("Passport"));
 		}
 	}
 
@@ -1083,13 +1083,17 @@ public class DIDStoreTest {
     	testData.loadTestIssuer();
     	DIDDocument test = testData.loadTestDocument();
     	VerifiableCredential vc = testData.loadProfileCredential();
-    	vc.setAlias("MyProfile");
+    	vc.getMetadata().setAlias("MyProfile");
+    	vc.saveMetadata();
     	vc = testData.loadEmailCredential();
-    	vc.setAlias("Email");
+    	vc.getMetadata().setAlias("Email");
+    	vc.saveMetadata();
     	vc = testData.loadTwitterCredential();
-    	vc.setAlias("Twitter");
+    	vc.getMetadata().setAlias("Twitter");
+    	vc.saveMetadata();
     	vc = testData.loadPassportCredential();
-    	vc.setAlias("Passport");
+    	vc.getMetadata().setAlias("Passport");
+    	vc.saveMetadata();
 
     	File file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + test.getSubject().getMethodSpecificId()
@@ -1173,7 +1177,7 @@ public class DIDStoreTest {
         	resolved = doc.getSubject().resolve(true);
         	assertNotNull(resolved);
         	store.storeDid(resolved);
-        	assertEquals(alias, resolved.getAlias());
+        	assertEquals(alias, resolved.getMetadata().getAlias());
         	assertEquals(doc.getSubject(), resolved.getSubject());
         	assertEquals(doc.getProof().getSignature(),
         			resolved.getProof().getSignature());
@@ -1236,7 +1240,7 @@ public class DIDStoreTest {
         	resolved = doc.getSubject().resolve(true);
         	assertNotNull(resolved);
         	store.storeDid(resolved);
-        	assertEquals(alias, resolved.getAlias());
+        	assertEquals(alias, resolved.getMetadata().getAlias());
         	assertEquals(doc.getSubject(), resolved.getSubject());
         	assertEquals(doc.getProof().getSignature(),
         			resolved.getProof().getSignature());
@@ -1274,23 +1278,23 @@ public class DIDStoreTest {
        	assertEquals(2, dids.size());
 
        	for (DID did : dids) {
-       		if (did.getAlias().equals("Issuer")) {
+       		if (did.getMetadata().getAlias().equals("Issuer")) {
        			List<DIDURL> vcs = store.listCredentials(did);
        			assertEquals(1, vcs.size());
 
        			DIDURL id = vcs.get(0);
-       			assertEquals("Profile", id.getAlias());
+       			assertEquals("Profile", id.getMetadata().getAlias());
 
        			assertNotNull(store.loadCredential(did, id));
-       		} else if (did.getAlias().equals("Test")) {
+       		} else if (did.getMetadata().getAlias().equals("Test")) {
        			List<DIDURL> vcs = store.listCredentials(did);
        			assertEquals(4, vcs.size());
 
        			for (DIDURL id : vcs) {
-       				assertTrue(id.getAlias().equals("Profile")
-       						|| id.getAlias().equals("Email")
-       						|| id.getAlias().equals("Passport")
-       						|| id.getAlias().equals("Twitter"));
+       				assertTrue(id.getMetadata().getAlias().equals("Profile")
+       						|| id.getMetadata().getAlias().equals("Email")
+       						|| id.getMetadata().getAlias().equals("Passport")
+       						|| id.getMetadata().getAlias().equals("Twitter"));
 
        				assertNotNull(store.loadCredential(did, id));
        			}
@@ -1506,13 +1510,13 @@ public class DIDStoreTest {
     	testData.loadTestIssuer();
     	testData.loadTestDocument();
     	VerifiableCredential vc = testData.loadProfileCredential();
-    	vc.setAlias("MyProfile");
+    	vc.getMetadata().setAlias("MyProfile");
     	vc = testData.loadEmailCredential();
-    	vc.setAlias("Email");
+    	vc.getMetadata().setAlias("Email");
     	vc = testData.loadTwitterCredential();
-    	vc.setAlias("Twitter");
+    	vc.getMetadata().setAlias("Twitter");
     	vc = testData.loadPassportCredential();
-    	vc.setAlias("Passport");
+    	vc.getMetadata().setAlias("Passport");
 
 		File tempDir = new File(TestConfig.tempDir);
 		tempDir.mkdirs();

@@ -62,8 +62,8 @@ import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDIDException;
 import org.elastos.did.exception.MalformedDocumentException;
 import org.elastos.did.exception.WrongPasswordException;
-import org.elastos.did.meta.CredentialMeta;
-import org.elastos.did.meta.DIDMeta;
+import org.elastos.did.metadata.CredentialMetadataImpl;
+import org.elastos.did.metadata.DIDMetadataImpl;
 import org.elastos.did.util.JsonHelper;
 import org.elastos.did.util.LRUCache;
 import org.slf4j.Logger;
@@ -333,9 +333,9 @@ public final class DIDStore {
 
 						DIDDocument localCopy = loadDid(did);
 						if (localCopy != null) {
-							if (localCopy.getMeta().getSignature() == null ||
+							if (localCopy.getMetadata().getSignature() == null ||
 									!localCopy.getProof().getSignature().equals(
-									localCopy.getMeta().getSignature())) {
+									localCopy.getMetadata().getSignature())) {
 								log.debug("{} on-chain copy conflict with local copy.",
 										did.toString());
 
@@ -424,7 +424,7 @@ public final class DIDStore {
 			DIDDocument.Builder db = new DIDDocument.Builder(did, this);
 			db.addAuthenticationKey(id, key.getPublicKeyBase58());
 			doc = db.seal(storepass);
-			doc.getMeta().setAlias(alias);
+			doc.getMetadata().setAlias(alias);
 			storeDid(doc);
 			return doc;
 		} finally {
@@ -490,18 +490,18 @@ public final class DIDStore {
 		DIDDocument resolvedDoc = did.resolve();
 		if (resolvedDoc != null) {
 			if (resolvedDoc.isDeactivated()) {
-				doc.getMeta().setDeactivated(true);
-				storage.storeDidMeta(doc.getSubject(), doc.getMeta());
+				doc.getMetadataImpl().setDeactivated(true);
+				storage.storeDidMetadata(doc.getSubject(), doc.getMetadataImpl());
 
 				log.error("{} already deactivated.", did.toString());
 				throw new DIDStoreException("DID already deactivated.");
 			}
 
 			if (!force) {
-				String localPrevTxid = doc.getMeta().getPreviousTransactionId();
-				String localSignature = doc.getMeta().getSignature();
+				String localPrevTxid = doc.getMetadata().getPreviousTransactionId();
+				String localSignature = doc.getMetadata().getSignature();
 
-				String resolvedTxid = resolvedDoc.getTransactionId();
+				String resolvedTxid = resolvedDoc.getMetadata().getTransactionId();
 				String reolvedSignautre = resolvedDoc.getProof().getSignature();
 
 				if (localPrevTxid == null && localSignature == null) {
@@ -519,7 +519,7 @@ public final class DIDStore {
 				}
 			}
 
-			lastTxid = resolvedDoc.getTransactionId();
+			lastTxid = resolvedDoc.getMetadata().getTransactionId();
 		}
 
 		if (signKey == null)
@@ -533,9 +533,9 @@ public final class DIDStore {
 			backend.update(doc, lastTxid, signKey, storepass);
 		}
 
-		doc.getMeta().setPreviousTransactionId(lastTxid);
-		doc.getMeta().setSignature(doc.getProof().getSignature());
-		storage.storeDidMeta(doc.getSubject(), doc.getMeta());
+		doc.getMetadataImpl().setPreviousTransactionId(lastTxid);
+		doc.getMetadataImpl().setSignature(doc.getProof().getSignature());
+		storage.storeDidMetadata(doc.getSubject(), doc.getMetadataImpl());
 	}
 
 	public void publishDid(DID did, DIDURL signKey, String storepass)
@@ -643,7 +643,7 @@ public final class DIDStore {
 			else
 				localCopy = true;
 		} else {
-			doc.getMeta().setStore(this);
+			doc.getMetadataImpl().setStore(this);
 		}
 
 		if (signKey == null) {
@@ -657,8 +657,8 @@ public final class DIDStore {
 
 		// Save deactivated status to DID metadata
 		if (localCopy) {
-			doc.getMeta().setDeactivated(true);
-			storage.storeDidMeta(did, doc.getMeta());
+			doc.getMetadataImpl().setDeactivated(true);
+			storage.storeDidMetadata(did, doc.getMetadataImpl());
 		}
 	}
 
@@ -743,7 +743,7 @@ public final class DIDStore {
 			if (doc == null)
 				throw new DIDNotFoundException(did.toString());
 		} else {
-			doc.getMeta().setStore(this);
+			doc.getMetadataImpl().setStore(this);
 		}
 
 		PublicKey signPk = null;
@@ -865,22 +865,17 @@ public final class DIDStore {
 	}
 	*/
 
-	public void storeDid(DIDDocument doc, String alias) throws DIDStoreException {
-		doc.getMeta().setAlias(alias);
-		storeDid(doc);
-	}
-
 	public void storeDid(DIDDocument doc) throws DIDStoreException {
 		if (doc == null)
 			throw new IllegalArgumentException();
 
 		storage.storeDid(doc);
 
-		DIDMeta meta = loadDidMeta(doc.getSubject());
-		doc.getMeta().merge(meta);
-		doc.getMeta().setStore(this);
+		DIDMetadataImpl metadata = loadDidMetadata(doc.getSubject());
+		doc.getMetadataImpl().merge(metadata);
+		doc.getMetadataImpl().setStore(this);
 
-		storage.storeDidMeta(doc.getSubject(), doc.getMeta());
+		storage.storeDidMetadata(doc.getSubject(), doc.getMetadataImpl());
 
 		for (VerifiableCredential vc : doc.getCredentials())
 			storeCredential(vc);
@@ -889,17 +884,19 @@ public final class DIDStore {
 			didCache.put(doc.getSubject(), doc);
 	}
 
-	protected void storeDidMeta(DID did, DIDMeta meta) throws DIDStoreException {
-		storage.storeDidMeta(did, meta);
+	protected void storeDidMetadata(DID did, DIDMetadataImpl metadata)
+			throws DIDStoreException {
+		storage.storeDidMetadata(did, metadata);
 
 		if (didCache != null) {
 			DIDDocument doc = didCache.get(did);
 			if (doc != null)
-				doc.setMeta(meta);
+				doc.setMetadata(metadata);
 		}
 	}
 
-	protected void storeDidMeta(String did, DIDMeta meta) throws DIDStoreException{
+	protected void storeDidMetadata(String did, DIDMetadataImpl metadata)
+			throws DIDStoreException{
 		DID _did = null;
 		try {
 			_did = new DID(did);
@@ -907,33 +904,33 @@ public final class DIDStore {
 			throw new IllegalArgumentException(e);
 		}
 
-		storeDidMeta(_did, meta);
+		storeDidMetadata(_did, metadata);
 	}
 
-	protected DIDMeta loadDidMeta(DID did) throws DIDStoreException {
+	protected DIDMetadataImpl loadDidMetadata(DID did) throws DIDStoreException {
 		if (did == null)
 			throw new IllegalArgumentException();
 
-		DIDMeta meta = null;
+		DIDMetadataImpl metadata = null;
 		DIDDocument doc = null;
 
 		if (didCache != null) {
 			doc = didCache.get(did);
 			if (doc != null) {
-				meta = doc.getMeta();
-				if (meta != null)
-					return meta;
+				metadata = doc.getMetadataImpl();
+				if (metadata != null)
+					return metadata;
 			}
 		}
 
-		meta = storage.loadDidMeta(did);
+		metadata = storage.loadDidMetadata(did);
 		if (doc != null)
-			doc.setMeta(meta);
+			doc.setMetadata(metadata);
 
-		return meta;
+		return metadata;
 	}
 
-	protected DIDMeta loadDidMeta(String did) throws DIDStoreException {
+	protected DIDMetadataImpl loadDidMetadata(String did) throws DIDStoreException {
 		DID _did = null;
 		try {
 			_did = new DID(did);
@@ -941,7 +938,7 @@ public final class DIDStore {
 			throw new IllegalArgumentException(e);
 		}
 
-		return loadDidMeta(_did);
+		return loadDidMetadata(_did);
 	}
 
 	public DIDDocument loadDid(DID did) throws DIDStoreException {
@@ -958,8 +955,9 @@ public final class DIDStore {
 
 		doc = storage.loadDid(did);
 		if (doc != null) {
-			doc.setMeta(storage.loadDidMeta(did));
-			doc.getMeta().setStore(this);
+			DIDMetadataImpl metadata = storage.loadDidMetadata(did);
+			metadata.setStore(this);
+			doc.setMetadata(metadata);
 		}
 
 		if (doc != null && didCache != null)
@@ -1020,18 +1018,12 @@ public final class DIDStore {
 		List<DID> dids = storage.listDids(filter);
 
 		for (DID did : dids) {
-			DIDMeta meta = loadDidMeta(did);
-			meta.setStore(this);
-			did.setMeta(meta);
+			DIDMetadataImpl metadata = loadDidMetadata(did);
+			metadata.setStore(this);
+			did.setMetadata(metadata);
 		}
 
 		return dids;
-	}
-
-	public void storeCredential(VerifiableCredential credential, String alias)
-			throws DIDStoreException {
-		credential.getMeta().setAlias(alias);
-		storeCredential(credential);
 	}
 
 	public void storeCredential(VerifiableCredential credential)
@@ -1041,35 +1033,35 @@ public final class DIDStore {
 
 		storage.storeCredential(credential);
 
-		CredentialMeta meta = loadCredentialMeta(
+		CredentialMetadataImpl metadata = loadCredentialMetadata(
 				credential.getSubject().getId(), credential.getId());
-		credential.getMeta().merge(meta);
-		credential.getMeta().setStore(this);
+		credential.getMetadataImpl().merge(metadata);
+		credential.getMetadataImpl().setStore(this);
 
-		storage.storeCredentialMeta(credential.getSubject().getId(),
-				credential.getId(), credential.getMeta());
+		storage.storeCredentialMetadata(credential.getSubject().getId(),
+				credential.getId(), credential.getMetadataImpl());
 
 		if (vcCache != null)
 			vcCache.put(credential.getId(), credential);
 	}
 
-	protected void storeCredentialMeta(DID did, DIDURL id, CredentialMeta meta)
-			throws DIDStoreException {
+	protected void storeCredentialMetadata(DID did, DIDURL id,
+			CredentialMetadataImpl metadata) throws DIDStoreException {
 		if (did == null || id == null)
 			throw new IllegalArgumentException();
 
-		storage.storeCredentialMeta(did, id, meta);
+		storage.storeCredentialMetadata(did, id, metadata);
 
 		if (vcCache != null) {
 			VerifiableCredential vc = vcCache.get(id);
 			if (vc != null) {
-				vc.setMeta(meta);
+				vc.setMetadata(metadata);
 			}
 		}
 	}
 
-	protected void storeCredentialMeta(String did, String id, CredentialMeta meta)
-			throws DIDStoreException {
+	protected void storeCredentialMetadata(String did, String id,
+			CredentialMetadataImpl metadata) throws DIDStoreException {
 		DID _did = null;
 		DIDURL _id = null;
 		try {
@@ -1079,34 +1071,34 @@ public final class DIDStore {
 			throw new IllegalArgumentException(e);
 		}
 
-		storeCredentialMeta(_did, _id, meta);
+		storeCredentialMetadata(_did, _id, metadata);
 	}
 
-	protected CredentialMeta loadCredentialMeta(DID did, DIDURL id)
+	protected CredentialMetadataImpl loadCredentialMetadata(DID did, DIDURL id)
 			throws DIDStoreException {
 		if (did == null || id == null)
 			throw new IllegalArgumentException();
 
-		CredentialMeta meta = null;
+		CredentialMetadataImpl metadata = null;
 		VerifiableCredential vc = null;
 
 		if (vcCache != null) {
 			vc = vcCache.get(id);
 			if (vc != null) {
-				meta = vc.getMeta();
-				if (meta != null)
-					return meta;
+				metadata = vc.getMetadataImpl();
+				if (metadata != null)
+					return metadata;
 			}
 		}
 
-		meta = storage.loadCredentialMeta(did, id);
+		metadata = storage.loadCredentialMetadata(did, id);
 		if (vc != null)
-			vc.setMeta(meta);
+			vc.setMetadata(metadata);
 
-		return meta;
+		return metadata;
 	}
 
-	protected CredentialMeta loadCredentialMeta(String did, String id)
+	protected CredentialMetadataImpl loadCredentialMetadata(String did, String id)
 			throws DIDStoreException {
 		DID _did = null;
 		DIDURL _id = null;
@@ -1117,7 +1109,7 @@ public final class DIDStore {
 			throw new IllegalArgumentException(e);
 		}
 
-		return loadCredentialMeta(_did, _id);
+		return loadCredentialMetadata(_did, _id);
 	}
 
 	public VerifiableCredential loadCredential(DID did, DIDURL id)
@@ -1134,6 +1126,12 @@ public final class DIDStore {
 		}
 
 		vc = storage.loadCredential(did, id);
+		if (vc != null) {
+			CredentialMetadataImpl metadata = storage.loadCredentialMetadata(did, id);
+			metadata.setStore(this);
+			vc.setMetadata(metadata);
+		}
+
 		if (vc != null && vcCache != null)
 			vcCache.put(vc.getId(), vc);
 
@@ -1223,9 +1221,9 @@ public final class DIDStore {
 		List<DIDURL> ids = storage.listCredentials(did);
 
 		for (DIDURL id : ids) {
-			CredentialMeta meta = loadCredentialMeta(did, id);
-			meta.setStore(this);
-			id.setMeta(meta);
+			CredentialMetadataImpl metadata = loadCredentialMetadata(did, id);
+			metadata.setStore(this);
+			id.setMetadata(metadata);
 		}
 
 		return ids;
@@ -1478,10 +1476,10 @@ public final class DIDStore {
 		bytes = value.getBytes();
 		sha256.update(bytes, 0, bytes.length);
 
-		DIDMeta didMeta = storage.loadDidMeta(did);
-		if (!didMeta.isEmpty()) {
-			generator.writeFieldName("meta");
-			value = didMeta.toString();
+		DIDMetadataImpl didMetadata = storage.loadDidMetadata(did);
+		if (!didMetadata.isEmpty()) {
+			generator.writeFieldName("metadata");
+			value = didMetadata.toString();
 			generator.writeRawValue(value);
 			bytes = value.getBytes();
 			sha256.update(bytes, 0, bytes.length);
@@ -1508,10 +1506,10 @@ public final class DIDStore {
 				bytes = value.getBytes();
 				sha256.update(bytes, 0, bytes.length);
 
-				CredentialMeta meta = storage.loadCredentialMeta(did, id);
-				if (!meta.isEmpty()) {
-					generator.writeFieldName("meta");
-					value = meta.toString();
+				CredentialMetadataImpl metadata = storage.loadCredentialMetadata(did, id);
+				if (!metadata.isEmpty()) {
+					generator.writeFieldName("metadata");
+					value = metadata.toString();
 					generator.writeRawValue(value);
 					bytes = value.getBytes();
 					sha256.update(bytes, 0, bytes.length);
@@ -1719,13 +1717,14 @@ public final class DIDStore {
 		bytes = doc.toString(true).getBytes();
 		sha256.update(bytes, 0, bytes.length);
 
-		JsonNode metaNode = node.get("meta");
+		JsonNode metaNode = node.get("metadata");
 		if (metaNode != null) {
-			DIDMeta meta = new DIDMeta();
-			meta.load(metaNode);
-			doc.setMeta(meta);
+			DIDMetadataImpl metadata = new DIDMetadataImpl();
+			metadata.load(metaNode);
+			metadata.setStore(this);
+			doc.setMetadata(metadata);
 
-			bytes = meta.toString().getBytes();
+			bytes = metadata.toString().getBytes();
 			sha256.update(bytes, 0, bytes.length);
 		}
 
@@ -1764,14 +1763,15 @@ public final class DIDStore {
 				bytes = vc.toString(true).getBytes();
 				sha256.update(bytes, 0, bytes.length);
 
-				metaNode = node.get(i).get("meta");
+				metaNode = node.get(i).get("metadata");
 				if (metaNode != null) {
-					CredentialMeta meta = new CredentialMeta();
-					meta.load(metaNode);
+					CredentialMetadataImpl metadata = new CredentialMetadataImpl();
+					metadata.load(metaNode);
+					metadata.setStore(this);
+					vc.setMetadata(metadata);
 
-					bytes = meta.toString().getBytes();
+					bytes = metadata.toString().getBytes();
 					sha256.update(bytes, 0, bytes.length);
-					vc.setMeta(meta);
 				}
 
 				vcs.put(vc.getId(), vc);
@@ -1833,12 +1833,12 @@ public final class DIDStore {
 		// avoid affects the cached objects.
 		log.debug("Importing document...");
 		storage.storeDid(doc);
-		storage.storeDidMeta(doc.getSubject(), doc.getMeta());
+		storage.storeDidMetadata(doc.getSubject(), doc.getMetadataImpl());
 
 		for (VerifiableCredential vc : vcs.values()) {
 			log.debug("Importing credential {}...", vc.getId().toString());
 			storage.storeCredential(vc);
-			storage.storeCredentialMeta(did, vc.getId(), vc.getMeta());
+			storage.storeCredentialMetadata(did, vc.getId(), vc.getMetadataImpl());
 		}
 
 		for (Map.Entry<DIDURL, String> sk : sks.entrySet()) {

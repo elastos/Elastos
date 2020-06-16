@@ -22,7 +22,6 @@
 
 package org.elastos.did;
 
-import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -30,7 +29,7 @@ import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDResolveException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedDIDException;
-import org.elastos.did.meta.DIDMeta;
+import org.elastos.did.metadata.DIDMetadataImpl;
 import org.elastos.did.parser.DIDURLBaseListener;
 import org.elastos.did.parser.DIDURLParser;
 import org.elastos.did.parser.ParserHelper;
@@ -41,7 +40,7 @@ public class DID implements Comparable<DID> {
 	private String method;
 	private String methodSpecificId;
 
-	private DIDMeta meta;
+	private DIDMetadataImpl metadata;
 
 	protected DID() {
 	}
@@ -78,62 +77,31 @@ public class DID implements Comparable<DID> {
 		this.methodSpecificId = methodSpecificId;
 	}
 
-	protected void setMeta(DIDMeta meta) {
-		this.meta = meta;
+	protected void setMetadata(DIDMetadataImpl metadata) {
+		this.metadata = metadata;
 	}
 
-	protected DIDMeta getMeta() {
-		if (meta == null)
-			meta = new DIDMeta();
+	public DIDMetadata getMetadata() {
+		if (metadata == null)
+			metadata = new DIDMetadataImpl();
 
-		return meta;
+		return metadata;
 	}
 
-	public void setExtra(String name, String value) throws DIDStoreException {
-		if (name == null || name.isEmpty())
-			throw new IllegalArgumentException();
-
-		getMeta().put(name, value);
-
-		if (getMeta().attachedStore())
-			getMeta().getStore().storeDidMeta(this, meta);
-	}
-
-	public String getExtra(String name) {
-		if (name == null || name.isEmpty())
-			throw new IllegalArgumentException();
-
-		return (String)getMeta().get(name);
-	}
-
-	public void setAlias(String alias) throws DIDStoreException {
-		getMeta().setAlias(alias);
-
-		if (getMeta().attachedStore())
-			getMeta().getStore().storeDidMeta(this, meta);
-	}
-
-	public String getAlias() {
-		return getMeta().getAlias();
-	}
-
-	public String getTransactionId() {
-		return getMeta().getTransactionId();
-	}
-
-	public Date getPublished() {
-		return getMeta().getPublished();
+	public void saveMetadata() throws DIDStoreException {
+		if (metadata != null && metadata.attachedStore())
+			metadata.getStore().storeDidMetadata(this, metadata);
 	}
 
 	public boolean isDeactivated() {
-		return getMeta().isDeactivated();
+		return getMetadata().isDeactivated();
 	}
 
 	public DIDDocument resolve(boolean force)
 			throws DIDBackendException, DIDResolveException {
 		DIDDocument doc = DIDBackend.resolve(this, force);
 		if (doc != null)
-			setMeta(doc.getMeta());
+			setMetadata(doc.getMetadataImpl());
 
 		return doc;
 	}

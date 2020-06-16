@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.did.meta;
+package org.elastos.did.metadata;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -42,12 +42,16 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public abstract class Metadata extends HashMap<String, Object> {
+public abstract class AbstractMetadata extends HashMap<String, Object> {
 	private static final long serialVersionUID = -3700036981800046481L;
 
 	protected final static String RESERVED_PREFIX = "DX-";
 
 	private DIDStore store;
+
+	protected AbstractMetadata(DIDStore store) {
+		this.store = store;
+	}
 
 	public void setStore(DIDStore store) {
 		this.store = store;
@@ -61,11 +65,25 @@ public abstract class Metadata extends HashMap<String, Object> {
 		return store != null;
 	}
 
-	public void merge(Metadata meta) {
-		if (meta == this)
+	public void setExtra(String key, String value) {
+		if (key == null || key.isEmpty())
+			throw new IllegalArgumentException();
+
+		put(key, value);
+	}
+
+	public String getExtra(String key) {
+		if (key == null || key.isEmpty())
+			throw new IllegalArgumentException();
+
+		return (String)get(key);
+	}
+
+	public void merge(AbstractMetadata metadata) {
+		if (metadata == this)
 			return;
 
-		meta.forEach((k, v) -> {
+		metadata.forEach((k, v) -> {
 			if (containsKey(k)) {
 				if (get(k) == null)
 					remove(k);

@@ -41,7 +41,7 @@ import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDResolveException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedCredentialException;
-import org.elastos.did.meta.CredentialMeta;
+import org.elastos.did.metadata.CredentialMetadataImpl;
 import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -70,7 +70,7 @@ public class VerifiableCredential extends DIDObject {
 	private CredentialSubject subject;
 	private Proof proof;
 
-	private CredentialMeta meta;
+	private CredentialMetadataImpl metadata;
 
 	static public class CredentialSubject {
 		private DID id;
@@ -309,48 +309,28 @@ public class VerifiableCredential extends DIDObject {
 		}
 	}
 
-	protected void setMeta(CredentialMeta meta) {
-		this.meta = meta;
-		this.getId().setMeta(meta);
+	protected void setMetadata(CredentialMetadataImpl metadata) {
+		this.metadata = metadata;
+		this.getId().setMetadata(metadata);
 	}
 
-	protected CredentialMeta getMeta() {
-		if (meta == null) {
-			meta = new CredentialMeta();
-			this.getId().setMeta(meta);
+	protected CredentialMetadataImpl getMetadataImpl() {
+		if (metadata == null) {
+			metadata = new CredentialMetadataImpl();
+			getId().setMetadata(metadata);
 		}
 
-		return meta;
+		return metadata;
 	}
 
-	public void setExtra(String name, String value) throws DIDStoreException {
-		if (name == null || name.isEmpty())
-			throw new IllegalArgumentException();
-
-		getMeta().put(name, value);
-
-		if (getMeta().attachedStore())
-			getMeta().getStore().storeCredentialMeta(getSubject().getId(),
-					getId(), meta);
+	public CredentialMetadata getMetadata() {
+		return getMetadataImpl();
 	}
 
-	public String getExtra(String name) {
-		if (name == null || name.isEmpty())
-			throw new IllegalArgumentException();
-
-		return (String)getMeta().get(name);
-	}
-
-	public void setAlias(String alias) throws DIDStoreException {
-		getMeta().setAlias(alias);
-
-		if (getMeta().attachedStore())
-			getMeta().getStore().storeCredentialMeta(getSubject().getId(),
-					getId(), meta);
-	}
-
-	public String getAlias() {
-		return getMeta().getAlias();
+	public void saveMetadata() throws DIDStoreException {
+		if (metadata != null && metadata.attachedStore())
+			metadata.getStore().storeCredentialMetadata(getSubject().getId(),
+					getId(), metadata);
 	}
 
 	public boolean isSelfProclaimed() {

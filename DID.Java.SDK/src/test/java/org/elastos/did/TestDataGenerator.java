@@ -95,7 +95,8 @@ public class TestDataGenerator {
 		db.addCredential(vc);
 		issuer = db.seal(TestConfig.storePass);
 		store.storeDid(issuer);
-		store.storeCredential(vc, "Profile");
+		vc.getMetadata().setAlias("Profile");
+		store.storeCredential(vc);
 
 		DIDURL id = issuer.getDefaultPublicKey();
 		HDKey key = store.loadPrivateKey(issuer.getSubject(), id, TestConfig.storePass);
@@ -114,7 +115,7 @@ public class TestDataGenerator {
 	}
 
 	private void createTestDocument() throws DIDException, IOException {
-		DIDDocument doc = store.newDid(TestConfig.storePass);
+		DIDDocument doc = store.newDid("Test", TestConfig.storePass);
 
 		// Test document with two embedded credentials
 		System.out.print("Generate test DID: " + doc.getSubject() + "...");
@@ -172,9 +173,11 @@ public class TestDataGenerator {
 		db.addCredential(vcProfile);
 		db.addCredential(vcEmail);
 		test = db.seal(TestConfig.storePass);
-		store.storeDid(test, "Test");
-		store.storeCredential(vcProfile, "Profile");
-		store.storeCredential(vcEmail, "Email");
+		store.storeDid(test);
+		vcProfile.getMetadata().setAlias("Profile");
+		store.storeCredential(vcProfile);
+		vcEmail.getMetadata().setAlias("Email");
+		store.storeCredential(vcEmail);
 
 		DIDURL id = test.getDefaultPublicKey();
 		HDKey key = store.loadPrivateKey(test.getSubject(), id, TestConfig.storePass);
@@ -233,7 +236,8 @@ public class TestDataGenerator {
 				.type("BasicProfileCredential", "SelfProclaimedCredential")
 				.properties(props)
 				.seal(TestConfig.storePass);
-		store.storeCredential(vcPassport, "Passport");
+		vcPassport.getMetadata().setAlias("Passport");
+		store.storeCredential(vcPassport);
 
 		json = vcPassport.toString(true);
 		writeTo("vc-passport.normalized.json", json);
@@ -260,7 +264,8 @@ public class TestDataGenerator {
 				.type("InternetAccountCredential", "TwitterCredential")
 				.properties(props)
 				.seal(TestConfig.storePass);
-		store.storeCredential(vcTwitter, "Twitter");
+		vcTwitter.getMetadata().setAlias("Twitter");
+		store.storeCredential(vcTwitter);
 
 		json = vcTwitter.toString(true);
 		writeTo("vc-twitter.normalized.json", json);
@@ -286,7 +291,8 @@ public class TestDataGenerator {
 				.type("InternetAccountCredential", "TwitterCredential")
 				.properties(jsonProps)
 				.seal(TestConfig.storePass);
-		store.storeCredential(vcTwitter, "json");
+		vcJson.getMetadata().setAlias("json");
+		store.storeCredential(vcTwitter);
 
 		json = vcJson.toString(true);
 		writeTo("vc-json.normalized.json", json);

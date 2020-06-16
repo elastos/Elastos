@@ -163,7 +163,7 @@ public class IDChainOperationsTest {
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		String lastTxid = resolved.getTransactionId();
+		String lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update
@@ -185,12 +185,12 @@ public class IDChainOperationsTest {
 
 		testData.waitForWalletAvaliable();
 		resolved = did.resolve(true);
-		assertNotEquals(lastTxid, resolved.getTransactionId());
+		assertNotEquals(lastTxid, resolved.getMetadata().getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		lastTxid = resolved.getTransactionId();
+		lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update again
@@ -212,12 +212,12 @@ public class IDChainOperationsTest {
 
 		testData.waitForWalletAvaliable();
 		resolved = did.resolve(true);
-		assertNotEquals(lastTxid, resolved.getTransactionId());
+		assertNotEquals(lastTxid, resolved.getMetadata().getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		lastTxid = resolved.getTransactionId();
+		lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		DIDHistory his = did.resolveHistory();
@@ -267,7 +267,7 @@ public class IDChainOperationsTest {
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		String lastTxid = resolved.getTransactionId();
+		String lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update
@@ -293,12 +293,12 @@ public class IDChainOperationsTest {
 		testData.waitForWalletAvaliable();
 		rf = did.resolveAsync(true);
 		resolved = rf.join();
-		assertNotEquals(lastTxid, resolved.getTransactionId());
+		assertNotEquals(lastTxid, resolved.getMetadata().getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		lastTxid = resolved.getTransactionId();
+		lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update again
@@ -324,12 +324,12 @@ public class IDChainOperationsTest {
 		testData.waitForWalletAvaliable();
 		rf = did.resolveAsync(true);
 		resolved = rf.join();
-		assertNotEquals(lastTxid, resolved.getTransactionId());
+		assertNotEquals(lastTxid, resolved.getMetadata().getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		lastTxid = resolved.getTransactionId();
+		lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		CompletableFuture<DIDHistory> hf = did.resolveHistoryAsync();
@@ -397,7 +397,7 @@ public class IDChainOperationsTest {
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		String lastTxid = resolved.getTransactionId();
+		String lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update
@@ -429,12 +429,12 @@ public class IDChainOperationsTest {
 
 		testData.waitForWalletAvaliable();
 		resolved = did.resolve(true);
-		assertNotEquals(lastTxid, resolved.getTransactionId());
+		assertNotEquals(lastTxid, resolved.getMetadata().getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		lastTxid = resolved.getTransactionId();
+		lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update again
@@ -470,12 +470,12 @@ public class IDChainOperationsTest {
 
 		testData.waitForWalletAvaliable();
 		resolved = did.resolve(true);
-		assertNotEquals(lastTxid, resolved.getTransactionId());
+		assertNotEquals(lastTxid, resolved.getMetadata().getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		lastTxid = resolved.getTransactionId();
+		lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 	}
 
@@ -530,7 +530,7 @@ public class IDChainOperationsTest {
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		String lastTxid = resolved.getTransactionId();
+		String lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update
@@ -566,12 +566,12 @@ public class IDChainOperationsTest {
 		testData.waitForWalletAvaliable();
 		rf = did.resolveAsync(true);
 		resolved = rf.join();
-		assertNotEquals(lastTxid, resolved.getTransactionId());
+		assertNotEquals(lastTxid, resolved.getMetadata().getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		lastTxid = resolved.getTransactionId();
+		lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update again
@@ -611,12 +611,12 @@ public class IDChainOperationsTest {
 		testData.waitForWalletAvaliable();
 		rf = did.resolveAsync(true);
 		resolved = rf.join();
-		assertNotEquals(lastTxid, resolved.getTransactionId());
+		assertNotEquals(lastTxid, resolved.getMetadata().getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
-		lastTxid = resolved.getTransactionId();
+		lastTxid = resolved.getMetadata().getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 	}
 

@@ -20,14 +20,16 @@
  * SOFTWARE.
  */
 
-package org.elastos.did.meta;
+package org.elastos.did.metadata;
 
 import java.text.ParseException;
 import java.util.Date;
 
+import org.elastos.did.DIDMetadata;
+import org.elastos.did.DIDStore;
 import org.elastos.did.util.JsonHelper;
 
-public class DIDMeta extends Metadata {
+public class DIDMetadataImpl extends AbstractMetadata implements DIDMetadata {
 	private static final long serialVersionUID = -6074640560591492115L;
 
 	private final static String TXID = RESERVED_PREFIX + "txid";
@@ -37,10 +39,20 @@ public class DIDMeta extends Metadata {
 	private final static String ALIAS = RESERVED_PREFIX + "alias";
 	private final static String DEACTIVATED = RESERVED_PREFIX + "deactivated";
 
+	public DIDMetadataImpl() {
+		this(null);
+	}
+
+	public DIDMetadataImpl(DIDStore store) {
+		super(store);
+	}
+
+	@Override
 	public void setAlias(String alias) {
 		put(ALIAS, alias);
 	}
 
+	@Override
 	public String getAlias() {
 		return (String)get(ALIAS);
 	}
@@ -49,6 +61,7 @@ public class DIDMeta extends Metadata {
 		put(TXID, txid);
 	}
 
+	@Override
 	public String getTransactionId() {
 		return (String)get(TXID);
 	}
@@ -57,6 +70,7 @@ public class DIDMeta extends Metadata {
 		put(PREV_TXID, txid);
 	}
 
+	@Override
 	public String getPreviousTransactionId() {
 		return (String)get(PREV_TXID);
 	}
@@ -65,6 +79,7 @@ public class DIDMeta extends Metadata {
 		put(SIGNATURE, signature);
 	}
 
+	@Override
 	public String getSignature() {
 		return (String)get(SIGNATURE);
 	}
@@ -73,6 +88,7 @@ public class DIDMeta extends Metadata {
 		put(PUBLISHED, JsonHelper.formatDate(timestamp));
 	}
 
+	@Override
 	public Date getPublished() {
 		try {
 			return JsonHelper.parseDate((String)get(PUBLISHED));
@@ -85,6 +101,7 @@ public class DIDMeta extends Metadata {
 		put(DEACTIVATED, deactivated);
 	}
 
+	@Override
 	public boolean isDeactivated( ) {
 		Boolean v = (Boolean)get(DEACTIVATED);
 		return v == null ? false : v;
