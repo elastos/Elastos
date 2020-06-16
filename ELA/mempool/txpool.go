@@ -240,6 +240,7 @@ func (mp *TxPool) checkAndCleanAllTransactions() {
 
 	txCount := len(mp.txnList)
 	var deleteCount int
+	var proposalsUsedAmount Fixed64
 	for _, tx := range mp.txnList {
 		references, err := chain.UTXOCache.GetTxReference(tx)
 		if err != nil {
@@ -248,11 +249,14 @@ func (mp *TxPool) checkAndCleanAllTransactions() {
 			deleteCount++
 			continue
 		}
-		err = chain.CheckTransactionContext(bestHeight+1, tx, references, 0)
+		err = chain.CheckTransactionContext(bestHeight+1, tx, references, proposalsUsedAmount)
 		if err != nil {
 			log.Warn("[checkAndCleanAllTransactions] check transaction context failed,", err)
 			deleteCount++
 			mp.doRemoveTransaction(tx)
+		}
+		if tx.IsCRCProposalTx() {
+			blockchain.RecordCRCProposalAmount(&proposalsUsedAmount, tx)
 		}
 	}
 
@@ -474,7 +478,9 @@ func (mp *TxPool) doAddTransaction(tx *Transaction) elaerr.ELAError {
 		return err
 	}
 	mp.txnList[tx.Hash()] = tx
-	mp.dealAddProposalTx(tx)
+	if tx.IsCRCProposalTx() {
+		mp.dealAddProposalTx(tx)
+	}
 	return nil
 }
 
@@ -485,7 +491,9 @@ func (mp *TxPool) doRemoveTransaction(tx *Transaction) {
 
 	if _, exist := mp.txnList[hash]; exist {
 		delete(mp.txnList, hash)
-		mp.dealDelProposalTx(tx)
+		if tx.IsCRCProposalTx() {
+			mp.dealDelProposalTx(tx)
+		}
 		mp.txFees.RemoveTx(hash, uint64(txSize), feeRate)
 		mp.removeTx(tx)
 	}
