@@ -1201,7 +1201,7 @@ func newCRChangeProposalOwner(L *lua.LState) int {
 	newOwnerPrivateKeyStr := L.ToString(7)
 
 	needSign := true
-	client, err := checkClient(L, 7)
+	client, err := checkClient(L, 8)
 	if err != nil {
 		needSign = false
 	}
@@ -1266,6 +1266,7 @@ func newCRChangeProposalOwner(L *lua.LState) int {
 		TargetProposalHash: *targetHash,
 		NewOwnerPublicKey:  newOwnerPublicKey,
 		CRCouncilMemberDID: *CRCouncilMemberDID,
+		NewOwnerSignature:  []byte{},
 	}
 
 	if needSign {

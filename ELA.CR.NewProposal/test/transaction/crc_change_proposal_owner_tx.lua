@@ -37,21 +37,27 @@ if target_hash == "" then
     return
 end
 
-local proposal_owner_key = getProposalOwnerKey()
-if proposal_owner_key == "" then
-    print("proposal_owner_key is nil, should use --ownerpublickey to set it.")
+local owner_public_key = getOwnerPublicKey()
+if owner_public_key == "" then
+    print("owner_public_key is nil, should use --ownerpublickey to set it.")
     return
 end
 
-local proposal_owner_private_key = getOwnerPrivateKey()
-if proposal_owner_private_key == "" then
-    print("proposal_owner_private_key is nil, should use --ownerprivatekey to set it.")
+local owner_private_key = getOwnerPrivateKey()
+if owner_private_key == "" then
+    print("owner_private_key is nil, should use --ownerprivatekey to set it.")
     return
 end
 
-local new_proposal_owner_key = getNewProposalOwnerKey()
-if new_proposal_owner_key == "" then
-    print("new_proposal_owner_key is nil, should use --newownerpublickey to set it.")
+local new_owner_public_key = getNewOwnerPublicKey()
+if new_owner_public_key == "" then
+    print("new_owner_public_key is nil, should use --newownerpublickey to set it.")
+    return
+end
+
+local new_owner_private_key = getNewOwnerPrivateKey()
+if new_owner_private_key == "" then
+    print("new_owner_private_key is nil, should use --newownerprivatekey to set it.")
     return
 end
 
@@ -62,12 +68,13 @@ print("fee:", fee)
 print("proposal type:", proposal_type)
 print("recipient addr:",recipient_addr)
 print("target proposal hash:", target_hash)
-print("proposal owner key:", proposal_owner_key)
-print("proposal owner private key:", proposal_owner_private_key)
-print("new proposal owner key:", new_proposal_owner_key)
+print("proposal owner key:", owner_public_key)
+print("proposal owner private key:", owner_private_key)
+print("new proposal owner key:", new_owner_public_key)
+print("new proposal owner private key:",new_owner_private_key)
 
--- crc change proposalowner payload: proposal_type, recipient_addr, target_hash, proposal_owner_key, new_proposal_owner_key, wallet
-local cr_payload =crchangeproposalowner.new(proposal_type, recipient_addr, target_hash, proposal_owner_key, proposal_owner_private_key,new_proposal_owner_key, wallet)
+-- crc change proposalowner payload: proposal_type, recipient_addr, target_hash, owner_public_key, owner_private_key,new_owner_public_key, new_owner_private_key, wallet
+local cr_payload =crchangeproposalowner.new(proposal_type, recipient_addr, target_hash, owner_public_key, owner_private_key,new_owner_public_key, new_owner_private_key, wallet)
 print(cr_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
