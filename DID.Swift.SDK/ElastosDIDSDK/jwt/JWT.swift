@@ -130,20 +130,20 @@ public struct JWT {
     /// - Parameter leeway: The time in seconds that the JWT can be invalid but still accepted to account for clock differences.
     /// - Returns: A value of `ValidateClaimsResult`.
     public func validateClaims(leeway: TimeInterval = 0) -> ValidateClaimsResult {        
-        if let expirationDate = claims.claims[Claims.exp] {
-                if expirationDate as! Date + leeway < Date() {
+        if let expirationDate = claims.getExpiration() {
+                if expirationDate + leeway < Date() {
                     return .expired
                 }
             }
 
-            if let notBeforeDate = claims.claims[Claims.nbf] {
-                if notBeforeDate as! Date > Date() + leeway {
+            if let notBeforeDate = claims.getNotBefore() {
+                if notBeforeDate > Date() + leeway {
                     return .notBefore
                 }
             }
 
-            if let issuedAtDate = claims.claims[Claims.iat] {
-                if issuedAtDate as! Date > Date() + leeway {
+            if let issuedAtDate = claims.getIssuedAt() {
+                if issuedAtDate > Date() + leeway {
                     return .issuedAt
                 }
             }
