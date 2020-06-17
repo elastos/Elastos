@@ -2,7 +2,6 @@ import Base from './Base'
 import * as _ from 'lodash'
 import { Document, Types } from 'mongoose'
 import * as jwt from 'jsonwebtoken'
-import * as moment from 'moment'
 import { constant } from '../constant'
 import {
   validate,
@@ -12,8 +11,7 @@ import {
   permissions,
   logger,
   getDidPublicKey,
-  utilCrypto,
-  getCurrentHeight
+  utilCrypto
 } from '../utility'
 const Big = require('big.js')
 
@@ -729,7 +727,7 @@ export default class extends Base {
 
     // deal with 7e-08
     if (doc.budgetAmount) {
-      doc.budgetAmount = Big(doc.budgetAmount).toFixed() 
+      doc.budgetAmount = Big(doc.budgetAmount).toFixed()
     }
 
     if (doc && _.isEmpty(doc.comments)) return doc
