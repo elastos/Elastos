@@ -301,7 +301,6 @@ export default class extends Base {
         exp: now + 60 * 60 * 24,
         command: 'reviewmilestone',
         iss: process.env.APP_DID,
-        callbackurl: `${process.env.API_URL}/api/proposals/milestones/sec-signature-callback`,
         data: {
           proposalhash: proposal.proposalHash,
           messagehash: history.messageHash,
@@ -325,131 +324,6 @@ export default class extends Base {
     } catch (error) {
       logger.error(error)
       return
-    }
-  }
-
-  public async secSignatureCallback(param: any) {
-    try {
-      const jwtToken = param.jwt
-      const claims: any = jwt.decode(jwtToken)
-      if (!_.get(claims, 'req')) {
-        return {
-          code: 400,
-          success: false,
-          message: 'Problems parsing jwt token.'
-        }
-      }
-
-      const payload: any = jwt.decode(
-        claims.req.slice('elastos://crproposal/'.length)
-      )
-      const proposalHash = _.get(payload, 'data.proposalhash')
-      const reasonHash = _.get(payload, 'data.secretaryopinionhash')
-      if (!proposalHash || !reasonHash) {
-        return {
-          code: 400,
-          success: false,
-          message: 'Problems parsing jwt token of CR website.'
-        }
-      }
-
-      const proposal = await this.model
-        .getDBInstance()
-        .findOne({ proposalHash })
-        .populate('proposer')
-      if (!proposal) {
-        return {
-          code: 400,
-          success: false,
-          message: 'There is no this proposal.'
-        }
-      }
-
-      const rs: any = await getDidPublicKey(claims.iss)
-      if (!_.get(rs, 'publicKey')) {
-        return {
-          code: 400,
-          success: false,
-          message: `Can not get your did's public key.`
-        }
-      }
-      // verify response data from ela wallet
-      return jwt.verify(
-        jwtToken,
-        rs.publicKey,
-        async (err: any, decoded: any) => {
-          if (err) {
-            return {
-              code: 401,
-              success: false,
-              message: 'Verify signatrue failed.'
-            }
-          } else {
-            try {
-              const history = proposal.withdrawalHistory.filter((item: any) => {
-                return item.review.reasonHash === reasonHash
-              })[0]
-              if (_.isEmpty(history)) {
-                return {
-                  code: 400,
-                  success: false,
-                  message: 'There is no this review record.'
-                }
-              }
-              let status: string
-              if (history.review.opinion === REJECTED) {
-                status = REJECTED
-              }
-              if (history.review.opinion === APPROVED) {
-                status = WAITING_FOR_APPROVAL
-              }
-              await this.model.update(
-                {
-                  proposalHash,
-                  'withdrawalHistory.review.reasonHash': reasonHash
-                },
-                {
-                  $set: {
-                    'withdrawalHistory.$.review.txid': decoded.data
-                  }
-                }
-              )
-              await this.model.update(
-                { proposalHash, 'budget.milestoneKey': history.milestoneKey },
-                { $set: { 'budget.$.status': status } }
-              )
-
-              if (history.review.opinion === APPROVED) {
-                this.notifyProposalOwner(
-                  proposal.proposer,
-                  this.approvalMailTemplate(proposal.vid)
-                )
-              }
-              if (history.review.opinion === REJECTED) {
-                this.notifyProposalOwner(
-                  proposal.proposer,
-                  this.rejectedMailTemplate(proposal.vid)
-                )
-              }
-              return { code: 200, success: true, message: 'Ok' }
-            } catch (err) {
-              logger.error(err)
-              return {
-                code: 500,
-                success: false,
-                message: 'Something went wrong'
-              }
-            }
-          }
-        }
-      )
-    } catch (err) {
-      logger.error(err)
-      return {
-        code: 500,
-        success: false,
-        message: 'Something went wrong'
-      }
     }
   }
 
