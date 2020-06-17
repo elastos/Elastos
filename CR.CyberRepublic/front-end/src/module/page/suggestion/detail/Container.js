@@ -15,7 +15,6 @@ export default createContainer(
     } else if (/^\/profile/.test(state.router.location.pathname)) {
       page = 'LEADER'
     }
-    const detail = _.get(state.suggestion, 'detail')
     return {
       ...state.suggestion,
       page,
@@ -25,9 +24,7 @@ export default createContainer(
       isAdmin: state.user.is_admin,
       isReference: !_.isEmpty(
         state.suggestion.detail && state.suggestion.detail.reference
-      ) || state.suggestion.reference_status,
-      proposal: state.suggestion.reference,
-      isProposed: detail && detail.proposed || state.suggestion.proposed
+      ) || state.suggestion.reference_status
     }
   },
   () => {
@@ -43,9 +40,6 @@ export default createContainer(
       },
       async createDraft(param) {
         return cVoteService.createDraft(param)
-      },
-      async pollProposalState(param) {
-        return service.pollProposalState(param)
       },
       async update(param) {
         return service.update(param)

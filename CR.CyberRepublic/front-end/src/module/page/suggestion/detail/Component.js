@@ -409,17 +409,12 @@ export default class extends StandardPage {
   }
 
   renderLabelNode() {
-    const { isReference, proposal } = this.props
+    const { isReference } = this.props
     if (!isReference) {
       return null
     }
     let result = _.get(this.props.detail, 'reference')
-    let reference
-    if (_.isEmpty(result)) {
-      reference = proposal
-    } else {
-      reference = _.last(result)
-    }
+    let reference = _.last(result)
     const { _id, vid, status } = reference
     // when proposal is draft, do not show the label
     if (status === CVOTE_STATUS.DRAFT) return null
@@ -611,9 +606,7 @@ export default class extends StandardPage {
       isAdmin,
       isReference,
       detail,
-      getCMSignatureUrl,
-      pollProposalState,
-      isProposed
+      getCMSignatureUrl
     } = this.props
     const oldData = _.get(detail, 'old')
     const signature = _.get(detail, 'signature.data')
@@ -651,8 +644,6 @@ export default class extends StandardPage {
           <CMSignSuggestionButton
             getCMSignatureUrl={getCMSignatureUrl}
             id={detail._id}
-            pollProposalState={pollProposalState}
-            isProposed={isProposed}
             user={this.props.user}
           />
         </Col>
@@ -698,13 +689,10 @@ export default class extends StandardPage {
   }
 
   renderMakeIntoProposalPanel() {
-    const { isReference, detail, proposal } = this.props
+    const { isReference, detail } = this.props
     if (!isReference) return null
     let result = _.get(this.props.detail, 'reference')
-    let reference = proposal
-    if (result && !_.isEmpty(result)) {
-      reference = _.last(result)
-    }
+    let reference = _.last(result)
     const { _id, vid, proposer } = reference
     return (
       <Row style={{ marginBottom: 30 }}>
