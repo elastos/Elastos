@@ -631,7 +631,6 @@ class C extends StandardPage {
             applyPayment: this.props.applyPayment,
             getPaymentSignature: this.props.getPaymentSignature,
             reviewApplication: this.props.reviewApplication,
-            getReviewTxid: this.props.getReviewTxid,
             withdraw: this.props.withdraw
           }
         )}

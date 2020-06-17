@@ -259,7 +259,6 @@ class PaymentList extends Component {
           opinion={opinion}
           reviewApplication={actions.reviewApplication}
           application={this.getApplication()}
-          getReviewTxid={actions.getReviewTxid}
         />
 
         {withdrawal ? (
