@@ -24,6 +24,7 @@ import Did from './Did'
 import Council from './Council'
 import Secretariat from './Secretariat'
 import Ela_Transaction from './Ela_Transaction'
+import Config from './Config'
 
 import Log from './Log'
 
@@ -123,6 +124,7 @@ export default class {
     this.db.Council = new Council(db)
     this.db.Secretariat = new Secretariat(db)
     this.db.Ela_Transaction = new Ela_Transaction(db)
+    this.db.Config = new Config(db)
   }
 
   public getModel(name: string) {

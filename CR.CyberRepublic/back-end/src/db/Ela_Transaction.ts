@@ -6,6 +6,6 @@ export default class extends Base {
         return ElaTransaction
     }
     protected getName() {
-        return 'elaTransaction'
+        return 'ela_transaction'
     }
 }
