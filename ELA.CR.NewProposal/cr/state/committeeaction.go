@@ -7,6 +7,7 @@ package state
 
 import (
 	"bytes"
+	"sort"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -19,9 +20,27 @@ import (
 // packed into a block.  Then loop through the transactions to update CR
 // state and votes according to transactions content.
 func (c *Committee) processTransactions(txs []*types.Transaction, height uint32) {
+	sortedTxs := make([]*types.Transaction, 0)
+	if len(txs) < 1 {
+		return
+	}
 	for _, tx := range txs {
+		sortedTxs = append(sortedTxs, tx)
+	}
+	sortTransactions(sortedTxs[1:])
+	for _, tx := range sortedTxs {
 		c.processTransaction(tx, height)
 	}
+}
+
+// sortTransactions purpose is to process some transaction first.
+func sortTransactions(txs []*types.Transaction) {
+	sort.Slice(txs, func(i, j int) bool {
+		if txs[i].IsCRCProposalWithdrawTx() {
+			return true
+		}
+		return !txs[j].IsCRCProposalWithdrawTx()
+	})
 }
 
 // processTransaction take a transaction and the height it has been packed into
