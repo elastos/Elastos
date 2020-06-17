@@ -112,9 +112,7 @@ export default class extends BaseService {
 
   resetDetail() {
     this.dispatch(this.selfRedux.actions.detail_reset())
-    this.dispatch(this.selfRedux.actions.reference_reset())
     this.dispatch(this.selfRedux.actions.reference_status_reset())
-    this.dispatch(this.selfRedux.actions.proposed_reset())
   }
 
   async create(doc) {
