@@ -823,14 +823,25 @@ export default class extends Base {
         return rs
     }
 
-    private async updateProposalBudget(query: any) {
-        const { WITHDRAWN, WAITING_FOR_WITHDRAWAL } = constant.MILESTONE_STATUS
+    public async updateProposalBudget() {
         const db_cvote = this.getDBModel('CVote')
-        const proposal = await db_cvote.findOne(query)
-        // deal with old proposal data
-        if (!_.get(proposal, 'proposalHash')) {
+        const proposals = await db_cvote.find({
+            status: {$in: ['ACTIVE', 'FINAL']},
+            old: {$exists: false}
+        })
+
+        if (!proposals.length) {
             return
         }
+        const arr = []
+        for (let proposal in proposals) {
+            arr.push(this.updateMilestoneStatus(proposal))
+        }
+        await Promise.all(arr)
+    }
+
+    private async updateMilestoneStatus(proposal) {
+        const { WITHDRAWN, WAITING_FOR_WITHDRAWAL, REJECTED } = constant.MILESTONE_STATUS
         const last: any = _.last(proposal.budget)
         // proposal is final
         if (
@@ -856,11 +867,15 @@ export default class extends Base {
             if (budgets) {
                 const budget = proposal.budget.map((item, index) => {
                     const chainStatus = budgets[index].status.toLowerCase()
-                    if (chainStatus === 'withdrawn') {
+                    if (chainStatus === 'withdrawn' && item.status !== WITHDRAWN) {
                         isBudgetUpdated = true
                         return { ...item, status: WITHDRAWN }
                     }
-                    if (chainStatus === 'withdrawable') {
+                    if (chainStatus === 'rejected' && item.status !== REJECTED) {
+                        isBudgetUpdated = true
+                        return { ...item, status: REJECTED }
+                    }
+                    if (chainStatus === 'withdrawable' && item.status !== WAITING_FOR_WITHDRAWAL) {
                         isBudgetUpdated = true
                         return { ...item, status: WAITING_FOR_WITHDRAWAL }
                     }
@@ -886,7 +901,6 @@ export default class extends Base {
         } else {
             query = {_id: id}
         }
-        await this.updateProposalBudget(query)
         const rs = await db_cvote
             .getDBInstance()
             .findOne(query, '-voteHistory')

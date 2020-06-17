@@ -10,8 +10,20 @@ const JOB_NAME = {
   INTOPROPOSAL: 'make into proposal',
   CVOTEJOB: 'cvote poll proposal',
   COUNCILJOB: 'council poll change',
-  USERJOB: 'user poll did infomation'
+  USERJOB: 'user poll did infomation',
+  UPDATEMILESTONE: 'update milestone status'
 }
+
+agenda.define(JOB_NAME.UPDATEMILESTONE, async(job: any) => {
+  console.log('------begin update milestone status------')
+  try {
+    const DB = await db.create()
+    const cvoteService = new CVoteServive(DB, { user: undefined })
+    await cvoteService.updateProposalBudget()
+  } catch(err) {
+    console.log('update milestone status cron job err...', err)
+  }
+})
 
 agenda.define(JOB_NAME.INTOPROPOSAL, async (job: any) => {
   console.log('------begin polling proposal state------')
@@ -95,4 +107,5 @@ agenda.define(JOB_NAME.USERJOB, async (job: any) => {
   await agenda.every('2 minutes', JOB_NAME.CVOTEJOB)
   await agenda.every('5 minutes', JOB_NAME.COUNCILJOB)
   await agenda.every('30 minutes', JOB_NAME.USERJOB)
+  await agenda.every('2 minutes', JOB_NAME.UPDATEMILESTONE)
 })()
