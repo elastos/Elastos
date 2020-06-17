@@ -126,11 +126,11 @@ type CRCProposal struct {
 	// Hash of proposal that need to change owner.
 	TargetProposalHash common.Uint256
 
-	// New public key of proposal owner.
-	NewOwnerPublicKey []byte
-
 	// The specified ELA address where the funds are to be sent.
 	NewRecipient common.Uint168
+
+	// New public key of proposal owner.
+	NewOwnerPublicKey []byte
 
 	// Public key of SecretaryGeneral.
 	SecretaryGeneralPublicKey []byte
@@ -230,11 +230,11 @@ func (p *CRCProposal) SerializeUnsignedChangeProposalOwner(w io.Writer, version 
 	if err := p.TargetProposalHash.Serialize(w); err != nil {
 		return errors.New("failed to serialize TargetProposalHash")
 	}
-	if err := common.WriteVarBytes(w, p.NewOwnerPublicKey); err != nil {
-		return errors.New("failed to serialize NewOwnerPublicKey")
-	}
 	if err := p.NewRecipient.Serialize(w); err != nil {
 		return errors.New("failed to serialize Recipient")
+	}
+	if err := common.WriteVarBytes(w, p.NewOwnerPublicKey); err != nil {
+		return errors.New("failed to serialize NewOwnerPublicKey")
 	}
 	return nil
 }
@@ -454,11 +454,11 @@ func (p *CRCProposal) DeserializeUnSignedChangeProposalOwner(r io.Reader, versio
 	if err = p.TargetProposalHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize TargetProposalHash")
 	}
-	if p.NewOwnerPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "owner"); err != nil {
-		return errors.New("failed to deserialize NewOwnerPublicKey")
-	}
 	if err = p.NewRecipient.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize Recipient")
+	}
+	if p.NewOwnerPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "owner"); err != nil {
+		return errors.New("failed to deserialize NewOwnerPublicKey")
 	}
 	return nil
 }
