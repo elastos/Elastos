@@ -102,7 +102,7 @@ public enum RxEnum {
     TRANSFERSUCESSPWD,//交易成功并回传密码
     SAVECREDENCIALTOWEB,//上传凭证到服务器
     SCANDATATOASSETPAGE,//把数据给首页处理
-    TRANSACTIONSUCCESSMESSAGE,//交易成功的消息
+    TRANSACTIONSUCCESSMESSAGE,//交易成功的消息 //只为通知特定页面加的补丁
 
    /* enum Type {
         CoinBase, // 创币交易

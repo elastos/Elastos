@@ -276,6 +276,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         super.onActivityResult(requestCode, resultCode, data);
         //处理扫描结果（在界面上显示）
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
+            restoreScanData();
             scanResult = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(scanResult) /*&& matcherUtil.isMatcherAddr(result)*/) {
                 if (scanResult.startsWith("elastos:")) {
@@ -822,9 +823,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             setRecycleView();
         }
         if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
-            //交易发生出去
-
+            //交易发生出去 首页收到不会弹成功的提示 只为了消息记录
+            //TRANSACTIONSUCCESSMESSAGE弹出提示
             transactionMap.put((String) result.getObj(), result.getName());
+            restoreScanData();
         }
         if (integer == RxEnum.VERTIFYPAYPASS.ordinal()) {
             //验证密码成功
@@ -839,18 +841,15 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
         if (integer == RxEnum.SCANDATATOASSETPAGE.ordinal()) {
             //其他页面接收的二维码数据
+            restoreScanData();
             scanResult = (String) result.getObj();
             scanElastos(scanResult);
 
         }
         if (integer == RxEnum.TRANSACTIONSUCCESSMESSAGE.ordinal()) {
+            //只为通知特定页面加的补丁 弹提示框
             if (getClass().getSimpleName().equals(result.getName())) {
-                new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
-                    @Override
-                    public void affireBtnClick(View view) {
-                        restoreScanData();
-                    }
-                });
+                showTransSucessTip(null);
             }
         }
         if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
@@ -1069,7 +1068,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             case "getVoteInfo":
                 //剔除非公示期的
                 String voteInfo = ((CommmonStringEntity) baseEntity).getData();
-                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("CRCProposal", voteInfo, depositList, crList, searchBeanList,councilList);
+                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("CRCProposal", voteInfo, depositList, crList, searchBeanList, councilList);
                 try {
                     JSONObject voteJson = proposalDetailPresenter.conversVote(voteInfo, "CRCProposal");//key value
                     //点击下一步 获得上次的投票后筛选数据
@@ -1144,12 +1143,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     des = getString(R.string.signsendsuccess);
 
                 }
-                new DialogUtil().showTransferSucess(des, getBaseActivity(), new WarmPromptListener() {
-                    @Override
-                    public void affireBtnClick(View view) {
-                    }
-                });
-                restoreScanData();
+                showTransSucessTip(des);
                 break;
             case "newPublishTransaction":
                 String hash = "";
@@ -1157,35 +1151,28 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 try {
                     JSONObject pulishdata = new JSONObject(((CommmonStringWithiMethNameEntity) baseEntity).getData());
                     hash = pulishdata.getString("TxHash");
-                    String callBacktype = "";
+                    //String callBacktype = "";
 
                     if ("reviewproposal".equals(curentJwtEntity.getCommand())) {
-                        callBacktype = "txidproposalreview";
                         transfertype = 38;
+                        //  callBacktype = "txidproposalreview";
+                        //proposalPresenter.backProposalJwt(callBacktype, scanResult, hash, payPasswd, this);
+                        showTransSucessTip(null);
 
                     } else if ("reviewmilestone".equals(curentJwtEntity.getCommand())) {
                         transfertype = 39;
-                        callBacktype = "txid";
-
+                        showTransSucessTip(null);
+                        //callBacktype = "txid";
+                        //proposalPresenter.backProposalJwt(callBacktype, scanResult, hash, payPasswd, this);
                     } else if ("withdraw".equals(curentJwtEntity.getCommand())) {
                         transfertype = 41;
-                        post(RxEnum.TRANSFERSUCESS.ordinal(), transfertype + "", hash);
-                        new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
-                            @Override
-                            public void affireBtnClick(View view) {
-                                restoreScanData();
-                            }
-                        });
-
-                        return;
-
+                        showTransSucessTip(null);
                     }
-                    proposalPresenter.backProposalJwt(callBacktype, scanResult, hash, payPasswd, this);
-
+                    post(RxEnum.TRANSFERSUCESS.ordinal(), transfertype + "", hash);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                post(RxEnum.TRANSFERSUCESS.ordinal(), transfertype + "", hash);
+
                 break;
             case "signTransaction":
             case "createProposalWithdrawTransaction":
@@ -1240,6 +1227,15 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 }
                 break;
         }
+    }
+
+    private void showTransSucessTip(String des) {
+        new DialogUtil().showTransferSucess(des, getBaseActivity(), new WarmPromptListener() {
+            @Override
+            public void affireBtnClick(View view) {
+                restoreScanData();
+            }
+        });
     }
 
     private void goTransferActivity(String attributesJson) {
@@ -1463,7 +1459,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         crList = null;
         searchBeanList = null;
         depositList = null;
-        councilList=null;
+        councilList = null;
         voteNum = null;
     }
 }

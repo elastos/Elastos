@@ -255,7 +255,13 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
                     e.printStackTrace();
                 }
                 post(RxEnum.TRANSFERSUCESS.ordinal(), 37 + "", hash);
-                presenter.calculateProposalHash(wallet.getWalletId(), new Gson().toJson(targetEntity), this, payPasswd);
+                new DialogUtil().showTransferSucess(null, getBaseActivity(), new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        pop();
+                    }
+                });
+
 
                 break;
             case "signTransaction":
