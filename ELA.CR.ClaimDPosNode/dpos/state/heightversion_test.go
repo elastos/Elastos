@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -51,7 +51,7 @@ func TestHeightVersionInit(t *testing.T) {
 		nil, nil)
 	assert.NoError(t, err)
 	arbiters.RegisterFunction(func() uint32 { return bestHeight }, nil, nil)
-	arbiters.State = NewState(activeNetParams, nil, nil)
+	arbiters.State = NewState(activeNetParams, nil, nil, nil)
 
 }
 

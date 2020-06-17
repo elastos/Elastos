@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -61,7 +61,7 @@ func TestCheckBlockSanity(t *testing.T) {
 	defer chainStore.Close()
 
 	chain, _ := New(chainStore, params, state.NewState(params,
-		nil, nil), nil)
+		nil, nil, nil), nil)
 	//chain.Init(nil)
 	if DefaultLedger == nil {
 		DefaultLedger = &Ledger{

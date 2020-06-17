@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package pow
 
@@ -62,7 +62,7 @@ func TestService_Init(t *testing.T) {
 		CurrentArbitrators: arbitrators,
 	}
 
-	chain, err := blockchain.New(chainStore, params, state.NewState(params,
+	chain, err := blockchain.New(chainStore, params, state.NewState(params, nil,
 		nil, nil), nil)
 	if err != nil {
 		t.Error(err)

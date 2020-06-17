@@ -32,6 +32,10 @@ const (
 
 	// MemberReturned indicates the CR member has deposit returned.
 	MemberReturned
+
+	// MemberInactive indicates the CR member was inactive because the dpos node
+	// is inactive.
+	MemberInactive
 )
 
 func (s *MemberState) String() string {

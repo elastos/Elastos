@@ -62,7 +62,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 		s.Error(err)
 	}
 	s.Chain, err = New(chainStore, params,
-		state.NewState(params, nil, nil),
+		state.NewState(params, nil, nil, nil),
 		crstate.NewCommittee(params))
 	if err != nil {
 		s.Error(err)
@@ -1082,7 +1082,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 
 	s.CurrentHeight = 1
 	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
-	s.Chain.state = state.NewState(s.Chain.chainParams, nil, func(programHash common.Uint168) (common.Fixed64,
+	s.Chain.state = state.NewState(s.Chain.chainParams, nil, nil, func(programHash common.Uint168) (common.Fixed64,
 		error) {
 		amount := common.Fixed64(0)
 		utxos, err := s.Chain.db.GetFFLDB().GetUTXO(&programHash)

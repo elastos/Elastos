@@ -19,6 +19,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
@@ -243,6 +244,7 @@ type State struct {
 
 	// getArbiters defines methods about get current arbiters
 	getArbiters              func() [][]byte
+	getCRMembers             func() []*state.CRMember
 	getProducerDepositAmount func(programHash common.Uint168) (
 		common.Fixed64, error)
 	getTxReference func(tx *types.Transaction) (
@@ -712,10 +714,12 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 			producer.state = Active
 			s.ActivityProducers[key] = producer
 			delete(s.InactiveProducers, key)
+			s.updateCRMemberState(producer.NodePublicKey(), state.MemberElected)
 		}, func() {
 			producer.state = Inactive
 			s.InactiveProducers[key] = producer
 			delete(s.ActivityProducers, key)
+			s.updateCRMemberState(producer.NodePublicKey(), state.MemberInactive)
 		})
 	}
 
@@ -726,6 +730,7 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 			producer.state = Active
 			s.ActivityProducers[key] = producer
 			delete(s.IllegalProducers, key)
+			s.updateCRMemberState(producer.NodePublicKey(), state.MemberElected)
 		}, func() {
 			producer.state = Illegal
 			s.IllegalProducers[key] = producer
@@ -890,6 +895,7 @@ func (s *State) cancelProducer(payload *payload.ProcessProducer, height uint32) 
 		} else {
 			producer.state = Active
 			s.ActivityProducers[key] = producer
+			s.updateCRMemberState(producer.NodePublicKey(), state.MemberElected)
 		}
 		s.Nicknames[producer.info.NickName] = struct{}{}
 	})
@@ -1297,6 +1303,7 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 				producer.activateRequestHeight = math.MaxUint32
 				delete(s.IllegalProducers, key)
 				s.Nicknames[producer.info.NickName] = struct{}{}
+				s.updateCRMemberState(producer.NodePublicKey(), state.MemberElected)
 			})
 			continue
 		}
@@ -1337,6 +1344,17 @@ func (s *State) ProcessSpecialTxPayload(p types.Payload, height uint32) {
 	s.history.Commit(height)
 }
 
+func (s *State) updateCRMemberState(nodePublicKey []byte, memberState state.MemberState) {
+	if s.getCRMembers != nil {
+		crMembers := s.getCRMembers()
+		for _, cr := range crMembers {
+			if bytes.Equal(cr.DPOSPublicKey, nodePublicKey) {
+				cr.MemberState = memberState
+			}
+		}
+	}
+}
+
 // setInactiveProducer set active producer to inactive state
 func (s *State) setInactiveProducer(producer *Producer, key string,
 	height uint32, emergency bool) {
@@ -1345,6 +1363,8 @@ func (s *State) setInactiveProducer(producer *Producer, key string,
 	producer.state = Inactive
 	s.InactiveProducers[key] = producer
 	delete(s.ActivityProducers, key)
+
+	s.updateCRMemberState(producer.NodePublicKey(), state.MemberInactive)
 
 	if height < s.VersionStartHeight || height >= s.VersionEndHeight {
 		if !emergency {
@@ -1363,6 +1383,7 @@ func (s *State) revertSettingInactiveProducer(producer *Producer, key string,
 	producer.state = Active
 	s.ActivityProducers[key] = producer
 	delete(s.InactiveProducers, key)
+	s.updateCRMemberState(producer.NodePublicKey(), state.MemberElected)
 
 	if height < s.VersionStartHeight || height >= s.VersionEndHeight {
 		penalty := s.chainParams.InactivePenalty
@@ -1482,11 +1503,12 @@ func (s *State) GetHistory(height uint32) (*StateKeyFrame, error) {
 }
 
 // NewState returns a new State instance.
-func NewState(chainParams *config.Params, getArbiters func() [][]byte,
+func NewState(chainParams *config.Params, getArbiters func() [][]byte, getCRMembers func() []*state.CRMember,
 	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error)) *State {
 	return &State{
 		chainParams:              chainParams,
 		getArbiters:              getArbiters,
+		getCRMembers:             getCRMembers,
 		getProducerDepositAmount: getProducerDepositAmount,
 		history:                  utils.NewHistory(maxHistoryCapacity),
 		StateKeyFrame:            NewStateKeyFrame(),
