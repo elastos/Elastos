@@ -1295,7 +1295,7 @@ public final class DIDStore {
 		storePrivateKey(_did, _id, privateKey, storepass);
 	}
 
-	protected HDKey loadPrivateKey(DID did, DIDURL id, String storepass)
+	protected byte[] loadPrivateKey(DID did, DIDURL id, String storepass)
 			throws DIDStoreException {
 		String encryptedKey = storage.loadPrivateKey(did, id);
 		byte[] keyBytes = decryptFromBase64(encryptedKey, storepass);
@@ -1325,7 +1325,7 @@ public final class DIDStore {
 			extendedKeyBytes = keyBytes;
 		}
 
-		return HDKey.deserialize(extendedKeyBytes);
+		return extendedKeyBytes;
 	}
 
 	public boolean containsPrivateKeys(DID did) throws DIDStoreException {
@@ -1402,7 +1402,7 @@ public final class DIDStore {
 			id = doc.getDefaultPublicKey();
 		}
 
-		HDKey key = loadPrivateKey(did, id, storepass);
+		HDKey key = HDKey.deserialize(loadPrivateKey(did, id, storepass));
 		byte[] sig = EcdsaSigner.sign(key.getPrivateKeyBytes(), digest);
 		key.wipe();
 

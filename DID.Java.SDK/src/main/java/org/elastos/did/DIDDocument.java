@@ -550,8 +550,8 @@ public class DIDDocument {
 		if (!getMetadataImpl().attachedStore())
 			throw new DIDStoreException("Not attached with a DID store.");
 
-		HDKey key = getMetadataImpl().getStore().loadPrivateKey(getSubject(),
-				getDefaultPublicKey(), storepass);
+		HDKey key = HDKey.deserialize(getMetadataImpl().getStore().loadPrivateKey(
+				getSubject(), getDefaultPublicKey(), storepass));
 
 		return key.derive(index).serializeBase58();
 	}
@@ -575,7 +575,8 @@ public class DIDDocument {
 		if (!getMetadataImpl().getStore().containsPrivateKey(getSubject(), id))
 			throw new InvalidKeyException("Don't have private key");
 
-		HDKey key = getMetadataImpl().getStore().loadPrivateKey(getSubject(), id, storepass);
+		HDKey key = HDKey.deserialize(getMetadataImpl().getStore().loadPrivateKey(
+				getSubject(), id, storepass));
 		return key.getJCEKeyPair();
 	}
 

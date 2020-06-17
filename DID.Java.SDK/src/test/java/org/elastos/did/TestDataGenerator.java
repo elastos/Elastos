@@ -99,7 +99,7 @@ public class TestDataGenerator {
 		store.storeCredential(vc);
 
 		DIDURL id = issuer.getDefaultPublicKey();
-		HDKey key = store.loadPrivateKey(issuer.getSubject(), id, TestConfig.storePass);
+		HDKey key = HDKey.deserialize(store.loadPrivateKey(issuer.getSubject(), id, TestConfig.storePass));
 		writeTo("issuer." + id.getFragment() + ".sk", key.serializeBase58());
 
 		String json = issuer.toString(true);
@@ -180,7 +180,7 @@ public class TestDataGenerator {
 		store.storeCredential(vcEmail);
 
 		DIDURL id = test.getDefaultPublicKey();
-		HDKey key = store.loadPrivateKey(test.getSubject(), id, TestConfig.storePass);
+		HDKey key = HDKey.deserialize(store.loadPrivateKey(test.getSubject(), id, TestConfig.storePass));
 		writeTo("document." + id.getFragment() + ".sk", key.serializeBase58());
 
 		String json = test.toString(true);
