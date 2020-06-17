@@ -23,6 +23,7 @@ import Vid from './Vid'
 import Did from './Did'
 import Council from './Council'
 import Secretariat from './Secretariat'
+import Ela_Transaction from './Ela_Transaction'
 
 import Log from './Log'
 
@@ -121,6 +122,7 @@ export default class {
     this.db.Did = new Did(db)
     this.db.Council = new Council(db)
     this.db.Secretariat = new Secretariat(db)
+    this.db.Ela_Transaction = new Ela_Transaction(db)
   }
 
   public getModel(name: string) {
