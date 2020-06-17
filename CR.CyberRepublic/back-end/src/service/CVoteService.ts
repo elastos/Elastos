@@ -119,57 +119,6 @@ export default class extends Base {
         }
     }
 
-    public async pollProposalState(param: any) {
-        const did = _.get(this.currentUser, 'did.id')
-        if (!did) {
-          return { success: false, message: 'Your DID not bound' }
-        }
-        const role = _.get(this.currentUser, 'role')
-        if (!permissions.isCouncil(role)) {
-          return { success: false, message: 'No access right' }
-        }
-        const { id } = param
-        const db_suggestion = this.getDBModel('Suggestion')
-        const suggestion = await db_suggestion.findById(id)
-        if (suggestion) {
-            const proposers = _.get(suggestion, 'proposers')
-            // make sure current council member had signed
-            const currentProposer = proposers && proposers.filter(item => item.proposalHash && item.did === did)[0]
-            if (currentProposer) {
-                // draft hash is a constant
-                const draftHash = _.get(suggestion, 'draftHash')
-                const db_cvote = this.getDBModel('CVote')
-                const cvote = await db_cvote.getDBInstance().findOne({ draftHash }).populate('createdBy')
-                if (cvote) {
-                    return {
-                        success: true,
-                        reference: {
-                            _id: cvote._id,
-                            vid: cvote.vid,
-                            proposer: userUtil.formatUsername(cvote.createdBy),
-                            status: cvote.status
-                        }
-                    }
-                }
-                const rs: any = await getProposalState({
-                    drafthash: draftHash
-                })
-                if (rs && rs.success && rs.status === 'Registered') {
-                    const proposal = await this.makeSuggIntoProposal({
-                        suggestion,
-                        proposalHash: rs.proposalHash,
-                        chainDid: rs.proposal.crcouncilmemberdid
-                    })
-                    return { success: true, reference: proposal }
-                } else {
-                    return { success: true, toChain: true }
-                }
-            }
-        } else {
-            return {success: false, message: 'no this suggestion'}
-        }
-    }
-
     public async makeSuggIntoProposal(param: any) {
         const db_cvote = this.getDBModel('CVote')
         const db_suggestion = this.getDBModel('Suggestion')
