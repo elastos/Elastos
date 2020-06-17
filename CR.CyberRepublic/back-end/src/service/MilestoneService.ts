@@ -7,7 +7,6 @@ import {
   logger,
   user as userUtil,
   utilCrypto,
-  getDidPublicKey,
   getPemPublicKey,
   getUtxosByAmount
 } from '../utility'
@@ -324,24 +323,6 @@ export default class extends Base {
     } catch (error) {
       logger.error(error)
       return
-    }
-  }
-
-  public async checkReviewTxid(param: any) {
-    const { id, messageHash } = param
-    const proposal: any = await this.getProposal(id)
-    if (proposal) {
-      const history = proposal.withdrawalHistory.filter(
-        (item: any) => item.review.reasonHash === messageHash
-      )
-      if (_.isEmpty(history)) {
-        return { success: false }
-      }
-      if (_.get(history[0], 'review.txid')) {
-        return { success: true, detail: proposal }
-      }
-    } else {
-      return { success: false }
     }
   }
 
