@@ -254,6 +254,7 @@ func (mp *TxPool) checkAndCleanAllTransactions() {
 			log.Warn("[checkAndCleanAllTransactions] check transaction context failed,", err)
 			deleteCount++
 			mp.doRemoveTransaction(tx)
+			continue
 		}
 		if tx.IsCRCProposalTx() {
 			blockchain.RecordCRCProposalAmount(&proposalsUsedAmount, tx)
