@@ -967,7 +967,7 @@ export default class extends Base {
         // const n = await db_cvote.count({})
         // return n + 1
         // new version, vid string from 1
-        const n = await db_cvote.count({old:{$ne:null}})
+        const n = await db_cvote.count({old:{$exists:false}})
         return n + 1
     }
 
