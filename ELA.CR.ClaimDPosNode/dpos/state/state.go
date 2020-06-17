@@ -667,6 +667,7 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	defer s.mtx.Unlock()
 
 	s.tryInitProducerAssetAmounts(block.Height)
+	s.updateCRInactivePeriod()
 	s.processTransactions(block.Transactions, block.Height)
 	s.ProcessVoteStatisticsBlock(block)
 
@@ -1350,6 +1351,17 @@ func (s *State) updateCRMemberState(nodePublicKey []byte, memberState state.Memb
 		for _, cr := range crMembers {
 			if bytes.Equal(cr.DPOSPublicKey, nodePublicKey) {
 				cr.MemberState = memberState
+			}
+		}
+	}
+}
+
+func (s *State) updateCRInactivePeriod() {
+	if s.getCRMembers != nil {
+		crMembers := s.getCRMembers()
+		for _, cr := range crMembers {
+			if cr.MemberState == state.MemberInactive {
+				cr.InactiveCount += 1
 			}
 		}
 	}

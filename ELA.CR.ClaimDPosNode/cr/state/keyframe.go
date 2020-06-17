@@ -100,6 +100,7 @@ type CRMember struct {
 	DepositHash      common.Uint168
 	MemberState      MemberState
 	DPOSPublicKey    []byte
+	InactiveCount    uint32
 }
 
 // StateKeyFrame holds necessary state about CR committee.
