@@ -527,8 +527,8 @@ export default class extends Base {
                 ..._.omit(data && data._doc, ['_id'])
             }
 
-            const startTime = await ela.getBlockByHeight(crRelatedStageStatus.ondutystartheight)
-            const endTime = await ela.getBlockByHeight(crRelatedStageStatus.votingstartheight)
+            const startTime = await ela.getTimestampByHeight(crRelatedStageStatus.ondutystartheight)
+            const endTime = await ela.getTimestampByHeight(crRelatedStageStatus.votingstartheight)
             if (status) {
                 const councilMembers = await updateUserInformation(newCouncilMembers)
                 doc['status'] = status
