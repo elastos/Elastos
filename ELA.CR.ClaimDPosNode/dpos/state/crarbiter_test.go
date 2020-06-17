@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -18,7 +18,8 @@ import (
 )
 
 func TestCRCArbiter_Deserialize(t *testing.T) {
-	a, _ := NewCRCArbiter(randomPublicKey(), randomCRMember())
+	pk := randomPublicKey()
+	a, _ := NewCRCArbiter(pk, pk, randomCRMember())
 	ar1 := a.(*crcArbiter)
 
 	buf := new(bytes.Buffer)
@@ -33,7 +34,8 @@ func TestCRCArbiter_Deserialize(t *testing.T) {
 }
 
 func TestCRCArbiter_Clone(t *testing.T) {
-	a, _ := NewCRCArbiter(randomPublicKey(), randomCRMember())
+	pk := randomPublicKey()
+	a, _ := NewCRCArbiter(pk, pk, randomCRMember())
 	ar1 := a.(*crcArbiter)
 
 	a = a.Clone()

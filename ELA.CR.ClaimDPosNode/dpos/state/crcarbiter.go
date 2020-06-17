@@ -77,13 +77,12 @@ func (c *crcArbiter) getPublicKey() []byte {
 	return c.crMember.Info.Code[1 : len(c.crMember.Info.Code)-1]
 }
 
-func NewCRCArbiter(nodePk []byte, cr *state.CRMember) (ArbiterMember, error) {
+func NewCRCArbiter(nodePK []byte, ownerPK []byte, cr *state.CRMember) (ArbiterMember, error) {
 	ar := &crcArbiter{
 		crMember: cr,
-		nodePk:   nodePk,
+		nodePk:   nodePK,
 	}
-	hash, err := contract.PublicKeyToStandardProgramHash(
-		ar.GetNodePublicKey())
+	hash, err := contract.PublicKeyToStandardProgramHash(ownerPK)
 	if err != nil {
 		return nil, err
 	}

@@ -445,8 +445,10 @@ func (a *arbitrators) distributeDPOSReward(height uint32,
 	reward common.Fixed64) (roundReward map[common.Uint168]common.Fixed64,
 	change common.Fixed64, err error) {
 	var realDPOSReward common.Fixed64
-	if height >= a.chainParams.CRCommitteeStartHeight+2*uint32(len(a.currentArbitrators)) {
-		roundReward, realDPOSReward, err = a.distributeWithNormalArbitratorsV(height, reward)
+	if height >= a.chainParams.CRClaimDPOSNodeStartHeight+2*uint32(len(a.currentArbitrators)) {
+		roundReward, realDPOSReward, err = a.distributeWithNormalArbitratorsV2(height, reward)
+	} else if height >= a.chainParams.CRCommitteeStartHeight+2*uint32(len(a.currentArbitrators)) {
+		roundReward, realDPOSReward, err = a.distributeWithNormalArbitratorsV1(height, reward)
 	} else {
 		roundReward, realDPOSReward, err = a.distributeWithNormalArbitratorsV0(reward)
 	}
@@ -463,11 +465,77 @@ func (a *arbitrators) distributeDPOSReward(height uint32,
 	return
 }
 
-func (a *arbitrators) distributeWithNormalArbitratorsV(height uint32, reward common.Fixed64) (
+func (a *arbitrators) distributeWithNormalArbitratorsV2(height uint32, reward common.Fixed64) (
 	map[common.Uint168]common.Fixed64, common.Fixed64, error) {
 	if len(a.currentArbitrators) == 0 {
 		return nil, 0, errors.New("not found arbiters when " +
-			"distributeWithNormalArbitratorsV")
+			"distributeWithNormalArbitratorsV1")
+	}
+
+	roundReward := map[common.Uint168]common.Fixed64{}
+	totalBlockConfirmReward := float64(reward) * 0.25
+	totalTopProducersReward := float64(reward) - totalBlockConfirmReward
+	// Consider that there is no only CR consensus.
+	arbitersCount := len(a.chainParams.CRCArbiters) + a.chainParams.GeneralArbiters
+	individualBlockConfirmReward := common.Fixed64(
+		math.Floor(totalBlockConfirmReward / float64(arbitersCount)))
+	totalVotesInRound := a.CurrentReward.TotalVotesInRound
+	if len(a.chainParams.CRCArbiters) == len(a.currentArbitrators) {
+		// if no normal DPOS node, need to destroy reward.
+		roundReward[a.chainParams.DestroyELAAddress] = reward
+		return roundReward, reward, nil
+	}
+	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
+
+	realDPOSReward := common.Fixed64(0)
+	for _, arbiter := range a.currentArbitrators {
+		ownerHash := arbiter.GetOwnerProgramHash()
+		rewardHash := ownerHash
+		var r common.Fixed64
+		if _, ok := a.crcArbiters[ownerHash]; ok {
+			r = individualBlockConfirmReward
+			m, ok := arbiter.(*crcArbiter)
+			if !ok || m.crMember.MemberState != state.MemberElected {
+				rewardHash = a.chainParams.DestroyELAAddress
+			} else {
+				pk := arbiter.GetOwnerPublicKey()
+				programHash, err := contract.PublicKeyToStandardProgramHash(pk)
+				if err != nil {
+					rewardHash = a.chainParams.DestroyELAAddress
+				} else {
+					rewardHash = *programHash
+				}
+			}
+		} else {
+			votes := a.CurrentReward.OwnerVotesInRound[ownerHash]
+			individualProducerReward := common.Fixed64(math.Floor(float64(
+				votes) * rewardPerVote))
+			r = individualBlockConfirmReward + individualProducerReward
+		}
+		roundReward[rewardHash] += r
+		realDPOSReward += r
+	}
+	for _, candidate := range a.currentCandidates {
+		ownerHash := candidate.GetOwnerProgramHash()
+		votes := a.CurrentReward.OwnerVotesInRound[ownerHash]
+		individualProducerReward := common.Fixed64(math.Floor(float64(
+			votes) * rewardPerVote))
+		roundReward[ownerHash] = individualProducerReward
+
+		realDPOSReward += individualProducerReward
+	}
+	// Abnormal CR`s reward need to be destroyed.
+	for i := len(a.currentArbitrators); i < arbitersCount; i++ {
+		roundReward[a.chainParams.DestroyELAAddress] += individualBlockConfirmReward
+	}
+	return roundReward, realDPOSReward, nil
+}
+
+func (a *arbitrators) distributeWithNormalArbitratorsV1(height uint32, reward common.Fixed64) (
+	map[common.Uint168]common.Fixed64, common.Fixed64, error) {
+	if len(a.currentArbitrators) == 0 {
+		return nil, 0, errors.New("not found arbiters when " +
+			"distributeWithNormalArbitratorsV1")
 	}
 
 	roundReward := map[common.Uint168]common.Fixed64{}
@@ -930,49 +998,18 @@ func (a *arbitrators) updateNextArbitrators(versionHeight, height uint32) error 
 
 func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32) error {
 	if a.crCommittee != nil && a.crCommittee.IsInElectionPeriod() {
-		crMembers := a.crCommittee.GetAllMembers()
-		if len(crMembers) != len(a.chainParams.CRCArbiters) {
-			return errors.New("CRC members count mismatch with CRC arbiters")
-		}
 
-		// get public key map
-		crPublicKeysMap := make(map[string]struct{})
-		for _, cr := range crMembers {
-			if cr.DPOSPublicKey != nil {
-				crPublicKeysMap[common.BytesToHexString(cr.DPOSPublicKey)] = struct{}{}
-			}
-		}
-		arbitersPublicKeysMap := make(map[string]struct{})
-		for _, ar := range a.chainParams.CRCArbiters {
-			arbitersPublicKeysMap[ar] = struct{}{}
-		}
-
-		// get unclaimed arbiter keys list
-		unclaimedArbiterKeys := make([]string, 0)
-		for k, _ := range arbitersPublicKeysMap {
-			if _, ok := crPublicKeysMap[k]; !ok {
-				unclaimedArbiterKeys = append(unclaimedArbiterKeys, k)
-			}
-		}
-
-		crcArbiters := map[common.Uint168]ArbiterMember{}
-		for _, cr := range crMembers {
-			var pk []byte
-			if cr.DPOSPublicKey == nil {
-				var err error
-				pk, err = common.HexStringToBytes(unclaimedArbiterKeys[0])
-				if err != nil {
-					return err
-				}
-				unclaimedArbiterKeys = unclaimedArbiterKeys[1:]
-			} else {
-				pk = cr.DPOSPublicKey
-			}
-			ar, err := NewCRCArbiter(pk, cr)
-			if err != nil {
+		var crcArbiters map[common.Uint168]ArbiterMember
+		if versionHeight >= a.chainParams.CRClaimDPOSNodeStartHeight {
+			var err error
+			if crcArbiters, err = a.getCRCArbitersV1(); err != nil {
 				return err
 			}
-			crcArbiters[ar.GetOwnerProgramHash()] = ar
+		} else {
+			var err error
+			if crcArbiters, err = a.getCRCArbitersV0(); err != nil {
+				return err
+			}
 		}
 
 		oriArbiters := a.crcArbiters
@@ -1027,6 +1064,81 @@ func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32)
 	})
 
 	return nil
+}
+
+func (a *arbitrators) getCRCArbitersV1() (map[common.Uint168]ArbiterMember, error) {
+	crMembers := a.crCommittee.GetAllMembers()
+	if len(crMembers) != len(a.chainParams.CRCArbiters) {
+		return nil, errors.New("CRC members count mismatch with CRC arbiters")
+	}
+
+	// get public key map
+	crPublicKeysMap := make(map[string]struct{})
+	for _, cr := range crMembers {
+		if cr.DPOSPublicKey != nil {
+			crPublicKeysMap[common.BytesToHexString(cr.DPOSPublicKey)] = struct{}{}
+		}
+	}
+	arbitersPublicKeysMap := make(map[string]struct{})
+	for _, ar := range a.chainParams.CRCArbiters {
+		arbitersPublicKeysMap[ar] = struct{}{}
+	}
+
+	// get unclaimed arbiter keys list
+	unclaimedArbiterKeys := make([]string, 0)
+	for k, _ := range arbitersPublicKeysMap {
+		if _, ok := crPublicKeysMap[k]; !ok {
+			unclaimedArbiterKeys = append(unclaimedArbiterKeys, k)
+		}
+	}
+
+	crcArbiters := map[common.Uint168]ArbiterMember{}
+	for _, cr := range crMembers {
+		if cr.MemberState != state.MemberElected {
+			continue
+		}
+		var pk []byte
+		if cr.DPOSPublicKey == nil {
+			var err error
+			pk, err = common.HexStringToBytes(unclaimedArbiterKeys[0])
+			if err != nil {
+				return nil, err
+			}
+			unclaimedArbiterKeys = unclaimedArbiterKeys[1:]
+		} else {
+			pk = cr.DPOSPublicKey
+		}
+		crPublicKey := cr.Info.Code[1 : len(cr.Info.Code)-1]
+		ar, err := NewCRCArbiter(pk, crPublicKey, cr)
+		if err != nil {
+			return nil, err
+		}
+		crcArbiters[ar.GetOwnerProgramHash()] = ar
+	}
+
+	return crcArbiters, nil
+}
+
+func (a *arbitrators) getCRCArbitersV0() (map[common.Uint168]ArbiterMember, error) {
+	crMembers := a.crCommittee.GetAllMembers()
+	if len(crMembers) != len(a.chainParams.CRCArbiters) {
+		return nil, errors.New("CRC members count mismatch with CRC arbiters")
+	}
+
+	crcArbiters := map[common.Uint168]ArbiterMember{}
+	for i, v := range a.chainParams.CRCArbiters {
+		pk, err := common.HexStringToBytes(v)
+		if err != nil {
+			return nil, err
+		}
+		ar, err := NewCRCArbiter(pk, pk, crMembers[i])
+		if err != nil {
+			return nil, err
+		}
+		crcArbiters[ar.GetOwnerProgramHash()] = ar
+	}
+
+	return crcArbiters, nil
 }
 
 func (a *arbitrators) GetCandidatesDesc(height uint32, startIndex int,
