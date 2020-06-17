@@ -10,13 +10,17 @@ class SignSuggestionButton extends Component {
     super(props)
     this.state = {
       url: '',
-      visible: false
+      visible: false,
+      message: ''
     }
     this.timer = null
   }
 
   elaQrCode = () => {
-    const { url } = this.state
+    const { url, message } = this.state
+    if (message) {
+      return <Content>{message}</Content>
+    }
     return (
       <Content>
         {url ? <QRCode value={url} size={400} /> : <Spin />}
@@ -55,6 +59,9 @@ class SignSuggestionButton extends Component {
   }
 
   handleSign = async () => {
+    if (this.state.message) {
+      return
+    }
     if (this.timer) {
       return
     }
@@ -66,10 +73,10 @@ class SignSuggestionButton extends Component {
     const { id, getSignatureUrl } = this.props
     const rs = await getSignatureUrl(id)
     if (rs && rs.success) {
-      this.setState({ url: rs.url })
+      this.setState({ url: rs.url, message: '' })
     }
     if (rs && !rs.success) {
-      message.error(rs.message)
+      this.setState({ message: rs.message, url: '' })
     }
   }
 
