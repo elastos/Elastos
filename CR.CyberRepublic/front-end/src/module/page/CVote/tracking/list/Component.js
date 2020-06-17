@@ -95,14 +95,19 @@ export default class extends BaseComponent {
           <StyledPrivateItem actions={[]}>
             <StyledRow gutter={16}>
               <LeftCol span={21} status={item.review ? item.review.opinion : 'REVIEWING'}>
-                <StyledRichContent>
+                <StyledRichContent span={21}>
                   <DraftEditor
                     value={item.message}
                     contentType={CONTENT_TYPE.MARKDOWN}
                     editorEnabled={false}
                   />
                 </StyledRichContent>
-                <StyledFooter>{moment(item.createdAt).format(DATE_FORMAT)}</StyledFooter>
+                <StyledFooter>
+                  {moment(item.createdAt).format(DATE_FORMAT)} , 
+                  {`${I18N.get('suggestion.budget.milestone')} #${Number(
+                    item.milestoneKey
+                  ) + 1}`}
+                </StyledFooter>
               </LeftCol>
               <RightCol span={3}>
                 <Status status={item.review ? item.review.opinion : 'REVIEWING'}>
@@ -110,7 +115,7 @@ export default class extends BaseComponent {
                   </Status>
               </RightCol>
             </StyledRow>
-            {this.renderWithdrawalActions(item.review)}
+            {this.renderWithdrawalActions(item)}
           </StyledPrivateItem>
         )}
       />
@@ -246,18 +251,14 @@ export default class extends BaseComponent {
   }
 
   renderWithdrawalActions(item) {
-    const { isSecretary } = this.props
-
+    const { secretariat } = this.state
     let body
-    if (item !== undefined){
-      const commenter = _.get(item, 'comment.createdBy')
-      const commenterName = commenter ? `${userUtil.formatUsername(commenter)}, ` : ''
-
+    if (item.review !== undefined){
       body = (
-        <CommentCol span={21} status={item.opinion}>
+        <CommentCol span={21} status={item.review.opinion}>
           <CommentContent>
             <div>
-              {item.reason.split('\n').map((item, key) => {
+              {item.review.reason.split('\n').map((item, key) => {
                 return (
                   <span key={key}>
                     {item}
@@ -267,8 +268,8 @@ export default class extends BaseComponent {
               })}
             </div>
             <CommentFooter>
-              {commenterName}
-              {moment(item.createdAt).format(DATE_FORMAT)}
+              { secretariat && secretariat.didName ? secretariat.didName + " , " : null}
+              {moment(item.review.createdAt).format(DATE_FORMAT)}
             </CommentFooter>
           </CommentContent>
         </CommentCol>
@@ -291,7 +292,9 @@ export default class extends BaseComponent {
 
   refetch = async () => {
     this.ord_loading(true)
-    const { listData } = this.props
+    const { listData,getSecretariat } = this.props
+    const secretariat =  await getSecretariat()
+    this.setState({secretariat})
     const param = this.getQuery()
     await listData(param)
     this.ord_loading(false)
