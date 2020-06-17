@@ -45,8 +45,22 @@ func (mp *TxPool) AppendToTxPool(tx *Transaction) elaerr.ELAError {
 	return nil
 }
 
+func (mp *TxPool) removeCRAppropriationConflictTransactions() {
+	for _, tx := range mp.txnList {
+		if tx.IsCRAssetsRectifyTx() {
+			mp.doRemoveTransaction(tx)
+		}
+	}
+}
+
 func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 	txHash := tx.Hash()
+
+	// If the transaction is CR appropriation transaction, need to remove
+	// transactions that conflict with it.
+	if tx.IsCRCAppropriationTx() {
+		mp.removeCRAppropriationConflictTransactions()
+	}
 
 	// Don't accept the transaction if it already exists in the pool.  This
 	// applies to orphan transactions as well.  This check is intended to
