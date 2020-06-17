@@ -84,12 +84,12 @@ void bulkmsgs_put(hashtable_t *msgs, BulkMsg *msg)
 }
 
 static inline
-BulkMsg *bulkmsgs_remove(hashtable_t *msgs, int64_t *tid)
+void bulkmsgs_remove(hashtable_t *msgs, int64_t *tid)
 {
     assert(msgs);
     assert(tid);
 
-    return (BulkMsg *)hashtable_remove(msgs, tid, sizeof(int64_t));
+    deref(hashtable_remove(msgs, tid, sizeof(int64_t)));
 }
 
 static inline
