@@ -5,29 +5,35 @@ import Foundation
 open class CarrierExtension: NSObject {
 
     public typealias CarrierExtensionInviteReplyCallback =
-        (_ carrier: CarrierExtension, _ from: String, _ status: Int, _ reason: String?,
+        (_ carrier: Carrier, _ from: String, _ status: Int, _ reason: String?,
         _ data: String?) -> Void
 
     public typealias CarrierExtensionInviteCallback =
-        (_ carrier: CarrierExtension, _ from: String, _ data: String?) -> Void
+        (_ carrier: Carrier, _ from: String, _ data: String?) -> Void
 
     private let TAG = "CarrierExtension"
-    var carrier: Carrier
-    var nativeCookie = 0
+    private var carrier: Carrier?
+    private var handler: CarrierExtensionInviteCallback?
+    private var didCleanup: Bool
+
+    deinit {
+        cleanup()
+    }
 
     public init(_ carrier: Carrier) {
         self.carrier = carrier
         Log.i(TAG, "CarrierExtension instance created")
+        self.didCleanup = true
+        super.init()
     }
 
     @objc (turnServerInfo:)
     public func turnServerInfo() throws -> TurnServerInfo {
         var cinfo = CTurnServer()
-        let result = ela_get_turn_server(carrier.ccarrier!, &cinfo)
+        let result = ela_get_turn_server(carrier!.ccarrier!, &cinfo)
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(TAG, "Get turn server error: 0x%X", errno)
-            ela_kill(carrier.ccarrier)
             throw CarrierError.FromErrorCode(errno: errno)
         }
 
@@ -47,7 +53,7 @@ open class CarrierExtension: NSObject {
             let ectxt = Unmanaged<AnyObject>.fromOpaque(cctxt)
                 .takeRetainedValue() as! [AnyObject?]
 
-            let carrier = ectxt[0] as! CarrierExtension
+            let carrier = ectxt[0] as! Carrier
             let handler = ectxt[1] as! CarrierExtensionInviteReplyCallback
 
             let from = String(cString: cfrom)
@@ -64,14 +70,14 @@ open class CarrierExtension: NSObject {
             handler(carrier, from, status, reason, _data)
         }
 
-        let econtext: [AnyObject?] = [self, responseHandler as AnyObject]
+        let econtext: [AnyObject?] = [carrier, responseHandler as AnyObject]
         let unmanaged = Unmanaged.passRetained(econtext as AnyObject)
         let cctxt = unmanaged.toOpaque()
         
         let result = target.withCString { (cto) -> Int32 in
             return data.withCString { (cdata) -> Int32 in
                 let len = data.utf8CString.count
-                return extension_invite_friend(carrier.ccarrier!, cto, cdata, len, cb, cctxt)
+                return extension_invite_friend(carrier!.ccarrier!, cto, cdata, len, cb, cctxt)
             }
         }
         guard result >= 0 else {
@@ -121,7 +127,7 @@ open class CarrierExtension: NSObject {
                     free(cdata)
                 }
             }
-            return extension_reply_friend_invite(carrier.ccarrier!, cto, CInt(status), creason, cdata, len)
+            return extension_reply_friend_invite(carrier!.ccarrier!, cto, CInt(status), creason, cdata, len)
         }
         guard result >= 0 else {
             let errno = getErrorCode()
@@ -138,35 +144,45 @@ open class CarrierExtension: NSObject {
 
     @objc (registerExtension:error:)
     public func registerExtension(_ handler: @escaping CarrierExtensionInviteCallback) throws {
+
+        let carrierExtension = CarrierExtension(carrier!)
+        carrierExtension.handler = handler
         let cb: CExtensionInviteCallback = {
 
             (_, cfrom, cdata, clen, cctxt) in
 
-            let ectxt = Unmanaged<AnyObject>.fromOpaque(cctxt!)
-                .takeRetainedValue() as! [AnyObject?]
+            let ccarrierExtension = Unmanaged<CarrierExtension>.fromOpaque(cctxt!)
+                .takeUnretainedValue()
 
-            let carrier = ectxt[0] as! CarrierExtension
-            let handler = ectxt[1] as! CarrierExtensionInviteCallback
+            let carrier = ccarrierExtension.carrier
+            let handle = ccarrierExtension.handler
 
             let from = String(cString: cfrom!)
             let _data : String? = String(cString: cdata)
 
-            handler(carrier, from, _data)
+            handle!(carrier!, from, _data)
         }
 
-        let econtext: [AnyObject?] = [self, handler as AnyObject]
-        let unmanaged = Unmanaged.passRetained(econtext as AnyObject)
-        let cctxt = unmanaged.toOpaque()
-        let result = extension_init(carrier.ccarrier!, cb, cctxt)
+        let cctxt = Unmanaged.passRetained(carrierExtension).toOpaque()
+        let result = extension_init(carrier!.ccarrier!, cb, cctxt)
         guard result >= 0 else {
             let errno = getErrorCode()
             throw CarrierError.FromErrorCode(errno: errno)
         }
+
+        carrierExtension.didCleanup = false
     }
 
-    @objc (cleanup:)
-    public func cleanup() throws {
-        extension_cleanup(carrier.ccarrier!)
+    @objc (cleanup)
+    public func cleanup() {
+
+        objc_sync_enter(self)
+        if !didCleanup {
+            extension_cleanup(carrier!.ccarrier!)
+            carrier = nil
+            didCleanup = true
+        }
+        objc_sync_exit(self)
     }
 }
 
