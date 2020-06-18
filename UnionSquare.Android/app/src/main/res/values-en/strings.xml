@@ -754,4 +754,8 @@
     <string name="selectreset">Select reset range</string>
     <string name="plzselectreset">Select reset range</string>
     <string name="deletesyncornot">Do you want to clear and resynchronize the data?</string>
+    <string name="openresorceintrod">Ela Wallet open source code program statement</string>
+    <string name="openresorcedetaile">1. This program is an open source code App that provides corresponding derivative functions based on the base code of the open source project Elastos, and follows the open source MIT agreement.
+\n\n2. The use of this program shall be deemed to be fully understood, and capable of bearing any relevant risks -  technical and  otherwise -that may exist.
+\n\n3. Due to the nature of the distributed node network, the development team is not responsible for the risks and consequences caused by any situation in which node services cannot be accessed due to poor network conditions or communication lines, code security defects, or any hacking or regulatory requirements originating in the country or region where the distributed network node is located.</string>
 </resources>

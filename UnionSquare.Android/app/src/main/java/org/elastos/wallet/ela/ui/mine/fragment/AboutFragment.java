@@ -34,16 +34,12 @@ import android.widget.TextView;
 
 import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseFragment;
-import org.elastos.wallet.ela.db.RealmUtil;
-import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.common.fragment.WebViewFragment;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.mine.presenter.AboutPresenter;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
-import org.elastos.wallet.ela.utils.FileUtile;
 import org.elastos.wallet.ela.utils.MyUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
 
@@ -82,9 +78,12 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
     }
 
 
-    @OnClick({R.id.tv_updatalog, R.id.tv_feedback, R.id.tv_runlog})
+    @OnClick({R.id.tv_updatalog, R.id.tv_feedback, R.id.tv_runlog, R.id.tv_openresource})
     public void onViewClicked(View view) {
         switch (view.getId()) {
+            case R.id.tv_openresource:
+                start(OpenResourceFragment.class);
+                break;
             case R.id.tv_updatalog:
                 Bundle bundle = new Bundle();
                 bundle.putString(Constant.FRAGMENTTAG, Constant.UpdateLog + "?langua=" + (new SPUtil(getContext()).getLanguage() == 0 ? "ch" : "en"));
@@ -115,7 +114,7 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
         share_intent.setAction(Intent.ACTION_SEND);//设置分享行为
         share_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         share_intent.setType("*/*");//设置分享内容的类型
-      //  File file1 = getContext().getExternalFilesDir("log");
+        //  File file1 = getContext().getExternalFilesDir("log");
         File file = new File(date);
         if (!file.exists()) {
             return;
