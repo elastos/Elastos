@@ -833,8 +833,9 @@ export default class extends Base {
         if (!proposals.length) {
             return
         }
+        console.log('upb---proposal length---', proposals.length)
         const arr = []
-        for (let proposal in proposals) {
+        for (const proposal of proposals) {
             arr.push(this.updateMilestoneStatus(proposal))
         }
         await Promise.all(arr)
@@ -872,6 +873,7 @@ export default class extends Base {
                         return { ...item, status: WITHDRAWN }
                     }
                     if (chainStatus === 'rejected' && item.status === WAITING_FOR_APPROVAL) {
+                        console.log('ums---rejected milestoneKey---', item.milestoneKey)
                         isBudgetUpdated = true
                         this.notifyProposalOwner(
                             proposal.proposer,
@@ -880,6 +882,7 @@ export default class extends Base {
                         return { ...item, status: REJECTED }
                     }
                     if (chainStatus === 'withdrawable' && item.status === WAITING_FOR_APPROVAL) {
+                        console.log('ums---approved milestoneKey---', item.milestoneKey)
                         isBudgetUpdated = true
                         this.notifyProposalOwner(
                             proposal.proposer,
@@ -894,6 +897,7 @@ export default class extends Base {
                 }
             }
             if (isStatusUpdated || isBudgetUpdated) {
+                console.log('ums---save proposal.vid---', proposal.vid)
                 await proposal.save()
             }
         }
