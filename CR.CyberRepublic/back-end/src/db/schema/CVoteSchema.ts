@@ -27,7 +27,14 @@ export const CVoteResultSchema = {
     emnu: _.values(constant.CVOTE_CHAIN_STATUS),
     default: constant.CVOTE_CHAIN_STATUS.UNCHAIN
   },
-  signature: { data: String, message: String }
+  signature: { data: String, message: String },
+  reasonHash: {
+    type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 }
 
 export const CVoteHistorySchema = {

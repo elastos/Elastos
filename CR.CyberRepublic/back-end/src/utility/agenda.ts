@@ -3,6 +3,7 @@ import { getProposalState } from '../utility'
 import CVoteServive from '../service/CVoteService'
 import CouncilService from '../service/CouncilService'
 import UserService from '../service/UserService'
+import ElaTransactionService from '../service/ElaTransactionService'
 const Agenda = require('agenda')
 const agenda = new Agenda({ db: { address: process.env.DB_URL } })
 
@@ -11,7 +12,9 @@ const JOB_NAME = {
   CVOTEJOB: 'cvote poll proposal',
   COUNCILJOB: 'council poll change',
   USERJOB: 'user poll did infomation',
-  UPDATEMILESTONE: 'update milestone status'
+  UPDATEMILESTONE: 'update milestone status',
+  COUNCILREVIEWJOB: 'council review',
+  TRANSACTIONJOB: 'append transaction',
 }
 
 agenda.define(JOB_NAME.UPDATEMILESTONE, async (job: any) => {
@@ -100,6 +103,26 @@ agenda.define(JOB_NAME.USERJOB, async (job: any) => {
     console.log('', err)
   }
 })
+agenda.define(JOB_NAME.COUNCILREVIEWJOB, async (job: any) => {
+  try{
+    const DB = await db.create()
+    const cvoteService = new CVoteServive(DB, { user: undefined })
+    await cvoteService.updateVoteStatusByChain()
+    console.log(JOB_NAME.COUNCILREVIEWJOB, 'at working')
+  }catch (err) {
+    console.log('',err)
+  }
+})
+agenda.define(JOB_NAME.TRANSACTIONJOB, async (job: any) => {
+  try{
+    const DB = await db.create()
+    const elaTransactionService = new ElaTransactionService(DB, { user: undefined })
+    await elaTransactionService.appendAllTransaction()
+    console.log(JOB_NAME.TRANSACTIONJOB, 'at working')
+  }catch (err) {
+    console.log('',err)
+  }
+})
 ;(async function () {
   console.log('------cron job starting------')
   await agenda.start()
@@ -108,4 +131,6 @@ agenda.define(JOB_NAME.USERJOB, async (job: any) => {
   await agenda.every('5 minutes', JOB_NAME.COUNCILJOB)
   await agenda.every('30 minutes', JOB_NAME.USERJOB)
   await agenda.every('2 minutes', JOB_NAME.UPDATEMILESTONE)
+  await agenda.every('2 minutes', JOB_NAME.COUNCILREVIEWJOB)
+  await agenda.every('1 minutes', JOB_NAME.TRANSACTIONJOB)
 })()

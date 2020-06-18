@@ -20,6 +20,7 @@ import {
     timestamp,
     logger
 } from '../utility'
+import { use } from 'chai'
 
 const util = require('util')
 const request = require('request')
@@ -78,6 +79,8 @@ const CHAIN_STATUS_TO_PROPOSAL_STATUS = {
         [constant.CVOTE_STATUS.NOTIFICATION]: constant.CVOTE_STATUS.VETOED
     }
 }
+
+const DID_PREFIX = 'did:elastos:'
 
 export default class extends Base {
     // create a DRAFT propoal with minimal info
@@ -612,7 +615,7 @@ export default class extends Base {
         if (param.status && constant.CVOTE_STATUS[param.status]) {
             query.status = param.status
         }
-        // old data 
+        // old data
         if (!param.old) {
             query.old = { $exists: false }
         }
@@ -995,10 +998,11 @@ export default class extends Base {
         const currentVoteResult = _.find(cur._doc.voteResult, ['votedBy', votedBy])
         const currentVoteHistory = cur._doc.voteHistory
         const currentVoteHistoryIndex = _.findLastIndex(currentVoteHistory, ['votedBy', votedBy])
-        
+
         currentVoteHistory[currentVoteHistoryIndex] = {
             ..._.omit(currentVoteResult,['_id'])
         }
+
         await db_cvote.update(
             {
                 _id,
@@ -1011,6 +1015,7 @@ export default class extends Base {
                     'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.UNCHAIN,
                     'voteResult.$.txid': '',
                     'voteResult.$.signature': null,
+                    'voteResult.$.reasonHash': utilCrypto.sha256D(reason + timestamp.second(new Date())),
                     'voteHistory': currentVoteHistory,
                 },
                 $inc: {
@@ -1130,12 +1135,11 @@ export default class extends Base {
                 iat: now,
                 exp: now + (60 * 60 * 24),
                 iss: process.env.APP_DID,
-                callbackurl: `${process.env.API_URL}/api/cvote/review/callback`,
                 command: 'reviewproposal',
                 data: {
                     proposalHash: cur.proposalHash,
                     voteResult: voteResultOnChain[currentVoteResult.value],
-                    opinionHash: utilCrypto.sha256D(currentVoteResult.reason),
+                    opinionHash: currentVoteResult.reasonHash,
                     did: councilMemberDid
                 }
             }
@@ -1148,119 +1152,6 @@ export default class extends Base {
         } catch (err) {
             logger.error(err)
             return {success: false}
-        }
-    }
-
-    // council callback
-    public async councilCallback(param): Promise<any> {
-        try {
-            const jwtToken = param.jwt
-            const claims: any = jwt.decode(jwtToken)
-            if (!_.get(claims, 'req')) {
-                return {
-                    code: 400,
-                    success: false,
-                    message: 'Problems parsing jwt token.'
-                }
-            }
-
-            const payload: any = jwt.decode(
-                claims.req.slice('elastos://crproposal/'.length)
-            )
-            if (!_.get(payload.data, 'proposalHash')) {
-                return {
-                    code: 400,
-                    success: false,
-                    message: 'Problems parsing jwt token of CR website.'
-                }
-            }
-
-            const proposalHash = payload.data.proposalHash
-            const db_cvote = this.getDBModel('CVote')
-            const db_user = this.getDBModel('User')
-            const cur = await db_cvote.find({
-                proposalHash
-            })
-            const user = await db_user.find({'did.id': payload.data.did})
-            const votedBy = _.get(user[0], '_id')
-            const voteResult = _.find(_.get(cur[0], 'voteResult'), function (o) {
-                if (o.votedBy.equals(votedBy)) {
-                    return o
-                }
-            })
-
-            if (!cur || !voteResult) {
-                return {
-                    code: 400,
-                    success: false,
-                    message: 'There is no this proposal'
-                }
-            }
-
-            const rs: any = await getDidPublicKey(claims.iss)
-            if (!rs) {
-                return {
-                    code: 400,
-                    success: false,
-                    message: `Can not get your did's public key`
-                }
-            }
-
-            return jwt.verify(
-                jwtToken,
-                rs.publicKey,
-                async (err: any, decoded: any) => {
-                    if (err) {
-                        return {
-                            code: 401,
-                            success: false,
-                            message: 'Verify signatrue failed.' + err.message
-                        }
-                    } else {
-                        try {
-                            const currentVoteResult = _.find(cur[0]._doc.voteResult, ['votedBy', votedBy])
-                            const currentVoteHistory = cur[0]._doc.voteHistory
-                            const currentVoteHistoryIndex = _.findLastIndex(currentVoteHistory, ['votedBy', votedBy])
-                            
-                            currentVoteHistory[currentVoteHistoryIndex] = {
-                                ..._.omit(currentVoteResult,['_id'])
-                            }
-                            await db_cvote.update(
-                                {
-                                    proposalHash: proposalHash,
-                                    'voteResult.votedBy': votedBy
-                                },
-                                {
-                                    $set: {
-                                        'voteResult.$.txid': claims.data,
-                                        'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINING,
-                                        'voteResult.$.signature': {data: decoded.data},
-                                        'voteHistory': currentVoteHistory
-                                    },
-                                    $inc: {
-                                        __v: 1
-                                    }
-                                }
-                            )
-                            return {code: 200, success: true, message: 'Ok'}
-                        } catch (err) {
-                            logger.error(err)
-                            return {
-                                code: 500,
-                                success: false,
-                                message: 'Something went wrong.' + err.message
-                            }
-                        }
-                    }
-                }
-            )
-        } catch (error) {
-            logger.error(error)
-            return {
-                code: 500,
-                success: false,
-                message: 'Something went wrong'
-            }
         }
     }
 
@@ -1306,7 +1197,7 @@ export default class extends Base {
                     constant.CVOTE_STATUS.NOTIFICATION,
                 ]
             }
-        }).populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+        })
 
         const asyncForEach = async (array, callback) => {
             for (let index = 0; index < array.length; index++) {
@@ -1315,7 +1206,7 @@ export default class extends Base {
         }
         const rejectThroughAmount: any = (await ela.currentCirculatingSupply()) * 0.1
         await asyncForEach(list, async (o: any) => {
-            const {proposalHash, status, voteResult} = o._doc
+            const {proposalHash, status} = o._doc
             const rs: any = await getProposalData(proposalHash)
             if (!rs || rs.success === false) {
                 return
@@ -1325,8 +1216,7 @@ export default class extends Base {
                     await this.updateProposalOnProposed({
                         rs,
                         _id: o._id,
-                        voteResult,
-                        version: o.__v,
+                        status,
                     })
                     break;
                 case constant.CVOTE_STATUS.NOTIFICATION:
@@ -1341,48 +1231,23 @@ export default class extends Base {
     }
 
     public async updateProposalOnProposed(data: any) {
-        const {rs, _id, voteResult, version} = data
+        const {rs, _id, status} = data
         const db_cvote = this.getDBModel('CVote')
         const {status: chainStatus} = rs
-        const newVoteHistory = []
-        const newVoteResult = await Promise.all(_.map(voteResult, async (e: any) => {
-            const newE = {
-                ..._.omit(e._doc, ['votedBy']),
-                votedBy: e.votedBy._id
-            }
-            if (e.status !== constant.CVOTE_CHAIN_STATUS.CHAINING || _.isEmpty(e.txid)) {
-                return newE
-            }
-            const voteResultflag = await getVoteResultByTxid(e.txid)
-            if (!voteResultflag) {
-                return newE
-            }
-            const newElement = {
-                ...newE,
-                status: constant.CVOTE_CHAIN_STATUS.CHAINED
-            }
-            newVoteHistory.push(_.omit(newElement, '_id'))
-            return newElement
-        }));
+        const currentStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
 
-        await db_cvote.update({
-            _id,
-            __v: version
-        }, {
-            status: CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus],
-            voteResult: newVoteResult,
-            $push: {
-                voteHistory: newVoteHistory
-            },
-            $inc: {
-                __v: 1
-            }
-        })
+        if (status !== currentStatus) {
+            await db_cvote.update({
+                _id,
+            }, {
+                status: currentStatus,
+            })
+        }
     }
 
     public async updateProposalOnNotification(data: any) {
         const {WAITING_FOR_WITHDRAWAL, WAITING_FOR_REQUEST} = constant.MILESTONE_STATUS
-        const db_cvote = this.getDBModel("CVote")
+        const db_cvote = this.getDBModel('CVote')
         const {rs, _id} = data
         let {rejectThroughAmount} = data
         const {
@@ -1391,7 +1256,7 @@ export default class extends Base {
             },
             status: chainStatus
         } = rs
-        
+
         const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
         if (proposalStatus === constant.CVOTE_STATUS.ACTIVE) {
             const proposal = await db_cvote.findById(_id)
@@ -1432,88 +1297,6 @@ export default class extends Base {
         })
     }
 
-    // according to txid polling vote status
-    public async pollCouncilVoteStatus() {
-        const db_cvote = this.getDBModel('CVote')
-        const list = await db_cvote.find({
-            status: constant.CVOTE_STATUS.PROPOSED
-        })
-        _.each(list, (item) => {
-            this.pollVoteStatus(item._id)
-        })
-    }
-
-    public async pollVoteStatus(id) {
-        const db_cvote = this.getDBModel('CVote')
-        const proposal = await db_cvote.findById(id)
-        if (proposal) {
-            const proposalHash = _.get(proposal, 'proposalHash')
-            if (proposalHash) {
-                const rs: any = await getProposalData(proposalHash)
-                if (rs && rs.success === false) {
-                    return {success: false, message: rs.message}
-                }
-                if (rs && rs.success && rs.status === 'Registered') {
-                    await this.updateVoteStatus({
-                        proposalId: id,
-                        rs
-                    })
-                    return {success: true, id: id}
-                }
-            }
-        } else {
-            return {success: false, message: 'no this proposal'}
-        }
-    }
-
-    public async updateVoteStatus(param: any): Promise<Document> {
-        const db_cvote = this.getDBModel('CVote')
-        const {proposalId, rs} = param
-
-        const proposal = proposalId && (await db_cvote.findById(proposalId))
-        if (!proposal) {
-            throw 'cannot find proposal'
-        }
-        const txids = []
-        _.forEach(rs.crvotes, function (v, k) {
-            if (v == 0) {
-                txids.push(k)
-            }
-        })
-
-        if (txids.length == 0) {
-            return
-        }
-        try {
-            _.forEach(txids, async function (value) {
-                const rs = await db_cvote.find({'voteResult.txid': value})
-                if (rs.length == 0) {
-                    return false
-                }
-                const vote = _.find(rs[0].voteResult, function (o) {
-                    if (o.txid == value) {
-                        return o
-                    }
-                })
-                await db_cvote.update(
-                    {
-                        'voteResult.txid': value
-                    },
-                    {
-                        'voteResult.$': {
-                            ..._.omit(vote._doc, ['status']),
-                            status: constant.CVOTE_CHAIN_STATUS.CHAINED
-                        }
-                    }
-                )
-            })
-            return proposal
-        } catch (error) {
-            logger.error(error)
-            return
-        }
-    }
-
     // member vote against
     public async memberVote(param): Promise<any> {
         try {
@@ -1527,7 +1310,6 @@ export default class extends Base {
                 iat: now,
                 exp: now + (60 * 60 * 24),
                 iss: process.env.APP_DID,
-                callbackurl: null,
                 command: 'voteforproposal',
                 data: {
                     proposalHash: cur.proposalHash
@@ -1830,11 +1612,11 @@ export default class extends Base {
         const list = _.map(summary, function (o) {
             const comment = o._doc.comment
             const contents = (JSON.parse(o.content))
-            let content = ""
+            let content = ''
             _.each(contents.blocks, function (v: any, k: any) {
                 content += v.text
                 if (k !== (contents.blocks.length) - 1) {
-                    content += "\n"
+                    content += '\n'
                 }
             })
             const commentObj = {
@@ -1995,5 +1777,61 @@ export default class extends Base {
             body: content.body
         }
         mail.send(mailObj)
+    }
+
+    public async updateVoteStatusByChain() {
+        const db_ela = this.getDBModel('Ela_Transaction')
+        const db_cvote = this.getDBModel('CVote')
+
+        let elaVoteList = await db_ela.getDBInstance().find({type: constant.TRANSACTION_TYPE.COUNCIL_VOTE})
+        if (_.isEmpty(elaVoteList)){
+            return
+        }
+        const elaVote = []
+        const useIndex = []
+        elaVoteList = _.map(elaVoteList, (o: any) => {
+            elaVote.push(JSON.parse(o.payload))
+            return {
+                ...o._doc,
+                payload:JSON.parse(o.payload)
+            }
+        })
+        const byHashElaList = _.keyBy(elaVoteList, 'payload.proposalhash')
+        const query = []
+        const byKeyElaList = _.keyBy(elaVote, 'proposalhash')
+        _.forEach(byKeyElaList, (v: any, k: any) => {
+            query.push(k)
+        })
+        const proposalList = await db_cvote.getDBInstance()
+            .find({status: constant.CVOTE_STATUS.PROPOSED, proposalHash: {$in:query}})
+            .populate('voteResult.votedBy',constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+
+        if (_.isEmpty(proposalList)){
+            return
+        }
+        const vote  = []
+        _.forEach(proposalList, (o: any) => {
+            _.forEach(o.voteResult, (v: any) => {
+                if(v.signature && v.status === constant.CVOTE_CHAIN_STATUS.UNCHAIN) {
+                    vote.push(v)
+                }
+            })
+        })
+        const voteList = _.keyBy(vote, 'votedBy.did.id')
+        _.forEach(elaVote, async (o: any) => {
+            const did: any = DID_PREFIX + o.did
+            if (voteList && voteList[did]) {
+                useIndex.push(byHashElaList[o.proposalhash].txid)
+                await db_cvote.update({
+                    'proposalHash': o.proposalhash,
+                    'voteResult._id':  voteList[did]._doc._id,
+                },{
+                    $set: {
+                        'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
+                    }
+                })
+            }
+        })
+        await db_ela.remove({txid: {$in:useIndex}})
     }
 }
