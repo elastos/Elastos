@@ -841,7 +841,7 @@ export default class extends Base {
     }
 
     private async updateMilestoneStatus(proposal) {
-        const { WITHDRAWN, WAITING_FOR_WITHDRAWAL, REJECTED } = constant.MILESTONE_STATUS
+        const { WITHDRAWN, WAITING_FOR_WITHDRAWAL, REJECTED, WAITING_FOR_APPROVAL } = constant.MILESTONE_STATUS
         const last: any = _.last(proposal.budget)
         // proposal is final
         if (
@@ -867,16 +867,24 @@ export default class extends Base {
             if (budgets) {
                 const budget = proposal.budget.map((item, index) => {
                     const chainStatus = budgets[index].status.toLowerCase()
-                    if (chainStatus === 'withdrawn' && item.status !== WITHDRAWN) {
+                    if (chainStatus === 'withdrawn' && item.status === WAITING_FOR_WITHDRAWAL) {
                         isBudgetUpdated = true
                         return { ...item, status: WITHDRAWN }
                     }
-                    if (chainStatus === 'rejected' && item.status !== REJECTED) {
+                    if (chainStatus === 'rejected' && item.status === WAITING_FOR_APPROVAL) {
                         isBudgetUpdated = true
+                        this.notifyProposalOwner(
+                            proposal.proposer,
+                            this.rejectedMailTemplate(proposal.vid)
+                        )
                         return { ...item, status: REJECTED }
                     }
-                    if (chainStatus === 'withdrawable' && item.status !== WAITING_FOR_WITHDRAWAL) {
+                    if (chainStatus === 'withdrawable' && item.status === WAITING_FOR_APPROVAL) {
                         isBudgetUpdated = true
+                        this.notifyProposalOwner(
+                            proposal.proposer,
+                            this.approvalMailTemplate(proposal.vid)
+                        )
                         return { ...item, status: WAITING_FOR_WITHDRAWAL }
                     }
                     return item
@@ -1942,4 +1950,46 @@ export default class extends Base {
     //         }
     //     )
     // }
+
+    private rejectedMailTemplate(id: string) {
+        const subject = `【Payment rejected】Your payment request is rejected by secretary`
+        const body = `
+        <p>One payment request in proposal #${id}  has been rejected.</p>
+        <p>Click this link to view more details:</p>
+        <p><a href="${process.env.SERVER_URL}/proposals/${id}">${process.env.SERVER_URL}/proposals/${id}</a></p>
+        <br />
+        <p>Cyber Republic Team</p>
+        <p>Thanks</p>
+        `
+        return { subject, body }
+    }
+    
+    private approvalMailTemplate(id: string) {
+        const subject = `【Payment approved】Your payment request is approved by secretary`
+        const body = `
+        <p>One payment request in proposal ${id} has been approved, the ELA distribution will processed shortly, check your ELA wallet later.</p>
+        <p>Click this link to view more details:</p>
+        <p><a href="${process.env.SERVER_URL}/proposals/${id}">${process.env.SERVER_URL}/proposals/${id}</a></p>
+        <br />
+        <p>Cyber Republic Team</p>
+        <p>Thanks</p>
+        `
+        return { subject, body }
+    }
+    
+    private async notifyProposalOwner(
+        proposer: any,
+        content: {
+            subject: string
+            body: string
+        }
+      ) {
+        const mailObj = {
+            to: proposer.email,
+            toName: userUtil.formatUsername(proposer),
+            subject: content.subject,
+            body: content.body
+        }
+        mail.send(mailObj)
+    }
 }

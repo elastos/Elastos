@@ -339,48 +339,6 @@ export default class extends Base {
     return { subject, body }
   }
 
-  private rejectedMailTemplate(id: string) {
-    const subject = `【Payment rejected】Your payment request is rejected by secretary`
-    const body = `
-    <p>One payment request in proposal #${id}  has been rejected.</p>
-    <p>Click this link to view more details:</p>
-    <p><a href="${process.env.SERVER_URL}/proposals/${id}">${process.env.SERVER_URL}/proposals/${id}</a></p>
-    <br />
-    <p>Cyber Republic Team</p>
-    <p>Thanks</p>
-  `
-    return { subject, body }
-  }
-
-  private approvalMailTemplate(id: string) {
-    const subject = `【Payment approved】Your payment request is approved by secretary`
-    const body = `
-    <p>One payment request in proposal ${id} has been approved, the ELA distribution will processed shortly, check your ELA wallet later.</p>
-    <p>Click this link to view more details:</p>
-    <p><a href="${process.env.SERVER_URL}/proposals/${id}">${process.env.SERVER_URL}/proposals/${id}</a></p>
-    <br />
-    <p>Cyber Republic Team</p>
-    <p>Thanks</p>
-  `
-    return { subject, body }
-  }
-
-  private async notifyProposalOwner(
-    proposer: any,
-    content: {
-      subject: string
-      body: string
-    }
-  ) {
-    const mailObj = {
-      to: proposer.email,
-      toName: userUtil.formatUsername(proposer),
-      subject: content.subject,
-      body: content.body
-    }
-    mail.send(mailObj)
-  }
-
   private async notifySecretaries(content: { subject: string; body: string }) {
     const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
