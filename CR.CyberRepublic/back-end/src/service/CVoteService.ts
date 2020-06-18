@@ -1040,7 +1040,7 @@ export default class extends Base {
                     'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.UNCHAIN,
                     'voteResult.$.txid': '',
                     'voteResult.$.signature': null,
-                    'voteResult.$.reasonHash': utilCrypto.sha256D( cur.proposalHash + reason + timestamp.second(new Date())),
+                    'voteResult.$.reasonHash': utilCrypto.sha256D(reason + timestamp.second(new Date())),
                     'voteHistory': currentVoteHistory,
                 },
                 $inc: {
@@ -1164,7 +1164,7 @@ export default class extends Base {
                 data: {
                     proposalHash: cur.proposalHash,
                     voteResult: voteResultOnChain[currentVoteResult.value],
-                    opinionHash: utilCrypto.sha256D(currentVoteResult.reason + timestamp.second(new Date())),
+                    opinionHash: currentVoteResult.reasonHash,
                     did: councilMemberDid
                 }
             }
