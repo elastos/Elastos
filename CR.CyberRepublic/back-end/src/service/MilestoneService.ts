@@ -260,9 +260,8 @@ export default class extends Base {
       const history = proposal.withdrawalHistory.filter((item: any) =>
         item._id.equals(applicationId)
       )[0]
-
-      if (history && _.get(history, 'review.txid')) {
-        return { success: false, message: 'You have reviewed this request.' }
+      if (!history) {
+        return { success: false, message: 'no this payment application record' }
       }
 
       const currTime = Date.now()
