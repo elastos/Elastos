@@ -235,56 +235,52 @@ ElaOptions *carrier_config_load(const char *config_file,
     }
 
     nodes_setting = config_lookup(&cfg, "express_nodes");
-    if (!nodes_setting) {
-        fprintf(stderr, "Missing express_nodes section.\n");
-        config_destroy(&cfg);
-        return NULL;
-    }
+    if (nodes_setting) {
+        entries = config_setting_length(nodes_setting);
+        if (entries < 0) {
+            fprintf(stderr, "Invalid express_nodes option.\n");
+            config_destroy(&cfg);
+            return NULL;
+        }
 
-    entries = config_setting_length(nodes_setting);
-    if (entries <= 0) {
-        fprintf(stderr, "Empty express_nodes option.\n");
-        config_destroy(&cfg);
-        return NULL;
-    }
+        mem = (size_t *)rc_zalloc(sizeof(size_t) +
+                sizeof(ExpressNode) * entries, express_nodes_destructor);
+        if (!mem) {
+            fprintf(stderr, "Load configuration failed, out of memory.\n");
+            config_destroy(&cfg);
+            return NULL;
+        }
 
-    mem = (size_t *)rc_zalloc(sizeof(size_t) +
-            sizeof(ExpressNode) * entries, express_nodes_destructor);
-    if (!mem) {
-        fprintf(stderr, "Load configuration failed, out of memory.\n");
-        config_destroy(&cfg);
-        return NULL;
-    }
+        *mem = entries;
+        options->express_nodes_size = entries;
+        options->express_nodes = (ExpressNode *)(++mem);
 
-    *mem = entries;
-    options->express_nodes_size = entries;
-    options->express_nodes = (ExpressNode *)(++mem);
+        for (i = 0; i < entries; i++) {
+            ExpressNode *node = options->express_nodes + i;
 
-    for (i = 0; i < entries; i++) {
-        ExpressNode *node = options->express_nodes + i;
+            node_setting = config_setting_get_elem(nodes_setting, i);
 
-        node_setting = config_setting_get_elem(nodes_setting, i);
+            rc = config_setting_lookup_string(node_setting, "ipv4", &stropt);
+            if (rc && *stropt)
+                node->ipv4 = (const char *)strdup(stropt);
+            else
+                node->ipv4 = NULL;
 
-        rc = config_setting_lookup_string(node_setting, "ipv4", &stropt);
-        if (rc && *stropt)
-            node->ipv4 = (const char *)strdup(stropt);
-        else
-            node->ipv4 = NULL;
+            node->ipv6 = NULL;
 
-        node->ipv6 = NULL;
+            rc = config_setting_lookup_int(node_setting, "port", &intopt);
+            if (rc && intopt) {
+                sprintf(number, "%d", intopt);
+                node->port = (const char *)strdup(number);
+            } else
+                node->port = NULL;
 
-        rc = config_setting_lookup_int(node_setting, "port", &intopt);
-        if (rc && intopt) {
-            sprintf(number, "%d", intopt);
-            node->port = (const char *)strdup(number);
-        } else
-            node->port = NULL;
-
-        rc = config_setting_lookup_string(node_setting, "public-key", &stropt);
-        if (rc && *stropt)
-            node->public_key = (const char *)strdup(stropt);
-        else
-            node->public_key = NULL;
+            rc = config_setting_lookup_string(node_setting, "public-key", &stropt);
+            if (rc && *stropt)
+                node->public_key = (const char *)strdup(stropt);
+            else
+                node->public_key = NULL;
+        }
     }
 
     options->udp_enabled = true;

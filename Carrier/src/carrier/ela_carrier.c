@@ -3354,7 +3354,7 @@ static int send_express_message(ElaCarrier *w, uint32_t friend_number, const cha
 
     w->connector = create_express_connector(w);
     if (!w->connector)
-        return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
+        return ELA_EXPRESS_ERROR(ELAERR_BAD_PERSISTENT_DATA);
 
     cp = elacp_create(ELACP_TYPE_MESSAGE, ext_name);
     if (!cp)
