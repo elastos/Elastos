@@ -1160,12 +1160,11 @@ export default class extends Base {
                 iat: now,
                 exp: now + (60 * 60 * 24),
                 iss: process.env.APP_DID,
-                callbackurl: `${process.env.API_URL}/api/cvote/review/callback`,
                 command: 'reviewproposal',
                 data: {
                     proposalHash: cur.proposalHash,
                     voteResult: voteResultOnChain[currentVoteResult.value],
-                    opinionHash: utilCrypto.sha256D(currentVoteResult.reason),
+                    opinionHash: utilCrypto.sha256D(currentVoteResult.reason + timestamp.second(new Date())),
                     did: councilMemberDid
                 }
             }
@@ -1436,88 +1435,6 @@ export default class extends Base {
         })
     }
 
-    // according to txid polling vote status
-    public async pollCouncilVoteStatus() {
-        const db_cvote = this.getDBModel('CVote')
-        const list = await db_cvote.find({
-            status: constant.CVOTE_STATUS.PROPOSED
-        })
-        _.each(list, (item) => {
-            this.pollVoteStatus(item._id)
-        })
-    }
-
-    public async pollVoteStatus(id) {
-        const db_cvote = this.getDBModel('CVote')
-        const proposal = await db_cvote.findById(id)
-        if (proposal) {
-            const proposalHash = _.get(proposal, 'proposalHash')
-            if (proposalHash) {
-                const rs: any = await getProposalData(proposalHash)
-                if (rs && rs.success === false) {
-                    return {success: false, message: rs.message}
-                }
-                if (rs && rs.success && rs.status === 'Registered') {
-                    await this.updateVoteStatus({
-                        proposalId: id,
-                        rs
-                    })
-                    return {success: true, id: id}
-                }
-            }
-        } else {
-            return {success: false, message: 'no this proposal'}
-        }
-    }
-
-    public async updateVoteStatus(param: any): Promise<Document> {
-        const db_cvote = this.getDBModel('CVote')
-        const {proposalId, rs} = param
-
-        const proposal = proposalId && (await db_cvote.findById(proposalId))
-        if (!proposal) {
-            throw 'cannot find proposal'
-        }
-        const txids = []
-        _.forEach(rs.crvotes, function (v, k) {
-            if (v == 0) {
-                txids.push(k)
-            }
-        })
-
-        if (txids.length == 0) {
-            return
-        }
-        try {
-            _.forEach(txids, async function (value) {
-                const rs = await db_cvote.find({'voteResult.txid': value})
-                if (rs.length == 0) {
-                    return false
-                }
-                const vote = _.find(rs[0].voteResult, function (o) {
-                    if (o.txid == value) {
-                        return o
-                    }
-                })
-                await db_cvote.update(
-                    {
-                        'voteResult.txid': value
-                    },
-                    {
-                        'voteResult.$': {
-                            ..._.omit(vote._doc, ['status']),
-                            status: constant.CVOTE_CHAIN_STATUS.CHAINED
-                        }
-                    }
-                )
-            })
-            return proposal
-        } catch (error) {
-            logger.error(error)
-            return
-        }
-    }
-
     // member vote against
     public async memberVote(param): Promise<any> {
         try {
@@ -1531,7 +1448,6 @@ export default class extends Base {
                 iat: now,
                 exp: now + (60 * 60 * 24),
                 iss: process.env.APP_DID,
-                callbackurl: null,
                 command: 'voteforproposal',
                 data: {
                     proposalHash: cur.proposalHash
@@ -1931,35 +1847,6 @@ export default class extends Base {
         )
     }
 
-    // update proposalHash status aborted
-    // public async temporaryChangeUpdateStatus() {
-    //     const db_cvote = this.getDBModel('CVote')
-    //     const list = await db_cvote.find({
-    //         $or: [
-    //             {status: constant.CVOTE_STATUS.NOTIFICATION},
-    //             {status: constant.CVOTE_STATUS.PROPOSED}
-    //         ]
-    //     })
-    //     const idsAborted = []
-    //     _.each(list, (item) => {
-    //         idsAborted.push(item._id)
-    //     })
-    //    await db_cvote.update(
-    //         {
-    //             _id: {$in:idsAborted}
-    //         },
-    //         {
-    //             $set:{
-    //                 status: constant.CVOTE_STATUS.ABORTED
-    //             }
-    //         },
-    //         {
-    //             multi: true
-    //         }
-    //     )
-    // }
-
-
     public async updateVoteStatusByChain() {
         const db_ela = this.getDBModel('Ela_Transaction')
         const db_cvote = this.getDBModel('CVote')
@@ -2011,8 +1898,8 @@ export default class extends Base {
                         'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
                     }
                 })
-                await db_ela.remove({txid: {$in:useIndex}})
             }
         })
+        await db_ela.remove({txid: {$in:useIndex}})
     }
 }
