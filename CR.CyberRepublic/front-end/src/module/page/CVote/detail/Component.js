@@ -175,7 +175,7 @@ class C extends StandardPage {
         }
       }
     })
-    const isChaining = currentVoted && currentVoted.status == 'chaining'
+    const isVote = (currentVoted && currentVoted.status == 'chained') || currentVoted.value == 'undecided'
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
@@ -204,7 +204,7 @@ class C extends StandardPage {
               {contentNode}
               {translationBtn}
               {notesNode}
-              {!isChaining ? voteActionsNode : null}
+              {isVote ? voteActionsNode : null}
               {voteDetailNode}
               {trackingNode}
               {summaryNode}

@@ -11,7 +11,6 @@ class OnChainButton extends Component {
       url: '',
       visible: false
     }
-    this.timerDid = null
   }
 
   qrCode = () => {
@@ -24,46 +23,12 @@ class OnChainButton extends Component {
     )
   }
 
-  pollingDid = () => {
-    const { id, getReviewProposal, updateProposal } = this.props
-    this.timerDid = setInterval(async () => {
-      const rs = await getReviewProposal(id)
-      if (rs && rs.success){
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        this.setState({ url: '', visible:false })
-        await updateProposal(rs.data)
-      }
-      if (rs && rs.success == false){
-        clearInterval(this.timerDid)
-        this.timerDid = null
-        if(rs.message) {
-          message.error(rs.message)
-        } else {
-          message.error('Something went wrong')
-        }
-        this.setState({ visible: false})
-      }
-    }, 3000)
-  }
-
-  handleAssociate = async () => {
-    if (this.timerDid){
-      return
-    }
-    this.pollingDid()
-  }
-
   componentDidMount = async () => {
     const { id, getReviewProposalUrl } = this.props
     const rs = await getReviewProposalUrl(id)
     if (rs && rs.success) {
       this.setState({ url: rs.url })
     }
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.timerDid)
   }
 
   handleVisibleChange = visible => {
@@ -85,7 +50,7 @@ class OnChainButton extends Component {
         visible={this.state.visible}
         onVisibleChange={this.handleVisibleChange}
         >
-            <Button onClick={this.handleAssociate}>
+            <Button>
                 {I18N.get('council.voting.voteResult.onchain')}
             </Button>
         </Popover>
