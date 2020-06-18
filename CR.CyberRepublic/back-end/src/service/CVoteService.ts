@@ -1987,22 +1987,36 @@ export default class extends Base {
 
 
     public async updateVoteStatusByChain() {
-        const db_ela = this.getDBModel("ElaTransaction")
+        const db_ela = this.getDBModel("Ela_Transaction")
         const db_cvote = this.getDBModel("CVote")
 
-        const elaVoteList = await db_ela.getDBInstance().find({type: constant.TRANSACTION_TYPE.COUNCIL_VOTE})
+        let elaVoteList = await db_ela.getDBInstance().find({type: constant.TRANSACTION_TYPE.COUNCIL_VOTE})
+        if (_.isEmpty(elaVoteList)){
+            return
+        }
         const elaVote = []
         const useIndex = []
-        _.forEach(elaVoteList, (o: any) => {
+        elaVoteList = _.map(elaVoteList, (o:any) => {
             elaVote.push(JSON.parse(o.payload))
+            return {
+                ...o._doc,
+                payload:JSON.parse(o.payload)
+            }
         })
-        const byKeyElaList = _.keyBy(elaVoteList, 'proposalHash')
-        
+        const byHashElaList = _.keyBy(elaVoteList, 'payload.proposalhash')
+        const query = []
+        const byKeyElaList = _.keyBy(elaVote, 'proposalhash')
+        _.forEach(byKeyElaList, (v: any, k: any) => {
+            query.push(k)
+        })
         const proposalList = await db_cvote.getDBInstance()
-            .find({status: constant.CVOTE_STATUS.PROPOSED})
+            .find({status: constant.CVOTE_STATUS.PROPOSED, proposalHash: {$in:query}})
             .populate('voteResult.votedBy',constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+            
+        if (_.isEmpty(proposalList)){
+            return
+        }
         const vote  = []
-
         _.forEach(proposalList, (o: any) => {
             _.forEach(o.voteResult, (v: any) => {
                 if(v.signature && v.status === constant.CVOTE_CHAIN_STATUS.UNCHAIN) {
@@ -2011,11 +2025,10 @@ export default class extends Base {
             })
         })
         const voteList = _.keyBy(vote, 'votedBy.did.id')
-        
         _.forEach(elaVote, async (o: any) => {
             const did: any = DID_PREFIX + o.did
             if (voteList && voteList[did]) {
-                useIndex.push(byKeyElaList[o.proposalhash])
+                useIndex.push(byHashElaList[o.proposalhash].txid)
                 await db_cvote.update({
                     'proposalHash': o.proposalhash,
                     'voteResult._id':  voteList[did]._doc._id,
@@ -2024,7 +2037,7 @@ export default class extends Base {
                         'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
                     }
                 })
-                await db_ela.remove({proposalhash: {$in:useIndex}})
+                await db_ela.remove({txid: {$in:useIndex}})
             }
         })
     }
