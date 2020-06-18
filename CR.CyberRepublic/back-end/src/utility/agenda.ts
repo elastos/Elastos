@@ -3,6 +3,7 @@ import { getProposalState, getCurrentHeight } from '../utility'
 import CVoteServive from '../service/CVoteService'
 import CouncilService from '../service/CouncilService'
 import UserService from '../service/UserService'
+import ElaTransactionService from '../service/ElaTransactionService'
 const Agenda = require('agenda')
 const agenda = new Agenda({ db: { address: process.env.DB_URL } })
 
@@ -10,7 +11,9 @@ const JOB_NAME = {
   INTOPROPOSAL: 'make into proposal',
   CVOTEJOB: 'cvote poll proposal',
   COUNCILJOB: 'council poll change',
-  USERJOB: 'user poll did infomation'
+  USERJOB: 'user poll did infomation',
+  COUNCILREVIEWJOB: 'council review',
+  TRANSACTIONJOB: 'append transaction',
 }
 
 agenda.define(JOB_NAME.INTOPROPOSAL, async (job: any) => {
@@ -83,7 +86,7 @@ agenda.define(JOB_NAME.CVOTEJOB, async (job: any) => {
     const DB = await db.create()
     const cvoteService = new CVoteServive(DB, { user: undefined })
     await cvoteService.pollProposal()
-    console.log(JOB_NAME.CVOTEJOB,"at working")
+    console.log(JOB_NAME.CVOTEJOB, 'at working')
   }catch (err) {
     console.log('',err)
   }
@@ -94,7 +97,7 @@ agenda.define(JOB_NAME.COUNCILJOB, async (job: any) => {
     const councilService = new CouncilService(DB, { user: undefined })
     await councilService.eachSecretariatJob()
     await councilService.eachCouncilJobPlus()
-    console.log(JOB_NAME.COUNCILJOB,"at working")
+    console.log(JOB_NAME.COUNCILJOB, 'at working')
   }catch (err) {
     console.log('',err)
   }
@@ -104,7 +107,27 @@ agenda.define(JOB_NAME.USERJOB, async (job: any) => {
     const DB = await db.create()
     const userService = new UserService(DB, { user: undefined })
     await userService.eachJob()
-    console.log(JOB_NAME.USERJOB,"at working")
+    console.log(JOB_NAME.USERJOB, 'at working')
+  }catch (err) {
+    console.log('',err)
+  }
+})
+agenda.define(JOB_NAME.COUNCILREVIEWJOB, async (job: any) => {
+  try{
+    const DB = await db.create()
+    const cvoteService = new CVoteServive(DB, { user: undefined })
+    await cvoteService.updateVoteStatusByChain()
+    console.log(JOB_NAME.COUNCILREVIEWJOB, 'at working')
+  }catch (err) {
+    console.log('',err)
+  }
+})
+agenda.define(JOB_NAME.TRANSACTIONJOB, async (job: any) => {
+  try{
+    const DB = await db.create()
+    const elaTransactionService = new ElaTransactionService(DB, { user: undefined })
+    await elaTransactionService.appendAllTransaction()
+    console.log(JOB_NAME.TRANSACTIONJOB, 'at working')
   }catch (err) {
     console.log('',err)
   }
@@ -117,4 +140,6 @@ agenda.define(JOB_NAME.USERJOB, async (job: any) => {
   await agenda.every('2 minutes', JOB_NAME.CVOTEJOB)
   await agenda.every('5 minutes', JOB_NAME.COUNCILJOB)
   await agenda.every('30 minutes', JOB_NAME.USERJOB)
+  await agenda.every('2 minutes', JOB_NAME.COUNCILREVIEWJOB)
+  await agenda.every('1 minutes', JOB_NAME.TRANSACTIONJOB)
 })()

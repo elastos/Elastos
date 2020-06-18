@@ -666,7 +666,7 @@ export default class extends Base {
         if (param.status && constant.CVOTE_STATUS[param.status]) {
             query.status = param.status
         }
-        // old data 
+        // old data
         if (!param.old) {
             query.old = { $exists: false }
         }
@@ -1023,11 +1023,11 @@ export default class extends Base {
         const currentVoteResult = _.find(cur._doc.voteResult, ['votedBy', votedBy])
         const currentVoteHistory = cur._doc.voteHistory
         const currentVoteHistoryIndex = _.findLastIndex(currentVoteHistory, ['votedBy', votedBy])
-        
+
         currentVoteHistory[currentVoteHistoryIndex] = {
             ..._.omit(currentVoteResult,['_id'])
         }
-        
+
         await db_cvote.update(
             {
                 _id,
@@ -1251,7 +1251,7 @@ export default class extends Base {
                             const currentVoteResult = _.find(cur[0]._doc.voteResult, ['votedBy', votedBy])
                             const currentVoteHistory = cur[0]._doc.voteHistory
                             const currentVoteHistoryIndex = _.findLastIndex(currentVoteHistory, ['votedBy', votedBy])
-                            
+
                             currentVoteHistory[currentVoteHistoryIndex] = {
                                 ..._.omit(currentVoteResult,['_id'])
                             }
@@ -1336,7 +1336,7 @@ export default class extends Base {
                     constant.CVOTE_STATUS.NOTIFICATION,
                 ]
             }
-        }).populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+        })
 
         const asyncForEach = async (array, callback) => {
             for (let index = 0; index < array.length; index++) {
@@ -1345,7 +1345,7 @@ export default class extends Base {
         }
         const rejectThroughAmount: any = (await ela.currentCirculatingSupply()) * 0.1
         await asyncForEach(list, async (o: any) => {
-            const {proposalHash, status, voteResult} = o._doc
+            const {proposalHash, status} = o._doc
             const rs: any = await getProposalData(proposalHash)
             if (!rs || rs.success === false) {
                 return
@@ -1355,8 +1355,7 @@ export default class extends Base {
                     await this.updateProposalOnProposed({
                         rs,
                         _id: o._id,
-                        voteResult,
-                        version: o.__v,
+                        status,
                     })
                     break;
                 case constant.CVOTE_STATUS.NOTIFICATION:
@@ -1371,48 +1370,23 @@ export default class extends Base {
     }
 
     public async updateProposalOnProposed(data: any) {
-        const {rs, _id, voteResult, version} = data
+        const {rs, _id, status} = data
         const db_cvote = this.getDBModel('CVote')
         const {status: chainStatus} = rs
-        const newVoteHistory = []
-        const newVoteResult = await Promise.all(_.map(voteResult, async (e: any) => {
-            const newE = {
-                ..._.omit(e._doc, ['votedBy']),
-                votedBy: e.votedBy._id
-            }
-            if (e.status !== constant.CVOTE_CHAIN_STATUS.CHAINING || _.isEmpty(e.txid)) {
-                return newE
-            }
-            const voteResultflag = await getVoteResultByTxid(e.txid)
-            if (!voteResultflag) {
-                return newE
-            }
-            const newElement = {
-                ...newE,
-                status: constant.CVOTE_CHAIN_STATUS.CHAINED
-            }
-            newVoteHistory.push(_.omit(newElement, '_id'))
-            return newElement
-        }));
+        const currentStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
 
-        await db_cvote.update({
-            _id,
-            __v: version
-        }, {
-            status: CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus],
-            voteResult: newVoteResult,
-            $push: {
-                voteHistory: newVoteHistory
-            },
-            $inc: {
-                __v: 1
-            }
-        })
+        if (status !== currentStatus) {
+            await db_cvote.update({
+                _id,
+            }, {
+                status: currentStatus,
+            })
+        }
     }
 
     public async updateProposalOnNotification(data: any) {
         const {WAITING_FOR_WITHDRAWAL, WAITING_FOR_REQUEST} = constant.MILESTONE_STATUS
-        const db_cvote = this.getDBModel("CVote")
+        const db_cvote = this.getDBModel('CVote')
         const {rs, _id} = data
         let {rejectThroughAmount} = data
         const {
@@ -1421,7 +1395,7 @@ export default class extends Base {
             },
             status: chainStatus
         } = rs
-        
+
         const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
         if (proposalStatus === constant.CVOTE_STATUS.ACTIVE) {
             const proposal = await db_cvote.findById(_id)
@@ -1860,11 +1834,11 @@ export default class extends Base {
         const list = _.map(summary, function (o) {
             const comment = o._doc.comment
             const contents = (JSON.parse(o.content))
-            let content = ""
+            let content = ''
             _.each(contents.blocks, function (v: any, k: any) {
                 content += v.text
                 if (k !== (contents.blocks.length) - 1) {
-                    content += "\n"
+                    content += '\n'
                 }
             })
             const commentObj = {
@@ -1987,8 +1961,8 @@ export default class extends Base {
 
 
     public async updateVoteStatusByChain() {
-        const db_ela = this.getDBModel("Ela_Transaction")
-        const db_cvote = this.getDBModel("CVote")
+        const db_ela = this.getDBModel('Ela_Transaction')
+        const db_cvote = this.getDBModel('CVote')
 
         let elaVoteList = await db_ela.getDBInstance().find({type: constant.TRANSACTION_TYPE.COUNCIL_VOTE})
         if (_.isEmpty(elaVoteList)){
@@ -1996,7 +1970,7 @@ export default class extends Base {
         }
         const elaVote = []
         const useIndex = []
-        elaVoteList = _.map(elaVoteList, (o:any) => {
+        elaVoteList = _.map(elaVoteList, (o: any) => {
             elaVote.push(JSON.parse(o.payload))
             return {
                 ...o._doc,
@@ -2012,7 +1986,7 @@ export default class extends Base {
         const proposalList = await db_cvote.getDBInstance()
             .find({status: constant.CVOTE_STATUS.PROPOSED, proposalHash: {$in:query}})
             .populate('voteResult.votedBy',constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-            
+
         if (_.isEmpty(proposalList)){
             return
         }
