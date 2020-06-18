@@ -189,6 +189,11 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	CRExpensesAddress := c.String("crccommiteeaddr")
 	payloadVersion := c.Int64("payloadversion")
 
+	managementType := c.Int64("managementtype")
+	crManagementPublicKey := c.String("crmanagementpublickey")
+	crManagementPrivateKey := c.String("crmanagementprivatekey")
+	crCommitteeDID := c.String("crcommitteedid")
+
 	getProposalType := func(L *lua.LState) int {
 		L.Push(lua.LNumber(proposalType))
 		return 1
@@ -288,6 +293,23 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LNumber(payloadVersion))
 		return 1
 	}
+	getManagementType := func(L *lua.LState) int {
+		L.Push(lua.LNumber(managementType))
+		return 1
+	}
+	getCRManagementPublicKey := func(L *lua.LState) int {
+		L.Push(lua.LString(crManagementPublicKey))
+		return 1
+	}
+	getCRManagementPrivateKey := func(L *lua.LState) int {
+		L.Push(lua.LString(crManagementPrivateKey))
+		return 1
+	}
+	getCRCommitteeDID := func(L *lua.LState) int {
+		L.Push(lua.LString(crCommitteeDID))
+		return 1
+	}
+
 	L.Register("getProposalType", getProposalType)
 	L.Register("getDraftData", getDraftData)
 	L.Register("getBudgets", getBudgets)
@@ -311,6 +333,10 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getCloseProposalHash", getCloseProposalHash)
 	L.Register("getCRExpensesAddress", getCRExpensesAddress)
 	L.Register("getPayloadVersion", getPayloadVersion)
+	L.Register("getManagementType", getManagementType)
+	L.Register("getCRManagementPublicKey", getCRManagementPublicKey)
+	L.Register("getCRManagementPrivateKey", getCRManagementPrivateKey)
+	L.Register("getCRcommitteeDID", getCRCommitteeDID)
 }
 
 func scriptAction(c *cli.Context) error {

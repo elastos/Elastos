@@ -1717,7 +1717,61 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 }
 
 func newCRDPOSManagement(L *lua.LState) int {
-	//TODO: fix me
+	managementType := L.ToInt64(1)
+	crManagementPublicKeyStr := L.ToString(2)
+	crManagementPrivateKeyStr := L.ToString(3)
+	crCommitteeDIDStr := L.ToString(4)
+	client, err := checkClient(L, 5)
+
+	needSign := true
+	if err != nil {
+		needSign = false
+	}
+
+	crManagementPublicKey, _ := common.HexStringToBytes(crManagementPublicKeyStr)
+	crCommitteeDID, _ := common.Uint168FromBytes([]byte(crCommitteeDIDStr))
+
+	account := client.GetMainAccount()
+
+	fmt.Println("-----newCrDPOSManagement------")
+	fmt.Println("managementType", managementType)
+	fmt.Println("crManagementPublicKeyStr", crManagementPublicKeyStr)
+	fmt.Println("crCommitteeDIDStr", crCommitteeDIDStr)
+	fmt.Printf("account %+v\n", account)
+	fmt.Println("-----newCrDPOSManagement------")
+
+	crDPOSManagement := &payload.CRDPOSManagement{
+		ManagementType:        payload.DPOSManagementType(managementType),
+		CRManagementPublicKey: crManagementPublicKey,
+		CRCommitteeDID:        *crCommitteeDID,
+	}
+
+	crManagementPrivateKey, err := common.HexStringToBytes(crManagementPrivateKeyStr)
+	if err != nil {
+		fmt.Println("wrong cr proposal owner private key")
+		os.Exit(1)
+	}
+
+	if needSign {
+		signBuf := new(bytes.Buffer)
+		err = crDPOSManagement.SerializeUnsigned(signBuf, payload.CRManagementVersion)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		sig, err := crypto.Sign(crManagementPrivateKey, signBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crDPOSManagement.Signature = sig
+	}
+	ud := L.NewUserData()
+	ud.Value = crDPOSManagement
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCRDPOSManagementName))
+	L.Push(ud)
+
 	return 1
 }
 
