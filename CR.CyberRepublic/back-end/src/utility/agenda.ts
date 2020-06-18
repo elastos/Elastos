@@ -14,13 +14,13 @@ const JOB_NAME = {
   UPDATEMILESTONE: 'update milestone status'
 }
 
-agenda.define(JOB_NAME.UPDATEMILESTONE, async(job: any) => {
-  console.log('------begin update milestone status------')
+agenda.define(JOB_NAME.UPDATEMILESTONE, async (job: any) => {
+  console.log('------begin updating milestone status------')
   try {
     const DB = await db.create()
     const cvoteService = new CVoteServive(DB, { user: undefined })
     await cvoteService.updateProposalBudget()
-  } catch(err) {
+  } catch (err) {
     console.log('update milestone status cron job err...', err)
   }
 })

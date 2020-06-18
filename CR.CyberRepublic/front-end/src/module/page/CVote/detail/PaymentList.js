@@ -6,7 +6,11 @@ import linkifyStr from 'linkifyjs/string'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import Signature from './Signature'
-import { MILESTONE_STATUS, SUGGESTION_BUDGET_TYPE, CVOTE_STATUS } from '@/constant'
+import {
+  MILESTONE_STATUS,
+  SUGGESTION_BUDGET_TYPE,
+  CVOTE_STATUS
+} from '@/constant'
 import WithdrawMoney from './WithdrawMoney'
 
 const {
@@ -61,7 +65,9 @@ class PaymentList extends Component {
 
   isVisible() {
     const { user, status } = this.props
-    return (this.isOwner() || user.is_secretary) && [ACTIVE, FINAL].includes(status)
+    return (
+      (this.isOwner() || user.is_secretary) && [ACTIVE, FINAL].includes(status)
+    )
   }
 
   renderMilestone = (item) => {
@@ -193,7 +199,9 @@ class PaymentList extends Component {
             style={{ p: { margin: '1em 0' } }}
           />
         </td>
-        {visible && <td>{I18N.get(`milestone.${item.status}`)}</td>}
+        {visible && (
+          <td>{item.status && I18N.get(`milestone.${item.status}`)}</td>
+        )}
         {visible && <td>{this.renderActions(item)}</td>}
       </StyledRow>
     )
@@ -210,8 +218,8 @@ class PaymentList extends Component {
 
   isFinal() {
     const { list } = this.props
-    const completion = list && list.filter(item => item.type === COMPLETION)[0]
-    return completion && completion.status === WITHDRAWN
+    const last = list && list.filter((item) => item.type === COMPLETION)[0]
+    return last && last.status === WITHDRAWN
   }
 
   render() {
