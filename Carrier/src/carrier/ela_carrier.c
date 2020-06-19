@@ -1324,7 +1324,7 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
 
     w->connector = create_express_connector(w);
     if (!w->connector)
-        vlogW("Carrier: Creating express connector error (%d)", ela_get_error());
+        vlogW("Carrier: Creating express connector error (%x)", ela_get_error());
 
     apply_extra_data(w, data.extra_savedata, data.extra_savedata_len);
     free_persistence_data(&data);
@@ -1857,7 +1857,8 @@ redo_check:
                                       ext_name);
 
             if (rc < 0) {
-                item->callback(item->msgid, ElaReceipt_Error, item->context);
+                if(item->callback != NULL)
+                    item->callback(item->msgid, ElaReceipt_Error, item->context);
                 receipts_iterator_remove(&it);
             }
         }
