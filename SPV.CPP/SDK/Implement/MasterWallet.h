@@ -117,6 +117,8 @@ namespace Elastos {
 			ChainConfigPtr GetChainConfig(const std::string &chainID) const;
 
 			std::string GetDataPath() const;
+
+			AccountPtr GetAccount() const;
 		protected:
 
 			friend class MasterWalletManager;

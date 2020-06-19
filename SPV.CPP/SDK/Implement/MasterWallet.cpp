@@ -488,6 +488,10 @@ namespace Elastos {
 			return _account->GetDataPath();
 		}
 
+		AccountPtr MasterWallet::GetAccount() const {
+			return _account;
+		}
+
 		void MasterWallet::startPeerManager(SubWallet *wallet) {
 			if (_p2pEnable)
 				wallet->StartP2P();

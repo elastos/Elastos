@@ -24,6 +24,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <nlohmann/json.hpp>
+#include <Common/uint256.h>
 
 class uchar_vector;
 typedef uchar_vector bytes_t;
@@ -123,6 +124,14 @@ namespace Elastos {
 			virtual std::string GetDataPath() const = 0;
 
 			virtual void RegenerateKey(const std::string &payPasswd) const = 0;
+
+			virtual uint512 GetSeed(const std::string &payPasswd) const = 0;
+
+			virtual bytes_t GetETHSCPubKey() const = 0;
+
+			virtual bool HasMnemonic() const = 0;
+
+			virtual bool HasPassphrase() const = 0;
 		};
 
 		typedef boost::shared_ptr<IAccount> AccountPtr;

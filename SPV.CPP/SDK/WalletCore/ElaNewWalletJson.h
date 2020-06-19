@@ -43,6 +43,14 @@ namespace Elastos {
 
 			void SetxPubKeyHDPM(const std::string &xpub);
 
+			const std::string &GetSeed() const;
+
+			void SetSeed(const std::string &seed);
+
+			const std::string &GetETHSCPrimaryPubKey() const;
+
+			void SetETHSCPrimaryPubKey(const std::string &pubkey);
+
 			virtual nlohmann::json ToJson(bool withPrivKey) const;
 
 			virtual void FromJson(const nlohmann::json &j);
@@ -56,6 +64,8 @@ namespace Elastos {
 			std::vector<CoinInfoPtr> _coinInfoList;
 			std::string _ownerPubKey;
 			std::string _xPubKeyHDPM;
+			std::string _seed;
+			std::string _ethscPrimaryPubKey;
 			bool _singleAddress;
 		};
 	}

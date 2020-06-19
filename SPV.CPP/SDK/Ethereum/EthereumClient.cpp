@@ -22,6 +22,7 @@
 
 #include "EthereumClient.h"
 #include "Common/Log.h"
+#include "Common/ErrorChecker.h"
 #include "WalletCore/WordLists/English.h"
 
 namespace Elastos {
@@ -29,13 +30,15 @@ namespace Elastos {
 
 		EthereumClient::EthereumClient(const EthereumNetworkPtr &network,
 									   const std::string &storagePath,
-									   const std::string &payperKey) :
+									   const bytes_t &pubkey) :
 			_network(network),
 			_storagePath(storagePath) {
 
-			_ewm = EthereumEWMPtr(
-				new EthereumEWM(this, EthereumEWM::Mode::P2P_ONLY, network, _storagePath, payperKey, EnglishWordLists));
+			ErrorChecker::CheckParam(pubkey[0] != 4 || pubkey.size() != 65, Error::InvalidArgument,
+									 "pubkey should be 65 bytes and begin with 0x04");
 
+			_ewm = EthereumEWMPtr(
+				new EthereumEWM(this, EthereumEWM::Mode::P2P_ONLY, _network, _storagePath, pubkey));
 		}
 
 		void EthereumClient::getGasPrice(BREthereumWallet wid, int rid) {

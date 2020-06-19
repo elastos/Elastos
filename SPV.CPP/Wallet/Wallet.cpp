@@ -49,6 +49,7 @@ using namespace Elastos::ElaWallet;
 #define SELA_PER_ELA 100000000UL
 static const std::string CHAINID_ELA = "ELA";
 static const std::string CHAINID_ID = "IDChain";
+static const std::string CHAINID_ETHSC = "ETHSC";
 static std::string walletRoot;
 static std::string network;
 
@@ -618,7 +619,7 @@ static int list(int argc, char *argv[]) {
 			struct tm tm;
 			time_t lastBlockTime;
 			int progress;
-			double balance;
+			char balance[50];
 			char info[256];
 			char buf[100] = {0};
 
@@ -626,7 +627,10 @@ static int list(int argc, char *argv[]) {
 			for (const ISubWallet *subWallet : subWallets) {
 				std::string chainID = subWallet->GetChainID();
 				if (subWallet) {
-					balance = std::stod(subWallet->GetBalance()) / SELA_PER_ELA;
+					if (chainID == CHAINID_ETHSC)
+						snprintf(balance, sizeof(balance), "%25s", subWallet->GetBalance().c_str());
+					else
+						snprintf(balance, sizeof(balance), "%25.8lf", std::stod(subWallet->GetBalance()) / SELA_PER_ELA);
 
 					lastBlockTime = masterWalletData[currentWallet->GetID()][chainID].GetLastBlockTime();
 					progress = masterWalletData[currentWallet->GetID()][chainID].GetSyncProgress();
@@ -637,7 +641,7 @@ static int list(int argc, char *argv[]) {
 						sprintf(buf, "-");
 					}
 
-					snprintf(info, sizeof(info), "%18.8lf  %3d%%  %19s", balance, progress, buf);
+					snprintf(info, sizeof(info), "%s  %3d%%  %19s", balance, progress, buf);
 				}
 
 				printf("%s:%-10s %s\n", currentWallet->GetID().c_str(), chainID.c_str(), info);
@@ -1149,6 +1153,29 @@ static int info(int argc, char *argv[]) {
 	return 0;
 }
 
+// basicinfo [chainID]
+static int basic_info(int argc, char *argv[]) {
+	if (argc != 1 && argc != 2) {
+		invalidCmdError();
+		return ERRNO_CMD;
+	}
+	checkCurrentWallet();
+
+	try {
+		if (argc == 1) {
+			std::cout << currentWallet->GetBasicInfo().dump(4) << std::endl;
+		} else {
+			std::string chainID = argv[1];
+			nlohmann::json info = currentWallet->GetSubWallet(chainID)->GetBasicInfo();
+			std::cout << info.dump(4) << std::endl;
+		}
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+	return 0;
+}
+
 // retrieve (cr | dpos)
 static int retrieve(int argc, char *argv[]) {
 	checkParam(2);
@@ -1560,6 +1587,35 @@ static int passwd(int argc, char *argv[]) {
 		}
 
 		currentWallet->ChangePassword(oldPassword, newPassword);
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+	return 0;
+}
+
+// verify (passphrase | paypasswd)
+static int verify(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
+
+	std::string verifyWhat = argv[1];
+	try {
+		bool result = false;
+		if (verifyWhat == "passphrase") {
+			std::string passphrase = getpass("Passphrase: ");
+			std::string paypasswd = getpass("Payment password: ");
+			result = currentWallet->VerifyPassPhrase(passphrase, paypasswd);
+		} else if (verifyWhat == "paypasswd") {
+			std::string paypasswd = getpass("Payment passwd: ");
+			result = currentWallet->VerifyPayPassword(paypasswd);
+		} else {
+			invalidCmdError();
+			return ERRNO_APP;
+		}
+
+		std::string resultString = result ? "successful" : "failed";
+		std::cout << "Verify " << resultString << std::endl;
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -2043,6 +2099,7 @@ struct command {
 	{"switch",     _switch,        "walletName                                       Switch current wallet."},
 	{"list",       list,           "[all]                                            List all wallets or current wallet."},
 	{"passwd",     passwd,         "                                                 Change password of wallet."},
+	{"verify",     verify,         "(passphrase | paypasswd)                         Verify payment passwd or passphrase."},
 	{"didtx",      didtx,          "[didDocFilepath]                                 Create DID transaction."},
 	{"didsign",    didsign,        "DID digest                                       Sign `digest` with private key of DID."},
 	{"did",        did,            "                                                 List did of IDChain"},
@@ -2070,6 +2127,7 @@ struct command {
 	{"register",   _register,      "(cr | dpos)                                      Register CR or DPoS with specified wallet."},
 	{"unregister", unregister,     "(cr | dpos)                                      Unregister CR or DPoS with specified wallet."},
 	{"info",       info,           "(cr | dpos | vote)                               Get CR or DPos info with specified wallet."},
+	{"basicinfo",  basic_info,     "[chainID]                                        Get basic info of master/sub Wallet"},
 	{"retrieve",   retrieve,       "(cr | dpos)                                      Retrieve Pledge with specified wallet."},
 	{"vote",       vote,           "(cr | dpos)                                      CR/DPoS vote."},
 	{"network",    _network,       "[netType]                                        Show current net type or set net type: 'MainNet', 'TestNet', 'RegTest', 'PrvNet'"},

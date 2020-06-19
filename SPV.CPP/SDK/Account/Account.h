@@ -141,8 +141,18 @@ namespace Elastos {
 			std::string GetDataPath() const;
 
 			void RegenerateKey(const std::string &payPasswd) const;
+
+			uint512 GetSeed(const std::string &payPasswd) const;
+
+			bytes_t GetETHSCPubKey() const;
+
+			bool HasMnemonic() const;
+
+			bool HasPassphrase() const;
 		private:
 			void Init() const;
+
+			void SupportETHSC(const uint512 &seed, const std::string &payPasswd) const;
 
 		private:
 			LocalStorePtr _localstore;

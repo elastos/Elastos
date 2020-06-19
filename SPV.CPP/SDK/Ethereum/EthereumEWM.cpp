@@ -382,27 +382,50 @@ namespace Elastos {
 			ewmUpdateTokens(_ewm);
 		}
 
-		EthereumEWM::EthereumEWM(EthereumEWM::Client *client, EthereumEWM::Mode mode,
-								 const EthereumNetworkPtr &network, const std::string &storagePath,
-								 const std::string &paperKey, const std::vector<std::string> &wordList) :
-			EthereumEWM(createRawEWM(client, mode, network->getRaw(), storagePath, paperKey, wordList), client, network) {
+		EthereumEWM::EthereumEWM(Client *client, EthereumEWM::Mode mode, const EthereumNetworkPtr &network,
+								 const std::string &storagePath, const std::string &paperKey,
+								 const std::vector<std::string> &wordList) :
+			EthereumEWM(createRawEWM(mode, network->getRaw(), storagePath, paperKey, wordList), client, network) {
 		}
 
-		EthereumEWM::EthereumEWM(EthereumEWM::Client *client, EthereumEWM::Mode mode,
-								 const EthereumNetworkPtr &network, const std::string &storagePath,
-								 const bytes_t &publicKey) :
-			EthereumEWM(createRawEWMPublicKey(client, mode, network->getRaw(), storagePath, publicKey), client, network){
+		EthereumEWM::EthereumEWM(Client *client, EthereumEWM::Mode mode, const EthereumNetworkPtr &network,
+								 const std::string &storagePath, const bytes_t &publicKey) :
+			EthereumEWM(createRawEWMPublicKey(mode, network->getRaw(), storagePath, publicKey), client, network) {
 		}
 
-		EthereumEWM::EthereumEWM(BREthereumEWM ewm, EthereumEWM::Client *client,
-								 const EthereumNetworkPtr &network) :
+		EthereumEWM::EthereumEWM(BREthereumEWM ewm, EthereumEWM::Client *client, const EthereumNetworkPtr &network) :
 			_ewm(ewm),
 			_client(client),
 			_network(network),
 			_account(EthereumAccountPtr(new EthereumAccount(this, ewmGetAccount(ewm)))) {
 		}
 
-		BREthereumEWM EthereumEWM::createRawEWM(Client *client, Mode mode, BREthereumNetwork network,
+		BREthereumEWM EthereumEWM::createRawEWM(Mode mode, BREthereumNetwork network, const std::string &storagePath,
+												BREthereumAccount account) {
+			BREthereumClient brClient = {
+				this,
+				clientGetBalance,
+				clientGetGasPrice,
+				clientEstimateGas,
+				clientSubmitTransaction,
+				clientGetTransactions,
+				clientGetLogs,
+				clientGetBlocks,
+				clientGetTokens,
+				clientGetBlockNumber,
+				clientGetNonce,
+
+				clientEWMEventHandler,
+				clientPeerEventHandler,
+				clientWalletEventHandler,
+				clientTokenEventHandler,
+				clientTransferEventHandler
+			};
+
+			return ewmCreate(network, account, ETHEREUM_TIMESTAMP_UNKNOWN, (BREthereumMode) mode, brClient, storagePath.data());
+		}
+
+		BREthereumEWM EthereumEWM::createRawEWM(Mode mode, BREthereumNetwork network,
 												const std::string &storagePath, const std::string &paperKey,
 												const std::vector<std::string> &wordList) {
 			int wordsCount = wordList.size();
@@ -437,7 +460,7 @@ namespace Elastos {
 										 (BREthereumMode) mode, brClient, storagePath.data());
 		}
 
-		BREthereumEWM EthereumEWM::createRawEWMPublicKey(Client *client, Mode mode, BREthereumNetwork network,
+		BREthereumEWM EthereumEWM::createRawEWMPublicKey(Mode mode, BREthereumNetwork network,
 														 const std::string &storagePath, const bytes_t &pubkey) {
 			assert (65 == pubkey.size());
 

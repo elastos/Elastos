@@ -32,8 +32,7 @@ namespace Elastos {
 		public:
 			EthereumClient(const EthereumNetworkPtr &network,
 						   const std::string &storagePath,
-						   const std::string &payperKey);
-
+						   const bytes_t &pubkey);
 		public:
 			// implement EthereumEWM::Client
 			//        typedef void (*BREthereumClientHandlerGetGasPrice) (BREthereumClientContext context,

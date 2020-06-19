@@ -23,6 +23,7 @@
 #include "EthSidechainSubWallet.h"
 #include <Ethereum/EthereumClient.h>
 #include <WalletCore/CoinInfo.h>
+#include <Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -38,23 +39,22 @@ namespace Elastos {
 
 			_walletID = _parent->GetID() + ":" + info->GetChainID();
 
-			// TODO: fixme later
-			std::string mnemonic = "boring head harsh green empty clip fatal typical found crane dinner timber";
+			AccountPtr account = _parent->GetAccount();
+			bytes_t pubkey = account->GetETHSCPubKey();
+			if (pubkey.empty()) {
+				if (!account->HasMnemonic() || account->Readonly()) {
+					ErrorChecker::ThrowParamException(Error::UnsupportOperation, "unsupport operation: ethsc pubkey is empty");
+				} else {
+					if (account->HasPassphrase()) {
+						ErrorChecker::ThrowParamException(Error::Other, "need to call IMasterWallet::VerifyPassPhrase() first");
+					} else {
+						ErrorChecker::ThrowParamException(Error::Other, "need to call IMasterWallet::VerifyPayPassword() first");
+					}
+				}
+			}
+
 			EthereumNetworkPtr network(new EthereumNetwork(netType));
-
-			// TODO: save public key to coininfo
-			_client = ClientPtr(new EthereumClient(network, parent->GetDataPath(), mnemonic));
-			EthereumWalletPtr wallet = _client->_ewm->getWallet();
-
-			SPVLOG_DEBUG("symbol: {}", wallet->getSymbol());
-			SPVLOG_DEBUG("balance: {}", wallet->getBalance());
-			SPVLOG_DEBUG("balance: {}", wallet->getBalance(EthereumAmount::Unit::ETHER_ETHER));
-			SPVLOG_DEBUG("gas limit: {}", wallet->getDefaultGasLimit());
-			SPVLOG_DEBUG("gas price: {}", wallet->getDefaultGasPrice());
-			SPVLOG_DEBUG("token: {}", wallet->getToken() == nullptr);
-			SPVLOG_DEBUG("account: {}", wallet->getAccount()->getPrimaryAddress());
-			SPVLOG_DEBUG("transfer: {}", wallet->getTransfers().size());
-			SPVLOG_DEBUG("holds ether: {}", wallet->walletHoldsEther());
+			_client = ClientPtr(new EthereumClient(network, parent->GetDataPath(), pubkey));
 		}
 
 		std::string EthSidechainSubWallet::GetChainID() const {
@@ -64,8 +64,16 @@ namespace Elastos {
 		nlohmann::json EthSidechainSubWallet::GetBasicInfo() const {
 			ArgInfo("{} {}", _walletID, GetFunName());
 
-			nlohmann::json j;
-			j["Info"] = nlohmann::json();
+			EthereumWalletPtr wallet = _client->_ewm->getWallet();
+			nlohmann::json j, jinfo;
+
+			jinfo["Symbol"] = wallet->getSymbol();
+			jinfo["GasLimit"] = wallet->getDefaultGasLimit();
+			jinfo["GasPrice"] = wallet->getDefaultGasPrice();
+			jinfo["Account"] = wallet->getAccount()->getPrimaryAddress();
+			jinfo["HoldsEther"] = wallet->walletHoldsEther();
+
+			j["Info"] = jinfo;
 			j["ChainID"] = _info->GetChainID();
 
 			ArgInfo("r => {}", j.dump());
@@ -96,7 +104,10 @@ namespace Elastos {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("addr: {}", address);
 
+			std::string primaryAddress = _client->_ewm->getWallet()->getAccount()->getPrimaryAddress();
 			std::string balance = "0";
+			if (primaryAddress == address)
+				balance = _client->_ewm->getWallet()->getBalance();
 
 			ArgInfo("r => {}", balance);
 			return balance;
@@ -105,7 +116,7 @@ namespace Elastos {
 		std::string EthSidechainSubWallet::CreateAddress() {
 			ArgInfo("{} {}", _walletID, GetFunName());
 
-			std::string addr = "";
+			std::string addr = _client->_ewm->getWallet()->getAccount()->getPrimaryAddress();
 
 			ArgInfo("r => {}", addr);
 			return addr;
@@ -117,7 +128,11 @@ namespace Elastos {
 			ArgInfo("count: {}", count);
 			ArgInfo("internal: {}", internal);
 
+			std::vector<std::string> addresses;
+			addresses.push_back(_client->_ewm->getWallet()->getAccount()->getPrimaryAddress());
 			nlohmann::json j;
+			j["Addresses"] = addresses;
+			j["MaxCount"] = 1;
 
 			ArgInfo("r => {}", j.dump());
 			return j;
@@ -127,7 +142,12 @@ namespace Elastos {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("s: {}", start);
 			ArgInfo("c: {}", count);
+
+			std::vector<std::string> pubkey;
+			pubkey.push_back(_client->_ewm->getWallet()->getAccount()->getPrimaryAddressPublicKey().getHex());
 			nlohmann::json j;
+			j["PublicKeys"] = pubkey;
+			j["MaxCount"] = 1;
 
 			ArgInfo("r => {}", j.dump());
 			return j;

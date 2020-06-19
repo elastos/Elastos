@@ -62,6 +62,22 @@ namespace Elastos {
 			_xPubKeyHDPM = xpub;
 		}
 
+		const std::string &ElaNewWalletJson::GetSeed() const {
+			return _seed;
+		}
+
+		void ElaNewWalletJson::SetSeed(const std::string &seed) {
+			_seed = seed;
+		}
+
+		const std::string &ElaNewWalletJson::GetETHSCPrimaryPubKey() const {
+			return _ethscPrimaryPubKey;
+		}
+
+		void ElaNewWalletJson::SetETHSCPrimaryPubKey(const std::string &pubkey) {
+			_ethscPrimaryPubKey = pubkey;
+		}
+
 		nlohmann::json ElaNewWalletJson::ToJson(bool withPrivKey) const {
 			nlohmann::json j = ElaWebWalletJson::ToJson(withPrivKey);
 			ToJsonCommon(j);
@@ -82,6 +98,8 @@ namespace Elastos {
 			j["SingleAddress"] = _singleAddress;
 			j["OwnerPubKey"] = _ownerPubKey;
 			j["xPubKeyHDPM"] = _xPubKeyHDPM;
+			j["seed"] = _seed;
+			j["ethscPrimaryPubKey"] = _ethscPrimaryPubKey;
 		}
 
 		void ElaNewWalletJson::FromJsonCommon(const nlohmann::json &j) {
@@ -105,6 +123,14 @@ namespace Elastos {
 
 			if (j.find("xPubKeyHDPM") != j.end()) {
 				_xPubKeyHDPM = j["xPubKeyHDPM"].get<std::string>();
+			}
+
+			if (j.find("seed") != j.end()) {
+				_seed = j["seed"].get<std::string>();
+			}
+
+			if (j.find("ethscPrimaryPubKey") != j.end()) {
+				_ethscPrimaryPubKey = j["ethscPrimaryPubKey"].get<std::string>();
 			}
 
 			if (j.find("CoSigners") != j.end() && j["Type"] == "MultiSign") {

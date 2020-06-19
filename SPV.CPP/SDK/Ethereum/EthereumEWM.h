@@ -380,11 +380,14 @@ namespace Elastos {
 		private:
 			EthereumEWM(BREthereumEWM identifier, Client *client, const EthereumNetworkPtr &network);
 
-			BREthereumEWM createRawEWM(Client *client, Mode mode, BREthereumNetwork network,
+			BREthereumEWM createRawEWM(Mode mode, BREthereumNetwork network,
+									   const std::string &storagePath, BREthereumAccount account);
+
+			BREthereumEWM createRawEWM(Mode mode, BREthereumNetwork network,
 									   const std::string &storagePath, const std::string &paperKey,
 									   const std::vector<std::string> &wordList);
 
-			BREthereumEWM createRawEWMPublicKey(Client *client, Mode mode, BREthereumNetwork network,
+			BREthereumEWM createRawEWMPublicKey(Mode mode, BREthereumNetwork network,
 												const std::string &storagePath, const bytes_t &pubkey);
 
 			// Connect / Disconnect

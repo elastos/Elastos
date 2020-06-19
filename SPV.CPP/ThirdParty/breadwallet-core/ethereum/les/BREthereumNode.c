@@ -184,7 +184,8 @@ nodeConnectTypeDescription (BREthereumNodeConnectType type) {
         "Ping Ack Discover",
         "Ping Ack Discover Ack",
         "Discover",
-        "Discover Ack"
+        "Discover Ack",
+        "Discover Ack Too"
     };
     return connectTypeDescriptions [type];
 }
@@ -1998,13 +1999,14 @@ nodeSend (BREthereumNode node,
              messageGetAnyIdentifierName (&message),
              nodeEndpointGetHostname(node->remote));
 
+    BRRlpData data;
     // Handle DIS messages specially.
     switch (message.identifier) {
         case MESSAGE_DIS: {
             // Extract the `item` bytes w/o the RLP length prefix.  This ends up being
             // simply the raw bytes.  We *know* the `item` is an RLP encoding of bytes; thus we
             // use `rlpDecodeBytes` (rather than `rlpDecodeList`.  Then simply send them.
-            BRRlpData data = rlpDecodeBytesSharedDontRelease (node->coder.rlp, item);
+            data = rlpDecodeBytesSharedDontRelease (node->coder.rlp, item);
 
             pthread_mutex_lock (&node->lock);
             error = nodeEndpointSendData (node->remote, route, data.bytes, data.bytesCount);
@@ -2026,7 +2028,7 @@ nodeSend (BREthereumNode node,
             
             // Extract the `items` bytes w/o the RLP length prefix.  We *know* the `item` is an
             // RLP encoding of a list; thus we use `rlpDecodeList`.
-            BRRlpData data = rlpDecodeListSharedDontRelease(node->coder.rlp, item);
+            data = rlpDecodeListSharedDontRelease(node->coder.rlp, item);
 
             // Encrypt the length-less data
             BRRlpData encryptedData;
@@ -2137,7 +2139,7 @@ nodeRecv (BREthereumNode node,
             pthread_mutex_unlock (&node->lock);
 
 #if defined (NEED_TO_PRINT_SEND_RECV_DATA)
-            eth_log (LES_LOG_TOPIC, "Size: Recv: TCP: PayLoad: %u, Frame: %zu", headerCount, bytesCount);
+            eth_log (LES_LOG_TOPIC, "Size: Recv: TCP: PayLoad: %zu, Frame: %zu", headerCount, bytesCount);
 #endif
             
             // get body/frame

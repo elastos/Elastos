@@ -42,6 +42,8 @@ namespace Elastos {
 			j["singleAddress"] = _singleAddress;
 			j["readonly"] = _readonly;
 			j["coinInfo"] = _subWalletsInfoList;
+			j["seed"] = _seed;
+			j["ethscPrimaryPubKey"] = _ethscPrimaryPubKey;
 			return j;
 		}
 
@@ -71,6 +73,18 @@ namespace Elastos {
 						_xPubKeyHDPM.clear();
 					}
 
+					if (j.find("seed") != j.end()) {
+						_seed = j["seed"].get<std::string>();
+					} else {
+						_seed.clear();
+					}
+
+					if (j.find("ethscPrimaryPubKey") != j.end()) {
+						_ethscPrimaryPubKey = j["ethscPrimaryPubKey"].get<std::string>();
+					} else {
+						_ethscPrimaryPubKey.clear();
+					}
+
 					_subWalletsInfoList = j["coinInfo"].get<std::vector<CoinInfoPtr>>();
 				} else {
 					// old version of localstore
@@ -85,6 +99,8 @@ namespace Elastos {
 					_ownerPubKey.clear();
 					_xPubKey.clear();
 					_xPubKeyHDPM.clear();
+					_seed.clear();
+					_ethscPrimaryPubKey.clear();
 
 					if (mpk.is_object()) {
 						bytes.setHex(mpk["ELA"]);
@@ -164,6 +180,9 @@ namespace Elastos {
 
 			bytes = AES::DecryptCCM(_requestPrivKey, oldPasswd);
 			_requestPrivKey = AES::EncryptCCM(bytes, newPasswd);
+
+			bytes = AES::DecryptCCM(_seed, oldPasswd);
+			_seed = AES::EncryptCCM(bytes, newPasswd);
 
 			bytes.clean();
 		}
@@ -377,6 +396,22 @@ namespace Elastos {
 
 		void LocalStore::ClearSubWalletInfoList() {
 			_subWalletsInfoList.clear();
+		}
+
+		void LocalStore::SetSeed(const std::string &seed) {
+			_seed = seed;
+		}
+
+		const std::string &LocalStore::GetSeed() const {
+			return _seed;
+		}
+
+		void LocalStore::SetETHSCPrimaryPubKey(const std::string &pubkey) {
+			_ethscPrimaryPubKey = pubkey;
+		}
+
+		const std::string &LocalStore::GetETHSCPrimaryPubKey() const {
+			return _ethscPrimaryPubKey;
 		}
 
 	}

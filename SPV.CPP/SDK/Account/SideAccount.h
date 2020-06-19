@@ -108,6 +108,14 @@ namespace Elastos {
 
 			void RegenerateKey(const std::string &) const {}
 
+			uint512 GetSeed(const std::string &payPasswd) const { return uint512(); }
+
+			bytes_t GetETHSCPubKey() const { return bytes_t(); }
+
+			bool HasMnemonic() const { return false; }
+
+			bool HasPassphrase() const { return false; }
+
 			bool VerifyPrivateKey(const std::string &, const std::string &) const { return false; }
 
 			bool VerifyPassPhrase(const std::string &, const std::string &) const { return false; }

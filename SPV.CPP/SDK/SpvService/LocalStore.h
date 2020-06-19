@@ -115,6 +115,14 @@ namespace Elastos {
 
 			void ClearSubWalletInfoList();
 
+			void SetSeed(const std::string &seed);
+
+			const std::string &GetSeed() const;
+
+			void SetETHSCPrimaryPubKey(const std::string &pubkey);
+
+			const std::string &GetETHSCPrimaryPubKey() const;
+
 		private:
 			virtual nlohmann::json ToJson() const;
 
@@ -149,6 +157,10 @@ namespace Elastos {
 			bool _mnemonicHasPassphrase;
 			bool _singleAddress;
 			bool _readonly;
+
+			// for ethsc
+			std::string _seed;
+			std::string _ethscPrimaryPubKey;
 
 			std::vector<CoinInfoPtr> _subWalletsInfoList;
 		private:
