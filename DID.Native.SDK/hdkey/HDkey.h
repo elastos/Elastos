@@ -50,19 +50,18 @@ extern "C" {
 #define KOREAN                         "korean"
 #define SPANISH                        "spanish"
 
+#define HARDENED                       0x80000000
+
 typedef struct HDKey {
+    uint8_t depth;
     uint32_t fingerPrint;
+    uint32_t childnumber;
     uint8_t prvChainCode[CHAINCODE_BYTES];
     uint8_t privatekey[PRIVATEKEY_BYTES];
     uint8_t pubChainCode[CHAINCODE_BYTES];
     uint8_t publickey[PUBLICKEY_BYTES];
-} HDKey;
-
-typedef struct DerivedKey {
-    uint8_t publickey[PUBLICKEY_BYTES];
-    uint8_t privatekey[PRIVATEKEY_BYTES];
     char address[ADDRESS_LEN];
-} DerivedKey;
+} HDKey;
 
 typedef enum
 {
@@ -105,26 +104,39 @@ HDKey *HDKey_FromSeed(const uint8_t *seed, size_t size, HDKey *hdkey);
 
 HDKey *HDKey_FromExtendedKey(const uint8_t *extendedkey, size_t size, HDKey *hdkey);
 
+HDKey *HDKey_FromExtendedKeyBase58(const char *extendedkeyBase58, size_t size, HDKey *hdkey);
+
 // Convert to extended private key format
 ssize_t HDKey_SerializePrv(HDKey *hdkey, uint8_t *extendedkey, size_t size);
 
 ssize_t HDKey_SerializePub(HDKey *hdkey, uint8_t *extendedkey, size_t size);
 
+HDKey *HDKey_Deserialize(HDKey *hdkey, const uint8_t *extendedkey, size_t size);
+
+HDKey *HDKey_DeserializeBase58(HDKey *hdkey, const char *extendedkeyBase58, size_t size);
+
+const char *HDKey_SerializePrvBase58(HDKey *hdkey, char *extendedkeyBase58, size_t size);
+
+const char *HDKey_SerializePubBase58(HDKey *hdkey, char *extendedkeyBase58, size_t size);
+
 void HDKey_Wipe(HDKey *hdkey);
 
 char *HDKey_PublicKey2Address(uint8_t *publickey, char *address, size_t len);
 
-DerivedKey *HDKey_GetDerivedKey(HDKey* hdkey, int index, DerivedKey *derivedkey);
+HDKey *HDKey_GetDerivedKey(HDKey* hdkey, HDKey *derivedkey, int depth, ...);
 
-uint8_t *DerivedKey_GetPublicKey(DerivedKey *derivedkey);
+uint8_t *HDKey_GetPublicKey(HDKey *hdkey);
 
-const char *DerivedKey_GetPublicKeyBase58(DerivedKey *derivedkey, char *base, size_t size);
+const char *HDKey_GetPublicKeyBase58(HDKey *hdkey, char *base, size_t size);
 
-uint8_t *DerivedKey_GetPrivateKey(DerivedKey *derivedkey);
+uint8_t *HDKey_GetPrivateKey(HDKey *hdkey);
 
-char *DerivedKey_GetAddress(DerivedKey *derivedkey);
+char *HDKey_GetAddress(HDKey *hdkey);
 
-void DerivedKey_Wipe(DerivedKey *derivedkey);
+void HDKey_Wipe(HDKey *hdkey);
+
+ssize_t HDKey_PaddingToExtendedPrivateKey(uint8_t *privatekey, size_t psize,
+        uint8_t *extendedkey, size_t esize);
 
 //- for jwt -----------------------------------------------
 KeySpec *KeySpec_Fill(KeySpec *keyspec, uint8_t *publickey, uint8_t *privatekey);

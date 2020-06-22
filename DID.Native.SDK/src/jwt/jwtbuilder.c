@@ -310,7 +310,7 @@ int JWTBuilder_Sign(JWTBuilder *builder, DIDURL *keyid, const char *storepass)
     if (!DIDStore_ContainsPrivateKey(issuer->meta.store, issuer, keyid))
         return -1;
 
-    if (DIDStore_LoadPrivateKey(issuer->meta.store, storepass, issuer, keyid, privatekey) == -1)
+    if (DIDStore_LoadPrivateKey(issuer->meta.store, storepass, issuer, keyid, privatekey, sizeof(privatekey)) == -1)
         return -1;
 
     // create key spec

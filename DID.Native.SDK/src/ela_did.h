@@ -2537,13 +2537,15 @@ DID_API bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *keyi
  *      did                     [in] The handle to DID.
  * @param
  *      id                      [in] The handle to public key identifier.
-  * @param
+ * @param
  *      privatekey              [in] Private key string.
+ * @param
+ *      size                    [in] The bytes of Private key.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass,
-        DID *did, DIDURL *id, const uint8_t *privatekey);
+        DID *did, DIDURL *id, const uint8_t *privatekey, size_t size);
 
 /**
  * \~English

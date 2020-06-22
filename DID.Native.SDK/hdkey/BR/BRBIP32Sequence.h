@@ -128,6 +128,9 @@ void BRBIP32PrivKeyPathFromRoot(BRKey *key, UInt256 *chainCode, UInt256 *secret,
 void BRBIP32vPrivKeyPathFromRoot(BRKey *key, UInt256 *chainCode, UInt256 *secret,
         int depth, va_list vlist);
 
+size_t BRBIP32vPubKeyPathWithParentKey(uint8_t *pubKey, size_t pubKeyLen,
+        uint8_t *parentKey, size_t parentKeyLen, BRMasterPubKey mpk, int depth, va_list vlist);
+
 #ifdef __cplusplus
 }
 #endif

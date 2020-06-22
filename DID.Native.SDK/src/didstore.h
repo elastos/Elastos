@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-#define MAX_PRIVATEKEY_BASE64           80
+#define MAX_PRIVATEKEY_BASE64           128
 
 typedef struct DIDBackend    DIDBackend;
 
@@ -54,10 +54,13 @@ int DIDStore_LoadCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
 int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
         DIDURL *key, char *sig, uint8_t *digest, size_t size);
 
-int DIDStore_LoadPrivateKey(DIDStore *store, const char *storepass, DID *did,
-        DIDURL *key, uint8_t *privatekey);
+ssize_t DIDStore_LoadPrivateKey(DIDStore *store, const char *storepass, DID *did,
+        DIDURL *key, uint8_t *privatekey, size_t size);
 
-int DIDStore_StorePrvKey(DIDStore *store, DID *did, DIDURL *id, const char *prvkey);
+int DIDStore_LoadPrivateKey_Internal(DIDStore *store, const char *storepass, DID *did,
+        DIDURL *key, uint8_t *extendedkey, size_t size);
+
+int DIDStore_StorePrivateKey_Internal(DIDStore *store, DID *did, DIDURL *id, const char *prvkey);
 
 #ifdef __cplusplus
 }

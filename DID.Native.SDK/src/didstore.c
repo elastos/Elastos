@@ -54,6 +54,7 @@
 #include "credential.h"
 #include "didmeta.h"
 #include "credmeta.h"
+#include "HDkey.h"
 
 #define MAX_PUBKEY_BASE58            128
 
@@ -764,7 +765,7 @@ static int list_did_helper(const char *path, void *context)
     DID_List_Helper *dh = (DID_List_Helper*)context;
     char didpath[PATH_MAX];
     DID did;
-    int rc;
+    int rc, len;
 
     if (!path)
         return dh->cb(NULL, dh->context);
@@ -772,11 +773,13 @@ static int list_did_helper(const char *path, void *context)
     if (strcmp(path, ".") == 0 || strcmp(path, "..") == 0)
         return 0;
 
-    if (strlen(path) >= sizeof(did.idstring)) {
-        if (get_dir(didpath, 0, 3, dh->store->root, DID_DIR, path) == 0) {
-            delete_file(didpath);
-            return 0;
-        }
+    len = snprintf(didpath, sizeof(didpath), "%s/%s/%s", dh->store->root, DID_DIR, path);
+    if (len < 0 || len > sizeof(didpath))
+        return -1;
+
+    if (test_path(didpath) == S_IFREG || strlen(path) >= sizeof(did.idstring)) {
+        delete_file(didpath);
+        return 0;
     }
 
     strcpy(did.idstring, path);
@@ -1627,7 +1630,8 @@ bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *id)
     return true;
 }
 
-int DIDStore_StorePrvKey(DIDStore *store, DID *did, DIDURL *id, const char *prvkey)
+int DIDStore_StorePrivateKey_Internal(DIDStore *store, DID *did, DIDURL *id,
+        const char *prvkey)
 {
     char path[PATH_MAX];
 
@@ -1656,11 +1660,11 @@ int DIDStore_StorePrvKey(DIDStore *store, DID *did, DIDURL *id, const char *prvk
 }
 
 int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass, DID *did,
-        DIDURL *id, const uint8_t *privatekey)
+        DIDURL *id, const uint8_t *privatekey, size_t size)
 {
     char base64[MAX_PRIVATEKEY_BASE64];
 
-    if (!store || !storepass || !*storepass || !did || !id || !privatekey) {
+    if (!store || !storepass || !*storepass || !did || !id || !privatekey || size <= 0) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
     }
@@ -1670,12 +1674,12 @@ int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass, DID *did,
         return -1;
     }
 
-    if (encrypt_to_base64(base64, storepass, privatekey, PRIVATEKEY_BYTES) == -1) {
+    if (encrypt_to_base64(base64, storepass, privatekey, size) == -1) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Encrypt private key failed.");
         return -1;
     }
 
-    return DIDStore_StorePrvKey(store, did, id, base64);
+    return DIDStore_StorePrivateKey_Internal(store, did, id, base64);
 }
 
 void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *id)
@@ -1693,6 +1697,63 @@ void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *id)
         delete_file(path);
 
     return;
+}
+
+static int store_pubidentity_from_prvidentity(DIDStore *store, HDKey *hdkey)
+{
+    ssize_t size;
+    HDKey _derivedkey, *predeviedkey;
+    uint8_t extendedkey[EXTENDEDKEY_BYTES];
+
+    assert(store);
+    assert(hdkey);
+
+    //// Pre-derive publickey path: m/44'/0'/0'
+    predeviedkey = HDKey_GetDerivedKey(hdkey, &_derivedkey, 3, 44 | HARDENED,
+            0 | HARDENED, 0 | HARDENED);
+    if (!predeviedkey)
+        return -1;
+
+    size = HDKey_SerializePub(predeviedkey, extendedkey, sizeof(extendedkey));
+    if (size == -1) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Serialize extended public key failed.");
+        return -1;
+    }
+
+    if (store_extendedpubkey(store, extendedkey, size) == -1)
+        return -1;
+
+    return 0;
+}
+
+
+static bool DIDStore_ContainsPublicIdentity(DIDStore *store)
+{
+    const char *seed;
+    char path[PATH_MAX];
+    struct stat st;
+
+    if (!store) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return false;
+    }
+
+    if (get_file(path, 0, 3, store->root, PRIVATE_DIR, HDPUBKEY_FILE) == -1) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Public identity don't already exist.");
+        return false;
+    }
+
+    if (stat(path, &st) < 0) {
+        DIDError_Set(DIDERR_IO_ERROR, "File error.");
+        return false;
+    }
+
+    if (st.st_size <= 0) {
+        DIDError_Set(DIDERR_IO_ERROR, "No private identity.");
+        return false;
+    }
+
+    return true;
 }
 
 //caller provide HDKey object.
@@ -1723,6 +1784,11 @@ static HDKey *load_privateIdentity(DIDStore *store, const char *storepass,
             DIDError_Set(DIDERR_CRYPTO_ERROR, "Initial private identity failed.");
             rc = -1;
         }
+
+        // For backward compatible, create pre-derived public key if not exist.
+        // TODO: Should be remove in the future
+        if (!DIDStore_ContainsPublicIdentity(store))
+            rc = store_pubidentity_from_prvidentity(store, identity);
     }
 
     memset(extendedkey, 0, sizeof(extendedkey));
@@ -1750,7 +1816,7 @@ static HDKey *load_publicIdentity(DIDStore *store, HDKey *identity)
 }
 
 static int store_default_privatekey(DIDStore *store, const char *storepass,
-        const char *idstring, uint8_t *privatekey)
+        const char *idstring, uint8_t *privatekey, size_t size)
 {
     DID did;
     DIDURL id;
@@ -1764,7 +1830,7 @@ static int store_default_privatekey(DIDStore *store, const char *storepass,
     if (Init_DID(&did, idstring) == -1 || Init_DIDURL(&id, &did, "primary") == -1)
         return -1;
 
-    if (DIDStore_StorePrivateKey(store, storepass, &did, &id, (unsigned char *)privatekey) == -1)
+    if (DIDStore_StorePrivateKey(store, storepass, &did, &id, privatekey, size) == -1)
         return -1;
 
     return 0;
@@ -1773,9 +1839,10 @@ static int store_default_privatekey(DIDStore *store, const char *storepass,
 int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeCallback *callback)
 {
     int rc, nextindex, i = 0, blanks = 0;
-    DIDDocument *chainCopy, *localCopy, *finalCopy;
+    DIDDocument *chainCopy = NULL, *localCopy = NULL, *finalCopy;
     HDKey _identity, *privateIdentity;
-    DerivedKey _derivedkey, *derivedkey;
+    HDKey _derivedkey, *derivedkey;
+    uint8_t extendedkey[EXTENDEDKEY_BYTES];
     DID did;
 
      if (!store || !storepass || !*storepass || !callback)
@@ -1792,11 +1859,12 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeC
     }
 
     while (i < nextindex || blanks < 20) {
-        derivedkey = HDKey_GetDerivedKey(privateIdentity, i++, &_derivedkey);
+        derivedkey = HDKey_GetDerivedKey(privateIdentity, &_derivedkey, 5, 44 | HARDENED,
+               0 | HARDENED, 0 | HARDENED, 0, i++);
         if (!derivedkey)
             continue;
 
-        if (Init_DID(&did, DerivedKey_GetAddress(derivedkey)) == 0) {
+        if (Init_DID(&did, HDKey_GetAddress(derivedkey)) == 0) {
             chainCopy = DID_Resolve(&did, true);
             if (chainCopy) {
                 if (DIDDocument_IsDeactivated(chainCopy)) {
@@ -1832,16 +1900,14 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeC
                 }
 
                 if (DIDStore_StoreDID(store, finalCopy, NULL) == 0) {
-                    if (store_default_privatekey(store, storepass,
-                            DerivedKey_GetAddress(derivedkey),
-                            DerivedKey_GetPrivateKey(derivedkey)) == 0) {
-                        if (store_index(store, i) == -1)
-                            DIDStore_DeleteDID(store, &did);
-
-                    } else {
-                        DIDStore_DeleteDID(store, &did);
+                    if (HDKey_SerializePrv(derivedkey, extendedkey, sizeof(extendedkey)) > 0) {
+                        if (store_default_privatekey(store, storepass, HDKey_GetAddress(derivedkey),
+                                extendedkey, sizeof(extendedkey)) == 0) {
+                            store_index(store, i);
+                        }
                     }
                 }
+
                 if (finalCopy != chainCopy && finalCopy != localCopy)
                     DIDDocument_Destroy(finalCopy);
 
@@ -1853,7 +1919,7 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeC
                     blanks++;
             }
         }
-        DerivedKey_Wipe(derivedkey);
+        HDKey_Wipe(derivedkey);
     }
 
     HDKey_Wipe(privateIdentity);
@@ -1889,10 +1955,31 @@ bool DIDStore_ContainsPrivateIdentity(DIDStore *store)
     return true;
 }
 
+static int didstore_initidentity(DIDStore *store, const char *storepass, HDKey *hdkey)
+{
+    ssize_t size;
+    uint8_t extendedkey[EXTENDEDKEY_BYTES];
+
+    assert(store);
+    assert(storepass && *storepass);
+    assert(hdkey);
+
+    size = HDKey_SerializePrv(hdkey, extendedkey, sizeof(extendedkey));
+    if (size == -1) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Serialize extended private key failed.");
+        return -1;
+    }
+
+    if (store_extendedprvkey(store, extendedkey, size, storepass) == -1)
+        return -1;
+
+    memset(extendedkey, 0, sizeof(extendedkey));
+    return store_pubidentity_from_prvidentity(store, hdkey);
+}
+
 int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
         const char *mnemonic, const char *passphrase, const char *language, bool force)
 {
-    uint8_t extendedkey[EXTENDEDKEY_BYTES];
     char path[PATH_MAX];
     ssize_t size;
     HDKey _privateIdentity, *privateIdentity;
@@ -1919,23 +2006,7 @@ int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
         return -1;
     }
 
-    size = HDKey_SerializePrv(privateIdentity, extendedkey, sizeof(extendedkey));
-    if (size == -1) {
-        DIDError_Set(DIDERR_CRYPTO_ERROR, "Serialize extended private key failed.");
-        return -1;
-    }
-
-    if (store_extendedprvkey(store, extendedkey, size, storepass) == -1)
-        return -1;
-
-    memset(extendedkey, 0, sizeof(extendedkey));
-    size = HDKey_SerializePub(privateIdentity, extendedkey, sizeof(extendedkey));
-    if (size == -1) {
-        DIDError_Set(DIDERR_CRYPTO_ERROR, "Serialize extended public key failed.");
-        return -1;
-    }
-
-    if (store_extendedpubkey(store, extendedkey, size) == -1)
+    if (didstore_initidentity(store, storepass, privateIdentity) == -1)
         return -1;
 
     if (store_mnemonic(store, storepass, (uint8_t *)mnemonic, strlen(mnemonic)) == -1)
@@ -1950,9 +2021,8 @@ int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
 int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *storepass,
         const char *extendedprvkey, bool force)
 {
-    uint8_t seed[SEED_BYTES], extendedkey[EXTENDEDKEY_BYTES];
+    uint8_t extendedkey[EXTENDEDKEY_BYTES];
     char path[PATH_MAX];
-    ssize_t size;
     HDKey _privateIdentity, *privateIdentity;
 
     if (!store || !storepass || !*storepass || !extendedprvkey || !*extendedprvkey) {
@@ -1968,35 +2038,13 @@ int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *storepa
         }
     }
 
-    size = base58_decode(extendedkey, sizeof(extendedkey), extendedprvkey);
-    if (size == -1) {
-        DIDError_Set(DIDERR_CRYPTO_ERROR, "Decode extended private key failed.");
-        return -1;
-    }
-
-    privateIdentity = HDKey_FromExtendedKey(extendedkey, size, &_privateIdentity);
+    privateIdentity = HDKey_FromExtendedKeyBase58(extendedprvkey, strlen(extendedprvkey) + 1, &_privateIdentity);
     if (!privateIdentity) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Initial private identity failed.");
         return -1;
     }
 
-    size = HDKey_SerializePrv(privateIdentity, extendedkey, sizeof(extendedkey));
-    if (size == -1) {
-        DIDError_Set(DIDERR_CRYPTO_ERROR, "Serialize extended private key failed.");
-        return -1;
-    }
-
-    if (store_extendedprvkey(store, extendedkey, size, storepass) == -1)
-        return -1;
-
-    memset(extendedkey, 0, sizeof(extendedkey));
-    size = HDKey_SerializePub(privateIdentity, extendedkey, sizeof(extendedkey));
-    if (size == -1) {
-        DIDError_Set(DIDERR_CRYPTO_ERROR, "Serialize extended public key failed.");
-        return -1;
-    }
-
-    if (store_extendedpubkey(store, extendedkey, size) == -1)
+    if (didstore_initidentity(store, storepass, privateIdentity) == -1)
         return -1;
 
     if (store_index(store, 0) == -1)
@@ -2005,11 +2053,10 @@ int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *storepa
     return 0;
 }
 
-static DerivedKey *get_childkey(DIDStore *store, const char *storepass, int index,
-        DerivedKey *derivedkey)
+static HDKey *get_childkey(DIDStore *store, const char *storepass, int index,
+        HDKey *derivedkey)
 {
-    HDKey _identity, *identity;
-    DerivedKey *dkey;
+    HDKey _identity, *identity, *dkey;
 
     assert(store);
     assert(index >= 0);
@@ -2023,7 +2070,8 @@ static DerivedKey *get_childkey(DIDStore *store, const char *storepass, int inde
     if (!identity)
         return NULL;
 
-    dkey = HDKey_GetDerivedKey(identity, index, derivedkey);
+    dkey = HDKey_GetDerivedKey(identity, derivedkey, 5, 44 | HARDENED, 0 | HARDENED,
+            0 | HARDENED, 0, index);
     HDKey_Wipe(identity);
     if (!dkey)
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Initial derived private identity failed.");
@@ -2061,7 +2109,7 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
 //free DID after use it.
 DID *DIDStore_GetDIDByIndex(DIDStore *store, int index)
 {
-    DerivedKey _derivedkey, *derivedkey;
+    HDKey _derivedkey, *derivedkey;
     DID *did;
     int rc;
 
@@ -2074,8 +2122,8 @@ DID *DIDStore_GetDIDByIndex(DIDStore *store, int index)
     if (!derivedkey)
         return NULL;
 
-    did = DID_New(DerivedKey_GetAddress(derivedkey));
-    DerivedKey_Wipe(derivedkey);
+    did = DID_New(HDKey_GetAddress(derivedkey));
+    HDKey_Wipe(derivedkey);
     return did;
 }
 
@@ -2083,7 +2131,8 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
         int index, const char *alias)
 {
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    DerivedKey _derivedkey, *derivedkey;
+    uint8_t extendedkey[EXTENDEDKEY_BYTES];
+    HDKey _derivedkey, *derivedkey;
     DIDDocument *document;
     DID did;
 
@@ -2096,31 +2145,33 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
     if (!derivedkey)
         return NULL;
 
-    if (Init_DID(&did, DerivedKey_GetAddress(derivedkey)) == -1) {
-        DerivedKey_Wipe(derivedkey);
+    if (Init_DID(&did, HDKey_GetAddress(derivedkey)) == -1) {
+        HDKey_Wipe(derivedkey);
         return NULL;
     }
 
     //check did is exist or not
     document = DIDStore_LoadDID(store, &did);
     if (document) {
-        DerivedKey_Wipe(derivedkey);
+        HDKey_Wipe(derivedkey);
         DIDDocument_Destroy(document);
         return NULL;
     }
 
-    if (store_default_privatekey(store, storepass,
-            DerivedKey_GetAddress(derivedkey),
-            DerivedKey_GetPrivateKey(derivedkey)) == -1) {
-        DerivedKey_Wipe(derivedkey);
+    if (HDKey_SerializePrv(derivedkey, extendedkey, sizeof(extendedkey)) < 0) {
+        HDKey_Wipe(derivedkey);
+        return NULL;
+    }
+    if (store_default_privatekey(store, storepass, HDKey_GetAddress(derivedkey),
+            extendedkey, sizeof(extendedkey)) == -1) {
+        HDKey_Wipe(derivedkey);
         return NULL;
     }
 
-    base58_encode(publickeybase58, sizeof(publickeybase58),
-            DerivedKey_GetPublicKey(derivedkey), PUBLICKEY_BYTES);
-    DerivedKey_Wipe(derivedkey);
-
-    document = create_document(store, &did, publickeybase58, storepass, alias);
+    document = create_document(store, &did,
+            HDKey_GetPublicKeyBase58(derivedkey, publickeybase58, sizeof(publickeybase58)),
+            storepass, alias);
+    HDKey_Wipe(derivedkey);
     if (!document) {
         DIDStore_DeleteDID(store, &did);
         return NULL;
@@ -2136,18 +2187,48 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
     return document;
 }
 
-int DIDStore_LoadPrivateKey(DIDStore *store, const char *storepass, DID *did,
-        DIDURL *key, uint8_t *privatekey)
+ssize_t DIDStore_LoadPrivateKey(DIDStore *store, const char *storepass,
+        DID *did, DIDURL *key, uint8_t *privatekey, size_t size)
 {
+    uint8_t extendedkey[EXTENDEDKEY_BYTES];
+    HDKey _identity, *identity;
+
+    assert(store);
+    assert(did);
+    assert(key);
+    assert(privatekey);
+    assert(size >= PRIVATEKEY_BYTES);
+
+    if (DIDStore_LoadPrivateKey_Internal(store, storepass, did, key, extendedkey, sizeof(extendedkey)) < 0)
+        return -1;
+
+    identity = HDKey_FromExtendedKey(extendedkey, sizeof(extendedkey), &_identity);
+    memset(extendedkey, 0, sizeof(extendedkey));
+    if (!identity)
+        return -1;
+
+    memcpy(privatekey, HDKey_GetPrivateKey(identity), PRIVATEKEY_BYTES);
+    return PRIVATEKEY_BYTES;
+}
+
+int DIDStore_LoadPrivateKey_Internal(DIDStore *store, const char *storepass, DID *did,
+        DIDURL *key, uint8_t *extendedkey, size_t size)
+{
+    ssize_t loadsize, len;
     const char *privatekey_str;
     char path[PATH_MAX];
-    int rc;
+    HDKey _identity, *identity;
+    HDKey _derivedkey, *derivedkey;
+    uint8_t loadextendedkey[EXTENDEDKEY_BYTES];
+    bool bsuccessed = false;
+    ssize_t rc = -1;
 
     assert(store);
     assert(storepass && *storepass);
     assert(did);
     assert(key);
-    assert(privatekey);
+    assert(extendedkey);
+    assert(size >= EXTENDEDKEY_BYTES);
 
     if (get_file(path, 0, 5, store->root, DID_DIR, did->idstring, PRIVATEKEYS_DIR, key->fragment) == -1) {
         DIDError_Set(DIDERR_NOT_EXISTS, "No private key file.");
@@ -2160,14 +2241,57 @@ int DIDStore_LoadPrivateKey(DIDStore *store, const char *storepass, DID *did,
         return -1;
     }
 
-    rc = decrypt_from_base64(privatekey, storepass, privatekey_str);
+    loadsize = decrypt_from_base64(loadextendedkey, storepass, privatekey_str);
     free((char*)privatekey_str);
-    if (rc == -1) {
+    if (loadsize == -1) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Decrypt private key failed.");
         return -1;
     }
 
-    return 0;
+    if (loadsize == PRIVATEKEY_BYTES) {
+        identity = load_privateIdentity(store, storepass, &_identity);
+        if (identity) {
+            for (int i = 0; i < 100; i++) {
+                memset(&_derivedkey, 0, sizeof(HDKey));
+                memset(extendedkey, 0, size);
+                derivedkey = HDKey_GetDerivedKey(identity, &_derivedkey, 5, 44 | HARDENED,
+                        0 | HARDENED, 0 | HARDENED, 0, i);
+                if (!derivedkey)
+                    continue;
+
+                if (memcmp(loadextendedkey, HDKey_GetPrivateKey(derivedkey), PRIVATEKEY_BYTES) == 0) {
+                    len = HDKey_SerializePrv(derivedkey, extendedkey, size);
+                    if (len < 0) {
+                        DIDError_Set(DIDERR_CRYPTO_ERROR, "Serialize derived key failed.");
+                        goto errorExit;
+                    }
+                    bsuccessed = true;
+                    break;
+                }
+            }
+        }
+
+        if (!bsuccessed) {
+            rc = HDKey_PaddingToExtendedPrivateKey(loadextendedkey, PRIVATEKEY_BYTES, extendedkey, size);
+            if (rc < 0)
+                goto errorExit;
+        }
+
+        if (DIDStore_StorePrivateKey(store, storepass, did, key, extendedkey, size) < 0) {
+            memset(extendedkey, 0, size);
+            goto errorExit;
+        }
+        rc = 0;
+    } else if (loadsize == EXTENDEDKEY_BYTES) {
+        memcpy(extendedkey, loadextendedkey, loadsize);
+        rc = 0;
+    } else {
+        goto errorExit;
+    }
+
+errorExit:
+    memset(loadextendedkey, 0, sizeof(loadextendedkey));
+    return rc;
 }
 
 int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
@@ -2181,7 +2305,7 @@ int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
         return -1;
     }
 
-    if (DIDStore_LoadPrivateKey(store, storepass, did, key, binkey) == -1)
+    if (DIDStore_LoadPrivateKey(store, storepass, did, key, binkey, sizeof(binkey)) == -1)
         return -1;
 
     if (ecdsa_sign_base64(sig, binkey, digest, size) == -1) {
@@ -2744,14 +2868,14 @@ static int export_privatekey(JsonGenerator *gen, DIDStore *store, const char *st
 
         for (int i = 0; i < size; i++) {
             char base64[512];
-            uint8_t privatekey[PRIVATEKEY_BYTES];
+            uint8_t extendedkey[EXTENDEDKEY_BYTES];
             keyid = &pks[i]->id;
             if (DIDStore_ContainsPrivateKey(store, did, keyid)) {
-                if (DIDStore_LoadPrivateKey(store, storepass, did, keyid, privatekey) == -1)
+                if (DIDStore_LoadPrivateKey_Internal(store, storepass, did, keyid, extendedkey, sizeof(extendedkey)) == -1)
                     return -1;
 
-                rc = encrypt_to_base64(base64, password, privatekey, sizeof(privatekey));
-                memset(privatekey, 0, sizeof(privatekey));
+                rc = encrypt_to_base64(base64, password, extendedkey, sizeof(extendedkey));
+                memset(extendedkey, 0, sizeof(extendedkey));
                 if (rc < 0)
                     return -1;
 
@@ -3210,7 +3334,7 @@ static ssize_t import_privatekey(cJSON *json, const char *storepass, const char 
 {
     cJSON *item, *field, *id_field, *key_field;
     ssize_t count;
-    uint8_t binkey[PRIVATEKEY_BYTES];
+    uint8_t binkey[EXTENDEDKEY_BYTES];
     char privatekey[512];
     size_t keysize;
     int i = 0;
@@ -3442,7 +3566,7 @@ int DIDStore_ImportDID(DIDStore *store, const char *storepass,
     }
 
     for (int i = 0; i < prv_size; i++) {
-        if (DIDStore_StorePrvKey(store, did, &prvs[i].keyid, prvs[i].key) < 0)
+        if (DIDStore_StorePrivateKey_Internal(store, did, &prvs[i].keyid, prvs[i].key) < 0)
             goto errorExit;
     }
 

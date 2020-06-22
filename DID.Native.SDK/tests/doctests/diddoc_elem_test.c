@@ -536,7 +536,7 @@ static void test_diddoc_add_authorization_key(void)
     DIDDocument *sealeddoc;
     DIDDocumentBuilder *builder;
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    DerivedKey _dkey, *dkey;
+    HDKey _dkey, *dkey;
     const char *keybase, *idstring;
     DID controller;
     bool isEquals;
@@ -549,9 +549,9 @@ static void test_diddoc_add_authorization_key(void)
     DIDURL *id1 = DIDURL_NewByDid(did, "test1");
     CU_ASSERT_PTR_NOT_NULL(id1);
     dkey = Generater_KeyPair(&_dkey);
-    keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
+    keybase = HDKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
-    idstring = DerivedKey_GetAddress(dkey);
+    idstring = HDKey_GetAddress(dkey);
     CU_ASSERT_PTR_NOT_NULL(idstring);
     strncpy(controller.idstring, idstring, sizeof(controller.idstring));
     rc = DIDDocumentBuilder_AddPublicKey(builder, id1, &controller, keybase);
@@ -562,9 +562,9 @@ static void test_diddoc_add_authorization_key(void)
     DIDURL *id2 = DIDURL_NewByDid(did, "test2");
     CU_ASSERT_PTR_NOT_NULL(id2);
     dkey = Generater_KeyPair(&_dkey);
-    keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
+    keybase = HDKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
-    idstring = DerivedKey_GetAddress(dkey);
+    idstring = HDKey_GetAddress(dkey);
     CU_ASSERT_PTR_NOT_NULL(idstring);
     strncpy(controller.idstring, idstring, sizeof(controller.idstring));
     rc = DIDDocumentBuilder_AddPublicKey(builder, id2, &controller, keybase);
@@ -576,9 +576,9 @@ static void test_diddoc_add_authorization_key(void)
     DIDURL *id3 = DIDURL_NewByDid(did, "test3");
     CU_ASSERT_PTR_NOT_NULL(id3);
     dkey = Generater_KeyPair(&_dkey);
-    keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
+    keybase = HDKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
-    idstring = DerivedKey_GetAddress(dkey);
+    idstring = HDKey_GetAddress(dkey);
     CU_ASSERT_PTR_NOT_NULL(idstring);
     strncpy(controller.idstring, idstring, sizeof(controller.idstring));
     rc = DIDDocumentBuilder_AddPublicKey(builder, id3, &controller, keybase);
@@ -589,9 +589,9 @@ static void test_diddoc_add_authorization_key(void)
     DIDURL *id4 = DIDURL_NewByDid(did, "test4");
     CU_ASSERT_PTR_NOT_NULL(id4);
     dkey = Generater_KeyPair(&_dkey);
-    keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
+    keybase = HDKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
-    idstring = DerivedKey_GetAddress(dkey);
+    idstring = HDKey_GetAddress(dkey);
     CU_ASSERT_PTR_NOT_NULL(idstring);
     strncpy(controller.idstring, idstring, sizeof(controller.idstring));
     rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id4, &controller, keybase);
@@ -654,7 +654,7 @@ static void test_diddoc_remove_authorization_key(void)
     DIDDocument *sealeddoc;
     DIDDocumentBuilder *builder;
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    DerivedKey _dkey, *dkey;
+    HDKey _dkey, *dkey;
     const char *keybase, *idstring;
     DID controller;
     int rc;
@@ -666,10 +666,10 @@ static void test_diddoc_remove_authorization_key(void)
     DIDURL *id1 = DIDURL_NewByDid(did, "test1");
     CU_ASSERT_PTR_NOT_NULL(id1);
     dkey = Generater_KeyPair(&_dkey);
-    keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58,
+    keybase = HDKey_GetPublicKeyBase58(dkey, publickeybase58,
             sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
-    idstring = DerivedKey_GetAddress(dkey);
+    idstring = HDKey_GetAddress(dkey);
     CU_ASSERT_PTR_NOT_NULL(idstring);
     strncpy(controller.idstring, idstring, sizeof(controller.idstring));
     rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id1, &controller, keybase);
@@ -678,10 +678,10 @@ static void test_diddoc_remove_authorization_key(void)
     DIDURL *id2 = DIDURL_NewByDid(did, "test2");
     CU_ASSERT_PTR_NOT_NULL(id2);
     dkey = Generater_KeyPair(&_dkey);
-    keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58,
+    keybase = HDKey_GetPublicKeyBase58(dkey, publickeybase58,
             sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
-    idstring = DerivedKey_GetAddress(dkey);
+    idstring = HDKey_GetAddress(dkey);
     CU_ASSERT_PTR_NOT_NULL(idstring);
     strncpy(controller.idstring, idstring, sizeof(controller.idstring));
     rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id2, &controller, keybase);

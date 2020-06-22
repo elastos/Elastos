@@ -583,6 +583,27 @@ size_t BRBIP32PubKeyPath(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk, 
     return len;
 }
 
+size_t BRBIP32vPubKeyPathWithParentKey(uint8_t *pubKey, size_t pubKeyLen,
+        uint8_t *parentKey, size_t parentKeyLen, BRMasterPubKey mpk, int depth, va_list vlist)
+{
+    UInt256 chainCode = mpk.chainCode;
+
+    assert(memcmp(&mpk, &BR_MASTER_PUBKEY_NONE, sizeof(mpk)) != 0);
+
+    if (pubKey && sizeof(BRECPoint) <= pubKeyLen) {
+        *(BRECPoint *) pubKey = *(BRECPoint *) mpk.pubKey;
+
+        for (int i = 0; i < depth; i++) {
+            _CKDpub((BRECPoint *) pubKey, &chainCode, va_arg(vlist, uint32_t));
+            if (i == depth - 2)
+                memcpy(parentKey, pubKey, parentKeyLen);
+        }
+        var_clean(&chainCode);
+    }
+
+    return (!pubKey || sizeof(BRECPoint) <= pubKeyLen) ? sizeof(BRECPoint) : 0;
+}
+
 size_t BRBIP32vPubKeyPath(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk, int depth, va_list vlist)
 {
     UInt256 chainCode = mpk.chainCode;

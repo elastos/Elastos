@@ -33,6 +33,8 @@
 #include "credential.h"
 #include "credmeta.h"
 
+#define HARDENED                       0x80000000
+
 typedef struct TestData {
     DIDStore *store;
 
@@ -367,7 +369,8 @@ static int import_privatekey(DIDURL *id, const char *storepass, const char *file
     }
 
     free(skbase);
-    if (DIDStore_StorePrivateKey(testdata.store, storepass, DIDURL_GetDid(id), id, privatekey) == -1)
+    if (DIDStore_StorePrivateKey(testdata.store, storepass, DIDURL_GetDid(id),
+            id, privatekey, sizeof(privatekey)) == -1)
         return -1;
 
     return 0;
@@ -802,7 +805,7 @@ const char *Generater_Publickey(char *publickeybase58, size_t size)
     uint8_t extendedkey[EXTENDEDKEY_BYTES];
     uint8_t publickey[PUBLICKEY_BYTES];
     HDKey hk, *privateIdentity;
-    DerivedKey _derivedkey, *derivedkey;
+    HDKey _derivedkey, *derivedkey;
     ssize_t len;
 
     if (size < MAX_PUBLICKEY_BASE58)
@@ -817,18 +820,20 @@ const char *Generater_Publickey(char *publickeybase58, size_t size)
     if (!privateIdentity)
         return NULL;
 
-    derivedkey = HDKey_GetDerivedKey(privateIdentity, 0, &_derivedkey);
+    derivedkey = HDKey_GetDerivedKey(privateIdentity, &_derivedkey, 5, 44 | HARDENED,
+            0 | HARDENED, 0 | HARDENED, 0, 0);
     if (!derivedkey)
         return NULL;
 
-    return DerivedKey_GetPublicKeyBase58(derivedkey, publickeybase58, size);
+    return HDKey_GetPublicKeyBase58(derivedkey, publickeybase58, size);
 }
 
-DerivedKey *Generater_KeyPair(DerivedKey *dkey)
+HDKey *Generater_KeyPair(HDKey *hdkey)
 {
     const char *mnemonic;
     uint8_t extendedkey[EXTENDEDKEY_BYTES];
     HDKey hk, *privateIdentity;
+    HDKey _derivedkey, *derivedkey;
     ssize_t size;
 
     mnemonic = Mnemonic_Generate(language);
@@ -840,7 +845,8 @@ DerivedKey *Generater_KeyPair(DerivedKey *dkey)
     if (!privateIdentity)
         return NULL;
 
-    return HDKey_GetDerivedKey(privateIdentity, 0, dkey);
+    return HDKey_GetDerivedKey(privateIdentity, hdkey, 5, 44 | HARDENED,
+           0 | HARDENED, 0 | HARDENED, 0, 0);
 }
 
 int Set_Doc_Txid(DIDDocument *doc, const char *txid)

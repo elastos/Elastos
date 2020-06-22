@@ -1759,7 +1759,7 @@ static void test_idchain_deactivedid_with_authorization2(void)
     char previous_txid[ELA_MAX_TXID_LEN];
     DIDDocument *resolvedoc = NULL, *doc, *targetdoc;
     const char *mnemonic, *txid, *keybase, *alias = "littlefish";
-    DerivedKey _dkey, *dkey;
+    HDKey _dkey, *dkey;
     DID controller, did;
     PublicKey *pks[1];
     bool isEqual, successed;
@@ -1780,14 +1780,14 @@ static void test_idchain_deactivedid_with_authorization2(void)
     DIDDocument_Destroy(doc);
 
     dkey = Generater_KeyPair(&_dkey);
-    keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
+    keybase = HDKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
 
     DIDURL *keyid = DIDURL_NewByDid(&controller, "key-2");
     CU_ASSERT_PTR_NOT_NULL(keyid);
 
     rc = DIDStore_StorePrivateKey(store, storepass, &controller, keyid,
-            DerivedKey_GetPrivateKey(dkey));
+            HDKey_GetPrivateKey(dkey), sizeof(HDKey_GetPrivateKey(dkey)));
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     rc = DIDDocumentBuilder_AddAuthenticationKey(builder, keyid, keybase);
