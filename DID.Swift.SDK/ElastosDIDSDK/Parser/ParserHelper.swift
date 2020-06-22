@@ -7,8 +7,9 @@ class DIDAntlr4ErrorListener: BaseErrorListener {
                                  _ line: Int,
                                  _ charPositionInLine: Int,
                                  _ msg: String,
-                                 _ e: AnyObject?) where T : ATNSimulator {
-        print("At position \(charPositionInLine) : \(msg), \(String(describing: e))")
+                                 _ e: AnyObject?) throws where T : ATNSimulator {
+        let msg = "At position \(charPositionInLine) : \(msg), \(String(describing: e))"
+        throw DIDError.illegalArgument(msg)
     }
 }
 
@@ -22,7 +23,7 @@ class ParserHelper: NSObject {
         lexer.removeErrorListeners()
         lexer.addErrorListener(errorListener)
         
-        let parser = try! DIDURLParser(CommonTokenStream(lexer))
+        let parser = try DIDURLParser(CommonTokenStream(lexer))
         parser.removeErrorListeners()
         parser.addErrorListener(errorListener)
         

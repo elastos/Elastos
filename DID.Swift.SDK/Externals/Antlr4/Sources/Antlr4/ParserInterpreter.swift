@@ -154,7 +154,7 @@ public class ParserInterpreter: Parser {
                  catch ANTLRException.recognition(let e) {
                     setState(self.atn.ruleToStopState[p.ruleIndex!].stateNumber)
                     getContext()!.exception = e
-                    getErrorHandler().reportError(self, e)
+                    try getErrorHandler().reportError(self, e)
                     try getErrorHandler().recover(self, e)
                 }
 

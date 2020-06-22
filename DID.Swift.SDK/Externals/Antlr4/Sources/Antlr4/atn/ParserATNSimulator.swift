@@ -507,7 +507,7 @@ open class ParserATNSimulator: ATNSimulator {
                     }
                     let fullCtx = true
                     let s0_closure = try computeStartState(dfa.atnStartState, outerContext, fullCtx)
-                    reportAttemptingFullContext(dfa, conflictingAlts, D.configs, startIndex, input.index())
+                    try reportAttemptingFullContext(dfa, conflictingAlts, D.configs, startIndex, input.index())
                     let alt = try execATNWithFullContext(dfa, D, s0_closure,
                         input, startIndex,
                         outerContext)
@@ -533,7 +533,7 @@ open class ParserATNSimulator: ATNSimulator {
                     default:
                         // report ambiguity after predicate evaluation to make sure the correct
                         // set of ambig alts is reported.
-                        reportAmbiguity(dfa, D, startIndex, stopIndex, false, alts, D.configs)
+                        try reportAmbiguity(dfa, D, startIndex, stopIndex, false, alts, D.configs)
                         return alts.firstSetBit()
                     }
                 }
@@ -724,7 +724,7 @@ open class ParserATNSimulator: ATNSimulator {
             // without conflict, then we know that it's a full LL decision
             // not SLL.
             if reach.uniqueAlt != ATN.INVALID_ALT_NUMBER {
-                reportContextSensitivity(dfa, predictedAlt, reach, startIndex, input.index())
+                try reportContextSensitivity(dfa, predictedAlt, reach, startIndex, input.index())
                 return predictedAlt
             }
 
@@ -755,7 +755,7 @@ open class ParserATNSimulator: ATNSimulator {
             /// the fact that we should predict alternative 1.  We just can't say for
             /// sure that there is an ambiguity without looking further.
             /// 
-            reportAmbiguity(dfa, D, startIndex, input.index(), foundExactAmbig,
+            try reportAmbiguity(dfa, D, startIndex, input.index(), foundExactAmbig,
                             reach.getAlts(), reach)
         }
         return predictedAlt
@@ -2022,20 +2022,20 @@ open class ParserATNSimulator: ATNSimulator {
         }
     }
 
-    func reportAttemptingFullContext(_ dfa: DFA, _ conflictingAlts: BitSet?, _ configs: ATNConfigSet, _ startIndex: Int, _ stopIndex: Int) {
+    func reportAttemptingFullContext(_ dfa: DFA, _ conflictingAlts: BitSet?, _ configs: ATNConfigSet, _ startIndex: Int, _ stopIndex: Int) throws {
         if debug || retry_debug {
             let input = getTextInInterval(startIndex, stopIndex)
             print("reportAttemptingFullContext decision=\(dfa.decision):\(configs), input=\(input)")
         }
-        parser.getErrorListenerDispatch().reportAttemptingFullContext(parser, dfa, startIndex, stopIndex, conflictingAlts, configs)
+        try parser.getErrorListenerDispatch().reportAttemptingFullContext(parser, dfa, startIndex, stopIndex, conflictingAlts, configs)
     }
 
-    func reportContextSensitivity(_ dfa: DFA, _ prediction: Int, _ configs: ATNConfigSet, _ startIndex: Int, _ stopIndex: Int) {
+    func reportContextSensitivity(_ dfa: DFA, _ prediction: Int, _ configs: ATNConfigSet, _ startIndex: Int, _ stopIndex: Int) throws {
         if debug || retry_debug {
             let input = getTextInInterval(startIndex, stopIndex)
             print("reportContextSensitivity decision=\(dfa.decision):\(configs), input=\(input)")
         }
-        parser.getErrorListenerDispatch().reportContextSensitivity(parser, dfa, startIndex, stopIndex, prediction, configs)
+        try parser.getErrorListenerDispatch().reportContextSensitivity(parser, dfa, startIndex, stopIndex, prediction, configs)
     }
 
     /// 
@@ -2047,13 +2047,13 @@ open class ParserATNSimulator: ATNSimulator {
         _ startIndex: Int, _ stopIndex: Int,
         _ exact: Bool,
         _ ambigAlts: BitSet,
-        _ configs: ATNConfigSet)
+        _ configs: ATNConfigSet) throws
     {
         if debug || retry_debug {
             let input = getTextInInterval(startIndex, stopIndex)
             print("reportAmbiguity \(ambigAlts):\(configs), input=\(input)")
         }
-        parser.getErrorListenerDispatch().reportAmbiguity(parser, dfa, startIndex, stopIndex,
+        try parser.getErrorListenerDispatch().reportAmbiguity(parser, dfa, startIndex, stopIndex,
             exact, ambigAlts, configs)
     }
 

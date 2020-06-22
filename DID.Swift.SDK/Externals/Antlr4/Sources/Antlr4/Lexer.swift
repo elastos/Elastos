@@ -159,7 +159,7 @@ open class Lexer: Recognizer<LexerATNSimulator>, TokenSource {
                         ttype = try getInterpreter().match(_input, _mode)
                     }
                     catch  ANTLRException.recognition(let e) {
-                        notifyListeners(e as! LexerNoViableAltException, recognizer: self)
+                        try notifyListeners(e as! LexerNoViableAltException, recognizer: self)
                         try recover(e as! LexerNoViableAltException)
                         ttype = Lexer.SKIP
                     }
@@ -397,7 +397,7 @@ open class Lexer: Recognizer<LexerATNSimulator>, TokenSource {
         }
     }
 
-    open func notifyListeners<T>(_ e: LexerNoViableAltException, recognizer: Recognizer<T>) {
+    open func notifyListeners<T>(_ e: LexerNoViableAltException, recognizer: Recognizer<T>) throws {
 
         let text: String
         do {
@@ -409,7 +409,7 @@ open class Lexer: Recognizer<LexerATNSimulator>, TokenSource {
         let msg = "token recognition error at: '\(getErrorDisplay(text))'"
 
         let listener = getErrorListenerDispatch()
-        listener.syntaxError(recognizer, nil, _tokenStartLine, _tokenStartCharPositionInLine, msg, e)
+        try listener.syntaxError(recognizer, nil, _tokenStartLine, _tokenStartCharPositionInLine, msg, e)
     }
 
     open func getErrorDisplay(_ s: String) -> String {

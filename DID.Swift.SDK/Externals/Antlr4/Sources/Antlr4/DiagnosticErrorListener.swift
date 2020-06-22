@@ -59,7 +59,7 @@ public class DiagnosticErrorListener: BaseErrorListener {
         _ stopIndex: Int,
         _ exact: Bool,
         _ ambigAlts: BitSet,
-        _ configs: ATNConfigSet) {
+        _ configs: ATNConfigSet) throws {
             if exactOnly && !exact {
                 return
             }
@@ -68,7 +68,7 @@ public class DiagnosticErrorListener: BaseErrorListener {
             let conflictingAlts = getConflictingAlts(ambigAlts, configs)
             let text = getTextInInterval(recognizer, startIndex, stopIndex)
             let message = "reportAmbiguity d=\(decision): ambigAlts=\(conflictingAlts), input='\(text)'"
-            recognizer.notifyErrorListeners(message)
+            try recognizer.notifyErrorListeners(message)
     }
 
     override
@@ -77,11 +77,11 @@ public class DiagnosticErrorListener: BaseErrorListener {
         _ startIndex: Int,
         _ stopIndex: Int,
         _ conflictingAlts: BitSet?,
-        _ configs: ATNConfigSet) {
+        _ configs: ATNConfigSet) throws {
             let decision = getDecisionDescription(recognizer, dfa)
             let text = getTextInInterval(recognizer, startIndex, stopIndex)
             let message = "reportAttemptingFullContext d=\(decision), input='\(text)'"
-            recognizer.notifyErrorListeners(message)
+            try recognizer.notifyErrorListeners(message)
     }
 
     override
@@ -90,11 +90,11 @@ public class DiagnosticErrorListener: BaseErrorListener {
         _ startIndex: Int,
         _ stopIndex: Int,
         _ prediction: Int,
-        _ configs: ATNConfigSet) {
+        _ configs: ATNConfigSet) throws {
             let decision = getDecisionDescription(recognizer, dfa)
             let text = getTextInInterval(recognizer, startIndex, stopIndex)
             let message = "reportContextSensitivity d=\(decision), input='\(text)'"
-            recognizer.notifyErrorListeners(message)
+            try recognizer.notifyErrorListeners(message)
     }
 
     internal func getDecisionDescription(_ recognizer: Parser, _ dfa: DFA) -> String {

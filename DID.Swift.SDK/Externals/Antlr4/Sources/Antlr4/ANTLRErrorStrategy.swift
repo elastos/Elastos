@@ -115,5 +115,5 @@ public protocol ANTLRErrorStrategy {
     /// - parameter recognizer: the parser instance
     /// - parameter e: the recognition exception to report
     /// 
-    func reportError(_ recognizer: Parser, _ e: RecognitionException)
+    func reportError(_ recognizer: Parser, _ e: RecognitionException) throws
 }

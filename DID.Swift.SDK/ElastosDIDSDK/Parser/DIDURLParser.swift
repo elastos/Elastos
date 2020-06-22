@@ -200,7 +200,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -256,7 +256,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -300,7 +300,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -344,7 +344,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -411,7 +411,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -475,7 +475,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -535,7 +535,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -579,7 +579,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -623,7 +623,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -667,7 +667,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -734,7 +734,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -801,7 +801,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -865,7 +865,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -909,7 +909,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -953,7 +953,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 
@@ -997,7 +997,7 @@ open class DIDURLParser: Parser {
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
-			_errHandler.reportError(self, re)
+            try _errHandler.reportError(self, re)
 			try _errHandler.recover(self, re)
 		}
 

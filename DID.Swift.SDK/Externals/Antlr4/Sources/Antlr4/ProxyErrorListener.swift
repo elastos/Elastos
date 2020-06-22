@@ -24,10 +24,10 @@ public class ProxyErrorListener: ANTLRErrorListener {
                                _ line: Int,
                                _ charPositionInLine: Int,
                                _ msg: String,
-                               _ e: AnyObject?)
+                               _ e: AnyObject?) throws
     {
         for listener in delegates {
-            listener.syntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e)
+           try listener.syntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e)
         }
     }
 
@@ -38,9 +38,9 @@ public class ProxyErrorListener: ANTLRErrorListener {
                                 _ stopIndex: Int,
                                 _ exact: Bool,
                                 _ ambigAlts: BitSet,
-                                _ configs: ATNConfigSet) {
+                                _ configs: ATNConfigSet) throws {
         for listener in delegates {
-            listener.reportAmbiguity(recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs)
+           try listener.reportAmbiguity(recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs)
         }
     }
 
@@ -50,9 +50,9 @@ public class ProxyErrorListener: ANTLRErrorListener {
                                             _ startIndex: Int,
                                             _ stopIndex: Int,
                                             _ conflictingAlts: BitSet?,
-                                            _ configs: ATNConfigSet) {
+                                            _ configs: ATNConfigSet) throws {
         for listener in delegates {
-            listener.reportAttemptingFullContext(recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs)
+           try listener.reportAttemptingFullContext(recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs)
         }
     }
 
@@ -62,9 +62,9 @@ public class ProxyErrorListener: ANTLRErrorListener {
                                          _ startIndex: Int,
                                          _ stopIndex: Int,
                                          _ prediction: Int,
-                                         _ configs: ATNConfigSet) {
+                                         _ configs: ATNConfigSet) throws {
         for listener in delegates {
-            listener.reportContextSensitivity(recognizer, dfa, startIndex, stopIndex, prediction, configs)
+            try listener.reportContextSensitivity(recognizer, dfa, startIndex, stopIndex, prediction, configs)
         }
     }
 }

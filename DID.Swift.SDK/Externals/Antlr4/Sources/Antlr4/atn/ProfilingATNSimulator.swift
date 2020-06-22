@@ -165,7 +165,7 @@ public class ProfilingATNSimulator: ParserATNSimulator {
     }
 
     override
-    internal func reportAttemptingFullContext(_ dfa: DFA, _ conflictingAlts: BitSet?, _ configs: ATNConfigSet, _ startIndex: Int, _ stopIndex: Int) {
+    internal func reportAttemptingFullContext(_ dfa: DFA, _ conflictingAlts: BitSet?, _ configs: ATNConfigSet, _ startIndex: Int, _ stopIndex: Int) throws {
         if let conflictingAlts = conflictingAlts {
             conflictingAltResolvedBySLL = conflictingAlts.firstSetBit()
         } else {
@@ -173,22 +173,22 @@ public class ProfilingATNSimulator: ParserATNSimulator {
             conflictingAltResolvedBySLL = configAlts.firstSetBit()
         }
         decisions[currentDecision].LL_Fallback += 1
-        super.reportAttemptingFullContext(dfa, conflictingAlts, configs, startIndex, stopIndex)
+        try super.reportAttemptingFullContext(dfa, conflictingAlts, configs, startIndex, stopIndex)
     }
 
     override
-    internal func reportContextSensitivity(_ dfa: DFA, _ prediction: Int, _ configs: ATNConfigSet, _ startIndex: Int, _ stopIndex: Int) {
+    internal func reportContextSensitivity(_ dfa: DFA, _ prediction: Int, _ configs: ATNConfigSet, _ startIndex: Int, _ stopIndex: Int) throws {
         if prediction != conflictingAltResolvedBySLL {
             decisions[currentDecision].contextSensitivities.append(
             ContextSensitivityInfo(currentDecision, configs, _input, startIndex, stopIndex)
             )
         }
-        super.reportContextSensitivity(dfa, prediction, configs, startIndex, stopIndex)
+        try super.reportContextSensitivity(dfa, prediction, configs, startIndex, stopIndex)
     }
 
     override
     internal func reportAmbiguity(_ dfa: DFA, _ D: DFAState, _ startIndex: Int, _ stopIndex: Int, _ exact: Bool,
-                                  _ ambigAlts: BitSet?, _ configs: ATNConfigSet) {
+                                  _ ambigAlts: BitSet?, _ configs: ATNConfigSet) throws {
         var prediction: Int
         if let ambigAlts = ambigAlts {
             prediction = ambigAlts.firstSetBit()
@@ -210,7 +210,7 @@ public class ProfilingATNSimulator: ParserATNSimulator {
         AmbiguityInfo(currentDecision, configs, ambigAlts!,
                 _input, startIndex, stopIndex, configs.fullCtx)
         )
-        super.reportAmbiguity(dfa, D, startIndex, stopIndex, exact, ambigAlts!, configs)
+        try super.reportAmbiguity(dfa, D, startIndex, stopIndex, exact, ambigAlts!, configs)
     }
 
 

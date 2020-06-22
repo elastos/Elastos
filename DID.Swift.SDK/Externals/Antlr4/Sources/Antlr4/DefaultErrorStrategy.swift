@@ -108,7 +108,7 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
     /// * All other types: calls _org.antlr.v4.runtime.Parser#notifyErrorListeners_ to report
     /// the exception
     /// 
-    open func reportError(_ recognizer: Parser, _ e: RecognitionException) {
+    open func reportError(_ recognizer: Parser, _ e: RecognitionException) throws {
         // if we've already reported an error and have not matched a token
         // yet successfully, don't report any errors.
         if inErrorRecoveryMode(recognizer) {
@@ -117,17 +117,17 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
         }
         beginErrorCondition(recognizer)
         if let nvae = e as? NoViableAltException {
-            reportNoViableAlternative(recognizer, nvae)
+            try reportNoViableAlternative(recognizer, nvae)
         }
         else if let ime = e as? InputMismatchException {
-            reportInputMismatch(recognizer, ime)
+            try reportInputMismatch(recognizer, ime)
         }
         else if let fpe = e as? FailedPredicateException {
-            reportFailedPredicate(recognizer, fpe)
+            try reportFailedPredicate(recognizer, fpe)
         }
         else {
             errPrint("unknown recognition error type: " + String(describing: type(of: e)))
-            recognizer.notifyErrorListeners(e.getOffendingToken(), e.message ?? "", e)
+            try recognizer.notifyErrorListeners(e.getOffendingToken(), e.message ?? "", e)
         }
     }
 
@@ -254,7 +254,7 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
         case ATNState.PLUS_LOOP_BACK: fallthrough
         case ATNState.STAR_LOOP_BACK:
 //			errPrint("at loop back: "+s.getClass().getSimpleName());
-            reportUnwantedToken(recognizer)
+            try reportUnwantedToken(recognizer)
             let expecting = try recognizer.getExpectedTokens()
             let whatFollowsLoopIterationOrRule = expecting.or(getErrorRecoverySet(recognizer)) as! IntervalSet
             try consumeUntil(recognizer, whatFollowsLoopIterationOrRule)
@@ -275,22 +275,17 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
     /// - parameter recognizer: the parser instance
     /// - parameter e: the recognition exception
     /// 
-    open func reportNoViableAlternative(_ recognizer: Parser, _ e: NoViableAltException) {
+    open func reportNoViableAlternative(_ recognizer: Parser, _ e: NoViableAltException) throws {
         let tokens = getTokenStream(recognizer)
         var input: String
         if e.getStartToken().getType() == CommonToken.EOF {
             input = "<EOF>"
         }
         else {
-            do {
-                input = try tokens.getText(e.getStartToken(), e.getOffendingToken())
-            }
-            catch {
-                input = "<unknown>"
-            }
+            input = try tokens.getText(e.getStartToken(), e.getOffendingToken())
         }
         let msg = "no viable alternative at input " + escapeWSAndQuote(input)
-        recognizer.notifyErrorListeners(e.getOffendingToken(), msg, e)
+        try recognizer.notifyErrorListeners(e.getOffendingToken(), msg, e)
     }
 
     /// 
@@ -302,11 +297,11 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
     /// - parameter recognizer: the parser instance
     /// - parameter e: the recognition exception
     /// 
-    open func reportInputMismatch(_ recognizer: Parser, _ e: InputMismatchException) {
+    open func reportInputMismatch(_ recognizer: Parser, _ e: InputMismatchException) throws {
         let tok = getTokenErrorDisplay(e.getOffendingToken())
         let expected = e.getExpectedTokens()?.toString(recognizer.getVocabulary()) ?? "<missing>"
         let msg = "mismatched input \(tok) expecting \(expected)"
-        recognizer.notifyErrorListeners(e.getOffendingToken(), msg, e)
+        try recognizer.notifyErrorListeners(e.getOffendingToken(), msg, e)
     }
 
     /// 
@@ -318,10 +313,10 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
     /// - parameter recognizer: the parser instance
     /// - parameter e: the recognition exception
     /// 
-    open func reportFailedPredicate(_ recognizer: Parser, _ e: FailedPredicateException) {
+    open func reportFailedPredicate(_ recognizer: Parser, _ e: FailedPredicateException) throws {
         let ruleName = recognizer.getRuleNames()[recognizer._ctx!.getRuleIndex()]
         let msg = "rule \(ruleName) \(e.message!)"
-        recognizer.notifyErrorListeners(e.getOffendingToken(), msg, e)
+        try recognizer.notifyErrorListeners(e.getOffendingToken(), msg, e)
     }
 
     /// 
@@ -342,7 +337,7 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
     /// 
     /// - parameter recognizer: the parser instance
     /// 
-    open func reportUnwantedToken(_ recognizer: Parser) {
+    open func reportUnwantedToken(_ recognizer: Parser) throws {
         if inErrorRecoveryMode(recognizer) {
             return
         }
@@ -353,7 +348,7 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
         let tokenName = getTokenErrorDisplay(t)
         let expecting = (try? getExpectedTokens(recognizer)) ?? IntervalSet.EMPTY_SET
         let msg = "extraneous input \(tokenName) expecting \(expecting.toString(recognizer.getVocabulary()))"
-        recognizer.notifyErrorListeners(t, msg, nil)
+        try recognizer.notifyErrorListeners(t, msg, nil)
     }
 
     /// 
@@ -373,7 +368,7 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
     /// 
     /// - parameter recognizer: the parser instance
     /// 
-    open func reportMissingToken(_ recognizer: Parser) {
+    open func reportMissingToken(_ recognizer: Parser) throws {
         if inErrorRecoveryMode(recognizer) {
             return
         }
@@ -384,7 +379,7 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
         let expecting = (try? getExpectedTokens(recognizer)) ?? IntervalSet.EMPTY_SET
         let msg = "missing \(expecting.toString(recognizer.getVocabulary())) at \(getTokenErrorDisplay(t))"
 
-        recognizer.notifyErrorListeners(t, msg, nil)
+        try recognizer.notifyErrorListeners(t, msg, nil)
     }
 
     /// 
@@ -485,7 +480,7 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
         let expectingAtLL2 = atn.nextTokens(next, recognizer._ctx)
 //		print("LT(2) set="+expectingAtLL2.toString(recognizer.getTokenNames()));
         if expectingAtLL2.contains(currentSymbolType) {
-            reportMissingToken(recognizer)
+            try reportMissingToken(recognizer)
             return true
         }
         return false
@@ -514,7 +509,7 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
         let nextTokenType = try getTokenStream(recognizer).LA(2)
         let expecting = try getExpectedTokens(recognizer)
         if expecting.contains(nextTokenType) {
-            reportUnwantedToken(recognizer)
+            try reportUnwantedToken(recognizer)
             /// 
             /// errPrint("recoverFromMismatchedToken deleting "+
             /// ((TokenStream)getTokenStream(recognizer)).LT(1)+

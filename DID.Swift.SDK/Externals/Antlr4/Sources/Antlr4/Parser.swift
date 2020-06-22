@@ -499,12 +499,12 @@ open class Parser: Recognizer<ParserATNSimulator> {
         return try _input.LT(1)!
     }
 
-    public final func notifyErrorListeners(_ msg: String) {
-        let token = try? getCurrentToken()
-        notifyErrorListeners(token, msg, nil)
+    public final func notifyErrorListeners(_ msg: String) throws {
+        let token = try getCurrentToken()
+        try notifyErrorListeners(token, msg, nil)
     }
 
-    public func notifyErrorListeners(_ offendingToken: Token?, _ msg: String, _ e: AnyObject?) {
+    public func notifyErrorListeners(_ offendingToken: Token?, _ msg: String, _ e: AnyObject?) throws {
         _syntaxErrors += 1
         var line = -1
         var charPositionInLine = -1
@@ -514,7 +514,7 @@ open class Parser: Recognizer<ParserATNSimulator> {
         }
 
         let listener = getErrorListenerDispatch()
-        listener.syntaxError(self, offendingToken, line, charPositionInLine, msg, e)
+        try listener.syntaxError(self, offendingToken, line, charPositionInLine, msg, e)
     }
 
     /// 

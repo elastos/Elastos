@@ -26,7 +26,12 @@ public class DID {
             try ParserHelper.parse(did, true, DID.Listener(self))
         } catch {
             Log.e(DID.TAG, "Parsing did error: malformed did string \(did)")
-            throw DIDError.malformedDID(did)
+            let didError = error as? DIDError
+            var errmsg = "Parsing did error: malformed did string \(did)"
+            if didError != nil {
+                errmsg = DIDError.desription(didError!)
+            }
+            throw DIDError.malformedDID(errmsg)
         }
     }
 

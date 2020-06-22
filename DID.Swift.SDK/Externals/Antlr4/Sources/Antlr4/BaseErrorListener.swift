@@ -23,7 +23,7 @@ open class BaseErrorListener: ANTLRErrorListener {
                              _ charPositionInLine: Int,
                              _ msg: String,
                              _ e: AnyObject?
-    ) {
+    ) throws {
     }
 
 
@@ -33,7 +33,7 @@ open class BaseErrorListener: ANTLRErrorListener {
                                 _ stopIndex: Int,
                                 _ exact: Bool,
                                 _ ambigAlts: BitSet,
-                                _ configs: ATNConfigSet) {
+                                _ configs: ATNConfigSet) throws {
     }
 
 
@@ -42,7 +42,7 @@ open class BaseErrorListener: ANTLRErrorListener {
                                             _ startIndex: Int,
                                             _ stopIndex: Int,
                                             _ conflictingAlts: BitSet?,
-                                            _ configs: ATNConfigSet) {
+                                            _ configs: ATNConfigSet) throws {
     }
 
 
@@ -51,6 +51,6 @@ open class BaseErrorListener: ANTLRErrorListener {
                                          _ startIndex: Int,
                                          _ stopIndex: Int,
                                          _ prediction: Int,
-                                         _ configs: ATNConfigSet) {
+                                         _ configs: ATNConfigSet) throws {
     }
 }
