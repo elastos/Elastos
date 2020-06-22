@@ -1188,7 +1188,7 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 	return nil
 }
 
-func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]Output) error {
+func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]Output, height uint32) error {
 	witPayload, ok := txn.Payload.(*payload.WithdrawFromSideChain)
 	if !ok {
 		return errors.New("Invalid withdraw from side chain payload type")
@@ -1206,11 +1206,21 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 	}
 
 	for _, p := range txn.Programs {
-		publicKeys, err := crypto.ParseCrossChainScript(p.Code)
+		publicKeys, m, n, err := crypto.ParseCrossChainScriptV1(p.Code)
 		if err != nil {
 			return err
 		}
 
+		if height > b.chainParams.CRClaimDPOSNodeStartHeight {
+			arbitersCount := b.chainParams.CRAgreementCount
+			minCount := b.chainParams.CRAgreementCount
+			if n != int(arbitersCount) {
+				return errors.New("invalid arbiters total count in code")
+			}
+			if m < int(minCount) {
+				return errors.New("invalid arbiters sign count in code")
+			}
+		}
 		if err := b.checkCrossChainArbitrators(publicKeys); err != nil {
 			return err
 		}

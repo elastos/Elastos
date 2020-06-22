@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package crypto
 
@@ -43,6 +43,23 @@ func ParseCrossChainScript(code []byte) ([][]byte, error) {
 		return nil, errors.New("not a valid cross chain transaction code, length not enough")
 	}
 	return parsePublicKeys(code)
+}
+
+func ParseCrossChainScriptV1(code []byte) ([][]byte, int, int, error) {
+	if len(code) < MinMultiSignCodeLength || code[len(code)-1] != common.CROSSCHAIN {
+		return nil, 0, 0, errors.New("not a valid cross chain transaction code, length not enough")
+	}
+	m, n := parseMAndN(code)
+	pks, err := parsePublicKeys(code)
+	return pks, m, n, err
+}
+
+func parseMAndN(code []byte) (int, int) {
+	// Get N parameter
+	n := int(code[len(code)-2]) - PUSH1 + 1
+	// Get M parameter
+	m := int(code[0]) - PUSH1 + 1
+	return m, n
 }
 
 func parsePublicKeys(code []byte) ([][]byte, error) {
