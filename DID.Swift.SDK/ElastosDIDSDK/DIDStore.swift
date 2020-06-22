@@ -319,8 +319,8 @@ public class DIDStore: NSObject {
                 }
 
                 if let _ = localCopy {
-                    if  localCopy!.getMeta().signature == nil ||
-                        localCopy!.proof.signature != localCopy!.getMeta().signature {
+                    if  localCopy!.getMetadata().signature == nil ||
+                        localCopy!.proof.signature != localCopy!.getMetadata().signature {
 
                         // local copy was modified.
                         do {
@@ -420,7 +420,7 @@ public class DIDStore: NSObject {
         let builder = DIDDocumentBuilder(did, self)
         doc = try builder.appendAuthenticationKey(with: id, keyBase58: key.getPublicKeyBase58())
             .sealed(using: storePassword)
-        doc!.getMeta().setAlias(alias)
+        doc!.getMetadata().setAlias(alias)
         try storeDid(using: doc!)
 
         return doc!
@@ -490,11 +490,10 @@ public class DIDStore: NSObject {
         return did
     }
 
-    private func publishDid(_ did: DID,
-                            _ confirms: Int,
+    public func publishDid(_ did: DID,
                             _ signKey: DIDURL?,
                             _ storePassword: String,
-                            _ force: Bool) throws -> String {
+                            _ force: Bool) throws {
         guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
@@ -510,149 +509,107 @@ public class DIDStore: NSObject {
             throw DIDError.didStoreError("DID already deactivated.")
         }
 
-        var lastTransactionId: String? = nil
+        var lastTxid: String? = nil
+        var reolvedSignautre: String? = nil
         let resolvedDoc = try did.resolve()
 
         if resolvedDoc != nil {
             guard !resolvedDoc!.isDeactivated else {
                 throw  DIDError.didStoreError("DID already deactivated")
             }
-
+            reolvedSignautre = resolvedDoc?.proof.signature
             if !force {
-                let localTxId = doc.getMeta().transactionId
-                let localSignature = doc.getMeta().signature
+                let localPrevSignature = doc.getMetadata().previousSignature
+                let localSignature = doc.getMetadata().signature
 
-                let resolvedTxId = resolvedDoc!.getMeta().transactionId!
-                let resolvedSignature = resolvedDoc!.getMeta().signature!
-
-                if localTxId == nil && localSignature == nil {
+                if localPrevSignature == nil && localSignature == nil {
+                    Log.e(DIDStore.TAG ,"Missing signatures information, DID SDK dosen't know how to handle it, use force mode to ignore checks.")
                     throw DIDError.didStoreError("DID document not up-to-date")
                 }
 
-                if localTxId != nil && localTxId != resolvedTxId {
-                    throw DIDError.didStoreError("DID document not up-to-date")
-                }
-
-                if localSignature != nil, localSignature != resolvedSignature {
+                if localSignature != nil && localSignature != reolvedSignautre && localPrevSignature != nil && localPrevSignature != reolvedSignautre {
+                    Log.e(DIDStore.TAG ,"Current copy not based on the lastest on-chain copy, txid mismatch.")
                     throw DIDError.didStoreError("DID document not up-to-date")
                 }
             }
 
-            lastTransactionId = resolvedDoc!.transactionId!
+            lastTxid = resolvedDoc!.getMetadata().transactionId!
         }
+
         var usedSignKey = signKey
         if  usedSignKey == nil {
             usedSignKey = doc.defaultPublicKey
         }
 
-        if  lastTransactionId?.isEmpty ?? true {
-            lastTransactionId = try backend.create(doc, confirms, usedSignKey!, storePassword)
+        if  lastTxid == nil {
+            Log.i(DIDStore.TAG ,"Try to publish[create] {}...\(did.toString())")
+            try backend.create(doc, usedSignKey!, storePassword)
         } else {
-            lastTransactionId = try backend.update(doc, lastTransactionId!, confirms, usedSignKey!, storePassword)
+            Log.i(DIDStore.TAG ,"Try to publish[update] {}...\(did.toString())")
+            try backend.update(doc, lastTxid!, usedSignKey!, storePassword)
         }
 
-        if let _ = lastTransactionId {
-            doc.getMeta().setTransactionId(lastTransactionId!)
-        }
-
-        doc.getMeta().setSignature(doc.proof.signature)
-        try storage.storeDidMeta(doc.subject, doc.getMeta())
-
-        return lastTransactionId ?? ""
+        doc.getMetadata().setPreviousSignature(reolvedSignautre)
+        doc.getMetadata().setSignature(doc.getProof()!.signature)
+        try storage.storeDidMeta(doc.subject, doc.getMetadata())
     }
 
     public func publishDid(for did: DID,
-                   waitForConfirms: Int,
                      using signKey: DIDURL,
                      storePassword: String,
-                           _ force: Bool) throws -> String {
+                           _ force: Bool) throws {
 
-        return try publishDid(did, waitForConfirms, signKey, storePassword, force)
+        return try publishDid(did, signKey, storePassword, force)
     }
 
     public func publishDid(for did: DID,
-                   waitForConfirms: Int,
                      using signKey: DIDURL,
-                     storePassword: String) throws -> String {
+                     storePassword: String) throws {
 
-        return try publishDid(did, waitForConfirms, signKey, storePassword, false)
+        return try publishDid(did, signKey, storePassword, false)
     }
 
     public func publishDid(for did: String,
-                   waitForConfirms: Int,
                      using signKey: String,
                      storePassword: String,
-                           _ force: Bool) throws -> String {
+                           _ force: Bool) throws {
 
         let _did = try DID(did)
         let _key = try DIDURL(_did, signKey)
 
-        return try publishDid(_did, waitForConfirms, _key, storePassword, force)
-    }
-
-    public func publishDid(for did: String,
-                   waitForConfirms: Int,
-                     using signKey: String,
-                     storePassword: String) throws -> String {
-
-        let _did = try DID(did)
-        let _key = try DIDURL(_did, signKey)
-
-        return try publishDid(_did, waitForConfirms, _key, storePassword, false)
-    }
-
-    public func publishDid(for did: DID,
-                     using signKey: DIDURL,
-                     storePassword: String) throws -> String {
-
-        return try publishDid(did, 0, signKey, storePassword, false)
+        return try publishDid(_did, _key, storePassword, force)
     }
 
     public func publishDid(for did: String,
                      using signKey: String,
-                     storePassword: String) throws -> String {
+                     storePassword: String) throws {
 
         let _did = try DID(did)
         let _key = try DIDURL(_did, signKey)
 
-        return try publishDid(_did, 0, _key, storePassword, false)
+        return try publishDid(_did, _key, storePassword, false)
     }
 
     public func publishDid(for did: DID,
-                   waitForConfirms: Int,
-               using storePassword: String) throws -> String {
+               using storePassword: String) throws {
 
-        return try publishDid(did, waitForConfirms, nil, storePassword, false)
+        return try publishDid(did, nil, storePassword, false)
     }
 
     public func publishDid(for did: String,
-                   waitForConfirms: Int,
-               using storePassword: String) throws -> String {
+               using storePassword: String) throws {
 
-        return try publishDid(DID(did), 0, nil, storePassword, false)
-    }
-
-    public func publishDid(for did: DID,
-               using storePassword: String) throws -> String {
-
-        return try publishDid(did, 0, nil, storePassword, false)
-    }
-
-    public func publishDid(for did: String,
-               using storePassword: String) throws -> String {
-
-        return try publishDid(DID(did), 0, nil, storePassword, false)
+        return try publishDid(DID(did), nil, storePassword, false)
     }
 
     private func publishDidAsync(_ did: DID,
-                                 _ confirms: Int,
                                  _ signKey: DIDURL?,
                                  _ storePassword: String,
-                                 _ force: Bool) -> Promise<String> {
+                                 _ force: Bool) -> Promise<Void> {
 
-        return Promise<String> { resolver in
+        return Promise<Void> { resolver in
             do {
-                resolver.fulfill(try publishDid(did, confirms, signKey, storePassword, force))
+                resolver.fulfill(try publishDid(did, signKey, storePassword, force))
             } catch let error  {
                 resolver.reject(error)
             }
@@ -660,93 +617,57 @@ public class DIDStore: NSObject {
     }
 
     public func publishDidAsync(for did: DID,
-                        waitForConfirms: Int,
                           using signKey: DIDURL,
                           storePassword: String,
-                                _ force: Bool) -> Promise<String> {
+                                _ force: Bool) -> Promise<Void> {
 
-        return publishDidAsync(did, waitForConfirms, signKey, storePassword, force)
+        return publishDidAsync(did, signKey, storePassword, force)
     }
 
     public func publishDidAsync(for did: DID,
-                        waitForConfirms: Int,
                           using signKey: DIDURL,
-                          storePassword: String) -> Promise<String> {
+                          storePassword: String) -> Promise<Void> {
 
-        return publishDidAsync(did, waitForConfirms, signKey, storePassword, false)
+        return publishDidAsync(did, signKey, storePassword, false)
     }
 
     public func publishDidAsync(for did: String,
-                        waitForConfirms: Int,
                           using signKey: String,
                           storePassword: String,
-                                _ force: Bool) throws -> Promise<String> {
+                                _ force: Bool) throws -> Promise<Void> {
 
         let _did = try DID(did)
         let _key = try DIDURL(_did, signKey)
 
-        return publishDidAsync(_did, waitForConfirms, _key, storePassword, force)
+        return publishDidAsync(_did, _key, storePassword, force)
     }
 
     public func publishDidAsync(for did: String,
-                        waitForConfirms: Int,
                           using signKey: String,
-                          storePassword: String) throws -> Promise<String> {
+                          storePassword: String) throws -> Promise<Void> {
 
         let _did = try DID(did)
         let _key = try DIDURL(_did, signKey)
 
-        return publishDidAsync(_did, waitForConfirms, _key, storePassword, false)
+        return publishDidAsync(_did, _key, storePassword, false)
     }
 
     public func publishDidAsync(for did: DID,
-                     using signKey: DIDURL,
-                     storePassword: String) -> Promise<String> {
+               using storePassword: String) -> Promise<Void> {
 
-        return publishDidAsync(did, 0, signKey, storePassword, false)
+        return publishDidAsync(did, nil, storePassword, false)
     }
 
     public func publishDidAsync(for did: String,
-                     using signKey: String,
-                     storePassword: String) throws -> Promise<String> {
+               using storePassword: String) throws -> Promise<Void> {
 
-        let _did = try DID(did)
-        let _key = try DIDURL(_did, signKey)
-
-        return publishDidAsync(_did, 0, _key, storePassword, false)
-    }
-
-    public func publishDidAsync(for did: DID,
-                   waitForConfirms: Int,
-               using storePassword: String) -> Promise<String> {
-
-        return publishDidAsync(did, 0, nil, storePassword, false)
-    }
-
-    public func publishDidAsync(for did: String,
-                   waitForConfirms: Int,
-               using storePassword: String) throws -> Promise<String> {
-
-        return publishDidAsync(try DID(did), 0, nil, storePassword, false)
-    }
-
-    public func publishDidAsync(for did: DID,
-               using storePassword: String) -> Promise<String> {
-
-        return publishDidAsync(did, 0, nil, storePassword, false)
-    }
-
-    public func publishDidAsync(for did: String,
-               using storePassword: String) throws -> Promise<String> {
-
-        return publishDidAsync(try DID(did), 0, nil, storePassword, false)
+        return publishDidAsync(try DID(did), nil, storePassword, false)
     }
 
     // Deactivate self DID using authentication keys
     private func deactivateDid(_ did: DID,
-                               _ confirms: Int,
                                _ signKey: DIDURL?,
-                               _ storePassword: String) throws -> String {
+                               _ storePassword: String) throws {
 
         guard !storePassword.isEmpty else {
             throw DIDError.didStoreError()
@@ -770,7 +691,7 @@ public class DIDStore: NSObject {
             }
             localCopy = true
         } else {
-            doc!.getMeta().setStore(self)
+            doc!.getMetadata().setStore(self)
         }
 
         var usedSignKey = signKey
@@ -778,87 +699,51 @@ public class DIDStore: NSObject {
             usedSignKey = doc!.defaultPublicKey
         }
 
-        let transactionId = try backend.deactivate(doc!, usedSignKey!, storePassword)
+        try backend.deactivate(doc!, usedSignKey!, storePassword)
 
         // Save deactivated status to DID metadata
         if localCopy {
-            doc!.getMeta().setDeactivated(true)
-            try storage.storeDidMeta(did, doc!.getMeta())
+            doc!.getMetadata().setDeactivated(true)
+            try storage.storeDidMeta(did, doc!.getMetadata())
         }
-
-        return transactionId
-    }
-
-    public func deactivateDid(for target: DID,
-                         waitForConfirms: Int,
-                           using signKey: DIDURL,
-                           storePassword: String) throws -> String {
-
-        return try deactivateDid(target, waitForConfirms, signKey, storePassword)
-    }
-
-    public func deactivateDid(for target: String,
-                         waitForConfirms: Int,
-                           using signKey: String,
-                           storePassword: String) throws -> String {
-
-        let _did = try DID(target)
-        let _key = try DIDURL(_did, signKey)
-
-        return try deactivateDid(_did, waitForConfirms, _key, storePassword)
     }
 
     public func deactivateDid(for target: DID,
                            using signKey: DIDURL,
-                           storePassword: String) throws -> String {
+                           storePassword: String) throws {
 
-        return try deactivateDid(target, 0, signKey, storePassword)
+        return try deactivateDid(target, signKey, storePassword)
     }
 
     public func deactivateDid(for target: String,
                            using signKey: String,
-                           storePassword: String) throws -> String {
+                           storePassword: String) throws {
 
         let _did = try DID(target)
         let _key = try DIDURL(_did, signKey)
 
-        return try deactivateDid(_did, 0, _key, storePassword)
+        return try deactivateDid(_did, _key, storePassword)
     }
 
     public func deactivateDid(for target: DID,
-                         waitForConfirms: Int,
-                     using storePassword: String) throws -> String {
+                     using storePassword: String) throws {
 
-        return try deactivateDid(target, waitForConfirms, nil, storePassword)
+        return try deactivateDid(target, nil, storePassword)
     }
 
     public func deactivateDid(for target: String,
-                         waitForConfirms: Int,
-                     using storePassword: String) throws -> String {
+                     using storePassword: String) throws {
 
-        return try deactivateDid(DID(target), waitForConfirms, nil, storePassword)
-    }
-
-    public func deactivateDid(for target: DID,
-                     using storePassword: String) throws -> String {
-
-        return try deactivateDid(target, 0, nil, storePassword)
-    }
-
-    public func deactivateDid(for target: String,
-                     using storePassword: String) throws -> String {
-
-        return try deactivateDid(DID(target), 0, nil, storePassword)
+        return try deactivateDid(DID(target), nil, storePassword)
     }
 
     private func deactivateDidAsync(_ target: DID,
-                                    _ confirms: Int,
                                     _ signKey: DIDURL?,
-                                    _ storePassword: String) -> Promise<String> {
+                                    _ storePassword: String) -> Promise<Void> {
 
-        return Promise<String> { resolver in
+        return Promise<Void> { resolver in
             do {
-                resolver.fulfill(try deactivateDid(target, confirms, signKey, storePassword))
+                resolver.fulfill(try deactivateDid(target, signKey, storePassword))
             } catch let error  {
                 resolver.reject(error)
             }
@@ -866,73 +751,39 @@ public class DIDStore: NSObject {
     }
 
     public func deactivateDidAsync(for target: DID,
-                         waitForConfirms: Int,
                            using signKey: DIDURL,
-                           storePassword: String) throws -> Promise<String> {
+                           storePassword: String) throws -> Promise<Void> {
 
-        return deactivateDidAsync(target, waitForConfirms, signKey, storePassword)
-    }
-
-    public func deactivateDidAsync(for target: String,
-                         waitForConfirms: Int,
-                           using signKey: String,
-                           storePassword: String) throws -> Promise<String> {
-
-        let _did = try DID(target)
-        let _key = try DIDURL(_did, signKey)
-
-        return deactivateDidAsync(_did, waitForConfirms, _key, storePassword)
-    }
-
-    public func deactivateDidAsync(for target: DID,
-                           using signKey: DIDURL,
-                           storePassword: String) throws -> Promise<String> {
-
-        return deactivateDidAsync(target, 0, signKey, storePassword)
+        return deactivateDidAsync(target, signKey, storePassword)
     }
 
     public func deactivateDidAsync(for target: String,
                            using signKey: String,
-                           storePassword: String) throws -> Promise<String> {
+                           storePassword: String) throws -> Promise<Void> {
 
         let _did = try DID(target)
         let _key = try DIDURL(_did, signKey)
 
-        return deactivateDidAsync(_did, 0, _key, storePassword)
+        return deactivateDidAsync(_did, _key, storePassword)
     }
 
     public func deactivateDidAsync(for target: DID,
-                         waitForConfirms: Int,
-                     using storePassword: String) throws -> Promise<String> {
+                     using storePassword: String) throws -> Promise<Void> {
 
-        return deactivateDidAsync(target, waitForConfirms, nil, storePassword)
+        return deactivateDidAsync(target, nil, storePassword)
     }
 
     public func deactivateDidAsync(for target: String,
-                         waitForConfirms: Int,
-                     using storePassword: String) throws -> Promise<String> {
+                     using storePassword: String) throws -> Promise<Void> {
 
-        return deactivateDidAsync(try DID(target), waitForConfirms, nil, storePassword)
-    }
-
-    public func deactivateDidAsync(for target: DID,
-                     using storePassword: String) throws -> Promise<String> {
-
-        return deactivateDidAsync(target, 0, nil, storePassword)
-    }
-
-    public func deactivateDidAsync(for target: String,
-                     using storePassword: String) throws -> Promise<String> {
-
-        return deactivateDidAsync(try DID(target), 0, nil, storePassword)
+        return deactivateDidAsync(try DID(target), nil, storePassword)
     }
 
     // Deactivate target DID with authorization
     private func deactivateDid(_ target: DID,
                                _ did: DID,
-                               _ confirms: Int,
                                _ signKey: DIDURL?,
-                               _ storePassword: String) throws -> String {
+                               _ storePassword: String) throws {
         guard !storePassword.isEmpty else {
             throw DIDError.didStoreError()
         }
@@ -953,7 +804,7 @@ public class DIDStore: NSObject {
                 throw DIDError.didStoreError("Can not resolve DID document")
             }
         } else {
-            doc!.getMeta().setStore(self)
+            doc!.getMetadata().setStore(self)
         }
 
         var signPk: PublicKey? = nil
@@ -1007,83 +858,45 @@ public class DIDStore: NSObject {
 
     public func deactivateDid(for target: DID,
                     withAuthroizationDid: DID,
-                         waitForConfirms: Int,
                            using signKey: DIDURL,
-                           storePassword: String) throws -> String {
+                           storePassword: String) throws {
 
-        return try deactivateDid(target, withAuthroizationDid, waitForConfirms, signKey, storePassword)
-    }
-
-    public func deactivateDid(for target: String,
-                    withAuthroizationDid: String,
-                         waitForConfirms: Int,
-                           using signKey: String,
-                           storePassword: String) throws -> String {
-
-        let _did = try DID(withAuthroizationDid)
-        let _key = try DIDURL(_did, signKey)
-
-        return try deactivateDid(DID(target), _did, waitForConfirms, _key, storePassword)
-    }
-
-    public func deactivateDid(for target: DID,
-                    withAuthroizationDid: DID,
-                           using signKey: DIDURL,
-                           storePassword: String) throws -> String {
-
-        return try deactivateDid(target, withAuthroizationDid, 0, signKey, storePassword)
+        return try deactivateDid(target, withAuthroizationDid, signKey, storePassword)
     }
 
     public func deactivateDid(for target: String,
                     withAuthroizationDid: String,
                            using signKey: String,
-                           storePassword: String) throws -> String {
+                           storePassword: String) throws {
 
         let _did = try DID(withAuthroizationDid)
         let _key = try DIDURL(_did, signKey)
 
-        return try deactivateDid(DID(target), _did, 0, _key, storePassword)
+        return try deactivateDid(DID(target), _did, _key, storePassword)
     }
 
     public func deactivateDid(for target: DID,
                     withAuthroizationDid: DID,
-                         waitForConfirms: Int,
-                           storePassword: String) throws -> String {
+                           storePassword: String) throws {
 
-        return try deactivateDid(target, withAuthroizationDid, waitForConfirms, nil, storePassword)
+        return try deactivateDid(target, withAuthroizationDid, nil, storePassword)
     }
 
     public func deactivateDid(for target: String,
                     withAuthroizationDid: String,
-                         waitForConfirms: Int,
-                           storePassword: String) throws -> String {
+                           storePassword: String) throws {
 
-        return try deactivateDid(DID(target), DID(withAuthroizationDid), waitForConfirms, nil, storePassword)
-    }
-
-    public func deactivateDid(for target: DID,
-                    withAuthroizationDid: DID,
-                           storePassword: String) throws -> String {
-
-        return try deactivateDid(target, withAuthroizationDid, 0, nil, storePassword)
-    }
-
-    public func deactivateDid(for target: String,
-                    withAuthroizationDid: String,
-                           storePassword: String) throws -> String {
-
-        return try deactivateDid(DID(target), DID(withAuthroizationDid), 0, nil, storePassword)
+        return try deactivateDid(DID(target), DID(withAuthroizationDid), nil, storePassword)
     }
 
     private func deactivateDidAsync(_ target: DID,
                                     _ did: DID,
-                                    _ confirms: Int,
                                     _ signKey: DIDURL?,
-                                    _ storePassword: String) -> Promise<String> {
+                                    _ storePassword: String) -> Promise<Void> {
 
-        return Promise<String> { resolver in
+        return Promise<Void> { resolver in
             do {
-                resolver.fulfill(try deactivateDid(target, did, confirms, signKey, storePassword))
+                resolver.fulfill(try deactivateDid(target, did, signKey, storePassword))
             } catch let error  {
                 resolver.reject(error)
             }
@@ -1092,87 +905,49 @@ public class DIDStore: NSObject {
 
     public func deactivateDidAsync(for target: DID,
                     withAuthroizationDid: DID,
-                         waitForConfirms: Int,
                            using signKey: DIDURL,
-                           storePassword: String) -> Promise<String> {
+                           storePassword: String) -> Promise<Void> {
 
-        return deactivateDidAsync(target, withAuthroizationDid, waitForConfirms, signKey, storePassword)
-    }
-
-    public func deactivateDidAsync(for target: String,
-                    withAuthroizationDid: String,
-                         waitForConfirms: Int,
-                           using signKey: String,
-                           storePassword: String) throws ->  Promise<String> {
-
-        let _did = try DID(withAuthroizationDid)
-        let _key = try DIDURL(_did, signKey)
-
-        return deactivateDidAsync(try DID(target), _did, waitForConfirms, _key, storePassword)
-    }
-
-    public func deactivateDidAsync(for target: DID,
-                    withAuthroizationDid: DID,
-                           using signKey: DIDURL,
-                           storePassword: String) ->  Promise<String> {
-
-        return deactivateDidAsync(target, withAuthroizationDid, 0, signKey, storePassword)
+        return deactivateDidAsync(target, withAuthroizationDid, signKey, storePassword)
     }
 
     public func deactivateDidAsync(for target: String,
                     withAuthroizationDid: String,
                            using signKey: String,
-                           storePassword: String) throws ->  Promise<String> {
+                           storePassword: String) throws ->  Promise<Void> {
 
         let _did = try DID(withAuthroizationDid)
         let _key = try DIDURL(_did, signKey)
 
-        return deactivateDidAsync(try DID(target), _did, 0, _key, storePassword)
+        return deactivateDidAsync(try DID(target), _did, _key, storePassword)
     }
 
     public func deactivateDidAsync(for target: DID,
                     withAuthroizationDid: DID,
-                         waitForConfirms: Int,
-                           storePassword: String) ->  Promise<String> {
+                           storePassword: String) ->  Promise<Void> {
 
-        return deactivateDidAsync(target, withAuthroizationDid, waitForConfirms, nil, storePassword)
+        return deactivateDidAsync(target, withAuthroizationDid, nil, storePassword)
     }
 
     public func deactivateDidAsync(for target: String,
                     withAuthroizationDid: String,
-                         waitForConfirms: Int,
-                           storePassword: String) throws ->  Promise<String> {
+                           storePassword: String) throws ->  Promise<Void> {
 
-        return try deactivateDidAsync(DID(target), DID(withAuthroizationDid), waitForConfirms, nil, storePassword)
-    }
-
-    public func deactivateDidAsync(for target: DID,
-                    withAuthroizationDid: DID,
-                           storePassword: String) ->  Promise<String> {
-
-        return deactivateDidAsync(target, withAuthroizationDid, 0, nil, storePassword)
-    }
-
-    public func deactivateDidAsync(for target: String,
-                    withAuthroizationDid: String,
-                           storePassword: String) throws ->  Promise<String> {
-
-        return try deactivateDidAsync(DID(target), DID(withAuthroizationDid), 0, nil, storePassword)
+        return try deactivateDidAsync(DID(target), DID(withAuthroizationDid), nil, storePassword)
     }
 
     public func storeDid(using doc: DIDDocument, with alias: String) throws {
-        doc.getMeta().setAlias(alias)
+        doc.getMetadata().setAlias(alias)
         try storeDid(using: doc)
     }
     
     public func storeDid(using doc: DIDDocument) throws {
         try storage.storeDid(doc)
 
-        let meta = try loadDidMeta(for: doc.subject)
-        try meta.merge(doc.getMeta())
-        meta.setStore(self)
-        doc.setMeta(meta)
-        try storage.storeDidMeta(doc.subject, meta)
+        let metadata = try loadDidMeta(for: doc.subject)
+        try doc.getMetadata().merge(metadata)
+        doc.getMetadata().setStore(self)
+        try storage.storeDidMeta(doc.subject, doc.getMetadata())
 
         for credential in doc.credentials() {
             try storeCredential(using: credential)
@@ -1196,8 +971,8 @@ public class DIDStore: NSObject {
         if documentCache != nil {
             doc = documentCache!.getValue(for: did)
             if doc != nil {
-                meta = doc!.getMeta()
-                if meta!.isEmpty() {
+                meta = doc!.getMetadata()
+                if !meta!.isEmpty() {
                     return meta!
                 }
             }
@@ -1207,7 +982,7 @@ public class DIDStore: NSObject {
             meta = DIDMeta()
         }
         if doc != nil {
-            doc!.setMeta(meta!)
+            doc!.setMetadata(meta!)
         }
         return meta!
     }
@@ -1234,8 +1009,8 @@ public class DIDStore: NSObject {
         if meta == nil {
             meta = DIDMeta()
         }
-        doc!.setMeta(meta!)
-        doc!.getMeta().setStore(self)
+        doc!.setMetadata(meta!)
+        doc!.getMetadata().setStore(self)
         if documentCache != nil {
             documentCache!.setValue(doc!, for: doc!.subject)
         }
@@ -1269,7 +1044,7 @@ public class DIDStore: NSObject {
         try dids.forEach { did in
             let meta = try loadDidMeta(for: did)
             meta.setStore(self)
-            did.setMeta(meta)
+            did.setMetadata(meta)
         }
 
         return dids
@@ -1285,12 +1060,10 @@ public class DIDStore: NSObject {
     public func storeCredential(using credential: VerifiableCredential) throws {
         try storage.storeCredential(credential)
 
-        let meta = try loadCredentialMeta(for: credential.subject.did, byId: credential.getId())
-        try meta.merge(credential.getMeta())
-        meta.setStore(self)
-        credential.setMeta(meta)
+        let metadata = try loadCredentialMeta(for: credential.subject.did, byId: credential.getId())
+        try credential.getMeta().merge(metadata)
         credential.getMeta().setStore(self)
-        try storage.storeCredentialMeta(credential.subject.did, credential.getId(), meta)
+        try storage.storeCredentialMeta(credential.subject.did, credential.getId(), credential.getMeta())
         credentialCache?.setValue(credential, for: credential.getId())
     }
 
@@ -1318,7 +1091,7 @@ public class DIDStore: NSObject {
             meta = CredentialMeta()
         }
         if vc != nil {
-            vc!.setMeta(meta!)
+            vc!.setMetadata(meta!)
         }
         return meta!
     }
@@ -1389,7 +1162,7 @@ public class DIDStore: NSObject {
         for id in ids {
             let meta = try loadCredentialMeta(for: did, byId: id)
             meta.setStore(self)
-            id.setMeta(meta)
+            id.setMetadata(meta)
         }
         return ids
     }
@@ -1676,7 +1449,7 @@ public class DIDStore: NSObject {
             
             if didMeta != nil {
                 generator.writeFieldName("document")
-                value = didMeta!.toString()
+                value = try didMeta!.toString()
                 generator.writeRawValue(value)
                 bytes = [UInt8](value.description.data(using: .utf8)!)
                 sha256.update(&bytes)
@@ -1686,14 +1459,14 @@ public class DIDStore: NSObject {
                 generator.writeFieldName("credential")
                 generator.writeStartArray()
                                 
-                vcMetas.forEach { (k, v) in
+               try vcMetas.forEach { (k, v) in
                     generator.writeStartObject()
                     value = k.toString()
                     generator.writeStringField("id", value)
                     bytes = [UInt8](value.description.data(using: .utf8)!)
                     sha256.update(&bytes)
                     
-                    value = v.toString()
+                    value = try v.toString()
                     generator.writeFieldName("metadata");
                     generator.writeRawValue(value)
                     bytes = [UInt8](value.description.data(using: .utf8)!)
@@ -1873,46 +1646,6 @@ public class DIDStore: NSObject {
             }
         }
         
-        // Metadata
-        node = root.get(forKey: "metadata")
-        if node != nil {
-            var metaNode = node?.get(forKey: "document")
-            if metaNode != nil && metaNode!.toString() != "" {
-                let meta: DIDMeta = try DIDMeta.fromJson(metaNode!, DIDMeta.self)
-                doc!.setMeta(meta)
-                value = meta.description
-                bytes = [UInt8](value.data(using: .utf8)!)
-                sha256.update(&bytes)
-            }
-            
-//            metaNode = dic!["credential"] as! String
-            metaNode = node?.get(forKey: "credential")
-            if metaNode != nil {
-                guard metaNode!.asArray() != nil else {
-                    Log.e(DIDStore.TAG, "Credential's metadata should be an array.")
-                    throw DIDError.didStoreError("Invalid export data, wrong metadata.")
-                }
-                for dic in metaNode!.asArray()! {
-                    serializer = JsonSerializer(dic)
-                    options = JsonSerializer.Options()
-                        .withHint("credential id")
-                    let id = try serializer.getDIDURL("id", options)
-                    value = id!.description
-                    bytes = [UInt8](value.data(using: .utf8)!)
-                    sha256.update(&bytes)
-                    let meta = try CredentialMeta.fromJson(dic.get(forKey: "metadata")!.toString(), CredentialMeta.self)
-                    value = meta.description
-                    bytes = [UInt8](value.data(using: .utf8)!)
-                    sha256.update(&bytes)
-                    
-                    let vc: VerifiableCredential? = vcs[id!]
-                    if vc != nil {
-                        vc?.setMeta(meta)
-                    }
-                }
-            }
-        }
-        
         // Fingerprint
         node = root.get(forKey: "fingerprint")
         guard let _ = node else {
@@ -1939,12 +1672,12 @@ public class DIDStore: NSObject {
         // avoid affects the cached objects.
         Log.i(DIDStore.TAG, "Importing document...")
         try storage.storeDid(doc!)
-        try storage.storeDidMeta(doc!.subject, doc!.getMeta())
+        try storage.storeDidMeta(doc!.subject, doc!.getMetadata())
         
         for vc in vcs.values {
             Log.i(DIDStore.TAG, "Importing credential {}...\(vc.getId().description)")
             try storage.storeCredential(vc)
-            try storage.storeCredentialMeta(did, vc.getId(), vc.getMeta())
+            try storage.storeCredentialMeta(did, vc.getId(), vc.getMetadata())
         }
         
         try sks.forEach { (key, value) in

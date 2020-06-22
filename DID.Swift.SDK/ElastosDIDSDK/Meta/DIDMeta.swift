@@ -1,135 +1,71 @@
 import Foundation
 
-class DIDMeta: Metadata {
+public class DIDMeta: Metadata {
     private var _deactivated: Bool = false
-    private var _updatedDate: Date?
     private var _transactionId: String?
-    private var _signature: String?
     private var _aliasName: String?
+    private var _prevSignature: String?
+    private var _signature: String?
+    private var _published: Int?
+    private let TXID = RESERVED_PREFIX + "txid"
+    private let PREV_SIGNATURE = RESERVED_PREFIX + "prevSignature"
+    private let SIGNATURE = RESERVED_PREFIX + "signature"
+    private let PUBLISHED = RESERVED_PREFIX + "published"
+    private let ALIAS = RESERVED_PREFIX + "alias"
+    private let DEACTIVATED = RESERVED_PREFIX + "deactivated"
 
-    var aliasName: String {
-        return _aliasName ?? ""
+    var aliasName: String? {
+        return self.get(key: ALIAS) as? String
     }
 
     func setAlias(_ alias: String?) {
-        self._aliasName = alias
+        put(key: ALIAS, value: alias as Any)
     }
 
     var transactionId: String? {
-        return _transactionId
+        return self.get(key: TXID) as? String
     }
 
     func setTransactionId(_ newValue: String?) {
-        self._transactionId = newValue
+        put(key: TXID, value: newValue as Any)
+    }
+    var previousSignature: String? {
+       return self.get(key: PREV_SIGNATURE) as? String
+    }
+
+    func setPreviousSignature(_ newValue: String?) {
+         put(key: PREV_SIGNATURE, value: newValue as Any)
     }
 
     var signature: String? {
-        return self._signature
+        return self.get(key: SIGNATURE) as? String
     }
 
-    func setSignature(_ newValue: String) {
-        self._signature = newValue
+    func setSignature(_ newValue: String?) {
+        put(key: SIGNATURE, value: newValue as Any)
     }
 
-    var updatedDate: Date? {
-        return self._updatedDate
+    func getPublished() -> Date? {
+        let time = self.get(key: PUBLISHED) as? Int
+        return DateHelper.getDateFromTimeStamp(time)
     }
 
-    func setUpdatedDate(_ newValue: Date?) {
-        self._updatedDate = newValue
+    func setPublished(_ timestamp: Date) {
+        let timestampDate = DateHelper.getTimeStamp(timestamp)
+        put(key: PUBLISHED, value: timestampDate as Any)
     }
 
     var isDeactivated: Bool {
-        return _deactivated
+        let v =  self.get(key: DEACTIVATED)
+        if case Optional<Any>.none = v {
+            return false
+        }
+        else {
+            return v as! Bool
+        }
     }
 
     func setDeactivated(_ newValue: Bool) {
-        self._deactivated = newValue
-    }
-
-    class func fromJson(_ metadata: String) throws -> DIDMeta {
-        return try super.fromJson(metadata, DIDMeta.self)
-    }
-
-    override func fromNode(_ node: JsonNode) throws {
-        var value: String?
-
-        value = node.get(forKey: Constants.ALIAS)?.asString()
-        if value != nil {
-            setAlias(value!)
-        }
-
-        value = node.get(forKey: Constants.DEACTIVATED)?.asString()
-        if value != nil {
-            setDeactivated(Bool(value!) ?? true)
-        }
-
-        value = node.get(forKey: Constants.TXID)?.asString()
-        if value != nil {
-            setTransactionId(value!)
-        }
-
-        value = node.get(forKey: Constants.SIGNATURE)?.asString()
-        if value != nil {
-            setSignature(value!)
-        }
-
-        value = node.get(forKey: Constants.TIMESTAMP)?.asString()
-        if value != nil {
-            setUpdatedDate(DateFormatter.convertToUTCDateFromString(value!))
-        }
-    }
-    
-    override func toNode(_ node: JsonNode) {
-        if _aliasName != nil {
-            node.put(forKey: Constants.ALIAS, value: _aliasName!)
-        }
-
-        if _deactivated {
-            node.put(forKey: Constants.DEACTIVATED, value: _deactivated)
-        }
-
-        if _transactionId != nil {
-            node.put(forKey: Constants.TXID, value: _transactionId!)
-        }
-
-        if _signature != nil {
-            node.put(forKey: Constants.SIGNATURE, value: _signature!)
-        }
-
-        if updatedDate != nil {
-            node.put(forKey: Constants.TIMESTAMP, value: DateHelper.formateDate(_updatedDate!))
-        }
-    }
-
-    override func merge(_ other: Metadata) throws {
-        guard other is DIDMeta else {
-            throw DIDError.illegalArgument("Not DIDMeta object.")
-        }
-
-        let meta = other as! DIDMeta
-        if let _ = meta._aliasName {
-            setAlias(meta.aliasName)
-        }
-        if !self.isDeactivated {
-            setDeactivated(meta.isDeactivated)
-        }
-        if let _ = meta.transactionId {
-            setTransactionId(meta.transactionId)
-        }
-        if let _ = meta.signature {
-            setSignature(meta.signature!)
-        }
-        if let _ = meta.updatedDate {
-            setUpdatedDate(meta.updatedDate)
-        }
-
-        try super.merge(other)
-    }
-
-    override func isEmpty() -> Bool {
-        return (aliasName != ""    || transactionId != nil ||
-                signature != nil   || updatedDate != nil   || isDeactivated)
-            ? false : super.isEmpty()
+        put(key: DEACTIVATED, value: newValue as Any)
     }
 }

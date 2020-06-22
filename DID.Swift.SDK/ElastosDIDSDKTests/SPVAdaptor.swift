@@ -5,6 +5,15 @@ import SPVWrapper
 
 public typealias PasswordCallback = (_ walletDir: String, _ walletId: String) -> String?
 public class SPVAdaptor: DIDAdapter {
+    public func createIdTransaction(_ payload: String, _ memo: String?) {
+        var password = passwordCallback!(walletDir, walletId)
+        if password == nil {
+            password = ""
+        }
+
+        _ = SPV.createIdTransaction(handle, password!, payload, memo)
+    }
+/*
     public func createIdTransaction(_ payload: String, _ memo: String?, _ confirms: Int, _ callback: @escaping (String, Int, String?) -> Void) {
         
         var password = passwordCallback!(walletDir, walletId)
@@ -22,7 +31,7 @@ public class SPVAdaptor: DIDAdapter {
             callback(txid, status, msg)
         }
     }
-
+*/
     var walletDir: String!
     var walletId: String!
     var network: String!

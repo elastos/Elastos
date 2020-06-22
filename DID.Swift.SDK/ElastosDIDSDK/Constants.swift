@@ -73,9 +73,6 @@ class Constants {
     static let STATUS = "status"
     static let TRANSACTION = "transaction"
 
-    // MetaData
-    static let EXTRA_PREFIX = "X-"
-
     // DIDMeta: TXID/TIMESTAMP/ALIAS/DEACTIVATED
     static let ALIAS = "alias"
     static let DEACTIVATED = "deactivated"

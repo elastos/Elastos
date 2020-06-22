@@ -25,20 +25,8 @@ class DummyAdapter: DIDAdapter, DIDResolver {
 
         return str
     }
-    
-    func createIdTransaction(_ payload: String, _ memo: String?, _ confirms: Int, _ callback: @escaping (String, Int, String?) -> Void) {
-        
-        do {
-            let txid = try createIdTransaction(payload, memo)
-            callback(txid, 0, nil);
-        }
-        catch {
-            // TODO: callback("")
-            callback("", -1, error.localizedDescription);
-        }
-    }
-    
-    func createIdTransaction(_ payload: String, _ memo: String?) throws -> String {
+
+    func createIdTransaction(_ payload: String, _ memo: String?) throws {
         
         do {
             let request: IDChainRequest = try IDChainRequest.fromJson(payload)
@@ -97,8 +85,7 @@ class DummyAdapter: DIDAdapter, DIDResolver {
             //TODO: Date()
             ti = IDTransactionInfo(DummyAdapter.generateTxId(), Date(), request)
             idtxs.append(ti!)
-            
-            return ti!.transactionId
+
         } catch {
             print(error)
             throw error

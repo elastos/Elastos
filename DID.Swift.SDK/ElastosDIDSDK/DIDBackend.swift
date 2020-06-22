@@ -285,8 +285,8 @@ public class DIDBackend {
 
             meta.setTransactionId(transactionInfo!.transactionId)
             meta.setSignature(doc!.proof.signature)
-            meta.setUpdatedDate(transactionInfo!.timestamp)
-            doc!.setMeta(meta)
+            meta.setPublished(transactionInfo!.getTimestamp())
+            doc!.setMetadata(meta)
             return doc
         }
     }
@@ -299,91 +299,46 @@ public class DIDBackend {
         return _adapter
     }
 
-    private func createTransaction(_ payload: String, _ memo: String?, _ confirms: Int) throws -> String {
-        let transResult = TransactionResult()
-        let semaphore = DispatchSemaphore(value: 0)
-
+    private func createTransaction(_ payload: String, _ memo: String?) throws {
         Log.i(DIDBackend.TAG, "Create ID transaction...")
-        Log.d(DIDBackend.TAG, "Transaction paload: '{\(payload)}', memo: {\(memo ?? "none")}, confirms: {\(confirms)}")
+        Log.d(DIDBackend.TAG, "Transaction paload: '{\(payload)}', memo: {\(memo ?? "none")}}")
 
-        _adapter.createIdTransaction(payload, memo, confirms) { (txid, status, message) -> Void in
-            transResult.update(txid, status, message)
-            semaphore.signal()
-        }
-
-        semaphore.wait()
-
-        if transResult.status != 0 {
-            throw DIDError.didtransactionError(
-                "create transaction failed (\(transResult.status):)\(transResult.message ?? "")")
-        }
-
-        return transResult.transactionId
+        try _adapter.createIdTransaction(payload, memo)
+        Log.d(DIDBackend.TAG, "ID transaction complete.")
     }
 
     func create(_ doc: DIDDocument,
                 _ signKey: DIDURL,
-                _ storePassword: String) throws -> String {
-        return try create(doc, 0, signKey, storePassword)
-    }
-
-    func create(_ doc: DIDDocument,
-                _ confirms: Int,
-                _ signKey: DIDURL,
-                _ storePassword: String) throws -> String {
+                _ storePassword: String) throws {
 
         let request = try IDChainRequest.create(doc, signKey, storePassword)
-        return try createTransaction(request.toJson(true), nil, confirms)
+        return try createTransaction(request.toJson(true), nil)
     }
 
     func update(_ doc: DIDDocument,
                 _ previousTransactionId: String,
                 _ signKey: DIDURL,
-                _ storePassword: String) throws -> String {
-        return try update(doc, previousTransactionId, 0, signKey, storePassword)
-    }
-
-    func update(_ doc: DIDDocument,
-                _ previousTransactionId: String,
-                _ confirms: Int,
-                _ signKey: DIDURL,
-                _ storePassword: String) throws -> String {
+                _ storePassword: String) throws {
 
         let request = try IDChainRequest.update(doc, previousTransactionId, signKey, storePassword)
-        return try createTransaction(request.toJson(true), nil, confirms)
+        return try createTransaction(request.toJson(true), nil)
     }
 
     func deactivate(_ doc: DIDDocument,
                     _ signKey: DIDURL,
-                    _ storePassword: String) throws -> String {
-        return try deactivate(doc, 0, signKey, storePassword)
-    }
-
-    func deactivate(_ doc: DIDDocument,
-                    _ confirms: Int,
-                    _ signKey: DIDURL,
-                    _ storePassword: String) throws -> String {
+                    _ storePassword: String) throws {
 
         let request = try IDChainRequest.deactivate(doc, signKey, storePassword)
-        return try createTransaction(request.toJson(true), nil, confirms)
+        return try createTransaction(request.toJson(true), nil)
     }
 
     func deactivate(_ target: DID,
                     _ targetSignKey: DIDURL,
                     _ doc: DIDDocument,
                     _ signKey: DIDURL,
-                    _ storePassword: String) throws -> String {
-        return try deactivate(target, targetSignKey, doc, 0, signKey, storePassword)
-    }
-
-    func deactivate(_ target: DID,
-                    _ targetSignKey: DIDURL,
-                    _ doc: DIDDocument,
-                    _ confirms: Int,
-                    _ signKey: DIDURL,
-                    _ storePassword: String) throws -> String {
+                    _ storePassword: String) throws {
 
         let request = try IDChainRequest.deactivate(target, targetSignKey, doc, signKey, storePassword)
-        return try createTransaction(request.toJson(true), nil, confirms)
+        return try createTransaction(request.toJson(true), nil)
     }
 }

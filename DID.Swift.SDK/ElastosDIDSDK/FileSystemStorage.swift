@@ -423,12 +423,11 @@ public class FileSystemStorage: DIDStorage {
     func storeDidMeta(_ did: DID, _ meta: DIDMeta) throws {
         do {
             let handle = try openDidMetaFile(did, true)
-            let metadata = meta.toString()
             defer {
                 handle.closeFile()
             }
 
-            if metadata.isEmpty || metadata == "{}" {
+            if meta.isEmpty() {
                 var path: String = _rootPath
                 path.append("/")
                 path.append(Constants.DID_DIR)
@@ -439,7 +438,7 @@ public class FileSystemStorage: DIDStorage {
 
                 try FileManager.default.removeItem(atPath: path)
             } else {
-                handle.write(metadata.data(using: .utf8)!)
+                try meta.save(path: handle)
             }
         } catch {
             throw DIDError.didStoreError("store DID metadata error")
@@ -447,13 +446,15 @@ public class FileSystemStorage: DIDStorage {
     }
 
     func loadDidMeta(_ did: DID) throws -> DIDMeta {
-        let handle = try openDidMetaFile(did)
-        defer {
-            handle.closeFile()
+        let metadata = DIDMeta()
+        do {
+            let handle = try openDidMetaFile(did)
+            try metadata.load(reader: handle)
+        } catch {
+            print("Ignore")
         }
 
-        let data = handle.readDataToEndOfFile()
-        return try DIDMeta.fromJson(String(data: data, encoding: .utf8)!)
+        return metadata
     }
 
     private func openDocumentFile(_ did: DID, _ forWrite: Bool) throws -> FileHandle {
@@ -556,25 +557,25 @@ public class FileSystemStorage: DIDStorage {
         return try openCredentialMetaFile(did, id, false)
     }
 
-    func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta) throws {
+    func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ metadata: CredentialMeta) throws {
         do {
             let handle = try openCredentialMetaFile(did, id, true)
-            let metadata = meta.toJson().data(using: .utf8)!
-            defer {
-                handle.closeFile()
-            }
-
-            if metadata.isEmpty {
-                var path: String = ""
+            if metadata.isEmpty() {
+                var path: String = _rootPath
+                path.append("/")
                 path.append(Constants.DID_DIR)
+                path.append("/")
                 path.append(did.methodSpecificId)
+                path.append("/")
                 path.append(Constants.CREDENTIALS_DIR)
+                path.append("/")
                 path.append(id.fragment!)
+                path.append("/")
                 path.append(Constants.META_FILE)
 
                 try FileManager.default.removeItem(atPath: path)
             } else {
-                handle.write(metadata)
+                try metadata.save(path: handle)
             }
         } catch {
             throw DIDError.didStoreError("store credential meta error")
@@ -584,12 +585,10 @@ public class FileSystemStorage: DIDStorage {
     func loadCredentialMeta(_ did: DID, _ id: DIDURL) throws -> CredentialMeta {
         do {
             let handle = try openCredentialMetaFile(did, id)
-            defer {
-                handle.closeFile()
-            }
+            let metadata = CredentialMeta()
+            try metadata.load(reader: handle)
 
-            let data = handle.readDataToEndOfFile()
-            return try CredentialMeta.fromJson(String(data: data, encoding: .utf8)!)
+            return metadata
         } catch {
             throw DIDError.didStoreError("load credential meta error")
         }

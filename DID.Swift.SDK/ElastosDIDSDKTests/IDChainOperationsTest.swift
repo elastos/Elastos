@@ -17,8 +17,7 @@ class IDChainOperationsTest: XCTestCase {
             let doc = try store.newDid(using: storePass)
             let did = doc.subject
             print("Publishing new DID: \(did)...")
-            let txid = try store.publishDid(for: did, waitForConfirms: 1, using: storePass)
-            XCTAssertNotNil(txid)
+            try store.publishDid(for: did, using: storePass)
 
             // Resolve new DID document
             try testData.waitForWalletAvaliable()
@@ -43,9 +42,7 @@ class IDChainOperationsTest: XCTestCase {
             let did = doc.subject
             //TODO:
             var lock = XCTestExpectation(description: "publishDidAsync")
-            var txid: String?
-            _ = store.publishDidAsync(for: did, waitForConfirms: 1, using: storePass).done { str in
-                txid = str
+            _ = store.publishDidAsync(for: did, using: storePass).done { void in
                 XCTAssertTrue(true)
                 lock.fulfill()
             }.catch { error in
@@ -53,7 +50,6 @@ class IDChainOperationsTest: XCTestCase {
                 lock.fulfill()
             }
             self.wait(for: [lock], timeout: 100.0)
-            XCTAssertNotNil(txid)
             print("Published new DID: \(did)")
 
             // Resolve new DID document
@@ -135,7 +131,7 @@ class IDChainOperationsTest: XCTestCase {
             print("Publishing new DID and resolve: \(did)...")
             var resolved: DIDDocument?
             let lock = XCTestExpectation(description: "publishDidAsync")
-            store.publishDidAsync(for: did, waitForConfirms: 1, using: storePass)
+            store.publishDidAsync(for: did, using: storePass)
                 .done{ doc in
                     lock.fulfill()
             }
@@ -168,7 +164,6 @@ class IDChainOperationsTest: XCTestCase {
 
     func testUpdateAndResolveAsync() {
         do {
-            var txids: [String] = []
             var sigs: [String] = []
 
             let testData = TestData()
@@ -182,11 +177,9 @@ class IDChainOperationsTest: XCTestCase {
             print("Publishing new DID:  \(did)...")
 
             var lock = XCTestExpectation()
-            store.publishDidAsync(for: did, waitForConfirms: 1, using: storePass).done { tx in
+            store.publishDidAsync(for: did, using: storePass).done { void in
                 print("OK")
-                txids.append(tx)
                 sigs.append(doc.proof.signature)
-                XCTAssertNotNil(tx)
                 XCTAssertTrue(true)
                 lock.fulfill()
             }.catch { error in
@@ -213,7 +206,7 @@ class IDChainOperationsTest: XCTestCase {
             XCTAssertTrue(resolved!.isValid)
             XCTAssertEqual(doc.toString(true), resolved!.toString(true))
 
-            var lastTxid = resolved!.transactionId
+            var lastTxid = resolved!.getMetadata().transactionId
             print("Last transaction id: \(lastTxid)")
 
             // Update
@@ -227,11 +220,9 @@ class IDChainOperationsTest: XCTestCase {
             try store.storeDid(using: doc)
 
             lock = XCTestExpectation()
-            store.publishDidAsync(for: did, waitForConfirms: 1, using: storePass).done { tx in
+            store.publishDidAsync(for: did, using: storePass).done { tx in
                 print("OK")
-                txids.append(tx)
                 sigs.append(doc.proof.signature)
-                XCTAssertNotNil(tx)
                 XCTAssertTrue(true)
                 lock.fulfill()
             }.catch { error in
@@ -253,12 +244,12 @@ class IDChainOperationsTest: XCTestCase {
                     break
                 }
             }
-            XCTAssertNotEqual(lastTxid, resolved!.transactionId)
+            XCTAssertNotEqual(lastTxid, resolved!.getMetadata().transactionId)
             XCTAssertEqual(did, resolved!.subject)
             XCTAssertTrue(resolved!.isValid)
             XCTAssertEqual(doc.toString(true), resolved!.toString(true))
 
-            lastTxid = resolved!.transactionId
+            lastTxid = resolved!.getMetadata().transactionId
             print("Last transaction id: \(lastTxid)")
 
             // Update again
@@ -272,11 +263,9 @@ class IDChainOperationsTest: XCTestCase {
             print("Updating DID: \(did)...")
 
             lock = XCTestExpectation()
-            _ = try store.publishDidAsync(for: did, waitForConfirms: 1, using: storePass).done{ tx in
+            _ = try store.publishDidAsync(for: did, using: storePass).done{ tx in
                 print("OK")
-                txids.append(tx)
                 sigs.append(doc.proof.signature)
-                XCTAssertNotNil(tx)
                 XCTAssertTrue(true)
                 lock.fulfill()
             }.catch{ error in
@@ -298,12 +287,12 @@ class IDChainOperationsTest: XCTestCase {
                     break
                 }
             }
-            XCTAssertNotEqual(lastTxid, resolved!.transactionId)
+            XCTAssertNotEqual(lastTxid, resolved!.getMetadata().transactionId)
             XCTAssertEqual(did, resolved?.subject)
             XCTAssertTrue(resolved!.isValid)
             XCTAssertEqual(doc.toString(true), resolved!.toString(true))
 
-            lastTxid = resolved?.transactionId
+            lastTxid = resolved?.getMetadata().transactionId
             print("Last transaction id: \(lastTxid)")
             lock = XCTestExpectation()
             did.resolveHistoryAsync().done{ his in
@@ -320,7 +309,6 @@ class IDChainOperationsTest: XCTestCase {
                 for i in 0..<txs.count {
                     let tx = txs[i]
                     XCTAssertEqual(did, tx.getDid())
-                    XCTAssertEqual(txids[i], tx.getTransactionId());
                     XCTAssertEqual(sigs[i], tx.getDocument().proof.signature)
                 }
                 lock.fulfill()
@@ -372,7 +360,7 @@ class IDChainOperationsTest: XCTestCase {
             try store.storeDid(using: doc)
 
             print("Published new DID: \(did)")
-            var txid = try store.publishDid(for: did, waitForConfirms: 1, using: storePass)
+            var txid = try store.publishDid(for: did, using: storePass)
             XCTAssertNotNil(txid)
 
             try! testData.waitForWalletAvaliable()
@@ -381,7 +369,7 @@ class IDChainOperationsTest: XCTestCase {
             XCTAssertTrue(resolved!.isValid)
             XCTAssertEqual(doc.toString(true), resolved!.toString(true))
 
-            var lastTxid = resolved!.transactionId
+            var lastTxid = resolved!.getMetadata().transactionId
             print("Last transaction id: \(lastTxid)")
 
             // Update
@@ -406,17 +394,17 @@ class IDChainOperationsTest: XCTestCase {
             try! store.storeDid(using: doc)
 
             print("Updated DID: \(did)")
-            txid = try! store.publishDid(for: did, waitForConfirms: 1, using: storePass)
+            txid = try! store.publishDid(for: did, using: storePass)
             XCTAssertNotNil(txid)
 
             try! testData.waitForWalletAvaliable()
             resolved = try did.resolve(true)!
             XCTAssertEqual(did, resolved!.subject)
-            XCTAssertNotEqual(lastTxid, resolved?.transactionId)
+            XCTAssertNotEqual(lastTxid, resolved?.getMetadata().transactionId)
             XCTAssertTrue(resolved!.isValid)
             XCTAssertEqual(doc.toString(true), resolved!.toString(true))
 
-            lastTxid = resolved?.transactionId
+            lastTxid = resolved?.getMetadata().transactionId
             print("Last transaction id: \(lastTxid)")
 
             // Update again
@@ -443,16 +431,16 @@ class IDChainOperationsTest: XCTestCase {
             try! store.storeDid(using: doc)
 
             print("Updated DID: \(did)")
-            txid = try! store.publishDid(for: did, waitForConfirms: 1, using: storePass)
+            txid = try! store.publishDid(for: did, using: storePass)
             XCTAssertNotNil(txid)
 
             try! testData.waitForWalletAvaliable()
             resolved = try did.resolve(true)!
             XCTAssertEqual(did, resolved!.subject)
-            XCTAssertNotEqual(lastTxid, resolved?.transactionId)
+            XCTAssertNotEqual(lastTxid, resolved?.getMetadata().transactionId)
             XCTAssertTrue(resolved!.isValid)
             XCTAssertEqual(doc.toString(true), resolved!.toString(true))
-            lastTxid = resolved?.transactionId
+            lastTxid = resolved?.getMetadata().transactionId
             print("Last transaction id: \(lastTxid)")
         } catch {
             XCTFail()
@@ -496,9 +484,8 @@ class IDChainOperationsTest: XCTestCase {
 
             print("Publishing new DID: \(did)...")
             var lock = XCTestExpectation()
-            _ =  try store.publishDidAsync(for: did, waitForConfirms: 1, using: storePass).done{ tx in
+            _ =  try store.publishDidAsync(for: did, using: storePass).done{ tx in
                 print("OK")
-                XCTAssertNotNil(tx)
                 lock.fulfill()
             }.catch{ error in
                 XCTFail()
@@ -524,7 +511,7 @@ class IDChainOperationsTest: XCTestCase {
             XCTAssertTrue(resolved!.isValid)
             XCTAssertEqual(doc.toString(true), resolved!.toString(true))
 
-            var lastTxid = resolved!.transactionId
+            var lastTxid = resolved!.getMetadata().transactionId
             print("Last transaction id: \(lastTxid)")
 
             // Update
@@ -550,9 +537,8 @@ class IDChainOperationsTest: XCTestCase {
 
             lock = XCTestExpectation()
             print("Updating DID: \(did)...")
-            store.publishDidAsync(for: did, waitForConfirms: 1, using: storePass).done { tx in
+            store.publishDidAsync(for: did, using: storePass).done { tx in
                 print("OK")
-                XCTAssertNotNil(tx)
                 lock.fulfill()
             }.catch { error in
                 XCTFail()
@@ -574,12 +560,12 @@ class IDChainOperationsTest: XCTestCase {
                 }
             }
 
-            XCTAssertNotEqual(lastTxid, resolved!.transactionId)
+            XCTAssertNotEqual(lastTxid, resolved!.getMetadata().transactionId)
             XCTAssertEqual(did, resolved!.subject)
             XCTAssertTrue(resolved!.isValid)
             XCTAssertEqual(doc.toString(true), resolved!.toString(true))
 
-            lastTxid = resolved!.transactionId
+            lastTxid = resolved!.getMetadata().transactionId
             print("Last transaction id: \(lastTxid)")
 
             // Update again
@@ -608,9 +594,8 @@ class IDChainOperationsTest: XCTestCase {
 
             print("Updating DID: \(did)...")
             lock = XCTestExpectation()
-            store.publishDidAsync(for: did, waitForConfirms: 1, using: storePass).done { tx in
+            store.publishDidAsync(for: did, using: storePass).done { tx in
                 print("OK")
-                XCTAssertNotNil(tx)
                 lock.fulfill()
             }.catch { error in
                 XCTFail()
@@ -631,12 +616,12 @@ class IDChainOperationsTest: XCTestCase {
                     break
                 }
             }
-            XCTAssertNotEqual(lastTxid, resolved!.transactionId)
+            XCTAssertNotEqual(lastTxid, resolved!.getMetadata().transactionId)
             XCTAssertEqual(did, resolved!.subject)
             XCTAssertTrue(resolved!.isValid)
             XCTAssertEqual(doc.toString(true), resolved!.toString(true))
 
-            lastTxid = resolved!.transactionId
+            lastTxid = resolved!.getMetadata().transactionId
             print("Last transaction id: \(lastTxid)")
         } catch {
             XCTFail()

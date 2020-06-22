@@ -5,7 +5,7 @@ public class DIDDocumentBuilder {
 
     init(_ did: DID, _ store: DIDStore) {
         self.document = DIDDocument(did)
-        self.document!.getMeta().setStore(store)
+        self.document!.getMetadata().setStore(store)
     }
 
     init(_ doc: DIDDocument) { // Make a copy

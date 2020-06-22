@@ -133,7 +133,7 @@ class DIDStoreTests: XCTestCase {
             let doc: DIDDocument = try store.newDid(withAlias: alias, using: storePass)
             XCTAssertTrue(doc.isValid)
             
-            var resolved = try doc.subject.resolve()
+            var resolved = try doc.subject.resolve(true)
             XCTAssertNil(resolved)
             
             _ = try store.publishDid(for: doc.subject, using: storePass)
@@ -143,13 +143,12 @@ class DIDStoreTests: XCTestCase {
             XCTAssertTrue(testData.existsFile(path))
             path = storeRoot + "/ids/" + doc.subject.methodSpecificId + "/.meta"
             XCTAssertTrue(testData.existsFile(path))
-            
             resolved = try doc.subject.resolve(true)
             
             XCTAssertNotNil(resolved)
 
             try store.storeDid(using: resolved!)
-            XCTAssertEqual(alias, resolved!.aliasName)
+            XCTAssertEqual(alias, resolved!.getMetadata().aliasName)
             XCTAssertEqual(doc.subject, resolved!.subject)
             XCTAssertEqual(doc.proof.signature, resolved!.proof.signature)
             
@@ -285,7 +284,7 @@ class DIDStoreTests: XCTestCase {
     }
     
 
-    func testUpdateDidWithoutTxid() {
+    func testUpdateDidWithoutPrevSignature() {
         do {
             let testData = TestData()
             let store = try testData.setupStore(true)
@@ -299,9 +298,6 @@ class DIDStoreTests: XCTestCase {
             var resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), resolved!.toString())
-
-            doc.getMeta().setTransactionId(nil)
-            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
 
             // Update
             var db = doc.editing()
@@ -318,8 +314,8 @@ class DIDStoreTests: XCTestCase {
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), resolved!.toString())
 
-            doc.getMeta().setTransactionId(nil)
-            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+            doc.getMetadata().setPreviousSignature(nil)
+            try doc.saveMetadata()
 
             // Update again
             db = doc.editing()
@@ -354,9 +350,6 @@ class DIDStoreTests: XCTestCase {
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), resolved!.toString())
 
-//            doc.getMeta().setSignature(nil) // seeting Signature withour storepass
-            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
-
             // Update
             var db = doc.editing()
             var key = try TestData.generateKeypair()
@@ -365,15 +358,14 @@ class DIDStoreTests: XCTestCase {
             XCTAssertEqual(2, doc.publicKeyCount)
             XCTAssertEqual(2, doc.authenticationKeyCount)
             try store.storeDid(using: doc)
-
             _ = try store.publishDid(for: doc.subject, using: storePass)
 
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), resolved!.toString())
 
-//            doc.getMeta().setSignature(nil)
-            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+            doc.getMetadata().setSignature(nil)
+            try doc.saveMetadata()
 
             // Update again
             db = doc.editing()
@@ -394,7 +386,7 @@ class DIDStoreTests: XCTestCase {
         }
     }
 
-    func testUpdateDidWithoutTxidAndSignature() {
+    func testUpdateDidWithoutAllSignatures() {
         do {
             let testData = TestData()
             let store = try testData.setupStore(true)
@@ -409,9 +401,9 @@ class DIDStoreTests: XCTestCase {
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), resolved!.toString())
 
-            doc.getMeta().setTransactionId(nil)
-//            doc.getMeta().setSignature(nil)
-            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+            doc.getMetadata().setPreviousSignature(nil)
+            doc.getMetadata().setSignature(nil)
+            try doc.saveMetadata()
 
             // Update
             let db = doc.editing()
@@ -422,22 +414,21 @@ class DIDStoreTests: XCTestCase {
             XCTAssertEqual(2, doc.authenticationKeyCount)
             try store.storeDid(using: doc)
             let did = doc.subject
-            try store.publishDid(for: did, using: storePass)
-            // java reference
-//            XCTAssertThrowsError(try store.publishDid(for: did, using: storePass)) { error in
-//                switch error as! DIDError{
-//                case .didStoreError("DID document not up-to-date"):
-//                    XCTAssertTrue(true)
-//                default:
-//                    XCTFail()
-//                }
-//            }
+
+            XCTAssertThrowsError(try store.publishDid(for: did, using: storePass)) { error in
+                switch error as! DIDError {
+                case .didStoreError("DID document not up-to-date"):
+                    XCTAssertTrue(true)
+                default:
+                    XCTFail()
+                }
+            }
         } catch {
             XCTFail()
         }
     }
 
-    func testForceUpdateDidWithoutTxidAndSignature() {
+    func testUpdateDidWithWrongPrevSignature() {
         do {
             let testData = TestData()
             let store = try testData.setupStore(true)
@@ -452,20 +443,35 @@ class DIDStoreTests: XCTestCase {
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), resolved!.toString())
 
-            doc.getMeta().setTransactionId(nil)
-//            doc.getMeta().setSignature(nil)
-            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
-
             // Update
-            let db = doc.editing()
-            let key = try TestData.generateKeypair()
+            var db = doc.editing()
+            var key = try TestData.generateKeypair()
             _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
             doc = try db.sealed(using: storePass)
             XCTAssertEqual(2, doc.publicKeyCount)
             XCTAssertEqual(2, doc.authenticationKeyCount)
             try store.storeDid(using: doc)
 
-            _ = try store.publishDid(for: doc.subject, waitForConfirms: 1, using: doc.defaultPublicKey, storePassword: storePass, true)
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+
+            resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved!.toString())
+
+            doc.getMetadata().setPreviousSignature("1234567890")
+            try doc.saveMetadata()
+
+            // Update
+            db = doc.editing()
+            key = try TestData.generateKeypair()
+            _ = try db.appendAuthenticationKey(with: "key2", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+
+            XCTAssertEqual(3, doc.publicKeyCount)
+            XCTAssertEqual(3, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+
+            try store.publishDid(for: doc.subject, using: storePass)
 
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
@@ -476,7 +482,7 @@ class DIDStoreTests: XCTestCase {
         }
     }
 
-    func testUpdateDidWithWrongTxid() {
+    func testUpdateDidWithWrongSignature() {
         do {
             let testData = TestData()
             let store = try testData.setupStore(true)
@@ -487,20 +493,34 @@ class DIDStoreTests: XCTestCase {
 
             _ = try store.publishDid(for: doc.subject, using: storePass)
 
-            let resolved = try doc.subject.resolve(true)
+            var resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), resolved!.toString())
 
-            doc.getMeta().setTransactionId("1234567890")
-            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
-
             // Update
-            let db = doc.editing()
-            let key = try TestData.generateKeypair()
+            var db = doc.editing()
+            var key = try TestData.generateKeypair()
             _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
             doc = try db.sealed(using: storePass)
             XCTAssertEqual(2, doc.publicKeyCount)
             XCTAssertEqual(2, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+
+            try store.publishDid(for: doc.subject, using: storePass)
+            resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved!.toString())
+
+            doc.getMetadata().setSignature("1234567890")
+            try doc.saveMetadata()
+
+            // Update
+             db = doc.editing()
+             key = try TestData.generateKeypair()
+            _ = try db.appendAuthenticationKey(with: "key2", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+            XCTAssertEqual(3, doc.publicKeyCount)
+            XCTAssertEqual(3, doc.authenticationKeyCount)
             try store.storeDid(using: doc)
 
             let did = doc.subject
@@ -518,48 +538,7 @@ class DIDStoreTests: XCTestCase {
         }
     }
 
-    func testUpdateDidWithWrongSignature() {
-        do {
-            let testData = TestData()
-            let store = try testData.setupStore(true)
-            _ = try testData.initIdentity()
-
-            var doc = try store.newDid(using: storePass)
-            XCTAssertTrue(doc.isValid)
-
-            _ = try store.publishDid(for: doc.subject, using: storePass)
-
-            let resolved = try doc.subject.resolve(true)
-            XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toString(), resolved!.toString())
-
-            doc.getMeta().setSignature("1234567890")
-            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
-
-            // Update
-            let db = doc.editing()
-            let key = try TestData.generateKeypair()
-             _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
-            doc = try db.sealed(using: storePass)
-            XCTAssertEqual(2, doc.publicKeyCount)
-            XCTAssertEqual(2, doc.authenticationKeyCount)
-            try store.storeDid(using: doc)
-
-            let did = doc.subject
-            XCTAssertThrowsError(try store.publishDid(for: did, using: storePass)) { error in
-                switch error as! DIDError{
-                case .didStoreError("DID document not up-to-date"):
-                    XCTAssertTrue(true)
-                default:
-                    XCTFail()
-                }
-            }
-        } catch {
-            XCTFail()
-        }
-    }
-
-    func testForceUpdateDidWithWrongTxid() {
+    func testForceUpdateDidWithWrongPrevSignature() {
         do {
             let testData = TestData()
             let store = try testData.setupStore(true)
@@ -574,8 +553,8 @@ class DIDStoreTests: XCTestCase {
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), resolved!.toString())
 
-            doc.getMeta().setTransactionId("1234567890")
-            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+            doc.getMetadata().setPreviousSignature("1234567890")
+            try doc.saveMetadata()
 
             // Update
             let db = doc.editing()
@@ -586,7 +565,7 @@ class DIDStoreTests: XCTestCase {
             XCTAssertEqual(2, doc.authenticationKeyCount)
             try store.storeDid(using: doc)
 
-            _ = try store.publishDid(for: doc.subject, waitForConfirms: 1, using: doc.defaultPublicKey, storePassword: storePass, true)
+            _ = try store.publishDid(for: doc.subject, using: doc.defaultPublicKey, storePassword: storePass, true)
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), resolved!.toString())
@@ -610,8 +589,8 @@ class DIDStoreTests: XCTestCase {
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.toString(), resolved!.toString())
 
-            doc.getMeta().setSignature("1234567890")
-            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+            doc.getMetadata().setSignature("1234567890")
+            try doc.saveMetadata()
 
             // Update
             let db = doc.editing()
@@ -622,7 +601,7 @@ class DIDStoreTests: XCTestCase {
             XCTAssertEqual(2, doc.authenticationKeyCount)
             try store.storeDid(using: doc)
 
-            _ = try store.publishDid(for: doc.subject, waitForConfirms: 1, using: doc.defaultPublicKey, storePassword: storePass, true)
+            _ = try store.publishDid(for: doc.subject, using: doc.defaultPublicKey, storePassword: storePass, true)
 
             resolved = try doc.subject.resolve(true)
             XCTAssertNotNil(resolved)
@@ -884,7 +863,7 @@ class DIDStoreTests: XCTestCase {
                 resolved = try doc.subject.resolve(true)
                 try store.storeDid(using: resolved!)
                 XCTAssertNotNil(resolved)
-                XCTAssertEqual(alias, resolved!.aliasName)
+                XCTAssertEqual(alias, resolved!.getMetadata().aliasName)
                 XCTAssertEqual(doc.subject, resolved!.subject)
                 XCTAssertEqual(doc.proof.signature, resolved!.proof.signature)
                 XCTAssertTrue(resolved!.isValid)
@@ -989,18 +968,18 @@ class DIDStoreTests: XCTestCase {
             _ = try testData.loadTestIssuer()
             let test: DIDDocument = try testData.loadTestDocument()
             var vc = try testData.loadProfileCredential()
-            try vc!.setAlias("MyProfile")
+            vc?.getMetadata().setAlias("MyProfile")
             vc = try testData.loadEmailCredential()
-            try vc!.setAlias("Email")
+            vc?.getMetadata().setAlias("Email")
             vc = try testData.loadTwitterCredential()
-            try vc!.setAlias("Twitter")
+            vc?.getMetadata().setAlias("Twitter")
             vc = try testData.loadPassportCredential()
-            try vc!.setAlias("Passport")
-                        
+            vc?.getMetadata().setAlias("Passport")
+
             var id: DIDURL = try DIDURL(test.subject, "profile")
             vc = try store.loadCredential(for: test.subject, byId: id)
             XCTAssertNotNil(vc)
-            XCTAssertEqual("MyProfile", vc!.aliasName)
+            XCTAssertEqual("MyProfile", vc!.getMetadata().aliasName)
             XCTAssertEqual(test.subject, vc!.subject.did)
             XCTAssertEqual(id, vc!.getId())
             XCTAssertTrue(vc!.isValid)
@@ -1008,7 +987,7 @@ class DIDStoreTests: XCTestCase {
             // try with full id string
             vc = try store.loadCredential(for: test.subject.description, byId: id.description)
             XCTAssertNotNil(vc)
-            XCTAssertEqual("MyProfile", vc!.aliasName)
+            XCTAssertEqual("MyProfile", vc!.getMetadata().aliasName)
             XCTAssertEqual(test.subject, vc!.subject.did)
             XCTAssertEqual(id, vc!.getId())
             XCTAssertTrue(vc!.isValid)
@@ -1016,7 +995,7 @@ class DIDStoreTests: XCTestCase {
             id = try DIDURL(test.subject, "twitter")
             vc = try store.loadCredential(for: test.subject.description, byId: "twitter")
             XCTAssertNotNil(vc)
-            XCTAssertEqual("Twitter", vc!.aliasName)
+            XCTAssertEqual("Twitter", vc!.getMetadata().aliasName)
             XCTAssertEqual(test.subject, vc!.subject.did)
             XCTAssertEqual(id, vc!.getId())
             XCTAssertTrue(vc!.isValid)
@@ -1044,21 +1023,21 @@ class DIDStoreTests: XCTestCase {
             _ = try testData.loadTestIssuer()
             let test: DIDDocument = try testData.loadTestDocument()
             var vc = try testData.loadProfileCredential()
-            try vc!.setAlias("MyProfile")
+            vc?.getMetadata().setAlias("MyProfile")
             vc = try testData.loadEmailCredential()
-            try vc!.setAlias("Email")
+            vc?.getMetadata().setAlias("Email")
             vc = try testData.loadTwitterCredential()
-            try vc!.setAlias("Twitter")
+            vc?.getMetadata().setAlias("Twitter")
             vc = try testData.loadPassportCredential()
-            try vc!.setAlias("Passport")
-            
+            vc?.getMetadata().setAlias("Passport")
+
             let vcs: Array<DIDURL> = try store.listCredentials(for: test.subject)
             XCTAssertEqual(4, vcs.count)
             for id in vcs {
                 var re = id.fragment == "profile" || id.fragment == "email" || id.fragment == "twitter" || id.fragment == "passport"
                 XCTAssertTrue(re)
                 
-                re = id.aliasName == "MyProfile" || id.aliasName == "Email" || id.aliasName == "Twitter" || id.aliasName == "Passport"
+                re = id.getMetadata().aliasName == "MyProfile" || id.getMetadata().aliasName == "Email" || id.getMetadata().aliasName == "Twitter" || id.getMetadata().aliasName == "Passport"
                 XCTAssertTrue(re)
             }
         } catch {
@@ -1077,14 +1056,18 @@ class DIDStoreTests: XCTestCase {
             _ = try testData.loadTestIssuer()
             let test: DIDDocument = try testData.loadTestDocument()
             var vc = try testData.loadProfileCredential()
-            try vc!.setAlias("MyProfile")
+            vc?.getMetadata().setAlias("MyProfile")
+            try vc?.saveMetadata()
             vc = try testData.loadEmailCredential()
-            try vc!.setAlias("Email")
+            vc?.getMetadata().setAlias("Email")
+            try vc?.saveMetadata()
             vc = try testData.loadTwitterCredential()
-            try vc!.setAlias("Twitter")
+            vc?.getMetadata().setAlias("Twitter")
+            try vc?.saveMetadata()
             vc = try testData.loadPassportCredential()
-            try vc!.setAlias("Passport")
-            
+            vc?.getMetadata().setAlias("Passport")
+            try vc?.saveMetadata()
+
             var path = storeRoot + "/ids/" + test.subject.methodSpecificId + "/credentials/twitter/credential"
             XCTAssertTrue(testData.existsFile(path))
             
@@ -1141,23 +1124,23 @@ class DIDStoreTests: XCTestCase {
         XCTAssertEqual(2, dids.count)
         
         for did in dids {
-            if did.aliasName == "Issuer" {
+            if did.getMetadata().aliasName == "Issuer" {
                 let vcs: [DIDURL] = try store.listCredentials(for: did)
                 XCTAssertEqual(1, vcs.count)
                 
                 let id: DIDURL = vcs[0]
-                XCTAssertEqual("Profile", id.aliasName)
+                XCTAssertEqual("Profile", id.getMetadata().aliasName)
                 
                 XCTAssertNotNil(try store.loadCredential(for: did, byId: id))
-            } else if did.aliasName == "Test" {
+            } else if did.getMetadata().aliasName == "Test" {
                 let vcs: [DIDURL] = try store.listCredentials(for: did)
                 XCTAssertEqual(4, vcs.count)
                 
                 for id: DIDURL in vcs {
-                    XCTAssertTrue(id.aliasName == "Profile"
-                    || id.aliasName == "Email"
-                    || id.aliasName == "Passport"
-                    || id.aliasName == "Twitter")
+                    XCTAssertTrue(id.getMetadata().aliasName == "Profile"
+                        || id.getMetadata().aliasName == "Email"
+                        || id.getMetadata().aliasName == "Passport"
+                        || id.getMetadata().aliasName == "Twitter")
                     
                     XCTAssertNotNil(try store.loadCredential(for: did, byId: id))
                 }
@@ -1361,7 +1344,7 @@ class DIDStoreTests: XCTestCase {
                 resolved = try doc.subject.resolve(true)
                 XCTAssertNotNil(resolved)
                 try store.storeDid(using: resolved!)
-                XCTAssertEqual(alias, resolved!.aliasName)
+                XCTAssertEqual(alias, resolved!.getMetadata().aliasName)
                 XCTAssertEqual(doc.subject, resolved!.subject)
                 XCTAssertEqual(doc.proof.signature, resolved!.proof.signature)
                 XCTAssertTrue(resolved!.isValid)
@@ -1414,7 +1397,7 @@ class DIDStoreTests: XCTestCase {
                 resolved = try doc.subject.resolve(true)
                 XCTAssertNotNil(resolved)
                 try store.storeDid(using: resolved!)
-                XCTAssertEqual(alias, resolved!.aliasName)
+                XCTAssertEqual(alias, resolved!.getMetadata().aliasName)
                 XCTAssertEqual(doc.subject, resolved!.subject)
                 XCTAssertEqual(doc.proof.signature, resolved!.proof.signature)
                 XCTAssertTrue(resolved!.isValid)

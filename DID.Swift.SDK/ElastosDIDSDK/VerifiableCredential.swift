@@ -14,8 +14,6 @@ public class VerifiableCredential: DIDObject {
     private let RULE_GENUINE: Int = 2
     private let RULE_VALID  : Int = 3
 
-    private var meta: CredentialMeta?
-
     override init() {
         super.init()
     }
@@ -114,44 +112,27 @@ public class VerifiableCredential: DIDObject {
     func getMeta() -> CredentialMeta {
         if  self._meta == nil {
             self._meta = CredentialMeta()
+
+            getId().setMetadata(_meta!)
         }
         return self._meta!
     }
 
-    func setMeta(_ newValue: CredentialMeta) {
+    func setMetadata(_ newValue: CredentialMeta) {
         self._meta = newValue
+        getId().setMetadata(newValue)
     }
 
-    public func setExtra(value: String, forName: String) throws {
-        guard !forName.isEmpty else {
-            throw DIDError.illegalArgument()
+    public func getMetadata() -> CredentialMeta {
+        return getMeta()
+    }
+
+    public func saveMetadata() throws {
+        if _meta != nil && _meta!.attachedStore {
+            try _meta?.store?.storeCredentialMeta(for: subject.did, key: getId(), meta: _meta!)
         }
-
-        getMeta().setExtra(value, forName)
-        try getMeta().store?.storeCredentialMeta(for: subject.did, key: getId(), meta: getMeta())
     }
 
-    public func getExtra(forName: String) -> String? {
-        return getMeta().getExtra(forName)
-    }
-    
-    public var aliasName: String {
-        return getMeta().aliasName
-    }
-
-    private func setAliasName(_ newValue: String?) throws {
-        getMeta().setAlias(newValue)
-        try getMeta().store?.storeCredentialMeta(for: subject.did, key: getId(), meta: getMeta())
-    }
-
-    public func unsetAlias() throws {
-        try setAliasName(nil)
-    }
-
-    public func setAlias(_ newValue: String) throws {
-        try setAliasName(newValue)
-    }
-    
     public func isSelfProclaimed() -> Bool {
         return issuer == subject.did
     }

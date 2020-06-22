@@ -142,49 +142,21 @@ public class DIDURL {
         self._queryParameters![forKey] = value
     }
 
-    func getMeta() -> CredentialMeta {
+    func setMetadata(_ metadata: CredentialMeta) {
+        self._meta = metadata
+    }
+
+    public func getMetadata() -> CredentialMeta {
         if  self._meta == nil {
             self._meta = CredentialMeta()
         }
         return self._meta!
     }
 
-    func setMeta(_ meta: CredentialMeta) {
-        self._meta = meta
-    }
-
-    public func setExtra(value: String?, forName name: String) throws {
-        guard !name.isEmpty else {
-            throw DIDError.illegalArgument()
+    public func saveMetadata() throws {
+        if (_meta != nil && _meta!.attachedStore) {
+            try _meta?.store?.storeCredentialMeta(for: did, key: self, meta: _meta!)
         }
-
-        getMeta().setExtra(name, value)
-        try getMeta().store?.storeCredentialMeta(for: did, key: self, meta: getMeta())
-    }
-
-    public func getExtra(forName: String) -> String? {
-        return getMeta().getExtra(forName)
-    }
-
-    public var aliasName: String {
-        return getMeta().aliasName
-    }
-
-    private func setAliasName(_ newValue: String?) throws {
-        getMeta().setAlias(newValue)
-        try getMeta().store?.storeCredentialMeta(for: did, key: self, meta: getMeta())
-    }
-
-    public func setAlias(_ newValue: String) throws {
-        guard !newValue.isEmpty else {
-            throw DIDError.illegalArgument()
-        }
-
-        try setAliasName(newValue)
-    }
-
-    public func unsetAlias() throws {
-        try setAliasName(nil)
     }
 }
 

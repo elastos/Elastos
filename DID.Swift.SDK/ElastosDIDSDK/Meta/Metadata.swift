@@ -1,17 +1,16 @@
 import Foundation
 
-private func getFullName(_ name: String) -> String {
-    guard !name.hasPrefix(Constants.EXTRA_PREFIX) else {
-        return name
-    }
-    return Constants.EXTRA_PREFIX + name
-}
-
- class Metadata {
+public class Metadata: NSObject {
+    static let RESERVED_PREFIX = "DX-"
     private var _store: DIDStore?
-    private var _extra = Dictionary<String, String>()
+    private var _extra = Dictionary<String, Any>()
 
-    required init() {}
+    required override init() {}
+
+    init(store: DIDStore) {
+        super.init()
+        setStore(store)
+    }
 
     var store: DIDStore? {
         return self._store
@@ -25,83 +24,117 @@ private func getFullName(_ name: String) -> String {
         self._store = store
     }
 
-    func setExtraInternal(_ name: String, _ value: String?) {
-        guard name.hasPrefix(Constants.EXTRA_PREFIX) else {
-            return
-        }
-        self._extra[getFullName(name)] = value
+    func setExtra(_ key: String, _ value: String?) {
+        self._extra[key] = value
     }
 
-    func setExtra(_ name: String, _ value: String?) {
-        self._extra[getFullName(name)] = value
-    }
-
-    func getExtra(_ name: String) -> String? {
-        return self._extra[getFullName(name)]
-    }
-    
-    func fromNode(_ node: JsonNode) throws {}
-    func toNode(_ node: JsonNode) {}
-
-    class func fromJson<T: Metadata>(_ node: JsonNode, _ type: T.Type) throws -> T {
-        let meta = T.init()
-        guard !node.isEmpty else {
-            return meta
-        }
-
-        try meta.fromNode(node)
-        let dict = node.asDictionary()
-        guard let _ = dict else {
-            return meta
-        }
-
-        for (key, value) in dict! {
-            meta.setExtraInternal(key, value.asString() ?? "")
-        }
-        return meta
-    }
-
-    class func fromJson<T: Metadata>(_ metadata: Data, _ type: T.Type) throws -> T {
-        let data: Any
-        do {
-            data = try JSONSerialization.jsonObject(with: metadata, options: [])
-        } catch {
-            throw DIDError.malformedMeta("Parse metadata error.")
-        }
-
-        return try fromJson(JsonNode(data), type)
-    }
-
-    class func fromJson<T: Metadata>(_ metadata: String, _ type: T.Type) throws -> T {
-        return try fromJson(metadata.data(using: .utf8)!, type)
-    }
-
-    func toJson() -> String {
-        let node = JsonNode()
-        toNode(node)
-        _extra.forEach { (key, value) in
-            node.put(forKey: key, value: value)
-        }
-      return node.toString()
+    func getExtra(_ key: String) -> String? {
+        return self._extra[key] as? String
     }
 
     func merge(_ meta: Metadata) throws {
         meta._extra.forEach{ (key, value) in
-            _extra[key] = value
+            if _extra.keys.contains(key) {
+                if _extra[key] == nil {
+                    _extra.removeValue(forKey: key)
+                }
+            }
+            else {
+                if case Optional<Any>.none = value {
+                    return
+                }
+                _extra[key] = value
+            }
         }
     }
 
+    public func load(reader: FileHandle) throws {
+        let data = reader.readDataToEndOfFile()
+        defer {
+            reader.closeFile()
+        }
+        let metaString = String(data: data, encoding: .utf8)!
+        let node = JsonNode(metaString)
+        try load(node)
+    }
+
+    public func load(_ node: JsonNode) throws {
+        let dic = node.asDictionary()
+        try dic?.forEach{ (key, value) in
+            switch value.getNodeType() {
+
+            case .BOOLEAN:
+                _extra[key] = value.asBool()
+                break;
+            case .NIL:
+                break
+            case .NUMBER:
+                _extra[key] = value.asNumber()
+                break;
+            case .STRING:
+                _extra[key] = value.asString()
+                break;
+            default:
+                throw DIDError.malformedMeta("Unsupported field: \(key)")
+            }
+        }
+    }
+
+    public func put(key: String, value: Any) {
+        _extra[key] = value
+    }
+
+    public func get(key: String) -> Any {
+        return _extra[key] as Any
+    }
+
+    private func save(generator: JsonGenerator) throws {
+        generator.writeStartObject()
+        try _extra.forEach { (key, value) in
+
+            if case Optional<Any>.none = value {
+                return
+            }
+
+            if value is Int {
+                generator.writeNumberField(key, value as! Int)
+            }
+            else if value is String {
+                generator.writeStringField(key, value as! String)
+            }
+            else if value is Date {
+                generator.writeStringField(key, DateHelper.formateDate(value as! Date))
+            }
+            else {
+                throw DIDError.malformedMeta("Can not serialize attribute: \(key)")
+            }
+        }
+        generator.writeEndObject()
+    }
+
+    public func save(path: FileHandle) throws {
+        defer {
+            path.closeFile()
+        }
+        let generator = JsonGenerator()
+        try save(generator: generator)
+        path.write(generator.toString().data(using: .utf8)!)
+    }
+
+    func toJson() throws -> String {
+        let generator = JsonGenerator()
+        try save(generator: generator)
+
+        return generator.toString()
+    }
+    
     func isEmpty() -> Bool {
         return _extra.isEmpty
     }
 }
 
-extension Metadata: CustomStringConvertible {
-    func toString() -> String {
-        return toJson()
-    }
-
-    var description: String {
-        return toString()
+extension Metadata {
+    func toString() throws -> String {
+        return try toJson()
     }
 }

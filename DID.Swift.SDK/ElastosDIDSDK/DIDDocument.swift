@@ -150,7 +150,7 @@ public class DIDDocument {
         self._subject = doc.subject
         self._expirationDate = doc.expirationDate
         self._proof = doc.proof
-        self._meta = doc.getMeta()
+        self._meta = doc.getMetadata()
     }
 
     public var subject: DID {
@@ -202,7 +202,7 @@ public class DIDDocument {
         guard containsPublicKey(forId: forId) else {
             return false
         }
-        guard let store = getMeta().store else {
+        guard let store = getMetadata().store else {
             return false
         }
 
@@ -239,10 +239,10 @@ public class DIDDocument {
         guard containsPublicKey(forId: ofId) else {
             throw DIDError.illegalArgument("Key no exist")
         }
-        guard getMeta().attachedStore else {
+        guard getMetadata().attachedStore else {
             throw DIDError.didStoreError("Not attached with DID store.")
         }
-        guard getMeta().store!.containsPrivateKey(for: subject, id: ofId) else {
+        guard getMetadata().store!.containsPrivateKey(for: subject, id: ofId) else {
             throw DIDError.illegalArgument("Don't have private key")
         }
         let pubKey = publicKey(ofId: ofId)
@@ -257,10 +257,10 @@ public class DIDDocument {
         guard containsPublicKey(forId: ofId) else {
             throw DIDError.illegalArgument("Key no exist")
         }
-        guard getMeta().attachedStore else {
+        guard getMetadata().attachedStore else {
             throw DIDError.didStoreError("Not attached with DID store.")
         }
-        guard getMeta().store!.containsPrivateKey(for: subject, id: ofId) else {
+        guard getMetadata().store!.containsPrivateKey(for: subject, id: ofId) else {
             throw DIDError.illegalArgument("Don't have private key")
         }
 
@@ -268,7 +268,7 @@ public class DIDDocument {
         let pubs = pubKey!.publicKeyBytes
         let pubData = Data(bytes: pubs, count: pubs.count)
 
-        let privKey = try getMeta().store?.loadPrivateKey(for: subject, byId: ofId)
+        let privKey = try getMetadata().store?.loadPrivateKey(for: subject, byId: ofId)
         let privKeyData = try DIDStore.decryptFromBase64(privKey!, storePassword)
         let privateKeyData = try HDKey.DerivedKey.PEM_ReadPrivateKey(pubData, privKeyData)
 
@@ -358,7 +358,7 @@ public class DIDDocument {
         }
 
         _ = publicKeyMap.remove(id)
-        _ = getMeta().store?.deletePrivateKey(for: subject, id: id)
+        _ = getMetadata().store?.deletePrivateKey(for: subject, id: id)
         return true
     }
 
@@ -630,61 +630,29 @@ public class DIDDocument {
         self._proof = proof
     }
 
-    func getMeta() -> DIDMeta {
-        if  self._meta == nil {
-            self._meta = DIDMeta()
-        }
-        return self._meta!
+    func setMetadata(_ metadata: DIDMeta) {
+        self._meta = metadata
+        subject.setMetadata(metadata)
     }
 
-    func setMeta(_ meta: DIDMeta) {
-        self._meta = meta
-    }
 
-    public func setExtra(value: String, forName name: String) throws {
-        guard !name.isEmpty else {
-            throw DIDError.illegalArgument()
+    public func getMetadata() -> DIDMeta {
+        if _meta == nil {
+            _meta = DIDMeta()
+            subject.setMetadata(_meta!)
         }
 
-        getMeta().setExtra(value, name)
-        try getMeta().store?.storeDidMeta(getMeta(), for: self.subject)
+        return _meta!
     }
 
-    public func getExtra(forName: String) -> String? {
-        return getMeta().getExtra(forName)
-    }
-
-    private func setAliasName(_ newValue: String?) throws {
-        getMeta().setAlias(newValue)
-        try getMeta().store?.storeDidMeta(getMeta(), for: self.subject)
-    }
-
-    public func setAlias(_ newValue: String) throws {
-        guard !newValue.isEmpty else {
-            throw DIDError.illegalArgument()
+    public func saveMetadata() throws {
+        if _meta != nil && _meta!.attachedStore {
+           try  _meta!.store?.storeDidMeta(_meta!, for: subject)
         }
-
-        try setAliasName(newValue)
-    }
-
-    public func unsetAlias() throws {
-        try setAliasName(nil)
-    }
-
-    public var aliasName: String {
-        return getMeta().aliasName
-    }
-
-    public var transactionId: String? {
-        return getMeta().transactionId
-    }
-
-    public var updatedDate: Date? {
-        return getMeta().updatedDate
     }
 
     public var isDeactivated: Bool {
-        return getMeta().isDeactivated
+        return getMetadata().isDeactivated
     }
 
     public var isExpired: Bool {
@@ -736,11 +704,11 @@ public class DIDDocument {
         guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
-        guard getMeta().attachedStore else {
+        guard getMetadata().attachedStore else {
             throw DIDError.didStoreError("Not attached with DID store")
         }
 
-        return try getMeta().store!.sign(subject, id, storePassword, data)
+        return try getMetadata().store!.sign(subject, id, storePassword, data)
     }
 
     public func verify(signature: String, onto data: Data...) throws -> Bool {
