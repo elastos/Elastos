@@ -175,7 +175,7 @@ class C extends StandardPage {
         }
       }
     })
-    const isVote = (currentVoted && currentVoted.status == 'chained') || currentVoted.value == 'undecided'
+    const isVote = currentVoted && (currentVoted.status == 'chained' || currentVoted.value == 'undecided')
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
