@@ -170,18 +170,12 @@ export default class extends Base {
                 {
                     $addToSet: {reference: res._id},
                     $set: {tags: []},
-                    proposalHash,
-                    $unset: {proposed: true}
+                    proposalHash
                 }
             )
             this.notifySubscribers(res)
             this.notifyCouncil(res)
-            return {
-                _id: res._id,
-                vid: res.vid,
-                proposer: userUtil.formatUsername(creator),
-                status: res.status
-            }
+            return { _id: res._id, vid: res.vid }
         } catch (error) {
             logger.error(error)
             return
