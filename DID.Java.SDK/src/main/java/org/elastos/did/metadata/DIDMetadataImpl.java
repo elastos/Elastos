@@ -91,7 +91,8 @@ public class DIDMetadataImpl extends AbstractMetadata implements DIDMetadata {
 	@Override
 	public Date getPublished() {
 		try {
-			return JsonHelper.parseDate((String)get(PUBLISHED));
+			String published = (String)get(PUBLISHED);
+			return published == null ? null : JsonHelper.parseDate(published);
 		} catch (ParseException e) {
 			return null;
 		}
