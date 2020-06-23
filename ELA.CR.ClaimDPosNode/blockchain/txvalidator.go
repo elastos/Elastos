@@ -253,7 +253,8 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		}
 
 	case WithdrawFromSideChain:
-		if err := b.checkWithdrawFromSideChainTransaction(txn, references); err != nil {
+		if err := b.checkWithdrawFromSideChainTransaction(txn, references,
+			blockHeight); err != nil {
 			log.Warn("[CheckWithdrawFromSideChainTransaction],", err)
 			return nil, elaerr.Simple(elaerr.ErrTxSidechainDuplicate, err)
 		}
@@ -1510,34 +1511,22 @@ func (b *BlockChain) checkProcessProducer(txn *Transaction) (
 	return producer, nil
 }
 
-func (b *BlockChain) checkActivateProducer(txn *Transaction) (
-	*state.Producer, error) {
-	activateProducer, ok := txn.Payload.(*payload.ActivateProducer)
-	if !ok {
-		return nil, errors.New("invalid payload")
-	}
-
+func (b *BlockChain) checkActivateProducerSignature(activateProducer *payload.ActivateProducer) error {
 	// check signature
 	publicKey, err := DecodePoint(activateProducer.NodePublicKey)
 	if err != nil {
-		return nil, errors.New("invalid public key in payload")
+		return errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
 	err = activateProducer.SerializeUnsigned(signedBuf, payload.ActivateProducerVersion)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	err = Verify(*publicKey, signedBuf.Bytes(), activateProducer.Signature)
 	if err != nil {
-		return nil, errors.New("invalid signature in payload")
+		return errors.New("invalid signature in payload")
 	}
-
-	producer := b.state.GetProducer(activateProducer.NodePublicKey)
-	if producer == nil || !bytes.Equal(producer.NodePublicKey(),
-		activateProducer.NodePublicKey) {
-		return nil, errors.New("getting unknown producer")
-	}
-	return producer, nil
+	return nil
 }
 
 func (b *BlockChain) checkCancelProducerTransaction(txn *Transaction) error {
@@ -1556,9 +1545,29 @@ func (b *BlockChain) checkCancelProducerTransaction(txn *Transaction) error {
 
 func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 	height uint32) error {
-	producer, err := b.checkActivateProducer(txn)
+
+	activateProducer, ok := txn.Payload.(*payload.ActivateProducer)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	err := b.checkActivateProducerSignature(activateProducer)
 	if err != nil {
 		return err
+	}
+
+	if b.GetCRCommittee().IsInElectionPeriod() {
+		crMember := b.GetCRCommittee().GetMemberByNodePublicKey(activateProducer.NodePublicKey)
+		if crMember != nil && crMember.MemberState == crstate.MemberInactive {
+			// todo check penalty
+			return nil
+		}
+	}
+
+	producer := b.state.GetProducer(activateProducer.NodePublicKey)
+	if producer == nil || !bytes.Equal(producer.NodePublicKey(),
+		activateProducer.NodePublicKey) {
+		return errors.New("getting unknown producer")
 	}
 
 	if height < b.chainParams.EnableActivateIllegalHeight {

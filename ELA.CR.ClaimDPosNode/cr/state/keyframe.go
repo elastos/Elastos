@@ -36,6 +36,10 @@ const (
 	// MemberInactive indicates the CR member was inactive because the dpos node
 	// is inactive.
 	MemberInactive
+
+	// MemberIllegal indicates the CR member was illegal because the dpos node
+	// is illegal.
+	MemberIllegal
 )
 
 func (s *MemberState) String() string {
@@ -95,12 +99,15 @@ func (s *BudgetStatus) Name() string {
 
 // CRMember defines CR committee member related info.
 type CRMember struct {
-	Info             payload.CRInfo
-	ImpeachmentVotes common.Fixed64
-	DepositHash      common.Uint168
-	MemberState      MemberState
-	DPOSPublicKey    []byte
-	InactiveCount    uint32
+	Info                   payload.CRInfo
+	ImpeachmentVotes       common.Fixed64
+	DepositHash            common.Uint168
+	MemberState            MemberState
+	DPOSPublicKey          []byte
+	InactiveSince          uint32
+	InactiveCountingHeight uint32
+	ActivateRequestHeight  uint32
+	InactiveCount          uint32
 }
 
 // StateKeyFrame holds necessary state about CR committee.

@@ -1619,6 +1619,7 @@ func NewArbitrators(chainParams *config.Params, committee *state.Committee,
 		return nil, err
 	}
 	a.State = NewState(chainParams, a.GetArbitrators, a.crCommittee.GetAllMembers,
+		a.crCommittee.IsInElectionPeriod,
 		getProducerDepositAmount)
 
 	chainParams.CkpManager.Register(NewCheckpoint(a))

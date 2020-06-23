@@ -234,6 +234,17 @@ func (c *Committee) getMember(did common.Uint168) *CRMember {
 	return nil
 }
 
+func (c *Committee) GetMemberByNodePublicKey(nodePK []byte) *CRMember {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	for _, m := range c.Members {
+		if bytes.Equal(m.DPOSPublicKey, nodePK) {
+			return m
+		}
+	}
+	return nil
+}
+
 // update Candidates state in voting period
 func (c *Committee) updateVotingCandidatesState(height uint32) {
 	if c.isInVotingPeriod(height) {
