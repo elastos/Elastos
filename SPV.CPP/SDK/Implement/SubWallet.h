@@ -95,7 +95,7 @@ namespace Elastos {
 
 			virtual nlohmann::json CreateTransaction(
 				const std::string &fromAddress,
-				const std::string &toAddress,
+				const std::string &targetAddress,
 				const std::string &amount,
 				const std::string &memo);
 

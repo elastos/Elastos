@@ -25,6 +25,7 @@
 
 #include "IEthSidechainSubWallet.h"
 #include "SubWallet.h"
+#include "Ethereum/EthereumEWM.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem/path.hpp>
@@ -134,6 +135,9 @@ namespace Elastos {
 								  MasterWallet *parent,
 								  const std::string &netType);
 
+			std::string GetTransferID(const EthereumTransferPtr &tx) const;
+
+			EthereumTransferPtr LookupTransfer(const std::string &tid) const;
 
 		protected:
 			std::string _walletID;

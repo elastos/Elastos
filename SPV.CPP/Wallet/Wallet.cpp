@@ -1630,9 +1630,14 @@ static int transfer(int argc, char *argv[]) {
 
 	std::string chainID = argv[1];
 	std::string addr = argv[2];
-	std::string amount = convertAmount(argv[3]);
+	std::string amount = "0";
 
 	try {
+		if (chainID == CHAINID_ETHSC) {
+			amount = argv[3];
+		} else {
+			amount = convertAmount(argv[3]);
+		}
 		ISubWallet *subWallet;
 		getSubWallet(subWallet, currentWallet, chainID);
 

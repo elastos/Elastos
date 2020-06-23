@@ -287,13 +287,13 @@ namespace Elastos {
 			return tx;
 		}
 
-		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
+		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &targetAddress,
 													const std::string &amount, const std::string &memo) {
 
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
-			ArgInfo("toAddr: {}", toAddress);
+			ArgInfo("targetAddr: {}", targetAddress);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
 
@@ -308,7 +308,7 @@ namespace Elastos {
 			}
 
 			OutputArray outputs;
-			Address receiveAddr(toAddress);
+			Address receiveAddr(targetAddress);
 			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, receiveAddr)));
 			AddressPtr fromAddr(new Address(fromAddress));
 

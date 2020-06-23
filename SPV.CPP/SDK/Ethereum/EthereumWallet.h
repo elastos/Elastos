@@ -110,7 +110,7 @@ namespace Elastos {
 
 			void sign(EthereumTransferPtr &transaction, const std::string &paperKey) const;
 
-			void signWithPrivateKey(EthereumTransferPtr &transaction, const bytes_t &privateKey) const;
+			void signWithPrivateKey(EthereumTransferPtr &transaction, const BRKey &key) const;
 
 			void submit(const EthereumTransferPtr &transaction);
 
@@ -130,7 +130,7 @@ namespace Elastos {
 
 			void signRawTransaction(BREthereumTransfer transaction, const std::string &paperKey) const;
 
-			void signRawTransactionWithPrivateKey(BREthereumTransfer transaction, const bytes_t &prvkey) const;
+			void signRawTransactionWithPrivateKey(BREthereumTransfer transaction, const BRKey &key) const;
 
 			void submitRawTransaction(BREthereumTransfer transaction) const;
 

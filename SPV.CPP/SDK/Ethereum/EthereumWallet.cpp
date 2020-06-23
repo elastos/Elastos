@@ -192,8 +192,8 @@ namespace Elastos {
 			signRawTransaction(transaction->getRaw(), paperKey);
 		}
 
-		void EthereumWallet::signWithPrivateKey(EthereumTransferPtr &transaction, const bytes_t &privateKey) const {
-			signRawTransactionWithPrivateKey(transaction->getRaw(), privateKey);
+		void EthereumWallet::signWithPrivateKey(EthereumTransferPtr &transaction, const BRKey &key) const {
+			signRawTransactionWithPrivateKey(transaction->getRaw(), key);
 		}
 
 		void EthereumWallet::submit(const EthereumTransferPtr &transaction) {
@@ -249,15 +249,8 @@ namespace Elastos {
 		}
 
 		void EthereumWallet::signRawTransactionWithPrivateKey(BREthereumTransfer transaction,
-															  const bytes_t &prvkey) const {
+															  const BRKey &key) const {
 			BREthereumEWM node = _ewm->getRaw();
-
-			BRKey key = {
-				UINT256_ZERO,
-				{0},
-				0
-			};
-			memcpy(key.secret.u8, prvkey.data(), prvkey.size() > sizeof(UInt256) ? sizeof(UInt256) : prvkey.size());
 
 			ewmWalletSignTransfer(node, getRaw(), (BREthereumTransfer) transaction, key);
 		}

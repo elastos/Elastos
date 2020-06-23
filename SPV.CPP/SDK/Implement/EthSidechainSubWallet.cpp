@@ -22,8 +22,10 @@
 #include "MasterWallet.h"
 #include "EthSidechainSubWallet.h"
 #include <Ethereum/EthereumClient.h>
+#include <ethereum/ewm/BREthereumAccount.h>
 #include <WalletCore/CoinInfo.h>
 #include <Common/ErrorChecker.h>
+#include <Common/hash.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -55,6 +57,22 @@ namespace Elastos {
 
 			EthereumNetworkPtr network(new EthereumNetwork(netType));
 			_client = ClientPtr(new EthereumClient(network, parent->GetDataPath(), pubkey));
+		}
+
+		std::string EthSidechainSubWallet::GetTransferID(const EthereumTransferPtr &tx) const {
+			bytes_t tid = sha256(bytes_t(tx->getRaw(), sizeof(tx->getRaw())));
+			tid.erase(tid.begin() + 4, tid.end());
+			return tid.getHex();
+		}
+
+		EthereumTransferPtr EthSidechainSubWallet::LookupTransfer(const std::string &tid) const {
+			std::vector<EthereumTransferPtr> transfers = _client->_ewm->getWallet()->getTransfers();
+			for (size_t i = 0; i < transfers.size(); ++i) {
+				if (tid == GetTransferID(transfers[i]))
+					return transfers[i];
+			}
+
+			return nullptr;
 		}
 
 		std::string EthSidechainSubWallet::GetChainID() const {
@@ -163,16 +181,21 @@ namespace Elastos {
 		}
 
 		nlohmann::json EthSidechainSubWallet::CreateTransaction(const std::string &fromAddress,
-																const std::string &toAddress,
+																const std::string &targetAddress,
 																const std::string &amount,
 																const std::string &memo) {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("from: {}", fromAddress);
-			ArgInfo("to: {}", toAddress);
+			ArgInfo("target: {}", targetAddress);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
 
 			nlohmann::json j;
+
+			EthereumTransferPtr tx = _client->_ewm->getWallet()->createTransfer(targetAddress, amount, EthereumAmount::Unit::ETHER_ETHER);
+
+			j["ID"] = GetTransferID(tx);
+			j["Fee"] = _client->_ewm->getWallet()->transferEstimatedFee(amount);
 
 			ArgInfo("r => {}", j.dump());
 
@@ -209,7 +232,26 @@ namespace Elastos {
 			ArgInfo("tx: {}", tx.dump());
 			ArgInfo("passwd: *");
 
-			nlohmann::json j;
+			std::string tid;
+			EthereumTransferPtr transfer;
+			if (tx.find("ID") == tx.end())
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "'ID' not found in json");
+
+			try {
+				tid = tx["ID"].get<std::string>();
+				transfer = LookupTransfer(tid);
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "get 'ID' of json failed");
+			}
+
+			ErrorChecker::CheckParam(transfer == nullptr, Error::InvalidArgument, "transfer " + tid + " not found");
+
+			uint512 seed = _parent->GetAccount()->GetSeed(payPassword);
+			BRKey prvkey = derivePrivateKeyFromSeed(*(UInt512 *)seed.begin(), 0);
+			_client->_ewm->getWallet()->signWithPrivateKey(transfer, prvkey);
+
+			nlohmann::json j = tx;
+			j["Hash"] = transfer->getOriginationTransactionHash();
 
 			ArgInfo("r => {}", j.dump());
 			return j;
@@ -230,7 +272,24 @@ namespace Elastos {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("tx: {}", tx.dump());
 
-			nlohmann::json j;
+			std::string tid;
+			EthereumTransferPtr transfer;
+			if (tx.find("ID") == tx.end())
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "'ID' not found in json");
+
+			try {
+				tid = tx["ID"].get<std::string>();
+				transfer = LookupTransfer(tid);
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "get 'ID' of json failed");
+			}
+			ErrorChecker::CheckParam(transfer == nullptr, Error::InvalidArgument, "transfer " + tid + " not found");
+
+			_client->_ewm->getWallet()->submit(transfer);
+
+			nlohmann::json j = tx;
+			j["Hash"] = transfer->getOriginationTransactionHash();
+
 			ArgInfo("r => {}", j.dump());
 			return j;
 		}

@@ -143,14 +143,14 @@ namespace Elastos {
 			/**
 			 * Create a normal transaction and return the content of transaction in json format.
 			 * @param fromAddress specify which address we want to spend, or just input empty string to let wallet choose UTXOs automatically.
-			 * @param toAddress specify which address we want to send.
+			 * @param targetAddress specify which address we want to send.
 			 * @param amount specify amount we want to send. "-1" means max.
 			 * @param memo input memo attribute for describing.
 			 * @return If success return the content of transaction in json format.
 			 */
 			virtual nlohmann::json CreateTransaction(
 					const std::string &fromAddress,
-					const std::string &toAddress,
+					const std::string &targetAddress,
 					const std::string &amount,
 					const std::string &memo) = 0;
 
