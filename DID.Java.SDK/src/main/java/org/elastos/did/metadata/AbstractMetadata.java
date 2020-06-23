@@ -29,9 +29,9 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.elastos.did.DIDStore;
 import org.elastos.did.exception.MalformedMetaException;
@@ -42,7 +42,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public abstract class AbstractMetadata extends HashMap<String, Object> {
+public abstract class AbstractMetadata extends TreeMap<String, Object> {
 	private static final long serialVersionUID = -3700036981800046481L;
 
 	protected final static String RESERVED_PREFIX = "DX-";
@@ -145,6 +145,8 @@ public abstract class AbstractMetadata extends HashMap<String, Object> {
 				generator.writeNumberField(k, (int)v);
 			else if (v instanceof Long)
 				generator.writeNumberField(k, (long)v);
+			else if (v instanceof Boolean)
+				generator.writeBooleanField(k, (boolean)v);
 			else if (v instanceof String)
 				generator.writeStringField(k, (String)v);
 			else if (v instanceof Date)
