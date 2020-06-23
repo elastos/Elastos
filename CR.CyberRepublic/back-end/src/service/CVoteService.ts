@@ -122,57 +122,6 @@ export default class extends Base {
         }
     }
 
-    public async pollProposalState(param: any) {
-        const did = _.get(this.currentUser, 'did.id')
-        if (!did) {
-          return { success: false, message: 'Your DID not bound' }
-        }
-        const role = _.get(this.currentUser, 'role')
-        if (!permissions.isCouncil(role)) {
-          return { success: false, message: 'No access right' }
-        }
-        const { id } = param
-        const db_suggestion = this.getDBModel('Suggestion')
-        const suggestion = await db_suggestion.findById(id)
-        if (suggestion) {
-            const proposers = _.get(suggestion, 'proposers')
-            // make sure current council member had signed
-            const currentProposer = proposers && proposers.filter(item => item.proposalHash && item.did === did)[0]
-            if (currentProposer) {
-                // draft hash is a constant
-                const draftHash = _.get(suggestion, 'draftHash')
-                const db_cvote = this.getDBModel('CVote')
-                const cvote = await db_cvote.getDBInstance().findOne({ draftHash }).populate('createdBy')
-                if (cvote) {
-                    return {
-                        success: true,
-                        reference: {
-                            _id: cvote._id,
-                            vid: cvote.vid,
-                            proposer: userUtil.formatUsername(cvote.createdBy),
-                            status: cvote.status
-                        }
-                    }
-                }
-                const rs: any = await getProposalState({
-                    drafthash: draftHash
-                })
-                if (rs && rs.success && rs.status === 'Registered') {
-                    const proposal = await this.makeSuggIntoProposal({
-                        suggestion,
-                        proposalHash: rs.proposalHash,
-                        chainDid: rs.proposal.crcouncilmemberdid
-                    })
-                    return { success: true, reference: proposal }
-                } else {
-                    return { success: true, toChain: true }
-                }
-            }
-        } else {
-            return {success: false, message: 'no this suggestion'}
-        }
-    }
-
     public async makeSuggIntoProposal(param: any) {
         const db_cvote = this.getDBModel('CVote')
         const db_suggestion = this.getDBModel('Suggestion')
@@ -877,14 +826,26 @@ export default class extends Base {
         return rs
     }
 
-    private async updateProposalBudget(query: any) {
-        const { WITHDRAWN, WAITING_FOR_WITHDRAWAL } = constant.MILESTONE_STATUS
+    public async updateProposalBudget() {
         const db_cvote = this.getDBModel('CVote')
-        const proposal = await db_cvote.findOne(query)
-        // deal with old proposal data
-        if (!_.get(proposal, 'proposalHash')) {
+        const proposals = await db_cvote.find({
+            status: {$in: ['ACTIVE', 'FINAL']},
+            old: {$exists: false}
+        })
+
+        if (!proposals.length) {
             return
         }
+        console.log('upb---proposal length---', proposals.length)
+        const arr = []
+        for (const proposal of proposals) {
+            arr.push(this.updateMilestoneStatus(proposal))
+        }
+        await Promise.all(arr)
+    }
+
+    private async updateMilestoneStatus(proposal) {
+        const { WITHDRAWN, WAITING_FOR_WITHDRAWAL, REJECTED, WAITING_FOR_APPROVAL } = constant.MILESTONE_STATUS
         const last: any = _.last(proposal.budget)
         // proposal is final
         if (
@@ -910,12 +871,26 @@ export default class extends Base {
             if (budgets) {
                 const budget = proposal.budget.map((item, index) => {
                     const chainStatus = budgets[index].status.toLowerCase()
-                    if (chainStatus === 'withdrawn') {
+                    if (chainStatus === 'withdrawn' && item.status === WAITING_FOR_WITHDRAWAL) {
                         isBudgetUpdated = true
                         return { ...item, status: WITHDRAWN }
                     }
-                    if (chainStatus === 'withdrawable') {
+                    if (chainStatus === 'rejected' && item.status === WAITING_FOR_APPROVAL) {
+                        console.log('ums---rejected milestoneKey---', item.milestoneKey)
                         isBudgetUpdated = true
+                        this.notifyProposalOwner(
+                            proposal.proposer,
+                            this.rejectedMailTemplate(proposal.vid)
+                        )
+                        return { ...item, status: REJECTED }
+                    }
+                    if (chainStatus === 'withdrawable' && item.status === WAITING_FOR_APPROVAL) {
+                        console.log('ums---approved milestoneKey---', item.milestoneKey)
+                        isBudgetUpdated = true
+                        this.notifyProposalOwner(
+                            proposal.proposer,
+                            this.approvalMailTemplate(proposal.vid)
+                        )
                         return { ...item, status: WAITING_FOR_WITHDRAWAL }
                     }
                     return item
@@ -925,6 +900,7 @@ export default class extends Base {
                 }
             }
             if (isStatusUpdated || isBudgetUpdated) {
+                console.log('ums---save proposal.vid---', proposal.vid)
                 await proposal.save()
             }
         }
@@ -940,7 +916,6 @@ export default class extends Base {
         } else {
             query = {_id: id}
         }
-        await this.updateProposalBudget(query)
         const rs = await db_cvote
             .getDBInstance()
             .findOne(query, '-voteHistory')
@@ -1732,6 +1707,76 @@ export default class extends Base {
                 multi: true
             }
         )
+    }
+
+    // update proposalHash status aborted
+    // public async temporaryChangeUpdateStatus() {
+    //     const db_cvote = this.getDBModel('CVote')
+    //     const list = await db_cvote.find({
+    //         $or: [
+    //             {status: constant.CVOTE_STATUS.NOTIFICATION},
+    //             {status: constant.CVOTE_STATUS.PROPOSED}
+    //         ]
+    //     })
+    //     const idsAborted = []
+    //     _.each(list, (item) => {
+    //         idsAborted.push(item._id)
+    //     })
+    //    await db_cvote.update(
+    //         {
+    //             _id: {$in:idsAborted}
+    //         },
+    //         {
+    //             $set:{
+    //                 status: constant.CVOTE_STATUS.ABORTED
+    //             }
+    //         },
+    //         {
+    //             multi: true
+    //         }
+    //     )
+    // }
+
+    private rejectedMailTemplate(id: string) {
+        const subject = `【Payment rejected】Your payment request is rejected by secretary`
+        const body = `
+        <p>One payment request in proposal #${id}  has been rejected.</p>
+        <p>Click this link to view more details:</p>
+        <p><a href="${process.env.SERVER_URL}/proposals/${id}">${process.env.SERVER_URL}/proposals/${id}</a></p>
+        <br />
+        <p>Cyber Republic Team</p>
+        <p>Thanks</p>
+        `
+        return { subject, body }
+    }
+    
+    private approvalMailTemplate(id: string) {
+        const subject = `【Payment approved】Your payment request is approved by secretary`
+        const body = `
+        <p>One payment request in proposal ${id} has been approved, the ELA distribution will processed shortly, check your ELA wallet later.</p>
+        <p>Click this link to view more details:</p>
+        <p><a href="${process.env.SERVER_URL}/proposals/${id}">${process.env.SERVER_URL}/proposals/${id}</a></p>
+        <br />
+        <p>Cyber Republic Team</p>
+        <p>Thanks</p>
+        `
+        return { subject, body }
+    }
+    
+    private async notifyProposalOwner(
+        proposer: any,
+        content: {
+            subject: string
+            body: string
+        }
+      ) {
+        const mailObj = {
+            to: proposer.email,
+            toName: userUtil.formatUsername(proposer),
+            subject: content.subject,
+            body: content.body
+        }
+        mail.send(mailObj)
     }
 
     public async updateVoteStatusByChain() {

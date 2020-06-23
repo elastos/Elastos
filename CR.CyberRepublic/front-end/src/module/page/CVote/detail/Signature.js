@@ -11,16 +11,7 @@ class Signature extends Component {
   constructor(props) {
     super(props)
     this.state = { url: '', messageHash: '', message: '' }
-    this.mtimerList = []
-  }
-
-  clearTimerList = () => {
-    if (this.mtimerList && this.mtimerList.length) {
-      for (let timer of this.mtimerList) {
-        clearTimeout(timer)
-      }
-      this.mtimerList = []
-    }
+    this.mtimer = null
   }
 
   handleSubmit = (e) => {
@@ -41,7 +32,7 @@ class Signature extends Component {
         })
         if (rs.success && rs.url) {
           this.setState({ url: rs.url, messageHash: rs.messageHash })
-          setTimeout(this.pollingSignature, 5000)
+          this.mtimer = setTimeout(this.pollingSignature, 3000)
         }
       }
     })
@@ -65,8 +56,7 @@ class Signature extends Component {
         }
         const rs = await reviewApplication(proposalId, stage, data)
         if (rs.success && rs.url) {
-          this.setState({ url: rs.url, messageHash: rs.messageHash })
-          setTimeout(this.pollingSignature, 5000)
+          this.setState({ url: rs.url })
         }
         if (!rs.success && rs.message) {
           this.setState({ message: rs.message })
@@ -81,24 +71,19 @@ class Signature extends Component {
     }
     const {
       proposalId,
-      getPaymentSignature,
-      isSecretary,
-      getReviewTxid
+      getPaymentSignature
     } = this.props
     const { messageHash } = this.state
-    let rs
-    if (isSecretary) {
-      rs = await getReviewTxid({ proposalId, messageHash })
-    } else {
-      rs = await getPaymentSignature({ proposalId, messageHash })
-    }
+    const rs = await getPaymentSignature({ proposalId, messageHash })
     if (rs && rs.success) {
-      this.clearTimerList()
+      clearTimeout(this.mtimer)
+      this.mtimer = null
       this.hideModal()
       return
     }
     if (rs && rs.success === false) {
-      this.clearTimerList()
+      clearTimeout(this.mtimer)
+      this.mtimer = null
       this.hideModal()
       if (rs.message) {
         message.error(rs.message)
@@ -108,8 +93,8 @@ class Signature extends Component {
       return
     }
     if (this._isMounted === true) {
-      const timer = setTimeout(this.pollingSignature, 5000)
-      this.mtimerList.push(timer)
+      clearTimeout(this.mtimer)
+      this.mtimer = setTimeout(this.pollingSignature, 3000)
     }
   }
 
@@ -119,7 +104,8 @@ class Signature extends Component {
 
   componentWillUnmount() {
     this._isMounted = false
-    this.clearTimerList()
+    clearTimeout(this.mtimer)
+    this.mtimer = null
   }
 
   signatureQrCode = () => {
@@ -180,7 +166,6 @@ class Signature extends Component {
   }
 
   render() {
-    const { url } = this.state
     const { stage, isSecretary, toggle, opinion } = this.props
     const flag = opinion && opinion.toLowerCase() === 'rejected'
     return (

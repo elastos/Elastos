@@ -56,8 +56,6 @@ const withdrawalHistorySchema = {
     reason: String,
     reasonHash: String,
     opinion: String,
-    signature: String,
-    txid: String,
     createdAt: Date
   }
 }

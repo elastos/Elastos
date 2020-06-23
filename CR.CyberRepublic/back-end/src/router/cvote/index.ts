@@ -18,18 +18,12 @@ import all_search from './all_search'
 import get_proposal from './get_proposal'
 import check_signature from './check_signature'
 import memberVote from './memberVote'
-import pollProposalState from './poll_proposal_state'
 import updateAborted from './update_aborted'
 
 export default Base.setRouter([
   {
     path: '/create_draft',
     router: create_draft,
-    method: 'post'
-  },
-  {
-    path: '/poll_proposal_state',
-    router: pollProposalState,
     method: 'post'
   },
   {

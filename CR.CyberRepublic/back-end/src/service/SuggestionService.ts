@@ -2,7 +2,6 @@ import Base from './Base'
 import * as _ from 'lodash'
 import { Document, Types } from 'mongoose'
 import * as jwt from 'jsonwebtoken'
-import * as moment from 'moment'
 import { constant } from '../constant'
 import {
   validate,
@@ -12,8 +11,7 @@ import {
   permissions,
   logger,
   getDidPublicKey,
-  utilCrypto,
-  getCurrentHeight
+  utilCrypto
 } from '../utility'
 const Big = require('big.js')
 
@@ -729,7 +727,7 @@ export default class extends Base {
 
     // deal with 7e-08
     if (doc.budgetAmount) {
-      doc.budgetAmount = Big(doc.budgetAmount).toFixed() 
+      doc.budgetAmount = Big(doc.budgetAmount).toFixed()
     }
 
     if (doc && _.isEmpty(doc.comments)) return doc
@@ -1479,7 +1477,6 @@ export default class extends Base {
         command: 'createproposal',
         iss: process.env.APP_DID,
         sid: suggestion._id,
-        callbackurl: `${process.env.API_URL}/api/suggestion/cm-signature-callback`,
         data: {
           proposaltype: 'normal',
           categorydata: '',
@@ -1507,102 +1504,6 @@ export default class extends Base {
     } catch (err) {
       logger.error(err)
       return { success: false }
-    }
-  }
-
-  public async councilMemberSignatureCallback(param: any) {
-    try {
-      const jwtToken = param.jwt
-      const claims: any = jwt.decode(jwtToken)
-      if (!_.get(claims, 'req')) {
-        return {
-          code: 400,
-          success: false,
-          message: 'Problems parsing jwt token.'
-        }
-      }
-
-      const payload: any = jwt.decode(
-        claims.req.slice('elastos://crproposal/'.length)
-      )
-      if (!_.get(payload, 'sid')) {
-        return {
-          code: 400,
-          success: false,
-          message: 'Problems parsing jwt token of CR website.'
-        }
-      }
-
-      const suggestion = await this.model.findById({
-        _id: payload.sid
-      })
-      if (!suggestion) {
-        return {
-          code: 400,
-          success: false,
-          message: 'There is no this suggestion.'
-        }
-      }
-
-      const rs: any = await getDidPublicKey(claims.iss)
-      if (!_.get(rs, 'publicKey')) {
-        return {
-          code: 400,
-          success: false,
-          message: `Can not get your did's public key.`
-        }
-      }
-
-      // verify response data from ela wallet
-      return jwt.verify(
-        jwtToken,
-        rs.publicKey,
-        async (err: any, decoded: any) => {
-          if (err) {
-            return {
-              code: 401,
-              success: false,
-              message: 'Verify signatrue failed.'
-            }
-          } else {
-            const did = _.get(payload, 'data.did')
-            const timestamp = _.get(payload, 'iat')
-            const fields: any = {
-              'proposers.$.proposalHash': decoded.data,
-              proposed: true,
-            }
-            const rs = await getCurrentHeight()
-            if (rs && rs.success) {
-              fields.chainHeight = rs.height
-            }
-            try {
-              await this.model.update(
-                {
-                  _id: payload.sid,
-                  'proposers.did': did,
-                  'proposers.timestamp': timestamp.toString()
-                },
-                fields
-              )
-              return { code: 200, success: true, message: 'Ok' }
-            } catch (err) {
-              logger.error(err)
-              return {
-                code: 500,
-                success: false,
-                message: 'Something went wrong'
-              }
-            }
-          }
-        }
-      )
-    } catch (err) {
-      logger.error(err)
-      return {
-        code: 500,
-        success: false,
-        message: 'Something went wrong'
-      }
     }
   }
 }
