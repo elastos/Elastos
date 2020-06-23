@@ -121,6 +121,15 @@ internal struct COptions {
 
     /**
      * \~English
+     * The pre-defined secret for the new carrier instance.
+     * This field will be ignored when there is persistent data exists.
+     *
+     * This filed must be 32 bytes long.
+     */
+    var secret_key: UnsafePointer<Int8>?
+
+    /**
+     * \~English
      * The option to decide to use udp transport or not. Setting this option
      * to false will force Carrier node to use TCP only, which will potentially
      * slow down the message to run through.

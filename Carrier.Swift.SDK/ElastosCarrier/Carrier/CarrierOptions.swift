@@ -40,6 +40,8 @@ public class CarrierOptions: NSObject {
      */
     @objc public var persistentLocation: String?
     
+    @objc public var secret_key: String?
+
     /**
      The option to decide to use udp transport or not. Setting this option
      to false will force Carrier node to use TCP only, which will
@@ -61,6 +63,7 @@ internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COp
     var cExpressNodes: UnsafeMutablePointer<CExpressNode>?
     
     cOptions.persistent_location = createCStringDuplicate(options.persistentLocation)
+    cOptions.secret_key = createCStringDuplicate(options.secret_key)
     cOptions.udp_enabled = options.udpEnabled
     (cNodes, cOptions.bootstraps_size) = convertBootstrapNodesToCBootstrapNodes(options.bootstrapNodes!)
     cOptions.bootstraps = UnsafePointer<CBootstrapNode>(cNodes)
@@ -76,6 +79,7 @@ internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COp
 
 internal func cleanupCOptions(_ cOptions : COptions) {
     deallocCString(cOptions.persistent_location)
+    deallocCString(cOptions.secret_key)
     cleanupCBootstrap(cOptions.bootstraps!, cOptions.bootstraps_size)
     UnsafeMutablePointer<CBootstrapNode>(mutating: cOptions.bootstraps)?.deallocate()
 

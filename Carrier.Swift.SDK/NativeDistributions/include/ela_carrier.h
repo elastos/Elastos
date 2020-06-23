@@ -316,6 +316,15 @@ typedef struct ElaOptions {
 
     /**
      * \~English
+     * The pre-defined secret for the new carrier instance.
+     * This field will be ignored when there is persistent data exists.
+     *
+     * This filed must be 32 bytes long.
+     */
+    const uint8_t *secret_key;
+
+    /**
+     * \~English
      * The option to decide to use udp transport or not. Setting this option
      * to false will force Carrier node to use TCP only, which will potentially
      * slow down the message to run through.
@@ -1338,6 +1347,7 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
 
 /**
  * \~English
+ * DISCARDED!
  * Send a message to a friend.
  *
  * The message length may not exceed ELA_MAX_BULK_MESSAGE_LEN. Larger messages
