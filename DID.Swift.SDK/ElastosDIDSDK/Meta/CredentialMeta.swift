@@ -7,15 +7,15 @@ public class CredentialMeta: Metadata {
         super.init(store: store)
     }
 
-    required init() {
+    public required init() {
         super.init()
     }
 
-    var aliasName: String? {
+    public var aliasName: String? {
         return self.get(key: ALIAS) as? String
     }
 
-    func setAlias(_ alias: String?) {
+    public func setAlias(_ alias: String?) {
         self.put(key: ALIAS, value: alias as Any)
     }
 }

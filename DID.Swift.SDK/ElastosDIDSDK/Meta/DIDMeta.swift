@@ -14,48 +14,52 @@ public class DIDMeta: Metadata {
     private let ALIAS = RESERVED_PREFIX + "alias"
     private let DEACTIVATED = RESERVED_PREFIX + "deactivated"
 
-    var aliasName: String? {
+    public required init() {
+        super.init()
+    }
+
+    public var aliasName: String? {
         return self.get(key: ALIAS) as? String
     }
 
-    func setAlias(_ alias: String?) {
+    public func setAlias(_ alias: String?) {
         put(key: ALIAS, value: alias as Any)
     }
 
-    var transactionId: String? {
+    public var transactionId: String? {
         return self.get(key: TXID) as? String
     }
 
-    func setTransactionId(_ newValue: String?) {
+    public func setTransactionId(_ newValue: String?) {
         put(key: TXID, value: newValue as Any)
     }
-    var previousSignature: String? {
+    public var previousSignature: String? {
        return self.get(key: PREV_SIGNATURE) as? String
     }
 
-    func setPreviousSignature(_ newValue: String?) {
+    public func setPreviousSignature(_ newValue: String?) {
          put(key: PREV_SIGNATURE, value: newValue as Any)
     }
 
-    var signature: String? {
+    public var signature: String? {
         return self.get(key: SIGNATURE) as? String
     }
 
-    func setSignature(_ newValue: String?) {
+    public func setSignature(_ newValue: String?) {
         put(key: SIGNATURE, value: newValue as Any)
     }
 
-    func getPublished() -> Date? {
+    public func getPublished() -> Date? {
         let time = self.get(key: PUBLISHED) as? Int
         return DateHelper.getDateFromTimeStamp(time)
     }
 
-    func setPublished(_ timestamp: Date) {
+    public func setPublished(_ timestamp: Date) {
         let timestampDate = DateHelper.getTimeStamp(timestamp)
         put(key: PUBLISHED, value: timestampDate as Any)
     }
 
-    var isDeactivated: Bool {
+    public var isDeactivated: Bool {
         let v =  self.get(key: DEACTIVATED)
         if case Optional<Any>.none = v {
             return false
@@ -65,7 +69,7 @@ public class DIDMeta: Metadata {
         }
     }
 
-    func setDeactivated(_ newValue: Bool) {
+    public func setDeactivated(_ newValue: Bool) {
         put(key: DEACTIVATED, value: newValue as Any)
     }
 }

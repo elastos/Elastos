@@ -5,34 +5,34 @@ public class Metadata: NSObject {
     private var _store: DIDStore?
     private var _extra = Dictionary<String, Any>()
 
-    required override init() {}
+    public required override init() {}
 
     init(store: DIDStore) {
         super.init()
         setStore(store)
     }
 
-    var store: DIDStore? {
+    public var store: DIDStore? {
         return self._store
     }
 
-    var attachedStore: Bool {
+    public var attachedStore: Bool {
         return self._store != nil
     }
 
-    func setStore(_ store: DIDStore) {
+    public func setStore(_ store: DIDStore) {
         self._store = store
     }
 
-    func setExtra(_ key: String, _ value: String?) {
+    public func setExtra(_ key: String, _ value: String?) {
         self._extra[key] = value
     }
 
-    func getExtra(_ key: String) -> String? {
+    public func getExtra(_ key: String) -> String? {
         return self._extra[key] as? String
     }
 
-    func merge(_ meta: Metadata) throws {
+    public func merge(_ meta: Metadata) throws {
         meta._extra.forEach{ (key, value) in
             if _extra.keys.contains(key) {
                 if _extra[key] == nil {
@@ -121,20 +121,20 @@ public class Metadata: NSObject {
         path.write(generator.toString().data(using: .utf8)!)
     }
 
-    func toJson() throws -> String {
+    public func toJson() throws -> String {
         let generator = JsonGenerator()
         try save(generator: generator)
 
         return generator.toString()
     }
     
-    func isEmpty() -> Bool {
+    public func isEmpty() -> Bool {
         return _extra.isEmpty
     }
 }
 
 extension Metadata {
-    func toString() throws -> String {
+    public func toString() throws -> String {
         return try toJson()
     }
 }
