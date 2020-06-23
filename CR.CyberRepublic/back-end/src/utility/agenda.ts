@@ -13,8 +13,8 @@ const JOB_NAME = {
   COUNCILJOB: 'council poll change',
   USERJOB: 'user poll did infomation',
   UPDATEMILESTONE: 'update milestone status',
-  COUNCILREVIEWJOB: 'council review',
-  TRANSACTIONJOB: 'append transaction',
+  COUNCILREVIEWJOB: 'new council review',
+  TRANSACTIONJOB: 'new append transaction',
 }
 
 agenda.define(JOB_NAME.UPDATEMILESTONE, async (job: any) => {
