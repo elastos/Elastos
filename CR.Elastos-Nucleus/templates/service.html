@@ -31,31 +31,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row flex-xl-nowrap service">
-        <!-- Left Sidebar -->
-        <div class="col-md-2 col-xl-2 bd-sidebar" style="margin: 30px 0px 30px 30px;">
-            <!-- Search Button-->
-            <form class="search-form">
-                <input class="form-control" type="search" placeholder="Search.." id="search-input"/>
-                <button class="btn btn-link bd-search-docs-toggle d-md-none p-0 ml-3" type="button"></button>
-            </form>
-
-            <!-- Related Services -->
-            <div style="margin-top: 30px;">
-                <h3 class="sidebar-header">Related Services</h3>
-                <ul style="font-family: Overpass; list-style-type: none;">
-                    {% block related_services %}{% endblock %}
-                </ul>
-            </div>
-
-            <!-- Documentation -->
-            <div style="margin-top: 30px;">
-                <h3 class="sidebar-header">Documentation</h3>
-                <ul style="font-family: Overpass; list-style-type: none;">
-                    {% block documentation %}{% endblock %}
-                </ul>
-            </div>
-        </div>
+    <div class="row flex-xl-nowrap service justify-content-center">
 
         <!-- Center Utilities -->
         <div class="col-md-9 col-xl-9" style="margin: 30px 0px 30px 30px;">

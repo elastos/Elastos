@@ -5,6 +5,15 @@
   color: #ffffff;
 }
 
+.elastos-trinity-title{
+  border-radius: 4px;
+  background-color:  #181b22;
+  color: #FFFFFF;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  padding: 20px;
+  justify-content: center;
+}
+
 .elastos-trinity-content {
   border-radius: 4px;
   background-color: #181b22;
@@ -159,4 +168,12 @@
 .dapp-top-category {
   font-family: Roboto;
   font-size: 14px;
+}
+
+.dapp-content{
+  border-radius: 4px;
+  background-color: #242a37;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  padding: 10px;
+  margin: 0px 30px 40px 40px
 }

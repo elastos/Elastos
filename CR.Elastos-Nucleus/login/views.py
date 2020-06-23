@@ -105,6 +105,7 @@ def activate(request, uidb64, token):
         return HttpResponse('Activation link is invalid!')
 
 
+
 @login_required
 def feed(request):
     suggest_form = SuggestServiceForm()
