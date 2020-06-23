@@ -98,7 +98,6 @@ def activate(request, uidb64, token):
         user.is_active = True
         user.save()
         populate_session_vars_from_database(request, uid)
-        request.session['logged_in'] = True
         messages.success(request, "Email has been confirmed!")
         return redirect(reverse('login:feed'))
     else:
