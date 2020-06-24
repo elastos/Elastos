@@ -1024,6 +1024,21 @@ export default class extends Base {
             }
         )
 
+        await db_cvote.update(
+            {
+                _id,
+                'voteHistory.votedBy': votedBy,
+            },
+            {
+                $set: {
+                    'voteHistory.$': currentVoteHistory,
+                },
+                $inc: {
+                    __v: 1
+                }
+            }
+        )
+
         return await this.getById(_id)
     }
 
