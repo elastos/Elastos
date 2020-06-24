@@ -1007,10 +1007,22 @@ export default class extends Base {
                     'voteResult.$.value': value,
                     'voteResult.$.reason': reason || '',
                     'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.UNCHAIN,
-                    'voteResult.$.txid': '',
-                    'voteResult.$.signature': null,
                     'voteResult.$.reasonHash': utilCrypto.sha256D(reason + timestamp.second(new Date())),
-                    'voteHistory': currentVoteHistory,
+                },
+                $inc: {
+                    __v: 1
+                }
+            }
+        )
+        console.log("Test")
+        await db_cvote.update(
+            {
+                _id,
+                'voteHistory.votedBy': votedBy,
+            },
+            {
+                $set: {
+                    'voteHistory.$': {..._.omit(currentVoteResult,['_id'])},
                 },
                 $inc: {
                     __v: 1
@@ -1806,7 +1818,7 @@ export default class extends Base {
         const vote  = []
         _.forEach(proposalList, (o: any) => {
             _.forEach(o.voteResult, (v: any) => {
-                if(v.signature && v.status === constant.CVOTE_CHAIN_STATUS.UNCHAIN) {
+                if(v.status === constant.CVOTE_CHAIN_STATUS.UNCHAIN) {
                     vote.push(v)
                 }
             })
@@ -1822,6 +1834,9 @@ export default class extends Base {
                 },{
                     $set: {
                         'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
+                    },
+                    $inc: {
+                        __v: 1
                     }
                 })
             }
