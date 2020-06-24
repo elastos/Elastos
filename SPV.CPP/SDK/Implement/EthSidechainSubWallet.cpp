@@ -57,10 +57,12 @@ namespace Elastos {
 
 			EthereumNetworkPtr network(new EthereumNetwork(netType));
 			_client = ClientPtr(new EthereumClient(network, parent->GetDataPath(), pubkey));
+			_client->_ewm->getWallet()->setDefaultGasPrice(5000000000);
 		}
 
 		std::string EthSidechainSubWallet::GetTransferID(const EthereumTransferPtr &tx) const {
-			bytes_t tid = sha256(bytes_t(tx->getRaw(), sizeof(tx->getRaw())));
+			void *id = tx->getRaw();
+			bytes_t tid = sha256(bytes_t(&id, sizeof(id)));
 			tid.erase(tid.begin() + 4, tid.end());
 			return tid.getHex();
 		}
@@ -191,11 +193,10 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 
 			nlohmann::json j;
-
 			EthereumTransferPtr tx = _client->_ewm->getWallet()->createTransfer(targetAddress, amount, EthereumAmount::Unit::ETHER_ETHER);
 
 			j["ID"] = GetTransferID(tx);
-			j["Fee"] = _client->_ewm->getWallet()->transferEstimatedFee(amount);
+			j["Fee"] = tx->getFee(EthereumAmount::Unit::ETHER_ETHER);
 
 			ArgInfo("r => {}", j.dump());
 
