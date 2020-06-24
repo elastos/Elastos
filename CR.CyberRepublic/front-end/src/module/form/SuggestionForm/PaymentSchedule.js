@@ -41,9 +41,8 @@ class PaymentSchedule extends Component {
   }
 
   validateAddress = (value) => {
-    const reg = /^[E8][a-zA-Z0-9]+$/
-    const len = value.length === 34
-    return !value || (reg.test(value) && len)
+    const reg = /^[E8][a-zA-Z0-9]{33}$/
+    return reg.test(value)
   }
 
   validateFields = (field, value) => {
