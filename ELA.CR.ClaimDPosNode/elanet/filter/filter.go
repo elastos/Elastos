@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package filter
 
@@ -19,6 +19,8 @@ const (
 
 	// FTDPOS indicates the TxFilter's Filter is a DPOS filter.
 	FTDPOS
+	//FTNEXTTURNDPOSINFO indicates the TxFilter's Filter is a next turn dpos info filter.
+	FTNEXTTURNDPOSINFO
 )
 
 // TxFilter indicates the methods a transaction filter should implement.

@@ -19,6 +19,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/elanet/bloom"
 	"github.com/elastos/Elastos.ELA/elanet/filter"
+	"github.com/elastos/Elastos.ELA/elanet/filter/nextturndposfilter"
 	"github.com/elastos/Elastos.ELA/elanet/filter/sidefilter"
 	"github.com/elastos/Elastos.ELA/elanet/netsync"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
@@ -108,6 +109,8 @@ func newServerPeer(s *server) *serverPeer {
 			return bloom.NewTxFilter()
 		case filter.FTDPOS:
 			return sidefilter.New(s.chain.GetState())
+		case filter.FTNEXTTURNDPOSINFO:
+			return nextturndposfilter.New()
 		}
 		return nil
 	})
@@ -713,8 +716,9 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 			HaveConfirm: blk.HaveConfirm,
 			Confirm:     confirm,
 		}
+	case *nextturndposfilter.NextTurnDPOSInfoFilter:
+		merkle.Header = &blk.Header
 	}
-
 	// Once we have fetched data wait for any previous operation to finish.
 	if waitChan != nil {
 		<-waitChan
@@ -726,6 +730,7 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 	if len(matchedTxIndices) == 0 {
 		dc = doneChan
 	}
+
 	sp.QueueMessage(merkle, dc)
 
 	// Finally, send any matched transactions.
