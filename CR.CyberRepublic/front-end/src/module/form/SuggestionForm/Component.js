@@ -229,6 +229,19 @@ class C extends BaseComponent {
     return cb()
   }
 
+  validateBudget = (rule, value, cb) => {
+    if (value && _.isEmpty(value.budgetAmount)) {
+      return cb(true)
+    }
+    if (value && _.isEmpty(value.elaAddress)) {
+      return cb(true)
+    }
+    if (value && _.isEmpty(value.paymentItems)) {
+      return cb(true)
+    }
+    return cb()
+  }
+
   getTextarea(id) {
     const initialValues = _.isEmpty(this.props.initialValues)
       ? { type: '1' }
@@ -285,12 +298,7 @@ class C extends BaseComponent {
       )
     }
 
-    if (
-      id === 'budget'
-      /* &&
-      ((initialValues.budget && typeof initialValues.budget !== 'string') ||
-       !initialValues.budget) */
-    ) {
+    if (id === 'budget') {
       let initialBudget = {}
       if (initialValues.budget && typeof initialValues.budget !== 'string') {
         initialBudget = initialValues.budget && {
@@ -306,7 +314,12 @@ class C extends BaseComponent {
         }
       }
 
+      rules.push({
+        validator: this.validateBudget
+      })
+
       return getFieldDecorator('budget', {
+        rules,
         initialValue: initialBudget
       })(
         <PaymentSchedule
@@ -333,8 +346,7 @@ class C extends BaseComponent {
     const hasError = _.has(this.state.errorKeys, id)
     return (
       <TabText hasErr={hasError}>
-        {I18N.get(`suggestion.fields.${id}`)}
-        {id !== 'budget' ? '*' : ''}
+        {I18N.get(`suggestion.fields.${id}`)}*
       </TabText>
     )
   }
