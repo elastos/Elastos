@@ -1828,6 +1828,9 @@ export default class extends Base {
                 },{
                     $set: {
                         'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
+                    },
+                    $inc: {
+                        __v: 1
                     }
                 })
             }
