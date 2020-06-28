@@ -13,7 +13,7 @@ class PaymentSchedule extends Component {
     const value = props.initialValue
     this.state = {
       visible: false,
-      total: (value && value.budgetAmount) || '',
+      total: _.get(value, 'budgetAmount'),
       address: (value && value.elaAddress) || '',
       paymentItems: (value && value.paymentItems) || [],
       errors: {}
@@ -29,7 +29,7 @@ class PaymentSchedule extends Component {
   passDataToParent() {
     const { total, address, paymentItems } = this.state
     this.changeValue({
-      budgetAmount: Number(total),
+      budgetAmount: total && Number(total),
       elaAddress: address,
       paymentItems
     })

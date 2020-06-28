@@ -101,6 +101,7 @@ export default {
       elaAddress: 'invalid address, please check your address',
       amount: 'Total budget is empty.',
       address: 'ELA receive address is emtpy.',
+      schedule: 'Payment schedule is empty',
       payment: `Project Completion Payment is required, at most one Project Initiation Payment, and each payment must match one milestone.`,
       advance: 'Project initiation payment only apply to the first milestone.',
       completion: `Project completion payment only apply to the last milestone.`,

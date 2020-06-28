@@ -230,14 +230,18 @@ class C extends BaseComponent {
   }
 
   validateBudget = (rule, value, cb) => {
-    if (value && _.isEmpty(value.budgetAmount)) {
-      return cb(true)
+    const amount = _.get(value, 'budgetAmount')
+    const address = _.get(value, 'elaAddress')
+    const pItems = _.get(value, 'paymentItems')
+
+    if (!amount && amount !== 0) {
+      return cb(I18N.get('suggestion.form.error.amount'))
     }
-    if (value && _.isEmpty(value.elaAddress)) {
-      return cb(true)
+    if (!address) {
+      return cb(I18N.get('suggestion.form.error.address'))
     }
-    if (value && _.isEmpty(value.paymentItems)) {
-      return cb(true)
+    if (_.isEmpty(pItems)) {
+      return cb(I18N.get('suggestion.form.error.schedule'))
     }
     return cb()
   }
