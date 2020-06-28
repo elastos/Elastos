@@ -1020,7 +1020,6 @@ export default class extends Base {
                 }
             }
         )
-        console.log("Test")
         await db_cvote.update(
             {
                 _id,
@@ -1833,10 +1832,10 @@ export default class extends Base {
         _.forEach(elaVote, async (o: any) => {
             const did: any = DID_PREFIX + o.did
             if (voteList && voteList[did]) {
-                useIndex.push(byHashElaList[o.proposalhash].txid)
-                await db_cvote.update({
+                const rs = await db_cvote.update({
                     'proposalHash': o.proposalhash,
                     'voteResult._id':  voteList[did]._doc._id,
+                    'voteResult.reasonHash': o.opinionhash
                 },{
                     $set: {
                         'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
@@ -1845,6 +1844,10 @@ export default class extends Base {
                         __v: 1
                     }
                 })
+
+                if (rs && rs.nModified == 1) {
+                    useIndex.push(byHashElaList[o.proposalhash].txid)
+                }
             }
         })
         await db_ela.remove({txid: {$in:useIndex}})
