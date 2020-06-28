@@ -498,7 +498,7 @@ export default class extends Base {
                     break;
                 case constant.USER_ROLE.MEMBER:
                     await this.userMode.update(
-                        {'role': constant.USER_ROLE.COUNCIL},
+                        {'did.id': {$in: didList}},
                         {
                             $set: {
                                 role: constant.USER_ROLE.MEMBER

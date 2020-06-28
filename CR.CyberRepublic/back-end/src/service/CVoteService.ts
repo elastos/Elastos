@@ -996,7 +996,7 @@ export default class extends Base {
         currentVoteHistory[currentVoteHistoryIndex] = {
             ..._.omit(currentVoteResult,['_id'])
         }
-
+        const reasonCreateDate = new Date()
         await db_cvote.update(
             {
                 _id,
@@ -1007,14 +1007,14 @@ export default class extends Base {
                     'voteResult.$.value': value,
                     'voteResult.$.reason': reason || '',
                     'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.UNCHAIN,
-                    'voteResult.$.reasonHash': utilCrypto.sha256D(reason + timestamp.second(new Date())),
+                    'voteResult.$.reasonHash': utilCrypto.sha256D(reason + timestamp.second(reasonCreateDate)),
+                    'voteResult.$.reasonCreatedAt': reasonCreateDate
                 },
                 $inc: {
                     __v: 1
                 }
             }
         )
-        console.log("Test")
         await db_cvote.update(
             {
                 _id,
@@ -1827,18 +1827,29 @@ export default class extends Base {
         _.forEach(elaVote, async (o: any) => {
             const did: any = DID_PREFIX + o.did
             if (voteList && voteList[did]) {
-                useIndex.push(byHashElaList[o.proposalhash].txid)
-                await db_cvote.update({
-                    'proposalHash': o.proposalhash,
-                    'voteResult._id':  voteList[did]._doc._id,
-                },{
-                    $set: {
-                        'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
-                    },
-                    $inc: {
-                        __v: 1
+                const oldReasonHash = voteList[did].reasonCreatedAt ? 
+                    utilCrypto.sha256D(voteList[did].reason + timestamp.second(voteList[did].reasonCreatedAt))
+                    :
+                    utilCrypto.sha256D(voteList[did].reason)
+                const reasonHash = voteList[did].reasonHash ? voteList[did].reasonHash : oldReasonHash
+                
+                if ( reasonHash == o.opinionhash) {
+                    const rs = await db_cvote.update({
+                        'proposalHash': o.proposalhash,
+                        'voteResult._id':  voteList[did]._doc._id,
+                        // 'voteResult.reasonHash': reasonHash
+                    },{
+                        $set: {
+                            'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
+                        },
+                        $inc: {
+                            __v: 1
+                        }
+                    })
+                    if (rs && rs.nModified == 1) {
+                        useIndex.push(byHashElaList[o.proposalhash].txid)
                     }
-                })
+                }
             }
         })
         await db_ela.remove({txid: {$in:useIndex}})
