@@ -82,50 +82,40 @@ class C extends BaseComponent {
         return
       }
 
-      const budget = form.getFieldValue('budget')
-      const amount = _.get(budget, 'budgetAmount')
-      const address = _.get(budget, 'elaAddress')
-      const pItems = _.get(budget, 'paymentItems')
+      const milestone = _.get(values, 'plan.milestone')
+      const amount = _.get(values, 'budget.budgetAmount')
+      const pItems = _.get(values, 'budget.paymentItems')
 
-      if (amount || address || !_.isEmpty(pItems)) {
-        if (!address) {
-          this.setState({ loading: false })
-          message.error(I18N.get('suggestion.form.error.address'))
-          return
-        }
+      const sum = pItems.reduce((sum, item) => {
+        return (sum += Number(item.amount))
+      }, 0)
 
-        const plan = form.getFieldValue('plan')
-        const milestone = _.get(plan, 'milestone')
-        const initiation = pItems.filter(
-          (item) => item.type === ADVANCE && item.milestoneKey === '0'
-        )
-        const completion = pItems.filter((item) => {
-          return (
-            item.type === COMPLETION &&
-            item.milestoneKey === (milestone.length - 1).toString()
-          )
-        })
-        if (
-          milestone.length !== pItems.length ||
-          initiation.length > 1 ||
-          completion.length !== 1
-        ) {
-          this.setState({ loading: false })
-          message.error(I18N.get('suggestion.form.error.payment'))
-          return
-        }
-
-        const sum = pItems.reduce((sum, item) => {
-          return (sum += Number(item.amount))
-        }, 0)
-
-        if (Number(amount) !== sum) {
-          this.setState({ loading: false })
-          message.error(I18N.get('suggestion.form.error.notEqual'))
-          return
-        }
+      if (Number(amount) !== sum) {
+        this.setState({ loading: false })
+        message.error(I18N.get('suggestion.form.error.notEqual'))
+        return
       }
 
+      const initiation = pItems.filter(
+        (item) => item.type === ADVANCE && item.milestoneKey === '0'
+      )
+      const completion = pItems.filter((item) => {
+        return (
+          item.type === COMPLETION &&
+          item.milestoneKey === (milestone.length - 1).toString()
+        )
+      })
+      if (
+        milestone.length !== pItems.length ||
+        initiation.length > 1 ||
+        completion.length !== 1
+      ) {
+        this.setState({ loading: false })
+        message.error(I18N.get('suggestion.form.error.payment'))
+        return
+      }
+
+      const budget = _.get(values, 'budget')
       // exclude old suggestion data
       if (budget && typeof budget !== 'string') {
         values.budget = budget.paymentItems
