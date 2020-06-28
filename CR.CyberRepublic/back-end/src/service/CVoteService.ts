@@ -1825,39 +1825,43 @@ export default class extends Base {
         _.forEach(proposalList, (o: any) => {
             _.forEach(o.voteResult, (v: any) => {
                 if(v.status === constant.CVOTE_CHAIN_STATUS.UNCHAIN) {
-                    vote.push(v)
+                    const oldReasonHash = v.reasonCreatedAt ? 
+                    utilCrypto.sha256D(v.reason + timestamp.second(v.reasonCreatedAt))
+                    :
+                    utilCrypto.sha256D(v.reason)
+                    const reasonHash = v.reasonHash ? v.reasonHash : oldReasonHash
+                    const data = {
+                        proposalHash: o.proposalHash,
+                        ...v._doc,
+                        did: !_.isEmpty(v._doc.votedBy) ? v._doc.votedBy.did.id : null,
+                        reasonHash
+                    }
+                    vote.push(data)
                 }
             })
         })
-        const voteList = _.keyBy(vote, 'votedBy.did.id')
         _.forEach(elaVote, async (o: any) => {
             const did: any = DID_PREFIX + o.did
-            if (voteList && voteList[did]) {
-                const oldReasonHash = voteList[did].reasonCreatedAt ? 
-                    utilCrypto.sha256D(voteList[did].reason + timestamp.second(voteList[did].reasonCreatedAt))
-                    :
-                    utilCrypto.sha256D(voteList[did].reason)
-                const reasonHash = voteList[did].reasonHash ? voteList[did].reasonHash : oldReasonHash
-                
-                if ( reasonHash == o.opinionhash) {
-                    const rs = await db_cvote.update({
-                        'proposalHash': o.proposalhash,
-                        'voteResult._id':  voteList[did]._doc._id,
-                        // 'voteResult.reasonHash': reasonHash
-                    },{
-                        $set: {
-                            'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
-                        },
-                        $inc: {
-                            __v: 1
-                        }
-                    })
-                    if (rs && rs.nModified == 1) {
-                        useIndex.push(byHashElaList[o.proposalhash].txid)
+            const voteList = _.find(vote, {'proposalHash':o.proposalhash,'reasonHash':o.opinionhash,'did':did})
+            console.log(voteList)
+            if (voteList) {
+                const rs = await db_cvote.update({
+                    'proposalHash': o.proposalhash,
+                    'voteResult._id':  voteList._id,
+                },{
+                    $set: {
+                        'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
+                    },
+                    $inc: {
+                        __v: 1
                     }
+                })
+                if (rs && rs.nModified == 1) {
+                    useIndex.push(byHashElaList[o.proposalhash].txid)
                 }
+                
             }
         })
-        await db_ela.remove({txid: {$in:useIndex}})
+        // await db_ela.remove({txid: {$in:useIndex}})
     }
 }
