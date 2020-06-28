@@ -43,6 +43,7 @@ typedef struct ExpressNodeHelper {
 typedef struct OptionsHelper {
     int udp_enabled;
     char* persistent_location;
+    uint8_t* secret_key;
     size_t  bootstraps_size;
     BootstrapHelper *bootstraps;
     size_t express_nodes_size;

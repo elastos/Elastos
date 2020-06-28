@@ -175,3 +175,26 @@ int getStringExt(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName
     (*env)->DeleteLocalRef(env, jresult);
     return 1;
 }
+
+int getByteArrayField(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName, uint8_t** value)
+{
+    jbyteArray jresult;
+    jsize len;
+    jbyte *data;
+
+    if (!callStringMethod(env, clazz, jobj, methodName, "()[B", &jresult))
+        return 0;
+
+    if (!jresult)
+        return 0;
+
+    len = (*env)->GetArrayLength(env, jresult);
+    data = (*env)->GetByteArrayElements(env, jresult, NULL);
+
+    *value = (uint8_t *)calloc(len, 1);
+    memcpy(*value, data, len);
+
+    (*env)->ReleaseByteArrayElements(env, jresult, data, 0);
+
+    return len;
+}

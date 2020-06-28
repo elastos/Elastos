@@ -66,4 +66,6 @@ int setString(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName, c
 
 int getStringExt(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName, char** value);
 
+int getByteArrayField(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName, uint8_t** value);
+
 #endif

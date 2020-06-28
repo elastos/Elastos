@@ -174,6 +174,7 @@ public class Carrier {
 	 */
 	public static class Options {
 		private String persistentLocation;
+		private byte[] secretKey;
 		private boolean udpEnabled;
 		private List<BootstrapNode> bootstrapNodes;
 		private List<ExpressNode> expressNodes;
@@ -274,6 +275,32 @@ public class Carrier {
 		 */
 		public String getPersistentLocation() {
 			return persistentLocation;
+		}
+
+
+		/**
+		 * Set the secret key.
+		 * The key is optional to be set.
+		 *
+		 * @param secretKey The secret key to set
+		 *
+		 * @return The current Options object reference.
+		 */
+		public Options setSecretKey(byte[] secretKey) {
+			if(secretKey != null && secretKey.length != 32)
+				throw new RuntimeException("Bad secret key length, the length must be 32.");
+
+			this.secretKey = secretKey;
+			return this;
+		}
+
+		/**
+		 * Get the secret key.
+		 *
+		 * @return The secret key
+		 */
+		public byte[] getSecretKey() {
+			return secretKey;
 		}
 
 		/**

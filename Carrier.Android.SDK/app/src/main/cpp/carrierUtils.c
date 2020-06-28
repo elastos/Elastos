@@ -53,6 +53,8 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
         return 0;
     }
 
+    getByteArrayField(env, clazz, jopts, "getSecretKey", &opts->secret_key);
+
     rc = callObjectMethod(env, clazz, jopts, "getBootstrapNodes", "()Ljava/util/List;", &jnodes);
     if (!rc) {
         logE("call method Carrier::Options::getBootstrapNodes error");
@@ -209,6 +211,9 @@ void cleanupOptionsHelper(OptionsHelper* opts)
 
     if (opts->persistent_location)
         free(opts->persistent_location);
+
+    if (opts->secret_key)
+        free(opts->secret_key);
 
     if (opts->bootstraps) {
         for (i = 0; i < opts->bootstraps_size; i++) {

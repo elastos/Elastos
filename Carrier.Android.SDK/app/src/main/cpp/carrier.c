@@ -128,6 +128,7 @@ jboolean carrierInit(JNIEnv* env, jobject thiz, jobject joptions, jobject jcallb
     ElaOptions opts = {
         .udp_enabled = true,
         .persistent_location = helper.persistent_location,
+        .secret_key = helper.secret_key,
         .bootstraps_size = helper.bootstraps_size,
         .bootstraps = (BootstrapNode *)helper.bootstraps,
         .express_nodes_size = helper.express_nodes_size,
