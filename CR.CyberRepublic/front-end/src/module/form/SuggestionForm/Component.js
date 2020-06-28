@@ -165,9 +165,7 @@ class C extends BaseComponent {
         return
       }
       const index = TAB_KEYS.findIndex((item) => item === this.state.activeKey)
-      if (index === TAB_KEYS.length - 1) {
-        // this.handleSubmit({ preventDefault: () => {} })
-      } else {
+      if (index !== TAB_KEYS.length - 1) {
         this.setState({ activeKey: TAB_KEYS[index + 1] })
       }
     })
@@ -370,6 +368,12 @@ class C extends BaseComponent {
     )
   }
 
+  hideContinue = () => {
+    const { activeKey, errorKeys } = this.state
+    const index = TAB_KEYS.findIndex((item) => item === activeKey)
+    return _.isEmpty(errorKeys) && index === TAB_KEYS.length - 1
+  }
+
   ord_render() {
     const { isEditMode } = this.props
     const saveDraftBtn = isEditMode && (
@@ -430,13 +434,15 @@ class C extends BaseComponent {
             justify="center"
             style={{ marginBottom: '30px' }}
           >
-            <Button
-              onClick={this.handleContinue}
-              className="cr-btn cr-btn-black"
-              htmlType="button"
-            >
-              {I18N.get('suggestion.form.button.continue')}
-            </Button>
+            {!this.hideContinue() && (
+              <Button
+                onClick={this.handleContinue}
+                className="cr-btn cr-btn-black"
+                htmlType="button"
+              >
+                {I18N.get('suggestion.form.button.continue')}
+              </Button>
+            )}
           </Row>
 
           <Row gutter={8} type="flex" justify="center">
