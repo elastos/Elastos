@@ -1213,9 +1213,9 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 		}
 
 		if height > b.chainParams.CRClaimDPOSNodeStartHeight {
-			arbitersCount := b.chainParams.CRAgreementCount
+			arbitersCount := len(b.chainParams.CRCArbiters)
 			minCount := b.chainParams.CRAgreementCount
-			if n != int(arbitersCount) {
+			if n != arbitersCount {
 				return errors.New("invalid arbiters total count in code")
 			}
 			if m < int(minCount) {
@@ -2194,6 +2194,11 @@ func (b *BlockChain) checkCRDPOSManagementTransaction(txn *Transaction) error {
 	log.Debugf("operating public key: %s", *publicKey)
 	if err != nil {
 		return errors.New("invalid operating public key")
+	}
+
+	// check duplication of node.
+	if b.state.ProducerNodePublicKeyExists(manager.CRManagementPublicKey) {
+		return fmt.Errorf("producer already registered")
 	}
 
 	return nil

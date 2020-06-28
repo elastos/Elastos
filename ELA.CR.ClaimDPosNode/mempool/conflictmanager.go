@@ -158,9 +158,20 @@ func newConflictManager() conflictManager {
 					},
 				),
 			},
+			// CR claim DPOS node public key
 			{
 				name: slotCRManagementPublicKey,
 				slot: newConflictSlot(str,
+					keyTypeFuncPair{
+						Type: types.CRDPOSManagement,
+						Func: strCRManagementPublicKey,
+					},
+				),
+			},
+			// CR claim DPOS node did
+			{
+				name: slotCRManagementPublicKey,
+				slot: newConflictSlot(programHash,
 					keyTypeFuncPair{
 						Type: types.CRDPOSManagement,
 						Func: strCRManagementPublicKey,
