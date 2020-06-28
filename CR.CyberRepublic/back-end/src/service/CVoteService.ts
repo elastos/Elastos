@@ -1843,7 +1843,6 @@ export default class extends Base {
         _.forEach(elaVote, async (o: any) => {
             const did: any = DID_PREFIX + o.did
             const voteList = _.find(vote, {'proposalHash':o.proposalhash,'reasonHash':o.opinionhash,'did':did})
-            console.log(voteList)
             if (voteList) {
                 const rs = await db_cvote.update({
                     'proposalHash': o.proposalhash,
@@ -1862,6 +1861,6 @@ export default class extends Base {
                 
             }
         })
-        // await db_ela.remove({txid: {$in:useIndex}})
+        await db_ela.remove({txid: {$in:useIndex}})
     }
 }
