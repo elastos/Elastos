@@ -229,16 +229,26 @@ class C extends BaseComponent {
     return cb()
   }
 
+  validateAmount = (value) => {
+    const reg = /^(0|[1-9][0-9]*)(\.[0-9]*)?$/
+    return (!isNaN(value) && reg.test(value)) || value === '' ? true : false
+  }
+
+  validateAddress = (value) => {
+    const reg = /^[E8][a-zA-Z0-9]{33}$/
+    return reg.test(value)
+  }
+
   validateBudget = (rule, value, cb) => {
     const amount = _.get(value, 'budgetAmount')
     const address = _.get(value, 'elaAddress')
     const pItems = _.get(value, 'paymentItems')
 
-    if (!amount && amount !== 0) {
-      return cb(I18N.get('suggestion.form.error.amount'))
+    if (!this.validateAmount(amount)) {
+      return cb(I18N.get('suggestion.form.error.isNaN'))
     }
-    if (!address) {
-      return cb(I18N.get('suggestion.form.error.address'))
+    if (!this.validateAddress(address)) {
+      return cb(I18N.get('suggestion.form.error.elaAddress'))
     }
     if (_.isEmpty(pItems)) {
       return cb(I18N.get('suggestion.form.error.schedule'))
