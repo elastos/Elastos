@@ -61,7 +61,7 @@ const Component = ({
           </Avatar>
         )}
         <div>{data.didName}</div>
-        <div>{data.reason !== '' ? voteStatus : null}</div>
+        <div className="status">{data.reason !== '' ? voteStatus : null}</div>
         <div style={{ marginTop: '0.5rem' }}>
           {isProposed &&
           isCouncil &&

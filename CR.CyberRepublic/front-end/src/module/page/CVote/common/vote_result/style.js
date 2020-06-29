@@ -54,6 +54,12 @@ export const Item = styled.div`
   flex-direction: column;
   align-items: center;
   text-align: center;
+  .status {
+    color: rgba(3,30,40,0.4);
+    font-size: 13px;
+    margin-top: 8px;
+    font-weight: 600;
+  }
 `
 
 export const Avatar = styled.img`
