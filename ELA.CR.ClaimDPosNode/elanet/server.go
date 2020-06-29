@@ -109,7 +109,7 @@ func newServerPeer(s *server) *serverPeer {
 			return bloom.NewTxFilter()
 		case filter.FTDPOS:
 			return sidefilter.New(s.chain.GetState())
-		case filter.FTNEXTTURNDPOSINFO:
+		case filter.FTNexTTurnDPOSInfo:
 			return nextturndposfilter.New()
 		}
 		return nil
