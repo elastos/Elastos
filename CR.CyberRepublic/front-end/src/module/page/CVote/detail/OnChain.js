@@ -31,7 +31,7 @@ class OnChainButton extends Component {
     }
   }
 
-  handleVisibleChange = visible => {
+  handleVisibleChange = (visible) => {
     this.setState({ visible })
   }
 
@@ -43,17 +43,15 @@ class OnChainButton extends Component {
       domain = 'idchain'
     }
     return (
-        <Popover 
-        content={this.qrCode()} 
-        trigger="click" 
+      <Popover
+        content={this.qrCode()}
+        trigger="click"
         placement="top"
         visible={this.state.visible}
         onVisibleChange={this.handleVisibleChange}
-        >
-            <Button>
-                {I18N.get('council.voting.voteResult.onchain')}
-            </Button>
-        </Popover>
+      >
+        <Button>{I18N.get('council.voting.voteResult.onchain')}</Button>
+      </Popover>
     )
   }
 }
