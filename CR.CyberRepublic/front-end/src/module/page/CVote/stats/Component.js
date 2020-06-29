@@ -7,7 +7,9 @@ import { List, Item, ItemUndecided, Text } from './style'
 
 const Component = ({ percentage, values, yes }) => {
   const statusGroup = _.map(values, (status, key) => {
-    if (status === CVOTE_RESULT.UNDECIDED) return <ItemUndecided status={status} key={key} />
+    if (status === CVOTE_RESULT.UNDECIDED) {
+      return <ItemUndecided status={status} key={key} />
+    }
     return <Item status={status} key={key} />
   })
   return (
@@ -21,10 +23,9 @@ const Component = ({ percentage, values, yes }) => {
 const propTypes = {
   percentage: PropTypes.string.isRequired,
   values: PropTypes.array.isRequired,
-  yes: PropTypes.bool.isRequired,
+  yes: PropTypes.bool.isRequired
 }
 
 Component.propTypes = propTypes
-
 
 export default Component

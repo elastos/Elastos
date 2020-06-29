@@ -401,9 +401,7 @@ export default class extends BaseComponent {
               </CSVLink>
             )}
             {isSecretary && <SplitLabel />}
-            <ViewOldDataBtn
-              onClick={this.viewOldData}
-            >
+            <ViewOldDataBtn onClick={this.viewOldData}>
               {this.state.showOldData === false
                 ? I18N.get('proposal.btn.viewOldData')
                 : I18N.get('proposal.btn.viewNewData')}
@@ -672,15 +670,17 @@ export default class extends BaseComponent {
   baseVoteDataByUser = (data, isCSV = false) => {
     const { vote_map: voteMap, voteResult, status } = data
     let voteArr
-
     if (status === CVOTE_STATUS.DRAFT) return null
 
     if (!_.isEmpty(voteResult)) {
-      voteArr = _.map(
-        voteResult,
-        (item) => CVOTE_RESULT[item.value.toUpperCase()]
-      )
+      voteArr = _.map(voteResult, (item) => {
+        if (item.status === 'chained') {
+          return CVOTE_RESULT[item.value.toUpperCase()]
+        }
+        return CVOTE_RESULT.UNDECIDED
+      })
     } else if (!_.isEmpty(voteMap)) {
+      // deal with old data
       voteArr = _.map(
         voteMap,
         (value) => CVOTE_RESULT[value.toUpperCase()] || CVOTE_RESULT.UNDECIDED
