@@ -236,12 +236,23 @@ func checkDuplicateTx(block *Block) error {
 	return nil
 }
 
+func RecordCRCProposalAmount(usedAmount *Fixed64, txn *Transaction) {
+	proposal, ok := txn.Payload.(*payload.CRCProposal)
+	if !ok {
+		return
+	}
+	for _, b := range proposal.Budgets {
+		*usedAmount += b.Amount
+	}
+}
+
 func (b *BlockChain) checkTxsContext(block *Block) error {
 	var totalTxFee = Fixed64(0)
 
+	var proposalsUsedAmount Fixed64
 	for i := 1; i < len(block.Transactions); i++ {
 		references, errCode := b.CheckTransactionContext(block.Height,
-			block.Transactions[i], 0)
+			block.Transactions[i], proposalsUsedAmount)
 		if errCode != nil {
 			return elaerr.SimpleWithMessage(elaerr.ErrBlockValidation, errCode,
 				"CheckTransactionContext failed when verify block")
@@ -249,6 +260,9 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 
 		// Calculate transaction fee
 		totalTxFee += GetTxFee(block.Transactions[i], config.ELAAssetID, references)
+		if block.Transactions[i].IsCRCProposalTx() {
+			RecordCRCProposalAmount(&proposalsUsedAmount, block.Transactions[i])
+		}
 	}
 
 	err := b.checkCoinbaseTransactionContext(block.Height,

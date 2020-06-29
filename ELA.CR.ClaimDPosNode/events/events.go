@@ -50,6 +50,9 @@ const (
 	// was added to the main chain.  For that, use ETBlockConnected.
 	ETBlockConfirmAccepted
 
+	// ETBlockProcessed indicates the status of DPOS and CR has changed.
+	ETBlockProcessed
+
 	// ETIllegalEvidence indicates a illegal block received.
 	ETIllegalBlockEvidence
 )
