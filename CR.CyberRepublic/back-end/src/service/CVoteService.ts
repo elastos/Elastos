@@ -1801,14 +1801,13 @@ export default class extends Base {
         }
         const elaVote = []
         const useIndex = []
-        elaVoteList = _.map(elaVoteList, (o: any) => {
-            elaVote.push(JSON.parse(o.payload))
-            return {
+        _.map(elaVoteList, (o: any) => {
+            const data = {
                 ...o._doc,
-                payload:JSON.parse(o.payload)
+                ...JSON.parse(o.payload)
             }
+            elaVote.push(data)
         })
-        const byHashElaList = _.keyBy(elaVoteList, 'payload.proposalhash')
         const query = []
         const byKeyElaList = _.keyBy(elaVote, 'proposalhash')
         _.forEach(byKeyElaList, (v: any, k: any) => {
@@ -1856,11 +1855,10 @@ export default class extends Base {
                     }
                 })
                 if (rs && rs.nModified == 1) {
-                    useIndex.push(byHashElaList[o.proposalhash].txid)
+                    await db_ela.remove({txid: o.txid})
                 }
                 
             }
         })
-        await db_ela.remove({txid: {$in:useIndex}})
     }
 }
