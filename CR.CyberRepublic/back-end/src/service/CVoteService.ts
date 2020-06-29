@@ -454,26 +454,39 @@ export default class extends Base {
         mail.send(mailObj)
     }
 
-    private async notifyCouncilToVote() {
+    public async notifyCouncilToVote(DateTime: any) {
         // find cvote before 1 day expiration without vote yet for each council member
         const db_cvote = this.getDBModel('CVote')
         const nearExpiredTime =
-            Date.now() - (constant.CVOTE_EXPIRATION - constant.ONE_DAY)
-        const unvotedCVotes = await db_cvote
+            Date.now() - (constant.CVOTE_COUNCIL_EXPIRATION - DateTime)
+        const createTime = DateTime == constant.ONE_DAY ? 
+            Date.now() - constant.CVOTE_COUNCIL_EXPIRATION
+            :
+            Date.now() - constant.CVOTE_COUNCIL_EXPIRATION + constant.ONE_DAY
+        const isNotifiedThreeDay = DateTime == constant.THREE_DAY ? false : true
+        const isNotifiedOneDay = DateTime == constant.ONE_DAY ? true : false
+        let unvotedCVotes = await db_cvote
             .getDBInstance()
             .find({
                 proposedAt: {
                     $lt: nearExpiredTime,
-                    $gt: Date.now() - constant.CVOTE_EXPIRATION
+                    $gt: createTime
                 },
-                notified: {$ne: true},
-                status: constant.CVOTE_STATUS.PROPOSED
+                notified: isNotifiedThreeDay,
+                status: constant.CVOTE_STATUS.PROPOSED,
+                'voteResult.value': constant.CVOTE_RESULT.UNDECIDED,
+                old: {
+                    $exists: false
+                }
             })
             .populate(
                 'voteResult.votedBy',
                 constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
             )
-
+        if (DateTime == constant.ONE_DAY) {
+            unvotedCVotes = _.filter(unvotedCVotes,['notifiedOneDay',false])
+        } 
+        const promptTime = DateTime == constant.ONE_DAY ? '24 hours' : '3 days'
         _.each(unvotedCVotes, (cvote) => {
             _.each(cvote.voteResult, (result) => {
                 if (result.value === constant.CVOTE_RESULT.UNDECIDED) {
@@ -481,7 +494,7 @@ export default class extends Base {
                     const {title, _id} = cvote
                     const subject = `Proposal Vote Reminder: ${title}`
                     const body = `
-            <p>You only got 24 hours to vote this proposal:</p>
+            <p>You only got ${promptTime} to vote this proposal:</p>
             <br />
             <p>${title}</p>
             <br />
@@ -499,7 +512,7 @@ export default class extends Base {
                     mail.send(mailObj)
 
                     // update notified to true
-                    db_cvote.update({_id: cvote._id}, {$set: {notified: true}})
+                    db_cvote.update({_id: cvote._id}, {$set: {notified:true, notifiedOneDay:isNotifiedOneDay}})
                 }
             })
         })

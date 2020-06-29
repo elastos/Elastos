@@ -200,5 +200,9 @@ export const CVote = {
     type: String
   },
   withdrawalHistory: [withdrawalHistorySchema],
-  old: Boolean // mark an old proposal
+  old: Boolean, // mark an old proposal
+  notifiedOneDay: {
+    type: Boolean,
+    default: false
+  }
 }
