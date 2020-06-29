@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -16,6 +16,29 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestSortTransactions(t *testing.T) {
+	txs := []*types.Transaction{
+		&types.Transaction{TxType: types.CoinBase},
+		&types.Transaction{TxType: types.TransferAsset},
+		&types.Transaction{TxType: types.TransferAsset},
+		&types.Transaction{TxType: types.CRCProposalTracking},
+		&types.Transaction{TxType: types.CRCProposalWithdraw},
+		&types.Transaction{TxType: types.CRCProposalWithdraw},
+		&types.Transaction{TxType: types.TransferAsset},
+		&types.Transaction{TxType: types.CRCProposalWithdraw},
+	}
+
+	sortTransactions(txs[1:])
+	assert.Equal(t, txs[0].TxType.Name(), "CoinBase")
+	assert.Equal(t, txs[1].TxType.Name(), "CRCProposalWithdraw")
+	assert.Equal(t, txs[2].TxType.Name(), "CRCProposalWithdraw")
+	assert.Equal(t, txs[3].TxType.Name(), "CRCProposalWithdraw")
+	assert.Equal(t, txs[4].TxType.Name(), "TransferAsset")
+	assert.Equal(t, txs[5].TxType.Name(), "TransferAsset")
+	assert.Equal(t, txs[6].TxType.Name(), "CRCProposalTracking")
+	assert.Equal(t, txs[7].TxType.Name(), "TransferAsset")
+}
 
 func TestNewCRCommittee(t *testing.T) {
 	committee := NewCommittee(&config.DefaultParams)

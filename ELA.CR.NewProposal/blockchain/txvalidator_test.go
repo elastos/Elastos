@@ -3017,7 +3017,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	s.Chain.crCommittee.CRCCurrentStageAmount = common.Fixed64(100 * 1e8)
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(99 * 1e8)
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
-	s.EqualError(err, "budgets exceeds the balance of CRC committee")
+	s.Error(err, "budgets exceeds the balance of CRC committee")
 
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0)
 

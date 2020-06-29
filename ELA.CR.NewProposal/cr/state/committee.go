@@ -366,7 +366,7 @@ func (c *Committee) transferCRMemberState(crMember *CRMember, height uint32) {
 	oriRefundable := c.state.depositInfo[crMember.Info.CID].Refundable
 	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
 	oriMemberState := crMember.MemberState
-	penalty := c.getMemberPenalty(height, crMember)
+	penalty := c.getMemberPenalty(height, crMember, true)
 	c.lastHistory.Append(height, func() {
 		crMember.MemberState = MemberImpeached
 		c.state.depositInfo[crMember.Info.CID].Penalty = penalty
@@ -672,7 +672,7 @@ func (c *Committee) terminateCRMember(crMember *CRMember, height uint32) {
 	oriRefundable := c.state.depositInfo[crMember.Info.CID].Refundable
 	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
 	oriMemberState := crMember.MemberState
-	penalty := c.getMemberPenalty(height, crMember)
+	penalty := c.getMemberPenalty(height, crMember, false)
 	c.lastHistory.Append(height, func() {
 		crMember.MemberState = MemberTerminated
 		c.state.depositInfo[crMember.Info.CID].Penalty = penalty
@@ -945,7 +945,7 @@ func (c *Committee) processCurrentMembersDepositInfo(height uint32) {
 			oriDepositAmount := c.state.depositInfo[m.Info.CID].DepositAmount
 			var dpositAmount common.Fixed64
 			dpositAmount = MinDepositAmount
-			penalty := c.getMemberPenalty(height, &member)
+			penalty := c.getMemberPenalty(height, &member, false)
 			c.lastHistory.Append(height, func() {
 				c.state.depositInfo[member.Info.CID].Penalty = penalty
 				c.state.depositInfo[member.Info.CID].Refundable = true
@@ -1019,10 +1019,15 @@ func (c *Committee) generateMember(candidate *Candidate) *CRMember {
 	}
 }
 
-func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fixed64 {
+func (c *Committee) getMemberPenalty(height uint32, member *CRMember, impeached bool) common.Fixed64 {
 	// Calculate penalty by election block count.
 	electionCount := height - c.LastCommitteeHeight
-	electionRate := float64(electionCount) / float64(c.params.CRDutyPeriod)
+	var electionRate float64
+	if impeached {
+		electionRate = float64(electionCount) / float64(c.params.CRDutyPeriod)
+	} else {
+		electionRate = 1
+	}
 
 	// Calculate penalty by vote proposal count.
 	var voteCount int
