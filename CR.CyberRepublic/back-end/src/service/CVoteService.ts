@@ -20,7 +20,7 @@ import {
     timestamp,
     logger
 } from '../utility'
-import { use } from 'chai'
+import {use} from 'chai'
 
 const util = require('util')
 const request = require('request')
@@ -126,7 +126,7 @@ export default class extends Base {
         const db_cvote = this.getDBModel('CVote')
         const db_suggestion = this.getDBModel('Suggestion')
         const db_user = this.getDBModel('User')
-        const { suggestion, proposalHash, chainDid } = param
+        const {suggestion, proposalHash, chainDid} = param
         const vid = await this.getNewVid()
         const [owner, creator] = await Promise.all([
             db_user.findById(suggestion.createdBy),
@@ -617,7 +617,7 @@ export default class extends Base {
         }
         // old data
         if (!param.old) {
-            query.old = { $exists: false }
+            query.old = {$exists: false}
         }
         if (param.old) {
             query.old = true
@@ -845,15 +845,15 @@ export default class extends Base {
     }
 
     private async updateMilestoneStatus(proposal) {
-        const { WITHDRAWN, WAITING_FOR_WITHDRAWAL, REJECTED, WAITING_FOR_APPROVAL } = constant.MILESTONE_STATUS
+        const {WITHDRAWN, WAITING_FOR_WITHDRAWAL, REJECTED, WAITING_FOR_APPROVAL} = constant.MILESTONE_STATUS
         const last: any = _.last(proposal.budget)
         // proposal is final
         if (
-          proposal.status === 'FINAL' &&
-          last.type === 'COMPLETION' &&
-          last.status === WITHDRAWN
+            proposal.status === 'FINAL' &&
+            last.type === 'COMPLETION' &&
+            last.status === WITHDRAWN
         ) {
-          return
+            return
         }
         if (proposal.status === 'ACTIVE' || proposal.status === 'FINAL') {
             const result = await getProposalData(proposal.proposalHash)
@@ -873,7 +873,7 @@ export default class extends Base {
                     const chainStatus = budgets[index].status.toLowerCase()
                     if (chainStatus === 'withdrawn' && item.status === WAITING_FOR_WITHDRAWAL) {
                         isBudgetUpdated = true
-                        return { ...item, status: WITHDRAWN }
+                        return {...item, status: WITHDRAWN}
                     }
                     if (chainStatus === 'rejected' && item.status === WAITING_FOR_APPROVAL) {
                         console.log('ums---rejected milestoneKey---', item.milestoneKey)
@@ -882,7 +882,7 @@ export default class extends Base {
                             proposal.proposer,
                             this.rejectedMailTemplate(proposal.vid)
                         )
-                        return { ...item, status: REJECTED }
+                        return {...item, status: REJECTED}
                     }
                     if (chainStatus === 'withdrawable' && item.status === WAITING_FOR_APPROVAL) {
                         console.log('ums---approved milestoneKey---', item.milestoneKey)
@@ -891,7 +891,7 @@ export default class extends Base {
                             proposal.proposer,
                             this.approvalMailTemplate(proposal.vid)
                         )
-                        return { ...item, status: WAITING_FOR_WITHDRAWAL }
+                        return {...item, status: WAITING_FOR_WITHDRAWAL}
                     }
                     return item
                 })
@@ -945,7 +945,7 @@ export default class extends Base {
         // const n = await db_cvote.count({})
         // return n + 1
         // new version, vid string from 1
-        const n = await db_cvote.count({old:{$exists:false}})
+        const n = await db_cvote.count({old: {$exists: false}})
         return n + 1
     }
 
@@ -1000,7 +1000,7 @@ export default class extends Base {
         const currentVoteHistoryIndex = _.findLastIndex(currentVoteHistory, ['votedBy', votedBy])
 
         currentVoteHistory[currentVoteHistoryIndex] = {
-            ..._.omit(currentVoteResult,['_id'])
+            ..._.omit(currentVoteResult, ['_id'])
         }
         const reasonCreateDate = new Date()
         await db_cvote.update(
@@ -1028,7 +1028,7 @@ export default class extends Base {
             },
             {
                 $set: {
-                    'voteHistory.$': {..._.omit(currentVoteResult,['_id'])},
+                    'voteHistory.$': {..._.omit(currentVoteResult, ['_id'])},
                 },
                 $inc: {
                     __v: 1
@@ -1388,7 +1388,7 @@ export default class extends Base {
             }
         }
 
-        query.old = {$ne:true}
+        query.old = {$ne: true}
 
         const fields = [
             'vid',
@@ -1457,7 +1457,7 @@ export default class extends Base {
         ]
         const proposal = await db_cvote
             .getDBInstance()
-            .findOne({vid: id, old: {$ne : true}}, fields.join(' '))
+            .findOne({vid: id, old: {$ne: true}}, fields.join(' '))
             .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
             .populate('voteHistory.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
@@ -1695,10 +1695,10 @@ export default class extends Base {
         })
         await db_cvote.update(
             {
-                _id: {$in:idsProposaed}
+                _id: {$in: idsProposaed}
             },
             {
-                $set:{
+                $set: {
                     status: constant.CVOTE_STATUS.REJECT
                 }
             },
@@ -1708,10 +1708,10 @@ export default class extends Base {
         )
         await db_cvote.update(
             {
-                _id: {$in:idsNotification}
+                _id: {$in: idsNotification}
             },
             {
-                $set:{
+                $set: {
                     status: constant.CVOTE_STATUS.VETOED
                 }
             },
@@ -1759,9 +1759,9 @@ export default class extends Base {
         <p>Cyber Republic Team</p>
         <p>Thanks</p>
         `
-        return { subject, body }
+        return {subject, body}
     }
-    
+
     private approvalMailTemplate(id: string) {
         const subject = `【Payment approved】Your payment request is approved by secretary`
         const body = `
@@ -1772,16 +1772,16 @@ export default class extends Base {
         <p>Cyber Republic Team</p>
         <p>Thanks</p>
         `
-        return { subject, body }
+        return {subject, body}
     }
-    
+
     private async notifyProposalOwner(
         proposer: any,
         content: {
             subject: string
             body: string
         }
-      ) {
+    ) {
         const mailObj = {
             to: proposer.email,
             toName: userUtil.formatUsername(proposer),
@@ -1796,7 +1796,7 @@ export default class extends Base {
         const db_cvote = this.getDBModel('CVote')
 
         let elaVoteList = await db_ela.getDBInstance().find({type: constant.TRANSACTION_TYPE.COUNCIL_VOTE})
-        if (_.isEmpty(elaVoteList)){
+        if (_.isEmpty(elaVoteList)) {
             return
         }
         const elaVote = []
@@ -1814,20 +1814,20 @@ export default class extends Base {
             query.push(k)
         })
         const proposalList = await db_cvote.getDBInstance()
-            .find({status: constant.CVOTE_STATUS.PROPOSED, proposalHash: {$in:query}})
-            .populate('voteResult.votedBy',constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+            .find({status: constant.CVOTE_STATUS.PROPOSED, proposalHash: {$in: query}})
+            .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
-        if (_.isEmpty(proposalList)){
+        if (_.isEmpty(proposalList)) {
             return
         }
-        const vote  = []
+        const vote = []
         _.forEach(proposalList, (o: any) => {
             _.forEach(o.voteResult, (v: any) => {
-                if(v.status === constant.CVOTE_CHAIN_STATUS.UNCHAIN) {
-                    const oldReasonHash = v.reasonCreatedAt ? 
-                    utilCrypto.sha256D(v.reason + timestamp.second(v.reasonCreatedAt))
-                    :
-                    utilCrypto.sha256D(v.reason)
+                if (v.status === constant.CVOTE_CHAIN_STATUS.UNCHAIN) {
+                    const oldReasonHash = v.reasonCreatedAt ?
+                        utilCrypto.sha256D(v.reason + timestamp.second(v.reasonCreatedAt))
+                        :
+                        utilCrypto.sha256D(v.reason)
                     const reasonHash = v.reasonHash ? v.reasonHash : oldReasonHash
                     const data = {
                         proposalHash: o.proposalHash,
@@ -1841,12 +1841,12 @@ export default class extends Base {
         })
         _.forEach(elaVote, async (o: any) => {
             const did: any = DID_PREFIX + o.did
-            const voteList = _.find(vote, {'proposalHash':o.proposalhash,'reasonHash':o.opinionhash,'did':did})
+            const voteList = _.find(vote, {'proposalHash': o.proposalhash, 'reasonHash': o.opinionhash, 'did': did})
             if (voteList) {
                 const rs = await db_cvote.update({
                     'proposalHash': o.proposalhash,
-                    'voteResult._id':  voteList._id,
-                },{
+                    'voteResult._id': voteList._id,
+                }, {
                     $set: {
                         'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
                     },
@@ -1857,7 +1857,7 @@ export default class extends Base {
                 if (rs && rs.nModified == 1) {
                     await db_ela.remove({txid: o.txid})
                 }
-                
+
             }
         })
     }
