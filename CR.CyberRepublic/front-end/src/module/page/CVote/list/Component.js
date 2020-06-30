@@ -18,7 +18,7 @@ import BaseComponent from '@/model/BaseComponent'
 import Meta from '@/module/common/Meta'
 import I18N from '@/I18N'
 import { logger } from '@/util'
-import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
+import { CVOTE_RESULT, CVOTE_STATUS, CVOTE_CHAIN_STATUS } from '@/constant'
 import VoteStats from '../stats/Component'
 import userUtil from '@/util/user'
 import { ReactComponent as UpIcon } from '@/assets/images/icon-up.svg'
@@ -674,7 +674,7 @@ export default class extends BaseComponent {
 
     if (!_.isEmpty(voteResult)) {
       voteArr = _.map(voteResult, (item) => {
-        if (item.status === 'chained') {
+        if (item.status === CVOTE_CHAIN_STATUS.CHAINED) {
           return CVOTE_RESULT[item.value.toUpperCase()]
         }
         return CVOTE_RESULT.UNDECIDED

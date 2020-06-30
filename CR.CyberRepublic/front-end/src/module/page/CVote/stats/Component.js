@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import _ from 'lodash'
-import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
+import { CVOTE_RESULT } from '@/constant'
 
 import { List, Item, ItemUndecided, Text } from './style'
 
