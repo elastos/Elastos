@@ -7,7 +7,7 @@
   "text7":"UI Display Optimization;",
   "text8":"Personalized icon fix for participant nodes.",
   "text9":"Official release of ELA Wallet;",
-  "text10":"Download the latest version v 1.4.3",
+  "text10":"Download the latest version v 1.4.4",
   "text11":"July 22, 2019",
   "text12":"Fixed bugs.",
   "text13":"Optimized Supernode profit presentation.",
@@ -68,5 +68,14 @@
   "text62":"Notes:",
   "text63":"-After the election period, CR Council member election participation will be temporarily closed, and the election management function will contain the CR Council interface. Unelected candidates can use the election management function to retrieve their ELA deposits.",
   "text64":"-Each CR Council member must use the wallet corresponding to his, her, or their organization’s candidate DID in order to perform duties.",
-  "text65":"-The QR codes provided on the CR website can be scanned using the scanning function on the upper righthand corner of the wallet home screen."
+  "text65":"-The QR codes provided on the CR website can be scanned using the scanning function on the upper righthand corner of the wallet home screen.",
+
+  "text66":"June 30 , 2020",
+  "text67":"This edition of ELA Wallet contain the following upgrades:",
+  "text68":"1. Optimize proposal processing flow",
+  "text69":"2. Add the impeachment function of the committee members to vote for impeachment of dissatisfied committee members",
+  "text70":"3. Add the function of resetting data to re-synchronize the synchronized data while keeping the wallet",
+  "text71":"4. Fix bugs",
+  "text72":"Notes:",
+  "text73":"-Please back up your wallet before you perform the upgrading."
 }
