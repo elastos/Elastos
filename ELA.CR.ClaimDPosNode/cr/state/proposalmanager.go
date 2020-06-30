@@ -336,9 +336,13 @@ func (p *ProposalManager) transferCRAgreedState(proposalState *ProposalState,
 			proposalState.BudgetsStatus = oriBudgetsStatus
 		})
 	} else {
-		status = VoterAgreed
+		if isSpecialProposal(proposalState.Proposal.ProposalType) {
+			status = Finished
+		} else {
+			status = VoterAgreed
+		}
 		p.history.Append(height, func() {
-			proposalState.Status = VoterAgreed
+			proposalState.Status = status
 			for _, b := range proposalState.Proposal.Budgets {
 				if b.Type == payload.Imprest {
 					proposalState.WithdrawableBudgets[b.Stage] = b.Amount
@@ -356,6 +360,15 @@ func (p *ProposalManager) transferCRAgreedState(proposalState *ProposalState,
 		})
 	}
 	return
+}
+
+func isSpecialProposal(proposalType payload.CRCProposalType) bool {
+	switch proposalType {
+	case payload.SecretaryGeneral, payload.ChangeProposalOwner, payload.CloseProposal:
+		return true
+	default:
+		return false
+	}
 }
 
 // shouldEndCRCVote returns if current height should end CRC vote about

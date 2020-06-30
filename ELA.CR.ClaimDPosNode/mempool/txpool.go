@@ -156,6 +156,12 @@ func (mp *TxPool) CleanSubmittedTransactions(block *Block) {
 	mp.Unlock()
 }
 
+func (mp *TxPool) CheckAndCleanAllTransactions() {
+	mp.Lock()
+	mp.checkAndCleanAllTransactions()
+	mp.Unlock()
+}
+
 func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 	txsInPool := len(mp.txnList)
 	deleteCount := 0
@@ -235,6 +241,31 @@ func (mp *TxPool) cleanCanceledProducerAndCR(txs []*Transaction) error {
 	}
 
 	return nil
+}
+
+func (mp *TxPool) checkAndCleanAllTransactions() {
+	chain := blockchain.DefaultLedger.Blockchain
+	bestHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
+
+	txCount := len(mp.txnList)
+	var deleteCount int
+	var proposalsUsedAmount Fixed64
+	for _, tx := range mp.txnList {
+		_, err := chain.CheckTransactionContext(bestHeight+1, tx, proposalsUsedAmount)
+		if err != nil {
+			log.Warn("[checkAndCleanAllTransactions] check transaction context failed,", err)
+			deleteCount++
+			mp.doRemoveTransaction(tx)
+			continue
+		}
+		if tx.IsCRCProposalTx() {
+			blockchain.RecordCRCProposalAmount(&proposalsUsedAmount, tx)
+		}
+	}
+
+	log.Debug(fmt.Sprintf("[checkAndCleanAllTransactions],transaction %d "+
+		"in transaction pool before, %d deleted. Remains %d in TxPool", txCount,
+		deleteCount, txCount-deleteCount))
 }
 
 func (mp *TxPool) cleanVoteAndUpdateProducer(ownerPublicKey []byte) error {
@@ -450,7 +481,9 @@ func (mp *TxPool) doAddTransaction(tx *Transaction) elaerr.ELAError {
 		return err
 	}
 	mp.txnList[tx.Hash()] = tx
-	mp.dealAddProposalTx(tx)
+	if tx.IsCRCProposalTx() {
+		mp.dealAddProposalTx(tx)
+	}
 	return nil
 }
 
@@ -461,7 +494,9 @@ func (mp *TxPool) doRemoveTransaction(tx *Transaction) {
 
 	if _, exist := mp.txnList[hash]; exist {
 		delete(mp.txnList, hash)
-		mp.dealDelProposalTx(tx)
+		if tx.IsCRCProposalTx() {
+			mp.dealDelProposalTx(tx)
+		}
 		mp.txFees.RemoveTx(hash, uint64(txSize), feeRate)
 		mp.removeTx(tx)
 	}

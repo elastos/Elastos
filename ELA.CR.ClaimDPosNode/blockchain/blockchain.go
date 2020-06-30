@@ -1450,6 +1450,8 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		DefaultLedger.Arbitrators.DumpInfo(block.Height)
 	}
 
+	events.Notify(events.ETBlockProcessed, block)
+
 	// Notify the caller that the new block was accepted into the block
 	// chain.  The caller would typically want to react by relaying the
 	// inventory to other peers.
