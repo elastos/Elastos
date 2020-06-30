@@ -77,8 +77,10 @@ static void test_didstore_newdid(void)
             PATH_STEP, (char*)idstring, PATH_STEP, META_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    newalias = DIDDocument_GetAlias(doc);
-    CU_ASSERT_NOT_EQUAL(rc, -1);
+    DIDMetaData *metadata = DIDDocument_GetMetaData(doc);
+    CU_ASSERT_PTR_NOT_NULL(metadata);
+    newalias = DIDMetaData_GetAlias(metadata);
+    CU_ASSERT_PTR_NOT_NULL(newalias);
     CU_ASSERT_STRING_EQUAL(newalias, alias);
 
     loaddoc = DIDStore_LoadDID(store, did);
@@ -198,9 +200,30 @@ static void test_didstore_newdid_withouAlias(void)
             PATH_STEP, (char*)idstring, PATH_STEP, DOCUMENT_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    newalias = DIDDocument_GetAlias(doc);
-    CU_ASSERT_PTR_NOT_NULL(newalias);
-    CU_ASSERT_STRING_EQUAL(newalias, "");
+    DIDMetaData *metadata = DIDDocument_GetMetaData(doc);
+    CU_ASSERT_PTR_NOT_NULL(metadata);
+    newalias = DIDMetaData_GetAlias(metadata);
+    CU_ASSERT_PTR_NULL(newalias);
+
+    rc = DIDMetaData_SetAlias(metadata, "testdoc");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = DIDMetaData_SetExtra(metadata, "name", "littlefish");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = DIDMetaData_SetExtraWithBoolean(metadata, "femal", false);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = DIDDocument_SaveMetaData(doc);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    loaddoc = DIDStore_LoadDID(store, did);
+    CU_ASSERT_PTR_NOT_NULL(loaddoc);
+    metadata = DIDDocument_GetMetaData(loaddoc);
+    CU_ASSERT_PTR_NOT_NULL(metadata);
+    CU_ASSERT_STRING_EQUAL("testdoc", DIDMetaData_GetAlias(metadata));
+    CU_ASSERT_STRING_EQUAL("littlefish", DIDMetaData_GetExtra(metadata, "name"));
+    CU_ASSERT_FALSE(DIDMetaData_GetExtraAsBoolean(metadata, "femal"));
+
+    DIDDocument_Destroy(doc);
+    DIDDocument_Destroy(loaddoc);
 }
 
 static void test_didstore_initial_error(void)

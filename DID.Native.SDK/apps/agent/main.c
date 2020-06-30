@@ -71,12 +71,23 @@ static void newdid(int argc, char *argv[])
 
 static int iterate_did_cb(DID *did, void *context)
 {
+    DIDMetaData *metadata;
+    const char *alias;
+
     int *num = (int *)context;
 
     if (!did)
         return 1;
 
-    printf("  %s\t%s\n", DID_GetMethodSpecificId(did), DID_GetAlias(did));
+    metadata = DID_GetMetaData(did);
+    if (!metadata)
+        return -1;
+
+    alias = DIDMetaData_GetAlias(metadata);
+    if (!alias)
+        return -1;
+
+    printf("  %s\t%s\n", DID_GetMethodSpecificId(did), alias);
 
     *num += 1;
     return 0;

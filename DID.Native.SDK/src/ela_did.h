@@ -159,6 +159,11 @@ typedef struct PublicKey            PublicKey;
 typedef struct Credential           Credential;
 /**
  * \~English
+ * CredentialMetaData stores information about Credential except information in Credential.
+ */
+typedef struct CredentialMetaData   CredentialMetaData;
+/**
+ * \~English
  * A Presentation can be targeted to a specific verifier by using a Linked Data
  * Proof that includes a nonce and realm.
  * This also helps prevent a verifier from reusing a verifiable presentation as
@@ -182,6 +187,11 @@ typedef struct Service              Service;
  * and at least one public key.
  */
 typedef struct DIDDocument          DIDDocument;
+/**
+ * \~English
+ DIDMetaData is store for other information about DID except DIDDocument information.
+ */
+typedef struct DIDMetaData          DIDMetaData;
 /**
  * \~English
  * A DIDDocument Builder to modify DIDDocument elems.
@@ -511,53 +521,160 @@ DID_API DIDDocument **DID_ResolveAll(DID *did);
 
 /**
  * \~English
- * Set alias for did.
+ * Get DID MetaData from did.
  *
  * @param
  *      did                      [in] The handle of DID.
-  * @param
- *      alias                    [in] Alias string for DID.
+ * @return
+ *      If no error occurs, return the handle to DIDMetaData.
+ *      Otherwise, return -1.
+ */
+DID_API DIDMetaData *DID_GetMetaData(DID *did);
+
+/**
+ * \~English
+ * Save DID MetaData.
+ *
+ * @param
+ *      did                      [in] The handle of DID.
  * @return
  *      If no error occurs, return 0.
  *      Otherwise, return -1.
  */
-DID_API int DID_SetAlias(DID *did, const char *alias);
+DID_API int DID_SaveMetaData(DID *did);
 
 /**
  * \~English
  * Get alias for did.
  *
  * @param
- *      did                        [in] The handle of DID.
+ *      metadata                        [in] The handle of DIDMetaData.
  * @return
  *      If no error occurs, return alias string.
  *      Otherwise, return NULL.
  */
-DID_API const char *DID_GetAlias(DID *did);
+DID_API const char *DIDMetaData_GetAlias(DIDMetaData *metadata);
 
 /**
  * \~English
  * Get did status, deactived or not.
  *
  * @param
- *      did                      [in] The handle of DID.
+ *      metadata                        [in] The handle of DIDMetaData.
  * @return
  *      If no error occurs, return status.
  *      Otherwise, return false.
  */
-DID_API bool DID_GetDeactived(DID *did);
+DID_API bool DIDMetaData_GetDeactivated(DIDMetaData *metadata);
 
 /**
  * \~English
- * Get the last timestamp of transaction id for did.
+ * Get the time of transaction id for did.
  *
  * @param
- *      did                      [in] The handle of DID.
+ *      metadata                        [in] The handle of DIDMetaData.
  * @return
  *      If no error occurs, return time stamp.
  *      Otherwise, return 0.
  */
-DID_API time_t DID_GetLastTransactionTimestamp(DID *did);
+DID_API time_t DIDMetaData_GetPublished(DIDMetaData *metadata);
+
+/**
+ * \~English
+ * Set alias for did.
+ *
+ * @param
+ *      metadata                        [in] The handle of DIDMetaData.
+ * @param
+ *      alias                           [in] The ailas string.
+ * @return
+ *      If no error occurs, return 0. Otherwise, return -1.
+ */
+DID_API int DIDMetaData_SetAlias(DIDMetaData *metadata, const char *alias);
+
+/**
+ * \~English
+ * Set 'string' extra elemfor did.
+ *
+ * @param
+ *      metadata                        [in] The handle of DIDMetaData.
+ * @param
+ *      key                             [in] The key string.
+ * @param
+ *      value                           [in] The value string.
+ * @return
+ *      If no error occurs, return 0. Otherwise, return -1.
+ */
+DID_API int DIDMetaData_SetExtra(DIDMetaData *metadata, const char* key, const char *value);
+
+/**
+ * \~English
+ * Set 'boolean' extra elem for did.
+ *
+ * @param
+ *      metadata                        [in] The handle of DIDMetaData.
+ * @param
+ *      key                             [in] The key string.
+ * @param
+ *      value                           [in] The boolean value.
+ * @return
+ *      If no error occurs, return 0. Otherwise, return -1.
+ */
+DID_API int DIDMetaData_SetExtraWithBoolean(DIDMetaData *metadata, const char *key, bool value);
+
+/**
+ * \~English
+ * Set 'double' extra elem for did.
+ *
+ * @param
+ *      metadata                        [in] The handle of DIDMetaData.
+ * @param
+ *      key                             [in] The key string.
+ * @param
+ *      value                           [in] The double value.
+ * @return
+ *      If no error occurs, return 0. Otherwise, return -1.
+ */
+DID_API int DIDMetaData_SetExtraWithDouble(DIDMetaData *metadata, const char *key, double value);
+
+/**
+ * \~English
+ * Get 'string' extra elem from DID.
+ *
+ * @param
+ *      metadata                       [in] The handle of CredentialMetaData.
+ * @param
+ *      key                            [in] The key string.
+ * @return
+ *      If no error occurs, return the elem string. Otherwise, return NULL.
+ */
+DID_API const char *DIDMetaData_GetExtra(DIDMetaData *metadata, const char *key);
+
+/**
+ * \~English
+ * Get 'boolean' extra elem from DID.
+ *
+ * @param
+ *      metadata                       [in] The handle of CredentialMetaData.
+ * @param
+ *      key                            [in] The key string.
+ * @return
+ *      'boolean' elem value.
+ */
+DID_API bool DIDMetaData_GetExtraAsBoolean(DIDMetaData *metadata, const char *key);
+
+/**
+ * \~English
+ * Get 'double' extra elem from DID.
+ *
+ * @param
+ *      metadata                       [in] The handle of CredentialMetaData.
+ * @param
+ *      key                            [in] The key string.
+ * @return
+ *      'double' elem value.
+ */
+DID_API double DIDMetaData_GetExtraAsDouble(DIDMetaData *metadata, const char *key);
 
 /******************************************************************************
  * DIDURL
@@ -690,16 +807,87 @@ DID_API void DIDURL_Destroy(DIDURL *id);
 
 /**
  * \~English
- * Set alias for id.
+ * Get CredentialMetaData from Credential.
  *
  * @param
  *      id                       [in] The handle of DIDURL.
-  * @param
- *      alias                    [in] Alias string for DID.
  * @return
- *      If no error occurs, return 0. Otherwise, return -1.
+ *      If no error occurs, return the handle to CredentialMetaData. Otherwise, return NULL.
  */
-DID_API int DIDURL_SetAlias(DIDURL *id, const char *alias);
+DID_API CredentialMetaData *DIDURL_GetMetaData(DIDURL *id);
+
+/**
+ * \~English
+ * Save Credential(DIDURL) MetaData.
+ *
+ * @param
+ *      id                      [in] The handle of DIDURL.
+ * @return
+ *      If no error occurs, return 0.
+ *      Otherwise, return -1.
+ */
+DID_API int DIDURL_SaveMetaData(DIDURL *id);
+
+/**
+ * \~English
+ * Set alias for Credential.
+ *
+ * @param
+ *      metadata                       [in] The handle of CredentialMetaData.
+ * @param
+ *      alias                          [in] The alias string.
+ * @return
+ *      If no error occurs, return the 0. Otherwise, return -1.
+ */
+DID_API int CredentialMetaData_SetAlias(CredentialMetaData *metadata, const char *alias);
+
+/**
+ * \~English
+ * Set 'string' extra elem for Credential.
+ *
+ * @param
+ *      metadata                       [in] The handle of CredentialMetaData.
+ * @param
+ *      key                            [in] The key string.
+ * @param
+ *      value                          [in] The value string.
+ * @return
+ *      If no error occurs, return the 0. Otherwise, return -1.
+ */
+DID_API int CredentialMetaData_SetExtra(CredentialMetaData *metadata,
+        const char* key, const char *value);
+
+/**
+ * \~English
+ * Set 'boolean' extra elem for Credential.
+ *
+ * @param
+ *      metadata                       [in] The handle of CredentialMetaData.
+ * @param
+ *      key                            [in] The key string.
+ * @param
+ *      value                          [in] The boolean value.
+ * @return
+ *      If no error occurs, return the 0. Otherwise, return -1.
+ */
+DID_API int CredentialMetaData_SetExtraWithBoolean(CredentialMetaData *metadata,
+        const char *key, bool value);
+
+/**
+ * \~English
+ * Set 'double' extra elem for Credential.
+ *
+ * @param
+ *      metadata                       [in] The handle of CredentialMetaData.
+ * @param
+ *      key                            [in] The key string.
+ * @param
+ *      value                          [in] The double value.
+ * @return
+ *      If no error occurs, return the 0. Otherwise, return -1.
+ */
+DID_API int CredentialMetaData_SetExtraWithDouble(CredentialMetaData *metadata,
+        const char *key, double value);
 
 /**
  * \~English
@@ -710,8 +898,49 @@ DID_API int DIDURL_SetAlias(DIDURL *id, const char *alias);
  * @return
  *      If no error occurs, return alias string. Otherwise, return NULL.
  */
-DID_API const char *DIDURL_GetAlias(DIDURL *id);
+DID_API const char *CredentialMetaData_GetAlias(CredentialMetaData *metadata);
 
+/**
+ * \~English
+ * Get 'string' extra elem from Credential.
+ *
+ * @param
+ *      metadata                       [in] The handle of CredentialMetaData.
+ * @param
+ *      key                            [in] The key string.
+ * @return
+ *      If no error occurs, return the elem string. Otherwise, return NULL.
+ */
+DID_API const char *CredentialMetaData_GetExtra(CredentialMetaData *metadata,
+        const char *key);
+
+/**
+ * \~English
+ * Get 'boolean' extra elem from Credential.
+ *
+ * @param
+ *      metadata                       [in] The handle of CredentialMetaData.
+ * @param
+ *      key                            [in] The key string.
+ * @return
+ *      'boolean' elem value.
+ */
+DID_API bool CredentialMetaData_GetExtraAsBoolean(CredentialMetaData *metadata,
+        const char *key);
+
+/**
+ * \~English
+ * Get 'double' extra elem from Credential.
+ *
+ * @param
+ *      metadata                       [in] The handle of CredentialMetaData.
+ * @param
+ *      key                            [in] The key string.
+ * @return
+ *      'double' elem value.
+ */
+DID_API double CredentialMetaData_GetExtraAsDouble(CredentialMetaData *metadata,
+        const char *key);
 /******************************************************************************
  * DIDDocument
  *****************************************************************************/
@@ -1532,40 +1761,26 @@ DID_API int DIDDocument_VerifyDigest(DIDDocument *document, DIDURL *keyid,
 
 /**
  * \~English
- * Set nickname for DID.
+ * Get DIDMetaData from DID.
  *
  * @param
  *      document                 [in] The handle to DIDDocument.
- * @param
- *      alias                    [in] The nickname to store.
  * @return
- *      0 on success, -1 if an error occurred.
+ *      If no error occurs, return the handle to DIDMetadata.
+ *      Otherwise, return NULL.
  */
-DID_API int DIDDocument_SetAlias(DIDDocument *document, const char *alias);
+DID_API DIDMetaData *DIDDocument_GetMetaData(DIDDocument *document);
 
 /**
  * \~English
- * Get nickname for DID.
+ * Save DIDMetaData of document.
  *
  * @param
  *      document                    [in] The handle to DIDDocument.
  * @return
- *      If no error occurs, return alias string.
- *      Otherwise, return NULL.
+ *      0 on success, -1 if an error occurred.
  */
-DID_API const char *DIDDocument_GetAlias(DIDDocument *document);
-
-/**
- * \~English
- * Get timestamp of the latest transaction.
- *
- * @param
- *      document                     [in] The handle to DID Document.
- * @return
- *      If no error occurs, return timestamp.
- *      Otherwise, return NULL.
- */
-DID_API time_t DIDDocument_GetLastTransactionTimestamp(DIDDocument *document);
+DID_API int DIDDocument_SaveMetaData(DIDDocument *document);
 
 /**
  * \~English
@@ -2007,7 +2222,7 @@ DID_API bool Credential_IsValid(Credential *cred);
  * @return
 *      0 on success, -1 if an error occurred.
  */
-DID_API int Credential_SetAlias(Credential *credential, const char *alias);
+DID_API int Credential_SaveMetaData(Credential *credential);
 
 /**
  * \~English
@@ -2019,7 +2234,7 @@ DID_API int Credential_SetAlias(Credential *credential, const char *alias);
  *      If no error occurs, return alias string.
  *      Otherwise, return NULL.
  */
-DID_API const char *Credential_GetAlias(Credential *credential);
+DID_API CredentialMetaData *Credential_GetMetaData(Credential *credential);
 
 /******************************************************************************
  * Issuer
@@ -2247,6 +2462,7 @@ DID_API int DIDStore_Synchronize(DIDStore *store, const char *storepass,
  *      storepass                 [in] Password for DIDStore.
  * @param
  *      alias                     [in] The nickname of DID.
+ *                                     ‘alias' supports NULL.
  * @return
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
@@ -2266,6 +2482,7 @@ DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass,
  *      index                     [in] The index to create new did.
  * @param
  *      alias                     [in] The nickname of DID.
+ *                                     'alias' supports NULL.
  * @return
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
@@ -2315,13 +2532,10 @@ DID_API int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
  *      store                     [in] The handle to DIDStore.
  * @param
  *      document                  [in] The handle to DID Document.
- * @param
- *      alias                     [in] The nickname of DID.
- *                                 If alias == NULL, use the old alias in store.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias);
+DID_API int DIDStore_StoreDID(DIDStore *store, DIDDocument *document);
 
 /**
  * \~English
@@ -2390,13 +2604,10 @@ DID_API int DIDStore_ListDIDs(DIDStore *store, ELA_DID_FILTER filer,
  *      store                    [in] The handle to DIDStore.
  * @param
  *      credential               [in] The handle to Credential.
- * @param
- *      alias                    [in] The nickname of credential.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_StoreCredential(DIDStore *store, Credential *credential,
-        const char *alias);
+DID_API int DIDStore_StoreCredential(DIDStore *store, Credential *credential);
 
 /**
  * \~English
@@ -3054,7 +3265,7 @@ DID_API void DIDBackend_SetTTL(long ttl);
 #define DIDERR_MALFORMED_PRESENTATION               0x8D000008
 /**
  * \~English
- * Meta(DIDMeta/CredMeta) is malformed.
+ * Meta(DIDMetaData/CredMetaData) is malformed.
  */
 #define DIDERR_MALFORMED_META                       0x8D000009
 /**

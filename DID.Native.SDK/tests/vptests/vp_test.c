@@ -231,7 +231,7 @@ static int vp_test_suite_init(void)
         return -1;
     }
 
-    if (DIDStore_StoreDID(store, testdoc, "vp test") == -1) {
+    if (DIDStore_StoreDID(store, testdoc) == -1) {
         TestData_Free();
         return -1;
     }

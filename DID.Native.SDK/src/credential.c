@@ -220,13 +220,6 @@ int Credential_ToJson_Internal(JsonGenerator *gen, Credential *cred, DID *did,
     return 0;
 }
 
-CredentialMeta *Credential_GetMeta(Credential *credential)
-{
-    assert(credential);
-
-    return &credential->meta;
-}
-
 ///////////////////////////////////////////////////////////////////////////
 void Credential_Destroy(Credential *cred)
 {
@@ -239,6 +232,7 @@ void Credential_Destroy(Credential *cred)
     if (cred->subject.properties)
         cJSON_Delete(cred->subject.properties);
 
+    CredentialMetaData_Free(&cred->metadata);
     free(cred);
 }
 
@@ -918,29 +912,20 @@ bool Credential_IsValid(Credential *cred)
     return true;
 }
 
-int Credential_SetAlias(Credential *credential, const char *alias)
+int Credential_SaveMetaData(Credential *credential)
 {
-    if (!credential) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return -1;
-    }
-
-    if (CredentialMeta_SetAlias(&credential->meta, alias) == -1)
-        return -1;
-
-    if (CredentialMeta_AttachedStore(&credential->meta))
-        return DIDStore_StoreCredMeta(CredentialMeta_GetStore(&credential->meta),
-                &credential->meta, &credential->id);
+    if (credential && CredentialMetaData_AttachedStore(&credential->metadata))
+        return DIDStore_StoreCredMeta(credential->metadata.base.store, &credential->metadata, &credential->id);
 
     return 0;
 }
 
-const char *Credential_GetAlias(Credential *credential)
+CredentialMetaData *Credential_GetMetaData(Credential *credential)
 {
     if (!credential) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
     }
 
-    return CredentialMeta_GetAlias(&credential->meta);
+    return &credential->metadata;
 }

@@ -9,12 +9,22 @@ _DID_ToString
 _DID_Equals
 _DID_Compare
 _DID_Destroy
-_DID_SetAlias
-_DID_GetAlias
-_DID_GetDeactived
-_DID_GetLastTransactionTimestamp
 _DID_Resolve
 _DID_ResolveAll
+_DID_GetMetaData
+_DID_SaveMetaData
+
+# DIDMetaData
+_DIDMetaData_GetAlias
+_DIDMetaData_GetDeactivated
+_DIDMetaData_GetPublished
+_DIDMetaData_SetAlias
+_DIDMetaData_SetExtra
+_DIDMetaData_SetExtraWithBoolean
+_DIDMetaData_SetExtraWithDouble
+_DIDMetaData_GetExtra
+_DIDMetaData_GetExtraAsBoolean
+_DIDMetaData_GetExtraAsDouble
 
 # DIDURL
 _DIDURL_FromString
@@ -26,8 +36,18 @@ _DIDURL_ToString
 _DIDURL_Equals
 _DIDURL_Compare
 _DIDURL_Destroy
-_DIDURL_SetAlias
-_DIDURL_GetAlias
+_DIDURL_GetMetaData
+_DIDURL_SaveMetaData
+
+# CredentialMetaData
+_CredentialMetaData_SetAlias
+_CredentialMetaData_SetExtra
+_CredentialMetaData_SetExtraWithBoolean
+_CredentialMetaData_SetExtraWithDouble
+_CredentialMetaData_GetAlias
+_CredentialMetaData_GetExtra
+_CredentialMetaData_GetExtraAsBoolean
+_CredentialMetaData_GetExtraAsDouble
 
 # DIDDocument
 _DIDDocument_FromJson
@@ -82,14 +102,13 @@ _DIDDocument_GetService
 _DIDDocument_GetServices
 _DIDDocument_SelectServices
 _DIDDocument_GetServiceCount
-_DIDDocument_SetAlias
-_DIDDocument_GetAlias
-_DIDDocument_GetLastTransactionTimestamp
 _DIDDocument_GetProofType
 _DIDDocument_GetProofCreater
 _DIDDocument_GetProofCreatedTime
 _DIDDocument_GetProofSignature
 _DIDDocument_GetJwtBuilder
+_DIDDocument_GetMetaData
+_DIDDocument_SaveMetaData
 
 _PublicKey_GetId
 _PublicKey_GetController
@@ -122,8 +141,8 @@ _Credential_IsExpired
 _Credential_IsGenuine
 _Credential_IsValid
 _Credential_IsSelfProclaimed
-_Credential_SetAlias
-_Credential_GetAlias
+_Credential_GetMetaData
+_Credential_SaveMetaData
 
 # DIDStore
 _DIDStore_Open
@@ -247,10 +266,12 @@ _JWS_GetIssuedAt
 @DUMMYADAPTER_CREATE@
 @DUMMYADAPTER_DESTROY@
 
-# DIDMeta
-@DIDSTORE_STOREDIDMETA@
-@DIDSTORE_LOADDIDMETA@
-
+# DIDMetaData
+@DIDMETADATA_GETPREVSIGNATURE@
+@DIDMETADATA_GETTXID@
+@DIDMETADATA_SETTXID@
+@DIDMETADATA_SETPREVSIGNATURE@
+@DIDMETADATA_SETSIGNATURE@
 
 
 

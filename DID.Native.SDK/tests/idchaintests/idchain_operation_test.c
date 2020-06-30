@@ -60,12 +60,14 @@ static void test_idchain_publishdid_and_resolve(void)
     CU_ASSERT_STRING_EQUAL(DIDDocument_GetProofSignature(doc), DIDDocument_GetProofSignature(resolvedoc));
     DIDDocument_Destroy(doc);
 
-    rc = DIDStore_StoreDID(store, resolvedoc, NULL);
+    rc = DIDStore_StoreDID(store, resolvedoc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
-    txid = resolvedoc->meta.txid;
+
+    DIDMetaData *metadata = DIDDocument_GetMetaData(resolvedoc);
+    CU_ASSERT_PTR_NOT_NULL(metadata);
+    txid = DIDMetaData_GetTxid(metadata);
     CU_ASSERT_PTR_NOT_NULL(txid);
     strcpy(previous_txid, txid);
-    //CU_ASSERT_STRING_EQUAL(alias, DIDDocument_GetAlias(resolvedoc));
     printf("\n   txid = %s\n-- resolve result: successfully!\n-- publish begin(update), waiting...\n", txid);
     DIDDocument_Destroy(resolvedoc);
     resolvedoc = NULL;
@@ -92,9 +94,8 @@ static void test_idchain_publishdid_and_resolve(void)
     CU_ASSERT_EQUAL(2, DIDDocument_GetAuthenticationCount(doc));
     DIDDocumentBuilder_Destroy(builder);
 
-    rc = DIDStore_StoreDID(store, doc, NULL);
+    rc = DIDStore_StoreDID(store, doc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
-    //CU_ASSERT_STRING_EQUAL(alias, DIDDocument_GetAlias(doc));
     DIDDocument_Destroy(doc);
 
     successed = DIDStore_PublishDID(store, storepass, &did, NULL, false);
@@ -112,7 +113,8 @@ static void test_idchain_publishdid_and_resolve(void)
         if (!resolvedoc) {
             break;
         } else {
-            txid = resolvedoc->meta.txid;
+            metadata = DIDDocument_GetMetaData(resolvedoc);
+            txid = DIDMetaData_GetTxid(metadata);
             printf(".");
         }
 
@@ -120,7 +122,7 @@ static void test_idchain_publishdid_and_resolve(void)
         if (i >= 20)
             CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
-    rc = DIDStore_StoreDID(store, resolvedoc, NULL);
+    rc = DIDStore_StoreDID(store, resolvedoc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     CU_ASSERT_NOT_EQUAL_FATAL(previous_txid, txid);
     strcpy(previous_txid, txid);
@@ -152,9 +154,8 @@ static void test_idchain_publishdid_and_resolve(void)
     CU_ASSERT_EQUAL(3, DIDDocument_GetAuthenticationCount(doc));
     DIDDocumentBuilder_Destroy(builder);
 
-    rc = DIDStore_StoreDID(store, doc, NULL);
+    rc = DIDStore_StoreDID(store, doc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
-    //CU_ASSERT_STRING_EQUAL(alias, DIDDocument_GetAlias(doc));
     DIDDocument_Destroy(doc);
 
     successed = DIDStore_PublishDID(store, storepass, &did, NULL, false);
@@ -172,14 +173,15 @@ static void test_idchain_publishdid_and_resolve(void)
         if (!resolvedoc) {
             break;
         } else {
-            txid = resolvedoc->meta.txid;
+            metadata = DIDDocument_GetMetaData(resolvedoc);
+            txid = DIDMetaData_GetTxid(metadata);
             printf(".");
         }
 
         if (++i >= 20)
             CU_FAIL_FATAL("publish did timeout!!!!\n");
     }
-    rc = DIDStore_StoreDID(store, resolvedoc, NULL);
+    rc = DIDStore_StoreDID(store, resolvedoc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     CU_ASSERT_NOT_EQUAL_FATAL(previous_txid, txid);
     CU_ASSERT_EQUAL(3, DIDDocument_GetPublicKeyCount(resolvedoc));
@@ -226,11 +228,13 @@ static void test_idchain_publishdid_with_credential(void)
                 CU_FAIL_FATAL("publish did timeout!!!!\n");
         }
     }
-    txid = resolvedoc->meta.txid;
+    DIDMetaData *metadata = DIDDocument_GetMetaData(resolvedoc);
+    CU_ASSERT_PTR_NOT_NULL(metadata);
+    txid = DIDMetaData_GetTxid(metadata);
     CU_ASSERT_PTR_NOT_NULL_FATAL(txid);
     strcpy(previous_txid, txid);
 
-    rc = DIDStore_StoreDID(store, resolvedoc, NULL);
+    rc = DIDStore_StoreDID(store, resolvedoc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     printf("\n   txid = %s\n-- resolve result: successfully!\n-- publish begin(update), waiting...\n", txid);
@@ -259,7 +263,7 @@ static void test_idchain_publishdid_with_credential(void)
     doc = DIDDocumentBuilder_Seal(builder, storepass);
     CU_ASSERT_PTR_NOT_NULL_FATAL(doc);
 
-    rc = DIDStore_StoreDID(store, doc, NULL);
+    rc = DIDStore_StoreDID(store, doc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     cred = DIDDocument_GetCredential(doc, credid);
@@ -280,7 +284,8 @@ static void test_idchain_publishdid_with_credential(void)
         if (!resolvedoc) {
             break;
         } else {
-            txid = resolvedoc->meta.txid;
+            metadata = DIDDocument_GetMetaData(resolvedoc);
+            txid = DIDMetaData_GetTxid(metadata);
             printf(".");
         }
 

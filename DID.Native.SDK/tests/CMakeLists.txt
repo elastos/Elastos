@@ -121,6 +121,7 @@ include_directories(
     ../src/utility
     ../src/adapter
     ../src/jwt
+    ../src/meta
     ../hdkey
     ../adapter/spvadapter
     ${PROJECT_INT_DIST_DIR}/include)

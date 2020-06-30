@@ -42,7 +42,7 @@ static void test_issuer_issuevc(void)
     const char* provalue;
 
     doc = TestData_LoadDoc();
-    rc = DIDStore_StoreDID(store, doc, "credential doc");
+    rc = DIDStore_StoreDID(store, doc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     did = DIDDocument_GetSubject(doc);
@@ -276,7 +276,7 @@ static int issuer_issuevc_test_suite_init(void)
         return -1;
     }
 
-    rc = DIDStore_StoreDID(store, issuerdoc, "issuer doc");
+    rc = DIDStore_StoreDID(store, issuerdoc);
     if (rc < 0) {
         TestData_Free();
         return rc;

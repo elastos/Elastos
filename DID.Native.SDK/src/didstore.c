@@ -127,7 +127,7 @@ typedef struct DID_Export {
     zip_t *zip;
 } DID_Export;
 
-static int store_didmeta(DIDStore *store, DIDMeta *meta, DID *did)
+static int store_didmeta(DIDStore *store, DIDMetaData *meta, DID *did)
 {
     char path[PATH_MAX];
     const char *data;
@@ -136,11 +136,6 @@ static int store_didmeta(DIDStore *store, DIDMeta *meta, DID *did)
     assert(store);
     assert(meta);
     assert(did);
-
-    if (DIDMeta_IsEmpty(meta)) {
-        DIDError_Set(DIDERR_DIDSTORE_ERROR, "No did meta.");
-        return 0;
-    }
 
     if (get_file(path, 1, 4, store->root, DID_DIR, did->idstring, META_FILE) == -1) {
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create file for didmeta file failed.");
@@ -153,7 +148,7 @@ static int store_didmeta(DIDStore *store, DIDMeta *meta, DID *did)
         return -1;
     }
 
-    data = DIDMeta_ToJson(meta);
+    data = DIDMetaData_ToJson(meta);
     if (!data) {
         delete_file(path);
         return -1;
@@ -167,7 +162,7 @@ static int store_didmeta(DIDStore *store, DIDMeta *meta, DID *did)
     return rc;
 }
 
-static int load_didmeta(DIDStore *store, DIDMeta *meta, const char *did)
+static int load_didmeta(DIDStore *store, DIDMetaData *meta, const char *did)
 {
     const char *data;
     char path[PATH_MAX];
@@ -177,7 +172,7 @@ static int load_didmeta(DIDStore *store, DIDMeta *meta, const char *did)
     assert(meta);
     assert(did);
 
-    memset(meta, 0, sizeof(DIDMeta));
+    memset(meta, 0, sizeof(DIDMetaData));
     if (get_file(path, 0, 4, store->root, DID_DIR, did, META_FILE) == -1) {
         DIDError_Set(DIDERR_NOT_EXISTS, "Did meta don't exist.");
         return 0;
@@ -201,16 +196,16 @@ static int load_didmeta(DIDStore *store, DIDMeta *meta, const char *did)
         return -1;
     }
 
-    rc = DIDMeta_FromJson(meta, data);
+    rc = DIDMetaData_FromJson(meta, data);
     free((char*)data);
     if (rc)
         return rc;
 
-    DIDMeta_SetStore(meta, store);
+    DIDMetaData_SetStore(meta, store);
     return rc;
 }
 
-int DIDStore_LoadDIDMeta(DIDStore *store, DIDMeta *meta, DID *did)
+int DIDStore_LoadDIDMeta(DIDStore *store, DIDMetaData *meta, DID *did)
 {
     bool iscontain;
 
@@ -227,7 +222,7 @@ int DIDStore_LoadDIDMeta(DIDStore *store, DIDMeta *meta, DID *did)
     return load_didmeta(store, meta, did->idstring);
 }
 
-int DIDStore_StoreDIDMeta(DIDStore *store, DIDMeta *meta, DID *did)
+int DIDStore_StoreDIDMetaData(DIDStore *store, DIDMetaData *meta, DID *did)
 {
     bool iscontain;
 
@@ -244,7 +239,7 @@ int DIDStore_StoreDIDMeta(DIDStore *store, DIDMeta *meta, DID *did)
     return store_didmeta(store, meta, did);
 }
 
-static int store_credmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
+static int store_credmeta(DIDStore *store, CredentialMetaData *meta, DIDURL *id)
 {
     char path[PATH_MAX];
     const char *data;
@@ -254,10 +249,7 @@ static int store_credmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
     assert(meta);
     assert(id);
 
-    if (CredentialMeta_IsEmpty(meta))
-        return 0;
-
-    data = CredentialMeta_ToJson(meta);
+    data = CredentialMetaData_ToJson(meta);
     if (!data)
         return -1;
 
@@ -297,7 +289,7 @@ errorExit:
     return -1;
 }
 
-static int load_credmeta(DIDStore *store, CredentialMeta *meta, const char *did,
+static int load_credmeta(DIDStore *store, CredentialMetaData *meta, const char *did,
         const char *fragment)
 {
     const char *data;
@@ -309,7 +301,7 @@ static int load_credmeta(DIDStore *store, CredentialMeta *meta, const char *did,
     assert(did);
     assert(fragment);
 
-    memset(meta, 0, sizeof(CredentialMeta));
+    memset(meta, 0, sizeof(CredentialMetaData));
     if (get_file(path, 0, 6, store->root, DID_DIR, did, CREDENTIALS_DIR,
             fragment, META_FILE) == -1)
         return 0;
@@ -332,16 +324,16 @@ static int load_credmeta(DIDStore *store, CredentialMeta *meta, const char *did,
         return -1;
     }
 
-    rc = CredentialMeta_FromJson(meta, data);
+    rc = CredentialMetaData_FromJson(meta, data);
     free((char*)data);
     if (rc)
         return rc;
 
-    CredentialMeta_SetStore(meta, store);
+    CredentialMetaData_SetStore(meta, store);
     return rc;
 }
 
-int DIDStore_StoreCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
+int DIDStore_StoreCredMeta(DIDStore *store, CredentialMetaData *meta, DIDURL *id)
 {
     bool iscontain;
 
@@ -358,7 +350,7 @@ int DIDStore_StoreCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
     return store_credmeta(store, meta, id);
 }
 
-int DIDStore_LoadCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
+int DIDStore_LoadCredMeta(DIDStore *store, CredentialMetaData *meta, DIDURL *id)
 {
     bool iscontain;
 
@@ -783,7 +775,7 @@ static int list_did_helper(const char *path, void *context)
     }
 
     strcpy(did.idstring, path);
-    load_didmeta(dh->store, &did.meta, did.idstring);
+    load_didmeta(dh->store, &did.metadata, did.idstring);
 
     if (dh->filter == 0 || (dh->filter == 1 && DIDSotre_ContainsPrivateKeys(dh->store, &did)) ||
             (dh->filter == 2 && !DIDSotre_ContainsPrivateKeys(dh->store, &did)))
@@ -890,7 +882,7 @@ static int list_credential_helper(const char *path, void *context)
 
     strcpy(id.did.idstring, ch->did.idstring);
     strcpy(id.fragment, path);
-    load_credmeta(ch->store, &id.meta, id.did.idstring, id.fragment);
+    load_credmeta(ch->store, &id.metadata, id.did.idstring, id.fragment);
     return ch->cb(&id, ch->context);
 }
 
@@ -964,13 +956,9 @@ static DIDDocument *create_document(DIDStore *store, DID *did, const char *key,
     if (!document)
         return NULL;
 
-    if (DIDMeta_Init(&document->meta, alias, NULL,
-            document->proof.signatureValue, false, 0) == -1) {
-        DIDDocument_Destroy(document);
-        return NULL;
-    }
-
-    DIDMeta_Copy(&document->did.meta, &document->meta);
+    DIDMetaData_SetAlias(&document->metadata, alias);
+    DIDMetaData_SetDeactivated(&document->metadata, false);
+    DIDMetaData_Copy(&document->did.metadata, &document->metadata);
     return document;
 }
 
@@ -1073,12 +1061,12 @@ int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
     return load_mnemonic(store, storepass, mnemonic, size);
 }
 
-int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
+int DIDStore_StoreDID(DIDStore *store, DIDDocument *document)
 {
     char path[PATH_MAX];
     const char *data, *root;
     char txid[ELA_MAX_TXID_LEN];
-    DIDMeta meta;
+    DIDMetaData meta;
     ssize_t count;
     int rc;
 
@@ -1090,11 +1078,11 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
     if (load_didmeta(store, &meta, document->did.idstring) == -1)
         return -1;
 
-    if (alias)
-        strcpy(document->meta.alias, alias);
+    if (DIDMetaData_Merge(&document->metadata, &meta) < 0)
+        return -1;
 
-    DIDMeta_Merge(&meta, &document->meta);
-    DIDDocument_SetStore(document, store);
+    DIDMetaData_SetStore(&document->metadata, store);
+    DIDMetaData_Free(&meta);
 
 	data = DIDDocument_ToJson(document, true);
 	if (!data)
@@ -1114,8 +1102,7 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
         goto errorExit;
     }
 
-    //strcpy(meta.alias, document->meta.alias);
-    if (store_didmeta(store, &meta, &document->did) == -1)
+    if (store_didmeta(store, &document->metadata, &document->did) == -1)
         goto errorExit;
 
     count = DIDDocument_GetCredentialCount(document);
@@ -1178,13 +1165,13 @@ DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did)
     if (!document)
         return NULL;
 
-    if (load_didmeta(store, &document->meta, document->did.idstring) == -1) {
+    if (load_didmeta(store, &document->metadata, document->did.idstring) == -1) {
         DIDDocument_Destroy(document);
         return NULL;
     }
 
-    DIDMeta_SetStore(&document->meta, store);
-    DIDMeta_Copy(&document->did.meta, &document->meta);
+    DIDMetaData_SetStore(&document->metadata, store);
+    DIDMetaData_Copy(&document->did.metadata, &document->metadata);
 
     return document;
 }
@@ -1284,9 +1271,9 @@ int DIDStore_ListDIDs(DIDStore *store, ELA_DID_FILTER filter,
     return 0;
 }
 
-int DIDStore_StoreCredential(DIDStore *store, Credential *credential, const char *alias)
+int DIDStore_StoreCredential(DIDStore *store, Credential *credential)
 {
-    CredentialMeta meta;
+    CredentialMetaData meta;
     char _alias[ELA_MAX_ALIAS_LEN];
     DIDURL *id;
 
@@ -1302,21 +1289,14 @@ int DIDStore_StoreCredential(DIDStore *store, Credential *credential, const char
     if (load_credmeta(store, &meta, id->did.idstring, id->fragment) == -1)
         return -1;
 
-    if (!alias) {
-        strcpy(_alias, meta.alias);
-        if (!*_alias)
-            strcpy(_alias, credential->meta.alias);
-        alias = _alias;
-    }
-
-    if (CredentialMeta_SetAlias(&credential->meta, alias) == -1 ||
-            CredentialMeta_Merge(&meta, &credential->meta) == -1)
+    if (CredentialMetaData_Merge(&credential->metadata, &meta) < 0)
         return -1;
 
-    CredentialMeta_SetStore(&meta, store);
-    memcpy(&credential->meta, &meta, sizeof(CredentialMeta));
+    CredentialMetaData_SetStore(&credential->metadata, store);
+    CredentialMetaData_Free(&meta);
+
     if (store_credential(store, credential) == -1 ||
-            store_credmeta(store, &credential->meta, id) == -1)
+            store_credmeta(store, &credential->metadata, id) == -1)
         return -1;
 
     return 0;
@@ -1361,7 +1341,7 @@ Credential *DIDStore_LoadCredential(DIDStore *store, DID *did, DIDURL *id)
     if (!credential)
         return NULL;
 
-    if (DIDStore_LoadCredMeta(store, &credential->meta, id) == -1) {
+    if (DIDStore_LoadCredMeta(store, &credential->metadata, id) == -1) {
         Credential_Destroy(credential);
         return NULL;
     }
@@ -1884,7 +1864,7 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeC
                 finalCopy = chainCopy;
                 localCopy = DIDStore_LoadDID(store, &did);
                 if (localCopy) {
-                    const char *local_signature = DIDMeta_GetSignature(&localCopy->meta);
+                    const char *local_signature = DIDMetaData_GetSignature(&localCopy->metadata);
                     if (!*local_signature ||
                             strcmp(DIDDocument_GetProofSignature(localCopy), local_signature)) {
                         finalCopy = callback(chainCopy, localCopy);
@@ -1899,7 +1879,7 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeC
                     }
                 }
 
-                if (DIDStore_StoreDID(store, finalCopy, NULL) == 0) {
+                if (DIDStore_StoreDID(store, finalCopy) == 0) {
                     if (HDKey_SerializePrv(derivedkey, extendedkey, sizeof(extendedkey)) > 0) {
                         if (store_default_privatekey(store, storepass, HDKey_GetAddress(derivedkey),
                                 extendedkey, sizeof(extendedkey)) == 0) {
@@ -2177,7 +2157,7 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
         return NULL;
     }
 
-    if (DIDStore_StoreDID(store, document, alias) == -1) {
+    if (DIDStore_StoreDID(store, document) == -1) {
         DIDStore_DeleteDID(store, &did);
         DIDDocument_Destroy(document);
         return NULL;
@@ -2320,8 +2300,7 @@ int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
 bool DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
         DIDURL *signkey, bool force)
 {
-    const char *local_txid, *last_txid;
-    const char *local_signature, *resolve_signature;
+    const char *local_signature, *local_prevsignature, *resolve_signature, *last_txid;
     DIDDocument *doc = NULL, *resolve_doc = NULL;
     int rc = -1;
     bool successed;
@@ -2357,18 +2336,19 @@ bool DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
             goto errorExit;
         }
 
-        last_txid = resolve_doc->meta.txid;
-        if (!last_txid || !*last_txid) {
-            DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing last transaction id.");
+        resolve_signature = resolve_doc->proof.signatureValue;
+        if (!resolve_signature || !*resolve_signature) {
+            DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing resolve signature.");
             goto errorExit;
         }
+        last_txid = DIDMetaData_GetTxid(&resolve_doc->metadata);
 
         if (!force) {
-            local_txid = DIDMeta_GetTxid(&doc->meta);
-            local_signature = DIDMeta_GetSignature(&doc->meta);
-            if ((!local_txid || !*local_txid) && (!local_signature || !*local_signature)) {
+            local_signature = DIDMetaData_GetSignature(&doc->metadata);
+            local_prevsignature = DIDMetaData_GetPrevSignature(&doc->metadata);
+            if ((!local_signature || !*local_signature) && (!local_prevsignature || !*local_prevsignature)) {
                 DIDError_Set(DIDERR_DIDSTORE_ERROR,
-                        "Missing last transaction id and signature, use force mode to ignore checks.");
+                        "Missing local document signature and previous signature, use force mode to ignore checks.");
                 goto errorExit;
             }
 
@@ -2378,17 +2358,18 @@ bool DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
                 goto errorExit;
             }
 
-            if ((*local_txid && strcmp(local_txid, last_txid)) &&
-                    (*local_signature && strcmp(local_signature, resolve_signature))) {
-                DIDError_Set(DIDERR_DIDSTORE_ERROR,
-                        "Current copy not based on the lastest on-chain copy, txid mismatch.");
-                goto errorExit;
+            if (local_signature && strcmp(local_signature, resolve_signature)) {
+                if (!local_prevsignature ||
+                        (local_prevsignature && strcmp(local_prevsignature, resolve_signature))) {
+                    DIDError_Set(DIDERR_DIDSTORE_ERROR,
+                            "Current copy not based on the lastest on-chain copy.");
+                    goto errorExit;
+                }
             }
         }
 
-        DIDMeta_SetTxid(&doc->did.meta, last_txid);
-        DIDMeta_SetTxid(&doc->meta, last_txid);
-
+        DIDMetaData_SetTxid(&doc->metadata, last_txid);
+        DIDMetaData_SetTxid(&doc->did.metadata, last_txid);
         successed = DIDBackend_Update(&store->backend, doc, signkey, storepass);
     }
 
@@ -2396,8 +2377,9 @@ bool DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
         goto errorExit;
 
     //Meta stores the resolved txid and local signature.
-    DIDMeta_SetSignature(&doc->meta, DIDDocument_GetProofSignature(doc));
-    rc = store_didmeta(store, &doc->meta, &doc->did);
+    DIDMetaData_SetSignature(&doc->metadata, DIDDocument_GetProofSignature(doc));
+    DIDMetaData_SetPrevSignature(&doc->metadata, resolve_signature);
+    rc = store_didmeta(store, &doc->metadata, &doc->did);
 
 errorExit:
     if (resolve_doc)
@@ -2432,8 +2414,8 @@ bool DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         }
     }
     else {
-        DIDMeta_SetStore(&doc->meta, store);
-        DIDMeta_SetStore(&doc->did.meta, store);
+        DIDMetaData_SetStore(&doc->metadata, store);
+        DIDMetaData_SetStore(&doc->did.metadata, store);
     }
 
     if (!signkey) {
@@ -2451,7 +2433,7 @@ bool DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         }
     }
 
-    successed = DIDBackend_Deactivate(&store->backend, did, signkey, storepass);
+    successed = DIDBackend_Deactivate(&store->backend, &doc->did, signkey, storepass);
     DIDDocument_Destroy(doc);
     return successed;
 }
@@ -2693,7 +2675,7 @@ static int write_credentials(DIDURL *id, void *context)
             DIDERR_OUT_OF_MEMORY, "Write credential failed.");
     CHECK_TO_MSG_ERROREXIT(JsonGenerator_WriteFieldName(ch->gen, "meta"),
             DIDERR_OUT_OF_MEMORY, "Write 'meta' failed.");
-    CHECK_TO_MSG_ERROREXIT(CredentialMeta_ToJson_Internal(&cred->meta, ch->gen),
+    CHECK_TO_MSG_ERROREXIT(CredentialMetaData_ToJson_Internal(&cred->metadata, ch->gen),
             DIDERR_OUT_OF_MEMORY, "Write credential meta failed.");
     CHECK_TO_MSG_ERROREXIT(JsonGenerator_WriteEndObject(ch->gen),
             DIDERR_OUT_OF_MEMORY, "End 'credential' object failed.");
@@ -2701,7 +2683,7 @@ static int write_credentials(DIDURL *id, void *context)
     if (!vc_string)
         goto errorExit;
 
-    meta_string = CredentialMeta_ToJson(&cred->meta);
+    meta_string = CredentialMetaData_ToJson(&cred->metadata);
     if (!meta_string)
         goto errorExit;
 
@@ -2789,14 +2771,14 @@ static int export_document(JsonGenerator *gen, DIDDocument *doc, Sha256_Digest *
     CHECK(JsonGenerator_WriteFieldName(gen, "content"));
     CHECK(DIDDocument_ToJson_Internal(gen, doc, true, false));
     CHECK(JsonGenerator_WriteFieldName(gen, "meta"));
-    CHECK(DIDMeta_ToJson_Internal(&doc->meta, gen));
+    CHECK(DIDMetaData_ToJson_Internal(&doc->metadata, gen));
     CHECK(JsonGenerator_WriteEndObject(gen));
 
     docstring = DIDDocument_ToJson(doc, true);
     if (!docstring)
         return -1;
 
-    meta = DIDMeta_ToJson(&doc->meta);
+    meta = DIDMetaData_ToJson(&doc->metadata);
     if (!meta) {
         free((char*)docstring);
         return -1;
@@ -3178,11 +3160,11 @@ static DIDDocument *import_document(cJSON *json, DID *did, Sha256_Digest *digest
         goto errorExit;
     }
 
-    if (DIDMeta_FromJson_Internal(&doc->meta, field) < 0)
+    if (DIDMetaData_FromJson_Internal(&doc->metadata, field) < 0)
         goto errorExit;
 
-    DIDMeta_Copy(&doc->did.meta, &doc->meta);
-    metastring = DIDMeta_ToJson(&doc->meta);
+    DIDMetaData_Copy(&doc->did.metadata, &doc->metadata);
+    metastring = DIDMetaData_ToJson(&doc->metadata);
     if (!metastring)
         goto errorExit;
 
@@ -3277,14 +3259,14 @@ static ssize_t import_creds(cJSON *json, DID *did, Credential **creds, size_t si
             DIDError_Set(DIDERR_UNSUPPOTED, "Invalid 'meta'.");
             goto errorExit;
         }
-        if (CredentialMeta_FromJson_Internal(&cred->meta, child_field) < 0)
+        if (CredentialMetaData_FromJson_Internal(&cred->metadata, child_field) < 0)
             goto errorExit;
 
         const char *credstring = Credential_ToJson(cred, true);
         if (!credstring)
             goto errorExit;
 
-        const char *metastring = CredentialMeta_ToJson(&cred->meta);
+        const char *metastring = CredentialMetaData_ToJson(&cred->metadata);
         if (!metastring) {
             free((char*)credstring);
             goto errorExit;
@@ -3557,11 +3539,11 @@ int DIDStore_ImportDID(DIDStore *store, const char *storepass,
         goto errorExit;
 
     //save all files
-    if (DIDStore_StoreDID(store, doc, NULL) < 0)
+    if (DIDStore_StoreDID(store, doc) < 0)
         goto errorExit;
 
     for (int i = 0; i < cred_size; i++) {
-        if (DIDStore_StoreCredential(store, creds[i], NULL) < 0)
+        if (DIDStore_StoreCredential(store, creds[i]) < 0)
             goto errorExit;
     }
 

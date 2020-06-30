@@ -309,7 +309,18 @@ static Credential *store_credential(const char *file, const char *alias)
     if (!cred)
         return NULL;
 
-    if (DIDStore_StoreCredential(testdata.store, cred, alias) == -1) {
+    CredentialMetaData *metadata = Credential_GetMetaData(cred);
+    if (!metadata) {
+        Credential_Destroy(cred);
+        return NULL;
+    }
+
+    if (CredentialMetaData_SetAlias(metadata, alias) < 0) {
+        Credential_Destroy(cred);
+        return NULL;
+    }
+
+    if (DIDStore_StoreCredential(testdata.store, cred) == -1) {
         Credential_Destroy(cred);
         return NULL;
     }
@@ -332,12 +343,23 @@ static DIDDocument *store_document(const char *file, const char *alias)
     if (!doc)
         return NULL;
 
-    if (DIDStore_StoreDID(testdata.store, doc, alias) == -1) {
+    DIDMetaData *metadata = DIDDocument_GetMetaData(doc);
+    if (!metadata) {
         DIDDocument_Destroy(doc);
         return NULL;
     }
 
-    return doc;
+    if (DIDMetaData_SetAlias(metadata, alias) < 0) {
+        DIDDocument_Destroy(doc);
+        return NULL;
+    }
+
+    if (DIDStore_StoreDID(testdata.store, doc) == -1) {
+        DIDDocument_Destroy(doc);
+        return NULL;
+    }
+
+    return DIDStore_LoadDID(testdata.store, &doc->did);
 }
 
 bool file_exist(const char *path)
@@ -383,7 +405,6 @@ DID *DID_Copy(DID *dest, DID *src)
     }
 
     strcpy(dest->idstring, src->idstring);
-    memcpy(&dest->meta, &src->meta, sizeof(DIDMeta));
     return dest;
 }
 
@@ -395,7 +416,6 @@ DIDURL *DIDURL_Copy(DIDURL *dest, DIDURL *src)
 
     strcpy(dest->did.idstring, src->did.idstring);
     strcpy(dest->fragment, src->fragment);
-    memcpy(&dest->meta, &src->meta, sizeof(CredentialMeta));
 
     return dest;
 }
@@ -847,39 +867,5 @@ HDKey *Generater_KeyPair(HDKey *hdkey)
 
     return HDKey_GetDerivedKey(privateIdentity, hdkey, 5, 44 | HARDENED,
            0 | HARDENED, 0 | HARDENED, 0, 0);
-}
-
-int Set_Doc_Txid(DIDDocument *doc, const char *txid)
-{
-    if (!doc)
-        return -1;
-
-    if (txid) {
-        if (strlen(txid) >= sizeof(doc->meta.txid))
-            return -1;
-        strcpy(doc->meta.txid, txid);
-    } else {
-        *doc->meta.txid = 0;
-    }
-
-    memcpy(&doc->did.meta, &doc->meta, sizeof(doc->meta));
-    return 0;
-}
-
-int Set_Doc_Signature(DIDDocument *doc, const char *signature)
-{
-    if (!doc)
-        return -1;
-
-    if (signature) {
-        if (strlen(signature) >= sizeof(doc->meta.signatureValue))
-            return -1;
-        strcpy(doc->meta.signatureValue, signature);
-    } else {
-        *doc->meta.signatureValue = 0;
-    }
-
-    memcpy(&doc->did.meta, &doc->meta, sizeof(doc->meta));
-    return 0;
 }
 

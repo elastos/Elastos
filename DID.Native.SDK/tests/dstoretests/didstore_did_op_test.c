@@ -65,9 +65,10 @@ static void test_didstore_bulk_newdid(void)
         CU_ASSERT_PTR_NOT_NULL(loaddoc);
         CU_ASSERT_TRUE(DIDDocument_IsValid(loaddoc));
 
-        gAlias = DIDDocument_GetAlias(loaddoc);
-        CU_ASSERT_NOT_EQUAL(rc, -1);
-
+        DIDMetaData *metadata = DIDDocument_GetMetaData(loaddoc);
+        CU_ASSERT_PTR_NOT_NULL(loaddoc);
+        gAlias = DIDMetaData_GetAlias(metadata);
+        CU_ASSERT_PTR_NOT_NULL(gAlias);
         CU_ASSERT_STRING_EQUAL(alias, gAlias);
         CU_ASSERT_STRING_EQUAL(DIDDocument_GetProofSignature(doc),
                 DIDDocument_GetProofSignature(loaddoc));

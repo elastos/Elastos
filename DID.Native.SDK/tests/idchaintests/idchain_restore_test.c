@@ -211,7 +211,7 @@ static void test_sync_with_localmodification1(void)
     modified_doc = DIDDocumentBuilder_Seal(builder, storepass);
     CU_ASSERT_PTR_NOT_NULL_FATAL(modified_doc);
 
-    rc = DIDStore_StoreDID(store, modified_doc, NULL);
+    rc = DIDStore_StoreDID(store, modified_doc);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     strcpy(modified_signature, DIDDocument_GetProofSignature(modified_doc));
     DIDDocument_Destroy(modified_doc);
@@ -300,7 +300,7 @@ static void test_sync_with_localmodification2(void)
     modified_doc = DIDDocumentBuilder_Seal(builder, storepass);
     CU_ASSERT_PTR_NOT_NULL_FATAL(modified_doc);
 
-    rc = DIDStore_StoreDID(store, modified_doc, NULL);
+    rc = DIDStore_StoreDID(store, modified_doc);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     DIDDocument_Destroy(modified_doc);
 

@@ -50,10 +50,6 @@ const char *Generater_Publickey(char *publickeybase58, size_t size);
 
 HDKey *Generater_KeyPair(HDKey *hdkey);
 
-int Set_Doc_Txid(DIDDocument *doc, const char *txid);
-
-int Set_Doc_Signature(DIDDocument *doc, const char *signature);
-
 DID *DID_Copy(DID *dest, DID *src);
 
 DIDURL *DIDURL_Copy(DIDURL *dest, DIDURL *src);

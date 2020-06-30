@@ -39,6 +39,7 @@ endif()
 file(GLOB utility-SOURCES "utility/*.c")
 file(GLOB backend-SOURCES "backend/*.c")
 file(GLOB jwt-SOURCES "jwt/*.c")
+file(GLOB meta-SOURCES "meta/*.c")
 
 set(SRC
     diderror.c
@@ -50,11 +51,10 @@ set(SRC
     mnemonic.c
     presentation.c
     issuer.c
-    credmeta.c
-    didmeta.c
     ${utility-SOURCES}
     ${backend-SOURCES}
-    ${jwt-SOURCES})
+    ${jwt-SOURCES}
+    ${meta-SOURCES})
 
 set(HEADERS
     ela_did.h
@@ -73,10 +73,16 @@ if(ENABLE_TESTS)
         "_DummyAdapter_Create")
     set(DUMMYADAPTER_DESTROY
         "_DummyAdapter_Destroy")
-    set(DIDSTORE_STOREDIDMETA
-        "_DIDStore_StoreDIDMeta")
-    set(DIDSTORE_LOADDIDMETA
-        "_DIDStore_LoadDIDMeta")
+    set(DIDMETADATA_GETPREVSIGNATURE
+        "_DIDMetaData_GetPrevSignature")
+    set(DIDMETADATA_GETTXID
+        "_DIDMetaData_GetTxid")
+    set(DIDMETADATA_SETTXID
+        "_DIDMetaData_SetTxid")
+    set(DIDMETADATA_SETPREVSIGNATURE
+        "_DIDMetaData_SetPrevSignature")
+    set(DIDMETADATA_SETSIGNATURE
+        "_DIDMetaData_SetSignature")
 endif()
 
 configure_file(
@@ -96,6 +102,7 @@ include_directories(
     backend
     adapter
     jwt
+    meta
     .
     ../hdkey
     ${PROJECT_INT_DIST_DIR}/include)

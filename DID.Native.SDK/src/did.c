@@ -140,6 +140,7 @@ int Init_DID(DID *did, const char *idstring)
     }
 
     strcpy(did->idstring, idstring);
+    memset(&did->metadata, 0, sizeof(DIDMetaData));
     return 0;
 }
 
@@ -236,7 +237,6 @@ DID *DID_Copy(DID *dest, DID *src)
     }
 
     strcpy(dest->idstring, src->idstring);
-    DIDMeta_Copy(&dest->meta, &src->meta);
     return dest;
 }
 
@@ -448,7 +448,6 @@ DIDURL *DIDURL_Copy(DIDURL *dest, DIDURL *src)
 
     strcpy(dest->did.idstring, src->did.idstring);
     strcpy(dest->fragment, src->fragment);
-    CredentialMeta_Copy(&dest->meta, &src->meta);
 
     return dest;
 }
@@ -484,77 +483,36 @@ DIDDocument *DID_Resolve(DID *did, bool force)
     return DIDBackend_Resolve(did, force);
 }
 
-int DID_SetAlias(DID *did, const char *alias)
-{
-    if (!did) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return -1;
-    }
-
-    if (DIDMeta_SetAlias(&did->meta, alias) < 0)
-        return -1;
-
-    if (DIDMeta_AttachedStore(&did->meta))
-        return DIDStore_StoreDIDMeta(did->meta.store, &did->meta, did);
-
-    return 0;
-}
-
-const char *DID_GetAlias(DID *did)
+DIDMetaData *DID_GetMetaData(DID *did)
 {
     if (!did) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
     }
-
-    return DIDMeta_GetAlias(&did->meta);
+    return &did->metadata;
 }
 
-bool DID_GetDeactived(DID *did)
+int DID_SaveMetaData(DID *did)
 {
-    if (!did) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return false;
-    }
-
-    return DIDMeta_GetDeactived(&did->meta);
-}
-
-time_t DID_GetLastTransactionTimestamp(DID *did)
-{
-    if (!did) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return 0;
-    }
-
-    return DIDMeta_GetTimestamp(&did->meta);
-}
-
-//for Credential
-int DIDURL_SetAlias(DIDURL *id, const char *alias)
-{
-    if (!id) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return -1;
-    }
-
-    if (CredentialMeta_SetAlias(&id->meta, alias) < 0) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "DIDURL: set didurl alias failed.");
-        return -1;
-    }
-
-    if (CredentialMeta_AttachedStore(&id->meta))
-        return DIDStore_StoreCredMeta(id->meta.store, &id->meta, id);
+    if (did && DIDMetaData_AttachedStore(&did->metadata))
+        return DIDStore_StoreDIDMetaData(did->metadata.base.store, &did->metadata, did);
 
     return 0;
 }
 
-const char *DIDURL_GetAlias(DIDURL *id)
+CredentialMetaData *DIDURL_GetMetaData(DIDURL *id)
 {
     if (!id) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
     }
+    return &id->metadata;
+}
 
-    return CredentialMeta_GetAlias(&id->meta);
+int DIDURL_SaveMetaData(DIDURL *id)
+{
+    if (id && CredentialMetaData_AttachedStore(&id->metadata))
+        return DIDStore_StoreCredMeta(id->metadata.base.store, &id->metadata, id);
+
+    return 0;
 }

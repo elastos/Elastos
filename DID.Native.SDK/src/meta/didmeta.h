@@ -27,6 +27,7 @@
 
 #include "ela_did.h"
 #include "JsonGenerator.h"
+#include "meta.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,59 +35,47 @@ extern "C" {
 
 #define MAX_DOC_SIGN                    128
 
-typedef struct DIDMeta {
-    char alias[ELA_MAX_ALIAS_LEN];
-    char txid[ELA_MAX_TXID_LEN];
-    char signatureValue[MAX_DOC_SIGN];
-    bool deactived;
-    time_t timestamp;
-    DIDStore *store;
-} DIDMeta;
+typedef struct DIDMetaData {
+    MetaData base;
+} DIDMetaData;
 
-int DIDMeta_Init(DIDMeta *meta, const char *alias, char *txid,
-        const char *signature, bool deactived, time_t timestamp);
+const char *DIDMetaData_ToJson(DIDMetaData *metadata);
 
-const char *DIDMeta_ToJson(DIDMeta *meta);
+int DIDMetaData_ToJson_Internal(DIDMetaData *metadata, JsonGenerator *gen);
 
-int DIDMeta_ToJson_Internal(DIDMeta *meta, JsonGenerator *gen);
+int DIDMetaData_FromJson(DIDMetaData *metadata, const char *data);
 
-int DIDMeta_FromJson(DIDMeta *meta, const char *json);
+int DIDMetaData_FromJson_Internal(DIDMetaData *metadata, cJSON *json);
 
-int DIDMeta_FromJson_Internal(DIDMeta *meta, cJSON *json);
+const char *DIDMetaData_ToString(DIDMetaData *metadata);
 
-void DIDMeta_Destroy(DIDMeta *meta);
+void DIDMetaData_Free(DIDMetaData *metadata);
 
-int DIDMeta_SetAlias(DIDMeta *meta, const char *alias);
+int DIDMetaData_SetDeactivated(DIDMetaData *metadata, bool deactived);
 
-int DIDMeta_SetDeactived(DIDMeta *meta, bool deactived);
+int DIDMetaData_SetPublished(DIDMetaData *metadata, time_t time);
 
-int DIDMeta_SetTimestamp(DIDMeta *meta, time_t time);
+const char *DIDMetaData_GetSignature(DIDMetaData *metadata);
 
-int DIDMeta_SetTxid(DIDMeta *meta, const char *txid);
+int DIDMetaData_Merge(DIDMetaData *metadata, DIDMetaData *frommeta);
 
-int DIDMeta_SetSignature(DIDMeta *meta, const char *signature);
+void DIDMetaData_Copy(DIDMetaData *metadata, DIDMetaData *frommeta);
 
-const char *DIDMeta_GetAlias(DIDMeta *meta);
+void DIDMetaData_SetStore(DIDMetaData *metadata, DIDStore *store);
 
-const char *DIDMeta_GetTxid(DIDMeta *meta);
+DIDStore *DIDMetaData_GetStore(DIDMetaData *metadata);
 
-const char *DIDMeta_GetSignature(DIDMeta *meta);
+bool DIDMetaData_AttachedStore(DIDMetaData *metadata);
 
-bool DIDMeta_GetDeactived(DIDMeta *meta);
+DID_API const char *DIDMetaData_GetPrevSignature(DIDMetaData *metadata);
 
-time_t DIDMeta_GetTimestamp(DIDMeta *meta);
+DID_API int DIDMetaData_SetTxid(DIDMetaData *metadata, const char *txid);
 
-int DIDMeta_Merge(DIDMeta *meta, DIDMeta *frommeta);
+DID_API int DIDMetaData_SetSignature(DIDMetaData *metadata, const char *signature);
 
-int DIDMeta_Copy(DIDMeta *meta, DIDMeta *frommeta);
+DID_API int DIDMetaData_SetPrevSignature(DIDMetaData *metadata, const char *signature);
 
-bool DIDMeta_IsEmpty(DIDMeta *meta);
-
-int DIDMeta_SetStore(DIDMeta *meta, DIDStore *store);
-
-DIDStore *DIDMeta_GetStore(DIDMeta *meta);
-
-bool DIDMeta_AttachedStore(DIDMeta *meta);
+DID_API const char *DIDMetaData_GetTxid(DIDMetaData *metadata);
 
 #ifdef __cplusplus
 }

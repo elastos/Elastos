@@ -73,7 +73,7 @@ int JsonHelper_ToJson(JsonGenerator *generator, cJSON *object, bool objectcontex
         for (i = 0; i < size; i++) {
             item  = cJSON_GetArrayItem(object, i);
             CHECK(JsonHelper_ToJson(generator, item, false));
-        }  
+        }
         CHECK(JsonGenerator_WriteEndArray(generator));
         return 0;
     }
@@ -85,7 +85,7 @@ int JsonHelper_ToJson(JsonGenerator *generator, cJSON *object, bool objectcontex
         size = cJSON_GetArraySize(object);
         cJSON **items = item_sort(object, size);
         if (!items)
-            return -1; 
+            return -1;
 
         for (i = 0; i < size; i++) {
             item = items[i];
@@ -107,11 +107,11 @@ int JsonHelper_ToJson(JsonGenerator *generator, cJSON *object, bool objectcontex
     if (cJSON_IsFalse(object)) {
         CHECK(JsonGenerator_WriteBoolean(generator, false));
         return 0;
-    } 
+    }
 
     if (cJSON_IsTrue(object)) {
         CHECK(JsonGenerator_WriteBoolean(generator, true));
-        return 0;       
+        return 0;
     }
 
     if (cJSON_IsNull(object)) {

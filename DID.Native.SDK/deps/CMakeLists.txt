@@ -7,19 +7,24 @@ add_submodule(libressl
     DEPENDS platform-specific)
 add_submodule(libcrystal
     DEPENDS platform-specific)
-add_submodule(CUnit
-    DEPENDS platform-specific)
-add_submodule(libzip
-    DEPENDS platform-specific)
-add_submodule(libcurl
-    DEPENDS libressl platform-specific)
-add_submodule(libjansson
-    DIRECTORY jansson
-    DEPENDS platform-specific)
-add_submodule(libcjose
-    DIRECTORY cjose
-    DEPENDS libjansson libressl platform-specific)
 
+if (ENABLE_TESTS)
+    add_submodule(CUnit
+        DEPENDS platform-specific)
+endif()
+
+if(NOT HDKEY_ONLY)
+    add_submodule(libzip
+        DEPENDS platform-specific)
+    add_submodule(libcurl
+        DEPENDS libressl platform-specific)
+    add_submodule(libjansson
+        DIRECTORY jansson
+        DEPENDS platform-specific)
+    add_submodule(libcjose
+        DIRECTORY cjose
+        DEPENDS libjansson libressl platform-specific)
+endif()
 
 if (ENABLE_SPVADAPTER)
     add_submodule(libspvsdk

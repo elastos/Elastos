@@ -31,10 +31,18 @@ jobs:
       - name: make
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-          brew install autoconf
-          brew install automake
-          brew install libtool
-          brew install pkg-config
+          if [[ $(brew list | grep 'autoconf') != *autoconf* ]]; then
+            brew install autoconf
+          fi
+          if [[ $(brew list | grep 'automake') != *automake* ]]; then
+            brew install automake
+          fi
+          if [[ $(brew list | grep 'libtool') != *libtool* ]]; then
+            brew install libtool
+          fi
+          if [[ $(brew list | grep 'pkg-config') != *pkg-config* ]]; then
+            brew install pkg-config
+          fi
 
           mkdir -p build/macos
           cd build/macos

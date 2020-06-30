@@ -43,13 +43,13 @@ struct DIDStore {
     DIDBackend backend;
 };
 
-DID_API int DIDStore_StoreDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
+DID_API int DIDStore_StoreDIDMetaData(DIDStore *store, DIDMetaData *meta, DID *did);
 
-DID_API int DIDStore_LoadDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
+DID_API int DIDStore_LoadDIDMeta(DIDStore *store, DIDMetaData *meta, DID *did);
 
-int DIDStore_StoreCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
+int DIDStore_StoreCredMeta(DIDStore *store, CredentialMetaData *meta, DIDURL *id);
 
-int DIDStore_LoadCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
+int DIDStore_LoadCredMeta(DIDStore *store, CredentialMetaData *meta, DIDURL *id);
 
 int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
         DIDURL *key, char *sig, uint8_t *digest, size_t size);

@@ -36,13 +36,13 @@ extern "C" {
 
 struct DID {
     char idstring[MAX_ID_SPECIFIC_STRING];
-    DIDMeta meta;
+    DIDMetaData metadata;
 };
 
 struct  DIDURL {
     DID did;
     char fragment[MAX_FRAGMENT];
-    CredentialMeta meta;
+    CredentialMetaData metadata;
 };
 
 int Parse_DID(DID *did, const char *idstring);

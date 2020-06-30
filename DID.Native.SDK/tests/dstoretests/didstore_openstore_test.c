@@ -25,6 +25,7 @@ static int get_issuer_cred(DIDURL *id, void *context)
     Credential *cred;
     const char *alias;
     DID *creddid;
+    CredentialMetaData *metadata;
     int rc;
 
     if (!id) {
@@ -35,7 +36,11 @@ static int get_issuer_cred(DIDURL *id, void *context)
     if (!creddid)
         return -1;
 
-    alias = DIDURL_GetAlias(id);
+    metadata = DIDURL_GetMetaData(id);
+    if (!metadata)
+        return -1;
+
+    alias = CredentialMetaData_GetAlias(metadata);
     CU_ASSERT_PTR_NOT_NULL(alias);
 
     if (strcmp(alias, "Profile") == 0) {
@@ -53,6 +58,7 @@ static int get_test_cred(DIDURL *id, void *context)
     Credential *cred;
     const char *alias;
     DID *creddid;
+    CredentialMetaData *metadata;
     int rc;
 
     if (!id)
@@ -62,7 +68,11 @@ static int get_test_cred(DIDURL *id, void *context)
     if (!creddid)
         return -1;
 
-    alias = DIDURL_GetAlias(id);
+    metadata = DIDURL_GetMetaData(id);
+    if (!metadata)
+        return -1;
+
+    alias = CredentialMetaData_GetAlias(metadata);
     CU_ASSERT_PTR_NOT_NULL(alias);
 
     if (strcmp(alias, "Profile") == 0 || strcmp(alias, "Email") == 0 ||
@@ -80,12 +90,17 @@ static int get_did(DID *did, void *context)
 {
     const char *alias;
     DIDDocument *doc = NULL;
+    DIDMetaData *metadata;
     int rc;
 
     if (!did)
         return 0;
 
-     /*alias = DID_GetAlias(did);
+    metadata = DID_GetMetaData(did);
+    if (!metadata)
+        return -1;
+
+    alias = DIDMetaData_GetAlias(metadata);
     if (!alias)
         return -1;
 
@@ -109,8 +124,7 @@ static int get_did(DID *did, void *context)
         return 0;
     }
 
-    return -1;*/
-    return 0;
+    return -1;
 }
 
 static const char *getpassword(const char *walletDir, const char *walletId)

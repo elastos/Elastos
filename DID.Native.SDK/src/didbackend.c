@@ -110,7 +110,7 @@ bool DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
     assert(signkey);
     assert(storepass && *storepass);
 
-    if (!DIDMeta_AttachedStore(&document->meta)) {
+    if (!DIDMetaData_AttachedStore(&document->metadata)) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
         return false;
     }
@@ -119,7 +119,7 @@ bool DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
     if (!reqstring)
         return false;
 
-   successed =  backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
+   successed = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
     if (!successed)
         DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(create) failed.");
@@ -138,7 +138,7 @@ bool DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signk
     assert(signkey);
     assert(storepass && *storepass);
 
-    if (!DIDMeta_AttachedStore(&document->meta)) {
+    if (!DIDMetaData_AttachedStore(&document->metadata)) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
         return false;
     }
@@ -167,12 +167,12 @@ bool DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signkey,
     assert(signkey);
     assert(storepass && *storepass);
 
-    if (!DIDMeta_AttachedStore(&did->meta)) {
+    if (!DIDMetaData_AttachedStore(&did->metadata)) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
         return false;
     }
 
-    document = DIDStore_LoadDID(did->meta.store, did);
+    document = DIDStore_LoadDID(did->metadata.base.store, did);
     if (!document)
         return false;
 

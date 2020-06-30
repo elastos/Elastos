@@ -115,7 +115,7 @@ static int issuer_create_test_suite_init(void)
         return -1;
     }
 
-    rc = DIDStore_StoreDID(store, issuerdoc, "issuer doc");
+    rc = DIDStore_StoreDID(store, issuerdoc);
     if (rc < 0) {
         TestData_Free();
         return rc;

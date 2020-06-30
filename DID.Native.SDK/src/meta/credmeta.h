@@ -25,46 +25,36 @@
 
 #include <cjson/cJSON.h>
 
-#include "ela_did.h"
 #include "JsonGenerator.h"
+#include "meta.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct CredentialMeta
-{
-    char alias[ELA_MAX_ALIAS_LEN];
-    DIDStore *store;
-} CredentialMeta;
+typedef struct CredentialMetaData {
+    MetaData base;
+} CredentialMetaData;
 
-int CredentialMeta_Init(CredentialMeta *meta, const char *alias);
+int CredentialMetaData_ToJson_Internal(CredentialMetaData *metadata, JsonGenerator *gen);
 
-int CredentialMeta_ToJson_Internal(CredentialMeta *meta, JsonGenerator *gen);
+const char *CredentialMetaData_ToJson(CredentialMetaData *metadata);
 
-const char *CredentialMeta_ToJson(CredentialMeta *meta);
+int CredentialMetaData_FromJson_Internal(CredentialMetaData *metadata, cJSON *json);
 
-int CredentialMeta_FromJson_Internal(CredentialMeta *meta, cJSON *json);
+int CredentialMetaData_FromJson(CredentialMetaData *metadata, const char *data);
 
-int CredentialMeta_FromJson(CredentialMeta *meta, const char *json);
+void CredentialMetaData_Free(CredentialMetaData *metadata);
 
-void CredentialMeta_Destroy(CredentialMeta *meta);
+int CredentialMetaData_Merge(CredentialMetaData *tometa, CredentialMetaData *frommeta);
 
-int CredentialMeta_SetAlias(CredentialMeta *meta, const char *alias);
+void CredentialMetaData_Copy(CredentialMetaData *tometa, CredentialMetaData *frommeta);
 
-const char *CredentialMeta_GetAlias(CredentialMeta *meta);
+void CredentialMetaData_SetStore(CredentialMetaData *metadata, DIDStore *store);
 
-int CredentialMeta_Merge(CredentialMeta *meta, CredentialMeta *frommeta);
+DIDStore *CredentialMetaData_GetStore(CredentialMetaData *metadata);
 
-int CredentialMeta_Copy(CredentialMeta *meta, CredentialMeta *frommeta);
-
-bool CredentialMeta_IsEmpty(CredentialMeta *meta);
-
-int CredentialMeta_SetStore(CredentialMeta *meta, DIDStore *store);
-
-DIDStore *CredentialMeta_GetStore(CredentialMeta *meta);
-
-bool CredentialMeta_AttachedStore(CredentialMeta *meta);
+bool CredentialMetaData_AttachedStore(CredentialMetaData *metadata);
 
 #ifdef __cplusplus
 }

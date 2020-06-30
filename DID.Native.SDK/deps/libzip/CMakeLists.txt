@@ -24,5 +24,6 @@ ExternalProject_Add(
         -DBUILD_TOOLS=OFF
         -DBUILD_EXAMPLES=OFF
         -DBUILD_DOC=OFF
+        -DBUILD_REGRESS=OFF
         ${CMAKE_ARGS_INIT}
 )

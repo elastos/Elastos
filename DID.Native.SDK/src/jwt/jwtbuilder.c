@@ -34,6 +34,7 @@
 #include "claims.h"
 #include "diderror.h"
 #include "didstore.h"
+#include "diddocument.h"
 
 static int init_jwtbuilder(JWTBuilder *builder)
 {
@@ -76,7 +77,7 @@ JWTBuilder *JWTBuilder_Create(DID *issuer)
         return NULL;
     }
 
-    if (!DIDMeta_AttachedStore(&issuer->meta)) {
+    if (!DIDMetaData_AttachedStore(&issuer->metadata)) {
         DIDError_Set(DIDERR_MALFORMED_DID, "Not attached with DID store.");
         return NULL;
     }
@@ -88,7 +89,7 @@ JWTBuilder *JWTBuilder_Create(DID *issuer)
     }
 
     DID_Copy(&builder->issuer, issuer);
-    builder->doc = DIDStore_LoadDID(issuer->meta.store, issuer);
+    builder->doc = DIDStore_LoadDID(issuer->metadata.base.store, issuer);
     if (!builder->doc) {
         JWTBuilder_Destroy(builder);
         return NULL;
@@ -307,10 +308,11 @@ int JWTBuilder_Sign(JWTBuilder *builder, DIDURL *keyid, const char *storepass)
     base58_decode(pubkey, sizeof(pubkey), PublicKey_GetPublicKeyBase58(pk));
 
     //get sk
-    if (!DIDStore_ContainsPrivateKey(issuer->meta.store, issuer, keyid))
+    if (!DIDStore_ContainsPrivateKey(builder->doc->metadata.base.store, issuer, keyid))
         return -1;
 
-    if (DIDStore_LoadPrivateKey(issuer->meta.store, storepass, issuer, keyid, privatekey, sizeof(privatekey)) == -1)
+    if (DIDStore_LoadPrivateKey(builder->doc->metadata.base.store, storepass, issuer,
+            keyid, privatekey, sizeof(privatekey)) == -1)
         return -1;
 
     // create key spec

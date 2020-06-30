@@ -56,6 +56,12 @@ DID
 .. doxygentypedef:: DID
    :project: DIDAPI
 
+DIDMetaData
+###
+
+.. doxygentypedef:: DID
+   :project: DIDAPI
+
 DIDURL
 ######
 
@@ -72,6 +78,12 @@ Credential
 ##########
 
 .. doxygentypedef:: Credential
+   :project: DIDAPI
+
+CredentialMetaData
+###################
+
+.. doxygentypedef:: CredentialMetaData
    :project: DIDAPI
 
 Presentation
@@ -213,28 +225,79 @@ DID_ResolveAll
 .. doxygenfunction:: DID_ResolveAll
    :project: DIDAPI
 
-DID_SetAlias
-~~~~~~~~~~~~
+DID_GetMetaData
+~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: DID_SetAlias
+.. doxygenfunction:: DID_GetMetaData
    :project: DIDAPI
 
-DID_GetAlias
-~~~~~~~~~~~~
-
-.. doxygenfunction:: DID_GetAlias
-   :project: DIDAPI
-
-DID_GetDeactived
+DID_SaveMetaData
 ~~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: DID_GetDeactived
+.. doxygenfunction:: DID_SaveMetaData
    :project: DIDAPI
 
-DID_GetLastTransactionTimestamp
+DIDMetaData Functions
+#####################
+
+DIDMetaData_GetAlias
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDMetaData_GetAlias
+   :project: DIDAPI
+
+DIDMetaData_GetDeactivated
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDMetaData_GetDeactivated
+   :project: DIDAPI
+
+DIDMetaData_GetPublished
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDMetaData_GetPublished
+   :project: DIDAPI
+
+DIDMetaData_SetAlias
+~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDMetaData_SetAlias
+   :project: DIDAPI
+
+DIDMetaData_SetExtra
+~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDMetaData_SetExtra
+   :project: DIDAPI
+
+DIDMetaData_SetExtraWithBoolean
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: DID_GetLastTransactionTimestamp
+.. doxygenfunction:: DIDMetaData_SetExtraWithBoolean
+   :project: DIDAPI
+
+DIDMetaData_SetExtraWithDouble
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDMetaData_SetExtraWithDouble
+   :project: DIDAPI
+
+DIDMetaData_GetExtra
+~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDMetaData_GetExtra
+   :project: DIDAPI
+
+DIDMetaData_GetExtraAsBoolean
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDMetaData_GetExtraAsBoolean
+   :project: DIDAPI
+
+DIDMetaData_GetExtraAsDouble
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDMetaData_GetExtraAsDouble
    :project: DIDAPI
 
 DIDURL Functions
@@ -288,18 +351,68 @@ DIDURL_Destroy
 .. doxygenfunction:: DIDURL_Destroy
    :project: DIDAPI
 
-DIDURL_SetAlias
-~~~~~~~~~~~~~~~~
+DIDURL_GetMetaData
+~~~~~~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: DIDURL_SetAlias
+.. doxygenfunction:: DIDURL_GetMetaData
    :project: DIDAPI
 
-DIDURL_GetAlias
-~~~~~~~~~~~~~~~~
+DIDURL_SaveMetaData
+~~~~~~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: DIDURL_GetAlias
+.. doxygenfunction:: DIDURL_SaveMetaData
    :project: DIDAPI
 
+CredentialMetaData Functions
+##############################
+
+CredentialMetaData_SetAlias
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: CredentialMetaData_SetAlias
+   :project: DIDAPI
+
+CredentialMetaData_SetExtra
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: CredentialMetaData_SetExtra
+   :project: DIDAPI
+
+CredentialMetaData_SetExtraWithBoolean
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: CredentialMetaData_SetExtraWithBoolean
+   :project: DIDAPI
+
+CredentialMetaData_SetExtraWithDouble
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: CredentialMetaData_SetExtraWithDouble
+   :project: DIDAPI
+
+CredentialMetaData_GetAlias
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: CredentialMetaData_GetAlias
+   :project: DIDAPI
+
+CredentialMetaData_GetExtra
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: CredentialMetaData_GetExtra
+   :project: DIDAPI
+
+CredentialMetaData_GetExtraAsBoolean
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: CredentialMetaData_GetExtraAsBoolean
+   :project: DIDAPI
+
+CredentialMetaData_GetExtraAsDouble
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: CredentialMetaData_GetExtraAsDouble
+   :project: DIDAPI
 
 DIDDocument Functions
 #####################
@@ -586,22 +699,16 @@ DIDDocument_VerifyDigest
 .. doxygenfunction:: DIDDocument_VerifyDigest
    :project: DIDAPI
 
-DIDDocument_SetAlias
-~~~~~~~~~~~~~~~~~~~~
+DIDDocument_GetMetaData
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: DIDDocument_SetAlias
+.. doxygenfunction:: DIDDocument_GetMetaData
    :project: DIDAPI
 
-DIDDocument_GetAlias
-~~~~~~~~~~~~~~~~~~~~
+DIDDocument_SaveMetaData
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: DIDDocument_GetAlias
-   :project: DIDAPI
-
-DIDDocument_GetLastTransactionTimestamp
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. doxygenfunction:: DIDDocument_GetLastTransactionTimestamp
+.. doxygenfunction:: DIDDocument_SaveMetaData
    :project: DIDAPI
 
 DIDDocument_GetProofCreater
@@ -781,16 +888,16 @@ Credential_IsValid
 .. doxygenfunction:: Credential_IsValid
    :project: DIDAPI
 
-Credential_SetAlias
-~~~~~~~~~~~~~~~~~~~
+Credential_GetMetaData
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: Credential_SetAlias
+.. doxygenfunction:: Credential_GetMetaData
    :project: DIDAPI
 
-Credential_GetAlias
-~~~~~~~~~~~~~~~~~~~
+Credential_SaveMetaData
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: Credential_GetAlias
+.. doxygenfunction:: Credential_SaveMetaData
    :project: DIDAPI
 
 Issuer Functions

@@ -20,66 +20,61 @@
  * SOFTWARE.
  */
 
-#ifndef __CREDENTIAL_H__
-#define __CREDENTIAL_H__
+#ifndef __META_H__
+#define __META_H__
 
 #include <cjson/cJSON.h>
 
 #include "ela_did.h"
-#include "did.h"
 #include "JsonGenerator.h"
-#include "credmeta.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_CRED_TYPE        64
-#define MAX_CRED_SIGN        128
+#define MAX_DOC_SIGN                    128
 
-typedef struct CredentialSubject {
-    DID id;
-    cJSON *properties;
-} CredentialSubject;
+typedef struct MetaData {
+    cJSON *data;
+    DIDStore *store;
+} MetaData;
 
-typedef struct CredentialProof {
-    char type[MAX_CRED_TYPE];
-    DIDURL verificationMethod;
-    char signatureValue[MAX_CRED_SIGN];
-} CredentialProof;
+const char *MetaData_ToJson(MetaData *metadata);
 
-struct Credential {
-    DIDURL id;
+int MetaData_ToJson_Internal(MetaData *metadata, JsonGenerator *gen);
 
-    struct {
-        char **types;
-        size_t size;
-    } type;
+int MetaData_FromJson(MetaData *metadata, const char *data);
 
-    DID issuer;
-    time_t issuanceDate;
-    time_t expirationDate;
-    CredentialSubject subject;
-    CredentialProof proof;
-    CredentialMetaData metadata;
-};
+int MetaData_FromJson_Internal(MetaData *metadata, cJSON *json);
 
-int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds, size_t size,
-        DID *did, bool compact);
+const char *MetaData_ToString(MetaData *metadata);
 
-Credential *Parse_Credential(cJSON *json, DID *did);
+void MetaData_Free(MetaData *metadata);
 
-ssize_t Parse_Credentials(DID *did, Credential **creds, size_t size, cJSON *json);
+int MetaData_Merge(MetaData *tometa, MetaData *frommeta);
 
-const char* Credential_ToJson_ForSign(Credential *cred, bool compact, bool forsign);
+void MetaData_Copy(MetaData *metadata, MetaData *frommeta);
 
-int Credential_Verify(Credential *cred);
+int MetaData_SetExtra(MetaData *metadata, const char* key, const char *value);
 
-int Credential_ToJson_Internal(JsonGenerator *gen, Credential *cred, DID *did,
-        bool compact, bool forsign);
+int MetaData_SetExtraWithBoolean(MetaData *metadata, const char *key, bool value);
+
+int MetaData_SetExtraWithDouble(MetaData *metadata, const char *key, double value);
+
+const char *MetaData_GetExtra(MetaData *metadata, const char *key);
+
+bool MetaData_GetExtraAsBoolean(MetaData *metadata, const char *key);
+
+double MetaData_GetExtraAsDouble(MetaData *metadata, const char *key);
+
+void MetaData_SetStore(MetaData *metadata, DIDStore *store);
+
+DIDStore *MetaData_GetStore(MetaData *metadata);
+
+bool MetaData_AttachedStore(MetaData *metadata);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__CREDENTIAL_H__
+#endif //__META_H__

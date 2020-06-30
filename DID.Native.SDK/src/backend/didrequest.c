@@ -124,7 +124,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DIDDocument *document, DIDURL 
     assert(signkey);
     assert(storepass && *storepass);
 
-    if (!DIDMeta_AttachedStore(&document->meta)) {
+    if (!DIDMetaData_AttachedStore(&document->metadata)) {
         DIDError_Set(DIDERR_MALFORMED_DID, "Not attached with DID store.");
         return NULL;
     }
@@ -132,7 +132,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DIDDocument *document, DIDURL 
     if (type == RequestType_Create || type == RequestType_Deactivate) {
         prevtxid = "";
     } else {
-        prevtxid = document->meta.txid;
+        prevtxid = DIDMetaData_GetTxid(&document->metadata);
         if (!prevtxid) {
             DIDError_Set(DIDERR_TRANSACTION_ERROR, "Can not determine the previous transaction ID.");
             return NULL;

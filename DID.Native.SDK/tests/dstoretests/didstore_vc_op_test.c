@@ -21,13 +21,18 @@ static int get_vc(DIDURL *id, void *context)
 
     const char *alias;
     int rc;
+    CredentialMetaData *metadata;
 
     if (!id)
         return 0;
 
     (*count)++;
 
-    alias = DIDURL_GetAlias(id);
+    metadata = DIDURL_GetMetaData(id);
+    if (!metadata)
+        return -1;
+
+    alias = CredentialMetaData_GetAlias(metadata);
     CU_ASSERT_PTR_NOT_NULL(alias);
 
     if (strcmp(id->fragment, "profile") == 0 ||
@@ -52,6 +57,7 @@ static int get_vc(DIDURL *id, void *context)
 static void test_didstore_load_vcs(void)
 {
     char _path[PATH_MAX];
+    CredentialMetaData *metadata;
     const char *storePath, *alias;
     DIDDocument *issuerdoc, *doc;
     DIDStore *store;
@@ -73,16 +79,28 @@ static void test_didstore_load_vcs(void)
     did = DIDDocument_GetSubject(doc);
 
     vc = TestData_LoadProfileVc();
-    rc = Credential_SetAlias(vc, "MyProfile");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "MyProfile");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     vc = TestData_LoadEmailVc();
-    rc = Credential_SetAlias(vc, "Email");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "Email");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     vc = TestData_LoadTwitterVc();
-    rc = Credential_SetAlias(vc, "Twitter");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "Twitter");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     vc = TestData_LoadPassportVc();
-    rc = Credential_SetAlias(vc, "Passport");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "Passport");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     id = DIDURL_NewByDid(did, "profile");
@@ -90,7 +108,8 @@ static void test_didstore_load_vcs(void)
 
     vc = DIDStore_LoadCredential(store, did, id);
     CU_ASSERT_PTR_NOT_NULL(vc);
-    alias = Credential_GetAlias(vc);
+    metadata = Credential_GetMetaData(vc);
+    alias = CredentialMetaData_GetAlias(metadata);
     CU_ASSERT_PTR_NOT_NULL(alias);
     CU_ASSERT_STRING_EQUAL("MyProfile", alias);
     isEquals = DID_Equals(did, Credential_GetOwner(vc));
@@ -107,7 +126,8 @@ static void test_didstore_load_vcs(void)
 
     vc = DIDStore_LoadCredential(store, did, id);
     CU_ASSERT_PTR_NOT_NULL(vc);
-    alias = Credential_GetAlias(vc);
+    metadata = Credential_GetMetaData(vc);
+    alias = CredentialMetaData_GetAlias(metadata);
     CU_ASSERT_PTR_NOT_NULL(alias);
     CU_ASSERT_STRING_EQUAL("Twitter", alias);
     isEquals = DID_Equals(did, Credential_GetOwner(vc));
@@ -133,6 +153,7 @@ static void test_didstore_load_vcs(void)
 static void test_didstore_list_vcs(void)
 {
     char _path[PATH_MAX];
+    CredentialMetaData *metadata;
     const char *storePath;
     DIDDocument *issuerdoc, *doc;
     DIDStore *store;
@@ -154,16 +175,28 @@ static void test_didstore_list_vcs(void)
     did = DIDDocument_GetSubject(doc);
 
     vc = TestData_LoadProfileVc();
-    rc = Credential_SetAlias(vc, "MyProfile");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "MyProfile");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     vc = TestData_LoadEmailVc();
-    rc = Credential_SetAlias(vc, "Email");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "Email");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     vc = TestData_LoadTwitterVc();
-    rc = Credential_SetAlias(vc, "Twitter");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "Twitter");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     vc = TestData_LoadPassportVc();
-    rc = Credential_SetAlias(vc, "Passport");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "Passport");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     rc = DIDStore_ListCredentials(store, did, get_vc, (void*)&count);
@@ -176,6 +209,7 @@ static void test_didstore_list_vcs(void)
 static void test_didstore_delete_vc(void)
 {
     char _path[PATH_MAX];
+    CredentialMetaData *metadata;
     const char *storePath, *path;
     DIDDocument *issuerdoc, *doc;
     DIDStore *store;
@@ -199,16 +233,28 @@ static void test_didstore_delete_vc(void)
     did = DIDDocument_GetSubject(doc);
 
     vc = TestData_LoadProfileVc();
-    rc = Credential_SetAlias(vc, "MyProfile");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "MyProfile");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     vc = TestData_LoadEmailVc();
-    rc = Credential_SetAlias(vc, "Email");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "Email");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     vc = TestData_LoadTwitterVc();
-    rc = Credential_SetAlias(vc, "Twitter");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "Twitter");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     vc = TestData_LoadPassportVc();
-    rc = Credential_SetAlias(vc, "Passport");
+    metadata = Credential_GetMetaData(vc);
+    rc = CredentialMetaData_SetAlias(metadata, "Passport");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = Credential_SaveMetaData(vc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     path = get_file_path(_path, PATH_MAX, 11, store->root, PATH_STEP, DID_DIR,

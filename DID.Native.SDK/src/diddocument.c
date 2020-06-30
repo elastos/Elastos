@@ -599,20 +599,13 @@ static int Parse_Credentials_InDoc(DIDDocument *document, cJSON *json)
     return 0;
 }
 
-DIDMeta *DIDDocument_GetMeta(DIDDocument *document)
-{
-    assert(document);
-
-    return &document->meta;
-}
-
 int DIDDocument_SetStore(DIDDocument *document, DIDStore *store)
 {
     assert(document);
     assert(store);
 
-    document->meta.store = store;
-    document->did.meta.store = store;
+    document->metadata.base.store = store;
+    document->did.metadata.base.store = store;
     return 0;
 }
 
@@ -857,48 +850,27 @@ void DIDDocument_Destroy(DIDDocument *document)
     if (document->credentials.credentials)
         free(document->credentials.credentials);
 
+    DIDMetaData_Free(&document->metadata);
     free(document);
     document = NULL;
 }
 
-int DIDDocument_SetAlias(DIDDocument *document, const char *alias)
+int DIDDocument_SaveMetaData(DIDDocument *document)
 {
-    int rc = 0;
+    if (document && DIDMetaData_AttachedStore(&document->metadata))
+        return DIDStore_StoreDIDMetaData(document->metadata.base.store, &document->metadata, &document->did);
 
-    if (!document) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return -1;
-    }
-
-    if (DIDMeta_SetAlias(&document->meta, alias) == -1)
-        return -1;
-
-    DIDMeta_Copy(&document->did.meta, &document->meta);
-
-    if (DIDMeta_AttachedStore(&document->meta))
-        rc = DIDStore_StoreDIDMeta(document->meta.store, &document->meta, &document->did);
-
-    return rc;
+    return 0;
 }
 
-const char *DIDDocument_GetAlias(DIDDocument *document)
+DIDMetaData *DIDDocument_GetMetaData(DIDDocument *document)
 {
     if (!document) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
     }
 
-    return DIDMeta_GetAlias(&document->meta);
-}
-
-time_t DIDDocument_GetLastTransactionTimestamp(DIDDocument *document)
-{
-    if (!document) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return 0;
-    }
-
-    return DIDMeta_GetTimestamp(&document->meta);
+    return &document->metadata;
 }
 
 const char *DIDDocument_GetProofType(DIDDocument *document)
@@ -951,7 +923,7 @@ bool DIDDocument_IsDeactivated(DIDDocument *document)
         return true;
     }
 
-    isdeactived = DIDMeta_GetDeactived(&document->meta);
+    isdeactived = DIDMetaData_GetDeactivated(&document->metadata);
     if (isdeactived)
         return isdeactived;
 
@@ -960,10 +932,10 @@ bool DIDDocument_IsDeactivated(DIDDocument *document)
         return false;
 
     //todo: check the flow
-    if (isdeactived != resolvedoc->meta.deactived)
-        DIDStore_StoreDID(document->meta.store, resolvedoc, NULL);
+    if (isdeactived != DIDMetaData_GetDeactivated(&resolvedoc->metadata))
+        DIDStore_StoreDID(document->metadata.base.store, resolvedoc);
 
-    return resolvedoc->meta.deactived;
+    return isdeactived;
 }
 
 bool DIDDocument_IsGenuine(DIDDocument *document)
@@ -1110,7 +1082,7 @@ static int credential_copy(Credential *cred1, Credential *cred2)
     cred1->subject.properties = cJSON_Duplicate(cred2->subject.properties, 1);
 
     memcpy(&cred1->proof, &cred2->proof, sizeof(CredentialProof));
-    memcpy(&cred1->meta, &cred2->meta, sizeof(CredentialMeta));
+    CredentialMetaData_Copy(&cred1->metadata, &cred2->metadata);
 
     return 0;
 }
@@ -1197,8 +1169,8 @@ static int document_copy(DIDDocument *destdoc, DIDDocument *srcdoc)
 
     destdoc->expires = srcdoc->expires;
     memcpy(&destdoc->proof, &srcdoc->proof, sizeof(DocumentProof));
-    DIDMeta_Copy(&destdoc->meta, &srcdoc->meta);
-    DIDMeta_Copy(&destdoc->did.meta, &destdoc->meta);
+    DIDMetaData_Copy(&destdoc->metadata, &srcdoc->metadata);
+    DIDMetaData_Copy(&destdoc->did.metadata, &destdoc->metadata);
     return 0;
 }
 
@@ -1723,7 +1695,7 @@ int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
     }
 
     issuer = Issuer_Create(&document->did, DIDDocument_GetDefaultPublicKey(document),
-            document->meta.store);
+            document->metadata.base.store);
     if (!issuer)
         return -1;
 
@@ -2563,7 +2535,7 @@ int DIDDocument_SignDigest(DIDDocument *document, DIDURL *keyid,
     if (!keyid)
         keyid = DIDDocument_GetDefaultPublicKey(document);
 
-    return DIDStore_Sign(document->meta.store, storepass,
+    return DIDStore_Sign(document->metadata.base.store, storepass,
         DIDDocument_GetSubject(document), keyid, sig, digest, size);
 }
 

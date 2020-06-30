@@ -66,7 +66,7 @@ struct DIDDocument {
     time_t expires;
     DocumentProof proof;
 
-    DIDMeta meta;
+    DIDMetaData metadata;
 };
 
 struct PublicKey {
@@ -87,8 +87,6 @@ struct Service {
 struct DIDDocumentBuilder {
     DIDDocument *document;
 };
-
-DIDMeta *DIDDocument_GetMeta(DIDDocument *document);
 
 int DIDDocument_SetStore(DIDDocument *document, DIDStore *store);
 
