@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package httpjsonrpc
 
@@ -94,6 +94,7 @@ func StartRPCServer() {
 	// for cross-chain arbiter
 	mainMux["submitsidechainillegaldata"] = SubmitSidechainIllegalData
 	mainMux["getarbiterpeersinfo"] = GetArbiterPeersInfo
+	mainMux["getdpospeersinfo"] = GetDPOSPeersInfo
 
 	mainMux["estimatesmartfee"] = EstimateSmartFee
 	mainMux["getdepositcoin"] = GetDepositCoin

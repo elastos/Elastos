@@ -73,6 +73,11 @@ func (a *Arbitrator) Stop() error {
 	return nil
 }
 
+func (a *Arbitrator) GetCurrentArbiters() [][]byte {
+	return a.dposManager.GetArbitrators().GetArbitrators()
+}
+
+
 func (a *Arbitrator) GetArbiterPeersInfo() []*dp2p.PeerInfo {
 	return a.network.p2pServer.DumpPeersInfo()
 }
