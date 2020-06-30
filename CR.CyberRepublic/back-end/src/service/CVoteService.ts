@@ -821,12 +821,24 @@ export default class extends Base {
     }
 
     public async updateProposalBudget() {
+        const { MILESTONE_STATUS, SUGGESTION_BUDGET_TYPE } = constant
         const db_cvote = this.getDBModel('CVote')
-        const proposals = await db_cvote.find({
-            status: {$in: ['ACTIVE', 'FINAL']},
-            old: {$exists: false}
-        })
-
+        const query = {
+            old: { $exists: false },
+            $or: [
+                { status: 'ACTIVE' },
+                {
+                    status: 'FINAL',
+                    budget: {
+                        $elemMatch: {
+                            type: SUGGESTION_BUDGET_TYPE.COMPLETION,
+                            status: { $ne: MILESTONE_STATUS.WITHDRAWN }
+                        }
+                    }
+                }
+            ]
+        }
+        const proposals = await db_cvote.find(query)
         if (!proposals.length) {
             return
         }
@@ -839,64 +851,56 @@ export default class extends Base {
     }
 
     private async updateMilestoneStatus(proposal) {
-        const {WITHDRAWN, WAITING_FOR_WITHDRAWAL, REJECTED, WAITING_FOR_APPROVAL} = constant.MILESTONE_STATUS
-        const last: any = _.last(proposal.budget)
-        // proposal is final
-        if (
-            proposal.status === 'FINAL' &&
-            last.type === 'COMPLETION' &&
-            last.status === WITHDRAWN
-        ) {
+        const {
+            WITHDRAWN,
+            WAITING_FOR_WITHDRAWAL,
+            REJECTED,
+            WAITING_FOR_APPROVAL
+        } = constant.MILESTONE_STATUS
+        const result = await getProposalData(proposal.proposalHash)
+        if (!result) {
             return
         }
-        if (proposal.status === 'ACTIVE' || proposal.status === 'FINAL') {
-            const result = await getProposalData(proposal.proposalHash)
-            if (!result) {
-                return
-            }
-            let isStatusUpdated = false
-            const status = _.get(result, 'status')
-            if (status && status.toLowerCase() === 'finished') {
-                proposal.status = constant.CVOTE_STATUS.FINAL
-                isStatusUpdated = true
-            }
-            const budgets = _.get(result, 'data.proposal.budgets')
-            let isBudgetUpdated = false
-            if (budgets) {
-                const budget = proposal.budget.map((item, index) => {
-                    const chainStatus = budgets[index].status.toLowerCase()
-                    if (chainStatus === 'withdrawn' && item.status === WAITING_FOR_WITHDRAWAL) {
-                        isBudgetUpdated = true
-                        return {...item, status: WITHDRAWN}
-                    }
-                    if (chainStatus === 'rejected' && item.status === WAITING_FOR_APPROVAL) {
-                        console.log('ums---rejected milestoneKey---', item.milestoneKey)
-                        isBudgetUpdated = true
-                        this.notifyProposalOwner(
-                            proposal.proposer,
-                            this.rejectedMailTemplate(proposal.vid)
-                        )
-                        return {...item, status: REJECTED}
-                    }
-                    if (chainStatus === 'withdrawable' && item.status === WAITING_FOR_APPROVAL) {
-                        console.log('ums---approved milestoneKey---', item.milestoneKey)
-                        isBudgetUpdated = true
-                        this.notifyProposalOwner(
-                            proposal.proposer,
-                            this.approvalMailTemplate(proposal.vid)
-                        )
-                        return {...item, status: WAITING_FOR_WITHDRAWAL}
-                    }
-                    return item
-                })
-                if (isBudgetUpdated) {
-                    proposal.budget = budget
+        let isStatusUpdated = false
+        const status = _.get(result, 'status')
+        if (status && status.toLowerCase() === 'finished') {
+            proposal.status = constant.CVOTE_STATUS.FINAL
+            isStatusUpdated = true
+        }
+        const budgets = _.get(result, 'data.proposal.budgets')
+        let isBudgetUpdated = false
+        if (budgets) {
+            const budget = proposal.budget.map((item, index) => {
+                const chainStatus = budgets[index].status.toLowerCase()
+                if (chainStatus === 'withdrawn' && item.status === WAITING_FOR_WITHDRAWAL) {
+                    isBudgetUpdated = true
+                    return {...item, status: WITHDRAWN}
                 }
+                if (chainStatus === 'rejected' && item.status === WAITING_FOR_APPROVAL) {
+                    isBudgetUpdated = true
+                    this.notifyProposalOwner(
+                        proposal.proposer,
+                        this.rejectedMailTemplate(proposal.vid)
+                    )
+                    return {...item, status: REJECTED}
+                }
+                if (chainStatus === 'withdrawable' && item.status === WAITING_FOR_APPROVAL) {
+                    isBudgetUpdated = true
+                    this.notifyProposalOwner(
+                        proposal.proposer,
+                        this.approvalMailTemplate(proposal.vid)
+                    )
+                    return {...item, status: WAITING_FOR_WITHDRAWAL}
+                }
+                return item
+            })
+            if (isBudgetUpdated) {
+                proposal.budget = budget
             }
-            if (isStatusUpdated || isBudgetUpdated) {
-                console.log('ums---save proposal.vid---', proposal.vid)
-                await proposal.save()
-            }
+        }
+        if (isStatusUpdated || isBudgetUpdated) {
+            console.log('ums---save proposal.vid---', proposal.vid)
+            await proposal.save()
         }
     }
 
