@@ -225,13 +225,13 @@
     <View
         android:id="@+id/line"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="0.5dp"
         android:background="@color/white"
         android:layout_above="@+id/impeach_cr_layout"/>
     <FrameLayout
         android:id="@+id/impeach_cr_layout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="80dp"
         android:layout_alignParentBottom="true"
         android:background="#aa000000">
         <TextView

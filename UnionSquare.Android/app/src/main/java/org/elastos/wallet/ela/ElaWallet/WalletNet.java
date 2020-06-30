@@ -45,6 +45,7 @@ public class WalletNet {
     public static final String PRVURL = "http://cen.longrunweather.com:18080";
 
 
+
     //did resolve网址
     public static final String MAINDID = "http://api.elastos.io:20606";
     public static final String TESTDID = "http://api.elastos.io:21606";
