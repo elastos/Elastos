@@ -143,4 +143,10 @@ public class ResolverCache {
 			}
 		}
 	}
+
+	static public void invalidate(DID did) {
+		File file = getFile(did.getMethodSpecificId());
+		file.delete();
+		cache.remove(did);
+	}
 }

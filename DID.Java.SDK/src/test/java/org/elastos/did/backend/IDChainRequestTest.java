@@ -38,5 +38,13 @@ public class IDChainRequestTest {
 		DIDDocument doc = req.getDocument();
 		// System.out.println(doc.toString(true));
 		assertTrue(doc.isGenuine());
+
+		/*
+		TestData testData = new TestData();
+		testData.setup(false);
+		testData.waitForWalletAvaliable();
+		testData.getAdapter().createIdTransaction(json, null);
+		testData.waitForWalletAvaliable();
+		*/
 	}
 }

@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.elastos.did.exception.DIDStorageException;
@@ -389,7 +390,6 @@ class FileSystemStorage implements DIDStorage {
 		}
 	}
 
-
 	@Override
 	public void storeDidMetadata(DID did, DIDMetadataImpl metadata) throws DIDStorageException {
 		try {
@@ -411,6 +411,9 @@ class FileSystemStorage implements DIDStorage {
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(), META_FILE);
 			metadata.load(new FileReader(file));
+
+			file = getFile(DID_DIR, did.getMethodSpecificId(), DOCUMENT_FILE);
+			metadata.setLastModified(new Date(file.lastModified()));
 		} catch (FileNotFoundException | MalformedMetaException ignore) {
 		}
 
@@ -424,6 +427,10 @@ class FileSystemStorage implements DIDStorage {
 					doc.getSubject().getMethodSpecificId(), DOCUMENT_FILE);
 
 			doc.toJson(new FileWriter(file), true);
+			if (doc.getMetadata().getLastModified() != null)
+				file.setLastModified(doc.getMetadata().getLastModified().getTime());
+			else
+				doc.getMetadataImpl().setLastModified(new Date(file.lastModified()));
 		} catch (IOException e) {
 			throw new DIDStorageException("Store DIDDocument error.", e);
 		}
@@ -528,6 +535,10 @@ class FileSystemStorage implements DIDStorage {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), META_FILE);
 			metadata.load(new FileReader(file));
+
+			file = getFile(DID_DIR, did.getMethodSpecificId(),
+					CREDENTIALS_DIR, id.getFragment(), CREDENTIAL_FILE);
+			metadata.setLastModified(new Date(file.lastModified()));
 		} catch (FileNotFoundException | MalformedMetaException ignore) {
 		}
 
@@ -544,6 +555,11 @@ class FileSystemStorage implements DIDStorage {
 					CREDENTIAL_FILE);
 
 			credential.toJson(new FileWriter(file), true);
+
+			if (credential.getMetadata().getLastModified() != null)
+				file.setLastModified(credential.getMetadata().getLastModified().getTime());
+			else
+				credential.getMetadataImpl().setLastModified(new Date(file.lastModified()));
 		} catch (IOException e) {
 			throw new DIDStorageException("Store credential error.", e);
 		}

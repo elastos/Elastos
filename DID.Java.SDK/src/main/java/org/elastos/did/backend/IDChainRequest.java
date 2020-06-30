@@ -342,7 +342,7 @@ public class IDChainRequest {
 		String spec = JsonHelper.getString(header, SPECIFICATION, false,
 				null, SPECIFICATION, clazz);
 		if (!spec.equals(CURRENT_SPECIFICATION))
-			throw new DIDTransactionException("Unknown DID specifiction.");
+			throw new DIDTransactionException("Unknown ID request specification.");
 
 		String opstr = JsonHelper.getString(header, OPERATION, false,
 				null, OPERATION, clazz);

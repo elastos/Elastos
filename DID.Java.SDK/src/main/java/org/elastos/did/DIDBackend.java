@@ -286,6 +286,7 @@ public class DIDBackend {
 			metadata.setTransactionId(ti.getTransactionId());
 			metadata.setSignature(doc.getProof().getSignature());
 			metadata.setPublished(ti.getTimestamp());
+			metadata.setLastModified(ti.getTimestamp());
 			doc.setMetadata(metadata);
 			return doc;
 		}
@@ -323,6 +324,7 @@ public class DIDBackend {
 				signKey, storepass);
 		String json = request.toJson(true);
 		createTransaction(json, null);
+		ResolverCache.invalidate(doc.getSubject());
 	}
 
 	protected void deactivate(DIDDocument doc, DIDURL signKey, String storepass)
@@ -330,6 +332,7 @@ public class DIDBackend {
 		IDChainRequest request = IDChainRequest.deactivate(doc, signKey, storepass);
 		String json = request.toJson(true);
 		createTransaction(json, null);
+		ResolverCache.invalidate(doc.getSubject());
 	}
 
 	protected void deactivate(DID target, DIDURL targetSignKey,
@@ -339,5 +342,6 @@ public class DIDBackend {
 				targetSignKey, doc, signKey, storepass);
 		String json = request.toJson(true);
 		createTransaction(json, null);
+		ResolverCache.invalidate(target);
 	}
 }

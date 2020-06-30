@@ -377,7 +377,11 @@ public final class DIDStore {
 
 	public void synchronize(String storepass)
 			throws DIDBackendException, DIDStoreException {
-		synchronize((c, l) -> l, storepass);
+		synchronize((c, l) -> {
+			l.getMetadataImpl().setPublished(c.getMetadata().getPublished());
+			l.getMetadataImpl().setSignature(c.getMetadata().getSignature());
+			return l;
+		}, storepass);
 	}
 
 	public CompletableFuture<Void> synchronizeAsync(
@@ -397,7 +401,18 @@ public final class DIDStore {
 	}
 
 	public CompletableFuture<Void> synchronizeAsync(String storepass) {
-		return synchronizeAsync((c, l) -> l, storepass);
+		if (storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException();
+
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			try {
+				synchronize(storepass);
+			} catch (DIDBackendException | DIDStoreException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
 	}
 
 	public DIDDocument newDid(int index, String alias, String storepass)
@@ -509,13 +524,18 @@ public final class DIDStore {
 							"DID SDK dosen't know how to handle it, " +
 							"use force mode to ignore checks.");
 					throw new DIDStoreException("DID document not up-to-date");
-				}
-
-
-				if ((localSignature != null && !localSignature.equals(reolvedSignautre)) &&
-					(localPrevSignature != null && !localPrevSignature.equals(reolvedSignautre))) {
-					log.error("Current copy not based on the lastest on-chain copy, txid mismatch.");
-					throw new DIDStoreException("DID document not up-to-date");
+				} else if (localPrevSignature == null || localSignature == null) {
+					String ls = localPrevSignature != null ? localPrevSignature : localSignature;
+					if (!ls.equals(reolvedSignautre)) {
+						log.error("Current copy not based on the lastest on-chain copy, txid mismatch.");
+						throw new DIDStoreException("DID document not up-to-date");
+					}
+				} else {
+					if (!localSignature.equals(reolvedSignautre) &&
+						!localPrevSignature.equals(reolvedSignautre)) {
+						log.error("Current copy not based on the lastest on-chain copy, txid mismatch.");
+						throw new DIDStoreException("DID document not up-to-date");
+					}
 				}
 			}
 

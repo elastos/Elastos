@@ -31,6 +31,7 @@ public interface DIDMetadata {
 	public String getPreviousSignature();
 	public String getSignature();
 	public Date getPublished();
+	public Date getLastModified();
 	public boolean isDeactivated();
 	public void setExtra(String key, String value);
 	public String getExtra(String key);

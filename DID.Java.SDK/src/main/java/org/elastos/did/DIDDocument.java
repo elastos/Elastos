@@ -374,7 +374,9 @@ public class DIDDocument {
 
 		this.expires = doc.expires;
 		this.proof = doc.proof;
-		this.metadata = doc.metadata;
+		DIDMetadataImpl metadata = (DIDMetadataImpl)doc.getMetadataImpl().clone();
+		metadata.clearLastModified();
+		this.setMetadata(metadata);
 	}
 
 	private <K, V extends DIDObject> int getEntryCount(Map<K, V> entries,

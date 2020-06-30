@@ -28,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -46,6 +47,7 @@ public abstract class AbstractMetadata extends TreeMap<String, Object> {
 	private static final long serialVersionUID = -3700036981800046481L;
 
 	protected final static String RESERVED_PREFIX = "DX-";
+	private final static String LAST_MODIFIED = RESERVED_PREFIX + "lastModified";
 
 	private DIDStore store;
 
@@ -63,6 +65,23 @@ public abstract class AbstractMetadata extends TreeMap<String, Object> {
 
 	public boolean attachedStore() {
 		return store != null;
+	}
+
+	public void setLastModified(Date timestamp) {
+		put(LAST_MODIFIED, JsonHelper.formatDate(timestamp));
+	}
+
+	public Date getLastModified() {
+		try {
+			String lastModified = (String)get(LAST_MODIFIED);
+			return lastModified == null ? null : JsonHelper.parseDate(lastModified);
+		} catch (ParseException e) {
+			return null;
+		}
+	}
+
+	public void clearLastModified() {
+		remove(LAST_MODIFIED);
 	}
 
 	public void setExtra(String key, String value) {

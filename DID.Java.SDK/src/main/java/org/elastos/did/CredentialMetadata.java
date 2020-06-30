@@ -22,9 +22,12 @@
 
 package org.elastos.did;
 
+import java.util.Date;
+
 public interface CredentialMetadata {
 	public void setAlias(String alias);
 	public String getAlias();
+	public Date getLastModified();
 	public void setExtra(String key, String value);
 	public String getExtra(String key);
 }
