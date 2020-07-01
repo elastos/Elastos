@@ -2498,20 +2498,6 @@ func (b *BlockChain) checkChangeOwnerSign(proposal *payload.CRCProposal, crMembe
 	if err != nil {
 		return err
 	}
-	// Check signature of new owner.
-	newOwnerPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
-	if err != nil {
-		return errors.New("invalid owner")
-	}
-	newOwnerContract, err := contract.CreateStandardContract(newOwnerPublicKey)
-	if err != nil {
-		return errors.New("invalid owner")
-	}
-
-	if err := checkCRTransactionSignature(proposal.NewOwnerSignature, newOwnerContract.Code,
-		signedBuf.Bytes()); err != nil {
-		return errors.New("new owner signature check failed")
-	}
 
 	// Check signature of owner.
 	publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
@@ -2527,12 +2513,27 @@ func (b *BlockChain) checkChangeOwnerSign(proposal *payload.CRCProposal, crMembe
 		return errors.New("owner signature check failed")
 	}
 
-	// Check signature of CR Council Member.
-	if err = common.WriteVarBytes(signedBuf, proposal.NewOwnerSignature); err != nil {
-		return errors.New("failed to write proposal new owner signature")
+	// Check signature of new owner.
+	newOwnerPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
 	}
+	newOwnerContract, err := contract.CreateStandardContract(newOwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
+	}
+
+	if err := checkCRTransactionSignature(proposal.NewOwnerSignature, newOwnerContract.Code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("new owner signature check failed")
+	}
+
+	// Check signature of CR Council Member.
 	if err = common.WriteVarBytes(signedBuf, proposal.Signature); err != nil {
 		return errors.New("failed to write proposal owner signature")
+	}
+	if err = common.WriteVarBytes(signedBuf, proposal.NewOwnerSignature); err != nil {
+		return errors.New("failed to write proposal new owner signature")
 	}
 	if err = proposal.CRCouncilMemberDID.Serialize(signedBuf); err != nil {
 		return errors.New("failed to write CR Council Member's DID")
