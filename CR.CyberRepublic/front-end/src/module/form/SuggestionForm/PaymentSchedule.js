@@ -5,6 +5,7 @@ import { Button, Modal } from 'antd'
 import I18N from '@/I18N'
 import BudgetForm from '@/module/form/BudgetForm/Container'
 import PaymentList from './PaymentList'
+import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import _ from 'lodash'
 
 class PaymentSchedule extends Component {
@@ -16,6 +17,7 @@ class PaymentSchedule extends Component {
       total: (value && value.budgetAmount) || '',
       address: (value && value.elaAddress) || '',
       paymentItems: (value && value.paymentItems) || [],
+      budgetIntro: (value && value.budgetIntro) || '',
       errors: {}
     }
   }
@@ -27,11 +29,12 @@ class PaymentSchedule extends Component {
   }
 
   passDataToParent() {
-    const { total, address, paymentItems } = this.state
+    const { total, address, paymentItems, budgetIntro } = this.state
     this.changeValue({
       budgetAmount: Number(total),
       elaAddress: address,
-      paymentItems
+      paymentItems,
+      budgetIntro
     })
   }
 
@@ -146,7 +149,8 @@ class PaymentSchedule extends Component {
   }
 
   render() {
-    const { paymentItems, index, total, address, errors } = this.state
+    const { paymentItems, index, total, address, errors, budgetIntro } = this.state
+    const { getFieldDecorator } = this.props
     const milestone = this.getMilestone()
     const flag = milestone && milestone.length <= paymentItems.length
     const disabled = !milestone || flag
@@ -205,6 +209,17 @@ class PaymentSchedule extends Component {
             />
           ) : null}
         </Modal>
+        <Section>
+          <Label>{`${I18N.get('suggestion.budget.introduction')}`}</Label>
+          {getFieldDecorator('budgetIntro')(
+            <CodeMirrorEditor
+              content={budgetIntro}
+              activeKey='budgetIntro'
+              name='budgetIntro'
+            />
+          )
+          }
+        </Section>
       </Wrapper>
     )
   }
@@ -252,9 +267,9 @@ const StyledInput = styled.input`
   &:focus {
     border-color: ${(props) => (props.error ? '#f5222d' : '#66bda3')};
     box-shadow: ${(props) =>
-      props.error
-        ? '0 0 0 2px rgba(245, 34, 45, 0.2);'
-        : '0 0 0 2px rgba(67, 175, 146, 0.2)'};
+    props.error
+      ? '0 0 0 2px rgba(245, 34, 45, 0.2);'
+      : '0 0 0 2px rgba(67, 175, 146, 0.2)'};
   }
 `
 const Error = styled.div`

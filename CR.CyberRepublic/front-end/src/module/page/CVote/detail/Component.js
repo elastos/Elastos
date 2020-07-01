@@ -87,6 +87,14 @@ const renderRichContent = (data, key, title, user, actions) => {
             status={data.status}
           />
         </div>
+        {data.budgetIntro ?
+          (<div>
+            <Subtitle>{I18N.get('suggestion.budget.introduction')}</Subtitle>
+            <MarkdownPreview content={data.budgetIntro} />
+          </div>)
+          : null
+
+        }
 
       </div>
     )
@@ -97,6 +105,14 @@ const renderRichContent = (data, key, title, user, actions) => {
         <Milestones initialValue={data.plan.milestone} editable={false} />
         <Subtitle>{I18N.get('suggestion.plan.teamInfo')}</Subtitle>
         <TeamInfoList list={data.plan.teamInfo} editable={false} />
+        {data.planIntro ?
+          (<div>
+            <Subtitle>{I18N.get('suggestion.plan.introduction')}</Subtitle>
+            <MarkdownPreview content={data.planIntro} />
+          </div>)
+          : null
+        }
+
       </div>
     )
   } else {

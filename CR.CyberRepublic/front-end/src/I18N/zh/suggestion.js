@@ -107,7 +107,8 @@ export default {
       conditioned: '该阶段支付不能用于项目的这个阶段',
       isUsed: '该项目阶段已被其它支付项使用了',
       exception: '出错了',
-      notEqual: '支付项款之和与项目总金额不一致'
+      notEqual: '支付项款之和与项目总金额不一致',
+      introduction: '里程碑简介不能为空'
     }
   },
   modal: {
@@ -171,7 +172,8 @@ export default {
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: '结项款',
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: '阶段支付',
     goal: '目标',
-    milestone: '里程碑'
+    milestone: '里程碑',
+    introduction: '预算简介'
   },
   plan: {
     teamMember: '团队成员',
@@ -188,7 +190,8 @@ export default {
     showDetail: '显示详细信息',
     hideDetail: '隐藏详细信息',
     selectDate: '选择日期',
-    milestone: '里程碑'
+    milestone: '里程碑',
+    introduction: '里程碑简介'
   },
   label: {
     hasMadeIntoProposal: '已经将此建议发布为'

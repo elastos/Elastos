@@ -171,7 +171,8 @@ export default {
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: 'Project Completion Payment',
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Project Milestone Payment',
     goal: 'Goal',
-    milestone: 'milestone'
+    milestone: 'milestone',
+    introduction: 'Budget Introduction'
   },
   plan: {
     teamMember: 'Team Member',
@@ -188,7 +189,8 @@ export default {
     showDetail: 'Show Detail',
     hideDetail: 'Hide Detail',
     selectDate: 'Select date',
-    milestone: 'Milestone'
+    milestone: 'Milestone',
+    introduction: 'Milestone Introduction'
   },
   label: {
     hasMadeIntoProposal: 'has made it into'
