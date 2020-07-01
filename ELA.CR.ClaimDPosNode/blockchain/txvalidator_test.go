@@ -2814,14 +2814,23 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	references = make(map[*types.Input]types.Output)
 	references[inputs[0]] = *outputs[0]
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
-	s.EqualError(err, "withdrawPayload.Amount + fee != withdrawAmount ")
+	s.EqualError(err, "withdrawPayload.Amount != withdrawAmount ")
 	outputs = []*types.Output{
 		{
 			AssetID:     config.ELAAssetID,
 			ProgramHash: *CRExpensesAddressU168,
-			Value:       common.Fixed64(60 * ela),
+			Value:       common.Fixed64(61 * ela),
 		},
 	}
+
+	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1,
+		Recipient, CRExpensesAddressU168, 20*ela, 40*ela, 1)
+	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
+	propState.WithdrawableBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8}
+	propState.WithdrawnBudgets = map[uint8]common.Fixed64{0: 10 * 1e8}
+	propState.FinalPaymentStatus = false
+	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
+		ProposalHash] = propState
 	references = make(map[*types.Input]types.Output)
 	references[inputs[0]] = *outputs[0]
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
