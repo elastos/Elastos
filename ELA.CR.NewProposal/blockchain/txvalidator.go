@@ -1886,8 +1886,8 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 		}
 	} else if txn.PayloadVersion == payload.CRCProposalWithdrawVersion01 {
 		// Recipient Amount + fee must equal to availableWithdrawalAmount
-		if withdrawPayload.Amount+fee != withdrawAmount {
-			return errors.New("withdrawPayload.Amount + fee != withdrawAmount ")
+		if withdrawPayload.Amount != withdrawAmount {
+			return errors.New("withdrawPayload.Amount != withdrawAmount ")
 		}
 		if withdrawPayload.Amount < b.chainParams.RealWithdrawSingleFee {
 			return errors.New("withdraw amount is less than RealWithdrawSingleFee")
