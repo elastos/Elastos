@@ -128,11 +128,19 @@ const ela = {
                 headers: DEFAULT_HEADERS
             })
             if (res && res.data && res.data.result) {
-                return res.data.result.time
+                return res.data.result
             }
         } catch (err) {
             logger.error(err)
         }
+    },
+    async getTimestampByHeight(height) {
+        const result = await this.getBlockByHeight(height)
+        return result && result.time
+    },
+    async getTransactionsByHeight(height) {
+        const result = await this.getBlockByHeight(height)
+        return result && result.tx
     },
     async depositCoin(did: string) {
         const data = {

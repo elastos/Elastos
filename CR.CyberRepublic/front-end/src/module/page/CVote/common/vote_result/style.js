@@ -26,8 +26,7 @@ export const Label = styled.div`
 
 export const List = styled.div`
   position: relative;
-  padding: 40px;
-  /* display: ${props => (props.type === CVOTE_RESULT.REJECT ? 'block' : 'flex')}; */
+  padding: 40px 20px;
   display: block;
   align-items: center;
   box-sizing: border-box;
@@ -49,10 +48,17 @@ export const List = styled.div`
 `
 
 export const Item = styled.div`
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  margin-left: 28px;
-  @media only screen and (max-width: ${breakPoint.mobile}) {
-    margin-left: 5px;
+  .status {
+    color: rgba(3,30,40,0.4);
+    font-size: 13px;
+    margin-top: 8px;
+    font-weight: 600;
   }
 `
 

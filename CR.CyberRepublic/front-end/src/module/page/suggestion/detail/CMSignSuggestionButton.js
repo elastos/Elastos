@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Modal, Spin, message, Button } from 'antd'
+import { Modal, Spin, Button } from 'antd'
 import QRCode from 'qrcode.react'
 import I18N from '@/I18N'
 import { StyledButton } from './style'
@@ -13,16 +13,6 @@ class CMSignSuggestionButton extends Component {
       visible: false,
       loading: false,
       isBound: false
-    }
-    this.timerList = []
-  }
-
-  clearTimerList = () => {
-    if (this.timerList && this.timerList.length) {
-      for (let timer of this.timerList) {
-        clearTimeout(timer)
-      }
-      this.timerList = []
     }
   }
 
@@ -54,71 +44,26 @@ class CMSignSuggestionButton extends Component {
     )
   }
 
-  pollingProposalState = async () => {
-    if (!this._isMounted) {
-      return
-    }
-    const { id, pollProposalState } = this.props
-    const rs = await pollProposalState({ id })
-    if (rs && rs.success && rs.toChain) {
-      this.setState({ visible: false, loading: true })
-    }
-    if (rs && rs.success && rs.reference) {
-      this.clearTimerList()
-      this.setState({ visible: false })
-      return
-    }
-    if (rs && rs.success === false) {
-      this.clearTimerList()
-      if (rs.message) {
-        message.error(rs.message)
-      } else {
-        message.error(I18N.get('suggestion.error.exception'))
-      }
-      this.setState({ visible: false })
-      return
-    }
-    if (this._isMounted === true) {
-      const timer = setTimeout(this.pollingProposalState, 3000)
-      this.timerList.push(timer)
-    }
-  }
-
   handleSign = async () => {
     const { user } = this.props
-    const { message } = this.state
     if (user && user.did && user.did.id) {
       this.setState({ isBound: true, visible: true })
-      if (this.timerList.length) {
-        return
-      }
-      if (message) {
-        return
-      }
-      setTimeout(this.pollingProposalState, 5000)
     } else {
       this.setState({ isBound: false, visible: true })
     }
   }
 
   componentDidMount = async () => {
-    this._isMounted = true
-    const { id, getCMSignatureUrl, isProposed } = this.props
-    if (isProposed) {
-      return
+    const { id, getCMSignatureUrl, user } = this.props
+    if (user && user.did && user.did.id) {
+      const rs = await getCMSignatureUrl(id)
+      if (rs && rs.success) {
+        this.setState({ url: rs.url, message: '' })
+      }
+      if (rs && !rs.success && rs.message) {
+        this.setState({ message: rs.message, url: '' })
+      }
     }
-    const rs = await getCMSignatureUrl(id)
-    if (rs && rs.success) {
-      this.setState({ url: rs.url, message: '' })
-    }
-    if (rs && rs.success === false && rs.message) {
-      this.setState({ message: rs.message, url: '' })
-    }
-  }
-
-  componentWillUnmount = () => {
-    this._isMounted = false
-    this.clearTimerList()
   }
 
   hideModal = () => {
@@ -126,20 +71,7 @@ class CMSignSuggestionButton extends Component {
   }
 
   render() {
-    const { visible, loading } = this.state
-    const { isProposed } = this.props
-    if (isProposed && isProposed === true) {
-      return (
-        <StyledButton
-          type="ebp"
-          className="cr-btn cr-btn-primary"
-          disabled
-          loading={loading}
-        >
-          {I18N.get('suggestion.msg.toChain')}
-        </StyledButton>
-      )
-    }
+    const { visible } = this.state
     return (
       <div>
         <StyledButton

@@ -7,7 +7,6 @@ import {
   logger,
   user as userUtil,
   utilCrypto,
-  getDidPublicKey,
   getPemPublicKey,
   getUtxosByAmount
 } from '../utility'
@@ -173,21 +172,23 @@ export default class extends Base {
                   message: 'There is no this payment application.'
                 }
               }
-              await this.model.update(
-                { proposalHash, 'withdrawalHistory.messageHash': messageHash },
-                {
-                  $set: {
-                    'withdrawalHistory.$.signature': decoded.data
-                  }
-                }
-              )
-              await this.model.update(
-                {
-                  proposalHash,
-                  'budget.milestoneKey': history.milestoneKey
-                },
-                { $set: { 'budget.$.status': WAITING_FOR_APPROVAL } }
-              )
+
+              await Promise.all([
+                this.model.update(
+                  {
+                    proposalHash,
+                    'withdrawalHistory.messageHash': messageHash
+                  },
+                  { 'withdrawalHistory.$.signature': decoded.data }
+                ),
+                this.model.update(
+                  {
+                    proposalHash,
+                    'budget.milestoneKey': history.milestoneKey
+                  },
+                  { 'budget.$.status': WAITING_FOR_APPROVAL }
+                )
+              ])
 
               this.notifySecretaries(this.updateMailTemplate(proposal.vid))
               return { code: 200, success: true, message: 'Ok' }
@@ -255,15 +256,17 @@ export default class extends Base {
         return { success: false, message: 'Payment stage is invalid.' }
       }
       if (budget.status !== WAITING_FOR_APPROVAL) {
-        return { success: false, message: 'Milestone status is wrong.' }
+        return {
+          success: false,
+          message: `This milestone is not ready for review, please refresh the page and try again.`
+        }
       }
 
       const history = proposal.withdrawalHistory.filter((item: any) =>
         item._id.equals(applicationId)
       )[0]
-
-      if (history && _.get(history, 'review.txid')) {
-        return { success: false, message: 'You have reviewed this request.' }
+      if (!history) {
+        return { success: false, message: 'no this payment application record' }
       }
 
       const currTime = Date.now()
@@ -301,7 +304,6 @@ export default class extends Base {
         exp: now + 60 * 60 * 24,
         command: 'reviewmilestone',
         iss: process.env.APP_DID,
-        callbackurl: `${process.env.API_URL}/api/proposals/milestones/sec-signature-callback`,
         data: {
           proposalhash: proposal.proposalHash,
           messagehash: history.messageHash,
@@ -328,149 +330,6 @@ export default class extends Base {
     }
   }
 
-  public async secSignatureCallback(param: any) {
-    try {
-      const jwtToken = param.jwt
-      const claims: any = jwt.decode(jwtToken)
-      if (!_.get(claims, 'req')) {
-        return {
-          code: 400,
-          success: false,
-          message: 'Problems parsing jwt token.'
-        }
-      }
-
-      const payload: any = jwt.decode(
-        claims.req.slice('elastos://crproposal/'.length)
-      )
-      const proposalHash = _.get(payload, 'data.proposalhash')
-      const reasonHash = _.get(payload, 'data.secretaryopinionhash')
-      if (!proposalHash || !reasonHash) {
-        return {
-          code: 400,
-          success: false,
-          message: 'Problems parsing jwt token of CR website.'
-        }
-      }
-
-      const proposal = await this.model
-        .getDBInstance()
-        .findOne({ proposalHash })
-        .populate('proposer')
-      if (!proposal) {
-        return {
-          code: 400,
-          success: false,
-          message: 'There is no this proposal.'
-        }
-      }
-
-      const rs: any = await getDidPublicKey(claims.iss)
-      if (!_.get(rs, 'publicKey')) {
-        return {
-          code: 400,
-          success: false,
-          message: `Can not get your did's public key.`
-        }
-      }
-      // verify response data from ela wallet
-      return jwt.verify(
-        jwtToken,
-        rs.publicKey,
-        async (err: any, decoded: any) => {
-          if (err) {
-            return {
-              code: 401,
-              success: false,
-              message: 'Verify signatrue failed.'
-            }
-          } else {
-            try {
-              const history = proposal.withdrawalHistory.filter((item: any) => {
-                return item.review.reasonHash === reasonHash
-              })[0]
-              if (_.isEmpty(history)) {
-                return {
-                  code: 400,
-                  success: false,
-                  message: 'There is no this review record.'
-                }
-              }
-              let status: string
-              if (history.review.opinion === REJECTED) {
-                status = REJECTED
-              }
-              if (history.review.opinion === APPROVED) {
-                status = WAITING_FOR_APPROVAL
-              }
-              await this.model.update(
-                {
-                  proposalHash,
-                  'withdrawalHistory.review.reasonHash': reasonHash
-                },
-                {
-                  $set: {
-                    'withdrawalHistory.$.review.txid': decoded.data
-                  }
-                }
-              )
-              await this.model.update(
-                { proposalHash, 'budget.milestoneKey': history.milestoneKey },
-                { $set: { 'budget.$.status': status } }
-              )
-
-              if (history.review.opinion === APPROVED) {
-                this.notifyProposalOwner(
-                  proposal.proposer,
-                  this.approvalMailTemplate(proposal.vid)
-                )
-              }
-              if (history.review.opinion === REJECTED) {
-                this.notifyProposalOwner(
-                  proposal.proposer,
-                  this.rejectedMailTemplate(proposal.vid)
-                )
-              }
-              return { code: 200, success: true, message: 'Ok' }
-            } catch (err) {
-              logger.error(err)
-              return {
-                code: 500,
-                success: false,
-                message: 'Something went wrong'
-              }
-            }
-          }
-        }
-      )
-    } catch (err) {
-      logger.error(err)
-      return {
-        code: 500,
-        success: false,
-        message: 'Something went wrong'
-      }
-    }
-  }
-
-  public async checkReviewTxid(param: any) {
-    const { id, messageHash } = param
-    const proposal: any = await this.getProposal(id)
-    if (proposal) {
-      const history = proposal.withdrawalHistory.filter(
-        (item: any) => item.review.reasonHash === messageHash
-      )
-      if (_.isEmpty(history)) {
-        return { success: false }
-      }
-      if (_.get(history[0], 'review.txid')) {
-        return { success: true, detail: proposal }
-      }
-    } else {
-      return { success: false }
-    }
-  }
-
   private updateMailTemplate(id: string) {
     const subject = `【Payment Review】One payment request is waiting for your review`
     const body = `
@@ -482,48 +341,6 @@ export default class extends Base {
       <p>Thanks</p>
     `
     return { subject, body }
-  }
-
-  private rejectedMailTemplate(id: string) {
-    const subject = `【Payment rejected】Your payment request is rejected by secretary`
-    const body = `
-    <p>One payment request in proposal #${id}  has been rejected.</p>
-    <p>Click this link to view more details:</p>
-    <p><a href="${process.env.SERVER_URL}/proposals/${id}">${process.env.SERVER_URL}/proposals/${id}</a></p>
-    <br />
-    <p>Cyber Republic Team</p>
-    <p>Thanks</p>
-  `
-    return { subject, body }
-  }
-
-  private approvalMailTemplate(id: string) {
-    const subject = `【Payment approved】Your payment request is approved by secretary`
-    const body = `
-    <p>One payment request in proposal ${id} has been approved, the ELA distribution will processed shortly, check your ELA wallet later.</p>
-    <p>Click this link to view more details:</p>
-    <p><a href="${process.env.SERVER_URL}/proposals/${id}">${process.env.SERVER_URL}/proposals/${id}</a></p>
-    <br />
-    <p>Cyber Republic Team</p>
-    <p>Thanks</p>
-  `
-    return { subject, body }
-  }
-
-  private async notifyProposalOwner(
-    proposer: any,
-    content: {
-      subject: string
-      body: string
-    }
-  ) {
-    const mailObj = {
-      to: proposer.email,
-      toName: userUtil.formatUsername(proposer),
-      subject: content.subject,
-      body: content.body
-    }
-    mail.send(mailObj)
   }
 
   private async notifySecretaries(content: { subject: string; body: string }) {
