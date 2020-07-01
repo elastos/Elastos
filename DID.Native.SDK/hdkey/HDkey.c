@@ -544,35 +544,44 @@ char *HDKey_PublicKey2Address(uint8_t *publickey, char *address, size_t len)
      return get_address(publickey, address, len);
 }
 
-HDKey *HDKey_GetDerivedKey(HDKey* hdkey, HDKey *derivedkey, int depth, ...)
+HDKey *HDKey_GetvDerivedKey(HDKey* hdkey, HDKey *derivedkey, int depth, va_list list)
 {
     char address[ADDRESS_LEN];
-    va_list ap;
+    va_list ap, ar;
 
     if (!hdkey || !derivedkey)
         return NULL;
 
+    va_copy(ap, list);
+    va_copy(ar, list);
+
     if (!hdkey_ispublickeyonly(hdkey)) {
-        va_start(ap, depth);
-        getv_fingerprint(hdkey, derivedkey, depth - 1, ap);
-        va_end(ap);
-        va_start(ap, depth);
-        getv_sub_privatekey_publickey(hdkey, derivedkey, depth, ap);
-        va_end(ap);
+        getv_fingerprint(hdkey, derivedkey, depth - 1, list);
+        getv_sub_privatekey_publickey(hdkey, derivedkey, depth, ar);
     } else {
-        va_start(ap, depth);
-        getv_sub_publickeyonly(hdkey, derivedkey, depth, ap);
-        va_end(ap);
+        getv_sub_publickeyonly(hdkey, derivedkey, depth, list);
     }
 
     if (!get_address(derivedkey->publickey, derivedkey->address, sizeof(derivedkey->address)))
         return NULL;
 
-    va_start(ap, depth);
     getv_childnumber(derivedkey, depth, ap);
+    return derivedkey;
+}
+
+HDKey *HDKey_GetDerivedKey(HDKey* hdkey, HDKey *derivedkey, int depth, ...)
+{
+    va_list ap;
+    HDKey *dkey;
+
+    if (!hdkey || !derivedkey)
+        return NULL;
+
+    va_start(ap, depth);
+    dkey = HDKey_GetvDerivedKey(hdkey, derivedkey, depth, ap);
     va_end(ap);
 
-    return derivedkey;
+    return dkey;
 }
 
 uint8_t *HDKey_GetPublicKey(HDKey *hdkey)

@@ -125,6 +125,8 @@ char *HDKey_PublicKey2Address(uint8_t *publickey, char *address, size_t len);
 
 HDKey *HDKey_GetDerivedKey(HDKey* hdkey, HDKey *derivedkey, int depth, ...);
 
+HDKey *HDKey_GetvDerivedKey(HDKey* hdkey, HDKey *derivedkey, int depth, va_list list);
+
 uint8_t *HDKey_GetPublicKey(HDKey *hdkey);
 
 const char *HDKey_GetPublicKeyBase58(HDKey *hdkey, char *base, size_t size);
