@@ -1663,10 +1663,10 @@ func (s *txValidatorTestSuite) getSecretaryGeneralCRCProposalTx(ownerPublicKeySt
 	sig, _ := crypto.Sign(ownerPrivateKey, signBuf.Bytes())
 	crcProposalPayload.Signature = sig
 
-	common.WriteVarBytes(signBuf, sig)
 	secretaryGeneralSig, _ := crypto.Sign(secretaryGeneralPrivateKey, signBuf.Bytes())
 	crcProposalPayload.SecretaryGeneraSignature = secretaryGeneralSig
 
+	common.WriteVarBytes(signBuf, sig)
 	common.WriteVarBytes(signBuf, secretaryGeneralSig)
 	crcProposalPayload.CRCouncilMemberDID.Serialize(signBuf)
 	crSig, _ := crypto.Sign(crPrivateKey, signBuf.Bytes())
@@ -2957,9 +2957,6 @@ func (s *txValidatorTestSuite) TestCheckSecretaryGeneralProposalTransaction() {
 	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "CR Council Member should be one of the CR members")
 	memebers[memberCr.Info.DID] = memberCr
-
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
-	s.EqualError(err, "proposal OwnerPublicKey must be MemberElected cr member")
 	memebers[memberOwner.Info.DID] = memberOwner
 
 	//owner signature check failed
@@ -3074,7 +3071,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	s.Chain.crCommittee.CRCCurrentStageAmount = common.Fixed64(100 * 1e8)
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(99 * 1e8)
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
-	s.EqualError(err, "budgets exceeds the balance of CRC committee")
+	s.Error(err, "budgets exceeds the balance of CRC committee")
 
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0)
 
@@ -3125,8 +3122,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	s.Chain.crCommittee.GetProposalManager().Proposals[targetHash] = proposalState2
 	txn = s.getCRChangeProposalOwnerProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1,
 		newOwnerPublicKeyStr, targetHash)
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
-	s.EqualError(err, "proposal sponsors must be members")
 
 	s.Chain.crCommittee.InElectionPeriod = false
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
@@ -3139,9 +3134,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	s.Chain.crCommittee.GetProposalManager().Proposals[proposal3.Hash()] = proposalState3
 
 	txn = s.getCRCCloseProposalTxWithHash(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1, proposal.Hash())
-
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
-	s.EqualError(err, "CloseProposal owner should be one of the CR members")
 
 	// invalid closeProposalHash
 	txn = s.getCRCCloseProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)

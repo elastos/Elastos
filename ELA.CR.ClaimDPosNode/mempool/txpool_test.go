@@ -797,8 +797,9 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	assert.NoError(t, appendTx(tx2))
 	newBLock.Transactions = []*types.Transaction{tx3}
 	txPool.CleanSubmittedTransactions(&newBLock)
-	if err := isTransactionExisted(txPool, tx2); err != nil {
-		t.Error("should have transaction: tx6", err)
+	txPool.CheckAndCleanAllTransactions()
+	if err := isTransactionCleaned(txPool, tx2); err != nil {
+		t.Error("should clean transaction: tx2", err)
 	}
 }
 

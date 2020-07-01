@@ -2490,9 +2490,6 @@ func (b *BlockChain) checkSecretaryGeneralSign(crcProposal *payload.CRCProposal,
 	if code, err = getCode(crcProposal.SecretaryGeneralPublicKey); err != nil {
 		return err
 	}
-	if err = common.WriteVarBytes(signedBuf, crcProposal.Signature); err != nil {
-		return errors.New("failed to write proposal owner signature")
-	}
 	if err = checkCRTransactionSignature(crcProposal.SecretaryGeneraSignature, code,
 		signedBuf.Bytes()); err != nil {
 		return errors.New("failed to check SecretaryGeneral signature")
@@ -2504,6 +2501,9 @@ func (b *BlockChain) checkProposalCRCouncilMemberSign(crcProposal *payload.CRCPr
 	signedBuf *bytes.Buffer) error {
 
 	// Check signature of CR Council Member.
+	if err := common.WriteVarBytes(signedBuf, crcProposal.Signature); err != nil {
+		return errors.New("failed to write proposal owner signature")
+	}
 	if err := common.WriteVarBytes(signedBuf, crcProposal.SecretaryGeneraSignature); err != nil {
 		return errors.New("failed to write SecretaryGenera Signature")
 	}
@@ -2519,24 +2519,12 @@ func (b *BlockChain) checkProposalCRCouncilMemberSign(crcProposal *payload.CRCPr
 }
 func (b *BlockChain) checkChangeSecretaryGeneralProposalTx(crcProposal *payload.CRCProposal) error {
 	// The number of the proposals of the committee can not more than 128
-	var ownerCode []byte
-	var ownerDID *common.Uint168
-	var err error
-
 	if !b.isPublicKeyDIDMatch(crcProposal.SecretaryGeneralPublicKey, &crcProposal.SecretaryGeneralDID) {
 		return errors.New("SecretaryGeneral PublicKey and DID is not matching")
 	}
-	// get owner code
-	if ownerCode, err = getCode(crcProposal.OwnerPublicKey); err != nil {
-		return err
-	}
-	// get owner did
-	if ownerDID, err = getDIDFromCode(ownerCode); err != nil {
-		return err
-	}
-	//owner must MemberElected cr member
-	if !b.crCommittee.IsElectedCRMemberByDID(*ownerDID) {
-		return errors.New("proposal OwnerPublicKey must be MemberElected cr member")
+	// Check owner public key
+	if _, err := crypto.DecodePoint(crcProposal.OwnerPublicKey); err != nil {
+		return errors.New("invalid owner public key")
 	}
 
 	//CRCouncilMemberDID must MemberElected cr member
@@ -2566,27 +2554,9 @@ func (b *BlockChain) checkChangeSecretaryGeneralProposalTx(crcProposal *payload.
 }
 
 func (b *BlockChain) checkCloseProposal(proposal *payload.CRCProposal) error {
-	pk, err := crypto.DecodePoint(proposal.OwnerPublicKey)
+	_, err := crypto.DecodePoint(proposal.OwnerPublicKey)
 	if err != nil {
 		return errors.New("DecodePoint from OwnerPublicKey error")
-	}
-	redeemScript, err := contract.CreateStandardRedeemScript(pk)
-	if err != nil {
-		return errors.New("CreateStandardRedeemScript from OwnerPublicKey error")
-	}
-	didCode := append(redeemScript[:len(redeemScript)-1], common.DID)
-	ct, err := contract.CreateCRIDContractByCode(didCode)
-	if err != nil {
-		return errors.New("CreateCRIDContractByCode from OwnerPublicKey error")
-	}
-	ownerDid := ct.ToProgramHash()
-	ownerMember := b.crCommittee.GetMember(*ownerDid)
-
-	if ownerMember == nil {
-		return errors.New("CloseProposal owner should be one of the CR members")
-	}
-	if ownerMember.MemberState != crstate.MemberElected {
-		return errors.New("CloseProposal owner should be an of the elected CR members")
 	}
 	if ps := b.crCommittee.GetProposal(proposal.TargetProposalHash); ps == nil {
 		return errors.New("CloseProposalHash does not exist")
@@ -2616,41 +2586,77 @@ func (b *BlockChain) checkChangeProposalOwner(proposal *payload.CRCProposal) err
 		return errors.New("proposal status is not VoterAgreed")
 	}
 
-	publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
-	if err != nil {
-		return errors.New("invalid owner")
+	if _, err := crypto.DecodePoint(proposal.OwnerPublicKey); err != nil {
+		return errors.New("invalid owner public key")
 	}
 
-	newPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
-	if err != nil {
-		return errors.New("invalid owner")
+	if _, err := crypto.DecodePoint(proposal.NewOwnerPublicKey); err != nil {
+		return errors.New("invalid new owner public key")
 	}
 
-	if newPublicKey == publicKey {
-		return errors.New("cr new did must be different from the previous one")
+	if bytes.Equal(proposal.NewOwnerPublicKey, proposalState.ProposalOwner) &&
+		proposal.NewRecipient.IsEqual(proposalState.Recipient) {
+		return errors.New("new owner or recipient must be different from the previous one")
 	}
 
-	newCode, err := contract.CreateStandardRedeemScript(newPublicKey)
-	if err != nil {
-		return errors.New("invalid owner")
-	}
-	did, err := getDIDByCode(newCode)
-	if err != nil {
-		return errors.New("invalid owner code")
-	}
-	crMember := b.crCommittee.GetMember(*did)
-	if crMember == nil {
-		return errors.New("proposal sponsors must be members")
-	}
-
-	if crMember.MemberState != crstate.MemberElected {
-		return errors.New("cr members should be elected")
-	}
 	crCouncilMember := b.crCommittee.GetMember(proposal.CRCouncilMemberDID)
 	if crCouncilMember == nil {
 		return errors.New("CR Council Member should be one of the CR members")
 	}
-	return b.checkOwnerAndCRCouncilMemberSign(proposal, crCouncilMember.Info.Code)
+	return b.checkChangeOwnerSign(proposal, crCouncilMember.Info.Code)
+}
+
+func (b *BlockChain) checkChangeOwnerSign(proposal *payload.CRCProposal, crMemberCode []byte) error {
+	signedBuf := new(bytes.Buffer)
+	err := proposal.SerializeUnsigned(signedBuf, payload.CRCProposalVersion)
+	if err != nil {
+		return err
+	}
+	// Check signature of new owner.
+	newOwnerPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
+	}
+	newOwnerContract, err := contract.CreateStandardContract(newOwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
+	}
+
+	if err := checkCRTransactionSignature(proposal.NewOwnerSignature, newOwnerContract.Code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("new owner signature check failed")
+	}
+
+	// Check signature of owner.
+	publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
+	}
+	ownerContract, err := contract.CreateStandardContract(publicKey)
+	if err != nil {
+		return errors.New("invalid owner")
+	}
+	if err := checkCRTransactionSignature(proposal.Signature, ownerContract.Code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("owner signature check failed")
+	}
+
+	// Check signature of CR Council Member.
+	if err = common.WriteVarBytes(signedBuf, proposal.NewOwnerSignature); err != nil {
+		return errors.New("failed to write proposal new owner signature")
+	}
+	if err = common.WriteVarBytes(signedBuf, proposal.Signature); err != nil {
+		return errors.New("failed to write proposal owner signature")
+	}
+	if err = proposal.CRCouncilMemberDID.Serialize(signedBuf); err != nil {
+		return errors.New("failed to write CR Council Member's DID")
+	}
+	if err = checkCRTransactionSignature(proposal.CRCouncilMemberSignature, crMemberCode,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("failed to check CR Council Member signature")
+	}
+
+	return nil
 }
 
 func (b *BlockChain) checkOwnerAndCRCouncilMemberSign(proposal *payload.CRCProposal, crMemberCode []byte) error {
@@ -2751,7 +2757,10 @@ func (b *BlockChain) checkNormalOrELIPProposal(proposal *payload.CRCProposal, pr
 		return errors.New("budgets exceeds 10% of CRC committee balance")
 	} else if amount > b.crCommittee.CRCCurrentStageAmount-
 		b.crCommittee.CRCCommitteeUsedAmount-proposalsUsedAmount {
-		return errors.New("budgets exceeds the balance of CRC committee")
+		return errors.New(fmt.Sprintf("budgets exceeds the balance of CRC"+
+			" committee, proposal hash:%s, budgets:%s, need <= %s",
+			proposal.Hash(), amount, b.crCommittee.CRCCurrentStageAmount-
+				b.crCommittee.CRCCommitteeUsedAmount-proposalsUsedAmount))
 	} else if amount < 0 {
 		return errors.New("budgets is invalid")
 	}
@@ -2818,7 +2827,6 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	default:
 		return b.checkNormalOrELIPProposal(proposal, proposalsUsedAmount)
 	}
-	return nil
 }
 
 func getDIDByCode(code []byte) (*common.Uint168, error) {

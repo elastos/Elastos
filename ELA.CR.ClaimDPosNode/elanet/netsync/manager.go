@@ -786,6 +786,10 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 		iv := msg.NewInvVect(msg.InvTypeConfirmedBlock, &blockHash)
 		sm.peerNotifier.RelayInventory(iv, block.Header)
 
+	case events.ETBlockProcessed:
+		// check all transactions in pool.
+		sm.txMemPool.CheckAndCleanAllTransactions()
+
 		// A block has been connected to the main block chain.
 	case events.ETBlockConnected:
 		block, ok := event.Data.(*types.Block)
