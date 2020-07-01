@@ -21,6 +21,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
+	"github.com/elastos/Elastos.ELA/elanet/filter"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
@@ -89,6 +90,7 @@ func main() {
 		ChainParams:    spvNetParams,
 		PermanentPeers: cfg.SPVPermanentPeers,
 		GenesisAddress: genesisAddress,
+		FilterType:  filter.FTNexTTurnDPOSInfo,
 	}
 	spvService, err := spv.NewService(&spvCfg)
 	if err != nil {
