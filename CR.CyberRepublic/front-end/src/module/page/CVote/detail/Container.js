@@ -84,9 +84,6 @@ const mapDispatch = () => {
     async reviewApplication(id, stage, data) {
       return service.reviewApplication(id, stage, data)
     },
-    async getReviewTxid(data) {
-      return service.getReviewTxid(data)
-    },
     async updateProposal(data) {
       return service.updateProposal(data)
     },

@@ -97,11 +97,8 @@ export const Suggestion = {
   proposers: [
     {
       did: String,
-      proposalHash: String,
       timestamp: String
     }
   ],
-  proposed: Boolean,
-  chainHeight: String,
   old: Boolean // mark an old suggestion
 }

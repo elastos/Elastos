@@ -82,50 +82,40 @@ class C extends BaseComponent {
         return
       }
 
-      const budget = form.getFieldValue('budget')
-      const amount = _.get(budget, 'budgetAmount')
-      const address = _.get(budget, 'elaAddress')
-      const pItems = _.get(budget, 'paymentItems')
+      const milestone = _.get(values, 'plan.milestone')
+      const amount = _.get(values, 'budget.budgetAmount')
+      const pItems = _.get(values, 'budget.paymentItems')
 
-      if (amount || address || !_.isEmpty(pItems)) {
-        if (!address) {
-          this.setState({ loading: false })
-          message.error(I18N.get('suggestion.form.error.address'))
-          return
-        }
+      const sum = pItems.reduce((sum, item) => {
+        return (sum += Number(item.amount))
+      }, 0)
 
-        const plan = form.getFieldValue('plan')
-        const milestone = _.get(plan, 'milestone')
-        const initiation = pItems.filter(
-          (item) => item.type === ADVANCE && item.milestoneKey === '0'
-        )
-        const completion = pItems.filter((item) => {
-          return (
-            item.type === COMPLETION &&
-            item.milestoneKey === (milestone.length - 1).toString()
-          )
-        })
-        if (
-          milestone.length !== pItems.length ||
-          initiation.length > 1 ||
-          completion.length !== 1
-        ) {
-          this.setState({ loading: false })
-          message.error(I18N.get('suggestion.form.error.payment'))
-          return
-        }
-
-        const sum = pItems.reduce((sum, item) => {
-          return (sum += Number(item.amount))
-        }, 0)
-
-        if (Number(amount) !== sum) {
-          this.setState({ loading: false })
-          message.error(I18N.get('suggestion.form.error.notEqual'))
-          return
-        }
+      if (Number(amount) !== sum) {
+        this.setState({ loading: false })
+        message.error(I18N.get('suggestion.form.error.notEqual'))
+        return
       }
 
+      const initiation = pItems.filter(
+        (item) => item.type === ADVANCE && item.milestoneKey === '0'
+      )
+      const completion = pItems.filter((item) => {
+        return (
+          item.type === COMPLETION &&
+          item.milestoneKey === (milestone.length - 1).toString()
+        )
+      })
+      if (
+        milestone.length !== pItems.length ||
+        initiation.length > 1 ||
+        completion.length !== 1
+      ) {
+        this.setState({ loading: false })
+        message.error(I18N.get('suggestion.form.error.payment'))
+        return
+      }
+
+      const budget = _.get(values, 'budget')
       // exclude old suggestion data
       if (budget && typeof budget !== 'string') {
         values.budget = budget.paymentItems
@@ -175,9 +165,7 @@ class C extends BaseComponent {
         return
       }
       const index = TAB_KEYS.findIndex((item) => item === this.state.activeKey)
-      if (index === TAB_KEYS.length - 1) {
-        // this.handleSubmit({ preventDefault: () => {} })
-      } else {
+      if (index !== TAB_KEYS.length - 1) {
         this.setState({ activeKey: TAB_KEYS[index + 1] })
       }
     })
@@ -225,6 +213,33 @@ class C extends BaseComponent {
     }
     if (value && _.isEmpty(value.milestone)) {
       return cb(I18N.get('suggestion.form.error.milestones'))
+    }
+    return cb()
+  }
+
+  validateAmount = (value) => {
+    const reg = /^(0|[1-9][0-9]*)(\.[0-9]*)?$/
+    return (!isNaN(value) && reg.test(value)) || value === '' ? true : false
+  }
+
+  validateAddress = (value) => {
+    const reg = /^[E8][a-zA-Z0-9]{33}$/
+    return reg.test(value)
+  }
+
+  validateBudget = (rule, value, cb) => {
+    const amount = _.get(value, 'budgetAmount')
+    const address = _.get(value, 'elaAddress')
+    const pItems = _.get(value, 'paymentItems')
+
+    if (!this.validateAmount(amount)) {
+      return cb(I18N.get('suggestion.form.error.isNaN'))
+    }
+    if (!this.validateAddress(address)) {
+      return cb(I18N.get('suggestion.form.error.elaAddress'))
+    }
+    if (_.isEmpty(pItems)) {
+      return cb(I18N.get('suggestion.form.error.schedule'))
     }
     return cb()
   }
@@ -285,12 +300,7 @@ class C extends BaseComponent {
       )
     }
 
-    if (
-      id === 'budget'
-      /* &&
-      ((initialValues.budget && typeof initialValues.budget !== 'string') ||
-       !initialValues.budget) */
-    ) {
+    if (id === 'budget') {
       let initialBudget = {}
       if (initialValues.budget && typeof initialValues.budget !== 'string') {
         initialBudget = initialValues.budget && {
@@ -306,7 +316,12 @@ class C extends BaseComponent {
         }
       }
 
+      rules.push({
+        validator: this.validateBudget
+      })
+
       return getFieldDecorator('budget', {
+        rules,
         initialValue: initialBudget
       })(
         <PaymentSchedule
@@ -333,8 +348,7 @@ class C extends BaseComponent {
     const hasError = _.has(this.state.errorKeys, id)
     return (
       <TabText hasErr={hasError}>
-        {I18N.get(`suggestion.fields.${id}`)}
-        {id !== 'budget' ? '*' : ''}
+        {I18N.get(`suggestion.fields.${id}`)}*
       </TabText>
     )
   }
@@ -352,6 +366,12 @@ class C extends BaseComponent {
         <CircularProgressbar count={count} />
       </CirContainer>
     )
+  }
+
+  hideContinue = () => {
+    const { activeKey, errorKeys } = this.state
+    const index = TAB_KEYS.findIndex((item) => item === activeKey)
+    return _.isEmpty(errorKeys) && index === TAB_KEYS.length - 1
   }
 
   ord_render() {
@@ -414,13 +434,15 @@ class C extends BaseComponent {
             justify="center"
             style={{ marginBottom: '30px' }}
           >
-            <Button
-              onClick={this.handleContinue}
-              className="cr-btn cr-btn-black"
-              htmlType="button"
-            >
-              {I18N.get('suggestion.form.button.continue')}
-            </Button>
+            {!this.hideContinue() && (
+              <Button
+                onClick={this.handleContinue}
+                className="cr-btn cr-btn-black"
+                htmlType="button"
+              >
+                {I18N.get('suggestion.form.button.continue')}
+              </Button>
+            )}
           </Row>
 
           <Row gutter={8} type="flex" justify="center">

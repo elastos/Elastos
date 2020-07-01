@@ -6,7 +6,11 @@ import linkifyStr from 'linkifyjs/string'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import Signature from './Signature'
-import { MILESTONE_STATUS, SUGGESTION_BUDGET_TYPE, CVOTE_STATUS } from '@/constant'
+import {
+  MILESTONE_STATUS,
+  SUGGESTION_BUDGET_TYPE,
+  CVOTE_STATUS
+} from '@/constant'
 import WithdrawMoney from './WithdrawMoney'
 
 const {
@@ -61,7 +65,9 @@ class PaymentList extends Component {
 
   isVisible() {
     const { user, status } = this.props
-    return (this.isOwner() || user.is_secretary) && [ACTIVE, FINAL].includes(status)
+    return (
+      (this.isOwner() || user.is_secretary) && [ACTIVE, FINAL].includes(status)
+    )
   }
 
   renderMilestone = (item) => {
@@ -88,74 +94,72 @@ class PaymentList extends Component {
   }
 
   renderActions(item) {
-    const { user } = this.props
-    const status = item.status
-    const isFinal = this.isFinal()
-    if (isFinal) {
+    const { user, status } = this.props
+    if (this.isFinal()) {
       return null
     }
-    if (status === WAITING_FOR_REQUEST && this.props.status !== FINAL) {
+    if (
+      !user.is_secretary &&
+      item.status === WAITING_FOR_REQUEST &&
+      status !== FINAL
+    ) {
       return (
-        !user.is_secretary && (
+        <div
+          className="action"
+          onClick={() => {
+            this.showModal(item)
+          }}
+        >
+          {I18N.get('milestone.request')}
+        </div>
+      )
+    }
+    if (!user.is_secretary && item.status === REJECTED && status !== FINAL) {
+      return (
+        <div
+          className="action"
+          onClick={() => {
+            this.showModal(item)
+          }}
+        >
+          {I18N.get('milestone.rerequest')}
+        </div>
+      )
+    }
+    if (item.status === WAITING_FOR_APPROVAL && user.is_secretary) {
+      return (
+        <div className="review">
           <div
-            className="action"
+            className="action approve"
             onClick={() => {
-              this.showModal(item)
+              this.showModal(item, 'APPROVED')
             }}
           >
-            {I18N.get('milestone.request')}
+            {I18N.get('milestone.approve')}
           </div>
-        )
-      )
-    }
-    if (status === REJECTED && this.props.status !== FINAL) {
-      return (
-        !user.is_secretary && (
           <div
-            className="action"
+            className="action reject"
             onClick={() => {
-              this.showModal(item)
+              this.showModal(item, 'REJECTED')
             }}
           >
-            {I18N.get('milestone.rerequest')}
+            {I18N.get('milestone.reject')}
           </div>
-        )
+        </div>
       )
     }
-    if (status === WAITING_FOR_APPROVAL) {
+    if (
+      !user.is_secretary &&
+      item.status === WAITING_FOR_WITHDRAWAL &&
+      Number(item.amount) !== 0
+    ) {
       return (
-        user.is_secretary && (
-          <div className="review">
-            <div
-              className="action approve"
-              onClick={() => {
-                this.showModal(item, 'APPROVED')
-              }}
-            >
-              {I18N.get('milestone.approve')}
-            </div>
-            <div
-              className="action reject"
-              onClick={() => {
-                this.showModal(item, 'REJECTED')
-              }}
-            >
-              {I18N.get('milestone.reject')}
-            </div>
-          </div>
-        )
-      )
-    }
-    if (status === WAITING_FOR_WITHDRAWAL) {
-      return (
-        !user.is_secretary && (
-          <div
-            className="action"
-            onClick={() => this.showWithdrawalModal(item.milestoneKey)}
-          >
-            {I18N.get('milestone.withdraw')}
-          </div>
-        )
+        <div
+          className="action"
+          onClick={() => this.showWithdrawalModal(item.milestoneKey)}
+        >
+          {I18N.get('milestone.withdraw')}
+        </div>
       )
     }
   }
@@ -193,7 +197,9 @@ class PaymentList extends Component {
             style={{ p: { margin: '1em 0' } }}
           />
         </td>
-        {visible && <td>{I18N.get(`milestone.${item.status}`)}</td>}
+        {visible && (
+          <td>{item.status && I18N.get(`milestone.${item.status}`)}</td>
+        )}
         {visible && <td>{this.renderActions(item)}</td>}
       </StyledRow>
     )
@@ -210,8 +216,8 @@ class PaymentList extends Component {
 
   isFinal() {
     const { list } = this.props
-    const completion = list && list.filter(item => item.type === COMPLETION)[0]
-    return completion && completion.status === WITHDRAWN
+    const last = list && list.filter((item) => item.type === COMPLETION)[0]
+    return last && last.status === WITHDRAWN
   }
 
   render() {
@@ -259,7 +265,6 @@ class PaymentList extends Component {
           opinion={opinion}
           reviewApplication={actions.reviewApplication}
           application={this.getApplication()}
-          getReviewTxid={actions.getReviewTxid}
         />
 
         {withdrawal ? (

@@ -6,25 +6,27 @@ import OnChain from '../../detail/OnChain'
 import Translation from '@/module/common/Translation/Container'
 import { Avatar } from 'antd'
 import { USER_AVATAR_DEFAULT } from '@/constant'
-import { Container, ResultRow, Reason, Label, List, Item, StyledAvatarIcon } from './style'
+import { Container, ResultRow, Reason, Label, List, Item } from './style'
 
-const Component = (
-  {
-    label,
-    type,
-    dataList,
-    id,
-    getReviewProposal,
-    getReviewProposalUrl,
-    updateProposal,
-    isProposed,
-    isCouncil,
-    currentUserId
-  }
-) => {
+const Component = ({
+  label,
+  type,
+  dataList,
+  id,
+  getReviewProposal,
+  getReviewProposalUrl,
+  updateProposal,
+  isProposed,
+  isCouncil,
+  currentUserId
+}) => {
   const votesNode = _.map(dataList, (data, key) => {
     let voteStatus = data.status
-    if (voteStatus == undefined || voteStatus == 'failed' || voteStatus == 'unchain') {
+    if (
+      voteStatus == undefined ||
+      voteStatus == 'failed' ||
+      voteStatus == 'unchain'
+    ) {
       voteStatus = I18N.get(`council.voting.chainStatus.unchain`)
     }
     if (voteStatus == 'chained') {
@@ -34,10 +36,16 @@ const Component = (
       voteStatus = I18N.get(`council.voting.chainStatus.chaining`)
     }
     let isOwner = data.votedBy && data.votedBy === currentUserId
-    const avatarName = data.name.split(" ")
+    const avatarName = data.name.split(' ')
     const userNode = (
       <Item key={key}>
-        {data.avatar || avatarName[0] == 'undefined' ? <Avatar size={64} src={data.avatar || USER_AVATAR_DEFAULT}  alt="voter avatar" /> :
+        {data.avatar || avatarName[0] == 'undefined' ? (
+          <Avatar
+            size={64}
+            src={data.avatar || USER_AVATAR_DEFAULT}
+            alt="voter avatar"
+          />
+        ) : (
           <Avatar
             className="comment-avatar pull-left"
             style={{
@@ -47,26 +55,35 @@ const Component = (
             shape="circle"
             size={64}
           >
-            {`${avatarName[0] && avatarName[0].toUpperCase().substr(0, 1)}${avatarName[1] && avatarName[1].toUpperCase().substr(0, 1)}`}
+            {`${avatarName[0] &&
+              avatarName[0].toUpperCase().substr(0, 1)}${avatarName[1] &&
+              avatarName[1].toUpperCase().substr(0, 1)}`}
           </Avatar>
-        }
+        )}
         <div>{data.didName}</div>
-        <div>{data.reason !== "" ? voteStatus : null}</div>
+        <div className="status">{data.reason !== '' ? voteStatus : null}</div>
         <div style={{ marginTop: '0.5rem' }}>
-          {
-            (isProposed && isCouncil && isOwner && (data.status === 'unchain' || data.status === undefined) && data.reason !== '') ?
-              <OnChain
-                getReviewProposal={getReviewProposal}
-                getReviewProposalUrl={getReviewProposalUrl}
-                updateProposal={updateProposal}
-                id={id}
-              /> : null
-          }
+          {isProposed &&
+          isCouncil &&
+          isOwner &&
+          (data.status === 'unchain' || data.status === undefined) &&
+          data.reason !== '' ? (
+            <OnChain
+              getReviewProposal={getReviewProposal}
+              getReviewProposalUrl={getReviewProposalUrl}
+              updateProposal={updateProposal}
+              id={id}
+            />
+          ) : null}
         </div>
       </Item>
     )
 
-    const googleNode = data.reason && <div style={{ marginTop: '0.5rem' }}><Translation text={data.reason} /></div>
+    const googleNode = data.reason && (
+      <div style={{ marginTop: '0.5rem' }}>
+        <Translation text={data.reason} />
+      </div>
+    )
 
     // if (!isReject) return userNode
     // show reason for all vote type
@@ -81,7 +98,6 @@ const Component = (
           )
         })}
         {googleNode}
-
       </Reason>
     )
 

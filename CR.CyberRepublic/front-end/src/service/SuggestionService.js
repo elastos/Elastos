@@ -112,9 +112,7 @@ export default class extends BaseService {
 
   resetDetail() {
     this.dispatch(this.selfRedux.actions.detail_reset())
-    this.dispatch(this.selfRedux.actions.reference_reset())
     this.dispatch(this.selfRedux.actions.reference_status_reset())
-    this.dispatch(this.selfRedux.actions.proposed_reset())
   }
 
   async create(doc) {
@@ -421,25 +419,4 @@ export default class extends BaseService {
     })
     return res
   }
-
-  async pollProposalState(data) {
-    const rs = await api_request({
-      path: '/api/cvote/poll_proposal_state',
-      method: 'post',
-      data
-    })
-    if (rs && rs.success && rs.toChain) {
-      this.dispatch(
-        this.selfRedux.actions.proposed_update(true)
-      )
-    }
-    if(rs && rs.success && rs.reference) {
-      this.dispatch(
-        this.selfRedux.actions.reference_status_update(true)
-      )
-      this.dispatch(this.selfRedux.actions.reference_update(rs.reference))
-    }
-    return rs
-  }
-
 }

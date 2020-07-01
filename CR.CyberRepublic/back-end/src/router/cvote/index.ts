@@ -16,22 +16,14 @@ import listcrcandidates from './listcrcandidates'
 import onchain from './onchain'
 import all_search from './all_search'
 import get_proposal from './get_proposal'
-import reviewCallback from './reviewCallback'
 import check_signature from './check_signature'
 import memberVote from './memberVote'
-import pollProposalState from './poll_proposal_state'
-import pollVoteState from './poll_vote_state'
 import updateAborted from './update_aborted'
 
 export default Base.setRouter([
   {
     path: '/create_draft',
     router: create_draft,
-    method: 'post'
-  },
-  {
-    path: '/poll_proposal_state',
-    router: pollProposalState,
     method: 'post'
   },
   {
@@ -110,11 +102,6 @@ export default Base.setRouter([
     method: 'post'
   },
   {
-    path: '/review/callback',
-    router: reviewCallback,
-    method: 'post'
-  },
-  {
     path: '/all_search',
     router: all_search,
     method: 'get'
@@ -123,11 +110,6 @@ export default Base.setRouter([
     path: '/get_proposal/:id',
     router: get_proposal,
     method: 'get'
-  },
-  {
-    path: '/poll_vote_state',
-    router: pollVoteState,
-    method: 'post'
   },
   {
     path: '/update_aborted',
