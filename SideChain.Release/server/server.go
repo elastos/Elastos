@@ -67,7 +67,7 @@ func (f *naFilter) Filter(na *p2p.NetAddress) bool {
 // newPeerMsg represent a new connected peer.
 type newPeerMsg struct {
 	p2psvr.IPeer
-	reply chan struct{}
+	reply chan bool
 }
 
 // donePeerMsg represent a disconnected peer.
@@ -520,7 +520,7 @@ func (sp *serverPeer) OnTxFilterLoad(_ *peer.Peer, tf *msg.TxFilterLoad) {
 // OnReject is invoked when a peer receives a reject message.
 func (sp *serverPeer) OnReject(_ *peer.Peer, msg *msg.Reject) {
 	log.Infof("%s sent a reject message Code: %s, Hash %s, Reason: %s",
-		sp, msg.Code.String(), msg.Hash.String(), msg.Reason)
+		sp, msg.RejectCode.String(), msg.Hash.String(), msg.Reason)
 }
 
 // pushTxMsg sends a tx message for the provided transaction hash to the
@@ -815,7 +815,7 @@ func (s *server) handlePeerMsg(peers map[p2psvr.IPeer]*serverPeer, p interface{}
 		})
 
 		peers[p.IPeer] = sp
-		p.reply <- struct{}{}
+		p.reply <- true
 
 	case donePeerMsg:
 		delete(peers, p.IPeer)
@@ -829,10 +829,10 @@ func (s *server) Services() pact.ServiceFlag {
 }
 
 // NewPeer adds a new peer that has already been connected to the server.
-func (s *server) NewPeer(p p2psvr.IPeer) {
-	reply := make(chan struct{})
+func (s *server) NewPeer(p p2psvr.IPeer) bool {
+	reply := make(chan bool)
 	s.peerQueue <- newPeerMsg{p, reply}
-	<-reply
+	return <-reply
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.
@@ -898,6 +898,7 @@ func New(cfg *Config) (*server, error) {
 		params.DefaultPort, params.DNSSeeds, params.ListenAddrs,
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(cfg.Chain.GetBestHeight()) },
+		 0, "0",
 	)
 	svrcfg.DataDir = cfg.DataDir
 	svrcfg.NAFilter = &naFilter{}
