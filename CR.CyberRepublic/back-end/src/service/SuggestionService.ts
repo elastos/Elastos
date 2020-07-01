@@ -1362,7 +1362,14 @@ export default class extends Base {
           message: 'There is no this suggestion.'
         }
       }
-
+      const signature = _.get(suggestion, 'signature.data')
+      if (signature) {
+        return {
+          code: 400,
+          success: false,
+          message: 'This suggestion had been signed.'
+        }
+      }
       const rs: any = await getDidPublicKey(claims.iss)
       if (!rs) {
         return {
