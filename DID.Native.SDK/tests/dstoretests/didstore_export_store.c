@@ -66,6 +66,7 @@ static void test_didstore_export_import_did(void)
 
     path = get_store_path(_path2, "/restore");
     CU_ASSERT_PTR_NOT_NULL(path);
+    delete_file(path);
 
     DIDStore *store2 = DIDStore_Open(path, adapter);
     CU_ASSERT_PTR_NOT_NULL(store2);

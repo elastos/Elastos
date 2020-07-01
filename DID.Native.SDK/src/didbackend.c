@@ -41,6 +41,7 @@
 
 static DIDResolver *resolverInstance;
 static bool defaultInstance;
+static DIDLocalResovleHandle *gLocalResolveHandle;
 
 long ttl = DEFAULT_TTL;
 
@@ -270,6 +271,10 @@ DIDDocument *DIDBackend_Resolve(DID *did, bool force)
         return NULL;
     }
 
+    //If user give did document to verify, sdk use it first.
+    if (gLocalResolveHandle)
+        return gLocalResolveHandle(did);
+
     if (!resolverInstance || !resolverInstance->resolve) {
         DIDError_Set(DIDERR_INVALID_BACKEND, "DID resolver not initialized.");
         return NULL;
@@ -344,3 +349,9 @@ void DIDBackend_SetTTL(long _ttl)
 {
     ttl = _ttl;
 }
+
+void DIDBackend_SetLocalResolveHandle(DIDLocalResovleHandle *handle)
+{
+    gLocalResolveHandle = handle;
+}
+

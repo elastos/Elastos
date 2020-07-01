@@ -271,7 +271,7 @@ int MetaData_Merge(MetaData *tometa, MetaData *frommeta)
     cJSON_ArrayForEach(json, frommeta->data) {
         item = cJSON_GetObjectItem(tometa->data, json->string);
         if (item) {
-            if (cJSON_IsNull(item))
+            if (cJSON_IsNull(item) || cJSON_IsNull(json))
                 cJSON_DeleteItemFromObject(tometa->data, json->string);
         } else {
             item = cJSON_AddStringToObject(tometa->data, json->string, json->valuestring);

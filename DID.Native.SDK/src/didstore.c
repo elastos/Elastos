@@ -2300,7 +2300,7 @@ int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
 bool DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
         DIDURL *signkey, bool force)
 {
-    const char *local_signature, *local_prevsignature, *resolve_signature, *last_txid;
+    const char *last_txid, *local_signature, *local_prevsignature, *resolve_signature = NULL;
     DIDDocument *doc = NULL, *resolve_doc = NULL;
     int rc = -1;
     bool successed;
@@ -2378,7 +2378,8 @@ bool DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
 
     //Meta stores the resolved txid and local signature.
     DIDMetaData_SetSignature(&doc->metadata, DIDDocument_GetProofSignature(doc));
-    DIDMetaData_SetPrevSignature(&doc->metadata, resolve_signature);
+    if (resolve_signature)
+        DIDMetaData_SetPrevSignature(&doc->metadata, resolve_signature);
     rc = store_didmeta(store, &doc->metadata, &doc->did);
 
 errorExit:

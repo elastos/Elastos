@@ -24,9 +24,11 @@
 #define __VC_TEST_SUITES_H__
 
 DECL_TESTSUITE(vc_test);
+DECL_TESTSUITE(vc_local_verify_test);
 
 #define DEFINE_VC_TESTSUITES \
-    DEFINE_TESTSUITE(vc_test)
+    DEFINE_TESTSUITE(vc_test), \
+    DEFINE_TESTSUITE(vc_local_verify_test)
 
 #endif /* __VC_TEST_SUITES_H__ */
 

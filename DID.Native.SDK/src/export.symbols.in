@@ -185,6 +185,7 @@ _DIDStore_ImportStore
 _DIDBackend_InitializeDefault
 _DIDBackend_Initialize
 _DIDBackend_SetTTL
+_DIDBackend_SetLocalResolveHandle
 
 # Mnemonic
 _Mnemonic_Generate

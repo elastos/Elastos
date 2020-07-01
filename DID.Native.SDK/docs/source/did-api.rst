@@ -154,6 +154,12 @@ DIDStore_MergeCallback
 .. doxygentypedef:: DIDStore_MergeCallback
    :project: DIDAPI
 
+DIDLocalResovleHandle
+######################
+
+.. doxygentypedef:: DIDLocalResovleHandle
+   :project: DIDAPI
+
 DIDLogLevel
 ###########
 
@@ -1215,4 +1221,10 @@ DIDBackend_SetTTL
 ~~~~~~~~~~~~~~~~~
 
 .. doxygenfunction:: DIDBackend_SetTTL
+   :project: DIDAPI
+
+DIDBackend_SetLocalResolveHandle
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDBackend_SetLocalResolveHandle
    :project: DIDAPI

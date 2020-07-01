@@ -259,6 +259,15 @@ typedef int DIDStore_CredentialsCallback(DIDURL *id, void *context);
 typedef DIDDocument* DIDStore_MergeCallback(DIDDocument *chaincopy, DIDDocument *localcopy);
 /**
  * \~English
+ * The function indicate how to get local did document, if this did is not published to chain.
+ * @param
+ *      did                 [in] The DID string.
+ * @return
+ *      If no error occurs, return the handle to DIDDocument. Otherwise, return NULL.
+ */
+typedef DIDDocument* DIDLocalResovleHandle(DID *did);
+/**
+ * \~English
  * DIDAdapter is support method to create did transaction.
  */
 struct DIDAdapter {
@@ -3217,6 +3226,16 @@ DID_API int DIDBackend_Initialize(DIDResolver *resolver, const char *cachedir);
  *      ttl            [in] The time for cache.
  */
 DID_API void DIDBackend_SetTTL(long ttl);
+
+/**
+ * \~English
+ * User set DID Local Resolve handle in order to give which did document to verify.
+ * If handle != NULL, set DID Local Resolve Handle; If handle == NULL, clear this handle.
+ *
+ * @param
+ *      handle            [in] The pointer to DIDLocalResovleHandle function.
+ */
+DID_API void DIDBackend_SetLocalResolveHandle(DIDLocalResovleHandle *handle);
 
 /******************************************************************************
  * Error handling
