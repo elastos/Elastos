@@ -256,7 +256,10 @@ export default class extends Base {
         return { success: false, message: 'Payment stage is invalid.' }
       }
       if (budget.status !== WAITING_FOR_APPROVAL) {
-        return { success: false, message: 'Milestone status is wrong.' }
+        return {
+          success: false,
+          message: `This milestone is not ready for review, please refresh the page and try again.`
+        }
       }
 
       const history = proposal.withdrawalHistory.filter((item: any) =>
