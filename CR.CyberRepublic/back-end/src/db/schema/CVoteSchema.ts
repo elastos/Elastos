@@ -204,5 +204,14 @@ export const CVote = {
   notifiedOneDay: {
     type: Boolean,
     default: false
+  },
+  planIntro: {
+    type: String
+  },
+  budgetIntro: {
+    type: String
+  },
+  registerHeight: {
+    type: Number
   }
 }

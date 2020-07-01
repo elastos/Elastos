@@ -132,6 +132,8 @@ export default class extends Base {
             db_user.findById(suggestion.createdBy),
             db_user.findOne({'did.id': `did:elastos:${chainDid}`})
         ])
+        const result = await getProposalData(proposalHash)
+        const registerHeight = result && result.data.registerheight
         const doc: any = {
             vid,
             type: suggestion.type,
@@ -144,7 +146,10 @@ export default class extends Base {
             reference: suggestion._id,
             proposalHash,
             draftHash: suggestion.draftHash,
-            ownerPublicKey: suggestion.ownerPublicKey
+            ownerPublicKey: suggestion.ownerPublicKey,
+            planIntro: suggestion.planIntro,
+            budgetIntro: suggestion.budgetIntro,
+            registerHeight
         }
 
         Object.assign(doc, _.pick(suggestion, BASE_FIELDS))
