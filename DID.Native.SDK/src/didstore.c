@@ -4042,7 +4042,7 @@ int DIDStore_ImportStore(DIDStore *store, const char *storepass, const char *zip
     zip_int64_t count;
     zip_stat_t stat;
     int rc = -1;
-    char *filename = "/tmp/storeexport.json";
+    char filename[] = "/tmp/storeexport.json";
 
     if (!store || !storepass || !*storepass || !zipfile || !*zipfile ||
             !password || !*password) {
@@ -4081,14 +4081,16 @@ int DIDStore_ImportStore(DIDStore *store, const char *storepass, const char *zip
             goto errorExit;
 
         delete_file(filename);
-        const char *file = mktemp(filename);
-        code = store_file(file, buffer);
+        if (mkstemp(filename) == -1)
+            goto errorExit;
+
+        code = store_file(filename, buffer);
         free(buffer);
         if (code < 0)
             goto errorExit;
 
         if (!strcmp(stat.name, "privateIdentity")) {
-            if (DIDStore_ImportPrivateIdentity(store, storepass, file, password) < 0) {
+            if (DIDStore_ImportPrivateIdentity(store, storepass, filename, password) < 0) {
                 goto errorExit;
             }
         } else {
@@ -4096,7 +4098,7 @@ int DIDStore_ImportStore(DIDStore *store, const char *storepass, const char *zip
             if (!did)
                 goto errorExit;
 
-            code = DIDStore_ImportDID(store, storepass, file, password);
+            code = DIDStore_ImportDID(store, storepass, filename, password);
             DID_Destroy(did);
             if (code < 0)
                 goto errorExit;

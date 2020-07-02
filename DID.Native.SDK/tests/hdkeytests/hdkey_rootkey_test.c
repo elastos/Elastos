@@ -156,7 +156,7 @@ static void test_hdkey_sign_verify(void)
     int rc;
 
     const char *newmnemonic = Mnemonic_Generate("english");
-    CU_ASSERT_PTR_NOT_NULL(mnemonic);
+    CU_ASSERT_PTR_NOT_NULL(newmnemonic);
 
     privateIdentity = HDKey_FromMnemonic(newmnemonic, "", "english", &hk);
     Mnemonic_Free((char*)newmnemonic);

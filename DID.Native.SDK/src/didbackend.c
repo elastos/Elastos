@@ -272,8 +272,11 @@ DIDDocument *DIDBackend_Resolve(DID *did, bool force)
     }
 
     //If user give did document to verify, sdk use it first.
-    if (gLocalResolveHandle)
-        return gLocalResolveHandle(did);
+    if (gLocalResolveHandle) {
+        doc = gLocalResolveHandle(did);
+        if (doc)
+            return doc;
+    }
 
     if (!resolverInstance || !resolverInstance->resolve) {
         DIDError_Set(DIDERR_INVALID_BACKEND, "DID resolver not initialized.");
