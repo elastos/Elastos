@@ -108,9 +108,17 @@ func (v *Validator) checkHeader(params ...interface{}) (err error) {
 	powLimit := AssertBigInt(params[1])
 	timeSource := AssertMedianTimeSource(params[2])
 	header := block.Header
-	if header.GetHeight() >= v.chain.chainParams.CheckPowHeaderHeight {
+	height := block.GetHeight()
+	if height >= v.chain.chainParams.CheckPowHeaderHeight {
 		if err := v.spvService.CheckCRCArbiterSignature(&header.GetAuxPow().SideAuxBlockTx); err != nil {
 			return err
+		}
+		spvHeader, err := v.spvService.HeaderStore().GetByHeight(height)
+		if err != nil {
+			return err
+		}
+		if spvHeader.Bits() != header.GetAuxPow().MainBlockHeader.Bits {
+			return errors.New("[powCheckHeader] bits not matched")
 		}
 	}
 
