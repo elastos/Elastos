@@ -64,6 +64,7 @@ public class DIDBackend {
 	private static final long DEFAULT_TTL = 24 * 60 * 60 * 1000;
 	private static final Charset utf8 = Charset.forName("UTF-8");
 	private static DIDResolver resolver;
+	private static ResolveHandle resolveHandle;
 
 	private static Random random = new Random();
 	private static long ttl = DEFAULT_TTL; // milliseconds
@@ -71,6 +72,10 @@ public class DIDBackend {
 	private DIDAdapter adapter;
 
 	private static final Logger log = LoggerFactory.getLogger(DIDBackend.class);
+
+	public interface ResolveHandle {
+		public DIDDocument resolve(DID did);
+	}
 
 	static class DefaultResolver implements DIDResolver {
 		private URL url;
@@ -198,6 +203,10 @@ public class DIDBackend {
 		return sb.toString();
 	}
 
+	public static void setResolveHandle(ResolveHandle handle) {
+		DIDBackend.resolveHandle = handle;
+	}
+
 	private static ResolveResult resolveFromBackend(DID did, boolean all)
 			throws DIDResolveException {
 		String requestId = generateRequestId();
@@ -257,6 +266,12 @@ public class DIDBackend {
 	protected static DIDDocument resolve(DID did, boolean force)
 			throws DIDResolveException {
 		log.info("Resolving {}...", did.toString());
+
+		if (DIDBackend.resolveHandle != null) {
+			DIDDocument doc = resolveHandle.resolve(did);
+			if (doc != null)
+				return doc;
+		}
 
 		ResolveResult rr = null;
 		if (!force) {

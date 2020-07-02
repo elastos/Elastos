@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -154,5 +155,35 @@ public class DIDTest {
 
 		System.out.println(String.format("Second time resovle %d DIDs took %d Milliseconds",
 				dids.size(), (end-start)));
+	}
+
+	@Test
+	public void testResolveLocal()  throws DIDException, IOException {
+		String json = "{\"id\":\"did:elastos:idFKwBpj3Buq3XbLAFqTy8LMAW8K7kp3Ab\",\"publicKey\":[{\"id\":\"did:elastos:idFKwBpj3Buq3XbLAFqTy8LMAW8K7kp3Ab#primary\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:idFKwBpj3Buq3XbLAFqTy8LMAW8K7kp3Ab\",\"publicKeyBase58\":\"21YM84C9hbap4GfFSB3QbjauUfhAN4ETKg2mn4bSqx4Kp\"}],\"authentication\":[\"did:elastos:idFKwBpj3Buq3XbLAFqTy8LMAW8K7kp3Ab#primary\"],\"verifiableCredential\":[{\"id\":\"did:elastos:idFKwBpj3Buq3XbLAFqTy8LMAW8K7kp3Ab#name\",\"type\":[\"BasicProfileCredential\",\"SelfProclaimedCredential\"],\"issuer\":\"did:elastos:idFKwBpj3Buq3XbLAFqTy8LMAW8K7kp3Ab\",\"issuanceDate\":\"2020-07-01T00:46:40Z\",\"expirationDate\":\"2025-06-30T00:46:40Z\",\"credentialSubject\":{\"id\":\"did:elastos:idFKwBpj3Buq3XbLAFqTy8LMAW8K7kp3Ab\",\"name\":\"KP Test\"},\"proof\":{\"type\":\"ECDSAsecp256r1\",\"verificationMethod\":\"did:elastos:idFKwBpj3Buq3XbLAFqTy8LMAW8K7kp3Ab#primary\",\"signature\":\"jQ1OGwpkYqjxooyaPseqyr_1MncOZDrMS_SvwYzqkCHVrRfjv_b7qfGCjxy7Gbx-LS3bvxZKeMxU1B-k3Ysb3A\"}}],\"expires\":\"2025-07-01T00:46:40Z\",\"proof\":{\"type\":\"ECDSAsecp256r1\",\"created\":\"2020-07-01T00:47:20Z\",\"creator\":\"did:elastos:idFKwBpj3Buq3XbLAFqTy8LMAW8K7kp3Ab#primary\",\"signatureValue\":\"TOpNt-pWeQDJFaS5EkpMOuCqnZKhPCizf7LYQQDBrNLVIZ_7AR73m-KJk7Aja0wmZWXd7S4n7SC2W4ZQayJlMA\"}}";
+		DID did = new DID("did:elastos:idFKwBpj3Buq3XbLAFqTy8LMAW8K7kp3Ab");
+
+		DIDBackend.initialize(TestConfig.resolver, TestData.getResolverCacheDir());
+		ResolverCache.reset();
+
+		DIDDocument doc = did.resolve();
+		assertNull(doc);
+
+		DIDBackend.setResolveHandle((d) -> {
+			try {
+				if (d.equals(did))
+					return DIDDocument.fromJson(json);
+			} catch (Exception e) {
+			}
+
+			return null;
+		});
+
+		doc = did.resolve();
+		assertNotNull(doc);
+		assertEquals(did, doc.getSubject());
+
+		DIDBackend.setResolveHandle(null);
+		doc = did.resolve();
+		assertNull(doc);
 	}
 }

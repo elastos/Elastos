@@ -527,13 +527,13 @@ public final class DIDStore {
 				} else if (localPrevSignature == null || localSignature == null) {
 					String ls = localPrevSignature != null ? localPrevSignature : localSignature;
 					if (!ls.equals(reolvedSignautre)) {
-						log.error("Current copy not based on the lastest on-chain copy, txid mismatch.");
+						log.error("Current copy not based on the lastest on-chain copy, signature mismatch.");
 						throw new DIDStoreException("DID document not up-to-date");
 					}
 				} else {
 					if (!localSignature.equals(reolvedSignautre) &&
 						!localPrevSignature.equals(reolvedSignautre)) {
-						log.error("Current copy not based on the lastest on-chain copy, txid mismatch.");
+						log.error("Current copy not based on the lastest on-chain copy, signature mismatch.");
 						throw new DIDStoreException("DID document not up-to-date");
 					}
 				}
