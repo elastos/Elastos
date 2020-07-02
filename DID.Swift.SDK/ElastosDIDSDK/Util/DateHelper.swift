@@ -32,11 +32,27 @@ class DateHelper {
         return Int(date.timeIntervalSince1970)
     }
 
+    class func getTimeStampForString(_ date: Date) -> String {
+
+        let time = Int(date.timeIntervalSince1970)
+        return String(time)
+    }
+
     class func getDateFromTimeStamp(_ timeStamp: Int?) -> Date? {
         guard timeStamp != nil else {
             return nil
         }
         let interval = TimeInterval.init(timeStamp!)
+
+        return Date(timeIntervalSince1970: interval)
+    }
+
+    class func getDateFromTimeStampWithString(_ timeStamp: String?) -> Date? {
+        guard timeStamp != nil else {
+            return nil
+        }
+        let intTimeStamp = Int(timeStamp!)
+        let interval = TimeInterval.init(intTimeStamp!)
 
         return Date(timeIntervalSince1970: interval)
     }

@@ -286,6 +286,7 @@ public class DIDBackend {
             meta.setTransactionId(transactionInfo!.transactionId)
             meta.setSignature(doc!.proof.signature)
             meta.setPublished(transactionInfo!.getTimestamp())
+            meta.setLastModified(transactionInfo!.getTimestamp())
             doc!.setMetadata(meta)
             return doc
         }
@@ -321,7 +322,8 @@ public class DIDBackend {
                 _ storePassword: String) throws {
 
         let request = try IDChainRequest.update(doc, previousTransactionId, signKey, storePassword)
-        return try createTransaction(request.toJson(true), nil)
+        try createTransaction(request.toJson(true), nil)
+        try ResolverCache.invalidate(doc.subject)
     }
 
     func deactivate(_ doc: DIDDocument,
@@ -329,7 +331,8 @@ public class DIDBackend {
                     _ storePassword: String) throws {
 
         let request = try IDChainRequest.deactivate(doc, signKey, storePassword)
-        return try createTransaction(request.toJson(true), nil)
+        try createTransaction(request.toJson(true), nil)
+        try ResolverCache.invalidate(doc.subject)
     }
 
     func deactivate(_ target: DID,
@@ -339,6 +342,7 @@ public class DIDBackend {
                     _ storePassword: String) throws {
 
         let request = try IDChainRequest.deactivate(target, targetSignKey, doc, signKey, storePassword)
-        return try createTransaction(request.toJson(true), nil)
+        try createTransaction(request.toJson(true), nil)
+        try ResolverCache.invalidate(doc.subject)
     }
 }

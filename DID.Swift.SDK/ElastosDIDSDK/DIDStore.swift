@@ -94,7 +94,7 @@ public class DIDStore: NSObject {
         .bindMemory(to: UInt8.self, capacity: re)
         
         let data = Data(bytes: temp, count: re)
-        let intArray = [UInt8](data).map { Int8(bitPattern: $0) }
+//        let intArray = [UInt8](data).map { Int8(bitPattern: $0) }
         return data
     }
 
@@ -359,8 +359,10 @@ public class DIDStore: NSObject {
 
     public func synchronize(using storePassword: String) throws {
 
-        return try synchronize(storePassword) { (chainCopy, localCopy) throws -> DIDDocument in
-            return localCopy
+        try synchronize(storePassword) { (c, l) throws -> DIDDocument in
+            l.getMetadata().setPublished(c.getMetadata().getPublished()!)
+            l.getMetadata().setSignature(c.getMetadata().signature)
+            return l
         }
     }
 
@@ -384,8 +386,16 @@ public class DIDStore: NSObject {
 
     public func synchronizeAsync(using storePassword: String) throws -> Promise<Void> {
 
-        return synchronizeAsync(storePassword) { (chainCopy, localCopy) throws -> DIDDocument in
-            return localCopy
+        guard !storePassword.isEmpty else {
+            throw DIDError.illegalArgument("store password is empty")
+        }
+        return Promise<Void> { resolver in
+            do {
+                try synchronize(using: storePassword)
+                resolver.fulfill(())
+            } catch let error  {
+                resolver.reject(error)
+            }
         }
     }
 
@@ -409,7 +419,7 @@ public class DIDStore: NSObject {
         }
 
         let did = DID(Constants.METHOD, key.getAddress())
-        var doc = try? loadDid(did)
+        var doc = try loadDid(did)
         if doc != nil {
             throw DIDError.didStoreError("DID already exists.")
         }
@@ -420,7 +430,7 @@ public class DIDStore: NSObject {
         let builder = DIDDocumentBuilder(did, self)
         doc = try builder.appendAuthenticationKey(with: id, keyBase58: key.getPublicKeyBase58())
             .sealed(using: storePassword)
-        doc!.getMetadata().setAlias(alias)
+        doc?.getMetadata().setAlias(alias)
         try storeDid(using: doc!)
 
         return doc!
@@ -491,21 +501,20 @@ public class DIDStore: NSObject {
     }
 
     public func publishDid(_ did: DID,
-                            _ signKey: DIDURL?,
-                            _ storePassword: String,
-                            _ force: Bool) throws {
+                           _ signKey: DIDURL?,
+                           _ storePassword: String,
+                           _ force: Bool) throws {
         guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
-
-        let doc: DIDDocument
-        do {
-            doc = try loadDid(did)
-        } catch {
+        Log.i(DIDStore.TAG, "Publishing {}{}...", did.toString(), force ? " in force mode" : "" )
+        let  doc = try loadDid(did)
+        if doc == nil {
+            Log.e(DIDStore.TAG, "No document for {}", did.toString())
             throw DIDError.didStoreError("Can not find the document for \(did)")
         }
 
-        guard !doc.isDeactivated else {
+        guard !doc!.isDeactivated else {
             throw DIDError.didStoreError("DID already deactivated.")
         }
 
@@ -519,17 +528,26 @@ public class DIDStore: NSObject {
             }
             reolvedSignautre = resolvedDoc?.proof.signature
             if !force {
-                let localPrevSignature = doc.getMetadata().previousSignature
-                let localSignature = doc.getMetadata().signature
+                let localPrevSignature = doc!.getMetadata().previousSignature
+                let localSignature = doc!.getMetadata().signature
 
                 if localPrevSignature == nil && localSignature == nil {
                     Log.e(DIDStore.TAG ,"Missing signatures information, DID SDK dosen't know how to handle it, use force mode to ignore checks.")
                     throw DIDError.didStoreError("DID document not up-to-date")
                 }
 
-                if localSignature != nil && localSignature != reolvedSignautre && localPrevSignature != nil && localPrevSignature != reolvedSignautre {
-                    Log.e(DIDStore.TAG ,"Current copy not based on the lastest on-chain copy, txid mismatch.")
-                    throw DIDError.didStoreError("DID document not up-to-date")
+                else if localPrevSignature == nil || localSignature == nil {
+                    let ls = localPrevSignature != nil ? localPrevSignature : localSignature
+                    if ls != reolvedSignautre {
+                        Log.e(DIDStore.TAG ,"Missing signatures information, DID SDK dosen't know how to handle it, use force mode to ignore checks.")
+                        throw DIDError.didStoreError("DID document not up-to-date")
+                    }
+                }
+                else {
+                    if localSignature != reolvedSignautre && localPrevSignature != reolvedSignautre {
+                        Log.e(DIDStore.TAG ,"Current copy not based on the lastest on-chain copy, txid mismatch.")
+                        throw DIDError.didStoreError("DID document not up-to-date")
+                    }
                 }
             }
 
@@ -538,20 +556,20 @@ public class DIDStore: NSObject {
 
         var usedSignKey = signKey
         if  usedSignKey == nil {
-            usedSignKey = doc.defaultPublicKey
+            usedSignKey = doc?.defaultPublicKey
         }
 
         if  lastTxid == nil {
             Log.i(DIDStore.TAG ,"Try to publish[create] {}...\(did.toString())")
-            try backend.create(doc, usedSignKey!, storePassword)
+            try backend.create(doc!, usedSignKey!, storePassword)
         } else {
             Log.i(DIDStore.TAG ,"Try to publish[update] {}...\(did.toString())")
-            try backend.update(doc, lastTxid!, usedSignKey!, storePassword)
+            try backend.update(doc!, lastTxid!, usedSignKey!, storePassword)
         }
 
-        doc.getMetadata().setPreviousSignature(reolvedSignautre)
-        doc.getMetadata().setSignature(doc.getProof()!.signature)
-        try storage.storeDidMeta(doc.subject, doc.getMetadata())
+        doc!.getMetadata().setPreviousSignature(reolvedSignautre)
+        doc!.getMetadata().setSignature(doc!.getProof()!.signature)
+        try storage.storeDidMetadata(doc!.subject, doc!.getMetadata())
     }
 
     public func publishDid(for did: DID,
@@ -704,7 +722,7 @@ public class DIDStore: NSObject {
         // Save deactivated status to DID metadata
         if localCopy {
             doc!.getMetadata().setDeactivated(true)
-            try storage.storeDidMeta(did, doc!.getMetadata())
+            try storage.storeDidMetadata(did, doc!.getMetadata())
         }
     }
 
@@ -947,7 +965,7 @@ public class DIDStore: NSObject {
         let metadata = try loadDidMeta(for: doc.subject)
         try doc.getMetadata().merge(metadata)
         doc.getMetadata().setStore(self)
-        try storage.storeDidMeta(doc.subject, doc.getMetadata())
+        try storage.storeDidMetadata(doc.subject, doc.getMetadata())
 
         for credential in doc.credentials() {
             try storeCredential(using: credential)
@@ -958,7 +976,7 @@ public class DIDStore: NSObject {
     }
     
     func storeDidMeta(_ meta: DIDMeta, for did: DID) throws {
-        try storage.storeDidMeta(did, meta)
+        try storage.storeDidMetadata(did, meta)
     }
     
     func storeDidMeta(_ meta: DIDMeta, for did: String) throws {
@@ -977,7 +995,7 @@ public class DIDStore: NSObject {
                 }
             }
         }
-        meta = try? storage.loadDidMeta(did)
+        meta = try storage.loadDidMetadata(did)
         if meta == nil {
             meta = DIDMeta()
         }
@@ -991,7 +1009,7 @@ public class DIDStore: NSObject {
         return try loadDidMeta(for: DID(did))
     }
 
-    public func loadDid(_ did: DID) throws -> DIDDocument {
+    public func loadDid(_ did: DID) throws -> DIDDocument? {
         var doc: DIDDocument?
         if documentCache != nil {
             doc = documentCache!.getValue(for: did)
@@ -1000,24 +1018,22 @@ public class DIDStore: NSObject {
             }
         }
 
-        doc = try? storage.loadDid(did)
-        guard let _ = doc else {
-            throw DIDError.notFoundError()
+        doc = try storage.loadDid(did)
+
+        if doc != nil {
+            let metadata = try storage.loadDidMetadata(did)
+            metadata.setStore(self)
+            doc?.setMetadata(metadata)
         }
 
-        var meta = try? storage.loadDidMeta(did)
-        if meta == nil {
-            meta = DIDMeta()
+        if doc != nil && documentCache != nil {
+            documentCache?.setValue(doc!, for: doc!.subject)
         }
-        doc!.setMetadata(meta!)
-        doc!.getMetadata().setStore(self)
-        if documentCache != nil {
-            documentCache!.setValue(doc!, for: doc!.subject)
-        }
-        return doc!
+
+        return doc
     }
 
-    public func loadDid(_ did: String) throws -> DIDDocument {
+    public func loadDid(_ did: String) throws -> DIDDocument? {
         return try loadDid(DID(did))
     }
     
@@ -1063,12 +1079,12 @@ public class DIDStore: NSObject {
         let metadata = try loadCredentialMeta(for: credential.subject.did, byId: credential.getId())
         try credential.getMeta().merge(metadata)
         credential.getMeta().setStore(self)
-        try storage.storeCredentialMeta(credential.subject.did, credential.getId(), credential.getMeta())
+        try storage.storeCredentialMetadata(credential.subject.did, credential.getId(), credential.getMeta())
         credentialCache?.setValue(credential, for: credential.getId())
     }
 
     func storeCredentialMeta(for did: DID, key id: DIDURL, meta: CredentialMeta) throws {
-        try storage.storeCredentialMeta(did, id, meta)
+        try storage.storeCredentialMetadata(did, id, meta)
     }
     
     func storeCredentialMeta(for did: String, key id: String, meta: CredentialMeta) throws {
@@ -1086,7 +1102,7 @@ public class DIDStore: NSObject {
                 return meta!
             }
         }
-        meta = try? storage.loadCredentialMeta(did, byId)
+        meta = try? storage.loadCredentialMetadata(did, byId)
         if meta == nil {
             meta = CredentialMeta()
         }
@@ -1262,12 +1278,11 @@ public class DIDStore: NSObject {
 
         var usedId: DIDURL? = id
         if  usedId == nil {
-            do {
-                let doc = try loadDid(did)
-                usedId = doc.defaultPublicKey
-            } catch {
-                throw DIDError.didStoreError("Can not resolve DID document")
+            let doc = try loadDid(did)
+            if doc == nil {
+                throw DIDError.didStoreError("Can not resolve DID document.")
             }
+            usedId = doc!.defaultPublicKey
         }
 
         let privatekeys = try DIDStore.decryptFromBase64(loadPrivateKey(for: did, byId: usedId!), storePassword)
@@ -1333,11 +1348,6 @@ public class DIDStore: NSObject {
                 _ storePassword: String) throws {
         // All objects should load directly from storage,
         // avoid affects the cached objects.
-        let sha256 = SHA256Helper()
-        var bytes = [UInt8](password.data(using: .utf8)!)
-        sha256.update(&bytes)
-        
-        generator.writeStartObject()
         var doc: DIDDocument? = nil
         do {
             doc = try storage.loadDid(did)
@@ -1347,6 +1357,12 @@ public class DIDStore: NSObject {
         guard doc != nil else {
             throw DIDError.didStoreError("Export DID \(did) failed, not exist.")
         }
+
+        let sha256 = SHA256Helper()
+        var bytes = [UInt8](password.data(using: .utf8)!)
+        sha256.update(&bytes)
+
+        generator.writeStartObject()
         
         // Type
         generator.writeStringField("type", DID_EXPORT)
@@ -1368,18 +1384,25 @@ public class DIDStore: NSObject {
         
         // Document
         generator.writeFieldName("document")
+        generator.writeStartObject()
+        generator.writeFieldName("content")
         try doc!.toJson(generator, false)
         value = doc!.toString()
         bytes = [UInt8](value.data(using: .utf8)!)
         sha256.update(&bytes)
         
-        var didMeta: DIDMeta? = try storage.loadDidMeta(did)
+        let didMeta: DIDMeta? = try storage.loadDidMetadata(did)
         if didMeta!.isEmpty() {
-            didMeta = nil
+            generator.writeFieldName("metadata")
+            value = try didMeta!.toString()
+            generator.writeRawValue(value)
+            bytes = [UInt8](value.data(using: .utf8)!)
+            sha256.update(&bytes)
         }
         
+        generator.writeEndObject()
+
         // Credential
-        var vcMetas: OrderedDictionary<DIDURL, CredentialMeta> = OrderedDictionary()
         if storage.containsCredentials(did) {
             generator.writeFieldName("credential")
             generator.writeStartArray()
@@ -1392,6 +1415,11 @@ public class DIDStore: NSObject {
                 var vc: VerifiableCredential? = nil
                 do {
                     Log.i(DIDStore.TAG, "Exporting credential {}...\(id.toString())")
+
+                    generator.writeStartObject()
+
+                    generator.writeFieldName("content")
+
                     vc = try storage.loadCredential(did, id)
                 } catch {
                     throw DIDError.didStoreError("Export DID \(did) failed.\(error)")
@@ -1401,10 +1429,15 @@ public class DIDStore: NSObject {
                 bytes = [UInt8](value.data(using: .utf8)!)
                 sha256.update(&bytes)
                 
-                let meta = try storage.loadCredentialMeta(did, id)
-                if !meta.isEmpty() {
-                    vcMetas[id] = meta
+                let metadata = try storage.loadCredentialMetadata(did, id)
+                if !metadata.isEmpty() {
+                    generator.writeFieldName("metadata")
+                    value = try metadata.toString()
+                    generator.writeRawValue(value)
+                    bytes = [UInt8](value.data(using: .utf8)!)
+                    sha256.update(&bytes)
                 }
+                generator.writeEndObject()
             }
             generator.writeEndArray()
         }
@@ -1442,42 +1475,6 @@ public class DIDStore: NSObject {
             generator.writeEndArray()
         }
 
-        // Metadata
-        if didMeta != nil || vcMetas.count != 0 {
-            generator.writeFieldName("metadata")
-            generator.writeStartObject()
-            
-            if didMeta != nil {
-                generator.writeFieldName("document")
-                value = try didMeta!.toString()
-                generator.writeRawValue(value)
-                bytes = [UInt8](value.description.data(using: .utf8)!)
-                sha256.update(&bytes)
-            }
-            
-            if vcMetas.count != 0 {
-                generator.writeFieldName("credential")
-                generator.writeStartArray()
-                                
-               try vcMetas.forEach { (k, v) in
-                    generator.writeStartObject()
-                    value = k.toString()
-                    generator.writeStringField("id", value)
-                    bytes = [UInt8](value.description.data(using: .utf8)!)
-                    sha256.update(&bytes)
-                    
-                    value = try v.toString()
-                    generator.writeFieldName("metadata");
-                    generator.writeRawValue(value)
-                    bytes = [UInt8](value.description.data(using: .utf8)!)
-                    sha256.update(&bytes)
-                    generator.writeEndObject()
-                }
-                generator.writeEndArray()
-            }
-            generator.writeEndObject()
-        }
-        
         // Fingerprint
         let result = sha256.finalize()
 
@@ -1575,12 +1572,18 @@ public class DIDStore: NSObject {
         // Document
         var node = root.get(forKey: "document")
         guard node?.toString() != nil else {
+            Log.e(DIDStore.TAG, "Missing DID document.")
             throw DIDError.didStoreError("Missing DID document in the export data")
         }
         
+        let docNode = node?.get(forKey: "content")
+        guard docNode?.toString() != nil else {
+            Log.e(DIDStore.TAG, "Missing DID document.")
+            throw DIDError.didStoreError("Missing DID document in the export data")
+        }
         var doc: DIDDocument? = nil
         do {
-            doc = try DIDDocument.convertToDIDDocument(fromJson: node!)
+            doc = try DIDDocument.convertToDIDDocument(fromJson: docNode!)
         } catch  {
             throw DIDError.didStoreError("Invalid export data.\(error)")
         }
@@ -1591,6 +1594,18 @@ public class DIDStore: NSObject {
         bytes = [UInt8](value.data(using: .utf8)!)
         sha256.update(&bytes)
         
+        let metaNode = node?.get(forKey: "metadata")
+        if metaNode != nil {
+            let metadata = DIDMeta()
+            try metadata.load(metaNode!)
+            metadata.setStore(self)
+            doc?.setMetadata(metadata)
+            value = try metadata.toString()
+
+            bytes = [UInt8](value.data(using: .utf8)!)
+            sha256.update(&bytes)
+        }
+
         // Credential
         var vcs: [DIDURL: VerifiableCredential] = [: ]
         node = root.get(forKey: "credential")
@@ -1599,11 +1614,16 @@ public class DIDStore: NSObject {
                 throw DIDError.didStoreError("Invalid export data, wrong credential data.")
             }
             for node in node!.asArray()! {
+                let vcNode = node.get(forKey: "content")
+                if (vcNode == nil) {
+                    Log.e(DIDStore.TAG, "Missing credential " + " content")
+                    throw DIDError.didStoreError("Invalid export data.")
+                }
                 var vc: VerifiableCredential? = nil
                 do {
-                    vc = try VerifiableCredential.fromJson(node, did)
+                    vc = try VerifiableCredential.fromJson(vcNode!, did)
                 } catch {
-                    Log.e(DIDStore.TAG, "Parse credential \(node) error \(error)")
+                    Log.e(DIDStore.TAG, "Parse credential \(String(describing: vcNode)) error \(error)")
                     throw DIDError.didExpired("Invalid export data.\(error)")
                 }
                 guard vc?.subject.did == did else {
@@ -1613,6 +1633,19 @@ public class DIDStore: NSObject {
                 value = vc!.toString(true)
                 bytes = [UInt8](value.data(using: .utf8)!)
                 sha256.update(&bytes)
+
+                let metaNode = node.get(forKey: "metadata")
+                if metaNode != nil {
+                    let metadata = CredentialMeta()
+                    try metadata.load(metaNode!)
+                    metadata.setStore(self)
+                    vc?.setMetadata(metadata)
+
+                    value = try metadata.toString()
+                    bytes = [UInt8](value.data(using: .utf8)!)
+                    sha256.update(&bytes)
+                }
+
                 vcs[vc!.getId()] = vc
             }
         }
@@ -1672,12 +1705,12 @@ public class DIDStore: NSObject {
         // avoid affects the cached objects.
         Log.i(DIDStore.TAG, "Importing document...")
         try storage.storeDid(doc!)
-        try storage.storeDidMeta(doc!.subject, doc!.getMetadata())
+        try storage.storeDidMetadata(doc!.subject, doc!.getMetadata())
         
         for vc in vcs.values {
             Log.i(DIDStore.TAG, "Importing credential {}...\(vc.getId().description)")
             try storage.storeCredential(vc)
-            try storage.storeCredentialMeta(did, vc.getId(), vc.getMetadata())
+            try storage.storeCredentialMetadata(did, vc.getId(), vc.getMetadata())
         }
         
         try sks.forEach { (key, value) in

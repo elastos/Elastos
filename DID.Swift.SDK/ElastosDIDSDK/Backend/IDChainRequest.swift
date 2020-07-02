@@ -298,7 +298,7 @@ class IDChainRequest: NSObject {
                                 .withError(error)
         let specs = try serializer.getString(Constants.SPECIFICATION, options)
         guard specs == IDChainRequest.CURRENT_SPECIFICATION else {
-            throw DIDError.didResolveError("unkown did specification.")
+            throw DIDError.didResolveError("Unknown ID request specification.")
         }
 
         options = JsonSerializer.Options()

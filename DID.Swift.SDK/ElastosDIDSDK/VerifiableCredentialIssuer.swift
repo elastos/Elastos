@@ -27,13 +27,16 @@ public class VerifiableCredentialIssuer {
     }
 
     private convenience init(_ did: DID, signKey: DIDURL? , _ store: DIDStore) throws {
-        let doc: DIDDocument
+        let doc: DIDDocument?
         do {
             doc = try store.loadDid(did)
+            if doc == nil {
+                throw DIDError.didStoreError("Can not load DID.")
+            }
         } catch {
             throw DIDError.didResolveError("Can not resolve did")
         }
-        try self.init(doc: doc, signKey: signKey)
+        try self.init(doc: doc!, signKey: signKey)
     }
 
     public convenience init(_ doc: DIDDocument, _ signKey: DIDURL) throws {

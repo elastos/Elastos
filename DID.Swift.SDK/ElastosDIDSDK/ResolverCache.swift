@@ -124,5 +124,10 @@ public class ResolverCache {
          }
      }
     
+    public class func invalidate(_ did: DID) throws {
+        let filePath = try getFile(did.methodSpecificId)
+        deleteFile(filePath)
+        cache.removeValue(for: did)
+    }
 }
 

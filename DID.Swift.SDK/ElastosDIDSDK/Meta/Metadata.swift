@@ -2,6 +2,7 @@ import Foundation
 
 public class Metadata: NSObject {
     static let RESERVED_PREFIX = "DX-"
+    static let LAST_MODIFIED = RESERVED_PREFIX + "lastModified"
     private var _store: DIDStore?
     private var _extra = Dictionary<String, Any>()
 
@@ -22,6 +23,20 @@ public class Metadata: NSObject {
 
     public func setStore(_ store: DIDStore) {
         self._store = store
+    }
+
+    public func setLastModified(_ timestamp: Date) {
+        put(key: Metadata.LAST_MODIFIED, value: DateHelper.getTimeStampForString(timestamp))
+    }
+
+    public func getLastModified() -> Date? {
+        let date = get(key: Metadata.LAST_MODIFIED) as? String
+        let time = DateHelper.getDateFromTimeStampWithString(date)
+        return time
+    }
+
+    public func clearLastModified() {
+        _extra.removeValue(forKey: Metadata.LAST_MODIFIED)
     }
 
     public func setExtra(_ key: String, _ value: String?) {

@@ -704,8 +704,8 @@ class IDChainOperationsTest: XCTestCase {
                 let did = try DID(did)
                 let doc = try store.loadDid(did)
                 XCTAssertNotNil(doc)
-                XCTAssertEqual(did, doc.subject)
-                XCTAssertEqual(4, doc.credentialCount)
+                XCTAssertEqual(did, doc!.subject)
+                XCTAssertEqual(4, doc!.credentialCount)
 
                 let vcs = try store.listCredentials(for: did)
                 XCTAssertEqual(4, vcs.count)
@@ -755,8 +755,8 @@ class IDChainOperationsTest: XCTestCase {
                 let did = try DID(did)
                 let doc = try store.loadDid(did)
                 XCTAssertNotNil(doc)
-                XCTAssertEqual(did, doc.subject)
-                XCTAssertEqual(4, doc.credentialCount)
+                XCTAssertEqual(did, doc!.subject)
+                XCTAssertEqual(4, doc!.credentialCount)
 
                 let vcs = try store.listCredentials(for: did)
                 XCTAssertEqual(4, vcs.count)
@@ -770,11 +770,11 @@ class IDChainOperationsTest: XCTestCase {
 
             let modifiedDid = dids[0]
             var doc = try store.loadDid(modifiedDid)
-            let db = doc.editing()
+            let db = doc!.editing()
             _ = try db.appendService(with: "test1", type: "TestType", endpoint: "http://test.com/")
             doc = try db.sealed(using: storePass)
-            try store.storeDid(using: doc)
-            let modifiedSignature = doc.proof.signature
+            try store.storeDid(using: doc!)
+            let modifiedSignature = doc!.proof.signature
 
             print("Synchronizing again from IDChain...")
             try store.synchronize(using: storePass)
@@ -799,8 +799,8 @@ class IDChainOperationsTest: XCTestCase {
                 let did = try DID(did)
                 let doc = try store.loadDid(did)
                 XCTAssertNotNil(doc)
-                XCTAssertEqual(did, doc.subject)
-                XCTAssertEqual(4, doc.credentialCount)
+                XCTAssertEqual(did, doc!.subject)
+                XCTAssertEqual(4, doc!.credentialCount)
 
                 let vcs = try store.listCredentials(for: did)
                 XCTAssertEqual(4, vcs.count)
@@ -813,7 +813,7 @@ class IDChainOperationsTest: XCTestCase {
             }
 
             doc = try store.loadDid(modifiedDid)
-            XCTAssertEqual(modifiedSignature, doc.proof.signature)
+            XCTAssertEqual(modifiedSignature, doc!.proof.signature)
         } catch {
             XCTFail()
         }
@@ -853,8 +853,8 @@ class IDChainOperationsTest: XCTestCase {
                 let did = try DID(did)
                 let doc = try store.loadDid(did)
                 XCTAssertNotNil(doc)
-                XCTAssertEqual(did, doc.subject)
-                XCTAssertEqual(4, doc.credentialCount)
+                XCTAssertEqual(did, doc!.subject)
+                XCTAssertEqual(4, doc!.credentialCount)
 
                 let vcs = try store.listCredentials(for: did)
                 XCTAssertEqual(4, vcs.count)
@@ -868,13 +868,13 @@ class IDChainOperationsTest: XCTestCase {
 
             var modifiedDid = dids[0]
             var doc = try store.loadDid(modifiedDid)
-            var originSignature = doc.proof.signature
+            var originSignature = doc!.proof.signature
 
-            var db = doc.editing()
+            var db = doc!.editing()
             _ = try db.appendService(with: "test1", type: "TestType", endpoint: "http://test.com/")
             doc = try db.sealed(using: storePass)
-            try store.storeDid(using: doc)
-            XCTAssertNotEqual(originSignature, doc.proof.signature)
+            try store.storeDid(using: doc!)
+            XCTAssertNotEqual(originSignature, doc!.proof.signature)
 
             print("OK")
             try store.synchronize(using: storePass, conflictHandler: { (chain, loca) -> DIDDocument in
@@ -884,13 +884,13 @@ class IDChainOperationsTest: XCTestCase {
 
             modifiedDid = dids[0]
             doc = try store.loadDid(modifiedDid)
-            originSignature = doc.proof.signature
+            originSignature = doc!.proof.signature
 
-            db = doc.editing()
+            db = doc!.editing()
             _ = try db.appendService(with: "test1", type: "TestType", endpoint: "http://test.com/")
             doc = try db.sealed(using: storePass)
-            try store.storeDid(using: doc)
-            XCTAssertNotEqual(originSignature, doc.proof.signature)
+            try store.storeDid(using: doc!)
+            XCTAssertNotEqual(originSignature, doc!.proof.signature)
 
             print("Synchronizing again from IDChain...")
             try store.synchronize(using: storePass) { (chain, loca) -> DIDDocument in
@@ -917,8 +917,8 @@ class IDChainOperationsTest: XCTestCase {
                 let did = try DID(did)
                 let doc = try store.loadDid(did)
                 XCTAssertNotNil(doc)
-                XCTAssertEqual(did, doc.subject)
-                XCTAssertEqual(4, doc.credentialCount)
+                XCTAssertEqual(did, doc!.subject)
+                XCTAssertEqual(4, doc!.credentialCount)
 
                 let vcs = try store.listCredentials(for: did)
                 XCTAssertEqual(4, vcs.count)
@@ -931,7 +931,7 @@ class IDChainOperationsTest: XCTestCase {
             }
 
             doc = try store.loadDid(modifiedDid)
-            XCTAssertEqual(originSignature, doc.proof.signature)
+            XCTAssertEqual(originSignature, doc!.proof.signature)
         } catch {
             XCTFail()
         }
@@ -978,8 +978,8 @@ class IDChainOperationsTest: XCTestCase {
                 let did = try DID(did)
                 let doc = try store.loadDid(did)
                 XCTAssertNotNil(doc)
-                XCTAssertEqual(did, doc.subject)
-                XCTAssertEqual(4, doc.credentialCount)
+                XCTAssertEqual(did, doc!.subject)
+                XCTAssertEqual(4, doc!.credentialCount)
 
                 let vcs = try store.listCredentials(for: did)
                 XCTAssertEqual(4, vcs.count)
@@ -993,13 +993,13 @@ class IDChainOperationsTest: XCTestCase {
 
             let modifiedDid = dids[0]
             var doc = try store.loadDid(modifiedDid)
-            let originSignature = doc.proof.signature
+            let originSignature = doc!.proof.signature
 
-            let db = doc.editing()
+            let db = doc!.editing()
             _ = try db.appendService(with: "test1", type: "TestType", endpoint: "http://test.com/")
             doc = try db.sealed(using: storePass)
-            try store.storeDid(using: doc)
-            XCTAssertNotEqual(originSignature, doc.proof.signature)
+            try store.storeDid(using: doc!)
+            XCTAssertNotEqual(originSignature, doc!.proof.signature)
 
             print("Synchronizing again from IDChain...")
             lock = XCTestExpectation()
@@ -1029,8 +1029,8 @@ class IDChainOperationsTest: XCTestCase {
                 let did = try DID(did)
                 let doc = try store.loadDid(did)
                 XCTAssertNotNil(doc)
-                XCTAssertEqual(did, doc.subject)
-                XCTAssertEqual(4, doc.credentialCount)
+                XCTAssertEqual(did, doc!.subject)
+                XCTAssertEqual(4, doc!.credentialCount)
 
                 let vcs = try store.listCredentials(for: did)
                 XCTAssertEqual(4, vcs.count)
@@ -1043,7 +1043,7 @@ class IDChainOperationsTest: XCTestCase {
             }
 
             doc = try store.loadDid(modifiedDid)
-            XCTAssertEqual(originSignature, doc.proof.signature)
+            XCTAssertEqual(originSignature, doc!.proof.signature)
         } catch {
             XCTFail()
         }

@@ -70,8 +70,8 @@ public class DIDURL {
 
         do {
             try ParserHelper.parse(url, false, DIDURL.Listener(self))
-            Log.e(DIDURL.TAG, "Parsing didurl error: malformed didurl string \(url)")
         } catch {
+            Log.e(DIDURL.TAG, "Parsing didurl error: malformed didurl string \(url)")
             throw DIDError.malformedDIDURL("malformed DIDURL \(url)")
         }
     }

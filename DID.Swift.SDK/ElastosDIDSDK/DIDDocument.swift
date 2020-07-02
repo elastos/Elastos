@@ -150,7 +150,9 @@ public class DIDDocument {
         self._subject = doc.subject
         self._expirationDate = doc.expirationDate
         self._proof = doc.proof
-        self._meta = doc.getMetadata()
+        let metadata = doc.getMetadata()
+        metadata.clearLastModified()
+        self.setMetadata(metadata)
     }
 
     public var subject: DID {
@@ -764,7 +766,7 @@ public class DIDDocument {
         return re == 0 ? true : false
     }
 
-    private func fromJson(_ doc: JsonNode) throws {
+    private func parse(_ doc: JsonNode) throws {
         let serializer = JsonSerializer(doc)
         var options: JsonSerializer.Options
 
@@ -927,7 +929,7 @@ public class DIDDocument {
 
     class func convertToDIDDocument(fromJson: JsonNode) throws -> DIDDocument {
         let doc = DIDDocument()
-        try doc.fromJson(fromJson)
+        try doc.parse(fromJson)
 
         return doc
     }
@@ -945,7 +947,7 @@ public class DIDDocument {
         }
 
         let doc = DIDDocument()
-        try doc.fromJson(JsonNode(node!))
+        try doc.parse(JsonNode(node!))
 
         return doc
     }
@@ -1125,15 +1127,15 @@ public class DIDDocument {
 }
 
 extension DIDDocument: CustomStringConvertible {
-    func toString() -> String {
+    public func toString() -> String {
         return (try? toJson(false, false)) ?? ""
     }
     
-    func toString(_ force: Bool) -> String {
+    public func toString(_ force: Bool) -> String {
         return (try? toJson(force, false)) ?? ""
     }
 
-    func toString(_ force: Bool, forSign: Bool) -> String {
+    public func toString(_ force: Bool, forSign: Bool) -> String {
         return (try? toJson(force, forSign)) ?? ""
     }
 

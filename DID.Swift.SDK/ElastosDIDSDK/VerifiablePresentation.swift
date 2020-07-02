@@ -286,11 +286,14 @@ public class VerifiablePresentation {
     private class func editing(_ did: DID, _ signKey: DIDURL?,
                                _ store: DIDStore) throws -> VerifiablePresentationBuilder {
 
-        let signer: DIDDocument
+        let signer: DIDDocument?
         let useKey: DIDURL
 
         do {
             signer = try store.loadDid(did)
+            if signer == nil {
+                throw DIDError.didStoreError("Can not load DID.")
+            }
         } catch {
             throw DIDError.unknownFailure("Can not load DID")
         }
@@ -298,19 +301,19 @@ public class VerifiablePresentation {
         // If no 'signKey' provided, use default public key. Otherwise,
         // need to check whether 'signKey' is authenticationKey or not.
         if signKey == nil {
-            useKey = signer.defaultPublicKey
+            useKey = signer!.defaultPublicKey
         } else {
-            guard signer.containsAuthenticationKey(forId: signKey!) else {
-                throw DIDError.illegalArgument("Invalid sign key Id")
+            guard signer!.containsAuthenticationKey(forId: signKey!) else {
+                throw DIDError.illegalArgument("Not an authentication key.")
             }
             useKey = signKey!
         }
 
-        guard signer.containsPrivateKey(forId: useKey) else {
+        guard signer!.containsPrivateKey(forId: useKey) else {
             throw DIDError.unknownFailure(Errors.NO_PRIVATE_KEY_EXIST)
         }
 
-        return VerifiablePresentationBuilder(signer, useKey)
+        return VerifiablePresentationBuilder(signer!, useKey)
     }
 
     public class func editingVerifiablePresentationFor(did: DID,
