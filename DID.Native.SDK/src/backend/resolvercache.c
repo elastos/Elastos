@@ -120,7 +120,7 @@ int ResolveCache_Store(ResolveResult *result, DID *did)
 
     assert(result);
     assert(did);
-    
+
     if (get_file(path, 1, 2, rootpath, did->idstring) == -1) {
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create resolver cache entry failed.");
         return -1;
@@ -138,4 +138,15 @@ int ResolveCache_Store(ResolveResult *result, DID *did)
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Store resolver result data failed.");
 
     return rc;
+}
+
+void ResolveCache_Invalid(DID *did)
+{
+    char path[PATH_MAX];
+
+    assert(did);
+
+    if (get_file(path, 0, 2, rootpath, did->idstring) == 0)
+        delete_file(path);
+
 }

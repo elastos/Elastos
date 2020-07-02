@@ -55,6 +55,7 @@
 #include "didmeta.h"
 #include "credmeta.h"
 #include "HDkey.h"
+#include "resolvercache.h"
 
 #define MAX_PUBKEY_BASE58            128
 
@@ -2344,27 +2345,33 @@ bool DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
         last_txid = DIDMetaData_GetTxid(&resolve_doc->metadata);
 
         if (!force) {
+            resolve_signature = DIDDocument_GetProofSignature(resolve_doc);
+            if (!resolve_signature || !*resolve_signature) {
+                DIDError_Set(DIDERR_DIDSTORE_ERROR, "Missing document signature on chain.");
+                goto errorExit;
+            }
+
             local_signature = DIDMetaData_GetSignature(&doc->metadata);
             local_prevsignature = DIDMetaData_GetPrevSignature(&doc->metadata);
             if ((!local_signature || !*local_signature) && (!local_prevsignature || !*local_prevsignature)) {
                 DIDError_Set(DIDERR_DIDSTORE_ERROR,
-                        "Missing local document signature and previous signature, use force mode to ignore checks.");
+                        "Missing signatures information, DID SDK dosen't know how to handle it, use force mode to ignore checks.");
                 goto errorExit;
-            }
-
-            resolve_signature = DIDDocument_GetProofSignature(resolve_doc);
-            if (!resolve_signature || !*resolve_signature) {
-                DIDError_Set(DIDERR_DIDSTORE_ERROR, "Missing transaction id and signature on chain.");
-                goto errorExit;
-            }
-
-            if (local_signature && strcmp(local_signature, resolve_signature)) {
-                if (!local_prevsignature ||
-                        (local_prevsignature && strcmp(local_prevsignature, resolve_signature))) {
+            } else if (!local_signature || !local_prevsignature) {
+                const char *sig = local_signature != NULL ? local_signature : local_prevsignature;
+                if (strcmp(sig, resolve_signature)) {
                     DIDError_Set(DIDERR_DIDSTORE_ERROR,
                             "Current copy not based on the lastest on-chain copy.");
                     goto errorExit;
                 }
+            } else {
+                if (strcmp(local_signature, resolve_signature) &&
+                        strcmp(local_prevsignature, resolve_signature)) {
+                    DIDError_Set(DIDERR_DIDSTORE_ERROR,
+                            "Current copy not based on the lastest on-chain copy.");
+                    goto errorExit;
+                }
+
             }
         }
 
@@ -2376,6 +2383,7 @@ bool DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
     if (!successed)
         goto errorExit;
 
+    ResolveCache_Invalid(did);
     //Meta stores the resolved txid and local signature.
     DIDMetaData_SetSignature(&doc->metadata, DIDDocument_GetProofSignature(doc));
     if (resolve_signature)
@@ -2436,6 +2444,9 @@ bool DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
 
     successed = DIDBackend_Deactivate(&store->backend, &doc->did, signkey, storepass);
     DIDDocument_Destroy(doc);
+    if (successed)
+        ResolveCache_Invalid(did);
+
     return successed;
 }
 

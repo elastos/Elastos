@@ -850,7 +850,7 @@ static void test_idchain_publishdid_without_prevsignature_and_signature(void)
 
     successed = DIDStore_PublishDID(store, storepass, &did, NULL, false);
     CU_ASSERT_FALSE(successed);
-    CU_ASSERT_STRING_EQUAL("Missing local document signature and previous signature, use force mode to ignore checks.",
+    CU_ASSERT_STRING_EQUAL("Missing signatures information, DID SDK dosen't know how to handle it, use force mode to ignore checks.",
            DIDError_GetMessage());
 }
 

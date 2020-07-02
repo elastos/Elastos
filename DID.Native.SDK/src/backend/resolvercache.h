@@ -40,6 +40,8 @@ int ResolverCache_Load(ResolveResult *result, DID *did, long ttl);
 
 int ResolveCache_Store(ResolveResult *result, DID *did);
 
+void ResolveCache_Invalid(DID *did);
+
 #ifdef __cplusplus
 }
 #endif
