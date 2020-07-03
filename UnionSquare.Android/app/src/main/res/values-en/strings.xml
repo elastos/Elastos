@@ -682,13 +682,13 @@
     <string name="ctmemberlist">Council Member List</string>
     <string name="current">Current Term</string>
     <string name="voting">In Election</string>
-    <string name="pastitemtitle">the %1$d-th Term(%2$s)</string>
-    <string name="amember">the %1$s-th Term</string>
+    <string name="pastitemtitle">the %1$s Term(%2$s)</string>
+    <string name="amember">the %1$s Term</string>
     <string name="votemanager">Management</string>
     <string name="ctmanager">Management</string>
     <string name="refreshctinfo">Update Member Profile</string>
     <string name="refreshdidinfo">Update DID Info</string>
-    <string name="actmember">The %1$s-th Council</string>
+    <string name="actmember">The %1$s Council</string>
     <string name="ctdetail">Council Member Profile</string>
     <string name="impeachprogress">Impeachment Progress</string>
     <string name="currentvotes">Current Votes</string>

@@ -37,6 +37,7 @@ import org.elastos.wallet.ela.ui.committee.adaper.GeneralCtRecAdapter;
 import org.elastos.wallet.ela.ui.committee.adaper.SecretaryCtRecAdapter;
 import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
 import org.elastos.wallet.ela.ui.committee.presenter.CtListPresenter;
+import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +92,24 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, String.format(getString(R.string.actmember), String.valueOf(index)));
+        String stage =  index + "";
+        int Language = new SPUtil(getContext()).getLanguage();
+        if (Language != 0) {
+            switch (index) {
+                case 1:
+                    stage = "1st";
+                    break;
+                case 2:
+                    stage = "2nd";
+                    break;
+                case 3:
+                    stage = "3rd";
+                    break;
+                default:
+                    stage = stage + "th";
+            }
+        }
+        setToobar(toolbar, toolbarTitle, String.format(getString(R.string.actmember), stage));
 
         presenter = new CtListPresenter();
         presenter.getCouncilList(this, String.valueOf(index));

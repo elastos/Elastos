@@ -43,8 +43,10 @@
 
             <TextView
                 android:id="@+id/manager_btn"
-                android:layout_width="80dp"
-                android:layout_height="25dp"
+                android:layout_width="wrap_content"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"
+                android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_marginRight="15dp"
                 android:background="@drawable/ct_manager_item_btn_border"

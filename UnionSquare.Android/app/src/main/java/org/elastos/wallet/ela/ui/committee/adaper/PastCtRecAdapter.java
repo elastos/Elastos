@@ -36,6 +36,7 @@ import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.DateUtil;
+import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.util.List;
 
@@ -72,12 +73,30 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
                 String.format("%1$s — %2$s", DateUtil.formatTimestamp(data.getStartDate(), "yyyy.MM.dd"), DateUtil.formatTimestamp(data.getEndDate(), "yyyy.MM.dd")));
         String status = data.getStatus();
         viewHolder.manager.setVisibility(View.GONE);
+        String stage =  data.getIndex() + "";
+        int Language = new SPUtil(context).getLanguage();
+        if (Language != 0) {
+            switch (data.getIndex()) {
+                case 1:
+                    stage = "1st";
+                    break;
+                case 2:
+                    stage = "2nd";
+                    break;
+                case 3:
+                    stage = "3rd";
+                    break;
+                default:
+                    stage = stage + "th";
+            }
+        }
+
         if(AppUtlis.isNullOrEmpty(status) || status.equalsIgnoreCase("HISTORY")) {
             //往届
-            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), ""));
+            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), stage, ""));
         } else if(status.equalsIgnoreCase("CURRENT")) {
             //本届
-            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(),context.getString(R.string.current)));
+            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), stage,context.getString(R.string.current)));
             if(isCRC) {
                 //是委员且质押金大于0
                 viewHolder.manager.setText(context.getString(R.string.ctmanager));
@@ -88,15 +107,15 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
             isVoting = true;
             viewHolder.manager.setVisibility(View.VISIBLE);
             viewHolder.manager.setText(context.getString(R.string.votemanager));
-            viewHolder.title.setText(String.format(context.getString(R.string.amember), String.valueOf(data.getIndex())));
+            viewHolder.title.setText(String.format(context.getString(R.string.amember), stage));
         } else {
-            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), ""));
+            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), stage, ""));
         }
 
         if(isVoting && i==0) {
             viewHolder.manager.setVisibility(View.VISIBLE);
             viewHolder.manager.setText(context.getString(R.string.votemanager));
-            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), context.getString(R.string.voting)));
+            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), stage, context.getString(R.string.voting)));
         }
 
         if(null != managerListener) {

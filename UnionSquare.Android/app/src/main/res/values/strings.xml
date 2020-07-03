@@ -685,7 +685,7 @@
     <string name="ctmemberlist">CR委员会列表</string>
     <string name="current">本届</string>
     <string name="voting">选举中</string>
-    <string name="pastitemtitle">第%1$d届(%2$s)</string>
+    <string name="pastitemtitle">第%1$s届(%2$s)</string>
     <string name="amember">第%1$s届</string>
     <string name="votemanager">选举管理</string>
     <string name="ctmanager">委员管理</string>
