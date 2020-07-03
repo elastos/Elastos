@@ -230,4 +230,12 @@ export default class extends BaseService {
     })
     return rs
   }
+
+  async getSecretariat() {
+    const rs = await api_request({
+      path: `/api/council/council_secretariat`,
+      method: 'get'
+    })
+    return rs.secretariat
+  }
 }
