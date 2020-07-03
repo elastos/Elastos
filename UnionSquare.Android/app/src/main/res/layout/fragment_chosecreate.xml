@@ -62,6 +62,7 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:visibility="gone"
         android:id="@+id/rl_single_readomly"
         style="@style/settingItem_margin"
         android:layout_height="58dp"

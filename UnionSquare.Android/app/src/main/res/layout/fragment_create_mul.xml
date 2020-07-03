@@ -63,12 +63,15 @@
                         android:src="@mipmap/setting_list_arrow" />
                 </LinearLayout>
 
-                <View style="@style/line_margin15" />
+                <View
+                    style="@style/line_margin15"
+                    android:visibility="gone" />
 
                 <LinearLayout
                     style="@style/settingItem_margin15"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
                     <TextView
                         android:layout_width="0dp"

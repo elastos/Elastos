@@ -224,7 +224,6 @@
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
-        android:visibility="gone"
         android:orientation="horizontal">
 
         <TextView
@@ -254,7 +253,6 @@
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
-        android:visibility="gone"
         android:orientation="horizontal">
 
         <TextView
