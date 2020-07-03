@@ -1046,6 +1046,11 @@ namespace Elastos {
 			size_t peersCount;
 			std::vector<PeerInfo> save;
 
+			if (_chainID == CHAINID_IDCHAIN && _netType == "MainNet") {
+				peer->info("do not relay IDChain's peers for now");
+				return;
+			}
+
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 				peer->info("relayed {} peer(s), {} peer(s) before save", peers.size(), _peers.size());

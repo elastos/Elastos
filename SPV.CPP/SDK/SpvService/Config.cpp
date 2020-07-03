@@ -225,6 +225,11 @@ namespace Elastos {
 				ifs >> currentConfig;
 			}
 
+			if (netType == CONFIG_MAINNET) {
+				currentConfig = DefaultMainNetConfig;
+				changed = true;
+			}
+
 			if (currentConfig["NetType"] != netType) {
 				if (netType == CONFIG_MAINNET) {
 					currentConfig = DefaultMainNetConfig;
