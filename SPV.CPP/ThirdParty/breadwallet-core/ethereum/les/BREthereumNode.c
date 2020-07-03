@@ -1332,11 +1332,11 @@ nodeProcess (BREthereumNode node,
 
                 // Recv if we can.  Get a result for the provided route; on success dispatch to
                 // a protocol-specific (P2P, DIS, ETH, LES and PIP) handler.
-                BREthereumNodeMessageResult result = nodeRecv (node, route);
+                result = nodeRecv (node, route);
                 if (NODE_STATUS_ERROR == result.status)
                     return nodeProcessFailure (node, route, NULL, nodeStateCreateErrorProtocol (NODE_PROTOCOL_RLP_PARSE));
 
-                BREthereumMessage message = result.u.success.message;
+                message = result.u.success.message;
 
                 switch (message.identifier) {
                     case MESSAGE_P2P:

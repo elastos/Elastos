@@ -591,12 +591,12 @@ lesCreate (BREthereumNetwork network,
     // preserved.
     nodeEndpointSetStatus (les->localEndpoint,
                            messageP2PStatusCreate (0x00,  // ignored
-                                                   networkGetChainId(network),
-                                                   les->head.number,
-                                                   les->head.hash,
-                                                   les->head.totalDifficulty,
-                                                   les->genesisHash,
-                                                   LES_SUPPORT_GETH_ANNOUNCE_TYPE));
+												   networkGetNetworkId(network),
+												   les->head.number,
+												   les->head.hash,
+												   les->head.totalDifficulty,
+												   les->genesisHash,
+												   LES_SUPPORT_GETH_ANNOUNCE_TYPE));
     nodeEndpointShowStatus (les->localEndpoint);
 
     // Create the PTHREAD LOCK variable
