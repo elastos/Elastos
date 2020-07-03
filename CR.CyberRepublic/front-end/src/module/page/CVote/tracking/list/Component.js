@@ -90,7 +90,7 @@ export default class extends BaseComponent {
         itemLayout="horizontal"
         grid={{ column: 1 }}
         split={false}
-        dataSource={withdrawalHistory}
+        dataSource={_.filter(withdrawalHistory,'review')}
         renderItem={item => (
           <StyledPrivateItem actions={[]}>
             <StyledRow gutter={16}>
