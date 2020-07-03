@@ -2307,28 +2307,79 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *payload.CRCProposal:
-		var budgets []BudgetBaseInfo
-		for _, b := range object.Budgets {
-			budgets = append(budgets, BudgetBaseInfo{
-				Type:   b.Type.Name(),
-				Stage:  b.Stage,
-				Amount: b.Amount.String(),
-			})
+
+		switch object.ProposalType {
+		case payload.Normal, payload.ELIP:
+			var budgets []BudgetBaseInfo
+			for _, b := range object.Budgets {
+				budgets = append(budgets, BudgetBaseInfo{
+					Type:   b.Type.Name(),
+					Stage:  b.Stage,
+					Amount: b.Amount.String(),
+				})
+			}
+			obj := new(CRCProposalInfo)
+			obj.ProposalType = object.ProposalType.Name()
+			obj.CategoryData = object.CategoryData
+			obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
+			obj.DraftHash = ToReversedString(object.DraftHash)
+			obj.Budgets = budgets
+			addr, _ := object.Recipient.ToAddress()
+			obj.Recipient = addr
+			obj.Signature = common.BytesToHexString(object.Signature)
+			crmdid, _ := object.CRCouncilMemberDID.ToAddress()
+			obj.CRCouncilMemberDID = crmdid
+			obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilMemberSignature)
+			obj.Hash = ToReversedString(object.Hash())
+			return obj
+
+		case payload.ChangeProposalOwner:
+			obj := new(CRCChangeProposalOwnerInfo)
+			obj.ProposalType = object.ProposalType.Name()
+			obj.CategoryData = object.CategoryData
+			obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
+			obj.DraftHash = ToReversedString(object.DraftHash)
+			obj.TargetProposalHash = ToReversedString(object.TargetProposalHash)
+			addr, _ := object.Recipient.ToAddress()
+			obj.NewRecipient = addr
+			obj.NewOwnerPublicKey = common.BytesToHexString(object.NewOwnerPublicKey)
+			obj.Signature = common.BytesToHexString(object.Signature)
+			obj.NewOwnerSignature = common.BytesToHexString(object.NewOwnerSignature)
+			crmdid, _ := object.CRCouncilMemberDID.ToAddress()
+			obj.CRCouncilMemberDID = crmdid
+			obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilMemberSignature)
+			obj.Hash = ToReversedString(object.Hash())
+
+		case payload.CloseProposal:
+			obj := new(CRCCloseProposalInfo)
+			obj.ProposalType = object.ProposalType.Name()
+			obj.CategoryData = object.CategoryData
+			obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
+			obj.DraftHash = ToReversedString(object.DraftHash)
+			obj.TargetProposalHash = ToReversedString(object.TargetProposalHash)
+			obj.Signature = common.BytesToHexString(object.Signature)
+			crmdid, _ := object.CRCouncilMemberDID.ToAddress()
+			obj.CRCouncilMemberDID = crmdid
+			obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilMemberSignature)
+			obj.Hash = ToReversedString(object.Hash())
+
+		case payload.SecretaryGeneral:
+			obj := new(CRCSecretaryGeneralProposalInfo)
+			obj.ProposalType = object.ProposalType.Name()
+			obj.CategoryData = object.CategoryData
+			obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
+			obj.DraftHash = ToReversedString(object.DraftHash)
+			obj.SecretaryGeneralPublicKey = common.BytesToHexString(object.SecretaryGeneralPublicKey)
+			sgDID, _ := object.SecretaryGeneralDID.ToAddress()
+			obj.SecretaryGeneralDID = sgDID
+			obj.Signature = common.BytesToHexString(object.Signature)
+			obj.SecretaryGeneraSignature = common.BytesToHexString(object.SecretaryGeneraSignature)
+			crmdid, _ := object.CRCouncilMemberDID.ToAddress()
+			obj.CRCouncilMemberDID = crmdid
+			obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilMemberSignature)
+			obj.Hash = ToReversedString(object.Hash())
 		}
-		obj := new(CRCProposalInfo)
-		obj.ProposalType = object.ProposalType.Name()
-		obj.CategoryData = object.CategoryData
-		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
-		obj.DraftHash = ToReversedString(object.DraftHash)
-		obj.Budgets = budgets
-		addr, _ := object.Recipient.ToAddress()
-		obj.Recipient = addr
-		obj.Signature = common.BytesToHexString(object.Signature)
-		crmdid, _ := object.CRCouncilMemberDID.ToAddress()
-		obj.CRCouncilMemberDID = crmdid
-		obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilMemberSignature)
-		obj.Hash = ToReversedString(object.Hash())
-		return obj
+
 	case *payload.CRCProposalReview:
 		obj := new(CRCProposalReviewInfo)
 		obj.ProposalHash = ToReversedString(object.ProposalHash)
@@ -2358,6 +2409,13 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
+	case *payload.CRCProposalRealWithdraw:
+		obj := new(CRCProposalRealWithdrawInfo)
+		obj.WithdrawTransactionHashes = make([]string, 0)
+		for _, hash := range object.WithdrawTransactionHashes {
+			obj.WithdrawTransactionHashes =
+				append(obj.WithdrawTransactionHashes, hash.String())
+		}
 	}
 	return nil
 }
