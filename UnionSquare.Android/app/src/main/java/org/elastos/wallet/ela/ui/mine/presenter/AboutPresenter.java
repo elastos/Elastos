@@ -36,13 +36,9 @@ import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
 import org.elastos.wallet.ela.utils.CopyFile;
-import org.elastos.wallet.ela.utils.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.ArrayList;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -83,15 +79,20 @@ public class AboutPresenter extends PresenterAbstract {
             return null;
         }
         try {
-            File file1 = context.getExternalFilesDir("log");//目标文件夹
-            if (file.length() > 10485760) {
-                //大于10m压缩
-                File zipFile = new File(file1, "spvsdk.zip");
-                ZipUtils.zipFile(file, zipFile);
-                return zipFile.getAbsolutePath();
-            }
-            InputStream is = new FileInputStream(file);
-            OutputStream fosto = new FileOutputStream(file1 + File.separator + logName);
+            File srcFile = context.getExternalFilesDir("log");//目标文件夹
+            File srcFile1 = new File(rootPath, "spvsdk.log");//目标文件夹
+            File srcFile2 = new File(srcFile, "walletapp.log");//目标文件夹
+            //if (srcFile1.exists() || srcFile2.length() > 10485760) {
+            //大于10m压缩
+            File zipFile = new File(srcFile, "log.zip");
+            ArrayList<File> arrayList = new ArrayList<File>();
+            arrayList.add(srcFile1);
+            arrayList.add(srcFile2);
+            ZipUtils.zipFiles(arrayList, zipFile);
+            return zipFile.getAbsolutePath();
+            //  }
+            /*InputStream is = new FileInputStream(file);
+            OutputStream fosto = new FileOutputStream(srcFile + File.separator + logName);
             byte bt[] = new byte[1024];
             int c = 0;
             while ((c = is.read(bt)) > 0) {
@@ -99,7 +100,7 @@ public class AboutPresenter extends PresenterAbstract {
             }
             is.close();
             fosto.close();
-            return file1.getAbsolutePath() + File.separator +logName;
+            return srcFile.getAbsolutePath() + File.separator + logName;*/
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;

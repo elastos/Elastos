@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="org.elastos.wallet">
 
+    <!--<uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />-->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -83,6 +84,9 @@
             android:theme="@style/App" />
         <activity
             android:name="org.elastos.wallet.ela.ui.vote.activity.VertifyPwdActivity"
+            android:theme="@style/App" />
+        <activity
+            android:name="org.elastos.wallet.ela.utils.CrashDialog"
             android:theme="@style/App" />
 
         <provider

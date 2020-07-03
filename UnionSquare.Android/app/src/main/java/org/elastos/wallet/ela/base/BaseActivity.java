@@ -113,6 +113,7 @@ public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends
         unbinder = ButterKnife.bind(this);
         getExtra();
         initView();
+        //MyApplication.activities.add(this);
     }
 
     public void popBackFragment(View view) {
@@ -124,7 +125,7 @@ public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends
     protected void onDestroy() {
         super.onDestroy();
         unbinder.unbind();
-
+        //MyApplication.activities.remove(this);
     }
 
 

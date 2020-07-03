@@ -29,6 +29,7 @@ import android.webkit.WebView;
 import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
+import org.elastos.wallet.ela.utils.CrashHandler;
 import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.util.HashSet;
@@ -38,11 +39,15 @@ import io.realm.Realm;
 
 
 public class MyApplication extends MultiDexApplication {
-    private static MyApplication myApplication;
+    public static MyApplication myApplication;
     public static int currentWalletNet = WalletNet.MAINNET;
     private static MyWallet myWallet;
     public static Set<String> serverList = new HashSet<>();
     public static String REQUEST_BASE_URL;
+    // public static List<Activity> activities = new ArrayList<Activity>();
+
+
+//public  static void
 
     @Override
     public void onCreate() {
@@ -75,6 +80,7 @@ public class MyApplication extends MultiDexApplication {
             REQUEST_BASE_URL = WalletNet.PRVURL;
             useBugly();
         }
+        CrashHandler.getInstance().init(this);
 
     }
 

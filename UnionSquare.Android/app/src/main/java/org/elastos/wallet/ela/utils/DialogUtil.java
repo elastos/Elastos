@@ -97,7 +97,7 @@ public class DialogUtil {
     }
 
     @NonNull
-    private Dialog getDialogs(BaseActivity activity, @LayoutRes int id) {
+    private Dialog getDialogs(Context activity, @LayoutRes int id) {
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(id);
         dialog.setCanceledOnTouchOutside(false);
@@ -283,11 +283,11 @@ public class DialogUtil {
         return dialog;
     }
 
-    public void showTransferSucess(String dec,BaseActivity activity, WarmPromptListener listener) {
+    public void showTransferSucess(String dec, BaseActivity activity, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity, R.style.coustom_dialog);
         dialog.setContentView(R.layout.dialog_transfersuccess);
         TextView tv = dialog.findViewById(R.id.tv);
-        if (!TextUtils.isEmpty(dec)){
+        if (!TextUtils.isEmpty(dec)) {
             tv.setText(dec);
         }
         dialog.setCancelable(false);
@@ -361,14 +361,14 @@ public class DialogUtil {
         dialog.show();
     }
 
-    public void showCommonSelect(BaseActivity activity, String dec,String[] strings, WarmPromptListener listener) {
+    public void showCommonSelect(BaseActivity activity, String dec, String[] strings, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(R.layout.dialog_numberpicker);
         dialog.setCancelable(true);
         dialog.setCanceledOnTouchOutside(true);
         TextView tvSure = dialog.findViewById(R.id.tv_sure);
         TextView tvDec = dialog.findViewById(R.id.tv_dec);
-        if (dec!=null){
+        if (dec != null) {
             tvDec.setText(dec);
         }
         TextConfigNumberPicker numberPicker = dialog.findViewById(R.id.np);
@@ -405,14 +405,14 @@ public class DialogUtil {
         dialog.show();
     }
 
-    public void showTime(BaseActivity activity,String dec, long minDate, long maxDate, WarmPromptListener listener) {
+    public void showTime(BaseActivity activity, String dec, long minDate, long maxDate, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(R.layout.dialog_timepicker);
         dialog.setCancelable(true);
         dialog.setCanceledOnTouchOutside(true);
         TextView tvSure = dialog.findViewById(R.id.tv_sure);
         TextView tvDec = dialog.findViewById(R.id.tv_dec);
-        if (dec!=null){
+        if (dec != null) {
             tvDec.setText(dec);
         }
         TextConfigDataPicker datePicker = dialog.findViewById(R.id.np);
@@ -528,26 +528,52 @@ public class DialogUtil {
         });
         dialog.show();
     }
-/*    public static void showComTextPopup(EditText view, Context context, List<String> textList) {
-        int x = view.getWidth();
-        RecyclerView recyclerView = (RecyclerView) LayoutInflater.from(context).inflate(R.layout.popup_text, null);
-        PopupWindow popupWindow = new PopupWindow(recyclerView, x, ViewGroup.LayoutParams.WRAP_CONTENT, true);
-        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        // 设置PopupWindow是否能响应外部点击事件
-        //popupWindow.setOutsideTouchable(true);
-        // popupWindow.setTouchable(true);
-        popupWindow.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
-        TextAdapter adapter = new TextAdapter(textList, context);
-        adapter.setOnItemOnclickListner(new TextAdapter.OnItemClickListner() {
-            @Override
-            public void onItemClick(View v, int position, String text) {
-                view.setText(text);
-                popupWindow.dismiss();
-            }
+
+    /*    public static void showComTextPopup(EditText view, Context context, List<String> textList) {
+            int x = view.getWidth();
+            RecyclerView recyclerView = (RecyclerView) LayoutInflater.from(context).inflate(R.layout.popup_text, null);
+            PopupWindow popupWindow = new PopupWindow(recyclerView, x, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+            popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            // 设置PopupWindow是否能响应外部点击事件
+            //popupWindow.setOutsideTouchable(true);
+            // popupWindow.setTouchable(true);
+            popupWindow.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
+            recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
+            TextAdapter adapter = new TextAdapter(textList, context);
+            adapter.setOnItemOnclickListner(new TextAdapter.OnItemClickListner() {
+                @Override
+                public void onItemClick(View v, int position, String text) {
+                    view.setText(text);
+                    popupWindow.dismiss();
+                }
+            });
+            recyclerView.setAdapter(adapter);
+            popupWindow.showAsDropDown(view, 0, 0);
+            //  return popupWindow;
+        }*/
+    public void showSystemError(Context context, NewWarmPromptListener listener) {
+        Dialog dialog = getDialogs(context, R.layout.dialog_apperro);
+
+        ImageView ivCancel = dialog.findViewById(R.id.iv_cancel);
+        TextView tvCancel = dialog.findViewById(R.id.tv_cancel);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+
+
+        ivCancel.setOnClickListener(v -> {
+            listener.onCancel(v);
+            dialogDismiss(dialog);
         });
-        recyclerView.setAdapter(adapter);
-        popupWindow.showAsDropDown(view, 0, 0);
-        //  return popupWindow;
-    }*/
+
+        tvCancel.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            listener.onCancel(v);
+
+        });
+
+        tvSure.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            listener.affireBtnClick(v);
+        });
+        dialog.show();
+    }
 }
