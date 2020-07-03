@@ -134,6 +134,7 @@ export default class extends Base {
         ])
         const result = await getProposalData(proposalHash)
         const registerHeight = result && result.data.registerheight
+        const { proposedEnds, notificationEnds} = await ela.calHeightTime(registerHeight)
         const doc: any = {
             vid,
             type: suggestion.type,
@@ -149,7 +150,9 @@ export default class extends Base {
             ownerPublicKey: suggestion.ownerPublicKey,
             planIntro: suggestion.planIntro,
             budgetIntro: suggestion.budgetIntro,
-            registerHeight
+            registerHeight,
+            proposedEnds: new Date(proposedEnds),
+            notificationEnds: new Date(notificationEnds)
         }
 
         Object.assign(doc, _.pick(suggestion, BASE_FIELDS))
@@ -679,7 +682,10 @@ export default class extends Base {
             'proposedAt',
             'createdAt',
             'voteResult',
-            'vote_map'
+            'vote_map',
+            'registerHeight',
+            'proposedEnds',
+            'notificationEnds'
         ]
 
         // const list = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
@@ -1878,5 +1884,28 @@ export default class extends Base {
 
             }
         })
+    }
+
+    public async processOldData() {
+        const db_cvote = this.getDBModel('CVote')
+        const oldList = await db_cvote.find({ registerHeight:{$exists:false}, old:{$exists:false} })
+        _.forEach(oldList, async (o: any)=> {
+            const result = await getProposalData(o.proposalHash)
+            if (result == undefined) return
+            const registerHeight = result !== undefined && result.data.registerheight
+            const { proposedEnds, notificationEnds} = await ela.calHeightTime(registerHeight)
+            await db_cvote.update({_id:o._id},{
+                $set:{
+                    registerHeight,
+                    proposedEnds: new Date(proposedEnds),
+                    notificationEnds: new Date(notificationEnds)
+                }
+            })
+        })
+    }
+
+    public async getRegisterHeight() {
+        const registerHeight = await ela.height()
+        return registerHeight
     }
 }

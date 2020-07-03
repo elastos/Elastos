@@ -17,6 +17,8 @@ const JOB_NAME = {
   COUNCILREVIEWJOB: 'council review',
   TRANSACTIONJOB: 'append transaction',
   NOTIFICATIONCOUNCILVOTE: 'notification council to vote',
+  UPDATECURRENTHEIGHT: 'update current height',
+  PROCESSOLDDATAONCE: 'process old data once'
 }
 
 agenda.define(JOB_NAME.UPDATEMILESTONE, async (job: any) => {
@@ -136,6 +138,26 @@ agenda.define(JOB_NAME.NOTIFICATIONCOUNCILVOTE, async (job: any) => {
     console.log('',err)
   }
 })
+agenda.define(JOB_NAME.UPDATECURRENTHEIGHT, async (job: any) => {
+  try{
+    const DB = await db.create()
+    const elaTransactionService = new ElaTransactionService(DB, { user: undefined })
+    await elaTransactionService.updateCurrentHeight()
+    console.log(JOB_NAME.UPDATECURRENTHEIGHT, 'at working')
+  }catch (err) {
+    console.log('',err)
+  }
+})
+agenda.define(JOB_NAME.PROCESSOLDDATAONCE, async (job: any) => {
+  try{
+    const DB = await db.create()
+    const cvoteService = new CVoteServive(DB, { user: undefined })
+    await cvoteService.processOldData()
+    console.log(JOB_NAME.PROCESSOLDDATAONCE, 'at working')
+  }catch (err) {
+    console.log('',err)
+  }
+})
 ;(async function () {
   console.log('------cron job starting------')
   await agenda.start()
@@ -147,4 +169,6 @@ agenda.define(JOB_NAME.NOTIFICATIONCOUNCILVOTE, async (job: any) => {
   await agenda.every('2 minutes', JOB_NAME.COUNCILREVIEWJOB)
   await agenda.every('1 minutes', JOB_NAME.TRANSACTIONJOB)
   await agenda.every('1 minutes', JOB_NAME.NOTIFICATIONCOUNCILVOTE)
+  await agenda.every('1 minutes', JOB_NAME.UPDATECURRENTHEIGHT)
+  await agenda.now(JOB_NAME.PROCESSOLDDATAONCE)
 })()
