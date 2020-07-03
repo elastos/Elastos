@@ -222,4 +222,12 @@ export default class extends BaseService {
     })
     return rs
   }
+
+  async getCurrentheight() {
+    const rs = await api_request({
+      path: `/api/cvote/get_current_height`,
+      method: 'get'
+    })
+    return rs
+  }
 }

@@ -40,7 +40,12 @@ import {
   FilterClearBtn,
   CheckboxText,
   SplitLabel,
-  ViewOldDataBtn
+  ViewOldDataBtn,
+  CurrentHeight,
+  CurrentHeightImg,
+  CurrentHeightTitle,
+  CurrentHeightContent,
+  CurrentHeightFooter
 } from './style'
 
 const { RangePicker } = DatePicker
@@ -236,14 +241,20 @@ export default class extends BaseComponent {
         dataIndex: 'proposedBy'
       },
       {
+        title: I18N.get('council.voting.voteByCouncil'),
+        render: (id, item) => this.voteDataByUser(item)
+      },
+      {
         title: I18N.get('council.voting.votingEndsIn'),
         dataIndex: 'proposedAt',
         key: 'endsIn',
         render: (proposedAt, item) => this.renderEndsIn(item)
       },
       {
-        title: I18N.get('council.voting.voteByCouncil'),
-        render: (id, item) => this.voteDataByUser(item)
+        title: I18N.get('council.voting.communityEndsIn'),
+        dataIndex: 'proposedAt',
+        key: 'endsIn',
+        render: (proposedAt, item) => this.renderCommunityEndsIn(item)
       },
       {
         title: I18N.get('council.voting.status'),
@@ -368,11 +379,13 @@ export default class extends BaseComponent {
          )
        */
     }
+    const currentHeight = this.renderCurrentHeight()
 
     return (
       <div>
         <Meta title="Cyber Republic - Elastos" />
         <Container>
+          {currentHeight}
           {createBtn}
           <Row
             type="flex"
@@ -424,6 +437,22 @@ export default class extends BaseComponent {
           {createBtn}
         </Container>
       </div>
+    )
+  }
+
+  renderCurrentHeight = () => {
+    const { currentHeight } = this.state
+    return (
+      <CurrentHeight>
+        <CurrentHeightContent>
+          <CurrentHeightImg src={'/assets/images/Elastos_Logo.png'}></CurrentHeightImg>
+          <CurrentHeightTitle>
+            {I18N.get('proposal.fields.currentHeight')}:
+          </CurrentHeightTitle>
+          {currentHeight ? currentHeight.toLocaleString() : 0}
+          <CurrentHeightFooter />
+        </CurrentHeightContent>
+      </CurrentHeight>
     )
   }
 
@@ -522,7 +551,7 @@ export default class extends BaseComponent {
       5: I18N.get('council.voting.type.process'),
       6: I18N.get('council.voting.type.information')
     }
-    const { listData, canManage } = this.props
+    const { listData, canManage, getCurrentheight } = this.props
     const param = this.getQuery()
     const page = 1
     try {
@@ -530,6 +559,7 @@ export default class extends BaseComponent {
         param,
         canManage
       )
+      console.log(allListData)
       const dataCSV = []
       dataCSV.push([
         I18N.get('council.voting.number'),
@@ -537,6 +567,7 @@ export default class extends BaseComponent {
         I18N.get('council.voting.type'),
         I18N.get('council.voting.author'),
         I18N.get('council.voting.votingEndsIn'),
+        I18N.get('council.voting.communityEndsIn'),
         I18N.get('council.voting.voteByCouncil'),
         I18N.get('council.voting.status'),
         I18N.get('council.voting.proposedAt')
@@ -548,6 +579,7 @@ export default class extends BaseComponent {
           PROPOSAL_TYPE[v.type],
           v.proposedBy,
           this.renderEndsInForCSV(v),
+          this.renderCommunityEndsInForCSV(v),
           this.voteDataByUserForCSV(v),
           this.renderStatus(v.status),
           _.replace(
@@ -557,16 +589,17 @@ export default class extends BaseComponent {
           )
         ])
       })
-
       // const page = sessionStorage.getItem('proposalPage')
       param.page = page
       param.results = 10
       const { list, total } = await listData(param, canManage)
+      const rs = await getCurrentheight()
       this.setState({
         list,
         alllist: dataCSV,
         total,
-        page: (page && parseInt(page)) || 1
+        page: (page && parseInt(page)) || 1,
+        currentHeight: rs
       })
     } catch (error) {
       logger.error(error)
@@ -618,37 +651,58 @@ export default class extends BaseComponent {
 
   renderBaseEndsIn = (item, isCSV = false) => {
     if (item.status === CVOTE_STATUS.DRAFT) return null
+    if (item.status !== CVOTE_STATUS.PROPOSED) return I18N.get('council.voting.votingEndsIn.finished')
     // only show when status is PROPOSED
+    return this.renderVoteEndsIn(item.proposedEnds, item.registerHeight)
+  }
+
+  renderCommunityEndsIn = (item) => {
+    return this.renderCommunityBaseEndsIn(item)
+  }
+
+  renderCommunityEndsInForCSV = (item) => {
+    return this.renderCommunityBaseEndsIn(item, true)
+  }
+
+  renderCommunityBaseEndsIn = (item, isCSV = false) => {
+    if (item.status === CVOTE_STATUS.DRAFT) return null
+    if (item.status === CVOTE_STATUS.PROPOSED) return '--'
+    if (item.status !== CVOTE_STATUS.NOTIFICATION) return I18N.get('council.voting.votingEndsIn.finished')
+    // only show when status is PROPOSED
+    return this.renderVoteEndsIn(item.notificationEnds, item.registerHeight)
+  }
+
+  renderVoteEndsIn = (ends, height) => {
     let endsInFloat = moment
       .duration(
-        moment(item.proposedAt || item.createdAt)
-          .add(7, 'd')
+        moment(ends)
           .diff(moment())
       )
-      .as('days')
-    if (item.status == CVOTE_STATUS.NOTIFICATION) {
-      endsInFloat = moment
-        .duration(
-          moment(item.proposedAt || item.createdAt)
-            .add(14, 'd')
-            .diff(moment())
-        )
-        .as('days')
+      .as('minutes')
+    let surplusTime = Math.ceil(endsInFloat / 60 / 24) + ' ' + I18N.get('council.voting.votingEndsIn.days')
+    if (endsInFloat > 0 && endsInFloat <= 60) {
+      surplusTime = Math.ceil(endsInFloat) + ' ' + I18N.get('council.voting.votingEndsIn.minutes')
     }
-    if (
-      (item.status !== CVOTE_STATUS.PROPOSED &&
-        item.status !== CVOTE_STATUS.NOTIFICATION) ||
-      endsInFloat <= 0
-    ) {
-      return I18N.get('council.voting.votingEndsIn.ended')
+    if (endsInFloat > 60 && endsInFloat <= 60 * 24) {
+      const hours = moment.duration(moment(ends).diff(moment())).get('h')
+      const minute = moment.duration(moment(ends).diff(moment())).get('m')
+      surplusTime = hours + ' ' +
+        I18N.get('council.voting.votingEndsIn.hours') + ' ' +
+        minute + ' ' +
+        I18N.get('council.voting.votingEndsIn.minutes')
     }
-    if (endsInFloat > 0 && endsInFloat <= 1) {
-      const oneDay = `1 ${I18N.get('council.voting.votingEndsIn.day')}`
-      return isCSV ? oneDay : <span style={{ color: 'red' }}>{oneDay}</span>
+    if (endsInFloat > 60 * 24 && endsInFloat <= 60 * 24 * 2) {
+      const days = moment.duration(moment(ends).diff(moment())).get('d')
+      const hours = moment.duration(moment(ends).diff(moment())).get('h')
+      surplusTime = days + ' ' +
+        I18N.get('council.voting.votingEndsIn.days') + ' ' +
+        hours + ' ' +
+        I18N.get('council.voting.votingEndsIn.hours')
     }
-    return `${Math.ceil(endsInFloat)} ${I18N.get(
-      'council.voting.votingEndsIn.days'
-    )}`
+    return <span style={{ whiteSpace: 'pre-wrap' }}>
+      {`${height}\n(${I18N.get(
+        'council.voting.votingEndsIn.approx')}. ${surplusTime})`}
+    </span>
   }
 
   renderStatus = (status) => {
@@ -658,7 +712,10 @@ export default class extends BaseComponent {
   renderProposed = (published, createdAt) => {
     const lang = localStorage.getItem('lang') || 'en'
     const format = lang === 'en' ? 'MMM D, YYYY' : 'YYYY-MM-DD'
-    return published && moment(createdAt).format(format)
+    const formatTime = 'hh:mm:ss'
+    const proposed = published && moment(createdAt).format(format)
+    const detailTime = published && moment(createdAt).format(formatTime)
+    return <span style={{ whiteSpace: 'pre-wrap' }}>{proposed + '\n' + detailTime}</span>
   }
 
   voteDataByUser = (data) => {
@@ -696,12 +753,12 @@ export default class extends BaseComponent {
     return isCSV ? (
       percentageStr
     ) : (
-      <VoteStats
-        percentage={percentageStr}
-        values={voteArr}
-        yes={proposalAgreed}
-      />
-    )
+        <VoteStats
+          percentage={percentageStr}
+          values={voteArr}
+          yes={proposalAgreed}
+        />
+      )
   }
 
   renderFilterPanel = (PROPOSAL_TYPE) => {

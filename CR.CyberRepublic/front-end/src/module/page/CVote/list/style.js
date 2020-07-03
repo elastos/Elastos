@@ -153,3 +153,45 @@ export const ViewOldDataBtn = styled.div`
     color: #388582;
   }
 `
+export const CurrentHeight = styled.div`
+  width: 100%;
+  height: 149px;
+  margin-left: 0px;
+`
+export const CurrentHeightTitle = styled.div`
+  position: absolute;
+  width: 157px;
+  height: 24px;
+  top: -30px;
+  left: 40px;
+  font-family: komu-a;
+  font-size: 24px;
+  line-height: 24px;
+  color: #031E28;
+`
+export const CurrentHeightImg = styled.img`
+  position: absolute;
+  width: 24px;
+  height: 22px;
+  top: -30px;
+`
+export const CurrentHeightContent = styled.div`
+  position: absolute;
+  height: 76px;
+  right: 108px;
+  top: 191px;
+  font-family: Synthese;
+  font-weight: bold;
+  font-size: 70px;
+  line-height: 75px;
+  z-index: 10;
+  color: #0F2631;
+`
+export const CurrentHeightFooter = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 8px;
+  bottom: 0;
+  z-index: -1;
+  background: #1DE9B6;
+`
