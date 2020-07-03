@@ -68,8 +68,11 @@ public class Metadata: NSObject {
         defer {
             reader.closeFile()
         }
-        let metaString = String(data: data, encoding: .utf8)!
-        let node = JsonNode(metaString)
+
+        let json = try JSONSerialization.jsonObject(with: data, options: .mutableContainers)
+        let dic = json as! Dictionary<String, Any>
+        let node = JsonNode(dic)
+
         try load(node)
     }
 

@@ -649,7 +649,7 @@ public class DIDDocument {
 
     public func saveMetadata() throws {
         if _meta != nil && _meta!.attachedStore {
-           try  _meta!.store?.storeDidMeta(_meta!, for: subject)
+           try  _meta!.store?.storeDidMetadata(_meta!, for: subject)
         }
     }
 

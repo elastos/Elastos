@@ -64,7 +64,7 @@ public class DID {
 
     public func saveMetadata() throws {
         if (_meta != nil && _meta!.attachedStore) {
-            try _meta?.store?.storeDidMeta(_meta!, for: self)
+            try _meta?.store?.storeDidMetadata(_meta!, for: self)
         }
     }
 

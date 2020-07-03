@@ -539,7 +539,7 @@ public class DIDStore: NSObject {
                 else if localPrevSignature == nil || localSignature == nil {
                     let ls = localPrevSignature != nil ? localPrevSignature : localSignature
                     if ls != reolvedSignautre {
-                        Log.e(DIDStore.TAG ,"Missing signatures information, DID SDK dosen't know how to handle it, use force mode to ignore checks.")
+                        Log.e(DIDStore.TAG ,"Current copy not based on the lastest on-chain copy, txid mismatch.")
                         throw DIDError.didStoreError("DID document not up-to-date")
                     }
                 }
@@ -975,12 +975,18 @@ public class DIDStore: NSObject {
         }
     }
     
-    func storeDidMeta(_ meta: DIDMeta, for did: DID) throws {
+    func storeDidMetadata(_ meta: DIDMeta, for did: DID) throws {
         try storage.storeDidMetadata(did, meta)
+        if (documentCache != nil) {
+            let doc = documentCache?.getValue(for: did)
+            if (doc != nil) {
+                doc!.setMetadata(meta)
+            }
+        }
     }
     
-    func storeDidMeta(_ meta: DIDMeta, for did: String) throws {
-        try storeDidMeta(meta, for: try DID(did))
+    func storeDidMetadata(_ meta: DIDMeta, for did: String) throws {
+        try storeDidMetadata(meta, for: try DID(did))
     }
     
     func loadDidMeta(for did: DID) throws -> DIDMeta {
