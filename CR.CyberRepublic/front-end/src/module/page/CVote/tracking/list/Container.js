@@ -1,6 +1,7 @@
 import { createContainer } from '@/util'
 import Component from './Component'
 import CVoteTrackingService from '@/service/CVoteTrackingService'
+import CVoteService from '@/service/CVoteService'
 
 const mapState = state => ({
   isSecretary: state.user.is_secretary,
@@ -9,6 +10,7 @@ const mapState = state => ({
 
 const mapDispatch = () => {
   const service = new CVoteTrackingService()
+  const secretariatService = new CVoteService()
   return {
     async create(param) {
       return service.create(param)
@@ -22,6 +24,10 @@ const mapDispatch = () => {
     async listData(param) {
       return service.listData(param)
     },
+    async getSecretariat() {
+      const rs = secretariatService.getSecretariat()
+      return rs
+    }
   }
 }
 

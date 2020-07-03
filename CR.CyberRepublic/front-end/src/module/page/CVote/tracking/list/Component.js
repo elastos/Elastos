@@ -28,10 +28,12 @@ export default class extends BaseComponent {
   ord_render() {
     const title = this.renderTitle()
     const privateListNode = this.renderPrivateList()
+    const withdrawalListNode = this.renderWithdrawalList()
     return (
       <Container>
         {title}
-        {privateListNode}
+        {/* {privateListNode} */}
+        {withdrawalListNode}
       </Container>
     )
   }
@@ -55,7 +57,7 @@ export default class extends BaseComponent {
               <LeftCol span={21} status={item.status}>
                 <StyledRichContent>
                   <DraftEditor
-                    value={item.content}
+                    value={item.message}
                     contentType={CONTENT_TYPE.MARKDOWN}
                     editorEnabled={false}
                   />
@@ -67,6 +69,53 @@ export default class extends BaseComponent {
               </RightCol>
             </StyledRow>
             {this.renderActions(item)}
+          </StyledPrivateItem>
+        )}
+      />
+    )
+    return (
+      <StyledCollapse defaultActiveKey={['1']} expandIconPosition="right">
+        <Panel header={I18N.get('proposal.text.tracking.reviewDetails')} key="1">
+          {body}
+        </Panel>
+      </StyledCollapse>
+    )
+  }
+
+  renderWithdrawalList() {
+    const { withdrawalHistory } = this.props.proposal
+    if (!withdrawalHistory || withdrawalHistory.length === 0) return null
+    const body = (
+      <List
+        itemLayout="horizontal"
+        grid={{ column: 1 }}
+        split={false}
+        dataSource={_.filter(withdrawalHistory,'review')}
+        renderItem={item => (
+          <StyledPrivateItem actions={[]}>
+            <StyledRow gutter={16}>
+              <LeftCol span={21} status={item.review ? item.review.opinion : 'REVIEWING'}>
+                <StyledRichContent span={21}>
+                  <DraftEditor
+                    value={item.message}
+                    contentType={CONTENT_TYPE.MARKDOWN}
+                    editorEnabled={false}
+                  />
+                </StyledRichContent>
+                <StyledFooter>
+                  {moment(item.createdAt).format(DATE_FORMAT)} , 
+                  {`${I18N.get('suggestion.budget.milestone')} #${Number(
+                    item.milestoneKey
+                  ) + 1}`}
+                </StyledFooter>
+              </LeftCol>
+              <RightCol span={3}>
+                <Status status={item.review ? item.review.opinion : 'REVIEWING'}>
+                  {I18N.get(`proposal.status.withdrawal.${item.review ? item.review.opinion : 'REVIEWING'}`)}
+                  </Status>
+              </RightCol>
+            </StyledRow>
+            {this.renderWithdrawalActions(item)}
           </StyledPrivateItem>
         )}
       />
@@ -201,6 +250,39 @@ export default class extends BaseComponent {
     )
   }
 
+  renderWithdrawalActions(item) {
+    const { secretariat } = this.state
+    let body
+    if (item.review !== undefined){
+      body = (
+        <CommentCol span={21} status={item.review.opinion}>
+          <CommentContent>
+            <div>
+              {item.review.reason.split('\n').map((item, key) => {
+                return (
+                  <span key={key}>
+                    {item}
+                    <br/>
+                  </span>
+                )
+              })}
+            </div>
+            <CommentFooter>
+              { secretariat && secretariat.didName ? secretariat.didName + " , " : null}
+              {moment(item.review.createdAt).format(DATE_FORMAT)}
+            </CommentFooter>
+          </CommentContent>
+        </CommentCol>
+      )
+    }
+
+    return (
+      <StyledRow gutter={16}>
+        {body}
+      </StyledRow>
+    )
+  }
+
   getQuery = () => {
     const query = {
       proposalId: _.get(this.props, 'proposal._id')
@@ -210,7 +292,9 @@ export default class extends BaseComponent {
 
   refetch = async () => {
     this.ord_loading(true)
-    const { listData } = this.props
+    const { listData,getSecretariat } = this.props
+    const secretariat =  await getSecretariat()
+    this.setState({secretariat})
     const param = this.getQuery()
     await listData(param)
     this.ord_loading(false)
@@ -231,6 +315,14 @@ const colorMap = {
     dark: '#CCCCCC',
     light: 'rgba(204, 204, 204, 0.2)',
   },
+  REJECTED: {
+    dark: '#BE1313',
+    light: 'rgba(252, 192, 192, 0.2)',
+  },
+  APPROVED: {
+    dark: '#43AF92',
+    light: 'rgba(29, 233, 182, 0.1)',
+  }
 }
 
 

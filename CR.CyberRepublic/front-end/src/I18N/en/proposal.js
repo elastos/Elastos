@@ -1,6 +1,7 @@
 import {
   CVOTE_TRACKING_STATUS,
   CVOTE_SUMMARY_STATUS,
+  CVOTE_WITHDRAWAL_STATUS,
   ABSTRACT_MAX_WORDS
 } from '@/constant'
 
@@ -32,7 +33,8 @@ export default {
     isUnvotedByYou: 'Unvoted by You',
     creationDate: 'Proposal Date',
     author: 'Author',
-    endsDate: 'Ends In'
+    endsDate: 'Ends In',
+    currentHeight: 'Current Block Height'
   },
   btn: {
     tracking: {
@@ -88,6 +90,11 @@ export default {
       [CVOTE_SUMMARY_STATUS.REVIEWING]: 'BEING REVIEWED',
       [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED',
       [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED'
+    },
+    withdrawal: {
+      [CVOTE_WITHDRAWAL_STATUS.REVIEWING]: 'BEING REVIEWED',
+      [CVOTE_WITHDRAWAL_STATUS.APPROVED]: 'APPROVED ✓',
+      [CVOTE_WITHDRAWAL_STATUS.REJECTED]: 'REJECTED !',
     }
   },
   form: {

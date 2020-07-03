@@ -1,6 +1,7 @@
 import {
   CVOTE_TRACKING_STATUS,
   CVOTE_SUMMARY_STATUS,
+  CVOTE_WITHDRAWAL_STATUS,
   ABSTRACT_MAX_WORDS
 } from '@/constant'
 
@@ -32,7 +33,8 @@ export default {
     isUnvotedByYou: '未被自己投票的提案',
     creationDate: '创建日期',
     author: '作者',
-    endsDate: '结束日期'
+    endsDate: '结束日期',
+    currentHeight: '当前高度'
   },
   btn: {
     tracking: {
@@ -88,6 +90,11 @@ export default {
       [CVOTE_SUMMARY_STATUS.REVIEWING]: '审阅中',
       [CVOTE_SUMMARY_STATUS.PUBLISHED]: '已批准',
       [CVOTE_SUMMARY_STATUS.REJECT]: '被驳回'
+    },
+    withdrawal: {
+      [CVOTE_WITHDRAWAL_STATUS.REVIEWING]: '审阅中',
+      [CVOTE_WITHDRAWAL_STATUS.APPROVED]: '已批准 ✓',
+      [CVOTE_WITHDRAWAL_STATUS.REJECTED]: '被驳回 !',
     }
   },
   form: {

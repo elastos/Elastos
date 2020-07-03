@@ -132,6 +132,9 @@ export default class extends Base {
             db_user.findById(suggestion.createdBy),
             db_user.findOne({'did.id': `did:elastos:${chainDid}`})
         ])
+        const result = await getProposalData(proposalHash)
+        const registerHeight = result && result.data.registerheight
+        const { proposedEnds, notificationEnds} = await ela.calHeightTime(registerHeight)
         const doc: any = {
             vid,
             type: suggestion.type,
@@ -144,7 +147,12 @@ export default class extends Base {
             reference: suggestion._id,
             proposalHash,
             draftHash: suggestion.draftHash,
-            ownerPublicKey: suggestion.ownerPublicKey
+            ownerPublicKey: suggestion.ownerPublicKey,
+            planIntro: suggestion.planIntro,
+            budgetIntro: suggestion.budgetIntro,
+            registerHeight,
+            proposedEnds: new Date(proposedEnds),
+            notificationEnds: new Date(notificationEnds)
         }
 
         Object.assign(doc, _.pick(suggestion, BASE_FIELDS))
@@ -448,26 +456,39 @@ export default class extends Base {
         mail.send(mailObj)
     }
 
-    private async notifyCouncilToVote() {
+    public async notifyCouncilToVote(DateTime: any) {
         // find cvote before 1 day expiration without vote yet for each council member
         const db_cvote = this.getDBModel('CVote')
         const nearExpiredTime =
-            Date.now() - (constant.CVOTE_EXPIRATION - constant.ONE_DAY)
-        const unvotedCVotes = await db_cvote
+            Date.now() - (constant.CVOTE_COUNCIL_EXPIRATION - DateTime)
+        const createTime = DateTime == constant.ONE_DAY ? 
+            Date.now() - constant.CVOTE_COUNCIL_EXPIRATION
+            :
+            Date.now() - constant.CVOTE_COUNCIL_EXPIRATION + constant.ONE_DAY
+        const isNotifiedThreeDay = DateTime == constant.THREE_DAY ? false : true
+        const isNotifiedOneDay = DateTime == constant.ONE_DAY ? true : false
+        let unvotedCVotes = await db_cvote
             .getDBInstance()
             .find({
                 proposedAt: {
                     $lt: nearExpiredTime,
-                    $gt: Date.now() - constant.CVOTE_EXPIRATION
+                    $gt: createTime
                 },
-                notified: {$ne: true},
-                status: constant.CVOTE_STATUS.PROPOSED
+                notified: isNotifiedThreeDay,
+                status: constant.CVOTE_STATUS.PROPOSED,
+                'voteResult.value': constant.CVOTE_RESULT.UNDECIDED,
+                old: {
+                    $exists: false
+                }
             })
             .populate(
                 'voteResult.votedBy',
                 constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
             )
-
+        if (DateTime == constant.ONE_DAY) {
+            unvotedCVotes = _.filter(unvotedCVotes,['notifiedOneDay',false])
+        } 
+        const promptTime = DateTime == constant.ONE_DAY ? '24 hours' : '3 days'
         _.each(unvotedCVotes, (cvote) => {
             _.each(cvote.voteResult, (result) => {
                 if (result.value === constant.CVOTE_RESULT.UNDECIDED) {
@@ -475,7 +496,7 @@ export default class extends Base {
                     const {title, _id} = cvote
                     const subject = `Proposal Vote Reminder: ${title}`
                     const body = `
-            <p>You only got 24 hours to vote this proposal:</p>
+            <p>You only got ${promptTime} to vote this proposal:</p>
             <br />
             <p>${title}</p>
             <br />
@@ -493,7 +514,7 @@ export default class extends Base {
                     mail.send(mailObj)
 
                     // update notified to true
-                    db_cvote.update({_id: cvote._id}, {$set: {notified: true}})
+                    db_cvote.update({_id: cvote._id}, {$set: {notified:true, notifiedOneDay:isNotifiedOneDay}})
                 }
             })
         })
@@ -655,7 +676,10 @@ export default class extends Base {
             'proposedAt',
             'createdAt',
             'voteResult',
-            'vote_map'
+            'vote_map',
+            'registerHeight',
+            'proposedEnds',
+            'notificationEnds'
         ]
 
         // const list = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
@@ -1858,5 +1882,28 @@ export default class extends Base {
 
             }
         })
+    }
+
+    public async processOldData() {
+        const db_cvote = this.getDBModel('CVote')
+        const oldList = await db_cvote.find({ registerHeight:{$exists:false}, old:{$exists:false} })
+        _.forEach(oldList, async (o: any)=> {
+            const result = await getProposalData(o.proposalHash)
+            if (result == undefined) return
+            const registerHeight = result !== undefined && result.data.registerheight
+            const { proposedEnds, notificationEnds} = await ela.calHeightTime(registerHeight)
+            await db_cvote.update({_id:o._id},{
+                $set:{
+                    registerHeight,
+                    proposedEnds: new Date(proposedEnds),
+                    notificationEnds: new Date(notificationEnds)
+                }
+            })
+        })
+    }
+
+    public async getRegisterHeight() {
+        const registerHeight = await ela.height()
+        return registerHeight
     }
 }
