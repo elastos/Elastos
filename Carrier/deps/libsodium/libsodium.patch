@@ -1,10 +1,11 @@
-diff -ru libsodium-1.0.11/libsodium.vcxproj libsodium-1.0.11-mod/libsodium.vcxproj
---- libsodium-1.0.11/libsodium.vcxproj	2016-05-29 22:48:02.000000000 +0800
-+++ libsodium-1.0.11-mod/libsodium.vcxproj	2018-06-03 21:33:55.000000000 +0800
+diff --git a/libsodium.vcxproj b/libsodium.vcxproj
+index e3b20729..ddff7d4a 100644
+--- a/libsodium.vcxproj
++++ b/libsodium.vcxproj
 @@ -1,4 +1,4 @@
 -﻿<?xml version="1.0" encoding="utf-8"?>
 +<?xml version="1.0" encoding="utf-8"?>
- <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
    <ItemGroup Label="ProjectConfigurations">
      <ProjectConfiguration Include="DebugDLL|Win32">
 @@ -45,56 +45,56 @@
@@ -72,9 +73,10 @@ diff -ru libsodium-1.0.11/libsodium.vcxproj libsodium-1.0.11-mod/libsodium.vcxpr
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
-diff -ru libsodium-1.0.11/msvc-scripts/sodium.props libsodium-1.0.11-mod/msvc-scripts/sodium.props
---- libsodium-1.0.11/msvc-scripts/sodium.props	2016-05-29 22:48:02.000000000 +0800
-+++ libsodium-1.0.11-mod/msvc-scripts/sodium.props	2018-06-03 21:32:46.000000000 +0800
+diff --git a/msvc-scripts/sodium.props b/msvc-scripts/sodium.props
+index 41e1e471..6c611681 100644
+--- a/msvc-scripts/sodium.props
++++ b/msvc-scripts/sodium.props
 @@ -1,8 +1,15 @@
 -﻿<?xml version="1.0" encoding="utf-8"?>
 +<?xml version="1.0" encoding="utf-8"?>
