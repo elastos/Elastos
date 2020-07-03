@@ -253,7 +253,7 @@ export default class extends BaseComponent {
       {
         title: I18N.get('council.voting.communityEndsIn'),
         dataIndex: 'proposedAt',
-        key: 'endsIn',
+        key: 'CommunityendsIn',
         render: (proposedAt, item) => this.renderCommunityEndsIn(item)
       },
       {
@@ -559,7 +559,6 @@ export default class extends BaseComponent {
         param,
         canManage
       )
-      console.log(allListData)
       const dataCSV = []
       dataCSV.push([
         I18N.get('council.voting.number'),
