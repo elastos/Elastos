@@ -173,7 +173,7 @@ export default {
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: '阶段支付',
     goal: '目标',
     milestone: '里程碑',
-    introduction: '预算简介'
+    introduction: '预算说明'
   },
   plan: {
     teamMember: '团队成员',
@@ -191,7 +191,7 @@ export default {
     hideDetail: '隐藏详细信息',
     selectDate: '选择日期',
     milestone: '里程碑',
-    introduction: '里程碑简介'
+    introduction: '实施说明'
   },
   label: {
     hasMadeIntoProposal: '已经将此建议发布为'

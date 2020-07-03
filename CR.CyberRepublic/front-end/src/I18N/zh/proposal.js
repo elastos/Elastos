@@ -32,7 +32,8 @@ export default {
     isUnvotedByYou: '未被自己投票的提案',
     creationDate: '创建日期',
     author: '作者',
-    endsDate: '结束日期'
+    endsDate: '结束日期',
+    currentHeight: '当前高度'
   },
   btn: {
     tracking: {

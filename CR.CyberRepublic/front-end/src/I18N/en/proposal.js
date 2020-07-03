@@ -32,7 +32,8 @@ export default {
     isUnvotedByYou: 'Unvoted by You',
     creationDate: 'Proposal Date',
     author: 'Author',
-    endsDate: 'Ends In'
+    endsDate: 'Ends In',
+    currentHeight: 'Current Block Height'
   },
   btn: {
     tracking: {

@@ -172,7 +172,7 @@ export default {
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Project Milestone Payment',
     goal: 'Goal',
     milestone: 'milestone',
-    introduction: 'Budget Introduction'
+    introduction: 'Budget Statement'
   },
   plan: {
     teamMember: 'Team Member',
@@ -190,7 +190,7 @@ export default {
     hideDetail: 'Hide Detail',
     selectDate: 'Select date',
     milestone: 'Milestone',
-    introduction: 'Milestone Introduction'
+    introduction: 'Plan Statement'
   },
   label: {
     hasMadeIntoProposal: 'has made it into'
