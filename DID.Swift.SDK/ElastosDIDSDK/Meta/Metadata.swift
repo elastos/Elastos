@@ -106,24 +106,21 @@ public class Metadata: NSObject {
         return _extra[key] as Any
     }
 
-    private func save(generator: JsonGenerator) throws {
+    private func save(_ generator: JsonGenerator) throws {
         generator.writeStartObject()
+
         try _extra.forEach { (key, value) in
-
             if case Optional<Any>.none = value {
-                return
-            }
-
-            if value is Int {
+                // Continue
+            } else if value is Int {
                 generator.writeNumberField(key, value as! Int)
-            }
-            else if value is String {
+            } else if value is Bool {
+                generator.writeBoolField(key, value as! Bool)
+            } else if value is String {
                 generator.writeStringField(key, value as! String)
-            }
-            else if value is Date {
+            } else if value is Date {
                 generator.writeStringField(key, DateHelper.formateDate(value as! Date))
-            }
-            else {
+            } else {
                 throw DIDError.malformedMeta("Can not serialize attribute: \(key)")
             }
         }
@@ -134,14 +131,15 @@ public class Metadata: NSObject {
         defer {
             path.closeFile()
         }
+
         let generator = JsonGenerator()
-        try save(generator: generator)
+        try save(generator)
         path.write(generator.toString().data(using: .utf8)!)
     }
 
     public func toJson() throws -> String {
         let generator = JsonGenerator()
-        try save(generator: generator)
+        try save(generator)
 
         return generator.toString()
     }

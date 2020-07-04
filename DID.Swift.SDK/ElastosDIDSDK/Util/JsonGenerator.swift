@@ -217,6 +217,11 @@ class JsonGenerator {
         writeNumber(value)
     }
 
+    func writeBoolField(_ name: String, _ value: Bool) {
+        writeFieldName(name)
+        writeBool(value)
+    }
+
     func toString() -> String {
         let output = buffer
         buffer = ""
