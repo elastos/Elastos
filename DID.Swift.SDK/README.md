@@ -23,36 +23,55 @@ $ open -a Xcode ElastosDIDSDK.xcworkspace
 
 ### 1.Build DID NDK
 
-You need to build DID iOS ndk distributions from the DID native repository with following github address.
+Before to build the whole workspace, native library distributions targeting at iPhone device should be built from DID native repository with following commands on macOS:
 
 ```
-https://github.com/elastos/Elastos.NET.DID.Native.SDK
+$ git clone https://github.com/elastos/Elastos.DID.Native.SDK.git
+$ cd Elastos.DID.Native.SDK/build
+$ mkdir -p iphoneos
+$ cd iphoneos
+$ cmake -DHDKEY_ONLY=ON \
+        -DIOS_PLATFORM="iphoneos" \
+        -DCMAKE_TOOLCHAIN_FILE=../../cmake/iOSToolchain.cmake \
+        ../..
+$ make install
 ```
 
-Finished building iOS NDKs for DID, you would need native output libraries **'lipo'ed** with serveral CPU architectures supported. Currently, only **x86-64** and **arm64** CPU architectures are supported.
+Where you also can use **iphonesimulator** option to build for iPhone simulator under new directory with appropriate name:
 
-The output static libraries would be listed under **"_dist/lipo"** directory in DID Native source.
+```
+$ cd Elastos.DID.Native.SDK/build
+$ mkdir -p iphonesimulator
+$ cd iphoneosimulator
+$ cmake -DHDKEY_ONLY=ON \
+        -DIOS_PLATFORM="iphonesimulator" \
+        -DCMAKE_TOOLCHAIN_FILE=../../cmake/iOSToolchain.cmake \
+        ../..
+$ make install
+```
+
+Noticed that only the architectures of **x86-64** (simulator) and **am64** (device) are supported.
 
 ### 2.Import DID NDK
 
-The directory **"Externals/HDKey"** to import native shared libraries and headers should have following directory structure:
+The directory **"Externals/HDKey"** would rely on native shared libraries built from upper step, and should have following directory structure:
 
 ```
 Externals/HDKey
    |--include
-       |--crypto.h
-       |--HDkey.h
-       |--CHDKey.swift
+       |-- crypto.h
+       |-- HDkey.h
+       |-- CHDKey.swift
    |--libs
-       |-- PLACEHOLDER.md
+       |--PLACEHOLDER.md
        （Please read the PLACEHOLDER.md）
 ```
 
-The headers under subdirectory **"include"** are public header files from DID native.
+Then follow the instruction of **PLACEHOLDER.md** , and import native headers and libraries with the specific locations.
 
 ### 3. Build DID SDK
 
-After importing dependencies from DID native, you need Apple Xcode to open this project and build DID iOS SDK.
+Once all native dependencies are ready,  use **Apple Xcode** to open the workspace and start to build for **Swift DID SDK**.
 
 ### 4. Output
 
