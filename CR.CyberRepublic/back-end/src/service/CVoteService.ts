@@ -1893,17 +1893,16 @@ export default class extends Base {
 
     public async processOldData() {
         const db_cvote = this.getDBModel('CVote')
-        const oldList = await db_cvote.find({ registerHeight:{$exists:false}, old:{$exists:false} })
+        const oldList = await db_cvote.find({ proposedEndsHeight:{$exists:false}, old:{$exists:false} })
         _.forEach(oldList, async (o: any)=> {
             const result = await getProposalData(o.proposalHash)
             if (result == undefined) return
             const registerHeight = result !== undefined && result.data.registerheight
-            const { proposedEnds, notificationEnds} = await ela.calHeightTime(registerHeight)
             await db_cvote.update({_id:o._id},{
                 $set:{
                     registerHeight,
-                    proposedEnds: new Date(proposedEnds),
-                    notificationEnds: new Date(notificationEnds)
+                    proposedEndsHeight: registerHeight + STAGE_BLOCAKS,
+                    notificationEndsHeight: registerHeight + STAGE_BLOCAKS * 2
                 }
             })
         })
