@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <openssl/obj_mac.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,6 +50,9 @@ extern "C" {
 #define SPANISH                        "spanish"
 
 #define HARDENED                       0x80000000
+#ifndef NID_X9_62_prime256v1
+#define NID_X9_62_prime256v1           415
+#endif
 
 typedef struct HDKey {
     uint8_t depth;
