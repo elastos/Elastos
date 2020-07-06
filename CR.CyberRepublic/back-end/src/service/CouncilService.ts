@@ -329,6 +329,7 @@ export default class extends Base {
       DID_PREFIX + currentSecretariatDID
     )
     const didName = await getDidName(DID_PREFIX + currentSecretariatDID)
+
     const user = await this.userMode
       .getDBInstance()
       .findOne({ 'did.id': DID_PREFIX + currentSecretariatDID }, ['_id', 'did'])
@@ -363,18 +364,33 @@ export default class extends Base {
     }
 
     if (user && user.did) {
+      const { USER_ROLE } = constant
+      let fields: any = {}
+      if (user.role !== USER_ROLE.SECRETARY) {
+        fields.role = USER_ROLE.SECRETARY
+      }
       const did = this.filterNullField({
         'did.avatar': _.get(information, 'avatar'),
         'did.didName': didName,
         'did.compressedPublicKey': secretariatPublicKey
       })
-      // add public key into user's did
-      await this.userMode.getDBInstance().update(
-        { _id: user._id },
-        {
-          $set: did
+      if (!_.isEmpty(did)) {
+        const keys = Object.keys(did)
+        for (let i = 0; i < keys.length; i++) {
+          const key = keys[i]
+          if (did[key] !== _.get(user, key)) {
+            fields[key] = did[key]
+          }
         }
-      )
+      }
+      if (!_.isEmpty(fields)) {
+        await this.userMode.getDBInstance().update(
+          { _id: user._id },
+          {
+            $set: fields
+          }
+        )
+      }
     }
   }
 
