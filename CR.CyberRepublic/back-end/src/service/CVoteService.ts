@@ -81,6 +81,7 @@ const CHAIN_STATUS_TO_PROPOSAL_STATUS = {
 }
 
 const DID_PREFIX = 'did:elastos:'
+const STAGE_BLOCAKS = 7 * 720
 
 export default class extends Base {
     // create a DRAFT propoal with minimal info
@@ -151,6 +152,8 @@ export default class extends Base {
             planIntro: suggestion.planIntro,
             budgetIntro: suggestion.budgetIntro,
             registerHeight,
+            proposedEndsHeight: registerHeight + STAGE_BLOCAKS,
+            notificationEndsHeight: registerHeight + STAGE_BLOCAKS * 2,
             proposedEnds: new Date(proposedEnds),
             notificationEnds: new Date(notificationEnds)
         }
@@ -684,6 +687,8 @@ export default class extends Base {
             'voteResult',
             'vote_map',
             'registerHeight',
+            'proposedEndsHeight',
+            'notificationEndsHeight',
             'proposedEnds',
             'notificationEnds'
         ]
