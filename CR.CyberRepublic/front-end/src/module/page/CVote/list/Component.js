@@ -678,7 +678,7 @@ export default class extends BaseComponent {
           .diff(moment())
       )
       .as('minutes')
-    let surplusTime = Math.floor(endsInFloat / 60 / 24) + ' ' + I18N.get('council.voting.votingEndsIn.days')
+    let surplusTime = Math.ceil(endsInFloat / 60 / 24) + ' ' + I18N.get('council.voting.votingEndsIn.days')
     if (endsInFloat > 0 && endsInFloat <= 60) {
       surplusTime = Math.ceil(endsInFloat) + ' ' + I18N.get('council.voting.votingEndsIn.minutes')
     }
