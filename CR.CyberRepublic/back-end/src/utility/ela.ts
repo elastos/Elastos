@@ -165,8 +165,8 @@ const ela = {
     },
     async calHeightTime(height) {
         const oneMinute = 1000 * 60
-        const mProposed = (DEFAULT_BLOCK_HEIGHT_PRO * 2 + 30) * oneMinute
-        const mNotification = (DEFAULT_BLOCK_HEIGHT_PRO * 2 * 2 + 30) * oneMinute
+        const mProposed = (DEFAULT_BLOCK_HEIGHT_PRO * 2 - 30) * oneMinute
+        const mNotification = (DEFAULT_BLOCK_HEIGHT_PRO * 2 * 2 - 30) * oneMinute
         const startTime = await this.getTimestampByHeight(height)
         const proposedEnds = mProposed + startTime * 1000
         const notificationEnds = mNotification + startTime * 1000

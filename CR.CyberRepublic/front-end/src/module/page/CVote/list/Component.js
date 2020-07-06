@@ -663,7 +663,7 @@ export default class extends BaseComponent {
 
   renderCommunityBaseEndsIn = (item, isCSV = false) => {
     if (item.status === CVOTE_STATUS.DRAFT) return null
-    if (item.status === CVOTE_STATUS.PROPOSED) return '--'
+    if (item.status === CVOTE_STATUS.PROPOSED || item.status === CVOTE_STATUS.REJECT) return '--'
     if (item.status !== CVOTE_STATUS.NOTIFICATION) return I18N.get('council.voting.votingEndsIn.finished')
     // only show when status is PROPOSED
     return this.renderVoteEndsIn(item.notificationEnds, item.registerHeight)
