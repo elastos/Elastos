@@ -214,6 +214,12 @@ export const CVote = {
   registerHeight: {
     type: Number
   },
+  proposedEndsHeight: {
+    type: Number
+  },
+  notificationEndsHeight: {
+    type: Number
+  },
   proposedEnds: {
     type: Date
   },
