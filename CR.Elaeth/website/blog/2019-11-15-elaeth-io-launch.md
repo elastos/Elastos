@@ -1,7 +1,6 @@
 ---
 title: 2019-11-15 - Elaeth.io Launch
 author: Harry Liu
-authorURL: http://twitter.com/jiyangxixi
 ---
 
 ### Welcome to the new Elaeth.io Website

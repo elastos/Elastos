@@ -1,7 +1,6 @@
 ---
 title: 2019-11-15 - ETH Task Force - Sep and Oct 2019 Report
 author: Harry Liu
-authorURL: http://twitter.com/jiyangxixi
 ---
 
 ETH Task Force Sep and Oct 2019 Report
