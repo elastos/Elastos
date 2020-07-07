@@ -117,7 +117,9 @@ export default {
     pleaseUpdate: '请按照需求更新建议，并通过评论通知委员或社区',
     commentsFromCouncil: '来自委员或管理员的评论:',
     consideration: '您确定要将此建议标记为委员会正在审议中？',
-    signNotice: '您的建议签名之后，才能被委员审核。您不能修改签名后的建议。',
+    signNotice: '准备好让理事会成员进行审查了吗？',
+    signNoticeNow:'请立即签名建议。',
+    signNoticeNote:'注意：签名后，您将无法编辑建议。',
     signNow: '签名',
     signLater: '稍后'
   },

@@ -116,7 +116,9 @@ export default {
     pleaseUpdate: `Please update the Suggestion with the requested info and notify the council/community through a comment.`,
     commentsFromCouncil: 'Comments from Council/Admin:',
     consideration: `Are you sure to mark this suggestion as under council consideration?`,
-    signNotice: `Ready for council members to review? Please sign the suggestion now. A suggestion can not be edited if it was signed.`,
+    signNotice: `Ready for council members to review?`,
+    signNoticeNow: 'Please sign the suggestion now.',
+    signNoticeNote: 'Note: You can not edit the suggestion once it is signed.',
     signNow: 'Sign Now',
     signLater: 'Later'
   },

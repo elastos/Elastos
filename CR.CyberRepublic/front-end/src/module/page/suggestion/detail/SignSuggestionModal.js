@@ -88,7 +88,13 @@ class SignSuggestionModal extends Component {
     }
     return (
       <Content>
-        <Notice>{I18N.get('suggestion.modal.signNotice')}</Notice>
+        <Notice>
+          {I18N.get('suggestion.modal.signNotice')}
+          <br />
+          {I18N.get('suggestion.modal.signNoticeNow')}
+          <br /><br />
+          {I18N.get('suggestion.modal.signNoticeNote')}
+        </Notice>
         <Button
           className="cr-btn cr-btn-default"
           onClick={() => {
@@ -143,4 +149,8 @@ const Notice = styled.div`
   font-size: 16px;
   color: #000;
   margin-bottom: 24px;
+  text-align: left;
+  margin-left: 50px;
+  margin-right: 50px;
+
 `
