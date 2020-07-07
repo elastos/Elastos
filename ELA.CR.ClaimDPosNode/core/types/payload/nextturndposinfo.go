@@ -14,6 +14,8 @@ type NextTurnDPOSInfo struct {
 	WorkingHeight  uint32
 	CRPublickeys   [][]byte
 	DPOSPublicKeys [][]byte
+
+	hash *common.Uint256
 }
 
 func (n *NextTurnDPOSInfo) Data(version byte) []byte {
@@ -106,4 +108,14 @@ func (n *NextTurnDPOSInfo) DeserializeUnsigned(r io.Reader, version byte) error 
 		n.DPOSPublicKeys = append(n.DPOSPublicKeys, DPOSPublicKey)
 	}
 	return nil
+}
+
+func (n *NextTurnDPOSInfo) Hash() common.Uint256 {
+	if n.hash == nil {
+		buf := new(bytes.Buffer)
+		n.SerializeUnsigned(buf, NextTurnDPOSInfoVersion)
+		hash := common.Hash(buf.Bytes())
+		n.hash = &hash
+	}
+	return *n.hash
 }

@@ -420,6 +420,33 @@ func (tx *Transaction) IsIllegalTypeTx() bool {
 	return tx.IsIllegalProposalTx() || tx.IsIllegalVoteTx() || tx.IsIllegalBlockTx() || tx.IsSidechainIllegalDataTx()
 }
 
+//special tx is this kind of tx who have no input and output
+func (tx *Transaction) IsSpecialTx() bool {
+	if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() || tx.IsNextTurnDPOSInfoTx() {
+		return true
+	}
+	return false
+}
+
+func (tx *Transaction) GetSpecialTxHash() (common.Uint256, error) {
+	switch tx.TxType {
+	case IllegalProposalEvidence, IllegalVoteEvidence,
+		IllegalBlockEvidence, IllegalSidechainEvidence, InactiveArbitrators:
+		illegalData, ok := tx.Payload.(payload.DPOSIllegalData)
+		if !ok {
+			return common.Uint256{}, errors.New("special tx payload cast failed")
+		}
+		return illegalData.Hash(), nil
+	case NextTurnDPOSInfo:
+		payloadData, ok := tx.Payload.(*payload.NextTurnDPOSInfo)
+		if !ok {
+			return common.Uint256{}, errors.New("NextTurnDPOSInfo tx payload cast failed")
+		}
+		return payloadData.Hash(), nil
+	}
+	return common.Uint256{}, errors.New("wrong TxType not special tx")
+}
+
 func (tx *Transaction) IsIllegalProposalTx() bool {
 	return tx.TxType == IllegalProposalEvidence
 }

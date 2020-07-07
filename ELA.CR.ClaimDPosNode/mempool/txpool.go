@@ -175,6 +175,13 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 				mp.doRemoveTransaction(blockTx)
 				deleteCount++
 			}
+			if blockTx.IsNextTurnDPOSInfoTx() {
+				payloadHash, err := blockTx.GetSpecialTxHash()
+				if err != nil {
+					continue
+				}
+				blockchain.DefaultLedger.Blockchain.GetState().RemoveSpecialTx(payloadHash)
+			}
 			continue
 		}
 

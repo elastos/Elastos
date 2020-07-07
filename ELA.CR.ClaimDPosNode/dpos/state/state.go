@@ -809,12 +809,23 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 	case types.IllegalProposalEvidence, types.IllegalVoteEvidence,
 		types.IllegalBlockEvidence, types.IllegalSidechainEvidence:
 		s.processIllegalEvidence(tx.Payload, height)
-		s.recordSpecialTx(tx, height)
+
+		payloadHash, err := tx.GetSpecialTxHash()
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		s.recordSpecialTx(payloadHash, height)
 
 	case types.InactiveArbitrators:
 		s.processEmergencyInactiveArbitrators(
 			tx.Payload.(*payload.InactiveArbitrators), height)
-		s.recordSpecialTx(tx, height)
+		payloadHash, err := tx.GetSpecialTxHash()
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		s.recordSpecialTx(payloadHash, height)
 
 	case types.ReturnDepositCoin:
 		s.returnDeposit(tx, height)
@@ -1301,19 +1312,19 @@ func (s *State) processEmergencyInactiveArbitrators(
 }
 
 // recordSpecialTx record hash of a special tx
-func (s *State) recordSpecialTx(tx *types.Transaction, height uint32) {
-	illegalData, ok := tx.Payload.(payload.DPOSIllegalData)
-	if !ok {
-		log.Error("special tx payload cast failed, tx:", tx.Hash())
-		return
-	}
-
-	hash := illegalData.Hash()
+func (s *State) recordSpecialTx(hash common.Uint256, height uint32) {
 	s.history.Append(height, func() {
 		s.SpecialTxHashes[hash] = struct{}{}
 	}, func() {
 		delete(s.SpecialTxHashes, hash)
 	})
+}
+
+// removeSpecialTx record hash of a special tx
+func (s *State) RemoveSpecialTx(hash common.Uint256) {
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	delete(s.SpecialTxHashes, hash)
 }
 
 // processIllegalEvidence takes the illegal evidence payload and change producer

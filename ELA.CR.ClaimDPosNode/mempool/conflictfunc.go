@@ -66,6 +66,15 @@ func hashSpecialTxHash(tx *types.Transaction) (interface{}, error) {
 	return illegalData.Hash(), nil
 }
 
+func hashNextTurnDPOSInfoTxPayloadHash(tx *types.Transaction) (interface{}, error) {
+	payload, ok := tx.Payload.(*payload.NextTurnDPOSInfo)
+	if !ok {
+		return nil, fmt.Errorf(
+			"NextTurnDPOSInfo tx payload cast failed, tx:%s", tx.Hash())
+	}
+	return payload.Hash(), nil
+}
+
 // strings related functions
 func strCancelProducerOwnerPublicKey(tx *types.Transaction) (interface{},
 	error) {

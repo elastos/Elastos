@@ -333,6 +333,10 @@ func newConflictManager() conflictManager {
 						Type: types.InactiveArbitrators,
 						Func: hashSpecialTxHash,
 					},
+					keyTypeFuncPair{
+						Type: types.NextTurnDPOSInfo,
+						Func: hashNextTurnDPOSInfoTxPayloadHash,
+					},
 				),
 			},
 			// side chain transaction hashes
