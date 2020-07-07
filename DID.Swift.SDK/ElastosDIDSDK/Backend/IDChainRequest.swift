@@ -106,7 +106,7 @@ class IDChainRequest: NSObject {
 
             let cInput = json.toUnsafePointerUInt8()
             let cPayload = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
-            let re = base64_url_encode(cPayload, cInput, json.count)
+            let re = base64_url_encode(cPayload, cInput, json.lengthOfBytes(using: .utf8))
             cPayload[re] = 0
             self._payload = String(cString: cPayload)
 
