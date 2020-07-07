@@ -139,7 +139,7 @@ export default class extends Base {
         const { proposedEnds, notificationEnds} = await ela.calHeightTime(registerHeight)
         let proposedEndsHeight = registerHeight + STAGE_BLOCAKS
         let notificationEndsHeight = registerHeight + STAGE_BLOCAKS * 2
-        if (process.env.NODE_ENV === 'dev') {
+        if (process.env.NODE_ENV === 'staging') {
             proposedEndsHeight = registerHeight + STAGE_BLOCAKS_DEV
             notificationEndsHeight = registerHeight + STAGE_BLOCAKS_DEV * 2
         }
@@ -720,7 +720,7 @@ export default class extends Base {
         const list = _.map(rs[0], (o: any) => {
             let proposedEnds = (o.proposedEndsHeight - currentHeight) * 2 - 30
             let notificationEnds = (o.notificationEndsHeight - currentHeight) * 2 - 30
-            if (process.env.NODE_ENV === 'dev') {
+            if (process.env.NODE_ENV === 'staging') {
                 proposedEnds = (o.proposedEndsHeight - currentHeight) * 252 - 30
                 notificationEnds = (o.notificationEndsHeight - currentHeight) * 252 - 30
             }
@@ -1919,7 +1919,7 @@ export default class extends Base {
             const registerHeight = result !== undefined && result.data.registerheight
             let proposedEndsHeight = registerHeight + STAGE_BLOCAKS
             let notificationEndsHeight = registerHeight + STAGE_BLOCAKS * 2
-            if (process.env.NODE_ENV === 'dev') {
+            if (process.env.NODE_ENV === 'staging') {
                 proposedEndsHeight = registerHeight + STAGE_BLOCAKS_DEV
                 notificationEndsHeight = registerHeight + STAGE_BLOCAKS_DEV * 2
             }
