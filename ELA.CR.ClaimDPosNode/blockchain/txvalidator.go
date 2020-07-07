@@ -1088,6 +1088,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.CRAssetsRectify:
 	case *payload.CRCProposalRealWithdraw:
 	case *payload.NextTurnDPOSInfo:
+	case *payload.CRDPOSManagement:
 
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")

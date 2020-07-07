@@ -1779,11 +1779,10 @@ func newCRDPOSManagement(L *lua.LState) int {
 	fmt.Println("crManagementPublicKeyStr", crManagementPublicKeyStr)
 	fmt.Println("crManagementPrivateKeyStr", crManagementPrivateKeyStr)
 	fmt.Println("crCommitteeDIDStr", crCommitteeDIDStr)
-	fmt.Printf("account %+v\n", account)
+	fmt.Printf("account: \n %+v\n", account)
 	fmt.Println("-----newCrDPOSManagement------")
 
 	crDPOSManagement := &payload.CRDPOSManagement{
-		ManagementType:        0x0100,
 		CRManagementPublicKey: crManagementPublicKey,
 		CRCommitteeDID:        *crCommitteeDID,
 	}
@@ -1800,12 +1799,11 @@ func newCRDPOSManagement(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		sig, err := crypto.Sign(crManagementPrivateKey, signBuf.Bytes())
+		crDPOSManagement.Signature, err = crypto.Sign(crManagementPrivateKey, signBuf.Bytes())
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		crDPOSManagement.Signature = sig
 	}
 	ud := L.NewUserData()
 	ud.Value = crDPOSManagement
