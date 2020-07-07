@@ -49,20 +49,17 @@ if cr_committee_did == "" then
     return
 end
 
-local management_type = getManagementType()
-
 print("fee:", fee)
-print("management type:", management_type)
 print("cr management public key:", cr_management_public_key)
 print("cr management private key:", cr_management_private_key)
 print("cr committee did:", cr_committee_did)
 
--- crc dpos management payload: management_type, cr_management_public_key, cr_management_private_key, cr_committee_did, wallet
-local cr_claims_dpos_payload =crdposmanagement.new(management_type, cr_management_public_key, cr_management_private_key, cr_committee_did, wallet)
+-- crc dpos management payload: cr_management_public_key, cr_management_private_key, cr_committee_did, wallet
+local cr_claims_dpos_payload =crdposmanagement.new(cr_management_public_key, cr_management_private_key, cr_committee_did, wallet)
 print(cr_claims_dpos_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
-local tx = transaction.new(9, 0x0100, 0, cr_claims_dpos_payload, 0)
+local tx = transaction.new(9, 0x31, 0, cr_claims_dpos_payload, 0)
 print(tx:get())
 
 -- input: from, fee

@@ -62,6 +62,10 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	CRExpensesAddress := c.String("crccommiteeaddr")
 	payloadVersion := c.Int64("payloadversion")
 
+	crManagementPublicKey := c.String("crmanagementpublickey")
+	crManagementPrivateKey := c.String("crmanagementprivatekey")
+	crCommitteeDID := c.String("crcommitteedid")
+
 	getWallet := func(L *lua.LState) int {
 		L.Push(lua.LString(wallet))
 		return 1
@@ -159,11 +163,6 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		return 1
 	}
 
-	managementType := c.Int64("managementtype")
-	crManagementPublicKey := c.String("crmanagementpublickey")
-	crManagementPrivateKey := c.String("crmanagementprivatekey")
-	crCommitteeDID := c.String("crcommitteedid")
-
 	getProposalType := func(L *lua.LState) int {
 		L.Push(lua.LNumber(proposalType))
 		return 1
@@ -254,10 +253,6 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LNumber(payloadVersion))
 		return 1
 	}
-	getManagementType := func(L *lua.LState) int {
-		L.Push(lua.LNumber(managementType))
-		return 1
-	}
 	getCRManagementPublicKey := func(L *lua.LState) int {
 		L.Push(lua.LString(crManagementPublicKey))
 		return 1
@@ -315,10 +310,9 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	L.Register("getCloseProposalHash", getCloseProposalHash)
 	L.Register("getCRExpensesAddress", getCRExpensesAddress)
 	L.Register("getPayloadVersion", getPayloadVersion)
-	L.Register("getManagementType", getManagementType)
 	L.Register("getCRManagementPublicKey", getCRManagementPublicKey)
 	L.Register("getCRManagementPrivateKey", getCRManagementPrivateKey)
-	L.Register("getCRcommitteeDID", getCRCommitteeDID)
+	L.Register("getCRCommitteeDID", getCRCommitteeDID)
 }
 
 func scriptAction(c *cli.Context) error {
@@ -534,6 +528,17 @@ func NewCommand() *cli.Command {
 			cli.Int64Flag{
 				Name:  "payloadversion",
 				Usage: "set the version of payload",
+			}, cli.StringFlag{
+				Name:  "crmanagementpublickey",
+				Usage: "set the public key of crmanagement",
+			},
+			cli.StringFlag{
+				Name:  "crmanagementprivatekey",
+				Usage: "set the private key of crmanagement",
+			},
+			cli.StringFlag{
+				Name:  "crcommitteedid",
+				Usage: "set the crcommittee did",
 			},
 		},
 		Action: scriptAction,

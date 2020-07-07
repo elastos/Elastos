@@ -1752,39 +1752,45 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 }
 
 func newCRDPOSManagement(L *lua.LState) int {
-	managementType := L.ToInt64(1)
-	crManagementPublicKeyStr := L.ToString(2)
-	crManagementPrivateKeyStr := L.ToString(3)
-	crCommitteeDIDStr := L.ToString(4)
-	client, err := checkClient(L, 5)
-
-	needSign := true
-	if err != nil {
-		needSign = false
-	}
-
-	crManagementPublicKey, _ := common.HexStringToBytes(crManagementPublicKeyStr)
-	crCommitteeDID, _ := common.Uint168FromBytes([]byte(crCommitteeDIDStr))
+	crManagementPublicKeyStr := L.ToString(1)
+	crManagementPrivateKeyStr := L.ToString(2)
+	crCommitteeDIDStr := L.ToString(3)
+	client, err := checkClient(L, 4)
 
 	account := client.GetMainAccount()
 
+	crManagementPublicKey, err := common.HexStringToBytes(crManagementPublicKeyStr)
+	if err != nil {
+		fmt.Println("wrong cr management public key")
+		os.Exit(1)
+	}
+	crManagementPrivateKey, err := common.HexStringToBytes(crManagementPrivateKeyStr)
+	if err != nil {
+		fmt.Println("wrong cr management private key")
+		os.Exit(1)
+	}
+	crCommitteeDID, err := common.Uint168FromAddress(crCommitteeDIDStr)
+	if err != nil {
+		fmt.Println("wrong cr management did")
+		os.Exit(1)
+	}
+
 	fmt.Println("-----newCrDPOSManagement------")
-	fmt.Println("managementType", managementType)
 	fmt.Println("crManagementPublicKeyStr", crManagementPublicKeyStr)
+	fmt.Println("crManagementPrivateKeyStr", crManagementPrivateKeyStr)
 	fmt.Println("crCommitteeDIDStr", crCommitteeDIDStr)
 	fmt.Printf("account %+v\n", account)
 	fmt.Println("-----newCrDPOSManagement------")
 
 	crDPOSManagement := &payload.CRDPOSManagement{
-		ManagementType:        payload.DPOSManagementType(managementType),
+		ManagementType:        0x0100,
 		CRManagementPublicKey: crManagementPublicKey,
 		CRCommitteeDID:        *crCommitteeDID,
 	}
 
-	crManagementPrivateKey, err := common.HexStringToBytes(crManagementPrivateKeyStr)
+	needSign := true
 	if err != nil {
-		fmt.Println("wrong cr proposal owner private key")
-		os.Exit(1)
+		needSign = false
 	}
 
 	if needSign {
@@ -1794,7 +1800,6 @@ func newCRDPOSManagement(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
 		sig, err := crypto.Sign(crManagementPrivateKey, signBuf.Bytes())
 		if err != nil {
 			fmt.Println(err)
@@ -1806,7 +1811,6 @@ func newCRDPOSManagement(L *lua.LState) int {
 	ud.Value = crDPOSManagement
 	L.SetMetatable(ud, L.GetTypeMetatable(luaCRDPOSManagementName))
 	L.Push(ud)
-
 	return 1
 }
 
