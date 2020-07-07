@@ -27,8 +27,6 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <sys/types.h>
-#include <openssl/ossl_typ.h>
-#include <openssl/evp.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,7 +36,7 @@ extern "C" {
 #define SHA256_BYTES            32
 
 typedef struct Sha256_Digest {
-    EVP_MD_CTX ctx;
+    unsigned char __opaque[sizeof(void *) * 8];
 } Sha256_Digest;
 
 // TODO: not a safe design, caller should provide large enough buffer

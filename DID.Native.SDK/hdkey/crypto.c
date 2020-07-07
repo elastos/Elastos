@@ -31,6 +31,7 @@
 #include <openssl/conf.h>
 #include <openssl/md5.h>
 #include <openssl/err.h>
+#include <openssl/ossl_typ.h>
 
 #include "BRInt.h"
 #include "BRBase58.h"
@@ -38,6 +39,11 @@
 #include "BRBIP32Sequence.h"
 #include "HDkey.h"
 #include "crypto.h"
+
+typedef struct Sha256_Digest_i {
+    EVP_MD_CTX ctx;
+} Sha256_Digest_i;
+static_assert(sizeof(Sha256_Digest) >= sizeof(Sha256_Digest_i), "Check with OpenSSL headers.");
 
 static void generateKeyAndIv(const char *passwd, uint8_t *key, uint8_t *iv)
 {
@@ -305,11 +311,14 @@ ssize_t base58_decode(uint8_t *data, size_t len, const char *base58)
 
 int sha256_digest_init(Sha256_Digest *sha256_digest)
 {
+    Sha256_Digest_i *digest_i;
+
     if (!sha256_digest)
         return -1;
 
-    EVP_MD_CTX_init(&sha256_digest->ctx);
-    if (!EVP_DigestInit_ex(&sha256_digest->ctx, EVP_sha256(), NULL))
+    digest_i = (Sha256_Digest_i*)sha256_digest;
+    EVP_MD_CTX_init(&digest_i->ctx);
+    if (!EVP_DigestInit_ex(&digest_i->ctx, EVP_sha256(), NULL))
         return -1;
 
     return 0;
@@ -317,9 +326,12 @@ int sha256_digest_init(Sha256_Digest *sha256_digest)
 
 int sha256v_digest_update(Sha256_Digest *sha256_digest, int count, va_list inputs)
 {
+    Sha256_Digest_i *digest_i;
+
     assert(sha256_digest);
     assert(count > 0);
 
+    digest_i = (Sha256_Digest_i*)sha256_digest;
     for (int i = 0; i < count; i++) {
         const void *input = va_arg(inputs, const void *);
         size_t len = va_arg(inputs, size_t);
@@ -327,7 +339,7 @@ int sha256v_digest_update(Sha256_Digest *sha256_digest, int count, va_list input
         if (!input)
             continue;
 
-        if (!EVP_DigestUpdate(&sha256_digest->ctx, input, len)) {
+        if (!EVP_DigestUpdate(&digest_i->ctx, input, len)) {
             return -1;
         }
     }
@@ -351,23 +363,27 @@ int sha256_digest_update(Sha256_Digest *sha256_digest, int count, ...)
 
 ssize_t sha256_digest_final(Sha256_Digest *sha256_digest, uint8_t *digest)
 {
+    Sha256_Digest_i *digest_i;
     unsigned int size = SHA256_BYTES;
     int rc;
 
     if (!sha256_digest || !digest)
         return -1;
 
-    rc = EVP_DigestFinal_ex(&sha256_digest->ctx, digest, &size);
+    digest_i = (Sha256_Digest_i*)sha256_digest;
+    rc = EVP_DigestFinal_ex(&digest_i->ctx, digest, &size);
     assert(size == SHA256_BYTES);
 
-    EVP_MD_CTX_cleanup(&sha256_digest->ctx);
+    EVP_MD_CTX_cleanup(&digest_i->ctx);
     return rc == 1 ? SHA256_BYTES : -1;
 }
 
 void sha256_digest_cleanup(Sha256_Digest *sha256_digest)
 {
-    if (sha256_digest)
-        EVP_MD_CTX_cleanup(&sha256_digest->ctx);
+    if (sha256_digest) {
+        Sha256_Digest_i *digest_i = (Sha256_Digest_i*)sha256_digest;
+        EVP_MD_CTX_cleanup(&digest_i->ctx);
+    }
 }
 
 ssize_t sha256v_digest(uint8_t *digest, int count, va_list inputs)
