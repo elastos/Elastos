@@ -880,7 +880,7 @@ const zh = {
   'profile.profession.MANAGEMENT': '管理',
   'profile.profession.OTHER': '其他',
   // 'profile.complete': '请完成您的档案',
-  'profile.complete': '请绑定您的 DID',
+  'profile.complete': '请先用ELA钱包绑定您的DID。 现在绑定',
   'profile.complete.dismiss': '取消',
   'profile.skillsDetails.placeholder': '请详细描述您的技能，工作经历等',
   'profile.motto.placeholder': '您的座右铭是什么？',

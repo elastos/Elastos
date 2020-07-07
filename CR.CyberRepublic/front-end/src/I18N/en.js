@@ -909,7 +909,7 @@ const en = {
   'profile.profession.MANAGEMENT': 'Management',
   'profile.profession.OTHER': 'Other',
   // 'profile.complete': 'Complete Your Profile',
-  'profile.complete': 'Binding Your DID',
+  'profile.complete': 'Please associate your DID using ELA wallet. [Associate now]',
   'profile.complete.dismiss': 'Dismiss',
   'profile.skillsDetails.placeholder':
     'Explain more about your skills, work experience, etc.',
