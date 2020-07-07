@@ -56,9 +56,9 @@ export default class extends Base {
     public async updateCurrentHeight() {
         const currentHeight = await ela.height()
         const currentConfig = await this.configModel.getDBInstance().findOne()
-        await this.configModel.getDBInstance().update({_id: currentConfig._id}, {
-            height: currentHeight
-        })
+        await this.configModel
+            .getDBInstance()
+            .update({ _id: currentConfig._id }, { $set: { currentHeight } })
     }
 
 }
