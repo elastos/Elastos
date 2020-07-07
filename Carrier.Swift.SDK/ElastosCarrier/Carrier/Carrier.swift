@@ -873,9 +873,9 @@ public class Carrier: NSObject {
             let handler = ectxt[1] as! CarrierFriendMessageReceiptResponseHandler
 
             let msgid = Int64(cmsgid)
+            var status = Int(Int64(cstatus))
 
-            var status = Int(cstatus)
-            if status != 0 {
+            if status == 2 {
                 status = getErrorCode()
             }
             let receipt = CarrierReceiptState(rawValue: status)!
@@ -932,7 +932,7 @@ public class Carrier: NSObject {
             let msgid = Int64(cmsgid)
 
             var status = Int(cstatus)
-            if status != 0 {
+            if status == 2 {
                 status = getErrorCode()
             }
             let receipt = CarrierReceiptState(rawValue: status)!
