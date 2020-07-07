@@ -78,6 +78,8 @@ int Credential_Verify(Credential *cred);
 int Credential_ToJson_Internal(JsonGenerator *gen, Credential *cred, DID *did,
         bool compact, bool forsign);
 
+int Credential_Copy(Credential *tocred, Credential *fromcred);
+
 #ifdef __cplusplus
 }
 #endif

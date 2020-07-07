@@ -852,7 +852,6 @@ void DIDDocument_Destroy(DIDDocument *document)
 
     DIDMetaData_Free(&document->metadata);
     free(document);
-    document = NULL;
 }
 
 int DIDDocument_SaveMetaData(DIDDocument *document)
@@ -935,6 +934,7 @@ bool DIDDocument_IsDeactivated(DIDDocument *document)
     if (isdeactived != DIDMetaData_GetDeactivated(&resolvedoc->metadata))
         DIDStore_StoreDID(document->metadata.base.store, resolvedoc);
 
+    DIDDocument_Destroy(resolvedoc);
     return isdeactived;
 }
 
@@ -965,7 +965,7 @@ bool DIDDocument_IsGenuine(DIDDocument *document)
 
     rc = DIDDocument_Verify(document, NULL, document->proof.signatureValue, 1,
             data, strlen(data));
-    free((char*)data);
+    free((void*)data);
     return rc == 0 ? true : false;
 }
 
@@ -1050,43 +1050,6 @@ errorExit:
     return -1;
 }
 
-static int credential_copy(Credential *cred1, Credential *cred2)
-{
-    int rc, i;
-
-    assert(cred1);
-    assert(cred2);
-
-    if (!DIDURL_Copy(&cred1->id, &cred2->id))
-        return -1;
-
-    cred1->type.types = (char**)calloc(cred2->type.size, sizeof(char*));
-    if (!cred1->type.types) {
-        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for type failed.");
-        return -1;
-    }
-
-    for (i = 0; i < cred2->type.size; i++)
-        cred1->type.types[i] = strdup(cred2->type.types[i]);
-    cred1->type.size = cred2->type.size;
-
-    if (!DID_Copy(&cred1->issuer, &cred2->issuer))
-        return -1;
-
-    cred1->issuanceDate = cred2->issuanceDate;
-    cred1->expirationDate = cred2->expirationDate;
-
-    if (!DID_Copy(&cred1->subject.id, &cred2->subject.id))
-        return -1;
-
-    cred1->subject.properties = cJSON_Duplicate(cred2->subject.properties, 1);
-
-    memcpy(&cred1->proof, &cred2->proof, sizeof(CredentialProof));
-    CredentialMetaData_Copy(&cred1->metadata, &cred2->metadata);
-
-    return 0;
-}
-
 static int credentials_copy(DIDDocument *doc, Credential **creds, size_t size)
 {
     Credential **cred_array;
@@ -1108,7 +1071,7 @@ static int credentials_copy(DIDDocument *doc, Credential **creds, size_t size)
         if (!doc->credentials.credentials[i])
             return -1;
 
-        if (credential_copy(doc->credentials.credentials[i], creds[i]) == -1) {
+        if (Credential_Copy(doc->credentials.credentials[i], creds[i]) == -1) {
             Credential_Destroy(doc->credentials.credentials[i]);
             doc->credentials.credentials[i] = NULL;
             return -1;
@@ -1170,7 +1133,7 @@ static int document_copy(DIDDocument *destdoc, DIDDocument *srcdoc)
     destdoc->expires = srcdoc->expires;
     memcpy(&destdoc->proof, &srcdoc->proof, sizeof(DocumentProof));
     DIDMetaData_Copy(&destdoc->metadata, &srcdoc->metadata);
-    DIDMetaData_Copy(&destdoc->did.metadata, &destdoc->metadata);
+    memcpy(&destdoc->did.metadata, &destdoc->metadata, sizeof(DIDMetaData));
     return 0;
 }
 
@@ -1237,7 +1200,7 @@ DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder, const char *st
 
     rc = DIDDocument_Sign(doc, key, storepass, signature, 1,
             (unsigned char*)data, strlen(data));
-    free((char*)data);
+    free((void*)data);
     if (rc)
         return NULL;
 
@@ -1663,7 +1626,7 @@ int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder, Credential *cr
         return -1;
     }
 
-    if (credential_copy(cred, credential) == -1 ||
+    if (Credential_Copy(cred, credential) == -1 ||
             diddocument_addcredential(document, cred) == -1) {
         Credential_Destroy(cred);
         return -1;

@@ -471,7 +471,7 @@ static int getv_sub_privatekey_publickey(HDKey *hdkey, HDKey *derivedkey, int de
     memcpy(derivedkey->prvChainCode, chaincode.u8, sizeof(chaincode.u8));
     memcpy(derivedkey->pubChainCode, chaincode.u8, sizeof(chaincode.u8));
 
-    derivedkey->depth += depth;
+    derivedkey->depth += (uint8_t)depth;
 
     var_clean(&chaincode);
     var_clean(&secret);
@@ -554,6 +554,8 @@ HDKey *HDKey_GetvDerivedKey(HDKey* hdkey, HDKey *derivedkey, int depth, va_list 
 
     va_copy(ap, list);
     va_copy(ar, list);
+
+    memset(derivedkey, 0, sizeof(HDKey));
 
     if (!hdkey_ispublickeyonly(hdkey)) {
         getv_fingerprint(hdkey, derivedkey, depth - 1, list);

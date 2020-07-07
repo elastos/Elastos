@@ -114,30 +114,25 @@ int ResolveResult_FromJson(ResolveResult *result, cJSON *json, bool all)
             }
 
             DIDDocument *doc = txinfo->request.doc;
-            DIDMetaData_SetPublished(&doc->metadata, txinfo->timestamp);
-            DIDMetaData_SetTxid(&doc->metadata, txinfo->txid);
-            DIDMetaData_SetSignature(&doc->metadata, doc->proof.signatureValue);
-            DIDMetaData_SetDeactivated(&doc->metadata, result->status);
-            DIDMetaData_Copy(&doc->did.metadata, &doc->metadata);
+            if (doc) {
+                DIDMetaData_SetPublished(&doc->metadata, txinfo->timestamp);
+                DIDMetaData_SetTxid(&doc->metadata, txinfo->txid);
+                DIDMetaData_SetSignature(&doc->metadata, doc->proof.signatureValue);
+                DIDMetaData_SetDeactivated(&doc->metadata, result->status);
+                memcpy(&doc->did.metadata, &doc->metadata, sizeof(DIDMetaData));
+            }
+            result->txinfos.size++;
         }
     }
-
-    result->txinfos.size = size;
     return 0;
 }
 
 void ResolveResult_Destroy(ResolveResult *result)
 {
-    size_t size;
-
-    if (!result)
+    if (!result || !result->txinfos.infos)
         return;
 
-    size = result->txinfos.size;
-    if (size <= 0 || !result->txinfos.infos)
-        return;
-
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < result->txinfos.size; i++)
         DIDTransactionInfo_Destroy(&result->txinfos.infos[i]);
 
     free(result->txinfos.infos);
@@ -145,8 +140,11 @@ void ResolveResult_Destroy(ResolveResult *result)
 
 void ResolveResult_Free(ResolveResult *result)
 {
-    if (!result)
-       return;
+    if (!result || !result->txinfos.infos)
+        return;
+
+    for (int i = 0; i < result->txinfos.size; i++)
+        DIDTransactionInfo_Free(&result->txinfos.infos[i]);
 
     free(result->txinfos.infos);
 }

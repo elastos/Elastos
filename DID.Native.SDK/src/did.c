@@ -262,11 +262,10 @@ int DID_Compare(DID *did1, DID *did2)
 
 void DID_Destroy(DID *did)
 {
-    if (!did) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return;
-    }
+    if (!did)
+       return;
 
+    DIDMetaData_Free(&did->metadata);
     free(did);
 }
 
@@ -454,13 +453,11 @@ DIDURL *DIDURL_Copy(DIDURL *dest, DIDURL *src)
 
 void DIDURL_Destroy(DIDURL *id)
 {
-    if (!id) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+    if (!id)
         return;
-    }
 
+    CredentialMetaData_Free(&id->metadata);
     free(id);
-    id = NULL;
 }
 
 DIDDocument **DID_ResolveAll(DID *did)

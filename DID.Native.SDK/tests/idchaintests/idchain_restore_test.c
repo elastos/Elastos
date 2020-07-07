@@ -162,6 +162,7 @@ static void test_idchain_restore(void)
             CU_ASSERT_PTR_NOT_NULL_FATAL(cred);
             CU_ASSERT_TRUE_FATAL(DID_Equals(did, Credential_GetOwner(cred)));
         }
+        DIDDocument_Destroy(doc);
     }
 
     TestData_Free();
@@ -210,6 +211,7 @@ static void test_sync_with_localmodification1(void)
 
     modified_doc = DIDDocumentBuilder_Seal(builder, storepass);
     CU_ASSERT_PTR_NOT_NULL_FATAL(modified_doc);
+    DIDDocumentBuilder_Destroy(builder);
 
     rc = DIDStore_StoreDID(store, modified_doc);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
@@ -244,6 +246,7 @@ static void test_sync_with_localmodification1(void)
             CU_ASSERT_PTR_NOT_NULL_FATAL(cred);
             CU_ASSERT_TRUE_FATAL(DID_Equals(did, Credential_GetOwner(cred)));
         }
+        DIDDocument_Destroy(doc);
     }
 
     modified_doc = DIDStore_LoadDID(store, modified_did);
@@ -299,6 +302,7 @@ static void test_sync_with_localmodification2(void)
 
     modified_doc = DIDDocumentBuilder_Seal(builder, storepass);
     CU_ASSERT_PTR_NOT_NULL_FATAL(modified_doc);
+    DIDDocumentBuilder_Destroy(builder);
 
     rc = DIDStore_StoreDID(store, modified_doc);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
@@ -332,6 +336,7 @@ static void test_sync_with_localmodification2(void)
             CU_ASSERT_PTR_NOT_NULL_FATAL(cred);
             CU_ASSERT_TRUE_FATAL(DID_Equals(did, Credential_GetOwner(cred)));
         }
+        DIDDocument_Destroy(doc);
     }
 
     modified_doc = DIDStore_LoadDID(store, modified_did);

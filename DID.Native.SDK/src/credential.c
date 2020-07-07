@@ -223,8 +223,6 @@ int Credential_ToJson_Internal(JsonGenerator *gen, Credential *cred, DID *did,
 ///////////////////////////////////////////////////////////////////////////
 void Credential_Destroy(Credential *cred)
 {
-    size_t i;
-
     if (!cred)
         return;
 
@@ -332,6 +330,7 @@ time_t Credential_GetExpirationDate(Credential *cred)
         return 0;
 
     expire = DIDDocument_GetExpires(doc);
+    DIDDocument_Destroy(doc);
     if (!expire)
         return 0;
 
@@ -340,6 +339,7 @@ time_t Credential_GetExpirationDate(Credential *cred)
         return 0;
 
     _expire = DIDDocument_GetExpires(doc);
+    DIDDocument_Destroy(doc);
     if (!_expire)
         return 0;
 
@@ -823,6 +823,7 @@ bool Credential_IsGenuine(Credential *cred)
 {
     DIDDocument *doc;
     int rc;
+    bool isauth;
 
     if (!cred) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
@@ -835,7 +836,9 @@ bool Credential_IsGenuine(Credential *cred)
         return false;
     }
 
-    if (!DIDDocument_IsAuthenticationKey(doc, &cred->proof.verificationMethod)) {
+    isauth = DIDDocument_IsAuthenticationKey(doc, &cred->proof.verificationMethod);
+    DIDDocument_Destroy(doc);
+    if (!isauth) {
         DIDError_Set(DIDERR_INVALID_KEY, "Invalid authentication key.");
         return false;
     }
@@ -929,3 +932,41 @@ CredentialMetaData *Credential_GetMetaData(Credential *credential)
 
     return &credential->metadata;
 }
+
+int Credential_Copy(Credential *tocred, Credential *fromcred)
+{
+    int rc, i;
+
+    assert(tocred);
+    assert(fromcred);
+
+    if (!DIDURL_Copy(&tocred->id, &fromcred->id))
+        return -1;
+
+    tocred->type.types = (char**)calloc(fromcred->type.size, sizeof(char*));
+    if (!tocred->type.types) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for type failed.");
+        return -1;
+    }
+
+    for (i = 0; i < fromcred->type.size; i++)
+        tocred->type.types[i] = strdup(fromcred->type.types[i]);
+    tocred->type.size = fromcred->type.size;
+
+    if (!DID_Copy(&tocred->issuer, &fromcred->issuer))
+        return -1;
+
+    tocred->issuanceDate = fromcred->issuanceDate;
+    tocred->expirationDate = fromcred->expirationDate;
+
+    if (!DID_Copy(&tocred->subject.id, &fromcred->subject.id))
+        return -1;
+
+    tocred->subject.properties = cJSON_Duplicate(fromcred->subject.properties, 1);
+
+    memcpy(&tocred->proof, &fromcred->proof, sizeof(CredentialProof));
+    CredentialMetaData_Copy(&tocred->metadata, &fromcred->metadata);
+
+    return 0;
+}
+

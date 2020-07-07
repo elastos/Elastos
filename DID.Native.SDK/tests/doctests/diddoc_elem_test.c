@@ -891,7 +891,7 @@ static void test_diddoc_add_selfclaimed_credential(void)
     CU_ASSERT_EQUAL(Credential_GetPropertyCount(vc), 2);
     provalue = Credential_GetProperty(vc, "passport");
     CU_ASSERT_STRING_EQUAL(provalue, "S653258Z07");
-    free((char*)provalue);
+    free((void*)provalue);
 
     const char *types1[2];
     rc = Credential_GetTypes(vc, types1, sizeof(types1));
@@ -1056,18 +1056,21 @@ static void test_diddoc_add_service(void)
     rc = DIDDocumentBuilder_AddService(builder, id1, "Service.Testing",
             "https://www.elastos.org/testing1");
     CU_ASSERT_NOT_EQUAL(rc, -1);
+    DIDURL_Destroy(id1);
 
     DIDURL *id2 = DIDURL_NewByDid(did, "test-svc-2");
     CU_ASSERT_PTR_NOT_NULL(id2);
     rc = DIDDocumentBuilder_AddService(builder, id2, "Service.Testing",
             "https://www.elastos.org/testing2");
     CU_ASSERT_NOT_EQUAL(rc, -1);
+    DIDURL_Destroy(id2);
 
     // Service id already exist, should failed.
     DIDURL *id = DIDURL_NewByDid(did, "vcr");
     CU_ASSERT_PTR_NOT_NULL(id1);
     rc = DIDDocumentBuilder_AddService(builder, id, "test", "https://www.elastos.org/test");
     CU_ASSERT_EQUAL(rc, -1);
+    DIDURL_Destroy(id);
 
     sealeddoc = DIDDocumentBuilder_Seal(builder, storepass);
     CU_ASSERT_PTR_NOT_NULL(sealeddoc);

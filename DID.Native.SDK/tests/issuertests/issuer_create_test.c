@@ -75,6 +75,7 @@ static void test_issuer_create_with_invalidkey1(void)
     doc = DIDDocumentBuilder_Seal(builder, storepass);
     CU_ASSERT_PTR_NOT_NULL(doc);
     CU_ASSERT_TRUE(DIDDocument_IsValid(doc));
+    DIDDocumentBuilder_Destroy(builder);
     DIDDocument_Destroy(doc);
 
     issuer = Issuer_Create(issuerid, keyid, store);
@@ -96,6 +97,7 @@ static void test_issuer_create_with_invalidkey2(void)
     CU_ASSERT_PTR_NULL(issuer);
 
     Issuer_Destroy(issuer);
+    DIDURL_Destroy(key);
 }
 
 static int issuer_create_test_suite_init(void)

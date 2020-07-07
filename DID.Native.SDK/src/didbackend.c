@@ -121,7 +121,7 @@ bool DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
         return false;
 
    successed = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
-    free((char*)reqstring);
+    free((void*)reqstring);
     if (!successed)
         DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(create) failed.");
 
@@ -149,7 +149,7 @@ bool DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signk
         return false;
 
     successed = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
-    free((char*)reqstring);
+    free((void*)reqstring);
     if (!successed)
         DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(update) failed.");
 
@@ -183,7 +183,7 @@ bool DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signkey,
         return false;
 
     successed = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
-    free((char*)reqstring);
+    free((void*)reqstring);
     if (!successed)
         DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(deactivated) failed.");
 
@@ -235,13 +235,14 @@ static int resolve_from_backend(ResolveResult *result, DID *did, bool all)
 
     if (ResolveResult_GetStatus(result) != STATUS_NOT_FOUND && !all && ResolveCache_Store(result, did) == -1)
         goto errorExit;
+
     rc = 0;
 
 errorExit:
     if (root)
         cJSON_Delete(root);
     if (data)
-        free((char*)data);
+        free((void*)data);
     return rc;
 }
 
@@ -290,13 +291,17 @@ DIDDocument *DIDBackend_Resolve(DID *did, bool force)
     }
 
     if (ResolveResult_GetStatus(&result) == STATUS_NOT_FOUND) {
+        ResolveResult_Destroy(&result);
         DIDError_Set(DIDERR_NOT_EXISTS, "DID not exists.");
         return NULL;
     } else if (ResolveResult_GetStatus(&result) == STATUS_DEACTIVATED) {
+        ResolveResult_Destroy(&result);
         DIDError_Set(DIDERR_DID_DEACTIVATED, "DID is deactivated.");
         return NULL;
     } else {
         doc = result.txinfos.infos[0].request.doc;
+        for (int i = 1; i < result.txinfos.size; i++)
+            DIDDocument_Destroy(result.txinfos.infos[i].request.doc);
         ResolveResult_Free(&result);
         if (!doc)
             DIDError_Set(DIDERR_RESOLVE_ERROR, "Malformed resolver response.");

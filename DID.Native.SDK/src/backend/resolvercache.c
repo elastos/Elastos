@@ -103,7 +103,7 @@ int ResolverCache_Load(ResolveResult *result, DID *did, long ttl)
         return -1;
 
     root = cJSON_Parse(data);
-    free((char*)data);
+    free((void*)data);
     if (!root)
         return -1;
 
@@ -133,7 +133,7 @@ int ResolveCache_Store(ResolveResult *result, DID *did)
     }
 
     rc = store_file(path, data);
-    free((char*)data);
+    free((void*)data);
     if (rc < 0)
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Store resolver result data failed.");
 

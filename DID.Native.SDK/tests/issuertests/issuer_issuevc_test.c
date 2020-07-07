@@ -93,25 +93,25 @@ static void test_issuer_issuevc(void)
     CU_ASSERT_EQUAL(Credential_GetPropertyCount(vc), 7);
     provalue = Credential_GetProperty(vc, "name");
     CU_ASSERT_STRING_EQUAL(provalue, "John");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "gender");
     CU_ASSERT_STRING_EQUAL(provalue, "Male");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "nation");
     CU_ASSERT_STRING_EQUAL(provalue, "Singapore");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "language");
     CU_ASSERT_STRING_EQUAL(provalue, "English");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "email");
     CU_ASSERT_STRING_EQUAL(provalue, "john@example.com");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "twitter");
     CU_ASSERT_STRING_EQUAL(provalue, "@john");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "phone");
     CU_ASSERT_STRING_EQUAL(provalue, "132780456");
-    free((char*)provalue);
+    free((void*)provalue);
 
     DIDURL_Destroy(credid);
     Credential_Destroy(vc);
@@ -177,25 +177,25 @@ static void test_issuer_issueselfvc(void)
     CU_ASSERT_EQUAL(Credential_GetPropertyCount(vc), 7);
     provalue = Credential_GetProperty(vc, "name");
     CU_ASSERT_STRING_EQUAL(provalue, "John");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "gender");
     CU_ASSERT_STRING_EQUAL(provalue, "Male");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "nation");
     CU_ASSERT_STRING_EQUAL(provalue, "Singapore");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "language");
     CU_ASSERT_STRING_EQUAL(provalue, "English");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "email");
     CU_ASSERT_STRING_EQUAL(provalue, "john@example.com");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "twitter");
     CU_ASSERT_STRING_EQUAL(provalue, "@john");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "phone");
     CU_ASSERT_STRING_EQUAL(provalue, "132780456");
-    free((char*)provalue);
+    free((void*)provalue);
 
     DIDURL_Destroy(credid);
     Credential_Destroy(vc);
@@ -223,6 +223,7 @@ static void test_issuer_issuerbystring(void)
 
     vc = Issuer_CreateCredentialByString(issuer, issuerid, credid, types, 2,
             propdata, expires, storepass);
+    DIDURL_Destroy(credid);
     CU_ASSERT_PTR_NOT_NULL_FATAL(vc);
     CU_ASSERT_FALSE(Credential_IsExpired(vc));
     CU_ASSERT_TRUE(Credential_IsGenuine(vc));
@@ -246,16 +247,18 @@ static void test_issuer_issuerbystring(void)
 
     provalue = Credential_GetProperty(vc, "Description");
     CU_ASSERT_STRING_EQUAL(provalue, "Technologist");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "alternateName");
     CU_ASSERT_STRING_EQUAL(provalue, "Jason Holtslander");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "numberValue");
     CU_ASSERT_STRING_EQUAL(provalue, "1234");
-    free((char*)provalue);
+    free((void*)provalue);
     provalue = Credential_GetProperty(vc, "doubleValue");
     CU_ASSERT_STRING_EQUAL(provalue, "9.5");
-    free((char*)provalue);
+    free((void*)provalue);
+
+    Credential_Destroy(vc);
 }
 
 static int issuer_issuevc_test_suite_init(void)

@@ -39,6 +39,8 @@ void JWS_Destroy(JWS *jws)
         json_decref(jws->header);
     if (jws->claims)
         json_decref(jws->claims);
+
+    free(jws);
 }
 
 const char *JWS_GetHeader(JWS *jws, const char *attr)

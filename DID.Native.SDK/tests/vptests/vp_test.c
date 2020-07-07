@@ -99,8 +99,14 @@ static void test_vp_parse(void)
     CU_ASSERT_TRUE(Presentation_IsGenuine(normvp));
     CU_ASSERT_TRUE(Presentation_IsValid(normvp));
 
-    CU_ASSERT_TRUE(!strcmp(TestData_LoadVpNormJson(), Presentation_ToJson(normvp, true)));
-    CU_ASSERT_TRUE(!strcmp(TestData_LoadVpNormJson(), Presentation_ToJson(vp, true)));
+    data = Presentation_ToJson(normvp, true);
+    CU_ASSERT_TRUE(!strcmp(TestData_LoadVpNormJson(), data));
+    free((void*)data);
+    data = Presentation_ToJson(vp, true);
+    CU_ASSERT_TRUE(!strcmp(TestData_LoadVpNormJson(), data));
+    free((void*)data);
+
+    Presentation_Destroy(normvp);
 }
 
 static void test_vp_create(void)
@@ -173,6 +179,8 @@ static void test_vp_create(void)
 
     CU_ASSERT_TRUE(Presentation_IsGenuine(vp));
     CU_ASSERT_TRUE(Presentation_IsValid(vp));
+
+    Presentation_Destroy(vp);
 }
 
 static void test_vp_create_without_creds(void)
@@ -206,6 +214,8 @@ static void test_vp_create_without_creds(void)
 
     CU_ASSERT_TRUE(Presentation_IsGenuine(vp));
     CU_ASSERT_TRUE(Presentation_IsValid(vp));
+
+    Presentation_Destroy(vp);
 }
 
 static int vp_test_suite_init(void)

@@ -20,6 +20,8 @@ static void test_didurl_fromString(void)
     id = DIDURL_FromString("#default", did);
     CU_ASSERT_PTR_NOT_NULL_FATAL(id);
     DIDURL_Destroy(id);
+
+    DID_Destroy(did);
 }
 
 static void test_didurl_fromString_error(void)

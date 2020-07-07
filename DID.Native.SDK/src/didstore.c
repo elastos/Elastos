@@ -156,7 +156,7 @@ static int store_didmeta(DIDStore *store, DIDMetaData *meta, DID *did)
     }
 
     rc = store_file(path, data);
-    free((char*)data);
+    free((void*)data);
     if (rc)
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Store did meta failed.");
 
@@ -198,7 +198,7 @@ static int load_didmeta(DIDStore *store, DIDMetaData *meta, const char *did)
     }
 
     rc = DIDMetaData_FromJson(meta, data);
-    free((char*)data);
+    free((void*)data);
     if (rc)
         return rc;
 
@@ -250,6 +250,9 @@ static int store_credmeta(DIDStore *store, CredentialMetaData *meta, DIDURL *id)
     assert(meta);
     assert(id);
 
+    if (!meta->base.data)
+        return 0;
+
     data = CredentialMetaData_ToJson(meta);
     if (!data)
         return -1;
@@ -257,18 +260,18 @@ static int store_credmeta(DIDStore *store, CredentialMetaData *meta, DIDURL *id)
     if (get_file(path, 1, 6, store->root, DID_DIR, id->did.idstring,
             CREDENTIALS_DIR, id->fragment, META_FILE) == -1) {
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create file for credential meta failed.");
-        free((char*)data);
+        free((void*)data);
         return -1;
     }
 
     if (test_path(path) == S_IFDIR) {
         DIDError_Set(DIDERR_IO_ERROR, "Credential meta should be a file.");
-        free((char*)data);
+        free((void*)data);
         goto errorExit;
     }
 
     rc = store_file(path, data);
-    free((char*)data);
+    free((void*)data);
     if (!rc)
         return 0;
 
@@ -326,7 +329,7 @@ static int load_credmeta(DIDStore *store, CredentialMetaData *meta, const char *
     }
 
     rc = CredentialMetaData_FromJson(meta, data);
-    free((char*)data);
+    free((void*)data);
     if (rc)
         return rc;
 
@@ -551,7 +554,7 @@ static ssize_t load_extendedprvkey(DIDStore *store, uint8_t *extendedkey, size_t
     }
 
     len = decrypt_from_base64(extendedkey, storepass, string);
-    free((char*)string);
+    free((void*)string);
     if (len < 0)
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Decrypt extended private key failed.");
 
@@ -626,7 +629,7 @@ static ssize_t load_extendedpubkey(DIDStore *store, uint8_t *extendedkey, size_t
         return -1;
 
     len = base58_decode(extendedkey, size, string);
-    free((char*)string);
+    free((void*)string);
     if (len < 0)
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Decode extended public key failed.");
 
@@ -685,7 +688,7 @@ static ssize_t load_mnemonic(DIDStore *store, const char *storepass,
     }
 
     len = decrypt_from_base64((uint8_t*)mnemonic, storepass, encrpted_mnemonic);
-    free((char*)encrpted_mnemonic);
+    free((void*)encrpted_mnemonic);
     if (len < 0)
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Decrypt mnemonic failed.");
 
@@ -714,7 +717,7 @@ static int load_index(DIDStore *store)
     }
 
     index = atoi(string);
-    free((char*)string);
+    free((void*)string);
     return index;
 }
 
@@ -758,7 +761,7 @@ static int list_did_helper(const char *path, void *context)
     DID_List_Helper *dh = (DID_List_Helper*)context;
     char didpath[PATH_MAX];
     DID did;
-    int rc, len;
+    int rc = 0, len;
 
     if (!path)
         return dh->cb(NULL, dh->context);
@@ -780,9 +783,10 @@ static int list_did_helper(const char *path, void *context)
 
     if (dh->filter == 0 || (dh->filter == 1 && DIDSotre_ContainsPrivateKeys(dh->store, &did)) ||
             (dh->filter == 2 && !DIDSotre_ContainsPrivateKeys(dh->store, &did)))
-        return dh->cb(&did, dh->context);
+        rc = dh->cb(&did, dh->context);
 
-    return 0;
+    DIDMetaData_Free(&did.metadata);
+    return rc;
 }
 
 static bool has_type(DID *did, const char *path, const char *type)
@@ -800,7 +804,7 @@ static bool has_type(DID *did, const char *path, const char *type)
         return false;
 
     credential = Credential_FromJson(data, did);
-    free((char*)data);
+    free((void*)data);
     if (!credential)
         return false;
 
@@ -841,7 +845,7 @@ static int select_credential_helper(const char *path, void *context)
         return -1;
 
     credential = Credential_FromJson(data, &(ch->did));
-    free((char*)data);
+    free((void*)data);
     if (!credential)
         return -1;
 
@@ -884,7 +888,9 @@ static int list_credential_helper(const char *path, void *context)
     strcpy(id.did.idstring, ch->did.idstring);
     strcpy(id.fragment, path);
     load_credmeta(ch->store, &id.metadata, id.did.idstring, id.fragment);
-    return ch->cb(&id, ch->context);
+    rc = ch->cb(&id, ch->context);
+    CredentialMetaData_Free(&id.metadata);
+    return rc;
 }
 
 static DIDDocumentBuilder* did_createbuilder(DID *did, DIDStore *store)
@@ -959,7 +965,7 @@ static DIDDocument *create_document(DIDStore *store, DID *did, const char *key,
 
     DIDMetaData_SetAlias(&document->metadata, alias);
     DIDMetaData_SetDeactivated(&document->metadata, false);
-    DIDMetaData_Copy(&document->did.metadata, &document->metadata);
+    memcpy(&document->did.metadata, &document->metadata, sizeof(DIDMetaData));
     return document;
 }
 
@@ -984,12 +990,12 @@ static int store_credential(DIDStore *store, Credential *credential)
     if (get_file(path, 1, 6, store->root, DID_DIR, id->did.idstring,
             CREDENTIALS_DIR, id->fragment, CREDENTIAL_FILE) == -1) {
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create credential file failed.");
-        free((char*)data);
+        free((void*)data);
         return -1;
     }
 
     rc = store_file(path, data);
-    free((char*)data);
+    free((void*)data);
     if (!rc)
         return 0;
 
@@ -1092,12 +1098,12 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document)
     rc = get_file(path, 1, 4, store->root, DID_DIR, document->did.idstring, DOCUMENT_FILE);
     if (rc < 0) {
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create file for did document failed.");
-        free((char*)data);
+        free((void*)data);
         return -1;
     }
 
     rc = store_file(path, data);
-    free((char*)data);
+    free((void*)data);
     if (rc) {
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Store did document failed.");
         goto errorExit;
@@ -1162,7 +1168,7 @@ DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did)
     }
 
     document = DIDDocument_FromJson(data);
-    free((char*)data);
+    free((void*)data);
     if (!document)
         return NULL;
 
@@ -1172,7 +1178,7 @@ DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did)
     }
 
     DIDMetaData_SetStore(&document->metadata, store);
-    DIDMetaData_Copy(&document->did.metadata, &document->metadata);
+    memcpy(&document->did.metadata, &document->metadata, sizeof(DIDMetaData));
 
     return document;
 }
@@ -1338,7 +1344,7 @@ Credential *DIDStore_LoadCredential(DIDStore *store, DID *did, DIDURL *id)
     }
 
     credential = Credential_FromJson(data, did);
-    free((char*)data);
+    free((void*)data);
     if (!credential)
         return NULL;
 
@@ -2223,7 +2229,7 @@ int DIDStore_LoadPrivateKey_Internal(DIDStore *store, const char *storepass, DID
     }
 
     loadsize = decrypt_from_base64(loadextendedkey, storepass, privatekey_str);
-    free((char*)privatekey_str);
+    free((void*)privatekey_str);
     if (loadsize == -1) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Decrypt private key failed.");
         return -1;
@@ -2549,7 +2555,7 @@ int dir_copy(const char *dst, const char *src, const char *new, const char *old)
     //src is not encrypted file.
     if (!need_reencrypt(src)) {
         rc = store_file(dst, string);
-        free((char*)string);
+        free((void*)string);
         if (rc < 0)
             DIDError_Set(DIDERR_IO_ERROR, "Store %s failed.", dst);
         return rc;
@@ -2557,7 +2563,7 @@ int dir_copy(const char *dst, const char *src, const char *new, const char *old)
 
     //src is encrypted file.
     size = decrypt_from_base64(plain, old, string);
-    free((char*)string);
+    free((void*)string);
     if (size < 0) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Decrypt %s failed.", src);
         return -1;
@@ -2706,9 +2712,9 @@ errorExit:
     if (cred)
         Credential_Destroy(cred);
     if (vc_string)
-        free((char*)vc_string);
+        free((void*)vc_string);
     if (meta_string)
-        free((char*)meta_string);
+        free((void*)meta_string);
 
     return rc;
 }
@@ -2792,13 +2798,13 @@ static int export_document(JsonGenerator *gen, DIDDocument *doc, Sha256_Digest *
 
     meta = DIDMetaData_ToJson(&doc->metadata);
     if (!meta) {
-        free((char*)docstring);
+        free((void*)docstring);
         return -1;
     }
 
     rc = sha256_digest_update(digest, 2, docstring, strlen(docstring), meta, strlen(meta));
-    free((char*)docstring);
-    free((char*)meta);
+    free((void*)docstring);
+    free((void*)meta);
 
     return rc;
 }
@@ -3031,7 +3037,7 @@ int DIDStore_ExportDID(DIDStore *store, const char *storepass, DID *did,
 
     data = JsonGenerator_Finish(gen);
     rc = store_file(file, data);
-    free((char*)data);
+    free((void*)data);
     if (rc < 0) {
         DIDError_Set(DIDERR_IO_ERROR, "write exporting did string into file failed.");
         return -1;
@@ -3175,14 +3181,14 @@ static DIDDocument *import_document(cJSON *json, DID *did, Sha256_Digest *digest
     if (DIDMetaData_FromJson_Internal(&doc->metadata, field) < 0)
         goto errorExit;
 
-    DIDMetaData_Copy(&doc->did.metadata, &doc->metadata);
+    memcpy(&doc->did.metadata, &doc->metadata, sizeof(DIDMetaData));
     metastring = DIDMetaData_ToJson(&doc->metadata);
     if (!metastring)
         goto errorExit;
 
     rc = sha256_digest_update(digest, 2, docstring, strlen(docstring), metastring, strlen(metastring));
-    free((char*)docstring);
-    free((char*)metastring);
+    free((void*)docstring);
+    free((void*)metastring);
     if (rc < 0) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Sha256 'document' failed.");
         DIDDocument_Destroy(doc);
@@ -3195,9 +3201,9 @@ errorExit:
     if (doc)
         DIDDocument_Destroy(doc);
     if (docstring)
-        free((char*)docstring);
+        free((void*)docstring);
     if (metastring)
-        free((char*)metastring);
+        free((void*)metastring);
 
     return NULL;
 }
@@ -3280,13 +3286,13 @@ static ssize_t import_creds(cJSON *json, DID *did, Credential **creds, size_t si
 
         const char *metastring = CredentialMetaData_ToJson(&cred->metadata);
         if (!metastring) {
-            free((char*)credstring);
+            free((void*)credstring);
             goto errorExit;
         }
 
         rc = sha256_digest_update(digest, 2, credstring, strlen(credstring), metastring, strlen(metastring));
-        free((char*)credstring);
-        free((char*)metastring);
+        free((void*)credstring);
+        free((void*)metastring);
         if (rc < 0)
             goto errorExit;
 
@@ -3496,7 +3502,7 @@ int DIDStore_ImportDID(DIDStore *store, const char *storepass,
     }
 
     root = cJSON_Parse(string);
-    free((char*)string);
+    free((void*)string);
     if (!root) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Deserialize export file from json failed.");
         return -1;
@@ -3666,7 +3672,7 @@ static int export_pubkey(JsonGenerator *gen, DIDStore *store, Sha256_Digest *dig
 
 errorExit:
     if (pubKey)
-        free((char*)pubKey);
+        free((void*)pubKey);
 
     return rc;
 }
@@ -3733,7 +3739,7 @@ int DIDStore_ExportPrivateIdentity(DIDStore *store, const char *storepass,
 
     data = JsonGenerator_Finish(gen);
     rc = store_file(file, data);
-    free((char*)data);
+    free((void*)data);
     if (rc < 0) {
         DIDError_Set(DIDERR_IO_ERROR, "write exporting did string into file failed.");
         goto errorExit;
@@ -3743,7 +3749,7 @@ int DIDStore_ExportPrivateIdentity(DIDStore *store, const char *storepass,
 
 errorExit:
     if (pubKey)
-       free((char*)pubKey);
+       free((void*)pubKey);
 
     return rc;
 }
@@ -3776,7 +3782,7 @@ int DIDStore_ImportPrivateIdentity(DIDStore *store, const char *storepass,
     }
 
     root = cJSON_Parse(string);
-    free((char*)string);
+    free((void*)string);
     if (!root) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Deserialize export file from json failed.");
         return -1;
@@ -4001,7 +4007,15 @@ int DIDStore_ExportStore(DIDStore *store, const char *storepass,
         return -1;
 
     //create temp dir
-    sprintf(tmpdir, "%s/didexport", getenv("TMPDIR"));
+    const char *tmp = getenv("TMPDIR");
+    if (!tmp) {
+        if (access("/tmp", F_OK) == 0)
+            tmp = "/tmp";
+        else
+            return -1;
+    }
+
+    snprintf(tmpdir, sizeof(tmpdir), "%s/didexport", tmp);
     mkdirs(tmpdir, S_IRWXU);
 
     if (exportdid_to_zip(store, storepass, zip, password, tmpdir) < 0 ||
@@ -4069,7 +4083,7 @@ int DIDStore_ImportStore(DIDStore *store, const char *storepass, const char *zip
         if (!zip_file)
             goto errorExit;
 
-        char *buffer = (char*)malloc(sizeof(zip_int64_t) * stat.size);
+        char *buffer = (char*)malloc(stat.size + 1);
         if (!buffer) {
             zip_fclose(zip_file);
             goto errorExit;
@@ -4079,26 +4093,31 @@ int DIDStore_ImportStore(DIDStore *store, const char *storepass, const char *zip
         zip_fclose(zip_file);
         if (readed < 0)
             goto errorExit;
+        buffer[stat.size] = 0;
 
         delete_file(filename);
-        if (mkstemp(filename) == -1)
+        if (check_file(filename) < 0)
             goto errorExit;
 
         code = store_file(filename, buffer);
         free(buffer);
-        if (code < 0)
+        if (code < 0) {
+            delete_file(filename);
             goto errorExit;
+        }
 
         if (!strcmp(stat.name, "privateIdentity")) {
-            if (DIDStore_ImportPrivateIdentity(store, storepass, filename, password) < 0) {
+            code = DIDStore_ImportPrivateIdentity(store, storepass, filename, password);
+            delete_file(filename);
+            if (code < 0)
                 goto errorExit;
-            }
         } else {
             DID * did = DID_New(stat.name);
             if (!did)
                 goto errorExit;
 
             code = DIDStore_ImportDID(store, storepass, filename, password);
+            delete_file(filename);
             DID_Destroy(did);
             if (code < 0)
                 goto errorExit;

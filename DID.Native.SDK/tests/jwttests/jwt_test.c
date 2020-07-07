@@ -69,7 +69,7 @@ static void test_jwt(void)
 
     jws = JWTParser_Parse(token);
     CU_ASSERT_PTR_NOT_NULL(jws);
-    free((char*)token);
+    free((void*)token);
 
     CU_ASSERT_STRING_EQUAL("json", JWS_GetHeader(jws, "ctyp"));
     CU_ASSERT_STRING_EQUAL("Elastos DID", JWS_GetHeader(jws, "library"));
@@ -84,7 +84,7 @@ static void test_jwt(void)
 
     data = JWS_GetClaimAsJson(jws, "object");
     CU_ASSERT_STRING_EQUAL(json, data);
-    free((char*)data);
+    free((void*)data);
     CU_ASSERT_EQUAL(false, JWS_GetClaimAsBoolean(jws, "finished"));
     CU_ASSERT_EQUAL(iat, JWS_GetIssuedAt(jws));
     CU_ASSERT_EQUAL(nbf, JWS_GetNotBefore(jws));
@@ -106,7 +106,7 @@ static void test_jwt(void)
 
     jws = JWTParser_Parse(token);
     CU_ASSERT_PTR_NOT_NULL(jws);
-    free((char*)token);
+    free((void*)token);
 
     CU_ASSERT_PTR_NULL(JWS_GetHeader(jws, "ctyp"));
     CU_ASSERT_PTR_NULL(JWS_GetHeader(jws, "library"));
@@ -135,6 +135,8 @@ static void test_jwt_compatible(void)
     CU_ASSERT_STRING_EQUAL("0", JWS_GetId(jws));
     CU_ASSERT_STRING_EQUAL("Test cases", JWS_GetAudience(jws));
     CU_ASSERT_STRING_EQUAL("bar", JWS_GetClaim(jws, "foo"));
+
+    JWS_Destroy(jws);
 }
 
 static void test_jws(void)
@@ -186,7 +188,7 @@ static void test_jws(void)
 
     jws = JWTParser_Parse(token);
     CU_ASSERT_PTR_NOT_NULL(jws);
-    free((char*)token);
+    free((void*)token);
 
     CU_ASSERT_STRING_EQUAL("json", JWS_GetHeader(jws, "ctyp"));
     CU_ASSERT_STRING_EQUAL("Elastos DID", JWS_GetHeader(jws, "library"));
@@ -202,7 +204,7 @@ static void test_jws(void)
 
     data = JWS_GetClaimAsJson(jws, "object");
     CU_ASSERT_STRING_EQUAL(json, data);
-    free((char*)data);
+    free((void*)data);
     CU_ASSERT_EQUAL(false, JWS_GetClaimAsBoolean(jws, "finished"));
     CU_ASSERT_EQUAL(iat, JWS_GetIssuedAt(jws));
     CU_ASSERT_EQUAL(nbf, JWS_GetNotBefore(jws));
@@ -221,7 +223,7 @@ static void test_jws(void)
 
     jws = JWTParser_Parse(token);
     CU_ASSERT_PTR_NOT_NULL(jws);
-    free((char*)token);
+    free((void*)token);
 
     CU_ASSERT_PTR_NULL(JWS_GetHeader(jws, "ctyp"));
     CU_ASSERT_PTR_NULL(JWS_GetHeader(jws, "library"));
@@ -278,7 +280,7 @@ static void test_jws_withdefaultkey(void)
 
     jws = JWTParser_Parse(token);
     CU_ASSERT_PTR_NOT_NULL(jws);
-    free((char*)token);
+    free((void*)token);
 
     CU_ASSERT_STRING_EQUAL("json", JWS_GetHeader(jws, "ctyp"));
     CU_ASSERT_STRING_EQUAL("Elastos DID", JWS_GetHeader(jws, "library"));
@@ -317,6 +319,7 @@ static void test_jws_compatible_withdefaultkey(void)
     CU_ASSERT_STRING_EQUAL("0", JWS_GetId(jws));
     CU_ASSERT_STRING_EQUAL("Test cases", JWS_GetAudience(jws));
     CU_ASSERT_STRING_EQUAL("bar", JWS_GetClaim(jws, "foo"));
+    JWS_Destroy(jws);
 }
 
 static void test_jws_compatible(void)
@@ -334,6 +337,7 @@ static void test_jws_compatible(void)
     CU_ASSERT_STRING_EQUAL("0", JWS_GetId(jws));
     CU_ASSERT_STRING_EQUAL("Test cases", JWS_GetAudience(jws));
     CU_ASSERT_STRING_EQUAL("bar", JWS_GetClaim(jws, "foo"));
+    JWS_Destroy(jws);
 }
 
 static int jwt_test_suite_init(void)

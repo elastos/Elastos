@@ -189,7 +189,12 @@ static JWS *parse_jws(const char *token)
 
     //get header
     json_t *json = cjose_jws_get_protected(jws_t);
-    jws->header = json_deep_copy(cjose_jws_get_protected(jws_t));
+    if (!json) {
+        DIDError_Set(DIDERR_JWT, "Get jws protected part failed.");
+        goto errorExit;
+    }
+
+    jws->header = json_deep_copy(json);
     if (!jws->header) {
         DIDError_Set(DIDERR_JWT, "Get jwt header failed.");
         goto errorExit;
@@ -216,12 +221,14 @@ static JWS *parse_jws(const char *token)
     }
 
     successed = cjose_jws_verify(jws_t, jwk, &err);
+    cjose_jws_release(jws_t);
     cjose_jwk_release(jwk);
     if (!successed) {
         DIDError_Set(DIDERR_JWT, "Verify jws failed.");
         JWS_Destroy(jws);
         return NULL;
     }
+
     return jws;
 
 errorExit:

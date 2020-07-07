@@ -55,6 +55,7 @@ static bool DummyAdapter_CreateIdTransaction(DIDAdapter *_adapter, const char *p
 {
     DIDTransactionInfo *info = NULL, *lastinfo;
     cJSON *root = NULL;
+    DIDDocument *doc;
 
     assert(_adapter);
     assert(payload);
@@ -76,16 +77,13 @@ static bool DummyAdapter_CreateIdTransaction(DIDAdapter *_adapter, const char *p
         return false;
     }
 
-    DIDDocument *doc = DIDRequest_FromJson(&info->request, root);
-    if (!doc)
-        goto errorExit;
-
+    doc = DIDRequest_FromJson(&info->request, root);
     if (strcmp(info->request.header.op, "deactivate")) {
-        if(!DIDDocument_IsValid(doc))
-            goto errorExit;
+        if (!doc || !DIDDocument_IsValid(doc))
+        goto errorExit;
     }
 
-    lastinfo = get_lasttransaction(DIDDocument_GetSubject(doc));
+    lastinfo = get_lasttransaction(&info->request.did);
     if (!strcmp(info->request.header.op, "create")) {
         if (lastinfo) {
             DIDError_Set(DIDERR_TRANSACTION_ERROR, "DID already exist.");
@@ -130,7 +128,7 @@ static bool DummyAdapter_CreateIdTransaction(DIDAdapter *_adapter, const char *p
 
 errorExit:
     if (info)
-        free(info);
+        DIDTransactionInfo_Destroy(info);
     if (root)
         cJSON_Delete(root);
 
@@ -189,6 +187,7 @@ const char* DummyAdapter_Resolve(DIDResolver *resolver, const char *did, int all
 {
     DIDTransactionInfo *info;
     JsonGenerator g, *gen;
+    DID *_did;
 
     if (!resolver || !did) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
@@ -200,7 +199,12 @@ const char* DummyAdapter_Resolve(DIDResolver *resolver, const char *did, int all
         return NULL;
     }
 
-    info = get_lasttransaction(DID_FromString(did));
+    _did = DID_FromString(did);
+    if (!_did)
+        return NULL;
+
+    info = get_lasttransaction(_did);
+    DID_Destroy(_did);
     if (!info)
         return NULL;
 

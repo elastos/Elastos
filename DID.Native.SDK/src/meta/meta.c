@@ -36,19 +36,16 @@
 
 int MetaData_ToJson_Internal(MetaData *metadata, JsonGenerator *gen)
 {
-    int rc;
+    int rc = 0;
 
     assert(metadata);
     assert(gen);
 
-    if (!metadata->data) {
-        DIDError_Set(DIDERR_MALFORMED_META, "No content in metadata.");
-        return -1;
+    if (metadata->data) {
+        rc = JsonHelper_ToJson(gen, metadata->data, false);
+        if (rc < 0)
+            DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize DID metadata to json failed.");
     }
-
-    rc = JsonHelper_ToJson(gen, metadata->data, false);
-    if (rc < 0)
-        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize DID metadata to json failed.");
 
     return rc;
 }
@@ -59,18 +56,22 @@ const char *MetaData_ToJson(MetaData *metadata)
 
     assert(metadata);
 
-    gen = JsonGenerator_Initialize(&g);
-    if (!gen) {
-        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Json generator initialize failed.");
-        return NULL;
+    if (metadata->data) {
+        gen = JsonGenerator_Initialize(&g);
+        if (!gen) {
+            DIDError_Set(DIDERR_OUT_OF_MEMORY, "Json generator initialize failed.");
+            return NULL;
+        }
+
+        if (MetaData_ToJson_Internal(metadata, gen) == -1) {
+            JsonGenerator_Destroy(gen);
+            return NULL;
+        }
+
+        return JsonGenerator_Finish(gen);
     }
 
-    if (MetaData_ToJson_Internal(metadata, gen) == -1) {
-        JsonGenerator_Destroy(gen);
-        return NULL;
-    }
-
-    return JsonGenerator_Finish(gen);
+    return NULL;
 }
 
 int MetaData_FromJson_Internal(MetaData *metadata, cJSON *json)
@@ -91,12 +92,10 @@ const char *MetaData_ToString(MetaData *metadata)
 {
     assert(metadata);
 
-    if (!metadata->data) {
-        DIDError_Set(DIDERR_MALFORMED_META, "No content in metadata.");
-        return NULL;
-    }
+    if (metadata->data)
+        return cJSON_Print(metadata->data);
 
-    return cJSON_Print(metadata->data);
+    return NULL;
 }
 
 int MetaData_FromJson(MetaData *metadata, const char *data)

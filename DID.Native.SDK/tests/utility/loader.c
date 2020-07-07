@@ -305,7 +305,7 @@ static Credential *store_credential(const char *file, const char *alias)
         return NULL;
 
     cred = Credential_FromJson(data, NULL);
-    free((char*)data);
+    free((void*)data);
     if (!cred)
         return NULL;
 
@@ -333,16 +333,19 @@ static DIDDocument *store_document(const char *file, const char *alias)
     DIDDocument *doc;
     const char *string;
     DIDStore *store;
+    DID did;
+    int rc;
 
     string = load_testdata_file(file);
     if (!string)
         return NULL;
 
     doc = DIDDocument_FromJson(string);
-    free((char*)string);
+    free((void*)string);
     if (!doc)
         return NULL;
 
+    strcpy(did.idstring, doc->did.idstring);
     DIDMetaData *metadata = DIDDocument_GetMetaData(doc);
     if (!metadata) {
         DIDDocument_Destroy(doc);
@@ -354,12 +357,12 @@ static DIDDocument *store_document(const char *file, const char *alias)
         return NULL;
     }
 
-    if (DIDStore_StoreDID(testdata.store, doc) == -1) {
-        DIDDocument_Destroy(doc);
+    rc = DIDStore_StoreDID(testdata.store, doc);
+    DIDDocument_Destroy(doc);
+    if (rc < 0)
         return NULL;
-    }
 
-    return DIDStore_LoadDID(testdata.store, &doc->did);
+    return DIDStore_LoadDID(testdata.store, &did);
 }
 
 bool file_exist(const char *path)
@@ -667,12 +670,14 @@ const char *TestData_LoadVcNormJson(void)
 
 Presentation *TestData_LoadVp(void)
 {
-    const char *data = load_testdata_file("vp.json");
-    if (!data)
-        return NULL;
+    if (!testdata.vp) {
+        const char *data = load_testdata_file("vp.json");
+        if (!data)
+            return NULL;
 
-    testdata.vp = Presentation_FromJson(data);
-    free((char*)data);
+        testdata.vp = Presentation_FromJson(data);
+        free((void*)data);
+    }
     return testdata.vp;
 }
 
@@ -689,6 +694,7 @@ DIDDocument *TestData_LoadDoc(void)
     DIDURL *id;
     DID *subject;
     int rc;
+    DIDDocument *doc;
 
     if (!testdata.doc)
        testdata.doc = store_document("document.json", "doc test");
@@ -712,9 +718,11 @@ DIDDocument *TestData_LoadDoc(void)
     if (rc)
         return NULL;
 
-    /*if (!DID_Resolve(subject, true) &&
+    /*doc = DID_Resolve(subject, true);
+    if (! &&
             !DIDStore_PublishDID(testdata.store, storepass, subject, NULL, false))
-        return NULL;*/
+        return NULL;
+    DIDDocument_Destroy(doc);*/
 
     return testdata.doc;
 }
@@ -724,6 +732,7 @@ DIDDocument *TestData_LoadIssuerDoc(void)
     DIDURL *id;
     DID *subject;
     int rc;
+    DIDDocument *doc;
 
     if (!testdata.issuerdoc)
         testdata.issuerdoc = store_document("issuer.json", "issuer test");
@@ -735,10 +744,11 @@ DIDDocument *TestData_LoadIssuerDoc(void)
     if (rc)
         return NULL;
 
-    if (!DID_Resolve(subject, true) &&
-            !DIDStore_PublishDID(testdata.store, storepass, subject, NULL, false))
+    doc = DID_Resolve(subject, true);
+    if (!doc && !DIDStore_PublishDID(testdata.store, storepass, subject, NULL, false))
         return NULL;
 
+    DIDDocument_Destroy(doc);
     return testdata.issuerdoc;
 }
 
@@ -836,7 +846,7 @@ const char *Generater_Publickey(char *publickeybase58, size_t size)
         return NULL;
 
     privateIdentity = HDKey_FromMnemonic(mnemonic, "", language, &hk);
-    Mnemonic_Free((char*)mnemonic);
+    Mnemonic_Free((void*)mnemonic);
     if (!privateIdentity)
         return NULL;
 
@@ -861,7 +871,7 @@ HDKey *Generater_KeyPair(HDKey *hdkey)
         return NULL;
 
     privateIdentity = HDKey_FromMnemonic(mnemonic, "", language, &hk);
-    Mnemonic_Free((char*)mnemonic);
+    Mnemonic_Free((void*)mnemonic);
     if (!privateIdentity)
         return NULL;
 

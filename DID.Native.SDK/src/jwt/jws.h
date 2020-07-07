@@ -33,7 +33,6 @@ extern "C" {
 #endif
 
 typedef struct JWS {
-    cjose_jws_t *jws;
     cjose_header_t *header;
     json_t *claims;
 } JWS;

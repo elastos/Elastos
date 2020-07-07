@@ -224,6 +224,8 @@ static void test_didstore_newdid_withouAlias(void)
 
     DIDDocument_Destroy(doc);
     DIDDocument_Destroy(loaddoc);
+
+    TestData_Free();
 }
 
 static void test_didstore_initial_error(void)

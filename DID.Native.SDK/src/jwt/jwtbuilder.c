@@ -116,6 +116,8 @@ void JWTBuilder_Destroy(JWTBuilder *builder)
         json_decref(builder->claims);
     if (builder->doc)
         DIDDocument_Destroy(builder->doc);
+
+    free(builder);
 }
 
 bool JWTBuilder_SetHeader(JWTBuilder *builder, const char *attr, const char *value)
@@ -342,10 +344,10 @@ int JWTBuilder_Sign(JWTBuilder *builder, DIDURL *keyid, const char *storepass)
     }
 
     builder->jws = cjose_jws_sign(jwk, builder->header, (uint8_t*)payload, strlen(payload), &err);
+    cjose_jwk_release(jwk);
     free((void*)payload);
     if (!builder->jws) {
         DIDError_Set(DIDERR_JWT, "Sign jwt body failed.");
-        cjose_jwk_release(jwk);
         return -1;
     }
 
@@ -401,7 +403,7 @@ static const char *jwt_export(JWTBuilder *builder)
     }
 
     len = base64_url_encode(token, (const uint8_t *)header, strlen(header));
-    free((char*)header);
+    free((void*)header);
     if (len <= 0) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Encode jwt header failed");
         goto errorExit;
@@ -410,7 +412,7 @@ static const char *jwt_export(JWTBuilder *builder)
     token[token_len++] = '.';
 
     len = base64_url_encode(token + token_len, (const uint8_t *)claims, strlen(claims));
-    free((char*)claims);
+    free((void*)claims);
     if (len <= 0) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Encode jwt body failed");
         goto errorExit;
@@ -423,11 +425,11 @@ static const char *jwt_export(JWTBuilder *builder)
 
 errorExit:
     if (header)
-        free((char*)header);
+        free((void*)header);
     if (claims)
-        free((char*)claims);
+        free((void*)claims);
     if (token)
-        free((char*)token);
+        free((void*)token);
 
     return NULL;
 }

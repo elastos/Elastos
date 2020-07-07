@@ -46,6 +46,7 @@ typedef struct DIDRequest {
 
     const char *payload;
     DIDDocument *doc;
+    DID did;
 
     struct {
         DIDURL verificationMethod;
@@ -63,6 +64,8 @@ typedef enum DIDRequest_Type
 DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json);
 
 void DIDRequest_Destroy(DIDRequest *request);
+
+void DIDRequest_Free(DIDRequest *request);
 
 const char* DIDRequest_Sign(DIDRequest_Type type, DIDDocument *document,
         DIDURL *signkey, const char *storepass);

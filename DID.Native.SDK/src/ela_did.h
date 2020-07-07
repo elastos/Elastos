@@ -371,7 +371,7 @@ typedef enum DIDLogLevel {
 
 /**
  * \~English
- * Initialize log options for Hive.
+ * Initialize log options for DID.
  * If this API is never called, the default log level is 'Info'; The default log
  * file is stdout.
  *
@@ -379,7 +379,7 @@ typedef enum DIDLogLevel {
  *      level       [in] The log level to control internal log output.
  * @param
  *      log_file    [in] the log file name.
- *                       If the log_file is NULL, Hive will not write
+ *                       If the log_file is NULL, DID will not write
  *                       log to file.
  * @param
  *      log_printer [in] the user defined log printer. Can be NULL.

@@ -43,6 +43,8 @@ int DIDTransactionInfo_FromJson(DIDTransactionInfo *txinfo, cJSON *json);
 
 void DIDTransactionInfo_Destroy(DIDTransactionInfo *txinfo);
 
+void DIDTransactionInfo_Free(DIDTransactionInfo *txinfo);
+
 int DIDTransactionInfo_ToJson_Internal(JsonGenerator *gen, DIDTransactionInfo *info);
 
 const char *DIDTransactionInfo_ToJson(DIDTransactionInfo *txinfo);

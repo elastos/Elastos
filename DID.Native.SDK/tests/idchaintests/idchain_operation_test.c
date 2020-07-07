@@ -262,12 +262,14 @@ static void test_idchain_publishdid_with_credential(void)
 
     doc = DIDDocumentBuilder_Seal(builder, storepass);
     CU_ASSERT_PTR_NOT_NULL_FATAL(doc);
+    DIDDocumentBuilder_Destroy(builder);
 
     rc = DIDStore_StoreDID(store, doc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     cred = DIDDocument_GetCredential(doc, credid);
     CU_ASSERT_PTR_NOT_NULL(cred);
+    DIDDocument_Destroy(doc);
 
     successed = DIDStore_PublishDID(store, storepass, &did, NULL, true);
     CU_ASSERT_TRUE_FATAL(successed);

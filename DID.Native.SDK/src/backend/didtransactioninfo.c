@@ -73,20 +73,21 @@ int DIDTransactionInfo_FromJson(DIDTransactionInfo *txinfo, cJSON *json)
     }
 
     txinfo->request.doc = DIDRequest_FromJson(&txinfo->request, item);
-    if (!txinfo->request.doc)
+    if (!txinfo->request.doc && strcmp(txinfo->request.header.op, "deactivate") != 0)
         return -1;
-
     return 0;
 }
 
 void DIDTransactionInfo_Destroy(DIDTransactionInfo *txinfo)
 {
-    if (!txinfo || !txinfo->request.doc)
-        return;
+    if (txinfo)
+        DIDRequest_Destroy(&txinfo->request);
+}
 
-    //no need to free txinfo, because txinfo is not malloced.
-    free((char*)txinfo->request.payload);
-    DIDDocument_Destroy(txinfo->request.doc);
+void DIDTransactionInfo_Free(DIDTransactionInfo *txinfo)
+{
+    if (txinfo)
+        DIDRequest_Free(&txinfo->request);
 }
 
 int DIDTransactionInfo_ToJson_Internal(JsonGenerator *gen, DIDTransactionInfo *txinfo)

@@ -124,6 +124,7 @@ static void test_didstore_change_password(void)
 
     newdoc = DIDStore_NewDID(store, "newpasswd", "new");
     CU_ASSERT_PTR_NOT_NULL(newdoc);
+    DIDDocument_Destroy(newdoc);
 
     TestData_Free();
 }

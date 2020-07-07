@@ -170,7 +170,7 @@ static Credential *issuer_generate_credential(Issuer *issuer, DID *owner,
 
     rc = DIDDocument_Sign(issuer->signer, &issuer->signkey, storepass, signature,
             1, (unsigned char*)data, strlen(data));
-    free((char*)data);
+    free((void*)data);
     if (rc)
         goto errorExit;
 

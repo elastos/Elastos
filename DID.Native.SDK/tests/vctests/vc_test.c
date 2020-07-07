@@ -22,6 +22,7 @@ static void test_vc_kycvc(void)
     DIDURL *id;
     ssize_t size;
     const char* types[3];
+    const char *data;
 
     issuerdoc = TestData_LoadIssuerDoc();
     CU_ASSERT_PTR_NOT_NULL_FATAL(issuerdoc);
@@ -47,7 +48,9 @@ static void test_vc_kycvc(void)
     CU_ASSERT_TRUE(DID_Equals(DIDDocument_GetSubject(issuerdoc), Credential_GetIssuer(cred)));
     CU_ASSERT_TRUE(DID_Equals(did, Credential_GetOwner(cred)));
 
-    CU_ASSERT_STRING_EQUAL("john@example.com", Credential_GetProperty(cred, "email"));
+    data = Credential_GetProperty(cred, "email");
+    CU_ASSERT_STRING_EQUAL("john@example.com", data);
+    free((void*)data);
 
     CU_ASSERT_NOT_EQUAL(0, Credential_GetIssuanceDate(cred));
     CU_ASSERT_NOT_EQUAL(0, Credential_GetExpirationDate(cred));
@@ -63,6 +66,7 @@ static void test_vc_selfclaimvc(void)
     DIDURL *id;
     ssize_t size;
     const char* types[2];
+    const char *prop;
 
     cred = TestData_LoadProfileVc();
     CU_ASSERT_PTR_NOT_NULL_FATAL(cred);
@@ -84,12 +88,24 @@ static void test_vc_selfclaimvc(void)
     CU_ASSERT_TRUE(DID_Equals(did, Credential_GetIssuer(cred)));
     CU_ASSERT_TRUE(DID_Equals(did, Credential_GetOwner(cred)));
 
-    CU_ASSERT_STRING_EQUAL("John", Credential_GetProperty(cred, "name"));
-    CU_ASSERT_STRING_EQUAL("Male", Credential_GetProperty(cred, "gender"));
-    CU_ASSERT_STRING_EQUAL("Singapore", Credential_GetProperty(cred, "nation"));
-    CU_ASSERT_STRING_EQUAL("English", Credential_GetProperty(cred, "language"));
-    CU_ASSERT_STRING_EQUAL("john@example.com", Credential_GetProperty(cred, "email"));
-    CU_ASSERT_STRING_EQUAL("@john", Credential_GetProperty(cred, "twitter"));
+    prop = Credential_GetProperty(cred, "name");
+    CU_ASSERT_STRING_EQUAL("John", prop);
+    free((void*)prop);
+    prop = Credential_GetProperty(cred, "gender");
+    CU_ASSERT_STRING_EQUAL("Male", prop);
+    free((void*)prop);
+    prop = Credential_GetProperty(cred, "nation");
+    CU_ASSERT_STRING_EQUAL("Singapore", prop);
+    free((void*)prop);
+    prop = Credential_GetProperty(cred, "language");
+    CU_ASSERT_STRING_EQUAL("English", prop);
+    free((void*)prop);
+    prop = Credential_GetProperty(cred, "email");
+    CU_ASSERT_STRING_EQUAL("john@example.com", prop);
+    free((void*)prop);
+    prop = Credential_GetProperty(cred, "twitter");
+    CU_ASSERT_STRING_EQUAL("@john", prop);
+    free((void*)prop);
 
     CU_ASSERT_NOT_EQUAL(0, Credential_GetIssuanceDate(cred));
     CU_ASSERT_NOT_EQUAL(0, Credential_GetExpirationDate(cred));
@@ -117,13 +133,28 @@ static void test_vc_parse_kycvc(void)
     cred = TestData_LoadTwitterVc();
     CU_ASSERT_PTR_NOT_NULL_FATAL(cred);
 
-    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcNormJson(), Credential_ToJson(normvc, true));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcNormJson(), Credential_ToJson(compactvc, true));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcNormJson(), Credential_ToJson(cred, true));
+    data = Credential_ToJson(normvc, true);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcNormJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(compactvc, true);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcNormJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(cred, true);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcNormJson(), data);
+    free((void*)data);
 
-    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcCompJson(), Credential_ToJson(normvc, false));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcCompJson(), Credential_ToJson(compactvc, false));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcCompJson(), Credential_ToJson(cred, false));
+    data = Credential_ToJson(normvc, false);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcCompJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(compactvc, false);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcCompJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(cred, false);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadTwitterVcCompJson(), data);
+    free((void*)data);
+
+    Credential_Destroy(compactvc);
+    Credential_Destroy(normvc);
 }
 
 static void test_vc_parse_selfclaimvc(void)
@@ -144,13 +175,28 @@ static void test_vc_parse_selfclaimvc(void)
     cred = TestData_LoadProfileVc();
     CU_ASSERT_PTR_NOT_NULL_FATAL(cred);
 
-    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcNormJson(), Credential_ToJson(normvc, true));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcNormJson(), Credential_ToJson(compactvc, true));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcNormJson(), Credential_ToJson(cred, true));
+    data = Credential_ToJson(normvc, true);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcNormJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(compactvc, true);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcNormJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(cred, true);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcNormJson(), data);
+    free((void*)data);
 
-    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcCompJson(), Credential_ToJson(normvc, false));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcCompJson(), Credential_ToJson(compactvc, false));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcCompJson(), Credential_ToJson(cred, false));
+    data = Credential_ToJson(normvc, false);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcCompJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(compactvc, false);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcCompJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(cred, false);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcCompJson(), data);
+    free((void*)data);
+
+    Credential_Destroy(compactvc);
+    Credential_Destroy(normvc);
 }
 
 static void test_vc_parse_jsonvc(void)
@@ -171,13 +217,28 @@ static void test_vc_parse_jsonvc(void)
     cred = TestData_LoadVc();
     CU_ASSERT_PTR_NOT_NULL_FATAL(cred);
 
-    CU_ASSERT_STRING_EQUAL(TestData_LoadVcNormJson(), Credential_ToJson(normvc, true));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadVcNormJson(), Credential_ToJson(compactvc, true));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadVcNormJson(), Credential_ToJson(cred, true));
+    data = Credential_ToJson(normvc, true);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadVcNormJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(compactvc, true);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadVcNormJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(cred, true);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadVcNormJson(), data);
+    free((void*)data);
 
-    CU_ASSERT_STRING_EQUAL(TestData_LoadVcCompJson(), Credential_ToJson(normvc, false));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadVcCompJson(), Credential_ToJson(compactvc, false));
-    CU_ASSERT_STRING_EQUAL(TestData_LoadVcCompJson(), Credential_ToJson(cred, false));
+    data = Credential_ToJson(normvc, false);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadVcCompJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(compactvc, false);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadVcCompJson(), data);
+    free((void*)data);
+    data = Credential_ToJson(cred, false);
+    CU_ASSERT_STRING_EQUAL(TestData_LoadVcCompJson(), data);
+    free((void*)data);
+
+    Credential_Destroy(compactvc);
+    Credential_Destroy(normvc);
 }
 
 static int vc_test_suite_init(void)

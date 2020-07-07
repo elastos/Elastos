@@ -339,7 +339,7 @@ const char *load_file(const char *path)
     }
 
     if (read(fd, (char*)data, size) != size) {
-        free((char*)data);
+        free((void*)data);
         close(fd);
         return NULL;
     }

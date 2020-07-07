@@ -44,7 +44,7 @@ static void test_rootkey_with_diff_method(void)
 
     size = base58_decode(extendedkey, sizeof(extendedkey), extendedpubbase58);
     CU_ASSERT_EQUAL(size, EXTENDEDKEY_BYTES);
-    CU_ASSERT_NSTRING_EQUAL(extendedkey, _extendedkey, EXTENDEDKEY_BYTES);
+    CU_ASSERT_NSTRING_EQUAL(extendedkey, _extendedkey, EXTENDEDKEY_BYTES - 4);
 }
 
 static void test_derive_publiconly(void)
@@ -159,7 +159,7 @@ static void test_hdkey_sign_verify(void)
     CU_ASSERT_PTR_NOT_NULL(newmnemonic);
 
     privateIdentity = HDKey_FromMnemonic(newmnemonic, "", "english", &hk);
-    Mnemonic_Free((char*)newmnemonic);
+    Mnemonic_Free((void*)newmnemonic);
     CU_ASSERT_PTR_NOT_NULL(privateIdentity);
 
     for (int i = 0; i < 10; i++) {
