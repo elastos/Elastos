@@ -652,7 +652,7 @@ export default class extends BaseComponent {
     if (item.status === CVOTE_STATUS.DRAFT) return null
     if (item.status !== CVOTE_STATUS.PROPOSED) return I18N.get('council.voting.votingEndsIn.finished')
     // only show when status is PROPOSED
-    return this.renderVoteEndsIn(item.proposedEndsHeight, item.registerHeight)
+    return this.renderVoteEndsIn(item.proposedEndsHeight, item.proposedEnds)
   }
 
   renderCommunityEndsIn = (item) => {
@@ -668,16 +668,14 @@ export default class extends BaseComponent {
     if (item.status === CVOTE_STATUS.PROPOSED || item.status === CVOTE_STATUS.REJECT) return '--'
     if (item.status !== CVOTE_STATUS.NOTIFICATION) return I18N.get('council.voting.votingEndsIn.finished')
     // only show when status is PROPOSED
-    return this.renderVoteEndsIn(item.notificationEndsHeight, item.registerHeight)
+    return this.renderVoteEndsIn(item.notificationEndsHeight, item.notificationEnds)
   }
 
-  renderVoteEndsIn = (endsHeight, registerHeight) => {
-    const { currentHeight } = this.state
-    const heightTime = (endsHeight - currentHeight) * 2 - 30
+  renderVoteEndsIn = (endsHeight, endsIn) => {
     let endsInFloat = moment
       .duration(
         moment()
-          .add(heightTime,'minutes')
+          .add(endsIn,'minutes')
           .diff(moment())
       )
       .as('minutes')
@@ -686,16 +684,16 @@ export default class extends BaseComponent {
       surplusTime = Math.ceil(endsInFloat) + ' ' + I18N.get('council.voting.votingEndsIn.minutes')
     }
     if (endsInFloat > 60 && endsInFloat <= 60 * 24) {
-      const hours = moment.duration(moment().add(heightTime,'minutes').diff(moment())).get('h')
-      const minute = moment.duration(moment().add(heightTime,'minutes').diff(moment())).get('m')
+      const hours = moment.duration(moment().add(endsIn,'minutes').diff(moment())).get('h')
+      const minute = moment.duration(moment().add(endsIn,'minutes').diff(moment())).get('m')
       surplusTime = hours + ' ' +
         I18N.get('council.voting.votingEndsIn.hours') + ' ' +
         minute + ' ' +
         I18N.get('council.voting.votingEndsIn.minutes')
     }
     if (endsInFloat > 60 * 24 && endsInFloat <= 60 * 24 * 2) {
-      const days = moment.duration(moment().add(heightTime,'minutes').diff(moment())).get('d')
-      const hours = moment.duration(moment().add(heightTime,'minutes').diff(moment())).get('h')
+      const days = moment.duration(moment().add(endsIn,'minutes').diff(moment())).get('d')
+      const hours = moment.duration(moment().add(endsIn,'minutes').diff(moment())).get('h')
       surplusTime = days + ' ' +
         I18N.get('council.voting.votingEndsIn.days') + ' ' +
         hours + ' ' +

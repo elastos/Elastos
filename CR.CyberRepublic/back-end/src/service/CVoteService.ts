@@ -82,6 +82,7 @@ const CHAIN_STATUS_TO_PROPOSAL_STATUS = {
 
 const DID_PREFIX = 'did:elastos:'
 const STAGE_BLOCAKS = 7 * 720
+const STAGE_BLOCAKS_DEV = 40
 
 export default class extends Base {
     // create a DRAFT propoal with minimal info
@@ -136,6 +137,12 @@ export default class extends Base {
         const result = await getProposalData(proposalHash)
         const registerHeight = result && result.data.registerheight
         const { proposedEnds, notificationEnds} = await ela.calHeightTime(registerHeight)
+        let proposedEndsHeight = registerHeight + STAGE_BLOCAKS
+        let notificationEndsHeight = registerHeight + STAGE_BLOCAKS * 2
+        if (process.env.NODE_ENV === 'dev') {
+            proposedEndsHeight = registerHeight + STAGE_BLOCAKS_DEV
+            notificationEndsHeight = registerHeight + STAGE_BLOCAKS_DEV * 2
+        }
         const doc: any = {
             vid,
             type: suggestion.type,
@@ -152,8 +159,8 @@ export default class extends Base {
             planIntro: suggestion.planIntro,
             budgetIntro: suggestion.budgetIntro,
             registerHeight,
-            proposedEndsHeight: registerHeight + STAGE_BLOCAKS,
-            notificationEndsHeight: registerHeight + STAGE_BLOCAKS * 2,
+            proposedEndsHeight,
+            notificationEndsHeight,
             proposedEnds: new Date(proposedEnds),
             notificationEnds: new Date(notificationEnds)
         }
@@ -689,8 +696,6 @@ export default class extends Base {
             'registerHeight',
             'proposedEndsHeight',
             'notificationEndsHeight',
-            'proposedEnds',
-            'notificationEnds'
         ]
 
         // const list = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
@@ -705,12 +710,26 @@ export default class extends Base {
             const page = parseInt(param.page, 10)
             cursor.skip(results * (page - 1)).limit(results)
         }
-
+        
+        const currentHeight = await ela.height()
         const rs = await Promise.all([
             cursor,
             db_cvote.getDBInstance().find(query).count()
         ])
-        const list = rs[0]
+        
+        const list = _.map(rs[0], (o: any) => {
+            let proposedEnds = (o.proposedEndsHeight - currentHeight) * 2 - 30
+            let notificationEnds = (o.notificationEndsHeight - currentHeight) * 2 - 30
+            if (process.env.NODE_ENV === 'dev') {
+                proposedEnds = (o.proposedEndsHeight - currentHeight) * 252 - 30
+                notificationEnds = (o.notificationEndsHeight - currentHeight) * 252 - 30
+            }
+            return {
+                ...o._doc,
+                proposedEnds,
+                notificationEnds
+            }
+        })
         const total = rs[1]
 
         return {list, total}
@@ -1893,16 +1912,22 @@ export default class extends Base {
 
     public async processOldData() {
         const db_cvote = this.getDBModel('CVote')
-        const oldList = await db_cvote.find({ proposedEndsHeight:{$exists:false}, old:{$exists:false} })
+        const oldList = await db_cvote.find({$or:[{proposedEndsHeight:{$exists:true}},{registerHeight: {$exists:false}}]},{old:{$exists:false}})
         _.forEach(oldList, async (o: any)=> {
             const result = await getProposalData(o.proposalHash)
             if (result == undefined) return
             const registerHeight = result !== undefined && result.data.registerheight
+            let proposedEndsHeight = registerHeight + STAGE_BLOCAKS
+            let notificationEndsHeight = registerHeight + STAGE_BLOCAKS * 2
+            if (process.env.NODE_ENV === 'dev') {
+                proposedEndsHeight = registerHeight + STAGE_BLOCAKS_DEV
+                notificationEndsHeight = registerHeight + STAGE_BLOCAKS_DEV * 2
+            }
             await db_cvote.update({_id:o._id},{
                 $set:{
                     registerHeight,
-                    proposedEndsHeight: registerHeight + STAGE_BLOCAKS,
-                    notificationEndsHeight: registerHeight + STAGE_BLOCAKS * 2
+                    proposedEndsHeight,
+                    notificationEndsHeight
                 }
             })
         })
