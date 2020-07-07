@@ -1293,13 +1293,14 @@ export default class extends Base {
         const db_cvote = this.getDBModel('CVote')
         const {status: chainStatus} = rs
         const currentStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
-
+        const proposal = await db_cvote.findById(_id)
         if (status !== currentStatus) {
             await db_cvote.update({
                 _id,
             }, {
                 status: currentStatus,
             })
+            this.notifyProposer(proposal, currentStatus, 'council')
         }
     }
 
@@ -1316,8 +1317,8 @@ export default class extends Base {
         } = rs
 
         const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
+        const proposal = await db_cvote.findById(_id)
         if (proposalStatus === constant.CVOTE_STATUS.ACTIVE) {
-            const proposal = await db_cvote.findById(_id)
             const budget = proposal.budget.map((item: any) => {
                 if (item.type === 'ADVANCE') {
                     return {...item, status: WAITING_FOR_WITHDRAWAL}
@@ -1335,6 +1336,7 @@ export default class extends Base {
                     rejectThroughAmount
                 }
             })
+            this.notifyProposer(proposal, proposalStatus, 'community')
             return
         }
         switch (proposalStatus) {
@@ -1353,6 +1355,7 @@ export default class extends Base {
             rejectAmount,
             rejectThroughAmount
         })
+        this.notifyProposer(proposal, proposalStatus, 'community')
     }
 
     // member vote against
@@ -1936,16 +1939,16 @@ export default class extends Base {
         return registerHeight
     }
 
-    private async notifyProposer(cvote: any) {
+    private async notifyProposer(cvote: any, status: any, by: any) {
         const db_user = this.getDBModel('User')
         const user = await db_user.find({
             _id: cvote.proposer
         })
         const toUsers = []
         const toMails = _.map(user, 'email')
-        const subject = `【${cvote.status}】Your proposal #${cvote.vid} get ${cvote.status}`
+        const subject = `【${status}】Your proposal #${cvote.vid} get ${status}`
         const body = `
-        <p>Your proposal #${cvote.vid} get ${cvote.status} by the council.</p>
+        <p>Your proposal #${cvote.vid} get ${status} by the ${by}.</p>
         <br />
         <p>Click here to view more:</p>
         <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
@@ -1953,17 +1956,16 @@ export default class extends Base {
         <p>Thanks</p>
         <p>Cyber Republic</p>
         `
-
         const recVariables = _.zipObject(
             toMails,
-            _.map(toUsers, (user) => {
+            _.map(user, (o) => {
                 return {
-                    _id: user._id,
-                    username: userUtil.formatUsername(user)
+                    _id: o._id,
+                    username: userUtil.formatUsername(o)
                 }
             })
         )
-
+            
         const mailObj = {
             to: toMails,
             // toName: ownerToName,
@@ -1971,7 +1973,6 @@ export default class extends Base {
             body,
             recVariables
         }
-
         mail.send(mailObj)
     }
 }
