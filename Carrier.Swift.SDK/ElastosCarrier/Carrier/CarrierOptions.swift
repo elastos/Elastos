@@ -61,12 +61,9 @@ internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COp
     var cOptions = COptions()
     var cNodes: UnsafeMutablePointer<CBootstrapNode>?
     var cExpressNodes: UnsafeMutablePointer<CExpressNode>?
-    
-    cOptions.persistent_location = createCStringDuplicate(options.persistentLocation)
-    options.secret_key?.withUnsafeBytes { (cdata) -> Void in
-        cOptions.secret_key = cdata
-    }
 
+    cOptions.persistent_location = createCStringDuplicate(options.persistentLocation)
+    cOptions.secret_key = createCDataDuplicate(options.secret_key)
     cOptions.udp_enabled = options.udpEnabled
     (cNodes, cOptions.bootstraps_size) = convertBootstrapNodesToCBootstrapNodes(options.bootstrapNodes!)
     cOptions.bootstraps = UnsafePointer<CBootstrapNode>(cNodes)
@@ -82,13 +79,28 @@ internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COp
 
 internal func cleanupCOptions(_ cOptions : COptions) {
     deallocCString(cOptions.persistent_location)
-    cOptions.secret_key?.deallocate()
     cleanupCBootstrap(cOptions.bootstraps!, cOptions.bootstraps_size)
     UnsafeMutablePointer<CBootstrapNode>(mutating: cOptions.bootstraps)?.deallocate()
-
+    deallocCData(cOptions.secret_key)
     guard cOptions.express_nodes != nil else {
         return
     }
     cleanupCBootstraphive(cOptions.express_nodes!, cOptions.express_nodes_size)
     UnsafeMutablePointer<CExpressNode>(mutating: cOptions.express_nodes)?.deallocate()
+}
+
+@inline(__always) internal func createCDataDuplicate(_ field: Data?) -> UnsafePointer<Int8>? {
+    if field != nil {
+        return UnsafePointer<Int8>(field!.withUnsafeBytes {
+            return strdup($0)
+        })
+    } else {
+        return nil
+    }
+}
+
+@inline(__always) internal func deallocCData(_ field: UnsafePointer<Int8>?) {
+    if (field != nil) {
+        free(UnsafeMutablePointer<Int8>(mutating: field))
+    }
 }
