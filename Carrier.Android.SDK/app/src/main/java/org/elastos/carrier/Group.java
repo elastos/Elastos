@@ -80,7 +80,7 @@ public class Group {
 			throw CarrierException.fromErrorCode(get_error_code());
 	}
 
-	String getId() {
+	public String getId() {
 		return groupId;
 	}
 
