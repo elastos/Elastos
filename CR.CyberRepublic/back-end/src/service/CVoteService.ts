@@ -1937,4 +1937,43 @@ export default class extends Base {
         const registerHeight = await ela.height()
         return registerHeight
     }
+
+    private async notifyProposer(cvote: any) {
+        const db_user = this.getDBModel('User')
+        const user = await db_user.find({
+            _id: cvote.proposer
+        })
+        const toUsers = []
+        const toMails = _.map(user, 'email')
+        const subject = `【${cvote.status}】Your proposal #${cvote.vid} get ${cvote.status}`
+        const body = `
+        <p>Your proposal #${cvote.vid} get ${cvote.status} by the council.</p>
+        <br />
+        <p>Click here to view more:</p>
+        <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
+        <br /><br />
+        <p>Thanks</p>
+        <p>Cyber Republic</p>
+        `
+
+        const recVariables = _.zipObject(
+            toMails,
+            _.map(toUsers, (user) => {
+                return {
+                    _id: user._id,
+                    username: userUtil.formatUsername(user)
+                }
+            })
+        )
+
+        const mailObj = {
+            to: toMails,
+            // toName: ownerToName,
+            subject,
+            body,
+            recVariables
+        }
+
+        mail.send(mailObj)
+    }
 }
