@@ -438,7 +438,7 @@ blockHeaderValidateGasUsed (BREthereumBlockHeader this,
 static int
 blockHeaderValidateExtraData (BREthereumBlockHeader this,
                               BREthereumBlockHeader parent) {
-    return this->extraDataCount <= 32;
+    return this->extraDataCount <= 1024;
 }
 
 #if defined (INCLUDE_UNUSED_FUNCTION)

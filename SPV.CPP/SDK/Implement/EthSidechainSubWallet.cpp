@@ -300,6 +300,7 @@ namespace Elastos {
 			ArgInfo("tx: {}", tx.dump());
 
 			ArgInfo("r => ");
+
 			return "";
 		}
 
@@ -308,7 +309,44 @@ namespace Elastos {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("start: {}, cnt: {}, txid: {}", start, count, txid);
 
-			nlohmann::json j;
+			nlohmann::json j, jtx;
+			std::vector<nlohmann::json> txList;
+
+			std::vector<EthereumTransferPtr> transfers = _client->_ewm->getWallet()->getTransfers();
+			if (!txid.empty()) {
+				start = 0;
+				count = transfers.size();
+			}
+
+			for (size_t i = start; i < transfers.size() && i - start < count; ++i) {
+				std::string transferID = GetTransferID(transfers[i]);
+				if (txid.empty() || txid == transferID || txid == transfers[i]->getIdentifier()) {
+					jtx["ID"] = transferID;
+					jtx["IsConfirmed"] = transfers[i]->isConfirmed();
+					jtx["IsSubmitted"] = transfers[i]->isSubmitted();
+					jtx["IsErrored"] = transfers[i]->isErrored();
+					jtx["ErrorDesc"] = transfers[i]->isErrored() ? transfers[i]->getErrorDescription() : "";
+					jtx["Hash"] = transfers[i]->getIdentifier();
+					jtx["OrigTxHash"] = transfers[i]->getOriginationTransactionHash();
+					jtx["Amount"] = transfers[i]->getAmount(EthereumAmount::ETHER_ETHER);
+					jtx["Timestamp"] = transfers[i]->getBlockTimestamp();
+					jtx["Fee"] = transfers[i]->getFee(EthereumAmount::ETHER_ETHER);
+					jtx["Confirmations"] = transfers[i]->getBlockConfirmations();
+					jtx["GasPrice"] = transfers[i]->getGasPrice();
+					jtx["GasLimit"] = transfers[i]->getGasLimit();
+					jtx["GasUsed"] = transfers[i]->getGasUsed();
+					jtx["BlockNumber"] = transfers[i]->getBlockNumber();
+					jtx["SourceAddress"] = transfers[i]->getSourceAddress();
+					jtx["TargetAddress"] = transfers[i]->getTargetAddress();
+					txList.push_back(jtx);
+
+					if (!txid.empty())
+						break;
+				}
+			}
+
+			j["MaxCount"] = transfers.size();
+			j["Transactions"] = txList;
 
 			ArgInfo("r => {}", j.dump());
 

@@ -97,7 +97,7 @@
 // The number of nodes that should be available.  We'll discover nodes until we reach this count.
 // Note that this doesn mean that the nodes are LESv2 or PIPv1 nodes - they are just nodes.  As
 // we explore individual nodes they may become unavailable and we'll need to discover more.
-#define LES_AVAILABLE_NODES_COUNT     (100)
+#define LES_AVAILABLE_NODES_COUNT     (10)
 
 // For a request with a nodeIndex that is not LES_PREFERRED_NODE_INDEX, the intention is to send
 // the same message multiple times.  If the message was to be sent to 3 nodes, but only two are
