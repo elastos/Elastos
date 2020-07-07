@@ -9,13 +9,13 @@ const Agenda = require('agenda')
 const agenda = new Agenda({ db: { address: process.env.DB_URL } })
 
 const JOB_NAME = {
-  INTOPROPOSAL: 'make into proposal',
+  INTOPROPOSAL: 'new make into proposal',
   CVOTEJOB: 'cvote poll proposal',
   COUNCILJOB: 'council poll change',
   USERJOB: 'user poll did infomation',
   UPDATEMILESTONE: 'update milestone status',
-  COUNCILREVIEWJOB: 'council review',
-  TRANSACTIONJOB: 'append transaction',
+  COUNCILREVIEWJOB: 'new council review',
+  TRANSACTIONJOB: 'new append transaction',
   NOTIFICATIONCOUNCILVOTE: 'notification council to vote',
   UPDATECURRENTHEIGHT: 'update current height',
   PROCESSOLDDATAONCE: 'process old data once'
@@ -40,7 +40,8 @@ agenda.define(JOB_NAME.INTOPROPOSAL, async (job: any) => {
     const cvoteService = new CVoteServive(DB, { user: undefined })
 
     const suggestions = await DB.getModel('Suggestion').find({
-      'proposers.did': { $exists: true }
+      'proposers.did': { $exists: true },
+      'proposalHash': { $exists: false }
     })
     console.log('suggestions', suggestions.length)
     if (!suggestions.length) {
@@ -55,12 +56,12 @@ agenda.define(JOB_NAME.INTOPROPOSAL, async (job: any) => {
       const rs = await getProposalState({ drafthash: doc.draftHash })
       if (rs && rs.success && rs.status === 'Registered') {
         console.log('registered doc.displayId', doc.displayId)
-        count++
         const proposal = await cvote.findOne({ draftHash: doc.draftHash })
         if (proposal) {
           console.log('existing proposal vid', proposal.vid)
           continue
         }
+
         const newProposal = await cvoteService.makeSuggIntoProposal({
           suggestion: doc,
           proposalHash: rs.proposalHash,
@@ -69,6 +70,7 @@ agenda.define(JOB_NAME.INTOPROPOSAL, async (job: any) => {
         if (newProposal) {
           console.log('newProposal.vid', newProposal.vid)
         }
+        count++
       }
     }
     console.log('proposed suggestion count...', count)
