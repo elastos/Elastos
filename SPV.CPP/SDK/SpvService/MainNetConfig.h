@@ -80,6 +80,7 @@ namespace Elastos {
 			"TargetTimeSpan": 86400,
 			"TargetTimePerBlock": 120,
 			"DNSSeeds": [
+				"node-mainnet-026.elastos.org",
 				"node-mainnet-002.elastos.org",
 				"node-mainnet-003.elastos.org",
 				"node-mainnet-004.elastos.org",
