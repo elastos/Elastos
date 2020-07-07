@@ -172,21 +172,23 @@ export default class extends Base {
                   message: 'There is no this payment application.'
                 }
               }
-              await this.model.update(
-                { proposalHash, 'withdrawalHistory.messageHash': messageHash },
-                {
-                  $set: {
-                    'withdrawalHistory.$.signature': decoded.data
-                  }
-                }
-              )
-              await this.model.update(
-                {
-                  proposalHash,
-                  'budget.milestoneKey': history.milestoneKey
-                },
-                { $set: { 'budget.$.status': WAITING_FOR_APPROVAL } }
-              )
+
+              await Promise.all([
+                this.model.update(
+                  {
+                    proposalHash,
+                    'withdrawalHistory.messageHash': messageHash
+                  },
+                  { 'withdrawalHistory.$.signature': decoded.data }
+                ),
+                this.model.update(
+                  {
+                    proposalHash,
+                    'budget.milestoneKey': history.milestoneKey
+                  },
+                  { 'budget.$.status': WAITING_FOR_APPROVAL }
+                )
+              ])
 
               this.notifySecretaries(this.updateMailTemplate(proposal.vid))
               return { code: 200, success: true, message: 'Ok' }
@@ -254,7 +256,10 @@ export default class extends Base {
         return { success: false, message: 'Payment stage is invalid.' }
       }
       if (budget.status !== WAITING_FOR_APPROVAL) {
-        return { success: false, message: 'Milestone status is wrong.' }
+        return {
+          success: false,
+          message: `This milestone is not ready for review, please refresh the page and try again.`
+        }
       }
 
       const history = proposal.withdrawalHistory.filter((item: any) =>
