@@ -607,29 +607,6 @@ func (b *BlockChain) checkCRCProposalWithdrawOutput(txn *Transaction) error {
 		return errors.New("proposal not exist")
 	}
 
-	if txn.PayloadVersion == payload.CRCProposalWithdrawDefault {
-		//check output[0] must equal with Recipient
-		if txn.Outputs[0].ProgramHash != proposalState.Recipient {
-			return errors.New("txn.Outputs[0].ProgramHash != Recipient")
-		}
-		//check output[1] if exist must equal with CRCComitteeAddresss
-		if len(txn.Outputs) > 1 {
-			if txn.Outputs[1].ProgramHash != b.chainParams.CRExpensesAddress {
-				return errors.New("txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
-			}
-		}
-		if len(txn.Outputs) > 2 {
-			return errors.New("CRCProposalWithdraw tx should not have over two output")
-		}
-	} else if txn.PayloadVersion == payload.CRCProposalWithdrawVersion01 {
-
-		//check output[0] must equal with Recipient
-		if withdrawPayload.Recipient != proposalState.Recipient {
-			return errors.New("withdrawPayload.Recipient != Recipient")
-		}
-
-	}
-
 	return nil
 }
 
@@ -720,12 +697,6 @@ func (b *BlockChain) checkTransactionOutput(txn *Transaction,
 		return errors.New("transaction has no outputs")
 	}
 
-	if txn.IsCRCProposalWithdrawTx() {
-		err := b.checkCRCProposalWithdrawOutput(txn)
-		if err != nil {
-			return err
-		}
-	}
 	// check if output address is valid
 	specialOutputCount := 0
 	for _, output := range txn.Outputs {
@@ -1880,11 +1851,31 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 		return errors.New("no need to withdraw")
 	}
 	if txn.PayloadVersion == payload.CRCProposalWithdrawDefault {
+		// Check output[0] must equal with Recipient
+		if txn.Outputs[0].ProgramHash != proposalState.Recipient {
+			return errors.New("txn.Outputs[0].ProgramHash != Recipient")
+		}
+
+		// Check output[1] if exist must equal with CRCComitteeAddresss
+		if len(txn.Outputs) > 1 {
+			if txn.Outputs[1].ProgramHash != b.chainParams.CRExpensesAddress {
+				return errors.New("txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
+			}
+		}
+
+		if len(txn.Outputs) > 2 {
+			return errors.New("CRCProposalWithdraw tx should not have over two output")
+		}
+
 		//Recipient count + fee must equal to availableWithdrawalAmount
 		if txn.Outputs[0].Value+fee != withdrawAmount {
 			return errors.New("txn.Outputs[0].Value + fee != withdrawAmout ")
 		}
 	} else if txn.PayloadVersion == payload.CRCProposalWithdrawVersion01 {
+		// Recipient address must be the current recipient address
+		if withdrawPayload.Recipient != proposalState.Recipient {
+			return errors.New("withdrawPayload.Recipient != Recipient")
+		}
 		// Recipient Amount + fee must equal to availableWithdrawalAmount
 		if withdrawPayload.Amount != withdrawAmount {
 			return errors.New("withdrawPayload.Amount != withdrawAmount ")
