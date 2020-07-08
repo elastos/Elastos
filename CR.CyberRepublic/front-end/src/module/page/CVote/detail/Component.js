@@ -75,7 +75,7 @@ const renderRichContent = (data, key, title, user, actions) => {
         <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
         <Paragraph>{data.elaAddress}</Paragraph>
         <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
-        <div className='budget-payment-list'>
+        <div className="budget-payment-list">
           <PaymentList
             list={data.budget}
             milestone={data.plan.milestone}
@@ -87,15 +87,12 @@ const renderRichContent = (data, key, title, user, actions) => {
             status={data.status}
           />
         </div>
-        {data.budgetIntro ?
-          (<div>
+        {data.budgetIntro ? (
+          <div>
             <Subtitle>{I18N.get('suggestion.budget.introduction')}</Subtitle>
             <MarkdownPreview content={data.budgetIntro} />
-          </div>)
-          : null
-
-        }
-
+          </div>
+        ) : null}
       </div>
     )
   } else if (key === 'plan' && data.plan && typeof data.plan !== 'string') {
@@ -105,14 +102,12 @@ const renderRichContent = (data, key, title, user, actions) => {
         <Milestones initialValue={data.plan.milestone} editable={false} />
         <Subtitle>{I18N.get('suggestion.plan.teamInfo')}</Subtitle>
         <TeamInfoList list={data.plan.teamInfo} editable={false} />
-        {data.planIntro ?
-          (<div>
+        {data.planIntro ? (
+          <div>
             <Subtitle>{I18N.get('suggestion.plan.introduction')}</Subtitle>
             <MarkdownPreview content={data.planIntro} />
-          </div>)
-          : null
-        }
-
+          </div>
+        ) : null}
       </div>
     )
   } else {
@@ -184,14 +179,16 @@ class C extends StandardPage {
       )
     }
 
-    const currentVoted = _.find(data.voteResult, function (o) {
+    const currentVoted = _.find(data.voteResult, function(o) {
       if (o.votedBy != null) {
         if (o.votedBy._id == currentUserId) {
           return o
         }
       }
     })
-    const isVote = currentVoted && (currentVoted.status == 'chained' || currentVoted.value == 'undecided')
+    const isVote =
+      currentVoted &&
+      (currentVoted.status == 'chained' || currentVoted.value == 'undecided')
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
@@ -253,9 +250,9 @@ class C extends StandardPage {
           }
           const finalStyle = style
             ? {
-              ...style,
-              zIndex: 2
-            }
+                ...style,
+                zIndex: 2
+              }
             : style
           const isNotification = this.props.data.status == 'NOTIFICATION'
           return (
@@ -402,8 +399,8 @@ class C extends StandardPage {
         </span>
       </span>
     ) : (
-        I18N.get('proposal.fields.tracking')
-      )
+      I18N.get('proposal.fields.tracking')
+    )
     const summaryTitle = summaryStatus ? (
       <span>
         {I18N.get('proposal.fields.summary')}{' '}
@@ -412,8 +409,8 @@ class C extends StandardPage {
         </span>
       </span>
     ) : (
-        I18N.get('proposal.fields.summary')
-      )
+      I18N.get('proposal.fields.summary')
+    )
     const tracking = isShowFollowingUp && (
       <Anchor.Link href="#tracking" title={trackingTitle} key="tracking" />
     )
@@ -732,12 +729,14 @@ class C extends StandardPage {
       />
     )
     const oldData = _.get(this.props.data, 'old')
-    return !oldData && (
-      <VoteBtnGroup>
-        {popOverYes}
-        {popOverOppose}
-        {popOverAbstain}
-      </VoteBtnGroup>
+    return (
+      !oldData && (
+        <VoteBtnGroup>
+          {popOverYes}
+          {popOverOppose}
+          {popOverAbstain}
+        </VoteBtnGroup>
+      )
     )
   }
 
