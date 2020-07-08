@@ -12,7 +12,7 @@ import {
 } from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
-import _, { values } from 'lodash'
+import _ from 'lodash'
 import StandardPage from '@/module/page/StandardPage'
 import { CVOTE_RESULT, CVOTE_STATUS, CVOTE_CHAIN_STATUS } from '@/constant'
 import Footer from '@/module/layout/Footer/Container'
@@ -876,7 +876,7 @@ class C extends StandardPage {
     let stats
     if (status === CVOTE_STATUS.DRAFT) return null
     const group = {}
-    for(const value of _.values(CVOTE_RESULT)) {
+    for (const value of _.values(CVOTE_RESULT)) {
       group[value] = []
     }
     if (!_.isEmpty(voteResult)) {
@@ -904,8 +904,16 @@ class C extends StandardPage {
               const history = { ...item, reason: rs.reason, status: rs.status }
               prev[rs.value].push(history)
             }
-            if (votedBy === this.props.currentUserId) {
+            if (
+              votedBy === this.props.currentUserId ||
+              cur.value === CVOTE_RESULT.UNDECIDED
+            ) {
               prev[cur.value].push(item)
+            } else {
+              prev[CVOTE_RESULT.UNDECIDED].push({
+                ...item,
+                reason: ''
+              })
             }
           } else {
             prev[cur.value].push(item)
