@@ -82,8 +82,14 @@
 #define TURN_REALM                      "elastos.org"
 
 #define TASSEMBLY_TIMEOUT               (60) //60s.
-#define EXPRESS_DEF_TIMEOUT             (5 * 60) //5min.
-#define EXPRESS_CUS_TIMEOUT             (2 * 60) //2min.
+
+/* it would conduct to pull offline messages at the regular interval
+ * of 5 minutes except that connection status of at least one friend
+ * changes, which would conduct at interval of 2 minutes only for
+ * that moment.
+ */
+#define PULLMSG_REGULAR_INTERVAL (5 * 60) //5m
+#define PULLMSG_INSTANT_INTERVAL (2 * 60) //2m
 
 // Carrier invite request/response data transmission unit length.
 #define INVITE_DATA_UNIT                (1280)
@@ -1487,11 +1493,11 @@ void notify_friend_connection_cb(uint32_t friend_number, bool connected,
                                  void *context)
 {
     ElaCarrier *w = (ElaCarrier *)context;
-    FriendInfo *fi;
-    char tmpid[ELA_MAX_ID_LEN + 1];
     ElaConnectionStatus status;
-    bool conn_made;
-    struct timeval now, subres, expire_interval;
+    FriendInfo *fi;
+
+    struct timeval expireat;
+    struct timeval interval;
 
     assert(friend_number != UINT32_MAX);
 
@@ -1506,21 +1512,27 @@ void notify_friend_connection_cb(uint32_t friend_number, bool connected,
                          ElaConnectionStatus_Disconnected;
 
     if (status != fi->info.status) {
-        fi->info.status = status;
-        strcpy(tmpid, fi->info.user_info.userid);
+        char friendid[ELA_MAX_ID_LEN + 1];
 
-        notify_friend_connection(w, tmpid, status);
+        fi->info.status = status;
+        strcpy(friendid, fi->info.user_info.userid);
+
+        notify_friend_connection(w, friendid, status);
     }
 
     deref(fi);
 
-    gettimeofday(&now, NULL);
-    timersub(&w->express_expiretime, &now, &subres);
-    if(subres.tv_sec > EXPRESS_CUS_TIMEOUT) {
-        expire_interval.tv_sec = EXPRESS_CUS_TIMEOUT;
-        expire_interval.tv_usec = 0;
-        timeradd(&now, &expire_interval, &w->express_expiretime);
-    }
+    /* As friend status changes, it would trigger to pull offline messages
+     * in 2 minutes.
+     */
+    gettimeofday(&expireat, NULL);
+
+    interval.tv_sec  = PULLMSG_INSTANT_INTERVAL;
+    interval.tv_usec = 0;
+    timeradd(&expireat, &interval, &expireat);
+
+    if (timercmp(&expireat, &w->express_expiretime, <))
+        w->express_expiretime = expireat;
 }
 
 static void notify_friend_presence(ElaCarrier *w, const char *friendid,
@@ -1834,7 +1846,7 @@ redo_check:
         if (rc == -1)
             goto redo_check;
 
-        if (timercmp(&now, &item->expire_time, <)) {
+        if (timercmp(&now, &item->expire_time, <=)) {
             deref(item);
             continue;
         }
@@ -1869,26 +1881,21 @@ redo_check:
 
 static void do_express_expire(ElaCarrier *w)
 {
-    struct timeval expire_interval;
-    bool need_pullmsg = false;
+    struct timeval timeout;
     struct timeval now;
-    int rc;
 
     gettimeofday(&now, NULL);
 
-    if (timercmp(&now, &w->express_expiretime, <))
+    if (timercmp(&now, &w->express_expiretime, <=))
         return;
 
-    if(w->express_expiretime.tv_sec != 0)
-        need_pullmsg = true;
-
-    expire_interval.tv_sec = EXPRESS_DEF_TIMEOUT;
-    expire_interval.tv_usec = 0;
-    timeradd(&now, &expire_interval, &w->express_expiretime);
-
     w->connector = create_express_connector(w);
-    if (need_pullmsg && w->connector)
+    if (w->connector && w->express_expiretime.tv_sec > 0)
         express_enqueue_pull_messages(w->connector);
+
+    timeout.tv_sec  = PULLMSG_REGULAR_INTERVAL;
+    timeout.tv_usec = 0;
+    timeradd(&now, &timeout, &w->express_expiretime);
 }
 
 static
