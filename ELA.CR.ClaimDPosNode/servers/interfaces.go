@@ -361,7 +361,7 @@ func GetDPOSPeersInfo(params Params) map[string]interface{} {
 		result.NodePublicKeys = append(result.NodePublicKeys, pk)
 	}
 
-	return ResponsePack(Success, peers)
+	return ResponsePack(Success, result)
 }
 
 func GetArbiterPeersInfo(params Params) map[string]interface{} {
