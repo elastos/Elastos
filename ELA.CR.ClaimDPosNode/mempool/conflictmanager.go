@@ -30,6 +30,7 @@ const (
 	slotSidechainTxHashes          = "SidechainTxHashes"
 	slotTxInputsReferKeys          = "TxInputsReferKeys"
 	slotCRManagementPublicKey      = "CRManagementPublicKey"
+	slotCRManagementDID            = "CRCommitteeDID"
 )
 
 type conflict struct {
@@ -170,11 +171,11 @@ func newConflictManager() conflictManager {
 			},
 			// CR claim DPOS node did
 			{
-				name: slotCRManagementPublicKey,
+				name: slotCRManagementDID,
 				slot: newConflictSlot(programHash,
 					keyTypeFuncPair{
 						Type: types.CRDPOSManagement,
-						Func: strCRManagementPublicKey,
+						Func: strCRManagementDID,
 					},
 				),
 			},
