@@ -2756,23 +2756,9 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	s.NoError(err)
 
 	//len(txn.Outputs) ==0 transaction has no outputs
-	rightOutPuts := txn.Outputs
 	txn.Outputs = []*types.Output{}
 	err = s.Chain.checkTransactionOutput(txn, tenureHeight)
 	s.EqualError(err, "transaction has no outputs")
-
-	//txn.Outputs[1].ProgramHash !=CRCComitteeAddresss
-	txn.Outputs = rightOutPuts
-	txn.Outputs[1].ProgramHash = *Recipient
-	err = s.Chain.checkTransactionOutput(txn, tenureHeight)
-	txn.Outputs[1].ProgramHash = *CRExpensesAddressU168
-	s.EqualError(err, "txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
-
-	//len(txn.Outputs) >2 CRCProposalWithdraw tx should not have over two output
-	txn.Outputs = rightOutPuts
-	txn.Outputs = append(txn.Outputs, &types.Output{})
-	err = s.Chain.checkTransactionOutput(txn, tenureHeight)
-	s.EqualError(err, "CRCProposalWithdraw tx should not have over two output")
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	pk2Bytes, _ := common.HexStringToBytes(publicKeyStr2)
