@@ -725,7 +725,7 @@ export default class extends BaseComponent {
   }
 
   baseVoteDataByUser = (data, isCSV = false) => {
-    const { vote_map: voteMap, voteResult, status } = data
+    const { vote_map: voteMap, voteResult, status, voteHistory } = data
     let voteArr
     if (status === CVOTE_STATUS.DRAFT) return null
 
@@ -733,6 +733,10 @@ export default class extends BaseComponent {
       voteArr = _.map(voteResult, (item) => {
         if (item.status === CVOTE_CHAIN_STATUS.CHAINED) {
           return CVOTE_RESULT[item.value.toUpperCase()]
+        }
+        const rs = _.find(voteHistory, (history) => item.votedBy === history.votedBy)
+        if (rs && rs.status === CVOTE_CHAIN_STATUS.CHAINED) {
+          return CVOTE_RESULT[rs.value.toUpperCase()]
         }
         return CVOTE_RESULT.UNDECIDED
       })
@@ -748,8 +752,7 @@ export default class extends BaseComponent {
     const supportNum = _.countBy(voteArr)[CVOTE_RESULT.SUPPORT] || 0
     const percentage = (supportNum * 100) / voteArr.length
     const proposalAgreed = percentage > 50
-    const percentageStr =
-      percentage.toString() && `${percentage.toFixed(1).toString()}%`
+    const percentageStr = percentage.toString() && `${percentage.toFixed(1).toString()}%`
     return isCSV ? (
       percentageStr
     ) : (

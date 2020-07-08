@@ -695,6 +695,7 @@ export default class extends Base {
       'proposedAt',
       'createdAt',
       'voteResult',
+      'voteHistory',
       'vote_map',
       'registerHeight',
       'proposedEndsHeight',
@@ -982,7 +983,7 @@ export default class extends Base {
     }
     const rs = await db_cvote
       .getDBInstance()
-      .findOne(query, '-voteHistory')
+      .findOne(query)
       .populate(
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
