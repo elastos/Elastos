@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import StandardPage from '@/module/page/StandardPage'
-import { CVOTE_RESULT, CVOTE_STATUS, ELIP_TYPE } from '@/constant'
+import { CVOTE_RESULT, CVOTE_STATUS, CVOTE_CHAIN_STATUS } from '@/constant'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import CRPopover from '@/module/shared/Popover/Component'
@@ -62,6 +62,7 @@ import {
   Paragraph
 } from './style'
 import './style.scss'
+import { ItemText } from '../../suggestion/detail/style'
 
 const { TextArea } = Input
 
@@ -868,6 +869,7 @@ class C extends StandardPage {
       vote_map: voteMap,
       reason_map: reasonMap,
       voteResult,
+      voteHistory,
       status
     } = this.props.data
     const { avatar_map: avatarMap } = this.props
@@ -878,6 +880,7 @@ class C extends StandardPage {
       stats = _.reduce(
         voteResult,
         (prev, cur) => {
+          const votedBy = _.get(cur, 'votedBy._id')
           const item = {
             name: `${_.get(cur, 'votedBy.profile.firstName')} ${_.get(
               cur,
@@ -886,14 +889,37 @@ class C extends StandardPage {
             didName: _.get(cur, 'votedBy.did.didName'),
             avatar: _.get(cur, 'votedBy.profile.avatar'),
             reason: cur.reason,
-            votedBy: _.get(cur, 'votedBy._id'),
-            status: _.get(cur, 'status')
+            votedBy,
+            status: cur.status
           }
-          if (prev[cur.value]) {
-            prev[cur.value].push(item)
-            return prev
+          if (cur.status !== CVOTE_CHAIN_STATUS.CHAINED) {
+            const rs = _.find(
+              voteHistory,
+              (history) => votedBy === history.votedBy
+            )
+            if (rs && rs.status === CVOTE_CHAIN_STATUS.CHAINED) {
+              const history = { ...item, reason: rs.reason, status: rs.status }
+              if (prev[rs.value]) {
+                prev[rs.value].push(history)
+              } else {
+                prev[rs.value] = [history]
+              }
+            }
+            if (votedBy === this.props.currentUserId) {
+              if (prev[cur.value]) {
+                prev[cur.value].push(item)
+              } else {
+                prev[cur.value] = [item]
+              }
+            }
+          } else {
+            if (prev[cur.value]) {
+              prev[cur.value].push(item)
+            } else {
+              prev[cur.value] = [item]
+            }
           }
-          return _.extend(prev, { [cur.value]: [item] })
+          return prev
         },
         {}
       )
