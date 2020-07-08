@@ -12,7 +12,7 @@ import {
 } from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
-import _ from 'lodash'
+import _, { values } from 'lodash'
 import StandardPage from '@/module/page/StandardPage'
 import { CVOTE_RESULT, CVOTE_STATUS, CVOTE_CHAIN_STATUS } from '@/constant'
 import Footer from '@/module/layout/Footer/Container'
@@ -875,7 +875,10 @@ class C extends StandardPage {
     const { avatar_map: avatarMap } = this.props
     let stats
     if (status === CVOTE_STATUS.DRAFT) return null
-
+    const group = {}
+    for(const value of _.values(CVOTE_RESULT)) {
+      group[value] = []
+    }
     if (!_.isEmpty(voteResult)) {
       stats = _.reduce(
         voteResult,
@@ -899,29 +902,17 @@ class C extends StandardPage {
             )
             if (rs && rs.status === CVOTE_CHAIN_STATUS.CHAINED) {
               const history = { ...item, reason: rs.reason, status: rs.status }
-              if (prev[rs.value]) {
-                prev[rs.value].push(history)
-              } else {
-                prev[rs.value] = [history]
-              }
+              prev[rs.value].push(history)
             }
             if (votedBy === this.props.currentUserId) {
-              if (prev[cur.value]) {
-                prev[cur.value].push(item)
-              } else {
-                prev[cur.value] = [item]
-              }
+              prev[cur.value].push(item)
             }
           } else {
-            if (prev[cur.value]) {
-              prev[cur.value].push(item)
-            } else {
-              prev[cur.value] = [item]
-            }
+            prev[cur.value].push(item)
           }
           return prev
         },
-        {}
+        group
       )
     } else if (!_.isEmpty(voteMap)) {
       // for legacy data structure
@@ -962,6 +953,9 @@ class C extends StandardPage {
     const isProposed = status == 'PROPOSED'
     const title = <h4>{I18N.get('council.voting.councilMembersVotes')}</h4>
     const detail = _.map(stats, (statArr, key) => {
+      if (_.isEmpty(statArr)) {
+        return null
+      }
       const type = CVOTE_RESULT[key.toUpperCase()] || CVOTE_RESULT.UNDECIDED
       const label = I18N.get(`council.voting.type.${type}`)
       const props = {
