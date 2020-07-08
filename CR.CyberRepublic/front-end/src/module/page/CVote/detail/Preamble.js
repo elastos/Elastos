@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment/moment'
-import { Row, Col } from 'antd'
+import { Row, Col, Button } from 'antd'
 import I18N from '@/I18N'
 import PopoverProfile from '@/module/common/PopoverProfile'
 import styled from 'styled-components'
@@ -15,7 +15,10 @@ const Component = ({
   createdAt,
   createdBy,
   reference,
-  user
+  user,
+  proposalHash,
+  txHash,
+  copyFun
 }) => {
   // header
   const headerNode = (
@@ -110,6 +113,33 @@ const Component = ({
       </Col>
     </Item>
   )
+  // proposalHash
+  const txHashNode = (
+    <Item>
+      <Col span={6}>
+        <ItemTitle>{I18N.get('proposal.fields.preambleSub.txHash')}</ItemTitle>
+      </Col>
+      <Col span={18}>
+        <ItemText><a href={`https://blockchain.elastos.org/tx/${txHash}`}>{txHash}</a></ItemText>
+      </Col>
+    </Item>
+  )
+  // proposalHash
+  const hashNode = (
+    <Item>
+      <Col span={6}>
+        <ItemTitle>{I18N.get('proposal.fields.preambleSub.hash')}</ItemTitle>
+      </Col>
+      <Col span={18}>
+        <ItemText >
+          {proposalHash}
+          <CopyButton onClick={() => copyFun(proposalHash)} >
+            {I18N.get('suggestion.btn.copyHash')}
+          </CopyButton>
+        </ItemText>
+      </Col>
+    </Item>
+  )
   return (
     <div>
       {headerNode}
@@ -120,6 +150,8 @@ const Component = ({
       {typeNode}
       {statusNode}
       {createdNode}
+      {txHash ? txHashNode : null}
+      {hashNode}
     </div>
   )
 }
@@ -152,4 +184,18 @@ const ItemTitle = styled.div`
 `
 const ItemText = styled.div`
   font-weight: 200;
+`
+const CopyButton = styled.span`
+  display: inline-block;
+  font-weight: 200;
+  background: #008D85;
+  width: 56px;
+  height: 20px;
+  margin-left: 30px;
+  border-radius: 2px;
+  font-size: 12px;
+  text-align: center;
+  line-height: 16px;
+  cursor:pointer;
+  color: #fff;
 `

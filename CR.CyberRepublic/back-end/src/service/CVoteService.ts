@@ -136,6 +136,7 @@ export default class extends Base {
         ])
         const result = await getProposalData(proposalHash)
         const registerHeight = result && result.data.registerheight
+        const txHash = result && result.data.txhash
         const { proposedEnds, notificationEnds} = await ela.calHeightTime(registerHeight)
         let proposedEndsHeight = registerHeight + STAGE_BLOCAKS
         let notificationEndsHeight = registerHeight + STAGE_BLOCAKS * 2
@@ -162,7 +163,8 @@ export default class extends Base {
             proposedEndsHeight,
             notificationEndsHeight,
             proposedEnds: new Date(proposedEnds),
-            notificationEnds: new Date(notificationEnds)
+            notificationEnds: new Date(notificationEnds),
+            txHash
         }
 
         Object.assign(doc, _.pick(suggestion, BASE_FIELDS))

@@ -225,5 +225,8 @@ export const CVote = {
   },
   notificationEnds: {
     type: Date
+  },
+  txHash: {
+    type: String
   }
 }
