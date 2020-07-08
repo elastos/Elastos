@@ -435,7 +435,7 @@ static int http_do(ExpressConnector *connector,
         vlogE("Express: Failed to new client.");
         return ELA_EXPRESS_ERROR(ELAERR_OUT_OF_MEMORY);
     }
-    
+
     rc = http_client_set_url(http_client, url);
     if(rc != 0) {
         http_client_close(http_client);
@@ -660,7 +660,7 @@ static int speedmeter_runner(ExpTasklet *base)
     int idx, iidx, jidx;
     struct timeval starttime;
     struct timeval *timeloss;
-    
+
     timeloss = alloca(sizeof(*timeloss) * connector->express_nodes_size);
     memset(timeloss, 0, sizeof(*timeloss) * connector->express_nodes_size);
 
@@ -840,12 +840,12 @@ ExpressConnector *express_connector_create(ElaCarrier *carrier,
     int idx;
 
     assert(carrier);
-    if (carrier->pref.express_nodes_size <= 0) {
+    if (carrier->pref.express_size <= 0) {
         ela_set_error(ELA_EXPRESS_ERROR(ELAERR_INVALID_ARGS));
         return NULL;
     }
 
-    connector = rc_zalloc(sizeof(ExpressConnector) + sizeof(ExpNode) * carrier->pref.express_nodes_size,
+    connector = rc_zalloc(sizeof(ExpressConnector) + sizeof(ExpNode) * carrier->pref.express_size,
                           connector_releaser); // deref by outside
     if (!connector) {
         ela_set_error(ELA_EXPRESS_ERROR(ELAERR_OUT_OF_MEMORY));
@@ -870,7 +870,7 @@ ExpressConnector *express_connector_create(ElaCarrier *carrier,
 
     connector->magic_num = ntohl(EXP_HTTP_MAGICNUM);
 
-    connector->express_nodes_size = carrier->pref.express_nodes_size;
+    connector->express_nodes_size = carrier->pref.express_size;
     for(idx = 0; idx < connector->express_nodes_size; idx++) {
         connector->express_nodes[idx].ipv4 = carrier->pref.express_nodes[idx].ipv4;
         connector->express_nodes[idx].port = carrier->pref.express_nodes[idx].port;

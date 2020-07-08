@@ -814,8 +814,7 @@ void dht_kill(DHT *dht)
 /*
  * The length of array address must be at least DHT_PUBLIC_KEY_SIZE.
  */
-int _dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
-                  const uint8_t *address)
+int _dht_bootstrap(DHT *dht, char *ipv4, char *ipv6, int port, uint8_t *address)
 {
     Tox *tox = dht->tox;
     TOX_ERR_BOOTSTRAP error;
@@ -826,7 +825,7 @@ int _dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
     assert(port > 0);
     assert(address);
 
-    if (*ipv4) {
+    if (ipv4) {
         rc = tox_bootstrap(tox, ipv4, (uint16_t)port, address, &error);
         if (!rc) {
             vlogE("DHT: add bootstrap %s:%d error (%d).", ipv4, port, error);
@@ -840,7 +839,7 @@ int _dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
         }
     }
 
-    if (*ipv6) {
+    if (ipv6) {
         rc = tox_bootstrap(tox, ipv6, (uint16_t)port, address, &error);
         if (!rc) {
             vlogE("DHT: add bootstrap %s:%d error (%d).", ipv6, port, error);

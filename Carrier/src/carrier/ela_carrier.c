@@ -1029,14 +1029,15 @@ static void ela_destroy(void *argv)
     if (w->pref.data_location)
         free(w->pref.data_location);
 
-    if (w->pref.dht_bootstraps)
-        free(w->pref.dht_bootstraps);
+    if (w->pref.bootstrap_nodes)
+        free(w->pref.bootstrap_nodes);
 
     if (w->pref.express_nodes) {
-        int idx;
-        for(idx = 0; idx < w->pref.express_nodes_size; idx++) {
-            if(w->pref.express_nodes[idx].ipv4)
-                free(w->pref.express_nodes[idx].ipv4);
+        int i;
+
+        for(i = 0; i < w->pref.express_size; i++) {
+            if(w->pref.express_nodes[i].ipv4)
+                free(w->pref.express_nodes[i].ipv4);
         }
         free(w->pref.express_nodes);
     }
@@ -1114,51 +1115,43 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
 
     w->pref.udp_enabled = opts->udp_enabled;
     w->pref.data_location = strdup(opts->persistent_location);
-    w->pref.dht_bootstraps_size = opts->bootstraps_size;
 
-    w->pref.dht_bootstraps = (DhtBootstrapNodeBuf *)calloc(1,
-                        sizeof(DhtBootstrapNodeBuf) * opts->bootstraps_size);
-    if (!w->pref.dht_bootstraps) {
-        deref(w);
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return NULL;
+    w->pref.bootstrap_size = opts->bootstraps_size;
+    if (w->pref.bootstrap_size > 0) {
+        w->pref.bootstrap_nodes = (BootstrapNodeBuf *)calloc(1,
+                            sizeof(BootstrapNodeBuf) * w->pref.bootstrap_size);
+        if (!w->pref.bootstrap_nodes) {
+            deref(w);
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+            return NULL;
+        }
     }
 
-    for (i = 0; i < opts->bootstraps_size; i++) {
+    for (i = 0; i < w->pref.bootstrap_size; i++) {
         BootstrapNode *b = &opts->bootstraps[i];
-        DhtBootstrapNodeBuf *bi = &w->pref.dht_bootstraps[i];
+        BootstrapNodeBuf *bi = &w->pref.bootstrap_nodes[i];
         char *endptr = "";
         ssize_t len;
 
-        if (b->ipv4 && strlen(b->ipv4) > MAX_IPV4_ADDRESS_LEN) {
-            vlogE("Carrier: DHT bootstrap ipv4 address (%s) too long", b->ipv4);
-            deref(w);
-            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
-            return NULL;
-        }
-
-        if (b->ipv6 && strlen(b->ipv6) > MAX_IPV6_ADDRESS_LEN) {
-            vlogE("Carrier: DHT bootstrap ipv4 address (%s) too long", b->ipv6);
-            deref(w);
-            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
-            return NULL;
-        }
-
         if (!b->ipv4 && !b->ipv6) {
-            vlogE("Carrier: DHT bootstrap ipv4 and ipv6 address both empty");
+            vlogE("Carrier: IPv4 and IPv6 address of bootstrap node are both empty");
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
         }
 
-        if (b->ipv4)
-            strcpy(bi->ipv4, b->ipv4);
-        if (b->ipv6)
-            strcpy(bi->ipv6, b->ipv6);
+        if (b->ipv4) bi->ipv4 = strdup(b->ipv4);
+        if (b->ipv6) bi->ipv6 = strdup(b->ipv6);
 
-        bi->port = b->port ? (int)strtol(b->port, &endptr, 10) : DHT_BOOTSTRAP_DEFAULT_PORT;
+        if (!bi->ipv4 && !bi->ipv6) {
+            deref(w);
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+            return NULL;
+        }
+
+        bi->port = b->port ? (int)strtol(b->port, &endptr, 10) : BOOTSTRAP_DEFAULT_PORT;
         if (bi->port < 1 || bi->port > 65535 || *endptr) {
-            vlogE("Carrier: Invalid DHT bootstrap port value (%s)", b->port);
+            vlogE("Carrier: Port value (%s) of bootstrap node is invalid", b->port);
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
@@ -1167,17 +1160,17 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         len = base58_decode(b->public_key, strlen(b->public_key), bi->public_key,
                             sizeof(bi->public_key));
         if (len != DHT_PUBLIC_KEY_SIZE) {
-            vlogE("Carrier: Invalid DHT bootstrap public key (%s)", b->public_key);
+            vlogE("Carrier: Public key (%s) of bootstrap node is invalid", b->public_key);
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
         }
     }
 
-    w->pref.express_nodes_size = opts->express_nodes_size;
-    if (w->pref.express_nodes_size > 0) {
+    w->pref.express_size = opts->express_nodes_size;
+    if (w->pref.express_size > 0) {
         w->pref.express_nodes = (ExpressNodeBuf *)calloc(1,
-                            sizeof(ExpressNodeBuf) * opts->express_nodes_size);
+                            sizeof(ExpressNodeBuf) * w->pref.express_size);
 
         if (!w->pref.express_nodes) {
             deref(w);
@@ -1186,23 +1179,29 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         }
     }
 
-    for (i = 0; i < w->pref.express_nodes_size; i++) {
+    for (i = 0; i < w->pref.express_size; i++) {
         ExpressNode *n = &opts->express_nodes[i];
         ExpressNodeBuf *ni= &w->pref.express_nodes[i];
         char *endptr = "";
         ssize_t len;
 
         if (!n->ipv4) {
-            vlogE("Carrier: Express node without ipv4 address.");
+            vlogE("Carrier: IPv4 address (%s) of express node is empty", n->ipv4);
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
         }
-        ni->ipv4 = strdup(n->ipv4);
 
-        ni->port = n->port ? (int)strtol(n->port, &endptr, 10) : DHT_BOOTSTRAP_DEFAULT_PORT;
+        ni->ipv4 = strdup(n->ipv4);
+        if (!ni->ipv4) {
+            deref(w);
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+            return NULL;
+        }
+
+        ni->port = n->port ? (int)strtol(n->port, &endptr, 10) : EXPRESS_DEFAULT_PORT;
         if (ni->port < 1 || ni->port > 65535 || *endptr) {
-            vlogE("Carrier: Invalid express node port value (%s)", n->port);
+            vlogE("Carrier: Port value (%s) of express node is invalid", n->port);
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
@@ -1211,7 +1210,7 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         len = base58_decode(n->public_key, strlen(n->public_key), ni->public_key,
                             sizeof(ni->public_key));
         if (len != DHT_PUBLIC_KEY_SIZE) {
-            vlogE("Carrier: Invalid express node public key (%s)", n->public_key);
+            vlogE("Carrier: Public key (%s) of express node is invalid", n->public_key);
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
@@ -1344,7 +1343,7 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         w->context = context;
     }
 
-    vlogI("Carrier: Carrier node created.");
+    vlogI("Carrier: Carrier instance created");
 
     return w;
 }
@@ -2574,8 +2573,8 @@ static void connect_to_bootstraps(ElaCarrier *w)
 {
     int i;
 
-    for (i = 0; i < w->pref.dht_bootstraps_size; i++) {
-        DhtBootstrapNodeBuf *bi = &w->pref.dht_bootstraps[i];
+    for (i = 0; i < w->pref.bootstrap_size; i++) {
+        BootstrapNodeBuf *bi = &w->pref.bootstrap_nodes[i];
         char id[ELA_MAX_ID_LEN + 1] = {0};
         size_t id_len = sizeof(id);
         int rc;

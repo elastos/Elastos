@@ -34,10 +34,7 @@
 
 #include "express.h"
 
-#define DHT_BOOTSTRAP_DEFAULT_PORT 33445
-
-#define MAX_IPV4_ADDRESS_LEN (15)
-#define MAX_IPV6_ADDRESS_LEN (47)
+#define BOOTSTRAP_DEFAULT_PORT 33445
 
 #define ELA_MAX_EXTENSION_NAME_LEN  (31)
 
@@ -45,12 +42,12 @@ typedef struct DHT {
     uint8_t padding[32];  // reserved for DHT.
 } DHT;
 
-typedef struct DhtBootstrapNodeBuf {
-    char ipv4[MAX_IPV4_ADDRESS_LEN + 1];
-    char ipv6[MAX_IPV6_ADDRESS_LEN + 1];
+typedef struct BootstrapNodeBuf {
+    char *ipv4;
+    char *ipv6;
     uint16_t port;
     uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
-} DhtBootstrapNodeBuf;
+} BootstrapNodeBuf;
 
 typedef struct ExpressNodeBuf {
     char *ipv4;
@@ -62,10 +59,10 @@ typedef struct Preferences {
     char *data_location;
     bool udp_enabled;
 
-    size_t dht_bootstraps_size;
-    DhtBootstrapNodeBuf *dht_bootstraps;
+    size_t bootstrap_size;
+    BootstrapNodeBuf *bootstrap_nodes;
 
-    size_t express_nodes_size;
+    size_t express_size;
     ExpressNodeBuf *express_nodes;
 } Preferences;
 

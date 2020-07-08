@@ -28,6 +28,8 @@
 extern "C" {
 #endif
 
+#define EXPRESS_DEFAULT_PORT    443
+
 typedef struct ExpConnector     ExpressConnector;
 typedef void (*ExpressOnRecvCallback)(ElaCarrier *carrier,
                                       const char *from,
