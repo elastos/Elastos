@@ -475,12 +475,13 @@ export default class extends Base {
   public async notifyCouncilToVote(DateTime: any) {
     // find cvote before 1 day expiration without vote yet for each council member
     const db_cvote = this.getDBModel('CVote')
-    const nearExpiredTime =
-      Date.now() - (constant.CVOTE_COUNCIL_EXPIRATION - DateTime)
-    const createTime =
-      DateTime == constant.ONE_DAY
-        ? Date.now() - constant.CVOTE_COUNCIL_EXPIRATION
-        : Date.now() - constant.CVOTE_COUNCIL_EXPIRATION + constant.ONE_DAY
+    // prettier-ignore
+    const nearExpiredTime = Date.now() - (constant.CVOTE_COUNCIL_EXPIRATION - DateTime)
+    // prettier-ignore
+    const createTime = DateTime == constant.ONE_DAY
+      ? Date.now() - constant.CVOTE_COUNCIL_EXPIRATION
+      : Date.now() - constant.CVOTE_COUNCIL_EXPIRATION + constant.ONE_DAY
+
     const isNotifiedThreeDay = DateTime == constant.THREE_DAY ? false : true
     const isNotifiedOneDay = DateTime == constant.ONE_DAY ? true : false
     let unvotedCVotes = await db_cvote
