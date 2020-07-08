@@ -193,7 +193,6 @@ export default class extends Base {
         { _id: suggestion._id },
         {
           $addToSet: { reference: res._id },
-          $set: { tags: [] },
           proposalHash
         }
       )
@@ -1007,8 +1006,6 @@ export default class extends Base {
 
   public async getNewVid() {
     const db_cvote = this.getDBModel('CVote')
-    // const n = await db_cvote.count({})
-    // return n + 1
     // new version, vid string from 1
     const n = await db_cvote.count({ old: { $exists: false } })
     return n + 1
