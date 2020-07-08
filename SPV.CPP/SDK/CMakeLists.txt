@@ -68,16 +68,7 @@ if(SPV_ENABLE_SHARED)
 		LIBRARY DESTINATION "lib")
 endif()
 
-set(SPVSDK_HEADERS
-	../Interface/IIDChainSubWallet.h
-	../Interface/IMainchainSubWallet.h
-	../Interface/IMasterWallet.h
-	../Interface/IMasterWalletManager.h
-	../Interface/ISidechainSubWallet.h
-	../Interface/ISubWallet.h
-	../Interface/ISubWalletCallback.h
-	../Interface/ITokenchainSubWallet.h
-	../Interface/MasterWalletManager.h)
+file(GLOB_RECURSE SPVSDK_HEADERS "../Interface/*.h")
 
 install(FILES ${SPVSDK_HEADERS} DESTINATION "include")
 install(FILES ${PROJECT_INT_DIST_DIR}/include/nlohmann/json.hpp DESTINATION "include/nlohmann")
