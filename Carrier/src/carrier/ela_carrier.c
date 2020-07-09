@@ -1507,7 +1507,8 @@ void notify_friend_connection_cb(uint32_t friend_number, bool connected,
         return;
     }
 
-    if (connection_status(connected) != fi->info.status) {
+    status = connection_status(connected);
+    if (status != fi->info.status) {
         char friendid[ELA_MAX_ID_LEN + 1];
 
         fi->info.status = status;
@@ -3614,14 +3615,17 @@ static void notify_offreceipt_received(ElaCarrier *w, const char *to,
     }
 }
 
-static int64_t ela_send_message_with_receipt_internal(ElaCarrier *carrier, const char *to,
-                                             const void *msg, size_t len,
-                                             ElaFriendMessageReceiptCallback *cb, void *context,
-                                             bool *is_offline)
+static
+int64_t send_message_with_receipt_internal(ElaCarrier *w, const char *to,
+                                const void *msg, size_t len,
+                                ElaFriendMessageReceiptCallback *cb,
+                                void *context,
+                                bool *is_offline)
 {
     int64_t msgid;
     Receipt *receipt;
     struct timeval expire_interval;
+    bool offline = false;
 
     receipt = (Receipt*)rc_zalloc(sizeof(Receipt) + len, NULL);
     if (!receipt) {
@@ -3641,48 +3645,37 @@ static int64_t ela_send_message_with_receipt_internal(ElaCarrier *carrier, const
     receipt->size = len;
     memcpy(receipt->data, msg, len);
 
-    pthread_mutex_lock(&carrier->receipts_mutex);
-    msgid = send_friend_message_internal(carrier, to, msg, len, is_offline);
+    pthread_mutex_lock(&w->receipts_mutex);
+    msgid = send_friend_message_internal(w, to, msg, len, &offline);
     if(msgid < 0) {
         deref(receipt);
-        pthread_mutex_unlock(&carrier->receipts_mutex);
+        pthread_mutex_unlock(&w->receipts_mutex);
         return -1;
     }
-    receipt->msgch = (*is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
+
+    receipt->msgch = (offline ? MSGCH_EXPRESS : MSGCH_DHT);
     receipt->msgid = msgid;
-    receipts_put(carrier->receipts, receipt);
+    receipts_put(w->receipts, receipt);
     deref(receipt);
-    pthread_mutex_unlock(&carrier->receipts_mutex);
+    pthread_mutex_unlock(&w->receipts_mutex);
+
+    if (!is_offline)
+        *is_offline = offline;
 
     return msgid;
 }
 
 int ela_send_friend_message(ElaCarrier *w, const char *to,
-                            const void *msg, size_t len, bool *is_offline)
+                            const void *message, size_t len, bool *is_offline)
 {
-    bool is_offline_tmp;
-    int64_t msgid;
-
-    msgid = ela_send_message_with_receipt_internal(w, to, msg, len, NULL, NULL, &is_offline_tmp);
-    if(msgid < 0)
-        return (int)msgid;
-
-    if(is_offline)
-        *is_offline = is_offline_tmp;
-
-    return 0;
+    return (int)send_message_with_receipt_internal(w, to, message, len, NULL, NULL, is_offline);
 }
 
-int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
-                                      const void *msg, size_t len,
+int64_t ela_send_message_with_receipt(ElaCarrier *w, const char *to,
+                                      const void *message, size_t len,
                                       ElaFriendMessageReceiptCallback *cb, void *context)
 {
-    bool is_offline;
-    int64_t msgid;
-
-    msgid = ela_send_message_with_receipt_internal(carrier, to, msg, len, cb, context, &is_offline);
-
-    return msgid;
+    return send_message_with_receipt_internal(w, to, message, len, cb, context, NULL);
 }
 
 int ela_invite_friend(ElaCarrier *w, const char *to, const char *bundle,
