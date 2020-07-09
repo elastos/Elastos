@@ -1082,21 +1082,8 @@ export default class extends Base {
           'voteResult.$.reasonHash': utilCrypto.sha256D(
             reason + timestamp.second(reasonCreateDate)
           ),
-          'voteResult.$.reasonCreatedAt': reasonCreateDate
-        },
-        $inc: {
-          __v: 1
-        }
-      }
-    )
-    await db_cvote.update(
-      {
-        _id,
-        'voteHistory.votedBy': votedBy
-      },
-      {
-        $set: {
-          'voteHistory.$': { ..._.omit(currentVoteResult, ['_id']) }
+          'voteResult.$.reasonCreatedAt': reasonCreateDate,
+          voteHistory: currentVoteHistory
         },
         $inc: {
           __v: 1
