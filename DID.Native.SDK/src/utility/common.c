@@ -40,6 +40,8 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <limits.h>
+#include <utime.h>
+#include <sys/stat.h>
 
 #include "common.h"
 #include "did.h"
@@ -414,6 +416,38 @@ int mkdirs(const char *path, mode_t mode)
         rc = mkdir_internal(path, mode);
 
     return rc;
+}
+
+time_t get_file_lastmodified(const char *path)
+{
+    struct stat st;
+
+    assert(path && *path);
+
+    if (stat(path, &st) < 0) {
+        DIDError_Set(DIDERR_IO_ERROR, "File error.");
+        return 0;
+    }
+
+    return st.st_mtime;
+}
+
+int set_file_lastmodified(const char *path, time_t lastmodified)
+{
+    struct utimbuf new_times;
+    struct stat st;
+
+    assert(path && *path);
+    assert(lastmodified > 0);
+
+    if (stat(path, &st) < 0) {
+        DIDError_Set(DIDERR_IO_ERROR, "File error.");
+        return -1;
+    }
+
+    new_times.actime = st.st_atime;
+    new_times.modtime = lastmodified;    /* set mtime to current time */
+    return utime(path, &new_times);
 }
 
 bool cJSON_IsDouble(cJSON *item)

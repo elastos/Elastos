@@ -75,6 +75,10 @@ bool is_empty(const char *path);
 
 int mkdirs(const char *path, mode_t mode);
 
+time_t get_file_lastmodified(const char *path);
+
+int set_file_lastmodified(const char *path, time_t lastmodified);
+
 //for json
 bool cJSON_IsDouble(cJSON *item);
 

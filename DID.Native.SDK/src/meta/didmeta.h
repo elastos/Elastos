@@ -55,6 +55,10 @@ int DIDMetaData_SetDeactivated(DIDMetaData *metadata, bool deactived);
 
 int DIDMetaData_SetPublished(DIDMetaData *metadata, time_t time);
 
+int DIDMetaData_SetLastModified(DIDMetaData *metadata, time_t time);
+
+time_t DIDMetaData_GetLastModified(DIDMetaData *metadata);
+
 const char *DIDMetaData_GetSignature(DIDMetaData *metadata);
 
 int DIDMetaData_Merge(DIDMetaData *metadata, DIDMetaData *frommeta);
@@ -67,6 +71,7 @@ DIDStore *DIDMetaData_GetStore(DIDMetaData *metadata);
 
 bool DIDMetaData_AttachedStore(DIDMetaData *metadata);
 
+//for DID_API
 DID_API const char *DIDMetaData_GetPrevSignature(DIDMetaData *metadata);
 
 DID_API int DIDMetaData_SetTxid(DIDMetaData *metadata, const char *txid);

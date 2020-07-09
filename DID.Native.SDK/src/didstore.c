@@ -168,6 +168,7 @@ static int load_didmeta(DIDStore *store, DIDMetaData *meta, const char *did)
     const char *data;
     char path[PATH_MAX];
     int rc;
+    time_t lastmodified;
 
     assert(store);
     assert(meta);
@@ -199,11 +200,26 @@ static int load_didmeta(DIDStore *store, DIDMetaData *meta, const char *did)
 
     rc = DIDMetaData_FromJson(meta, data);
     free((void*)data);
-    if (rc)
-        return rc;
+    if (rc < 0)
+        return -1;
 
+    //set last modified
+    if (get_file(path, 0, 4, store->root, DID_DIR, did, DOCUMENT_FILE) == -1) {
+        DIDMetaData_Free(meta);
+        DIDError_Set(DIDERR_NOT_EXISTS, "The file for Did document don't exist.");
+        return -1;
+    }
+
+    lastmodified = get_file_lastmodified(path);
+    if (lastmodified == 0) {
+        DIDMetaData_Free(meta);
+        DIDError_Set(DIDERR_IO_ERROR, "Get last modified of document failed.");
+        return -1;
+    }
+
+    DIDMetaData_SetLastModified(meta, lastmodified);
     DIDMetaData_SetStore(meta, store);
-    return rc;
+    return 0;
 }
 
 int DIDStore_LoadDIDMeta(DIDStore *store, DIDMetaData *meta, DID *did)
@@ -298,6 +314,7 @@ static int load_credmeta(DIDStore *store, CredentialMetaData *meta, const char *
 {
     const char *data;
     char path[PATH_MAX];
+    time_t lastmodified;
     int rc;
 
     assert(store);
@@ -330,11 +347,27 @@ static int load_credmeta(DIDStore *store, CredentialMetaData *meta, const char *
 
     rc = CredentialMetaData_FromJson(meta, data);
     free((void*)data);
-    if (rc)
-        return rc;
+    if (rc < 0)
+        return -1;
 
+    //set last modified
+    if (get_file(path, 0, 6, store->root, DID_DIR, did, CREDENTIALS_DIR,
+            fragment, CREDENTIAL_FILE) == -1) {
+        CredentialMetaData_Free(meta);
+        DIDError_Set(DIDERR_NOT_EXISTS, "Credential don't exist.");
+        return -1;
+    }
+
+    lastmodified = get_file_lastmodified(path);
+    if (lastmodified == 0) {
+        CredentialMetaData_Free(meta);
+        DIDError_Set(DIDERR_IO_ERROR, "Get last modified of document failed.");
+        return -1;
+    }
+
+    CredentialMetaData_SetLastModified(meta, lastmodified);
     CredentialMetaData_SetStore(meta, store);
-    return rc;
+    return 0;
 }
 
 int DIDStore_StoreCredMeta(DIDStore *store, CredentialMetaData *meta, DIDURL *id)
@@ -974,6 +1007,7 @@ static int store_credential(DIDStore *store, Credential *credential)
     const char *data;
     char path[PATH_MAX];
     DIDURL *id;
+    time_t lastmodified;
     int rc;
 
     assert(store);
@@ -996,8 +1030,16 @@ static int store_credential(DIDStore *store, Credential *credential)
 
     rc = store_file(path, data);
     free((void*)data);
-    if (!rc)
+    if (!rc) {
+        //set credential last modified
+        lastmodified = CredentialMetaData_GetLastModified(&credential->metadata);
+        if (lastmodified > 0) {
+            set_file_lastmodified(path, lastmodified);
+        } else {
+            CredentialMetaData_SetLastModified(&credential->metadata, get_file_lastmodified(path));
+        }
         return 0;
+    }
 
     delete_file(path);
 
@@ -1074,6 +1116,7 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document)
     const char *data, *root;
     char txid[ELA_MAX_TXID_LEN];
     DIDMetaData meta;
+    time_t lastmodified;
     ssize_t count;
     int rc;
 
@@ -1085,12 +1128,12 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document)
     if (load_didmeta(store, &meta, document->did.idstring) == -1)
         return -1;
 
-    if (DIDMetaData_Merge(&document->metadata, &meta) < 0)
+    rc = DIDMetaData_Merge(&document->metadata, &meta);
+    DIDMetaData_Free(&meta);
+    if (rc < 0)
         return -1;
 
     DIDMetaData_SetStore(&document->metadata, store);
-    DIDMetaData_Free(&meta);
-
 	data = DIDDocument_ToJson(document, true);
 	if (!data)
 		return -1;
@@ -1111,6 +1154,14 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document)
 
     if (store_didmeta(store, &document->metadata, &document->did) == -1)
         goto errorExit;
+
+    //set document last modified
+    lastmodified = DIDMetaData_GetLastModified(&document->metadata);
+    if (lastmodified > 0) {
+        set_file_lastmodified(path, lastmodified);
+    } else {
+        DIDMetaData_SetLastModified(&document->metadata, get_file_lastmodified(path));
+    }
 
     count = DIDDocument_GetCredentialCount(document);
     for (int i = 0; i < count; i++) {

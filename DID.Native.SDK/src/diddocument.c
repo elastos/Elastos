@@ -1133,6 +1133,7 @@ static int document_copy(DIDDocument *destdoc, DIDDocument *srcdoc)
     destdoc->expires = srcdoc->expires;
     memcpy(&destdoc->proof, &srcdoc->proof, sizeof(DocumentProof));
     DIDMetaData_Copy(&destdoc->metadata, &srcdoc->metadata);
+    DIDMetaData_SetLastModified(&destdoc->metadata, 0);
     memcpy(&destdoc->did.metadata, &destdoc->metadata, sizeof(DIDMetaData));
     return 0;
 }

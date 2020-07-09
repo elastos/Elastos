@@ -119,8 +119,10 @@ int MetaData_FromJson(MetaData *metadata, const char *data)
 
 void MetaData_Free(MetaData *metadata)
 {
-    if (metadata && metadata->data)
+    if (metadata && metadata->data) {
         cJSON_Delete(metadata->data);
+        metadata->data = NULL;
+    }
 }
 
 int MetaData_SetExtra(MetaData *metadata, const char* key, const char *value)

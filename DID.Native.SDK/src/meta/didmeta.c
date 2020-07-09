@@ -39,6 +39,7 @@ static const char *PREV_SIGNATURE = "DX-prevSignature";
 static const char *SIGNATURE = "DX-signature";
 static const char *PUBLISHED = "DX-published";
 static const char *DEACTIVATED = "DX-deactivated";
+static const char *LAST_MODIFIED= "DX-lastModified";
 
 int DIDMetaData_ToJson_Internal(DIDMetaData *metadata, JsonGenerator *gen)
 {
@@ -114,6 +115,25 @@ int DIDMetaData_SetPrevSignature(DIDMetaData *metadata, const char *signature)
     assert(metadata);
 
     return MetaData_SetExtra(&metadata->base, PREV_SIGNATURE, signature);
+}
+
+int DIDMetaData_SetLastModified(DIDMetaData *metadata, time_t time)
+{
+    assert(metadata);
+
+    if (time == 0) {
+        cJSON_DeleteItemFromObject(metadata->base.data, LAST_MODIFIED);
+        return 0;
+    }
+
+    return MetaData_SetExtraWithDouble(&metadata->base, LAST_MODIFIED, (double)time);
+}
+
+time_t DIDMetaData_GetLastModified(DIDMetaData *metadata)
+{
+    assert(metadata);
+
+    return (time_t)MetaData_GetExtraAsDouble(&metadata->base, LAST_MODIFIED);
 }
 
 const char *DIDMetaData_GetTxid(DIDMetaData *metadata)
@@ -237,7 +257,7 @@ time_t DIDMetaData_GetPublished(DIDMetaData *metadata)
         return 0;
     }
 
-    return (time_t)MetaData_GetExtraAsBoolean(&metadata->base, PUBLISHED);
+    return (time_t)MetaData_GetExtraAsDouble(&metadata->base, PUBLISHED);
 }
 
 bool DIDMetaData_GetDeactivated(DIDMetaData *metadata)

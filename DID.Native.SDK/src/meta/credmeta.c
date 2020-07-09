@@ -33,6 +33,7 @@
 #include "diderror.h"
 
 static const char *ALIAS = "DX-alias";
+static const char *LAST_MODIFIED= "DX-lastModified";
 
 int CredentialMetaData_ToJson_Internal(CredentialMetaData *metadata, JsonGenerator *gen)
 {
@@ -106,6 +107,25 @@ bool CredentialMetaData_AttachedStore(CredentialMetaData *metadata)
     assert(metadata);
 
     return MetaData_AttachedStore(&metadata->base);
+}
+
+int CredentialMetaData_SetLastModified(CredentialMetaData *metadata, time_t time)
+{
+    assert(metadata);
+
+    if (time == 0) {
+        cJSON_DeleteItemFromObject(metadata->base.data, LAST_MODIFIED);
+        return 0;
+    }
+
+    return MetaData_SetExtraWithDouble(&metadata->base, LAST_MODIFIED, (double)time);
+}
+
+time_t CredentialMetaData_GetLastModified(CredentialMetaData *metadata)
+{
+    assert(metadata);
+
+    return (time_t)MetaData_GetExtraAsDouble(&metadata->base, LAST_MODIFIED);
 }
 
 //****** DID_API

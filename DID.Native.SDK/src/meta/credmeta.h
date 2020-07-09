@@ -56,6 +56,10 @@ DIDStore *CredentialMetaData_GetStore(CredentialMetaData *metadata);
 
 bool CredentialMetaData_AttachedStore(CredentialMetaData *metadata);
 
+int CredentialMetaData_SetLastModified(CredentialMetaData *metadata, time_t time);
+
+time_t CredentialMetaData_GetLastModified(CredentialMetaData *metadata);
+
 #ifdef __cplusplus
 }
 #endif
