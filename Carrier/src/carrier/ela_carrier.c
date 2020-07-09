@@ -3641,7 +3641,7 @@ int64_t send_message_with_receipt_internal(ElaCarrier *w, const char *to,
     deref(receipt);
     pthread_mutex_unlock(&w->receipts_mutex);
 
-    if (!is_offline)
+    if (is_offline)
         *is_offline = offline;
 
     return msgid;
