@@ -896,10 +896,8 @@ class C extends StandardPage {
             status: cur.status
           }
           if (cur.status !== CVOTE_CHAIN_STATUS.CHAINED) {
-            const rs = _.find(
-              voteHistory,
-              (history) => votedBy === history.votedBy
-            )
+            const index = _.findLastIndex(voteHistory, ['votedBy', votedBy])
+            const rs = voteHistory[index]
             if (rs && rs.status === CVOTE_CHAIN_STATUS.CHAINED) {
               const history = { ...item, reason: rs.reason, status: rs.status }
               prev[rs.value].push(history)

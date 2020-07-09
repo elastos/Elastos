@@ -734,7 +734,8 @@ export default class extends BaseComponent {
         if (item.status === CVOTE_CHAIN_STATUS.CHAINED) {
           return CVOTE_RESULT[item.value.toUpperCase()]
         }
-        const rs = _.find(voteHistory, (history) => item.votedBy === history.votedBy)
+        const index = _.findLastIndex(voteHistory, ['votedBy', item.votedBy])
+        const rs = voteHistory[index]
         if (rs && rs.status === CVOTE_CHAIN_STATUS.CHAINED) {
           return CVOTE_RESULT[rs.value.toUpperCase()]
         }
