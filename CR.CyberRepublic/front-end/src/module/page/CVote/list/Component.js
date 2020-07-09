@@ -749,6 +749,7 @@ export default class extends BaseComponent {
     } else {
       return ''
     }
+    voteArr = _.sortBy(voteArr)
     const supportNum = _.countBy(voteArr)[CVOTE_RESULT.SUPPORT] || 0
     const percentage = (supportNum * 100) / voteArr.length
     const proposalAgreed = percentage > 50

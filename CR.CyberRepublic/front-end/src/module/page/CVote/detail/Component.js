@@ -876,7 +876,7 @@ class C extends StandardPage {
     let stats
     if (status === CVOTE_STATUS.DRAFT) return null
     const group = {}
-    for (const value of _.values(CVOTE_RESULT)) {
+    for (const value of _.sortBy(_.values(CVOTE_RESULT))) {
       group[value] = []
     }
     if (!_.isEmpty(voteResult)) {
