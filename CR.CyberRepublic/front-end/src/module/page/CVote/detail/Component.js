@@ -903,6 +903,10 @@ class C extends StandardPage {
             if (rs && rs.status === CVOTE_CHAIN_STATUS.CHAINED) {
               const history = { ...item, reason: rs.reason, status: rs.status }
               prev[rs.value].push(history)
+              if (votedBy === this.props.currentUserId) {
+                prev[cur.value].push(item)
+              }
+              return prev
             }
             if (
               votedBy === this.props.currentUserId ||
@@ -915,10 +919,11 @@ class C extends StandardPage {
                 reason: ''
               })
             }
+            return prev
           } else {
             prev[cur.value].push(item)
+            return prev
           }
-          return prev
         },
         group
       )
