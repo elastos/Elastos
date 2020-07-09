@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import StandardPage from '@/module/page/StandardPage'
-import { CVOTE_RESULT, CVOTE_STATUS, ELIP_TYPE } from '@/constant'
+import { CVOTE_RESULT, CVOTE_STATUS, CVOTE_CHAIN_STATUS } from '@/constant'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import CRPopover from '@/module/shared/Popover/Component'
@@ -62,6 +62,7 @@ import {
   Paragraph
 } from './style'
 import './style.scss'
+import { ItemText } from '../../suggestion/detail/style'
 
 const { TextArea } = Input
 
@@ -75,7 +76,7 @@ const renderRichContent = (data, key, title, user, actions) => {
         <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
         <Paragraph>{data.elaAddress}</Paragraph>
         <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
-        <div className='budget-payment-list'>
+        <div className="budget-payment-list">
           <PaymentList
             list={data.budget}
             milestone={data.plan.milestone}
@@ -87,7 +88,12 @@ const renderRichContent = (data, key, title, user, actions) => {
             status={data.status}
           />
         </div>
-
+        {data.budgetIntro ? (
+          <div>
+            <Subtitle>{I18N.get('suggestion.budget.introduction')}</Subtitle>
+            <MarkdownPreview content={data.budgetIntro} />
+          </div>
+        ) : null}
       </div>
     )
   } else if (key === 'plan' && data.plan && typeof data.plan !== 'string') {
@@ -97,6 +103,12 @@ const renderRichContent = (data, key, title, user, actions) => {
         <Milestones initialValue={data.plan.milestone} editable={false} />
         <Subtitle>{I18N.get('suggestion.plan.teamInfo')}</Subtitle>
         <TeamInfoList list={data.plan.teamInfo} editable={false} />
+        {data.planIntro ? (
+          <div>
+            <Subtitle>{I18N.get('suggestion.plan.introduction')}</Subtitle>
+            <MarkdownPreview content={data.planIntro} />
+          </div>
+        ) : null}
       </div>
     )
   } else {
@@ -168,14 +180,16 @@ class C extends StandardPage {
       )
     }
 
-    const currentVoted = _.find(data.voteResult, function (o) {
+    const currentVoted = _.find(data.voteResult, function(o) {
       if (o.votedBy != null) {
         if (o.votedBy._id == currentUserId) {
           return o
         }
       }
     })
-    const isVote = currentVoted && (currentVoted.status == 'chained' || currentVoted.value == 'undecided')
+    const isVote =
+      currentVoted &&
+      (currentVoted.status == 'chained' || currentVoted.value == 'undecided')
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
@@ -237,9 +251,9 @@ class C extends StandardPage {
           }
           const finalStyle = style
             ? {
-              ...style,
-              zIndex: 2
-            }
+                ...style,
+                zIndex: 2
+              }
             : style
           const isNotification = this.props.data.status == 'NOTIFICATION'
           return (
@@ -386,8 +400,8 @@ class C extends StandardPage {
         </span>
       </span>
     ) : (
-        I18N.get('proposal.fields.tracking')
-      )
+      I18N.get('proposal.fields.tracking')
+    )
     const summaryTitle = summaryStatus ? (
       <span>
         {I18N.get('proposal.fields.summary')}{' '}
@@ -396,8 +410,8 @@ class C extends StandardPage {
         </span>
       </span>
     ) : (
-        I18N.get('proposal.fields.summary')
-      )
+      I18N.get('proposal.fields.summary')
+    )
     const tracking = isShowFollowingUp && (
       <Anchor.Link href="#tracking" title={trackingTitle} key="tracking" />
     )
@@ -716,12 +730,14 @@ class C extends StandardPage {
       />
     )
     const oldData = _.get(this.props.data, 'old')
-    return !oldData && (
-      <VoteBtnGroup>
-        {popOverYes}
-        {popOverOppose}
-        {popOverAbstain}
-      </VoteBtnGroup>
+    return (
+      !oldData && (
+        <VoteBtnGroup>
+          {popOverYes}
+          {popOverOppose}
+          {popOverAbstain}
+        </VoteBtnGroup>
+      )
     )
   }
 
@@ -853,16 +869,21 @@ class C extends StandardPage {
       vote_map: voteMap,
       reason_map: reasonMap,
       voteResult,
+      voteHistory,
       status
     } = this.props.data
     const { avatar_map: avatarMap } = this.props
     let stats
     if (status === CVOTE_STATUS.DRAFT) return null
-
+    const group = {}
+    for (const value of _.sortBy(_.values(CVOTE_RESULT))) {
+      group[value] = []
+    }
     if (!_.isEmpty(voteResult)) {
       stats = _.reduce(
         voteResult,
         (prev, cur) => {
+          const votedBy = _.get(cur, 'votedBy._id')
           const item = {
             name: `${_.get(cur, 'votedBy.profile.firstName')} ${_.get(
               cur,
@@ -871,16 +892,38 @@ class C extends StandardPage {
             didName: _.get(cur, 'votedBy.did.didName'),
             avatar: _.get(cur, 'votedBy.profile.avatar'),
             reason: cur.reason,
-            votedBy: _.get(cur, 'votedBy._id'),
-            status: _.get(cur, 'status')
+            votedBy,
+            status: cur.status
           }
-          if (prev[cur.value]) {
+          if (cur.status !== CVOTE_CHAIN_STATUS.CHAINED) {
+            const index = _.findLastIndex(voteHistory, ['votedBy', votedBy])
+            const rs = voteHistory[index]
+            if (rs && rs.status === CVOTE_CHAIN_STATUS.CHAINED) {
+              const history = { ...item, reason: rs.reason, status: rs.status }
+              prev[rs.value].push(history)
+              if (votedBy === this.props.currentUserId) {
+                prev[cur.value].push(item)
+              }
+              return prev
+            }
+            if (
+              votedBy === this.props.currentUserId ||
+              cur.value === CVOTE_RESULT.UNDECIDED
+            ) {
+              prev[cur.value].push(item)
+            } else {
+              prev[CVOTE_RESULT.UNDECIDED].push({
+                ...item,
+                reason: ''
+              })
+            }
+            return prev
+          } else {
             prev[cur.value].push(item)
             return prev
           }
-          return _.extend(prev, { [cur.value]: [item] })
         },
-        {}
+        group
       )
     } else if (!_.isEmpty(voteMap)) {
       // for legacy data structure
@@ -921,6 +964,9 @@ class C extends StandardPage {
     const isProposed = status == 'PROPOSED'
     const title = <h4>{I18N.get('council.voting.councilMembersVotes')}</h4>
     const detail = _.map(stats, (statArr, key) => {
+      if (_.isEmpty(statArr)) {
+        return null
+      }
       const type = CVOTE_RESULT[key.toUpperCase()] || CVOTE_RESULT.UNDECIDED
       const label = I18N.get(`council.voting.type.${type}`)
       const props = {

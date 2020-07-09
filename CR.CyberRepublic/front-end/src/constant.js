@@ -281,6 +281,11 @@ export const CVOTE_SUMMARY_STATUS = create([
   'PUBLISHED',
   'REJECT'
 ])
+export const CVOTE_WITHDRAWAL_STATUS = create([
+  'REVIEWING',
+  'APPROVED',
+  'REJECTED'
+])
 
 export const CVOTE_TRACKING_STATUS_TEXT = {
   [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',

@@ -106,7 +106,8 @@ export default {
       conditioned: '该阶段支付不能用于项目的这个阶段',
       isUsed: '该项目阶段已被其它支付项使用了',
       exception: '出错了',
-      notEqual: '支付项款之和与项目总金额不一致'
+      notEqual: '支付项款之和与项目总金额不一致',
+      introduction: '里程碑简介不能为空'
     }
   },
   modal: {
@@ -116,7 +117,9 @@ export default {
     pleaseUpdate: '请按照需求更新建议，并通过评论通知委员或社区',
     commentsFromCouncil: '来自委员或管理员的评论:',
     consideration: '您确定要将此建议标记为委员会正在审议中？',
-    signNotice: '您的建议签名之后，才能被委员审核。您不能修改签名后的建议。',
+    signNotice: '准备好让理事会成员进行审查了吗？',
+    signNoticeNow:'请立即签名建议。',
+    signNoticeNote:'注意：签名后，您将无法编辑建议。',
     signNow: '签名',
     signLater: '稍后'
   },
@@ -170,7 +173,8 @@ export default {
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: '结项款',
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: '阶段支付',
     goal: '目标',
-    milestone: '里程碑'
+    milestone: '里程碑',
+    introduction: '预算说明'
   },
   plan: {
     teamMember: '团队成员',
@@ -187,7 +191,8 @@ export default {
     showDetail: '显示详细信息',
     hideDetail: '隐藏详细信息',
     selectDate: '选择日期',
-    milestone: '里程碑'
+    milestone: '里程碑',
+    introduction: '实施说明'
   },
   label: {
     hasMadeIntoProposal: '已经将此建议发布为'

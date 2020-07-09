@@ -74,11 +74,11 @@ class C extends BaseComponent {
     }
     const formContent = (
       <div>
-        <FormItem label="Name" {...formItemLayout}>
+        <FormItem label={I18N.get('release.form.name')} {...formItemLayout}>
           {p.title}
         </FormItem>
         <StyledFormItem>
-          <FormItem label="Desc" {...formItemLayout}>
+          <FormItem label={I18N.get('release.form.desc')} {...formItemLayout}>
             {p.desc}
           </FormItem>
         </StyledFormItem>

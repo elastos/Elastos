@@ -211,6 +211,7 @@ export const ELIP_EXPIRATION = 1000 * 60 * 60 * 24 * 7
 export const CONTENT_TYPE = create(['MARKDOWN', 'HTML'])
 
 export const ONE_DAY = 1000 * 60 * 60 * 24
+export const THREE_DAY = 1000 * 60 * 60 * 24 * 3
 
 export const USER_SKILLSET = {
   DESIGN: create([

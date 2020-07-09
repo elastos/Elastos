@@ -86,5 +86,11 @@ export const SuggestionCore = {
   },
   plan: {
     type: Schema.Types.Mixed
+  },
+  planIntro: {
+    type: String
+  },
+  budgetIntro: {
+    type: String
   }
 }

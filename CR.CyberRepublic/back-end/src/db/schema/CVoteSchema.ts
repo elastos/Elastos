@@ -18,18 +18,13 @@ export const CVoteResultSchema = {
     type: String,
     default: ''
   },
-  txid: {
-    type: String,
-    default: ''
-  },
   status: {
     type: String,
     emnu: _.values(constant.CVOTE_CHAIN_STATUS),
     default: constant.CVOTE_CHAIN_STATUS.UNCHAIN
   },
-  signature: { data: String, message: String },
   reasonHash: {
-    type: String,
+    type: String
   },
   reasonCreatedAt: {
     type: Date
@@ -200,5 +195,30 @@ export const CVote = {
     type: String
   },
   withdrawalHistory: [withdrawalHistorySchema],
-  old: Boolean // mark an old proposal
+  old: Boolean, // mark an old proposal
+  notifiedOneDay: {
+    type: Boolean,
+    default: false
+  },
+  planIntro: {
+    type: String
+  },
+  budgetIntro: {
+    type: String
+  },
+  registerHeight: {
+    type: Number
+  },
+  proposedEndsHeight: {
+    type: Number
+  },
+  notificationEndsHeight: {
+    type: Number
+  },
+  proposedEnds: {
+    type: Date
+  },
+  notificationEnds: {
+    type: Date
+  }
 }
