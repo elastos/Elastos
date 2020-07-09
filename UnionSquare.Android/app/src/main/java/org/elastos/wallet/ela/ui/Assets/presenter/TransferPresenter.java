@@ -22,16 +22,21 @@
 
 package org.elastos.wallet.ela.ui.Assets.presenter;
 
+import android.app.Dialog;
+
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
+import org.elastos.wallet.ela.ui.Assets.viewdata.StringObserverViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringListner;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 public class TransferPresenter extends NewPresenterAbstract {
     public void isAddressValid(String walletId, String addr, BaseFragment baseFragment, String type) {
@@ -103,5 +108,47 @@ public class TransferPresenter extends NewPresenterAbstract {
             return 2;
         }
 
+    }
+
+    public void getUrlString(String tempUrl, BaseFragment baseFragment, StringObserverViewData viewData, boolean isShowDialog) {
+        Dialog dialog;
+        if (isShowDialog) {
+            dialog = initProgressDialog(baseFragment.getContext());
+        } else {
+            dialog = null;
+        }
+        Observer observer = new Observer<String>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                if (mDisposable != null) {
+                    mDisposable.dispose();//这里他的上一个请求只可能是它自己 所有先取消上一次请求
+                }
+                mDisposable = d;
+            }
+
+            @Override
+            public void onNext(String value) {
+                if (isShowDialog) {
+                    dismissProgessDialog(dialog);
+                }
+                viewData.onNext(value);
+
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                if (isShowDialog) {
+                    dismissProgessDialog(dialog);
+                }
+                viewData.onError(e);
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        };
+        Observable observable = RetrofitManager.specialCreate1().getUrlString(tempUrl);
+        subscriberObservable(observer, observable, baseFragment);
     }
 }

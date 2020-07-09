@@ -45,6 +45,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 
 public class RetrofitManager {
@@ -226,6 +227,29 @@ public class RetrofitManager {
         Retrofit retrofit;
         Retrofit.Builder build = new Retrofit.Builder().baseUrl(WalletNet.SERVERLIST_BASE)
                 .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
+        HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());
+        logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+        synchronized (RetrofitManager.class) {
+            OkHttpClient mOkHttpClient = builder//.cache(cache)
+                    .connectTimeout(2, TimeUnit.SECONDS)
+                    .readTimeout(2, TimeUnit.SECONDS)
+                    .writeTimeout(2, TimeUnit.SECONDS)
+                    .addInterceptor(logInterceptor)
+                    .addInterceptor(new InterceptorCom())
+                    .build();
+            retrofit = build.client(mOkHttpClient).build();
+            return retrofit.create(ApiServer.class);
+        }
+
+    }
+
+    public static ApiServer specialCreate1() {
+        Retrofit retrofit;
+        Retrofit.Builder build = new Retrofit.Builder().baseUrl(WalletNet.SERVERLIST_BASE)
+                .addConverterFactory(ScalarsConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
         HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());
         logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);

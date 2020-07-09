@@ -119,4 +119,6 @@ public interface ApiServer {
 
     @GET("/api/cvote/get_proposal/{id}")
     Observable<ProposalDetailEntity> getProposalDetail(@Path("id") int id);
+    @GET
+    Observable<String> getUrlString(@Url String url);//不同baseurl用@Url @GET
 }

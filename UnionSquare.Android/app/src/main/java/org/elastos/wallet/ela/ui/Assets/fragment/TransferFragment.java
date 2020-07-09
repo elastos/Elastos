@@ -46,6 +46,7 @@ import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
+import org.elastos.wallet.ela.ui.Assets.viewdata.StringObserverViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringViewData;
 import org.elastos.wallet.ela.utils.Arith;
@@ -128,6 +129,28 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
                 Checked = isChecked;
             }
         });*/
+        etPayeeaddr.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                String name = etPayeeaddr.getText().toString();
+                if (!hasFocus && !TextUtils.isEmpty(name) && name.length() <= 24) {
+
+                    presenter.getUrlString("https://" + name + ".elastos.name/ela.address", TransferFragment.this, new StringObserverViewData() {
+                        @Override
+                        public void onNext(String t) {
+                            etPayeeaddr.setText(t);
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            super.onError(e);
+                            showToast(getString(R.string.CryptoNamewrongaddress));
+                        }
+                    }, false);
+
+                }
+            }
+        });
     }
 
 
@@ -169,7 +192,26 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             showToastMessage(getString(R.string.lack_of_balance));
             return;
         }*/
-        presenter.isAddressValid(wallet.getWalletId(), address, this, null);
+        if (address.length() <= 24) {
+            presenter.getUrlString("https://" + address + ".elastos.name/ela.address", TransferFragment.this, new StringObserverViewData() {
+                @Override
+                public void onNext(String t) {
+                    address = t;
+                    etPayeeaddr.setText(t);
+                    presenter.isAddressValid(wallet.getWalletId(), address, TransferFragment.this, null);
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    super.onError(e);
+                    showToast(getString(R.string.CryptoNamewrongaddress));
+                }
+            }, true);
+        } else {
+            presenter.isAddressValid(wallet.getWalletId(), address, TransferFragment.this, null);
+        }
+
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -195,7 +237,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
-            bundle.putInt("transType",2 );
+            bundle.putInt("transType", 2);
             start(SignFragment.class, bundle);
 
         }
@@ -205,7 +247,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
-            bundle.putInt("transType",2 );
+            bundle.putInt("transType", 2);
             bundle.putBoolean("signStatus", true);
             start(SignFragment.class, bundle);
 
