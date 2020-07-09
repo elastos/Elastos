@@ -282,6 +282,12 @@ type CRCProposalWithdrawInfo struct {
 	Signature      string `json:"signature"`
 }
 
+type CRDPOSManagementInfo struct {
+	CRManagementPublicKey string `json:"crmanagementpublickey"`
+	CRCommitteeDID        string `json:"crcommitteedid"`
+	Signature             string `json:"signature"`
+}
+
 type NextTurnDPOSPayloadInfo struct {
 	WorkingHeight  uint32   `json:"workingheight"`
 	CRPublickeys   []string `json:"crpublickeys"`
