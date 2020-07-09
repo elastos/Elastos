@@ -1420,31 +1420,12 @@ static void notify_connection_cb(bool connected, void *context)
         express_enqueue_pull_messages(w->connector);
 }
 
-static void notify_friend_info(ElaCarrier *w, uint32_t friend_number,
-                               ElaFriendInfo *info)
-
-{
-    const char *userid;
-
-    assert(w);
-    assert(friend_number != UINT32_MAX);
-    assert(info);
-
-    userid = info->user_info.userid;
-
-    if (friends_exist(w->friends, friend_number)) {
-        if (w->callbacks.friend_info)
-            w->callbacks.friend_info(w, userid, info, w->context);
-    }
-}
-
 static
 void notify_friend_description_cb(uint32_t friend_number, const uint8_t *desc,
                                   size_t length, void *context)
 {
     ElaCarrier *w = (ElaCarrier *)context;
     FriendInfo *fi;
-    ElaUserInfo *ui;
     bool changed = false;
 
     assert(friend_number != UINT32_MAX);
@@ -1464,14 +1445,15 @@ void notify_friend_description_cb(uint32_t friend_number, const uint8_t *desc,
         return;
     }
 
-    ui = &fi->info.user_info;
-    unpack_user_desc(desc, length, ui, &changed);
+    unpack_user_desc(desc, length, &fi->info.user_info, &changed);
 
     if (changed) {
-        ElaFriendInfo tmpfi;
+        ElaFriendInfo _fi;
 
-        memcpy(&tmpfi, &fi->info, sizeof(tmpfi));
-        notify_friend_info(w, friend_number, &tmpfi);
+        memcpy(&_fi, &fi->info, sizeof(_fi));
+
+        if (w->callbacks.friend_info)
+            w->callbacks.friend_info(w, _fi.user_info.userid, &_fi, w->context);
     }
 
     deref(fi);
