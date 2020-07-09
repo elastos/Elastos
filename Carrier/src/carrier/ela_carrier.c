@@ -1383,16 +1383,18 @@ static void notify_friends(ElaCarrier *w)
     friends_iterate(w->friends, &it);
     while(friends_iterator_has_next(&it)) {
         FriendInfo *fi;
-        ElaFriendInfo _fi;
 
-        if (friends_iterator_next(&it, &fi) == 1) {
-            if (w->callbacks.friend_list) {
-                memcpy(&_fi, &fi->info, sizeof(ElaFriendInfo));
-                w->callbacks.friend_list(w, &_fi, w->context);
-            }
+        if (friends_iterator_next(&it, &fi) != 1) // end of interation.
+            break;
 
-            deref(fi);
+        if (w->callbacks.friend_list) {
+            ElaFriendInfo _fi;
+
+            memcpy(&_fi, &fi->info, sizeof(ElaFriendInfo));
+            w->callbacks.friend_list(w, &_fi, w->context);
         }
+
+        deref(fi);
     }
 
     if (w->callbacks.friend_list)
@@ -1409,9 +1411,7 @@ static void notify_connection_cb(bool connected, void *context)
             w->callbacks.ready(w, w->context);
     }
 
-    w->connection_status = (connected ? ElaConnectionStatus_Connected :
-                                        ElaConnectionStatus_Disconnected);
-
+    w->connection_status = connection_status(connected);
     if (w->callbacks.connection_status)
         w->callbacks.connection_status(w, w->connection_status, w->context);
 
@@ -1507,10 +1507,7 @@ void notify_friend_connection_cb(uint32_t friend_number, bool connected,
         return;
     }
 
-    status = connected ? ElaConnectionStatus_Connected :
-                         ElaConnectionStatus_Disconnected;
-
-    if (status != fi->info.status) {
+    if (connection_status(connected) != fi->info.status) {
         char friendid[ELA_MAX_ID_LEN + 1];
 
         fi->info.status = status;

@@ -38,6 +38,11 @@
 
 #define ELA_MAX_EXTENSION_NAME_LEN  (31)
 
+static inline ElaConnectionStatus connection_status(bool connected)
+{
+    return connected ? ElaConnectionStatus_Connected : ElaConnectionStatus_Disconnected;
+}
+
 typedef struct DHT {
     uint8_t padding[32];  // reserved for DHT.
 } DHT;
