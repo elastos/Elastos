@@ -111,7 +111,10 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
                                              status=False)
 
         response = requests.post(url, data=json.dumps(d), headers=self.headers, timeout=REQUEST_TIMEOUT)
-        data = json.loads(response.text)
+        try:
+            data = json.loads(response.text)
+        except Exception as e:
+            data = {'result': {}}
 
         # generate jwt token
         jwt_info = {
