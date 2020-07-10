@@ -85,8 +85,7 @@ const CHAIN_STATUS_TO_PROPOSAL_STATUS = {
 }
 
 const DID_PREFIX = 'did:elastos:'
-const STAGE_BLOCAKS = 7 * 720
-const STAGE_BLOCAKS_DEV = 40
+const STAGE_BLOCKS = process.env.NODE_ENV == 'staging' ? 40 : 7 * 720 
 
 export default class extends Base {
   // create a DRAFT propoal with minimal info
@@ -144,12 +143,8 @@ export default class extends Base {
     const { proposedEnds, notificationEnds } = await ela.calHeightTime(
       registerHeight
     )
-    let proposedEndsHeight = registerHeight + STAGE_BLOCAKS
-    let notificationEndsHeight = registerHeight + STAGE_BLOCAKS * 2
-    if (process.env.NODE_ENV === 'staging') {
-      proposedEndsHeight = registerHeight + STAGE_BLOCAKS_DEV
-      notificationEndsHeight = registerHeight + STAGE_BLOCAKS_DEV * 2
-    }
+    let proposedEndsHeight = registerHeight + STAGE_BLOCKS
+    let notificationEndsHeight = registerHeight + STAGE_BLOCKS * 2
     const doc: any = {
       vid,
       type: suggestion.type,
@@ -1359,7 +1354,7 @@ export default class extends Base {
         }
       )
       this.notifyProposer(proposal, currentStatus, 'council')
-      return rs.data.registerheight
+      return rs.data.registerheight + STAGE_BLOCKS
     }
   }
 
@@ -1404,7 +1399,7 @@ export default class extends Base {
       )
       if (updateStatus && updateStatus.nModified == 1) {
         this.notifyProposer(proposal, proposalStatus, 'community')
-        return rs.data.registerheight
+        return rs.data.registerheight + STAGE_BLOCKS * 2
       }
     }
     switch (proposalStatus) {
@@ -1428,7 +1423,7 @@ export default class extends Base {
     )
     if (updateStatus && updateStatus.nModified == 1) {
       this.notifyProposer(proposal, proposalStatus, 'community')
-      return rs.data.registerheight
+      return rs.data.registerheight + STAGE_BLOCKS * 2
     }
   }
 
@@ -2062,12 +2057,8 @@ export default class extends Base {
       const result = await getProposalData(o.proposalHash)
       if (result == undefined) return
       const registerHeight = result !== undefined && result.data.registerheight
-      let proposedEndsHeight = registerHeight + STAGE_BLOCAKS
-      let notificationEndsHeight = registerHeight + STAGE_BLOCAKS * 2
-      if (process.env.NODE_ENV === 'staging') {
-        proposedEndsHeight = registerHeight + STAGE_BLOCAKS_DEV
-        notificationEndsHeight = registerHeight + STAGE_BLOCAKS_DEV * 2
-      }
+      let proposedEndsHeight = registerHeight + STAGE_BLOCKS
+      let notificationEndsHeight = registerHeight + STAGE_BLOCKS * 2
       await db_cvote.update(
         { _id: o._id },
         {
