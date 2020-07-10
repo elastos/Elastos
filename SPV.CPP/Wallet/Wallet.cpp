@@ -789,37 +789,24 @@ static int _close(int argc, char *argv[]) {
 	return 0;
 }
 
-// deposit amount address
+// deposit chainID amount address
 static int deposit(int argc, char *argv[]) {
-	checkParam(3);
+	checkParam(4);
 	checkCurrentWallet();
 
-	std::string amount = convertAmount(argv[1]);
-	std::string sideChainAddress = argv[2];
+	std::string chainID = argv[1];
+	std::string amount = convertAmount(argv[2]);
+	std::string sideChainAddress = argv[3];
 
 	try {
 		IMainchainSubWallet *subWallet;
 		getSubWallet(subWallet, currentWallet, CHAINID_ELA);
 
 		std::vector<std::string> supportChainID = currentWallet->GetSupportedChains();
-		auto stripChainID = std::find(supportChainID.begin(), supportChainID.end(), CHAINID_ELA);
-		if (stripChainID != supportChainID.end())
-			supportChainID.erase(stripChainID);
-
-		if (supportChainID.empty()) {
-			std::cerr << "No support side chain found!" << std::endl;
+		auto findChainID = std::find(supportChainID.begin(), supportChainID.end(), chainID);
+		if (chainID == CHAINID_ELA || findChainID == supportChainID.end()) {
+			std::cerr << "Invalid chainID"  << std::endl;
 			return ERRNO_APP;
-		}
-
-		std::string chainID;
-		if (supportChainID.size() > 1) {
-			std::cout << "Support side chain ID: " << std::endl;
-			for (const std::string &id: supportChainID)
-				std::cout << "  " << id << std::endl;
-			std::cout << "Which side chain do you want to top up: ";
-			std::getline(std::cin, chainID);
-		} else {
-			chainID = supportChainID[0];
 		}
 
 		nlohmann::json tx = subWallet->CreateDepositTransaction(
@@ -2126,7 +2113,7 @@ struct command {
 	{"receive",    _receive,       "chainID                                          Get receive address of `chainID`."},
 	{"address",    address,        "chainID [internal]                               Get the revceive addresses or change addresses of chainID."},
 	{"proposal",   proposal,       "                                                 Create proposal tx."},
-	{"deposit",    deposit,        "amount address                                   Deposit to sidechain from mainchain."},
+	{"deposit",    deposit,        "chainID amount address                           Deposit to sidechain from mainchain."},
 	{"withdraw",   withdraw,       "amount address                                   Withdraw from sidechain to mainchain."},
 	{"export",     _export,        "(m[nemonic] | k[eystore])                        Export mnemonic or keystore."},
 	{"register",   _register,      "(cr | dpos)                                      Register CR or DPoS with specified wallet."},
