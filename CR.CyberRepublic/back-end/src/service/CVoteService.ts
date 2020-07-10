@@ -556,6 +556,7 @@ export default class extends Base {
    */
   public async list(param): Promise<Object> {
     const db_cvote = this.getDBModel('CVote')
+    const db_config = this.getDBModel('Config')
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
     const query: any = {}
@@ -716,7 +717,7 @@ export default class extends Base {
       cursor.skip(results * (page - 1)).limit(results)
     }
 
-    const currentHeight = await ela.height()
+    const { currentHeight } = await db_config.getDBInstance().findOne()
     const rs = await Promise.all([
       cursor,
       db_cvote.getDBInstance().find(query).count()
