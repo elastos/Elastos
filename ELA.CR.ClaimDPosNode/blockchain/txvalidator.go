@@ -2202,6 +2202,22 @@ func (b *BlockChain) checkCRDPOSManagementTransaction(txn *Transaction) error {
 		return fmt.Errorf("producer already registered")
 	}
 
+	err = b.checkCRDPOSManagementSignature(manager, crMember.Info.Code)
+	if err != nil {
+		return errors.New("CR claim DPOS signature check failed")
+	}
+
+	return nil
+}
+
+func (b *BlockChain) checkCRDPOSManagementSignature(
+	managementPayload *payload.CRDPOSManagement, code []byte) error {
+	signBuf := new(bytes.Buffer)
+	managementPayload.SerializeUnsigned(signBuf, payload.CRManagementVersion)
+	if err := checkCRTransactionSignature(managementPayload.Signature, code,
+		signBuf.Bytes()); err != nil {
+		return errors.New("CR signature check failed")
+	}
 	return nil
 }
 

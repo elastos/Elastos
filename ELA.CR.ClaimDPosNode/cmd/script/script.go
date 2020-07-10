@@ -63,7 +63,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	payloadVersion := c.Int64("payloadversion")
 
 	crManagementPublicKey := c.String("crmanagementpublickey")
-	crManagementPrivateKey := c.String("crmanagementprivatekey")
+	crDPOSPrivateKey := c.String("crdposprivatekey")
 	crCommitteeDID := c.String("crcommitteedid")
 
 	getWallet := func(L *lua.LState) int {
@@ -257,8 +257,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(crManagementPublicKey))
 		return 1
 	}
-	getCRManagementPrivateKey := func(L *lua.LState) int {
-		L.Push(lua.LString(crManagementPrivateKey))
+	getCRDPOSPrivateKey := func(L *lua.LState) int {
+		L.Push(lua.LString(crDPOSPrivateKey))
 		return 1
 	}
 	getCRCommitteeDID := func(L *lua.LState) int {
@@ -311,7 +311,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	L.Register("getCRExpensesAddress", getCRExpensesAddress)
 	L.Register("getPayloadVersion", getPayloadVersion)
 	L.Register("getCRManagementPublicKey", getCRManagementPublicKey)
-	L.Register("getCRManagementPrivateKey", getCRManagementPrivateKey)
+	L.Register("getCRDPOSPrivateKey", getCRDPOSPrivateKey)
 	L.Register("getCRCommitteeDID", getCRCommitteeDID)
 }
 
@@ -533,7 +533,7 @@ func NewCommand() *cli.Command {
 				Usage: "set the public key of crmanagement",
 			},
 			cli.StringFlag{
-				Name:  "crmanagementprivatekey",
+				Name:  "crdposprivatekey",
 				Usage: "set the private key of crmanagement",
 			},
 			cli.StringFlag{

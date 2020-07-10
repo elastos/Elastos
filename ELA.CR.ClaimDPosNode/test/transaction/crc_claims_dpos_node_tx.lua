@@ -37,9 +37,9 @@ if cr_management_public_key == "" then
     return
 end
 
-local cr_management_private_key = getCRManagementPrivateKey()
-if cr_management_public_key == "" then
-    print("cr_management_private_key is nil, should use --crmanagementprivatekey to set it.")
+local cr_dpos_private_key = getCRDPOSPrivateKey()
+if cr_dpos_private_key == "" then
+    print("cr_dpos_private_key is nil, should use --crdposprivatekey to set it.")
     return
 end
 
@@ -51,11 +51,11 @@ end
 
 print("fee:", fee)
 print("cr management public key:", cr_management_public_key)
-print("cr management private key:", cr_management_private_key)
+print("cr dpos private key:", cr_dpos_private_key)
 print("cr committee did:", cr_committee_did)
 
--- crc dpos management payload: cr_management_public_key, cr_management_private_key, cr_committee_did, wallet
-local cr_claims_dpos_payload =crdposmanagement.new(cr_management_public_key, cr_management_private_key, cr_committee_did, wallet)
+-- crc dpos management payload: cr_management_public_key, cr_dpos_private_key, cr_committee_did, wallet
+local cr_claims_dpos_payload =crdposmanagement.new(cr_management_public_key, cr_dpos_private_key, cr_committee_did, wallet)
 print(cr_claims_dpos_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime

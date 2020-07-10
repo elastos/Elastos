@@ -1753,7 +1753,7 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 
 func newCRDPOSManagement(L *lua.LState) int {
 	crManagementPublicKeyStr := L.ToString(1)
-	crManagementPrivateKeyStr := L.ToString(2)
+	crDPOSPrivateKeyStr := L.ToString(2)
 	crCommitteeDIDStr := L.ToString(3)
 	client, err := checkClient(L, 4)
 
@@ -1764,7 +1764,7 @@ func newCRDPOSManagement(L *lua.LState) int {
 		fmt.Println("wrong cr management public key")
 		os.Exit(1)
 	}
-	crManagementPrivateKey, err := common.HexStringToBytes(crManagementPrivateKeyStr)
+	crDPOSPrivateKey, err := common.HexStringToBytes(crDPOSPrivateKeyStr)
 	if err != nil {
 		fmt.Println("wrong cr management private key")
 		os.Exit(1)
@@ -1777,7 +1777,7 @@ func newCRDPOSManagement(L *lua.LState) int {
 
 	fmt.Println("-----newCrDPOSManagement------")
 	fmt.Println("crManagementPublicKeyStr", crManagementPublicKeyStr)
-	fmt.Println("crManagementPrivateKeyStr", crManagementPrivateKeyStr)
+	fmt.Println("crDPOSPrivateKeyStr", crDPOSPrivateKeyStr)
 	fmt.Println("crCommitteeDIDStr", crCommitteeDIDStr)
 	fmt.Printf("account: \n %+v\n", account)
 	fmt.Println("-----newCrDPOSManagement------")
@@ -1799,7 +1799,7 @@ func newCRDPOSManagement(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		crDPOSManagement.Signature, err = crypto.Sign(crManagementPrivateKey, signBuf.Bytes())
+		crDPOSManagement.Signature, err = crypto.Sign(crDPOSPrivateKey, signBuf.Bytes())
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
