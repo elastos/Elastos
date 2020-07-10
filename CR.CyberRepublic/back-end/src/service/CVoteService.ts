@@ -1574,7 +1574,9 @@ export default class extends Base {
       'createdAt',
       'proposalHash',
       'rejectAmount',
-      'rejectThroughAmount'
+      'rejectThroughAmount',
+      'proposedEndsHeight',
+      'notificationEndsHeight'
     ]
     const proposal = await db_cvote
       .getDBInstance()
@@ -1638,17 +1640,15 @@ export default class extends Base {
     const notificationResult = {}
 
     // duration
-    const endTime = Math.round(proposal.createdAt.getTime() / 1000)
-    const nowTime = Math.round(new Date().getTime() / 1000)
-
+    const currentHeight = await ela.height()
     if (proposal.status === constant.CVOTE_STATUS.PROPOSED) {
-      notificationResult['duration'] =
-        endTime - nowTime + 604800 > 0 ? endTime - nowTime + 604800 : 0
+      const duration = (proposal.proposalEndsHeight - currentHeight) * 2 * 60
+      notificationResult['duration'] = duration >= 0 ? duration : 0
     }
 
     if (proposal.status === constant.CVOTE_STATUS.NOTIFICATION) {
-      notificationResult['duration'] =
-        endTime - nowTime + 604800 * 2 > 0 ? endTime - nowTime + 604800 * 2 : 0
+        const duration = (proposal.notificationEndsHeight - currentHeight) * 2 * 60
+        notificationResult['duration'] = duration >= 0 ? duration : 0
     }
 
     if (
@@ -1683,7 +1683,9 @@ export default class extends Base {
           'rejectAmount',
           'rejectThroughAmount',
           'status',
-          'voteHistory'
+          'voteHistory',
+          'notificationEndsHeight',
+          'proposedEndsHeight'
         ]),
         ...notificationResult,
         createdAt: timestamp.second(proposal.createdAt),
@@ -2079,8 +2081,11 @@ export default class extends Base {
     })
   }
 
-  public async getRegisterHeight() {
-    const registerHeight = await ela.height()
+  public async getCurrentHeight() {
+    const db_config = this.getDBModel('Config')
+    const {
+      currentHeight: registerHeight
+    } = await db_config.getDBInstance().findOne()
     return registerHeight
   }
 
