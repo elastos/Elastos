@@ -86,9 +86,12 @@ public class AboutPresenter extends PresenterAbstract {
             //大于10m压缩
             File zipFile = new File(srcFile, "log.zip");
             ArrayList<File> arrayList = new ArrayList<File>();
-            arrayList.add(srcFile1);
-            arrayList.add(srcFile2);
-            ZipUtils.zipFiles(arrayList, zipFile);
+            if (srcFile1.exists())
+                arrayList.add(srcFile1);
+            if (srcFile2.exists())
+                arrayList.add(srcFile2);
+            if (arrayList.size() > 0)
+                ZipUtils.zipFiles(arrayList, zipFile);
             return zipFile.getAbsolutePath();
             //  }
             /*InputStream is = new FileInputStream(file);

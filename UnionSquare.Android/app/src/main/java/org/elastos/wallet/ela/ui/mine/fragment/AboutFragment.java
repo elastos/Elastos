@@ -146,7 +146,7 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
                 tvVersionSdk.setText(getString(R.string.curentsdkversion) + data);
                 break;
             case "moveLogFile":
-                if (!TextUtils.isEmpty(data)) {
+                if (!TextUtils.isEmpty(data)&&!"null".equals(data)) {
                     showToast(getContext().getString(R.string.logkeppin) + data);
                     shareFile(data);
                 } else {
