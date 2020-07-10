@@ -19,6 +19,7 @@ import get_proposal from './get_proposal'
 import check_signature from './check_signature'
 import memberVote from './memberVote'
 import updateAborted from './update_aborted'
+import getCurrentHeight from './get_current_height'
 
 export default Base.setRouter([
   {
@@ -116,4 +117,9 @@ export default Base.setRouter([
     router: updateAborted,
     method: 'get'
   },
+  {
+    path: '/get_current_height',
+    router: getCurrentHeight,
+    method: 'get'
+  }
 ])

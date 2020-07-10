@@ -294,7 +294,8 @@ class C extends BaseComponent {
         initialValue: initialValues.plan
       })(
         <ImplementationPlan
-          initialValue={initialValues.plan}
+          initialValue={initialValues}
+          getFieldDecorator={getFieldDecorator}
           callback={this.onTextareaChange}
         />
       )
@@ -326,6 +327,7 @@ class C extends BaseComponent {
       })(
         <PaymentSchedule
           initialValue={initialBudget}
+          getFieldDecorator={getFieldDecorator}
           callback={this.onTextareaChange}
         />
       )

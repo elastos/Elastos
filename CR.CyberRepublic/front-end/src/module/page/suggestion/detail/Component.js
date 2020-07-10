@@ -319,6 +319,8 @@ export default class extends StandardPage {
                 )}
                 <Subtitle>{I18N.get('suggestion.plan.teamInfo')}</Subtitle>
                 <TeamInfoList list={detail.plan.teamInfo} editable={false} />
+                <Subtitle>{I18N.get('suggestion.plan.introduction')}</Subtitle>
+                <MarkdownPreview content={detail.planIntro} />
               </div>
             )
           }
@@ -345,6 +347,8 @@ export default class extends StandardPage {
                   milestone={detail.plan.milestone}
                   editable={false}
                 />
+                <Subtitle>{I18N.get('suggestion.budget.introduction')}</Subtitle>
+                <MarkdownPreview content={detail.budgetIntro} />
               </div>
             )
           }

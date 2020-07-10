@@ -4,6 +4,7 @@ import CVoteServive from '../service/CVoteService'
 import CouncilService from '../service/CouncilService'
 import UserService from '../service/UserService'
 import ElaTransactionService from '../service/ElaTransactionService'
+import { constant } from '../constant'
 const Agenda = require('agenda')
 const agenda = new Agenda({ db: { address: process.env.DB_URL } })
 
@@ -15,6 +16,9 @@ const JOB_NAME = {
   UPDATEMILESTONE: 'update milestone status',
   COUNCILREVIEWJOB: 'new council review',
   TRANSACTIONJOB: 'new append transaction',
+  NOTIFICATIONCOUNCILVOTE: 'notification council to vote',
+  UPDATECURRENTHEIGHT: 'update current height',
+  PROCESSOLDDATAONCE: 'process old data once'
 }
 
 agenda.define(JOB_NAME.UPDATEMILESTONE, async (job: any) => {
@@ -125,6 +129,27 @@ agenda.define(JOB_NAME.TRANSACTIONJOB, async (job: any) => {
     console.log('',err)
   }
 })
+agenda.define(JOB_NAME.NOTIFICATIONCOUNCILVOTE, async (job: any) => {
+  try{
+    const DB = await db.create()
+    const cvoteService = new CVoteServive(DB, { user: undefined })
+    await cvoteService.notifyCouncilToVote(constant.ONE_DAY)
+    await cvoteService.notifyCouncilToVote(constant.THREE_DAY)
+    console.log(JOB_NAME.NOTIFICATIONCOUNCILVOTE, 'at working')
+  }catch (err) {
+    console.log('',err)
+  }
+})
+agenda.define(JOB_NAME.PROCESSOLDDATAONCE, async (job: any) => {
+  try{
+    const DB = await db.create()
+    const cvoteService = new CVoteServive(DB, { user: undefined })
+    await cvoteService.processOldData()
+    console.log(JOB_NAME.PROCESSOLDDATAONCE, 'at working')
+  }catch (err) {
+    console.log('',err)
+  }
+})
 ;(async function () {
   console.log('------cron job starting------')
   await agenda.start()
@@ -135,4 +160,6 @@ agenda.define(JOB_NAME.TRANSACTIONJOB, async (job: any) => {
   await agenda.every('2 minutes', JOB_NAME.UPDATEMILESTONE)
   await agenda.every('2 minutes', JOB_NAME.COUNCILREVIEWJOB)
   await agenda.every('1 minutes', JOB_NAME.TRANSACTIONJOB)
+  await agenda.every('1 minutes', JOB_NAME.NOTIFICATIONCOUNCILVOTE)
+  await agenda.now(JOB_NAME.PROCESSOLDDATAONCE)
 })()

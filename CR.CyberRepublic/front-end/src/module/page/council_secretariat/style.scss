@@ -165,13 +165,19 @@ $maxWithContent: 888px;
         
         .self-intro {
           font-family: 'synthese', sans-serif;
-          display: -webkit-box;
-          /*!autoprefixer:off*/
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 3;
-          /*autoprefixer:on*/
+          // display: -webkit-box;
+          // /*!autoprefixer:off*/
+          // -webkit-box-orient: vertical;
+          // /*autoprefixer:on*/
+          // -webkit-line-clamp: 3;
+          // overflow: hidden;
+          // text-overflow: ellipsis;
+          /*! autoprefixer: off */
+          -webkit-box-orient: vertical; // 避免压缩后删除此行
+          -webkit-line-clamp: 5; // 显示省略号行数
           overflow: hidden;
           text-overflow: ellipsis;
+          display: -webkit-box;
         }
       }
     }

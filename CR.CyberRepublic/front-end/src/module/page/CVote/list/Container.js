@@ -53,6 +53,9 @@ const mapDispatch = () => {
     },
     async createDraft(param) {
       return service.createDraft(param)
+    },
+    async getCurrentheight() {
+      return service.getCurrentheight()
     }
   }
 }
