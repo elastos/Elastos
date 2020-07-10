@@ -1626,7 +1626,7 @@ export default class extends Base {
     // duration
     const currentHeight = await ela.height()
     if (proposal.status === constant.CVOTE_STATUS.PROPOSED) {
-      const duration = (proposal.proposalEndsHeight - currentHeight) * 2 * 60
+      const duration = (proposal.proposedEndsHeight - currentHeight) * 2 * 60
       notificationResult['duration'] = duration >= 0 ? duration : 0
     }
 
