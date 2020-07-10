@@ -1266,7 +1266,7 @@ export default class extends Base {
   // update proposal information on the chain
   public async pollProposal() {
     const db_cvote = this.getDBModel('CVote')
-
+    const db_config = this.getDBModel('Config')
     const list = await db_cvote.getDBInstance().find({
       proposalHash: { $exists: true },
       status: {
@@ -1277,6 +1277,9 @@ export default class extends Base {
       }
     })
 
+    let tempCurrentHeight = 0
+    let heightProposed = 0
+    let heightNotification = 0
     const asyncForEach = async (array, callback) => {
       for (let index = 0; index < array.length; index++) {
         await callback(array[index], index, array)
@@ -1292,21 +1295,36 @@ export default class extends Base {
       }
       switch (status) {
         case constant.CVOTE_STATUS.PROPOSED:
-          await this.updateProposalOnProposed({
+          heightProposed = await this.updateProposalOnProposed({
             rs,
             _id: o._id,
             status
           })
           break
         case constant.CVOTE_STATUS.NOTIFICATION:
-          await this.updateProposalOnNotification({
+          heightNotification = await this.updateProposalOnNotification({
             rs,
             _id: o._id,
             rejectThroughAmount
           })
           break
       }
+      tempCurrentHeight =
+        heightProposed > heightNotification
+          ? heightProposed
+          : heightNotification
     })
+    let currentHeight = await ela.height()
+    const currentConfig = await db_config.getDBInstance().findOne()
+    if (
+      tempCurrentHeight !== 0 &&
+      tempCurrentHeight > currentConfig.currentHeight
+    ) {
+      currentHeight = tempCurrentHeight
+    }
+    await db_config
+      .getDBInstance()
+      .update({ _id: currentConfig._id }, { $set: { currentHeight } })
   }
 
   public async updateProposalOnProposed(data: any) {
@@ -1325,6 +1343,7 @@ export default class extends Base {
         }
       )
       this.notifyProposer(proposal, currentStatus, 'council')
+      return rs.data.registerheight
     }
   }
 
@@ -1343,6 +1362,9 @@ export default class extends Base {
 
     const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
     const proposal = await db_cvote.findById(_id)
+    if (proposalStatus === proposal.status) {
+      return false
+    }
     if (proposalStatus === constant.CVOTE_STATUS.ACTIVE) {
       const budget = proposal.budget.map((item: any) => {
         if (item.type === 'ADVANCE') {
@@ -1351,7 +1373,7 @@ export default class extends Base {
           return { ...item, status: WAITING_FOR_REQUEST }
         }
       })
-      await db_cvote.update(
+      const updateStatus = await db_cvote.update(
         {
           _id
         },
@@ -1364,8 +1386,10 @@ export default class extends Base {
           }
         }
       )
-      this.notifyProposer(proposal, proposalStatus, 'community')
-      return
+      if (updateStatus && updateStatus.nModified == 1) {
+        this.notifyProposer(proposal, proposalStatus, 'community')
+        return rs.data.registerheight
+      }
     }
     switch (proposalStatus) {
       case constant.CVOTE_STATUS.VETOED:
@@ -1376,7 +1400,7 @@ export default class extends Base {
         break
     }
 
-    await db_cvote.update(
+    const updateStatus = await db_cvote.update(
       {
         _id
       },
@@ -1386,7 +1410,10 @@ export default class extends Base {
         rejectThroughAmount
       }
     )
-    this.notifyProposer(proposal, proposalStatus, 'community')
+    if (updateStatus && updateStatus.nModified == 1) {
+      this.notifyProposer(proposal, proposalStatus, 'community')
+      return rs.data.registerheight
+    }
   }
 
   // member vote against
