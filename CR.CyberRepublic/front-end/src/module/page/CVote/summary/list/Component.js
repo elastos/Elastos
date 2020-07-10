@@ -41,42 +41,83 @@ export default class extends BaseComponent {
   }
 
   renderPrivateList() {
-    const { privateList } = this.props
-    if (!privateList || privateList.length === 0) return null
+    const { withdrawalHistory,budget } = this.props.proposal
+    const completion = _.filter(budget,{'type':'COMPLETION'})
+    if (!withdrawalHistory || withdrawalHistory.length === 0) return null
     const body = (
       <List
         itemLayout="horizontal"
         grid={{ column: 1 }}
         split={false}
-        dataSource={privateList}
+        dataSource={_.filter(withdrawalHistory,{'milestoneKey':completion[0].milestoneKey})}
         renderItem={item => (
           <StyledPrivateItem actions={[]}>
             <StyledRow gutter={16}>
-              <LeftCol span={21} status={item.status}>
-                <StyledRichContent>
+              <LeftCol span={21} status={item.review ? item.review.opinion : 'REVIEWING'}>
+                <StyledRichContent span={21}>
                   <DraftEditor
-                    value={item.content}
+                    value={item.message}
                     contentType={CONTENT_TYPE.MARKDOWN}
                     editorEnabled={false}
                   />
                 </StyledRichContent>
-                <StyledFooter>{moment(item.createdAt).format(DATE_FORMAT)}</StyledFooter>
+                <StyledFooter>
+                  {moment(item.createdAt).format(DATE_FORMAT)} ,
+                  {`${I18N.get('suggestion.budget.milestone')} #${Number(
+                    item.milestoneKey
+                  ) + 1}`}
+                </StyledFooter>
               </LeftCol>
               <RightCol span={3}>
-                <Status status={item.status}>{I18N.get(`proposal.status.summary.${item.status}`)}</Status>
+                <Status status={item.review ? item.review.opinion : 'REVIEWING'}>
+                  {I18N.get(`proposal.status.withdrawal.${item.review ? item.review.opinion : 'REVIEWING'}`)}
+                </Status>
               </RightCol>
             </StyledRow>
-            {this.renderActions(item)}
+            {this.renderWithdrawalActions(item)}
           </StyledPrivateItem>
         )}
       />
     )
     return (
       <StyledCollapse defaultActiveKey={['1']} expandIconPosition="right">
-        <Panel header={I18N.get('proposal.text.summary.reviewDetails')} key="1">
+        <Panel header={I18N.get('proposal.text.tracking.reviewDetails')} key="1">
           {body}
         </Panel>
       </StyledCollapse>
+    )
+  }
+
+  renderWithdrawalActions(item) {
+    const { secretariat } = this.state
+    let body
+    if (item.review !== undefined){
+      body = (
+        <CommentCol span={21} status={item.review.opinion}>
+          <CommentContent>
+            <div>
+              {item.review.reason.split('\n').map((item, key) => {
+                return (
+                  <span key={key}>
+                    {item}
+                    <br/>
+                  </span>
+                )
+              })}
+            </div>
+            <CommentFooter>
+              { secretariat && secretariat.didName ? secretariat.didName + " , " : null}
+              {moment(item.review.createdAt).format(DATE_FORMAT)}
+            </CommentFooter>
+          </CommentContent>
+        </CommentCol>
+      )
+    }
+
+    return (
+      <StyledRow gutter={16}>
+        {body}
+      </StyledRow>
     )
   }
 
@@ -179,7 +220,7 @@ export default class extends BaseComponent {
                 return (
                   <span key={key}>
                     {item}
-                    <br/>
+                    <br />
                   </span>
                 )
               })}
@@ -209,7 +250,9 @@ export default class extends BaseComponent {
 
   refetch = async () => {
     this.ord_loading(true)
-    const { listData, proposal } = this.props
+    const { listData, proposal,getSecretariat } = this.props
+    const secretariat =  await getSecretariat()
+    this.setState({secretariat})
     const param = this.getQuery()
     const paramCVote = {
       id: proposal._id
@@ -234,6 +277,14 @@ const colorMap = {
     dark: '#CCCCCC',
     light: 'rgba(204, 204, 204, 0.2)',
   },
+  REJECTED: {
+    dark: '#BE1313',
+    light: 'rgba(252, 192, 192, 0.2)',
+  },
+  APPROVED: {
+    dark: '#43AF92',
+    light: 'rgba(29, 233, 182, 0.1)',
+  }
 }
 
 
