@@ -205,7 +205,7 @@ namespace Elastos {
 					time_t earliestPeerTime,
 					MasterWalletInitFrom from);
 
-			SubWallet *SubWalletFactoryMethod(const CoinInfoPtr &info,
+			ISubWallet *SubWalletFactoryMethod(const CoinInfoPtr &info,
 											  const ChainConfigPtr &config,
 											  MasterWallet *parent,
 											  const std::string &netType);

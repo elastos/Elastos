@@ -254,7 +254,7 @@ namespace Elastos {
 			info->SetChainID(chainID);
 			info->SetVisibleAsset(Asset::GetELAAssetID());
 
-			SubWallet *subWallet = SubWalletFactoryMethod(info, chainConfig, this, _config->GetNetType());
+			ISubWallet *subWallet = SubWalletFactoryMethod(info, chainConfig, this, _config->GetNetType());
 			_createdWallets[chainID] = subWallet;
 			_account->AddSubWalletInfoList(info);
 			_account->Save();
@@ -414,10 +414,9 @@ namespace Elastos {
 					defaultInfo->SetVisibleAsset(Asset::GetELAAssetID());
 
 					ISubWallet *subWallet = SubWalletFactoryMethod(defaultInfo, mainchainConfig, this, _config->GetNetType());
-					SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
-					ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
+					ErrorChecker::CheckCondition(subWallet == nullptr, Error::CreateSubWalletError,
 												 "Recover sub wallet error");
-					_createdWallets[subWalletImpl->GetInfoChainID()] = subWallet;
+					_createdWallets[subWallet->GetChainID()] = subWallet;
 
 					_account->AddSubWalletInfoList(defaultInfo);
 					_account->Save();
@@ -431,15 +430,14 @@ namespace Elastos {
 					}
 
 					ISubWallet *subWallet = SubWalletFactoryMethod(info[i], chainConfig, this, _config->GetNetType());
-					SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
-					ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
+					ErrorChecker::CheckCondition(subWallet == nullptr, Error::CreateSubWalletError,
 												 "Recover sub wallet error");
-					_createdWallets[subWalletImpl->GetInfoChainID()] = subWallet;
+					_createdWallets[subWallet->GetChainID()] = subWallet;
 				}
 			}
 		}
 
-		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfoPtr &info, const ChainConfigPtr &config,
+		ISubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfoPtr &info, const ChainConfigPtr &config,
 														MasterWallet *parent, const std::string &netType) {
 
 			if (_initFrom == CreateNormal) {

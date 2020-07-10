@@ -28,9 +28,11 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		EthereumClient::EthereumClient(const EthereumNetworkPtr &network,
+		EthereumClient::EthereumClient(EthereumEWM::Client *client,
+									   const EthereumNetworkPtr &network,
 									   const std::string &storagePath,
 									   const bytes_t &pubkey) :
+			_client(client),
 			_network(network),
 			_storagePath(storagePath) {
 
@@ -42,7 +44,7 @@ namespace Elastos {
 		}
 
 		void EthereumClient::getGasPrice(BREthereumWallet wid, int rid) {
-			ArgInfo("{}", GetFunName());
+			_client->getGasPrice(wid, rid);
 		}
 
 		void EthereumClient::getGasEstimate(BREthereumWallet wid,
@@ -52,38 +54,25 @@ namespace Elastos {
 											const std::string &amount,
 											const std::string &data,
 											int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("from: {}", from);
-			ArgInfo("to: {}", to);
-			ArgInfo("amount: {}", amount);
-			ArgInfo("data: {}", data);
-			ArgInfo("rid: {}", rid);
-
+			_client->getGasEstimate(wid, tid, from, to, amount, data, rid);
 		}
 
 		void EthereumClient::getBalance(BREthereumWallet wid, const std::string &address, int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("address: {}", address);
-			ArgInfo("rid: {}", rid);
-
+			_client->getBalance(wid, address, rid);
 		}
 
-		void EthereumClient::submitTransaction(BREthereumWallet wid, BREthereumTransfer tid, const std::string &rawTransaction,
+		void EthereumClient::submitTransaction(BREthereumWallet wid,
+											   BREthereumTransfer tid,
+											   const std::string &rawTransaction,
 											   int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("rawTx: {}", rawTransaction);
-			ArgInfo("rid: {}", rid);
-
+			_client->submitTransaction(wid, tid, rawTransaction, rid);
 		}
 
-		void EthereumClient::getTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber,
+		void EthereumClient::getTransactions(const std::string &address,
+											 uint64_t begBlockNumber,
+											 uint64_t endBlockNumber,
 											 int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("address: {}", address);
-			ArgInfo("begBlockNumber: {}", begBlockNumber);
-			ArgInfo("endBlockNumber: {}", endBlockNumber);
-			ArgInfo("rid: {}", rid);
-
+			_client->getTransactions(address, begBlockNumber, endBlockNumber, rid);
 		}
 
 		void EthereumClient::getLogs(const std::string &contract,
@@ -92,13 +81,7 @@ namespace Elastos {
 									 uint64_t begBlockNumber,
 									 uint64_t endBlockNumber,
 									 int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("contract: {}", contract);
-			ArgInfo("address: {}", address);
-			ArgInfo("event: {}", event);
-			ArgInfo("begBlockNumber: {}", begBlockNumber);
-			ArgInfo("endBlockNumber: {}", endBlockNumber);
-
+			_client->getLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
 		}
 
 		void EthereumClient::getBlocks(const std::string &address,
@@ -106,87 +89,52 @@ namespace Elastos {
 									   uint64_t blockNumberStart,
 									   uint64_t blockNumberStop,
 									   int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("address: {}", address);
-			ArgInfo("interests: {}", interests);
-			ArgInfo("blockNumberStart: {}", blockNumberStart);
-			ArgInfo("blockNumberStop: {}", blockNumberStop);
-			ArgInfo("rid: {}", rid);
-
+			_client->getBlocks(address, interests, blockNumberStart, blockNumberStop, rid);
 		}
 
 		void EthereumClient::getTokens(int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("rid: {}", rid);
-
+			_client->getTokens(rid);
 		}
 
 		void EthereumClient::getBlockNumber(int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("rid: {}", rid);
-
+			_client->getBlockNumber(rid);
 		}
 
 		void EthereumClient::getNonce(const std::string &address, int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("address: {}", address);
-			ArgInfo("rid: {}", rid);
-
+			_client->getNonce(address, rid);
 		}
 
 		void EthereumClient::handleEWMEvent(EthereumEWM::EWMEvent event, EthereumEWM::Status status,
 											const std::string &errorDescription) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("event: {}", event);
-			ArgInfo("status: {}", status);
-			ArgInfo("errorDesc: {}", errorDescription);
-
+			_client->handleEWMEvent(event, status, errorDescription);
 		}
 
 		void EthereumClient::handlePeerEvent(EthereumEWM::PeerEvent event, EthereumEWM::Status status,
 											 const std::string &errorDescription) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("event: {}", event);
-			ArgInfo("status: {}", status);
-			ArgInfo("errorDesc: {}", errorDescription);
-
+			_client->handlePeerEvent(event, status, errorDescription);
 		}
 
 		void EthereumClient::handleWalletEvent(const EthereumWalletPtr &wallet,
 											   EthereumEWM::WalletEvent event, EthereumEWM::Status status,
 											   const std::string &errorDescription) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("event: {}", event);
-			ArgInfo("status: {}", status);
-			ArgInfo("errorDesc: {}", errorDescription);
-
+			_client->handleWalletEvent(wallet, event, status, errorDescription);
 		}
 
 		void EthereumClient::handleTokenEvent(const EthereumTokenPtr &token, EthereumEWM::TokenEvent event) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("event: {}", event);
-
+			_client->handleTokenEvent(token, event);
 		}
 
 		void EthereumClient::handleBlockEvent(const EthereumBlockPtr &block,
 											  EthereumEWM::BlockEvent event, EthereumEWM::Status status,
 											  const std::string &errorDescription) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("event: {}", event);
-			ArgInfo("status: {}", status);
-			ArgInfo("errorDesc: {}", errorDescription);
-
+			_client->handleBlockEvent(block, event, status, errorDescription);
 		}
 
 		void EthereumClient::handleTransferEvent(const EthereumWalletPtr &wallet,
 												 const EthereumTransferPtr &transaction,
 												 EthereumEWM::TransactionEvent event, EthereumEWM::Status status,
 												 const std::string &errorDescription) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("event: {}", event);
-			ArgInfo("status: {}", status);
-			ArgInfo("errorDesc: {}", errorDescription);
-
+			_client->handleTransferEvent(wallet, transaction, event, status, errorDescription);
 		}
 
 	}

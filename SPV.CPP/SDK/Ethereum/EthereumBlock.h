@@ -29,6 +29,7 @@
 
 #include "Reference.h"
 
+#include "Common/uint256.h"
 #include <ethereum/blockchain/BREthereumBlock.h>
 #include <boost/shared_ptr.hpp>
 
@@ -40,6 +41,22 @@ namespace Elastos {
 			EthereumBlock(EthereumEWM *ewm, BREthereumBlock block);
 
 			~EthereumBlock() override;
+
+			//extern BREthereumHash
+			//blockGetHash (BREthereumBlock block);
+			uint256 getHash() const;
+
+			//extern uint64_t
+			//blockGetNumber (BREthereumBlock block);
+			uint64_t getBlockNumber() const;
+
+			//extern uint64_t
+			//blockGetTimestamp (BREthereumBlock block);
+			uint64_t getTimestamp() const;
+
+			//extern UInt256
+			//blockGetDifficulty (BREthereumBlock block);
+			uint256 getDifficulty() const;
 		};
 
 		typedef boost::shared_ptr<EthereumBlock> EthereumBlockPtr;

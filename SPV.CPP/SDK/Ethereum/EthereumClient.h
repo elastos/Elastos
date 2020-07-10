@@ -30,7 +30,8 @@ namespace Elastos {
 
 		class EthereumClient : public EthereumEWM::Client {
 		public:
-			EthereumClient(const EthereumNetworkPtr &network,
+			EthereumClient(EthereumEWM::Client *listener,
+						   const EthereumNetworkPtr &network,
 						   const std::string &storagePath,
 						   const bytes_t &pubkey);
 		public:
@@ -150,6 +151,7 @@ namespace Elastos {
 			EthereumNetworkPtr _network;
 			EthereumEWMPtr _ewm;
 			std::string _storagePath;
+			EthereumEWM::Client *_client;
 		};
 
 	}

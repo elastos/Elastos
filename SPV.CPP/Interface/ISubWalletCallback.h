@@ -88,6 +88,8 @@ namespace Elastos {
 			 */
 			virtual void OnConnectStatusChanged(const std::string &status) = 0;
 
+			virtual void OnETHSCEventHandled(const nlohmann::json &event) = 0;
+
 		};
 
 	}

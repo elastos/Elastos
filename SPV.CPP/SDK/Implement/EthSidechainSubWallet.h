@@ -24,8 +24,9 @@
 #define __ELASTOS_SDK_ETHSIDECHAINSUBWALLET_H__
 
 #include "IEthSidechainSubWallet.h"
-#include "SubWallet.h"
+#include "ISubWallet.h"
 #include "Ethereum/EthereumEWM.h"
+#include "Common/Lockable.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem/path.hpp>
@@ -43,11 +44,73 @@ namespace Elastos {
 		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
 		typedef boost::shared_ptr<EthereumClient> ClientPtr;
 
-		class EthSidechainSubWallet : public IEthSidechainSubWallet, public SubWallet {
+		class EthSidechainSubWallet : public IEthSidechainSubWallet,
+									  public EthereumEWM::Client,
+									  public Lockable {
 		public: // implement IEthSidechainSubWallet
 			virtual ~EthSidechainSubWallet();
 
+		public:
+			// implement callback of Client
+			virtual void getGasPrice(BREthereumWallet wid, int rid);
 
+			virtual void getGasEstimate(BREthereumWallet wid,
+										BREthereumTransfer tid,
+										const std::string &from,
+										const std::string &to,
+										const std::string &amount,
+										const std::string &data,
+										int rid);
+
+			virtual void getBalance(BREthereumWallet wid, const std::string &address, int rid);
+
+			virtual void
+			submitTransaction(BREthereumWallet wid, BREthereumTransfer tid, const std::string &rawTransaction,
+							  int rid);
+
+			virtual void
+			getTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber,
+							int rid);
+
+			virtual void getLogs(const std::string &contract,
+								 const std::string &address,
+								 const std::string &event,
+								 uint64_t begBlockNumber,
+								 uint64_t endBlockNumber,
+								 int rid);
+
+			virtual void getBlocks(const std::string &address,
+								   int interests,
+								   uint64_t blockNumberStart,
+								   uint64_t blockNumberStop,
+								   int rid);
+
+			virtual void getTokens(int rid);
+
+			virtual void getBlockNumber(int rid);
+
+			virtual void getNonce(const std::string &address, int rid);
+
+			virtual void handleEWMEvent(EthereumEWM::EWMEvent event, EthereumEWM::Status status,
+										const std::string &errorDescription);
+
+			virtual void handlePeerEvent(EthereumEWM::PeerEvent event, EthereumEWM::Status status,
+										 const std::string &errorDescription);
+
+			virtual void handleWalletEvent(const EthereumWalletPtr &wallet,
+										   EthereumEWM::WalletEvent event, EthereumEWM::Status status,
+										   const std::string &errorDescription);
+
+			virtual void handleTokenEvent(const EthereumTokenPtr &token, EthereumEWM::TokenEvent event);
+
+			virtual void handleBlockEvent(const EthereumBlockPtr &block,
+										  EthereumEWM::BlockEvent event, EthereumEWM::Status status,
+										  const std::string &errorDescription);
+
+			virtual void handleTransferEvent(const EthereumWalletPtr &wallet,
+											 const EthereumTransferPtr &transaction,
+											 EthereumEWM::TransactionEvent event, EthereumEWM::Status status,
+											 const std::string &errorDescription);
 			// implement ISubWallet
 		public:
 			virtual std::string GetChainID() const;
@@ -142,6 +205,10 @@ namespace Elastos {
 		protected:
 			std::string _walletID;
 			ClientPtr _client;
+			MasterWallet *_parent;
+			CoinInfoPtr _info;
+			ChainConfigPtr _config;
+			ISubWalletCallback *_callback;
 		};
 
 	}

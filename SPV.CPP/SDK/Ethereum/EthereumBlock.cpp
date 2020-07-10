@@ -38,5 +38,27 @@ namespace Elastos {
 
 		}
 
+		uint256 EthereumBlock::getHash() const {
+			BREthereumHash hash = blockGetHash ((BREthereumBlock) _identifier);
+			uint256 h;
+			memcpy(h.begin(), hash.bytes, h.size());
+			return h;
+		}
+
+		uint64_t EthereumBlock::getBlockNumber() const {
+			return blockGetNumber ((BREthereumBlock) _identifier);
+		}
+
+		uint64_t EthereumBlock::getTimestamp() const {
+			return blockGetTimestamp ((BREthereumBlock) _identifier);
+		}
+
+		uint256 EthereumBlock::getDifficulty() const {
+			UInt256 diff = blockGetDifficulty ((BREthereumBlock) _identifier);
+			uint256 d;
+			memcpy(d.begin(), diff.u8, d.size());
+			return d;
+		}
+
 	}
 }

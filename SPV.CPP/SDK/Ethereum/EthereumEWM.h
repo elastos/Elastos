@@ -139,6 +139,21 @@ namespace Elastos {
 			};
 
 		public:
+			static std::string Status2String(Status s);
+
+			static std::string WalletEvent2String(WalletEvent e);
+
+			static std::string TokenEvent2String(TokenEvent e);
+
+			static std::string BlockEvent2String(BlockEvent e);
+
+			static std::string TransactionEvent2String(TransactionEvent e);
+
+			static std::string EWMEvent2String(EWMEvent e);
+
+			static std::string PeerEvent2String(PeerEvent e);
+
+		public:
 			// Client
 			class Client {
 			public:

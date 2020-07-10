@@ -21,6 +21,7 @@
  */
 #include "MasterWallet.h"
 #include "EthSidechainSubWallet.h"
+#include <Common/Log.h>
 #include <Ethereum/EthereumClient.h>
 #include <ethereum/ewm/BREthereumAccount.h>
 #include <WalletCore/CoinInfo.h>
@@ -37,7 +38,10 @@ namespace Elastos {
 													 const ChainConfigPtr &config,
 													 MasterWallet *parent,
 													 const std::string &netType) :
-			SubWallet(netType, parent, config, info) {
+													 _info(info),
+													 _config(config),
+													 _callback(nullptr),
+													 _parent(parent) {
 
 			_walletID = _parent->GetID() + ":" + info->GetChainID();
 
@@ -56,7 +60,7 @@ namespace Elastos {
 			}
 
 			EthereumNetworkPtr network(new EthereumNetwork(netType));
-			_client = ClientPtr(new EthereumClient(network, parent->GetDataPath(), pubkey));
+			_client = ClientPtr(new EthereumClient(this, network, parent->GetDataPath(), pubkey));
 			_client->_ewm->getWallet()->setDefaultGasPrice(5000000000);
 		}
 
@@ -77,8 +81,196 @@ namespace Elastos {
 			return nullptr;
 		}
 
+		void EthSidechainSubWallet::getGasPrice(BREthereumWallet wid, int rid) {
+			ArgInfo("{}", GetFunName());
+		}
+
+		void EthSidechainSubWallet::getGasEstimate(BREthereumWallet wid,
+												   BREthereumTransfer tid,
+												   const std::string &from,
+												   const std::string &to,
+												   const std::string &amount,
+												   const std::string &data,
+												   int rid) {
+			ArgInfo("{}", GetFunName());
+			ArgInfo("from: {}", from);
+			ArgInfo("to: {}", to);
+			ArgInfo("amount: {}", amount);
+			ArgInfo("data: {}", data);
+			ArgInfo("rid: {}", rid);
+		}
+
+		void EthSidechainSubWallet::getBalance(BREthereumWallet wid, const std::string &address, int rid) {
+			ArgInfo("{}", GetFunName());
+			ArgInfo("address: {}", address);
+			ArgInfo("rid: {}", rid);
+		}
+
+		void EthSidechainSubWallet::submitTransaction(BREthereumWallet wid,
+													  BREthereumTransfer tid,
+													  const std::string &rawTransaction,
+													  int rid) {
+			ArgInfo("{}", GetFunName());
+			ArgInfo("rawTx: {}", rawTransaction);
+			ArgInfo("rid: {}", rid);
+		}
+
+		void EthSidechainSubWallet::getTransactions(const std::string &address,
+													uint64_t begBlockNumber,
+													uint64_t endBlockNumber,
+													int rid) {
+			ArgInfo("{}", GetFunName());
+			ArgInfo("address: {}", address);
+			ArgInfo("begBlockNumber: {}", begBlockNumber);
+			ArgInfo("endBlockNumber: {}", endBlockNumber);
+			ArgInfo("rid: {}", rid);
+		}
+
+		void EthSidechainSubWallet::getLogs(const std::string &contract,
+											const std::string &address,
+											const std::string &event,
+											uint64_t begBlockNumber,
+											uint64_t endBlockNumber,
+											int rid) {
+			ArgInfo("{}", GetFunName());
+			ArgInfo("contract: {}", contract);
+			ArgInfo("address: {}", address);
+			ArgInfo("event: {}", event);
+			ArgInfo("begBlockNumber: {}", begBlockNumber);
+			ArgInfo("endBlockNumber: {}", endBlockNumber);
+		}
+
+		void EthSidechainSubWallet::getBlocks(const std::string &address,
+											  int interests,
+											  uint64_t blockNumberStart,
+											  uint64_t blockNumberStop,
+											  int rid) {
+			ArgInfo("{}", GetFunName());
+			ArgInfo("address: {}", address);
+			ArgInfo("interests: {}", interests);
+			ArgInfo("blockNumberStart: {}", blockNumberStart);
+			ArgInfo("blockNumberStop: {}", blockNumberStop);
+			ArgInfo("rid: {}", rid);
+		}
+
+		void EthSidechainSubWallet::getTokens(int rid) {
+			ArgInfo("{}", GetFunName());
+			ArgInfo("rid: {}", rid);
+		}
+
+		void EthSidechainSubWallet::getBlockNumber(int rid) {
+			ArgInfo("{}", GetFunName());
+			ArgInfo("rid: {}", rid);
+		}
+
+		void EthSidechainSubWallet::getNonce(const std::string &address, int rid) {
+			ArgInfo("{}", GetFunName());
+			ArgInfo("address: {}", address);
+			ArgInfo("rid: {}", rid);
+		}
+
+		void EthSidechainSubWallet::handleEWMEvent(EthereumEWM::EWMEvent event, EthereumEWM::Status status,
+												   const std::string &errorDescription) {
+
+			ArgInfo("{}", GetFunName());
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback != nullptr) {
+				nlohmann::json eJson;
+				eJson["Type"] = "EWMEvent";
+				eJson["Event"] = EthereumEWM::EWMEvent2String(event);
+				eJson["Status"] = EthereumEWM::Status2String(status);
+				eJson["ErrorDescription"] = errorDescription;
+				ArgInfo("e: {}", eJson.dump(4));
+				_callback->OnETHSCEventHandled(eJson);
+			}
+		}
+
+		void EthSidechainSubWallet::handlePeerEvent(EthereumEWM::PeerEvent event, EthereumEWM::Status status,
+													const std::string &errorDescription) {
+			ArgInfo("{}", GetFunName());
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback != nullptr) {
+				nlohmann::json eJson;
+				eJson["Type"] = "PeerEvent";
+				eJson["Event"] = EthereumEWM::PeerEvent2String(event);
+				eJson["Status"] = EthereumEWM::Status2String(status);
+				eJson["ErrorDescription"] = errorDescription;
+				ArgInfo("e: {}", eJson.dump(4));
+				_callback->OnETHSCEventHandled(eJson);
+			}
+		}
+
+		void EthSidechainSubWallet::handleWalletEvent(const EthereumWalletPtr &wallet,
+													  EthereumEWM::WalletEvent event,
+													  EthereumEWM::Status status,
+													  const std::string &errorDescription) {
+			ArgInfo("{}", GetFunName());
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback != nullptr) {
+				nlohmann::json eJson;
+				eJson["Type"] = "WalletEvent";
+				eJson["Event"] = EthereumEWM::WalletEvent2String(event);
+				eJson["Status"] = EthereumEWM::Status2String(status);
+				eJson["ErrorDescription"] = errorDescription;
+				eJson["WalletSymbol"] = wallet->getSymbol();
+				ArgInfo("e: {}", eJson.dump(4));
+				_callback->OnETHSCEventHandled(eJson);
+			}
+		}
+
+		void EthSidechainSubWallet::handleTokenEvent(const EthereumTokenPtr &token, EthereumEWM::TokenEvent event) {
+			ArgInfo("{}", GetFunName());
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback != nullptr) {
+				nlohmann::json eJson;
+				eJson["Type"] = "TokenEvent";
+				eJson["Event"] = EthereumEWM::TokenEvent2String(event);
+				eJson["WalletSymbol"] = token->getSymbol();
+				ArgInfo("e: {}", eJson.dump(4));
+				_callback->OnETHSCEventHandled(eJson);
+			}
+		}
+
+		void EthSidechainSubWallet::handleBlockEvent(const EthereumBlockPtr &block,
+													 EthereumEWM::BlockEvent event,
+													 EthereumEWM::Status status,
+													 const std::string &errorDescription) {
+			ArgInfo("{}", GetFunName());
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback != nullptr) {
+				nlohmann::json eJson;
+				eJson["Type"] = "BlockEvent";
+				eJson["Event"] = EthereumEWM::BlockEvent2String(event);
+				eJson["Status"] = EthereumEWM::Status2String(status);
+				eJson["ErrorDescription"] = errorDescription;
+				eJson["BlockNumber"] = block->getBlockNumber();
+				ArgInfo("e: {}", eJson.dump(4));
+				_callback->OnETHSCEventHandled(eJson);
+			}
+		}
+
+		void EthSidechainSubWallet::handleTransferEvent(const EthereumWalletPtr &wallet,
+														const EthereumTransferPtr &transaction,
+														EthereumEWM::TransactionEvent event,
+														EthereumEWM::Status status,
+														const std::string &errorDescription) {
+			ArgInfo("{}", GetFunName());
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback != nullptr) {
+				nlohmann::json eJson;
+				eJson["Type"] = "TransferEvent";
+				eJson["Event"] = EthereumEWM::TransactionEvent2String(event);
+				eJson["Status"] = EthereumEWM::Status2String(status);
+				eJson["ErrorDescription"] = errorDescription;
+				eJson["WalletSymbol"] = wallet->getSymbol();
+				eJson["TxHash"] = transaction->getIdentifier();
+				ArgInfo("e: {}", eJson.dump(4));
+				_callback->OnETHSCEventHandled(eJson);
+			}
+		}
+
 		std::string EthSidechainSubWallet::GetChainID() const {
-			return SubWallet::GetChainID();
+			return _info->GetChainID();
 		}
 
 		nlohmann::json EthSidechainSubWallet::GetBasicInfo() const {
@@ -176,6 +368,9 @@ namespace Elastos {
 		void EthSidechainSubWallet::AddCallback(ISubWalletCallback *subCallback) {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("callback: *");
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			_callback = subCallback;
 		}
 
 		void EthSidechainSubWallet::RemoveCallback() {

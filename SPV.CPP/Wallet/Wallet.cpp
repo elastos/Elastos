@@ -199,6 +199,11 @@ public:
 					  << status << std::endl;
 	}
 
+	virtual void OnETHSCEventHandled(const nlohmann::json &event) {
+		if (verboseMode)
+			std::cout << "*** Wallet " << _chainID << " event: " << event.dump(4) << std::endl;
+	}
+
 private:
 	std::string _walletID;
 	std::string _chainID;

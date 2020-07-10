@@ -156,6 +156,120 @@ namespace Elastos {
 			c->trampolineTransferEvent(node, wid, tid, event, status, errorDescription ? errorDescription : "");
 		}
 
+		std::string EthereumEWM::Status2String(Status s) {
+			std::string status;
+			switch (s) {
+				case SUCCESS: status = "SUCCESS"; break;
+				// Reference access,
+				case ERROR_UNKNOWN_NODE: status = "ERROR_UNKNOWN_NODE"; break;
+				case ERROR_UNKNOWN_TRANSACTION: status = "ERROR_UNKNOWN_TRANSACTION"; break;
+				case ERROR_UNKNOWN_ACCOUNT: status = "ERROR_UNKNOWN_ACCOUNT"; break;
+				case ERROR_UNKNOWN_WALLET: status = "ERROR_UNKNOWN_WALLET"; break;
+				case ERROR_UNKNOWN_BLOCK: status = "ERROR_UNKNOWN_BLOCK"; break;
+				case ERROR_UNKNOWN_LISTENER: status = "ERROR_UNKNOWN_LISTENER"; break;
+
+				// Node
+				case ERROR_NODE_NOT_CONNECTED: status = "ERROR_NODE_NOT_CONNECTED"; break;
+
+				// Transaction
+				case ERROR_TRANSACTION_X: status = "ERROR_TRANSACTION_X"; break;
+
+				// Acount
+				// Wallet
+				// Block
+				// Listener
+
+				// Numeric
+				case ERROR_NUMERIC_PARSE: status = "ERROR_NUMERIC_PARSE"; break;
+				case NUMBER_OF_STATUS_EVENTS: status = "NUMBER_OF_STATUS_EVENTS"; break;
+				default: status = "UNKNOWN"; break;
+			}
+
+			return status;
+		}
+
+		std::string EthereumEWM::WalletEvent2String(WalletEvent e) {
+			std::string event;
+			switch (e) {
+				case WalletEvent_CREATED: event = "CREATED"; break;
+				case WalletEvent_BALANCE_UPDATED: event = "BALANCE_UPDATED"; break;
+				case WalletEvent_DEFAULT_GAS_LIMIT_UPDATED: event = "DEFAULT_GAS_LIMIT_UPDATED"; break;
+				case WalletEvent_DEFAULT_GAS_PRICE_UPDATED: event = "DEFAULT_GAS_PRICE_UPDATED"; break;
+				case WalletEvent_DELETED: event = "DELETED"; break;
+				case WalletEvent_NUMBER_OF_WALLET_EVENTS: event = "NUMBER_OF_WALLET_EVENTS"; break;
+				default: event = "UNDEFINE"; break;
+			}
+			return event;
+		}
+
+		std::string EthereumEWM::TokenEvent2String(TokenEvent e) {
+			std::string event;
+			switch (e) {
+				case TokenEvent_CREATED: event = "CREATED"; break;
+				case TokenEvent_DELETED: event = "DELETED"; break;
+				case TokenEvent_NUMBER_OF_TOKEN_EVENTS: event = "NUMBER_OF_TOKEN_EVENTS"; break;
+				default: event = "UNDEFINE"; break;
+			}
+
+			return event;
+		}
+
+		std::string EthereumEWM::BlockEvent2String(BlockEvent e) {
+			std::string event;
+			switch (e) {
+				case BlockEvent_CREATED: event = "CREATED"; break;
+				case BlockEvent_CHAINED: event = "CHAINED"; break;
+				case BlockEvent_ORPHANED: event = "ORPHANED"; break;
+				case BlockEvent_DELETED: event = "DELETED"; break;
+				case BlockEvent_NUMBER_OF_BLOCK_EVENT: event = "NUMBER_OF_BLOCK_EVENT"; break;
+				default: event = "UNDEFINE"; break;
+			}
+			return event;
+		}
+
+		std::string EthereumEWM::TransactionEvent2String(TransactionEvent e) {
+			std::string event;
+			switch (e) {
+				case TransactionEvent_CREATED: event = "CREATED"; break;
+				case TransactionEvent_SIGNED: event = "SIGNED"; break;
+				case TransactionEvent_SUBMITTED: event = "SUBMITTED"; break;
+				case TransactionEvent_INCLUDED: event = "INCLUDED"; break;  // aka confirmed
+				case TransactionEvent_ERRORED: event = "ERRORED"; break;
+				case TransactionEvent_GAS_ESTIMATE_UPDATED: event = "GAS_ESTIMATE_UPDATED"; break;
+				case TransactionEvent_BLOCK_CONFIRMATIONS_UPDATED: event = "BLOCK_CONFIRMATIONS_UPDATED"; break;
+				case TransactionEvent_DELETED: event = "DELETED"; break;
+				case TransactionEvent_NUMBER_OF_TRANSACTION_EVENTS: event = "NUMBER_OF_TRANSACTION_EVENTS"; break;
+				default: event = "UNDEFINE"; break;
+			}
+			return event;
+		}
+
+		std::string EthereumEWM::EWMEvent2String(EWMEvent e) {
+			std::string event;
+			switch (e) {
+				case EWMEvent_CREATED: event = "CREATED"; break;
+				case EWMEvent_SYNC_STARTED: event = "SYNC_STARTED"; break;
+				case EWMEvent_SYNC_CONTINUES: event = "SYNC_CONTINUES"; break;
+				case EWMEvent_SYNC_STOPPED: event = "SYNC_STOPPED"; break;
+				case EWMEvent_NETWORK_UNAVAILABLE: event = "NETWORK_UNAVAILABLE"; break;
+				case EWMEvent_DELETED: event = "DELETED"; break;
+				case EWMEvent_NUMBER_OF_EWM_EVENTS: event = "NUMBER_OF_EWM_EVENTS"; break;
+				default: event = "UNDEFINE"; break;
+			}
+			return event;
+		}
+
+		std::string EthereumEWM::PeerEvent2String(PeerEvent e) {
+			std::string event;
+			switch (e) {
+				case PeerEvent_CREATED: event = "CREATED"; break;
+				case PeerEvent_DELETED: event = "DELETED"; break;
+				case PeerEvent_NUMBER_OF_PEER_EVENTS: event = "NUMBER_OF_PEER_EVENTS"; break;
+				default: event = "UNDEFINE"; break;
+			}
+			return event;
+		}
+
 		// Client Announcers
 		void EthereumEWM::announceBalance(BREthereumWallet wid, const std::string &balance, int rid) {
 			ewmAnnounceWalletBalance(_ewm, wid, balance.c_str(), rid);
