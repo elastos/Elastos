@@ -1225,7 +1225,9 @@ func (a *arbitrators) getCRCArbitersV1() (map[common.Uint168]ArbiterMember, erro
 			unclaimedArbiterKeys = append(unclaimedArbiterKeys, k)
 		}
 	}
-
+	sort.Slice(unclaimedArbiterKeys, func(i, j int) bool {
+		return strings.Compare(unclaimedArbiterKeys[i], unclaimedArbiterKeys[j]) < 0
+	})
 	crcArbiters := map[common.Uint168]ArbiterMember{}
 	for _, cr := range crMembers {
 		if cr.MemberState != state.MemberElected {
