@@ -1262,6 +1262,7 @@ export default class extends Base {
   public async pollProposal() {
     const db_cvote = this.getDBModel('CVote')
     const db_config = this.getDBModel('Config')
+    let currentHeight = await ela.height()
     const list = await db_cvote.getDBInstance().find({
       proposalHash: { $exists: true },
       status: {
@@ -1273,6 +1274,7 @@ export default class extends Base {
     })
 
     let tempCurrentHeight = 0
+    let compareHeight = 0
     let heightProposed = 0
     let heightNotification = 0
     const asyncForEach = async (array, callback) => {
@@ -1304,12 +1306,13 @@ export default class extends Base {
           })
           break
       }
-      tempCurrentHeight =
+      compareHeight =
         heightProposed > heightNotification
           ? heightProposed
           : heightNotification
+      tempCurrentHeight =
+        compareHeight > tempCurrentHeight ? compareHeight : tempCurrentHeight
     })
-    let currentHeight = await ela.height()
     const currentConfig = await db_config.getDBInstance().findOne()
     if (
       tempCurrentHeight !== 0 &&
@@ -1626,8 +1629,9 @@ export default class extends Base {
     }
 
     if (proposal.status === constant.CVOTE_STATUS.NOTIFICATION) {
-        const duration = (proposal.notificationEndsHeight - currentHeight) * 2 * 60
-        notificationResult['duration'] = duration >= 0 ? duration : 0
+      const duration =
+        (proposal.notificationEndsHeight - currentHeight) * 2 * 60
+      notificationResult['duration'] = duration >= 0 ? duration : 0
     }
 
     if (
