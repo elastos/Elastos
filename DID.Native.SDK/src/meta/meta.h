@@ -53,7 +53,7 @@ void MetaData_Free(MetaData *metadata);
 
 int MetaData_Merge(MetaData *tometa, MetaData *frommeta);
 
-void MetaData_Copy(MetaData *metadata, MetaData *frommeta);
+int MetaData_Copy(MetaData *metadata, MetaData *frommeta);
 
 int MetaData_SetExtra(MetaData *metadata, const char* key, const char *value);
 

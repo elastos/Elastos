@@ -63,7 +63,7 @@ const char *DIDMetaData_GetSignature(DIDMetaData *metadata);
 
 int DIDMetaData_Merge(DIDMetaData *metadata, DIDMetaData *frommeta);
 
-void DIDMetaData_Copy(DIDMetaData *metadata, DIDMetaData *frommeta);
+int DIDMetaData_Copy(DIDMetaData *metadata, DIDMetaData *frommeta);
 
 void DIDMetaData_SetStore(DIDMetaData *metadata, DIDStore *store);
 

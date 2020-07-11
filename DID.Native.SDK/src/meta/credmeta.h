@@ -48,7 +48,7 @@ void CredentialMetaData_Free(CredentialMetaData *metadata);
 
 int CredentialMetaData_Merge(CredentialMetaData *tometa, CredentialMetaData *frommeta);
 
-void CredentialMetaData_Copy(CredentialMetaData *tometa, CredentialMetaData *frommeta);
+int CredentialMetaData_Copy(CredentialMetaData *tometa, CredentialMetaData *frommeta);
 
 void CredentialMetaData_SetStore(CredentialMetaData *metadata, DIDStore *store);
 

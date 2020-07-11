@@ -80,11 +80,11 @@ int CredentialMetaData_Merge(CredentialMetaData *tometa, CredentialMetaData *fro
     return MetaData_Merge(&tometa->base, &frommeta->base);
 }
 
-void CredentialMetaData_Copy(CredentialMetaData *tometa, CredentialMetaData *frommeta)
+int CredentialMetaData_Copy(CredentialMetaData *tometa, CredentialMetaData *frommeta)
 {
     assert(tometa && frommeta);
 
-    MetaData_Copy(&tometa->base, &frommeta->base);
+    return MetaData_Copy(&tometa->base, &frommeta->base);
 }
 
 void CredentialMetaData_SetStore(CredentialMetaData *metadata, DIDStore *store)

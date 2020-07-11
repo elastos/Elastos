@@ -164,11 +164,11 @@ int DIDMetaData_Merge(DIDMetaData *tometa, DIDMetaData *frommeta)
     return MetaData_Merge(&tometa->base, &frommeta->base);
 }
 
-void DIDMetaData_Copy(DIDMetaData *tometa, DIDMetaData *frommeta)
+int DIDMetaData_Copy(DIDMetaData *tometa, DIDMetaData *frommeta)
 {
     assert(tometa && frommeta);
 
-    MetaData_Copy(&tometa->base, &frommeta->base);
+    return MetaData_Copy(&tometa->base, &frommeta->base);
 }
 
 void DIDMetaData_SetStore(DIDMetaData *metadata, DIDStore *store)
