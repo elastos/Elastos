@@ -77,30 +77,27 @@ const char *MetaData_ToJson(MetaData *metadata)
 int MetaData_FromJson_Internal(MetaData *metadata, cJSON *json)
 {
     cJSON *root;
+    cJSON *copy;
 
     assert(metadata);
     assert(json);
 
-    root = metadata->data;
-    metadata->data = cJSON_Duplicate(json, true);
-    if (!metadata->data) {
-        metadata->data = root;
-        DIDError_Set(DIDERR_MALFORMED_META, "Duplicate metadata content failed.");
+    copy = cJSON_Duplicate(json, true);
+    if (!copy) {
+       DIDError_Set(DIDERR_MALFORMED_META, "Duplicate metadata content failed.");
         return -1;
     }
 
-    cJSON_Delete(root);
+    cJSON_Delete(metadata->data);
+    metadata->data = copy;
+
     return 0;
 }
 
 const char *MetaData_ToString(MetaData *metadata)
 {
     assert(metadata);
-
-    if (metadata->data)
-        return cJSON_Print(metadata->data);
-
-    return NULL;
+    return metadata->data ? cJSON_Print(metadata->data) : NULL;
 }
 
 int MetaData_FromJson(MetaData *metadata, const char *data)
@@ -124,7 +121,9 @@ int MetaData_FromJson(MetaData *metadata, const char *data)
 
 void MetaData_Free(MetaData *metadata)
 {
-    if (metadata && metadata->data) {
+    assert(metadata);
+
+    if (metadata->data) {
         cJSON_Delete(metadata->data);
         metadata->data = NULL;
     }
@@ -305,26 +304,26 @@ int MetaData_Merge(MetaData *tometa, MetaData *frommeta)
     return 0;
 }
 
-int MetaData_Copy(MetaData *tometa, MetaData *frommeta)
+int MetaData_Copy(MetaData *dest, MetaData *src)
 {
-    cJSON *root;
-    assert(tometa && frommeta);
+    cJSON *data = NULL;
 
-    root = tometa->data;
-    tometa->store = frommeta->store;
-    if (!frommeta->data) {
-        tometa->data = NULL;
-    }
-    else {
-        tometa->data = cJSON_Duplicate(frommeta->data, true);
-        if (!tometa->data) {
-            tometa->data = root;
-            DIDError_Set(DIDERR_MALFORMED_META, "MetaData copy failed.");
+    assert(dest);
+    assert(src);
+
+    if (src->data) {
+        data = cJSON_Duplicate(src->data, true);
+        if (!data) {
+            DIDError_Set(DIDERR_MALFORMED_META, "MetaData duplication failed.");
             return -1;
         }
     }
 
-    cJSON_Delete(root);
+    cJSON_Delete(dest->data);
+
+    dest->store = src->store;
+    dest->data  = data;
+
     return 0;
 }
 

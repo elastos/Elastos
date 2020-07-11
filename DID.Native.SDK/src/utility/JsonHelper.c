@@ -56,8 +56,6 @@ static cJSON **item_sort(cJSON *json, size_t size)
     return jsonlist;
 }
 
-int JsonHelper_ToJson(JsonGenerator *generator, cJSON *object, bool objectcontext);
-
 int JsonHelper_ToJson(JsonGenerator *generator, cJSON *object, bool objectcontext)
 {
     int i, rc;
