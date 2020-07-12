@@ -44,33 +44,24 @@ const char *MetaData_ToJson(MetaData *metadata);
 int MetaData_ToJson_Internal(MetaData *metadata, JsonGenerator *gen);
 
 int MetaData_FromJson(MetaData *metadata, const char *data);
-
 int MetaData_FromJson_Internal(MetaData *metadata, cJSON *json);
 
 const char *MetaData_ToString(MetaData *metadata);
 
 void MetaData_Free(MetaData *metadata);
-
 int MetaData_Merge(MetaData *tometa, MetaData *frommeta);
-
 int MetaData_Copy(MetaData *metadata, MetaData *frommeta);
 
 int MetaData_SetExtra(MetaData *metadata, const char* key, const char *value);
-
 int MetaData_SetExtraWithBoolean(MetaData *metadata, const char *key, bool value);
-
 int MetaData_SetExtraWithDouble(MetaData *metadata, const char *key, double value);
 
 const char *MetaData_GetExtra(MetaData *metadata, const char *key);
-
 bool MetaData_GetExtraAsBoolean(MetaData *metadata, const char *key);
-
 double MetaData_GetExtraAsDouble(MetaData *metadata, const char *key);
 
 void MetaData_SetStore(MetaData *metadata, DIDStore *store);
-
 DIDStore *MetaData_GetStore(MetaData *metadata);
-
 bool MetaData_AttachedStore(MetaData *metadata);
 
 #ifdef __cplusplus
