@@ -45,6 +45,7 @@ class PaymentList extends BaseComponent {
   ord_render() {
     const { list, editable, milestone } = this.props
     const visible = editable === false ? editable : true
+    const isOld = list && list[0] && list[0].reasons
     return (
       <StyledTable>
         <StyledHead>
@@ -55,7 +56,7 @@ class PaymentList extends BaseComponent {
               {I18N.get('suggestion.budget.amount')}
               (ELA)
             </th>
-            <th>{I18N.get('suggestion.budget.reasons')}</th>
+            {isOld ? <th>{I18N.get('suggestion.budget.reasons')}</th> : null}
             <th>{I18N.get('suggestion.budget.goal')}</th>
             <th>{I18N.get('suggestion.budget.criteria')}</th>
             {visible && (
@@ -78,12 +79,14 @@ class PaymentList extends BaseComponent {
                         : ''}
                     </td>
                     <td>{item.amount}</td>
-                    <td>
-                      <MarkdownPreview
-                        content={item.reasons ? item.reasons : ''}
-                        style={{ p: { margin: '1em 0' } }}
-                      />
-                    </td>
+                    {isOld ? (
+                      <td>
+                        <MarkdownPreview
+                          content={item.reasons ? item.reasons : ''}
+                          style={{ p: { margin: '1em 0' } }}
+                        />
+                      </td>
+                    ) : null}
                     <td>
                       {item.milestoneKey ? (
                         <Popover
