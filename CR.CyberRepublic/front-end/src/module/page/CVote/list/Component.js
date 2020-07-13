@@ -699,7 +699,7 @@ export default class extends BaseComponent {
     }
     return <span style={{ whiteSpace: 'pre-wrap' }}>
       {`${endsHeight}\n(${I18N.get(
-        'council.voting.votingEndsIn.approx')}. ${surplusTime})`}
+        'council.voting.votingEndsIn.approx')} ≈ ${surplusTime})`}
     </span>
   }
 
