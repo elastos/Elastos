@@ -120,10 +120,10 @@ public class TransferPresenter extends NewPresenterAbstract {
         Observer observer = new Observer<String>() {
             @Override
             public void onSubscribe(Disposable d) {
-                if (mDisposable != null) {
+                /*if (mDisposable != null) {
                     mDisposable.dispose();//这里他的上一个请求只可能是它自己 所有先取消上一次请求
                 }
-                mDisposable = d;
+                mDisposable = d;*/
             }
 
             @Override

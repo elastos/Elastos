@@ -129,7 +129,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
                 Checked = isChecked;
             }
         });*/
-        etPayeeaddr.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+       /* etPayeeaddr.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 String name = etPayeeaddr.getText().toString();
@@ -150,7 +150,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
 
                 }
             }
-        });
+        });*/
     }
 
 
@@ -197,7 +197,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
                 @Override
                 public void onNext(String t) {
                     address = t;
-                    etPayeeaddr.setText(t);
+                   // etPayeeaddr.setText(t);
                     presenter.isAddressValid(wallet.getWalletId(), address, TransferFragment.this, null);
                 }
 
@@ -348,6 +348,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             presenter.createTransaction(wallet.getWalletId(), chainId, "", address, value, remark, Checked, this);
 
         } else {
+            //直接判断二维码是否是有效地址
             etPayeeaddr.setText((String) o);
         }
     }
