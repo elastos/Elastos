@@ -151,6 +151,18 @@ public class SubWalletCallback {
         }
     }
 
+    public void OnETHSCEventHandled(String event) {
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+            jsonObject.put("event", event);
+            jsonObject.put("MasterWalletID", mMasterWalletID);
+            jsonObject.put("ChainID", mSubWalletID);
+            mListener.OnConnectStatusChanged(jsonObject);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
     private native long InitSubWalletCallback();
 
