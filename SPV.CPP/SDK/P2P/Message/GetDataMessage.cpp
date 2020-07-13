@@ -9,8 +9,6 @@
 #include <Common/Log.h>
 #include <Common/Utils.h>
 
-#define TX_MAX_SIZE          100000      // no tx can be larger than this size in bytes
-
 namespace Elastos {
 	namespace ElaWallet {
 

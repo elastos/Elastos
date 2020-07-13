@@ -347,7 +347,7 @@ namespace Elastos {
 					if (firstInput == nullptr)
 						firstInput = *u;
 
-					if (txSize >= TX_MAX_SIZE - 1000) { // transaction size-in-bytes too large
+					if (txSize >= TX_MAX_SIZE) { // transaction size-in-bytes too large
 						BigInt maxAmount = totalInputAmount - feeAmount;
 						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
 													 "Tx size too large, max available amount: " + maxAmount.getDec() +
@@ -443,7 +443,7 @@ namespace Elastos {
 				utxo2Pick.insert(utxo2Pick.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
 
 				for (UTXOArray::iterator u = utxo2Pick.begin(); u != utxo2Pick.end(); ++u) {
-					if (txSize >= TX_MAX_SIZE - 1000 || tx->GetInputs().size() >= 500)
+					if (txSize >= TX_MAX_SIZE || tx->GetInputs().size() >= 3000)
 						break;
 
 					if (_parent->IsUTXOSpending(*u)) {
@@ -571,7 +571,7 @@ namespace Elastos {
 					txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
 					txSize = txn->EstimateSize();
-					if (txSize >= TX_MAX_SIZE - 1000) { // transaction size-in-bytes too large
+					if (txSize >= TX_MAX_SIZE) { // transaction size-in-bytes too large
 						if (!pickVoteFirst)
 							return CreateTxForOutputs(type, payload, outputs, fromAddress, memo, max, !pickVoteFirst);
 
