@@ -741,9 +741,10 @@
     <string name="pass">Pass</string>
     <string name="rejected">Reject</string>
     <string name="withdrawaddress">Withdrawal Address</string>
-    <string name="aboutday">About %1$s Days </string>
-    <string name="abouthour">About %1$s Hours</string>
-    <string name="noonehour">Less than 1 hour</string>
+    <string name="aboutday"> %1$s Days </string>
+    <string name="about1dayhour">1 Days %1$s Hours</string>
+    <string name="abouthour"> %1$s Hours %2$s Minutes</string>
+    <string name="aboutminute"> %1$s Minutes</string>
     <string name="hasfinished">Completed</string>
     <string name="proposalman">Proposer</string>
     <string name="votingfinishhint">This election is over. Unfortunately, you have not been elected this time. Thank you for your participation</string>

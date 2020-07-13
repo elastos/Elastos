@@ -744,9 +744,10 @@
     <string name="pass">通过</string>
     <string name="rejected">否决</string>
     <string name="withdrawaddress">提取地址</string>
-    <string name="aboutday">约%1$s天</string>
-    <string name="abouthour">约 %1$s 个小时</string>
-    <string name="noonehour">不足 1 小时</string>
+    <string name="aboutday">%1$s天</string>
+    <string name="about1dayhour">1 天 %1$s 小时</string>
+    <string name="abouthour"> %1$s 个小时 %2$s 分钟</string>
+    <string name="aboutminute"> %1$s 分钟</string>
     <string name="hasfinished">已完结</string>
     <string name="proposalman">提案人</string>
     <string name="votingfinishhint">本轮竞选已经结束，很遗憾您此次未能当选。感谢您的参与，祝您好运！</string>

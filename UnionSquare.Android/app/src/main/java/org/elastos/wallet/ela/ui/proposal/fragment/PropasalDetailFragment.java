@@ -266,13 +266,15 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     }
 
     private String setRestDay(long time) {
-        int hours = (int) (time / 3600);
-        if (hours >= 24) {
-            return String.format(getString(R.string.aboutday), String.valueOf(hours / 24));
-        } else if (hours >= 1) {
-            return String.format(getString(R.string.abouthour), String.valueOf(hours));
+        int minutes = (int) (time / 60);
+        if (minutes / 60 >= 24 * 2) {
+            return String.format(getString(R.string.aboutday), String.valueOf(minutes / 60 / 24));
+        } else if (minutes / 60 >= 24) {
+            return String.format(getString(R.string.about1dayhour), String.valueOf(minutes / 60 - 24));
+        } else if (minutes / 60 >= 1) {
+            return String.format(getString(R.string.abouthour), String.valueOf(minutes / 60), String.valueOf(minutes %60));
         } else {
-            return getString(R.string.noonehour);
+            return String.format(getString(R.string.aboutminute), String.valueOf(minutes));
         }
 
     }
@@ -524,7 +526,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
             case "getVoteInfo":
                 //剔除非公示期的
                 String voteInfo = ((CommmonStringEntity) baseEntity).getData();
-                JSONArray otherUnActiveVote = presenter.conversUnactiveVote("CRCProposal", voteInfo, depositList, crList, searchBeanList,councilList);
+                JSONArray otherUnActiveVote = presenter.conversUnactiveVote("CRCProposal", voteInfo, depositList, crList, searchBeanList, councilList);
                 try {
                     JSONObject voteJson = presenter.conversVote(voteInfo, "CRCProposal");//key value
                     //点击下一步 获得上次的投票后筛选数据
