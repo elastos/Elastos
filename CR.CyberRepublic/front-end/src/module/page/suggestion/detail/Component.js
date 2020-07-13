@@ -715,13 +715,13 @@ export default class extends StandardPage {
         {makeIntoProposalPanel}
         <Row type="flex" justify="start">
           {considerBtn}
-          {needMoreInfoBtn}
+          {/* {needMoreInfoBtn} */}
           {makeIntoProposalBtn}
         </Row>
-        <Row type="flex" justify="start">
+        {/* <Row type="flex" justify="start">
           {needDueDiligenceBtn}
           {needAdvisoryBtn}
-        </Row>
+        </Row> */}
       </BtnGroup>
     )
     return !oldData && res
