@@ -1064,7 +1064,7 @@ DIDStore* DIDStore_Open(const char *root, DIDAdapter *adapter)
     char path[PATH_MAX];
     DIDStore *didstore;
 
-    if (!root || !*root || !adapter) {
+    if (!root || !*root) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
     }
@@ -1874,6 +1874,18 @@ static int store_default_privatekey(DIDStore *store, const char *storepass,
     return 0;
 }
 
+static DIDDocument* default_didstore_merge(DIDDocument *chaincopy, DIDDocument *localcopy)
+{
+    assert(chaincopy);
+    assert(localcopy);
+
+    DIDMetaData_SetPublished(&localcopy->metadata, DIDMetaData_GetPublished(&chaincopy->metadata));
+    DIDMetaData_SetSignature(&localcopy->metadata, DIDMetaData_GetSignature(&chaincopy->metadata));
+    memcpy(&localcopy->did.metadata, &localcopy->metadata, sizeof(DIDMetaData));
+
+    return localcopy;
+}
+
 int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeCallback *callback)
 {
     int rc, nextindex, i = 0, blanks = 0;
@@ -1883,8 +1895,11 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeC
     uint8_t extendedkey[EXTENDEDKEY_BYTES];
     DID did;
 
-     if (!store || !storepass || !*storepass || !callback)
+     if (!store || !storepass || !*storepass)
         return -1;
+
+    if (!callback)
+        callback = default_didstore_merge;
 
     privateIdentity = load_privateIdentity(store, storepass, &_identity);
     if (!privateIdentity)

@@ -33,7 +33,7 @@ static void test_didstore_newdid(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     path = get_file_path(_path, PATH_MAX, 3, store->root, PATH_STEP, META_FILE);
@@ -111,7 +111,7 @@ static void test_didstore_newdid_byindex(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     path = get_file_path(_path, PATH_MAX, 3, store->root, PATH_STEP, META_FILE);
@@ -164,7 +164,7 @@ static void test_didstore_newdid_withouAlias(void)
     int rc;
 
     storePath = get_store_path(_storepath, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     path = get_file_path(_path, PATH_MAX, 3, storePath, PATH_STEP, META_FILE);
@@ -237,7 +237,8 @@ static void test_didstore_initial_error(void)
 
     storePath = get_store_path(_path, "/servet");
     store = DIDStore_Open(storePath, NULL);
-    CU_ASSERT_PTR_NULL(store);
+    CU_ASSERT_PTR_NOT_NULL(store);
+    DIDStore_Close(store);
 
     adapter = TestData_GetAdapter(false);
     CU_ASSERT_PTR_NOT_NULL_FATAL(adapter);
@@ -259,7 +260,7 @@ static void test_didstore_privateIdentity_error(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
@@ -295,7 +296,7 @@ static void test_didstore_newdid_emptystore(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
@@ -325,7 +326,7 @@ static void test_didstore_privateidentity_compatibility(void)
     const char *passphrase = "helloworld";
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, passphrase,

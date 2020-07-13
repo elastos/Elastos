@@ -110,15 +110,19 @@ static DIDDocument* merge_to_chaincopy(DIDDocument *chaincopy, DIDDocument *loca
 static void test_idchain_restore(void)
 {
     int rc;
-    char _path[PATH_MAX];
+    char _path[PATH_MAX], cachedir[PATH_MAX];
     const char *path, *mnemonic;
     DIDStore *store;
     DIDs dids;
     DIDs restore_dids;
 
     path = get_store_path(_path, "/idchain");
-    store = TestData_SetupStore(false, path);
+    delete_file(path);
+    store = DIDStore_Open(path, NULL);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
+
+    sprintf(cachedir, "%s%s", getenv("HOME"), "/.cache.did.elastos");
+    DIDBackend_InitializeDefault(resolver, cachedir);
 
     rc = DIDStore_InitPrivateIdentity(store, storepass, TestData_LoadRestoreMnemonic(),
         "secret", language, true);
@@ -132,6 +136,7 @@ static void test_idchain_restore(void)
     memset(&dids, 0, sizeof(DIDs));
     rc = DIDStore_ListDIDs(store, 0, get_did, (void*)&dids);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    printf("dids count is %d\n", dids.index);
     CU_ASSERT_EQUAL(dids.index, 5);
 
     path = get_path(_path, "dids.restore");
@@ -165,20 +170,25 @@ static void test_idchain_restore(void)
         DIDDocument_Destroy(doc);
     }
 
+    DIDStore_Close(store);
     TestData_Free();
 }
 
 static void test_sync_with_localmodification1(void)
 {
     int rc;
-    char _path[PATH_MAX], modified_signature[MAX_DOC_SIGN];
+    char _path[PATH_MAX], modified_signature[MAX_DOC_SIGN], cachedir[PATH_MAX];
     const char *path, *mnemonic;
     DIDStore *store;
     DIDs dids;
 
     path = get_store_path(_path, "/idchain");
-    store = TestData_SetupStore(false, path);
+    delete_file(path);
+    store = DIDStore_Open(path, NULL);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
+
+    sprintf(cachedir, "%s%s", getenv("HOME"), "/.cache.did.elastos");
+    DIDBackend_InitializeDefault(resolver, cachedir);
 
     rc = DIDStore_InitPrivateIdentity(store, storepass, TestData_LoadRestoreMnemonic(),
         "secret", language, true);
@@ -254,6 +264,7 @@ static void test_sync_with_localmodification1(void)
     CU_ASSERT_STRING_EQUAL(modified_signature, DIDDocument_GetProofSignature(modified_doc));
     DIDDocument_Destroy(modified_doc);
 
+    DIDStore_Close(store);
     TestData_Free();
 }
 
@@ -261,14 +272,18 @@ static void test_sync_with_localmodification1(void)
 static void test_sync_with_localmodification2(void)
 {
     int rc;
-    char _path[PATH_MAX], origin_signature[MAX_DOC_SIGN];
+    char _path[PATH_MAX], origin_signature[MAX_DOC_SIGN], cachedir[PATH_MAX];
     const char *path, *mnemonic;
     DIDStore *store;
     DIDs dids;
 
     path = get_store_path(_path, "/idchain");
-    store = TestData_SetupStore(false, path);
+    delete_file(path);
+    store = DIDStore_Open(path, NULL);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
+
+    sprintf(cachedir, "%s%s", getenv("HOME"), "/.cache.did.elastos");
+    DIDBackend_InitializeDefault(resolver, cachedir);
 
     rc = DIDStore_InitPrivateIdentity(store, storepass, TestData_LoadRestoreMnemonic(),
         "secret", language, true);
@@ -296,6 +311,8 @@ static void test_sync_with_localmodification2(void)
     DIDURL *serviceid = DIDURL_NewByDid(modified_did, "test1");
     CU_ASSERT_PTR_NOT_NULL_FATAL(serviceid);
 
+    //add by chenyu
+    printf("----------\n");
     rc = DIDDocumentBuilder_AddService(builder, serviceid, "TestType", "http://test.com/");
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     DIDURL_Destroy(serviceid);
@@ -344,6 +361,7 @@ static void test_sync_with_localmodification2(void)
     CU_ASSERT_STRING_EQUAL(origin_signature, DIDDocument_GetProofSignature(modified_doc));
     DIDDocument_Destroy(modified_doc);
 
+    DIDStore_Close(store);
     TestData_Free();
 }
 

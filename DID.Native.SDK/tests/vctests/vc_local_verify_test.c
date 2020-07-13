@@ -33,7 +33,7 @@ static void test_vc_local_verify(void)
     int rc;
 
     storePath = get_store_path(_path, "/localverify");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     const char *newmnemonic = Mnemonic_Generate(language);

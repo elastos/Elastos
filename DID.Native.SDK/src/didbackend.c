@@ -106,10 +106,16 @@ bool DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
     const char *reqstring;
     bool successed;
 
-    assert(backend && backend->adapter);
+    assert(backend);
     assert(document);
     assert(signkey);
     assert(storepass && *storepass);
+
+    if (!backend->adapter) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not adapter to create transaction.\
+                Please reopen didstore to add adapter.");
+        return false;
+    }
 
     if (!DIDMetaData_AttachedStore(&document->metadata)) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
@@ -134,10 +140,16 @@ bool DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signk
     const char *reqstring;
     bool successed;
 
-    assert(backend && backend->adapter);
+    assert(backend);
     assert(document);
     assert(signkey);
     assert(storepass && *storepass);
+
+    if (!backend->adapter) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not adapter to create transaction.\
+                Please reopen didstore to add adapter.");
+        return false;
+    }
 
     if (!DIDMetaData_AttachedStore(&document->metadata)) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
@@ -163,10 +175,16 @@ bool DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signkey,
     DIDDocument *document;
     bool successed;
 
-    assert(backend && backend->adapter);
+    assert(backend);
     assert(did);
     assert(signkey);
     assert(storepass && *storepass);
+
+    if (!backend->adapter) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not adapter to create transaction.\
+                Please reopen didstore to add adapter.");
+        return false;
+    }
 
     if (!DIDMetaData_AttachedStore(&did->metadata)) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");

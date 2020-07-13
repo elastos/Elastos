@@ -34,7 +34,7 @@ static void test_didstore_bulk_newdid(void)
     int rc, count = 0;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = TestData_InitIdentity(store);
@@ -106,7 +106,7 @@ static void test_didstore_op_deletedid(void)
     int rc, count = 0;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = TestData_InitIdentity(store);
@@ -167,7 +167,7 @@ static void test_didstore_op_store_load_did(void)
     int rc, count = 0;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = TestData_InitIdentity(store);

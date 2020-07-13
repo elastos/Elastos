@@ -42,7 +42,7 @@ static void test_didstore_change_password(void)
     DIDDocument *newdoc;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = TestData_InitIdentity(store);
@@ -137,7 +137,7 @@ static void test_didstore_change_with_wrongpassword(void)
     int rc, count = 0;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = TestData_InitIdentity(store);

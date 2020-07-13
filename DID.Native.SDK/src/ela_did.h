@@ -2455,6 +2455,7 @@ DID_API int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store,
  *      storepass              [in] The pass word of DID holder.
  * @param
  *      callback               [in] The method to merge document.
+ *                              callback == NULL, use default method supported by sdk.
  * @return
  *      0 on success, -1 if an error occurred.
  */

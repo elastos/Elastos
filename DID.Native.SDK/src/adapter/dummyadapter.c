@@ -244,6 +244,9 @@ void DummyAdapter_Destroy(void)
         DIDTransactionInfo_Destroy(infos[i]);
         free(infos[i]);
     }
+
+    memset(infos, 0, sizeof(infos));
+    num = 0;
 }
 
 

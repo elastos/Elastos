@@ -359,11 +359,15 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
     return request->doc;
 
 errorExit:
-    if (request->payload)
+    if (request->payload) {
         free((void*)request->payload);
+        request->payload = NULL;
+    }
 
-    if (request->doc)
+    if (request->doc) {
         DIDDocument_Destroy(request->doc);
+        request->doc = NULL;
+    }
 
     return NULL;
 }
@@ -373,14 +377,20 @@ void DIDRequest_Destroy(DIDRequest *request)
     if (!request)
         return;
 
-    if (request->payload)
+    if (request->payload) {
         free((void*)request->payload);
-    if (request->doc)
+        request->payload = NULL;
+    }
+    if (request->doc) {
         DIDDocument_Destroy(request->doc);
+        request->doc = NULL;
+    }
 }
 
 void DIDRequest_Free(DIDRequest *request)
 {
-    if (request && request->payload)
+    if (request && request->payload) {
         free((void*)request->payload);
+        request->payload = NULL;
+    }
 }

@@ -1147,7 +1147,7 @@ static int diddoc_elem_test_suite_init(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(false, storePath);
+    store = TestData_SetupStore(true, storePath);
     if (!store)
         return -1;
 
