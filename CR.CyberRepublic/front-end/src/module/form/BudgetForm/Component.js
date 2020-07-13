@@ -13,9 +13,9 @@ const { ADVANCE, COMPLETION, CONDITIONED } = SUGGESTION_BUDGET_TYPE
 class BudgetForm extends Component {
   constructor(props) {
     super(props)
+    const { item } = props
     this.state = {
-      activeKey:
-        props.item && props.item.milestoneKey ? props.item.milestoneKey : '0'
+      activeKey: item && item.milestoneKey ? item.milestoneKey : '0'
     }
   }
 
