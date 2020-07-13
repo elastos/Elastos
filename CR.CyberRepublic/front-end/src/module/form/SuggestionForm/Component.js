@@ -83,18 +83,7 @@ class C extends BaseComponent {
       }
 
       const milestone = _.get(values, 'plan.milestone')
-      const amount = _.get(values, 'budget.budgetAmount')
       const pItems = _.get(values, 'budget.paymentItems')
-
-      const sum = pItems.reduce((sum, item) => {
-        return (sum += Number(item.amount))
-      }, 0)
-
-      if (Number(amount) !== sum) {
-        this.setState({ loading: false })
-        message.error(I18N.get('suggestion.form.error.notEqual'))
-        return
-      }
 
       const initiation = pItems.filter(
         (item) => item.type === ADVANCE && item.milestoneKey === '0'
@@ -119,7 +108,7 @@ class C extends BaseComponent {
       // exclude old suggestion data
       if (budget && typeof budget !== 'string') {
         values.budget = budget.paymentItems
-        values.budgetAmount = Number(budget.budgetAmount)
+        values.budgetAmount = budget.budgetAmount
         values.elaAddress = budget.elaAddress
       }
 
