@@ -158,28 +158,6 @@ class BudgetForm extends Component {
             })(<Input />)}
           </FormItem>
 
-          <Label gutter={-8}>
-            <span>*</span>
-            {I18N.get('suggestion.budget.reasons')}
-          </Label>
-          <FormItem>
-            {getFieldDecorator('reasons', {
-              rules: [
-                {
-                  required: true,
-                  message: I18N.get('suggestion.form.error.required')
-                }
-              ],
-              initialValue: item && item.reasons ? item.reasons : ''
-            })(
-              <CodeMirrorEditor
-                content={item && item.reasons ? item.reasons : ''}
-                name="reasons"
-                autofocus={false}
-              />
-            )}
-          </FormItem>
-
           <Label>
             <span>*</span>
             {I18N.get('suggestion.budget.criteria')}
