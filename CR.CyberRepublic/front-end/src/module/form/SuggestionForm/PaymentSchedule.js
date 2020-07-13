@@ -119,7 +119,7 @@ class PaymentSchedule extends Component {
     const milestone = sessionStorage.getItem('plan-milestone') || []
     try {
       const rs = JSON.parse(milestone)
-      return Array.isArray(rs) ? rs : []
+      return _.isArray(rs) ? rs : []
     } catch (err) {
       return []
     }
