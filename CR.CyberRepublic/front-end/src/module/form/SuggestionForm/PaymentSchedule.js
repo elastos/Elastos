@@ -17,8 +17,7 @@ class PaymentSchedule extends Component {
       total: _.get(value, 'budgetAmount'),
       address: (value && value.elaAddress) || '',
       paymentItems: (value && value.paymentItems) || [],
-      budgetIntro: (value && value.budgetIntro) || '',
-      errors: {}
+      budgetIntro: (value && value.budgetIntro) || ''
     }
   }
 
@@ -37,7 +36,6 @@ class PaymentSchedule extends Component {
       budgetIntro
     })
   }
-
 
   handleChange = (e, field) => {
     this.setState({ [field]: e.target.value }, () => {
@@ -64,12 +62,9 @@ class PaymentSchedule extends Component {
       ...paymentItems.slice(index + 1)
     ]
     const sortedItems = this.sortPayments(rs)
-    this.setState(
-      { paymentItems: sortedItems },
-      () => {
-        this.passDataToParent()
-      }
-    )
+    this.setState({ paymentItems: sortedItems }, () => {
+      this.passDataToParent()
+    })
   }
 
   handleEdit = (index) => {
@@ -115,7 +110,7 @@ class PaymentSchedule extends Component {
   }
 
   render() {
-    const { paymentItems, index, total, address, errors, budgetIntro } = this.state
+    const { paymentItems, index, total, address, budgetIntro } = this.state
     const { getFieldDecorator } = this.props
     const milestone = this.getMilestone()
     const flag = milestone && milestone.length <= paymentItems.length
@@ -175,11 +170,10 @@ class PaymentSchedule extends Component {
           {getFieldDecorator('budgetIntro')(
             <CodeMirrorEditor
               content={budgetIntro}
-              activeKey='budgetIntro'
-              name='budgetIntro'
+              activeKey="budgetIntro"
+              name="budgetIntro"
             />
-          )
-          }
+          )}
         </Section>
       </Wrapper>
     )
@@ -227,14 +221,12 @@ const StyledInput = styled.input`
   }
   &:focus {
     border-color: ${(props) => (props.error ? '#f5222d' : '#66bda3')};
-    box-shadow: ${(props) =>
-    props.error
-      ? '0 0 0 2px rgba(245, 34, 45, 0.2);'
-      : '0 0 0 2px rgba(67, 175, 146, 0.2)'};
+    box-shadow: ${(props) => {
+      return props.error
+        ? '0 0 0 2px rgba(245, 34, 45, 0.2)'
+        : '0 0 0 2px rgba(67, 175, 146, 0.2)'
+    }};
   }
-`
-const Error = styled.div`
-  color: #f5222d;
 `
 const Tip = styled.div`
   color: #666;
