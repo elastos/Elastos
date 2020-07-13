@@ -631,7 +631,9 @@ export default class extends BaseComponent {
   }
 
   toDetailPage(id) {
-    this.props.history.push(`/proposals/${id}`)
+    // this.props.history.push(`/proposals/${id}`)
+    const w=window.open('about:blank')
+    w.location.href=`/proposals/${id}`
   }
 
   toEditPage(id) {
