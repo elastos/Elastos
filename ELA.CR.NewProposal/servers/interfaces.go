@@ -2349,6 +2349,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 			obj.CRCouncilMemberDID = crmdid
 			obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilMemberSignature)
 			obj.Hash = ToReversedString(object.Hash())
+			return obj
 
 		case payload.CloseProposal:
 			obj := new(CRCCloseProposalInfo)
@@ -2362,6 +2363,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 			obj.CRCouncilMemberDID = crmdid
 			obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilMemberSignature)
 			obj.Hash = ToReversedString(object.Hash())
+			return obj
 
 		case payload.SecretaryGeneral:
 			obj := new(CRCSecretaryGeneralProposalInfo)
@@ -2378,6 +2380,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 			obj.CRCouncilMemberDID = crmdid
 			obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilMemberSignature)
 			obj.Hash = ToReversedString(object.Hash())
+			return obj
 		}
 
 	case *payload.CRCProposalReview:
@@ -2416,6 +2419,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 			obj.WithdrawTransactionHashes =
 				append(obj.WithdrawTransactionHashes, hash.String())
 		}
+		return obj
 	}
 	return nil
 }
