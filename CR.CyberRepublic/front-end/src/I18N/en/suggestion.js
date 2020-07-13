@@ -176,7 +176,8 @@ export default {
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Project Milestone Payment',
     goal: 'Goal',
     milestone: 'milestone',
-    introduction: 'Budget Statement'
+    introduction: 'Budget Statement',
+    totalBudget: 'Total Budget(ELA): '
   },
   plan: {
     teamMember: 'Team Member',

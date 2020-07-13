@@ -165,10 +165,10 @@ class PaymentSchedule extends Component {
             />
           )}
         </Section>
-        <Section>
-          <Label>{`${I18N.get('suggestion.budget.total')} (ELA)`}</Label>
-          {total}
-        </Section>
+        <Total>
+          <span>{`${I18N.get('suggestion.budget.totalBudget')}`}</span>
+          <Digit>{total}</Digit>
+        </Total>
         <Modal
           maskClosable={false}
           visible={this.state.visible}
@@ -244,4 +244,11 @@ const StyledInput = styled.input`
 const Tip = styled.div`
   color: #666;
   font-size: 13px;
+`
+const Total = styled.div`
+  text-align: right;
+`
+const Digit = styled.span`
+  font-size: 18px;
+  color: #000;
 `
