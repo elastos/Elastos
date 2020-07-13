@@ -618,7 +618,7 @@ class C extends StandardPage {
     if (_.has(data, 'content')) return renderRichContent(data, 'content')
     return (
       <div>
-        <Preamble {...data} user={user} />
+        <Preamble {...data} user={user} copyFun={this.copyToClip} />
         {renderRichContent(
           data,
           'abstract',
@@ -990,6 +990,18 @@ class C extends StandardPage {
         <div>{detail}</div>
       </div>
     )
+  }
+
+  copyToClip(content) {
+    var aux = document.createElement("input"); 
+    aux.setAttribute("value", content); 
+    document.body.appendChild(aux); 
+    aux.select();
+    const err = document.execCommand("copy"); 
+    document.body.removeChild(aux)
+    if (err) {
+      message.success('粘贴成功')
+    }
   }
 
   publish = async () => {

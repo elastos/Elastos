@@ -15,7 +15,9 @@ export default {
       proposer: 'Proposer',
       referee: 'Referee',
       status: 'Status',
-      created: 'Created'
+      created: 'Created',
+      hash: 'Hash',
+      txHash: 'TxID'
     },
     abstract: 'Abstract',
     goal: 'Goal',

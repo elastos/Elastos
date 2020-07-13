@@ -83,14 +83,18 @@ export default class extends BaseComponent {
   }
 
   renderWithdrawalList() {
-    const { withdrawalHistory } = this.props.proposal
+    const { withdrawalHistory, budget } = this.props.proposal
+    const completion = _.filter(budget, { 'type': 'COMPLETION' })
+    const dataList = _.filter(withdrawalHistory, (o) => {
+      return !_.isEmpty(o.review) && o.milestoneKey !== completion[0].milestoneKey
+    })
     if (!withdrawalHistory || withdrawalHistory.length === 0) return null
     const body = (
       <List
         itemLayout="horizontal"
         grid={{ column: 1 }}
         split={false}
-        dataSource={_.filter(withdrawalHistory,'review')}
+        dataSource={dataList}
         renderItem={item => (
           <StyledPrivateItem actions={[]}>
             <StyledRow gutter={16}>
@@ -103,7 +107,7 @@ export default class extends BaseComponent {
                   />
                 </StyledRichContent>
                 <StyledFooter>
-                  {moment(item.createdAt).format(DATE_FORMAT)} , 
+                  {moment(item.createdAt).format(DATE_FORMAT)} ,
                   {`${I18N.get('suggestion.budget.milestone')} #${Number(
                     item.milestoneKey
                   ) + 1}`}
@@ -112,7 +116,7 @@ export default class extends BaseComponent {
               <RightCol span={3}>
                 <Status status={item.review ? item.review.opinion : 'REVIEWING'}>
                   {I18N.get(`proposal.status.withdrawal.${item.review ? item.review.opinion : 'REVIEWING'}`)}
-                  </Status>
+                </Status>
               </RightCol>
             </StyledRow>
             {this.renderWithdrawalActions(item)}
@@ -229,7 +233,7 @@ export default class extends BaseComponent {
                 return (
                   <span key={key}>
                     {item}
-                    <br/>
+                    <br />
                   </span>
                 )
               })}
@@ -253,7 +257,7 @@ export default class extends BaseComponent {
   renderWithdrawalActions(item) {
     const { secretariat } = this.state
     let body
-    if (item.review !== undefined){
+    if (item.review !== undefined) {
       body = (
         <CommentCol span={21} status={item.review.opinion}>
           <CommentContent>
@@ -262,13 +266,13 @@ export default class extends BaseComponent {
                 return (
                   <span key={key}>
                     {item}
-                    <br/>
+                    <br />
                   </span>
                 )
               })}
             </div>
             <CommentFooter>
-              { secretariat && secretariat.didName ? secretariat.didName + " , " : null}
+              {secretariat && secretariat.didName ? secretariat.didName + " , " : null}
               {moment(item.review.createdAt).format(DATE_FORMAT)}
             </CommentFooter>
           </CommentContent>
@@ -292,9 +296,9 @@ export default class extends BaseComponent {
 
   refetch = async () => {
     this.ord_loading(true)
-    const { listData,getSecretariat } = this.props
-    const secretariat =  await getSecretariat()
-    this.setState({secretariat})
+    const { listData, getSecretariat } = this.props
+    const secretariat = await getSecretariat()
+    this.setState({ secretariat })
     const param = this.getQuery()
     await listData(param)
     this.ord_loading(false)

@@ -631,7 +631,9 @@ export default class extends BaseComponent {
   }
 
   toDetailPage(id) {
-    this.props.history.push(`/proposals/${id}`)
+    // this.props.history.push(`/proposals/${id}`)
+    const w=window.open('about:blank')
+    w.location.href=`/proposals/${id}`
   }
 
   toEditPage(id) {
@@ -699,7 +701,7 @@ export default class extends BaseComponent {
     }
     return <span style={{ whiteSpace: 'pre-wrap' }}>
       {`${endsHeight}\n(${I18N.get(
-        'council.voting.votingEndsIn.approx')}. ${surplusTime})`}
+        'council.voting.votingEndsIn.approx')} ≈ ${surplusTime})`}
     </span>
   }
 

@@ -706,8 +706,8 @@ export default class extends Base {
       .getDBInstance()
       .findOne(query)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-      .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-
+      .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS_HASH_TXID)
+      
     if (!doc) {
       return { success: true, empty: true }
     }

@@ -19,7 +19,9 @@ export default {
       status: '状态',
       created: '创建日期',
       updated: '更新日期',
-      signature: '签名'
+      signature: '签名',
+      txHash: 'TxID',
+      proposalHash: 'Hash'
     },
     abstract: '摘要',
     goal: '目标',
@@ -43,7 +45,8 @@ export default {
     signSuggetion: '签名建议',
     associateDid: '绑定 DID',
     viewOldData: '查看老数据',
-    viewNewData: '查看新数据'
+    viewNewData: '查看新数据',
+    copyHash: '复制'
   },
   status: {
     posted: '发布',

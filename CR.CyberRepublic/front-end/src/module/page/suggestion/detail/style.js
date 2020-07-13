@@ -180,3 +180,17 @@ export const Paragraph = styled.div`
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 `
+export const CopyButton = styled.span`
+  display: inline-block;
+  font-weight: 200;
+  background: #008D85;
+  width: 56px;
+  height: 20px;
+  margin-left: 30px;
+  border-radius: 2px;
+  font-size: 12px;
+  text-align: center;
+  line-height: 16px;
+  cursor:pointer;
+  color: #fff;
+`
