@@ -7,6 +7,7 @@ import BudgetForm from '@/module/form/BudgetForm/Container'
 import PaymentList from './PaymentList'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import _ from 'lodash'
+import Big from 'big.js'
 
 class PaymentSchedule extends Component {
   constructor(props) {
@@ -74,9 +75,9 @@ class PaymentSchedule extends Component {
 
   getTotalBudget = (items) => {
     const total = items.reduce((sum, item) => {
-      return (sum += Number(item.amount))
-    }, 0)
-    return Number(total.toFixed(8))
+      return sum.add(item.amount)
+    }, Big(0))
+    return total.toFixed()
   }
 
   handleSubmit = (values) => {
