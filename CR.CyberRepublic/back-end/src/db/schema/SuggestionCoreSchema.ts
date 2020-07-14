@@ -76,7 +76,7 @@ export const SuggestionCore = {
     type: String
   },
   budgetAmount: {
-    type: Number
+    type: Schema.Types.Mixed
   },
   elaAddress: {
     type: String
