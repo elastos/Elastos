@@ -245,7 +245,7 @@ export default class extends StandardPage {
     const err = document.execCommand("copy"); 
     document.body.removeChild(aux)
     if (err) {
-      message.success('粘贴成功')
+      message.success(I18N.get('btn.CopyHash'))
     }
   }
 

@@ -1266,6 +1266,8 @@ const zh = {
   'from.UserProfileForm.text.slogan': '个人标语',
   'from.UserProfileForm.text.motto': '个人座右铭',
 
+  'btn.CopyHash': '复制成功',
+
   // CR Video / Earn ELA page
   'cr-video.here': '点击这里',
   'cr-video.header.1': '重新获得属于您的互联网',

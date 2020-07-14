@@ -478,23 +478,16 @@ export default class extends Base {
   public async notifyCouncilToVote(DateTime: any) {
     // find cvote before 1 day expiration without vote yet for each council member
     const db_cvote = this.getDBModel('CVote')
-    // prettier-ignore
-    const nearExpiredTime = Date.now() - (constant.CVOTE_COUNCIL_EXPIRATION - DateTime)
-    // prettier-ignore
-    const createTime = DateTime == constant.ONE_DAY
-      ? Date.now() - constant.CVOTE_COUNCIL_EXPIRATION
-      : Date.now() - constant.CVOTE_COUNCIL_EXPIRATION + constant.ONE_DAY
-
-    const isNotifiedThreeDay = DateTime == constant.THREE_DAY ? false : true
-    const isNotifiedOneDay = DateTime == constant.ONE_DAY ? true : false
+    let startHeight = process.env.NODE_ENV == 'staging' ? 17 : 2160
+    let endHeight = process.env.NODE_ENV == 'staging' ? 16 : 2150
+    const isOneDay = DateTime == constant.ONE_DAY
+    if (isOneDay) {
+      startHeight = process.env.NODE_ENV == 'staging' ? 5 : 720
+      endHeight = process.env.NODE_ENV == 'staging' ? 4 : 710
+    }
     let unvotedCVotes = await db_cvote
       .getDBInstance()
       .find({
-        proposedAt: {
-          $lt: nearExpiredTime,
-          $gt: createTime
-        },
-        notified: isNotifiedThreeDay,
         status: constant.CVOTE_STATUS.PROPOSED,
         'voteResult.value': constant.CVOTE_RESULT.UNDECIDED,
         old: {
@@ -505,10 +498,20 @@ export default class extends Base {
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
       )
-    if (DateTime == constant.ONE_DAY) {
+    const currentHeight = await ela.height()
+    unvotedCVotes = _.filter(unvotedCVotes, (o: any) => {
+      const lastHeight = o.proposedEndsHeight - currentHeight
+      if (lastHeight >= endHeight && lastHeight <= startHeight) {
+        return o
+      }
+    })
+    if (isOneDay) {
       unvotedCVotes = _.filter(unvotedCVotes, ['notifiedOneDay', false])
+    } else {
+      unvotedCVotes = _.filter(unvotedCVotes, ['notified', false])
     }
-    const promptTime = DateTime == constant.ONE_DAY ? '24 hours' : '3 days'
+    const cvoteIds = []
+    const promptTime = isOneDay ? '24 hours' : '3 days'
     _.each(unvotedCVotes, (cvote) => {
       _.each(cvote.voteResult, (result) => {
         if (result.value === constant.CVOTE_RESULT.UNDECIDED) {
@@ -534,13 +537,21 @@ export default class extends Base {
           mail.send(mailObj)
 
           // update notified to true
-          db_cvote.update(
-            { _id: cvote._id },
-            { $set: { notified: true, notifiedOneDay: isNotifiedOneDay } }
-          )
+          cvoteIds.push(cvote._id)
         }
       })
     })
+    if (isOneDay) {
+      await db_cvote.update(
+        { _id: {$in:cvoteIds} },
+        { $set: { notifiedOneDay: true } }
+      )
+    } else {
+      await db_cvote.update(
+        { _id: {$in:cvoteIds} },
+        { $set: { notified: true } }
+      )
+    }
   }
 
   /**
