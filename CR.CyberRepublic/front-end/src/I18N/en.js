@@ -1316,6 +1316,8 @@ const en = {
   'from.UserProfileForm.text.slogan': 'Bio',
   'from.UserProfileForm.text.motto': 'Profile Motto',
 
+  'btn.CopyHash': 'Copy successful',
+
   // CR Video / Earn ELA page
   'cr-video.here': 'here',
   'cr-video.header.1': 'Reclaim Your Internet',
