@@ -45,7 +45,7 @@ class PaymentList extends BaseComponent {
   ord_render() {
     const { list, editable, milestone } = this.props
     const visible = editable === false ? editable : true
-    const isOld = list && list[0] && list[0].reasons
+    const isOld = list && list.find((item) => item.reasons)
     return (
       <StyledTable>
         <StyledHead>
