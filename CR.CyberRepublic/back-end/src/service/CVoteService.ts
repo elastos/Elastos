@@ -1369,9 +1369,6 @@ export default class extends Base {
 
     const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
     const proposal = await db_cvote.findById(_id)
-    if (proposalStatus === proposal.status) {
-      return false
-    }
     if (proposalStatus === constant.CVOTE_STATUS.ACTIVE) {
       const budget = proposal.budget.map((item: any) => {
         if (item.type === 'ADVANCE') {
@@ -1417,7 +1414,7 @@ export default class extends Base {
         rejectThroughAmount
       }
     )
-    if (updateStatus && updateStatus.nModified == 1) {
+    if (proposalStatus !== proposal.status && updateStatus.nModified ==1) {
       this.notifyProposer(proposal, proposalStatus, 'community')
       return rs.data.registerheight + STAGE_BLOCKS * 2
     }
