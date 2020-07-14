@@ -74,11 +74,16 @@ public class ResolveResult implements DIDHistory {
 		return idtxs.size();
 	}
 
-	public IDChainTransaction getTransactionInfo(int index) {
+	public IDChainTransaction getTransactionInfo(int index)
+			throws DIDTransactionException {
 		if (idtxs == null)
 			return null;
 
-		return idtxs.get(index);
+		IDChainTransaction tx = idtxs.get(index);
+		if (!tx.getRequest().isValid())
+			throw new DIDTransactionException("Invalid ID transaction, can not verify the signature.");
+
+		return tx;
 	}
 
 	@Override

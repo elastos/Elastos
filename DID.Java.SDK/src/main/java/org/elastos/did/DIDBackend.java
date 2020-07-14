@@ -295,7 +295,13 @@ public class DIDBackend {
 			return null;
 
 		default:
-			IDChainTransaction ti = rr.getTransactionInfo(0);
+			IDChainTransaction ti;
+			try {
+				ti = rr.getTransactionInfo(0);
+			} catch (DIDTransactionException e) {
+				throw new DIDResolveException(e);
+			}
+
 			DIDDocument doc = ti.getRequest().getDocument();
 			DIDMetadataImpl metadata = new DIDMetadataImpl();
 			metadata.setTransactionId(ti.getTransactionId());
