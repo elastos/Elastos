@@ -372,7 +372,7 @@ const char *HDKey_SerializePubBase58(HDKey *hdkey, char *extendedkeyBase58, size
         return NULL;
 
     memset(extendedkey, 0, sizeof(extendedkey));
-    len = generate_extendedkey(extendedkey, size, hdkey, true);
+    len = generate_extendedkey(extendedkey, sizeof(extendedkey), hdkey, true);
     if (len < 0)
         return NULL;
 
