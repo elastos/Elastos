@@ -165,19 +165,22 @@ class PaymentList extends Component {
   }
 
   renderPaymentItem(item, index) {
-    const { milestone } = this.props
+    const { milestone, list } = this.props
     const visible = this.isVisible()
+    const isOld = list && list.find((item) => item.reasons)
     return (
       <StyledRow key={index}>
         <td>{index + 1}</td>
         <td>{item.type ? I18N.get(`suggestion.budget.${item.type}`) : ''}</td>
         <td>{item.amount}</td>
-        <td>
-          <MarkdownPreview
-            content={item.reasons ? item.reasons : ''}
-            style={{ p: { margin: '1em 0' } }}
-          />
-        </td>
+        {isOld ? (
+          <td>
+            <MarkdownPreview
+              content={item.reasons ? item.reasons : ''}
+              style={{ p: { margin: '1em 0' } }}
+            />
+          </td>
+        ) : null}
         <td>
           {item.milestoneKey ? (
             <Popover
@@ -231,6 +234,7 @@ class PaymentList extends Component {
       withdrawal,
       withdrawalStage
     } = this.state
+    const isOld = list && list.find((item) => item.reasons)
     return (
       <StyledTable>
         <StyledHead>
@@ -241,7 +245,7 @@ class PaymentList extends Component {
               {I18N.get('suggestion.budget.amount')}
               (ELA)
             </th>
-            <th>{I18N.get('suggestion.budget.reasons')}</th>
+            {isOld ? <th>{I18N.get('suggestion.budget.reasons')}</th> : null}
             <th>{I18N.get('suggestion.budget.goal')}</th>
             <th>{I18N.get('suggestion.budget.criteria')}</th>
             {visible && <th>{I18N.get('milestone.status')}</th>}
