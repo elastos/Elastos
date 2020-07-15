@@ -108,27 +108,6 @@ int Parse_DID(DID *did, const char *idstring)
     return parse_id_string(did->idstring, NULL, idstring, NULL);
 }
 
-int Parse_DIDURL(DIDURL *id, const char *idstring, DID *base)
-{
-    return parse_id_string(id->did.idstring, id->fragment, idstring, base);
-}
-
-int Init_DIDURL(DIDURL *id, DID *did, const char *fragment)
-{
-    assert(id);
-    assert(did);
-    assert(fragment && *fragment);
-
-    if (strlen(fragment) >= sizeof(id->fragment)) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "The fragment is too long.");
-        return -1;
-    }
-
-    DID_Copy(&id->did, did);
-    strcpy(id->fragment, fragment);
-    return 0;
-}
-
 int Init_DID(DID *did, const char *idstring)
 {
     assert(did);
@@ -262,11 +241,69 @@ int DID_Compare(DID *did1, DID *did2)
 
 void DID_Destroy(DID *did)
 {
-    if (!did)
-       return;
+    if (!did) {
+        DIDMetaData_Free(&did->metadata);
+        free(did);
+    }
+}
 
-    DIDMetaData_Free(&did->metadata);
-    free(did);
+DIDDocument **DID_ResolveAll(DID *did)
+{
+    if (!did) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return NULL;
+    }
+
+    return DIDBackend_ResolveAll(did);
+}
+
+DIDDocument *DID_Resolve(DID *did, bool force)
+{
+    if (!did) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return NULL;
+    }
+
+    return DIDBackend_Resolve(did, force);
+}
+
+DIDMetaData *DID_GetMetaData(DID *did)
+{
+    if (!did) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return NULL;
+    }
+    return &did->metadata;
+}
+
+int DID_SaveMetaData(DID *did)
+{
+    if (did && DIDMetaData_AttachedStore(&did->metadata))
+        return DIDStore_StoreDIDMetaData(did->metadata.base.store, &did->metadata, did);
+
+    return 0;
+}
+
+int Parse_DIDURL(DIDURL *id, const char *idstring, DID *base)
+{
+    return parse_id_string(id->did.idstring, id->fragment, idstring, base);
+}
+
+int Init_DIDURL(DIDURL *id, DID *did, const char *fragment)
+{
+    assert(id);
+    assert(did);
+    assert(fragment && *fragment);
+
+    if (strlen(fragment) >= sizeof(id->fragment)) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "The fragment is too long.");
+        return -1;
+    }
+
+    DID_Copy(&id->did, did);
+    strcpy(id->fragment, fragment);
+    memset(&did->metadata, 0, sizeof(CredentialMetaData));
+    return 0;
 }
 
 DIDURL *DIDURL_FromString(const char *idstring, DID *ref)
@@ -458,43 +495,6 @@ void DIDURL_Destroy(DIDURL *id)
 
     CredentialMetaData_Free(&id->metadata);
     free(id);
-}
-
-DIDDocument **DID_ResolveAll(DID *did)
-{
-    if (!did) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return NULL;
-    }
-
-    return DIDBackend_ResolveAll(did);
-}
-
-DIDDocument *DID_Resolve(DID *did, bool force)
-{
-    if (!did) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return NULL;
-    }
-
-    return DIDBackend_Resolve(did, force);
-}
-
-DIDMetaData *DID_GetMetaData(DID *did)
-{
-    if (!did) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return NULL;
-    }
-    return &did->metadata;
-}
-
-int DID_SaveMetaData(DID *did)
-{
-    if (did && DIDMetaData_AttachedStore(&did->metadata))
-        return DIDStore_StoreDIDMetaData(did->metadata.base.store, &did->metadata, did);
-
-    return 0;
 }
 
 CredentialMetaData *DIDURL_GetMetaData(DIDURL *id)
