@@ -4,7 +4,6 @@ import { Popover } from 'antd'
 import moment from 'moment'
 import linkifyStr from 'linkifyjs/string'
 import I18N from '@/I18N'
-import MarkdownPreview from '@/module/common/MarkdownPreview'
 import Signature from './Signature'
 import {
   MILESTONE_STATUS,
@@ -12,6 +11,7 @@ import {
   CVOTE_STATUS
 } from '@/constant'
 import WithdrawMoney from './WithdrawMoney'
+import ShowLongText from '@/module/common/ShowLongText'
 
 const {
   WAITING_FOR_REQUEST,
@@ -165,30 +165,6 @@ class PaymentList extends Component {
     }
   }
 
-  showMore = () => {
-    const { showMore } = this.state
-    this.setState({ showMore: !showMore })
-  }
-
-  renderLongText(text) {
-    const { showMore } = this.state
-    const arr = text && text.split('\n')
-    const content = showMore ? arr.slice(0, 5).join('\n') : text
-    return (
-      <td>
-        <MarkdownPreview
-          content={content ? content : ''}
-          style={{ p: { margin: '1em 0' } }}
-        />
-        {arr.length > 5 ? (
-          <div onClick={this.showMore}>
-            {showMore ? 'Show More' : 'Show Less'}
-          </div>
-        ) : null}
-      </td>
-    )
-  }
-
   renderPaymentItem(item, index) {
     const { milestone, list } = this.props
     const visible = this.isVisible()
@@ -198,7 +174,11 @@ class PaymentList extends Component {
         <td>{index + 1}</td>
         <td>{item.type ? I18N.get(`suggestion.budget.${item.type}`) : ''}</td>
         <td>{item.amount}</td>
-        {isOld ? this.renderLongText(item.reasons) : null}
+        {isOld ? (
+          <td>
+            <ShowLongText text={item.reasons} />
+          </td>
+        ) : null}
         <td>
           {item.milestoneKey ? (
             <Popover
@@ -213,10 +193,7 @@ class PaymentList extends Component {
           ) : null}
         </td>
         <td>
-          <MarkdownPreview
-            content={item.criteria ? item.criteria : ''}
-            style={{ p: { margin: '1em 0' } }}
-          />
+          <ShowLongText text={item.criteria} />
         </td>
         {visible && (
           <td>{item.status && I18N.get(`milestone.${item.status}`)}</td>
