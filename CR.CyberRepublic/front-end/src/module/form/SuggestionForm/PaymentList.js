@@ -6,9 +6,9 @@ import moment from 'moment'
 import linkifyStr from 'linkifyjs/string'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
-import MarkdownPreview from '@/module/common/MarkdownPreview'
 import DeleteSvgIcon from '@/module/common/DeleteSvgIcon'
 import EditSvgIcon from '@/module/common/EditSvgIcon'
+import ShowLongText from '@/module/common/ShowLongText'
 
 class PaymentList extends BaseComponent {
   handleDelete = (index) => {
@@ -81,10 +81,7 @@ class PaymentList extends BaseComponent {
                     <td>{item.amount}</td>
                     {isOld ? (
                       <td>
-                        <MarkdownPreview
-                          content={item.reasons ? item.reasons : ''}
-                          style={{ p: { margin: '1em 0' } }}
-                        />
+                        <ShowLongText text={item.reasons} />
                       </td>
                     ) : null}
                     <td>
@@ -103,10 +100,7 @@ class PaymentList extends BaseComponent {
                       ) : null}
                     </td>
                     <td>
-                      <MarkdownPreview
-                        content={item.criteria ? item.criteria : ''}
-                        style={{ p: { margin: '1em 0' } }}
-                      />
+                      <ShowLongText text={item.criteria} />
                     </td>
                     {visible && (
                       <td>
