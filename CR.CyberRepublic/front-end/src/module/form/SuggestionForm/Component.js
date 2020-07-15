@@ -287,13 +287,15 @@ class C extends BaseComponent {
         initialBudget = initialValues.budget && {
           budgetAmount: initialValues.budgetAmount,
           elaAddress: initialValues.elaAddress,
-          paymentItems: initialValues.budget
+          paymentItems: initialValues.budget,
+          budgetIntro: initialValues.budgetIntro
         }
       } else {
         initialBudget = {
           budgetAmount: initialValues.budget,
           elaAddress: '',
-          paymentItems: []
+          paymentItems: [],
+          budgetIntro: ''
         }
       }
 
