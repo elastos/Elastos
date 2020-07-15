@@ -19,7 +19,8 @@ class ShowLongText extends Component {
     const { toggle } = this.state
     const { text } = this.props
     const arr = text && text.split('\n')
-    const content = toggle ? arr && `${arr.slice(0, 5).join('\n')}...` : text
+    const ellipsis = arr && arr.length > 5 ? '...' : ''
+    const content = toggle ? arr && arr.slice(0, 5).join('\n') + ellipsis : text
     return (
       <div>
         <MarkdownPreview
