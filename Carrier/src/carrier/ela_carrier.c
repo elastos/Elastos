@@ -3427,30 +3427,31 @@ static int64_t send_friend_message_internal(ElaCarrier *w, const char *to,
     return msgid;
 }
 
-static void handle_offline_friend_message(EventBase *event, ElaCarrier *w)
+static void handle_offline_friend_message_cb(EventBase *base, ElaCarrier *w)
 {
-    OfflineMsgEvent *ev = (OfflineMsgEvent *)event;
+    OfflineEvent* event = (OfflineEvent *)base;
     ElaCP *cp;
     const char* name;
     const void* data;
     size_t len;
 
-    assert(ev->msg.timestamp > 0);
-    assert(ev->msg.len > 0);
+    assert(event->timestamp > 0);
+    assert(event->length > 0);
 
-    if (!ela_is_friend(w, ev->friendid)) {
-        vlogW("Carrier: Offline message not from friends, dropped.");
+    if (!ela_is_friend(w, event->from)) {
+        vlogW("Carrier: Offline message is not from friends, dropped");
         return;
     }
 
-    cp = elacp_decode(ev->msg.content, ev->msg.len);
+    cp = elacp_decode(event->data, event->length);
     if (!cp) {
-        vlogE("Carrier: Invalid offline message, dropped.");
+        vlogE("Carrier: Decode offline message content failed, dropped");
         return;
     }
 
     if (elacp_get_type(cp) != ELACP_TYPE_MESSAGE) {
-        vlogE("Carrier: Unknown offline message type, dropped.");
+        elacp_free(cp);
+        vlogE("Carrier: Invalid offline message type, dropped");
         return;
     }
 
@@ -3462,112 +3463,113 @@ static void handle_offline_friend_message(EventBase *event, ElaCarrier *w)
     assert(len > 0);
 
     if (w->callbacks.friend_message && (!name || !*name))
-        w->callbacks.friend_message(w, ev->friendid, data, len, ev->msg.timestamp,
+        w->callbacks.friend_message(w, event->from, data, len, event->timestamp,
                                     true, w->context);
+
+    elacp_free(cp);
 }
 
 static void notify_offmsg_received(ElaCarrier *w, const char *from,
                                    const uint8_t *msg, size_t len,
                                    int64_t timestamp)
 {
-    OfflineMsgEvent *event;
+    OfflineEvent *event;
 
     assert(w);
     assert(from && *from);
     assert(msg);
     assert(len);
 
-    event = rc_zalloc(sizeof(OfflineMsgEvent) + len, NULL);
+    event = rc_zalloc(sizeof(OfflineEvent) + len, NULL);
     if (event) {
-        strcpy(event->friendid, from);
-        event->msg.timestamp = timestamp;
-        event->msg.len = len;
-        memcpy(event->msg.content, msg, len);
+        strcpy(event->from, from);
+        event->timestamp = timestamp;
+        event->length = len;
+        memcpy(event->data, msg, len);
 
         event->base.le.data = event;
-        event->base.handle = handle_offline_friend_message;
+        event->base.handle = handle_offline_friend_message_cb;
         list_push_tail(w->friend_events, &event->base.le);
         deref(event);
     }
 }
 
-static void handle_offline_friend_request(EventBase *event, ElaCarrier *w)
+static void handle_offline_friend_request_cb(EventBase *base, ElaCarrier *w)
 {
-    OfflineMsgEvent *ev = (OfflineMsgEvent *)event;
-    uint8_t from[DHT_PUBLIC_KEY_SIZE] = {0};
+    OfflineEvent *event = (OfflineEvent *)base;
+    uint8_t pubkey[DHT_PUBLIC_KEY_SIZE] = {0};
     ssize_t len;
 
-    len = base58_decode(ev->friendid, strlen(ev->friendid), from, sizeof(from));
-    if (len != (ssize_t)sizeof(from)) {
-        vlogE("Carrier: Offline friend request from nodeid (%s) that can not"
-              " base58 encoded.", ev->friendid);
+    len = base58_decode(event->from, strlen(event->from), pubkey, sizeof(pubkey));
+    if (len != (ssize_t)sizeof(pubkey)) {
+        vlogE("Carrier: Base8 decode offline friend request failed.", event->from);
         return;
     }
 
-    notify_friend_request_cb(from, ev->req.gretting, ev->req.len, w);
+    notify_friend_request_cb(pubkey, event->data, event->length, w);
 }
 
 static void notify_offreq_received(ElaCarrier *w, const char *from,
-                                   const uint8_t *gretting, size_t len,
+                                   const uint8_t *greeting, size_t len,
                                    int64_t timestamp)
 {
-    OfflineMsgEvent *event;
+    OfflineEvent *event;
 
     assert(w);
     assert(from && *from);
-    assert(gretting);
+    assert(greeting);
     assert(len);
 
-    event = rc_zalloc(sizeof(OfflineMsgEvent) + len, NULL);
+    event = rc_zalloc(sizeof(OfflineEvent) + len, NULL);
     if (event) {
-        strcpy(event->friendid, from);
-        event->req.timestamp = timestamp;
-        event->req.len = len;
-        memcpy(event->req.gretting, gretting, len);
+        strcpy(event->from, from);
+        event->timestamp = timestamp;
+        event->length = len;
+        memcpy(event->data, greeting, len);
 
         event->base.le.data = event;
-        event->base.handle = handle_offline_friend_request;
+        event->base.handle = handle_offline_friend_request_cb;
         list_push_tail(w->friend_events, &event->base.le);
         deref(event);
     }
 }
 
-static void handle_offline_message_receipt(EventBase *event, ElaCarrier *w)
+static void handle_offline_message_receipt_cb(EventBase *base, ElaCarrier *w)
 {
-    OfflineMsgEvent *ev = (OfflineMsgEvent *)event;
+    MsgidEvent *event = (MsgidEvent *)base;
     ElaReceiptState state;
 
-    if(ev->stat.errcode < 0) {
+    if(event->errcode < 0) {
         state = ElaReceipt_Error;
-        ela_set_error(ev->stat.errcode);
+        ela_set_error(event->errcode);
     } else {
         state = ElaReceipt_Offline;
     }
 
-    if (ev->stat.msgid > 0)
-        on_friend_message_receipt(w, state, ev->stat.msgid);
+    if (event->msgid > 0)
+        on_friend_message_receipt(w, state, event->msgid);
     else
         vlogI("Carrier: offline request friend %s %s(%d).",
-              ev->friendid, (ev->stat.errcode == 0 ? "success" : "failed"), ev->stat.errcode);
+              event->friendid, (event->errcode == 0 ? "success" : "failed"), event->errcode);
 
 }
 
 static void notify_offreceipt_received(ElaCarrier *w, const char *to,
                                        int64_t msgid, int errcode)
 {
-    OfflineMsgEvent *event;
+    MsgidEvent *event;
 
     assert(w);
     assert(to && *to);
 
-    event = rc_zalloc(sizeof(OfflineMsgEvent) + sizeof(int64_t), NULL);
+    event = rc_zalloc(sizeof(MsgidEvent), NULL);
     if (event) {
         strcpy(event->friendid, to);
-        event->stat.msgid = msgid;
-        event->stat.errcode = errcode;
+        event->msgid = msgid;
+        event->errcode = errcode;
 
         event->base.le.data = event;
-        event->base.handle = handle_offline_message_receipt;
+        event->base.handle = handle_offline_message_receipt_cb;
         list_push_tail(w->friend_events, &event->base.le);
         deref(event);
     }

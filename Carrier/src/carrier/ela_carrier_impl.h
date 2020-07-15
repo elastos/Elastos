@@ -82,31 +82,25 @@ typedef struct FriendEvent {
     ElaFriendInfo fi;
 } FriendEvent;
 
+typedef struct OfflineEvent {
+    EventBase base;
+    char from [ELA_MAX_ADDRESS_LEN + 1];
+    int64_t timestamp;
+    size_t length;
+    uint8_t data[0];
+} OfflineEvent;
+
+typedef struct MsgidEvent {
+    EventBase base;
+    char friendid[ELA_MAX_ID_LEN + 1];
+    int64_t msgid;
+    int errcode;
+} MsgidEvent;
+
 typedef enum MsgCh {
     MSGCH_DHT = 1,
     MSGCH_EXPRESS = 2,
 } MsgCh;
-
-typedef struct OfflineMsgEvent {
-    EventBase base;
-    char friendid[ELA_MAX_ADDRESS_LEN + 1];
-    union {
-        struct {
-            int64_t timestamp;
-            size_t len;
-            uint8_t content[0];
-        } msg;
-        struct {
-            int64_t timestamp;
-            size_t len;
-            uint8_t gretting[0];
-        } req;
-        struct {
-            int64_t msgid;
-            int errcode;
-        } stat;
-    };
-} OfflineMsgEvent;
 
 struct ElaCarrier {
     pthread_mutex_t ext_mutex;
