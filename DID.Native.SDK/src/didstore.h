@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-#define MAX_PRIVATEKEY_BASE64           128
+#define MAX_PRIVATEKEY_BASE64           160
 
 typedef struct DIDBackend    DIDBackend;
 
