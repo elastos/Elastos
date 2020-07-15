@@ -33,7 +33,8 @@ class PaymentList extends Component {
       opinion: '',
       withdrawal: false,
       withdrawalStage: '',
-      isCompletion: false
+      isCompletion: false,
+      showMore: true
     }
   }
 
@@ -164,6 +165,30 @@ class PaymentList extends Component {
     }
   }
 
+  showMore = () => {
+    const { showMore } = this.state
+    this.setState({ showMore: !showMore })
+  }
+
+  renderLongText(text) {
+    const { showMore } = this.state
+    const arr = text && text.split('\n')
+    const content = showMore ? arr.slice(0, 5).join('\n') : text
+    return (
+      <td>
+        <MarkdownPreview
+          content={content ? content : ''}
+          style={{ p: { margin: '1em 0' } }}
+        />
+        {arr.length > 5 ? (
+          <div onClick={this.showMore}>
+            {showMore ? 'Show More' : 'Show Less'}
+          </div>
+        ) : null}
+      </td>
+    )
+  }
+
   renderPaymentItem(item, index) {
     const { milestone, list } = this.props
     const visible = this.isVisible()
@@ -173,14 +198,7 @@ class PaymentList extends Component {
         <td>{index + 1}</td>
         <td>{item.type ? I18N.get(`suggestion.budget.${item.type}`) : ''}</td>
         <td>{item.amount}</td>
-        {isOld ? (
-          <td>
-            <MarkdownPreview
-              content={item.reasons ? item.reasons : ''}
-              style={{ p: { margin: '1em 0' } }}
-            />
-          </td>
-        ) : null}
+        {isOld ? this.renderLongText(item.reasons) : null}
         <td>
           {item.milestoneKey ? (
             <Popover
