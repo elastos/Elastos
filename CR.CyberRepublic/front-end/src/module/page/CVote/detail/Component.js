@@ -993,11 +993,11 @@ class C extends StandardPage {
   }
 
   copyToClip(content) {
-    var aux = document.createElement("input"); 
-    aux.setAttribute("value", content); 
-    document.body.appendChild(aux); 
-    aux.select();
-    const err = document.execCommand("copy"); 
+    var aux = document.createElement('input')
+    aux.setAttribute('value', content)
+    document.body.appendChild(aux)
+    aux.select()
+    const err = document.execCommand('copy')
     document.body.removeChild(aux)
     if (err) {
       message.success(I18N.get('btn.CopyHash'))
