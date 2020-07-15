@@ -31,7 +31,7 @@ class ShowLongText extends Component {
           <a onClick={this.showMore} style={{ textDecoration: 'underline' }}>
             {toggle
               ? I18N.get('milestone.showMore')
-              : I18N.get('milestone.showMore')}
+              : I18N.get('milestone.showLess')}
           </a>
         ) : null}
       </div>
