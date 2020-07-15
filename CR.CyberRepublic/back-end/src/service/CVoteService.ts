@@ -91,6 +91,13 @@ const EMAIL_PROPOSAL_STATUS = {
   [constant.CVOTE_STATUS.VETOED] : 'Rejected',
 } 
 
+const EMAIL_TITLE_PROPOSAL_STATUS = {
+  [constant.CVOTE_STATUS.NOTIFICATION] : constant.CVOTE_STATUS.NOTIFICATION,
+  [constant.CVOTE_STATUS.ACTIVE] : 'PASSED',
+  [constant.CVOTE_STATUS.REJECT] : 'REJECTED',
+  [constant.CVOTE_STATUS.VETOED] : 'REJECTED',
+}
+
 const DID_PREFIX = 'did:elastos:'
 const STAGE_BLOCKS = process.env.NODE_ENV == 'staging' ? 40 : 7 * 720 
 
@@ -2107,7 +2114,7 @@ export default class extends Base {
     })
     const toUsers = []
     const toMails = _.map(user, 'email')
-    const subject = `【${(EMAIL_PROPOSAL_STATUS[status]).toUpperCase()}】Your proposal #${cvote.vid} get ${EMAIL_PROPOSAL_STATUS[status]}`
+    const subject = `【${(EMAIL_TITLE_PROPOSAL_STATUS[status])}】Your proposal #${cvote.vid} get ${EMAIL_PROPOSAL_STATUS[status]}`
     const body = `
         <p>Your proposal #${cvote.vid} get ${EMAIL_PROPOSAL_STATUS[status]} by the ${by}.</p>
         <br />
