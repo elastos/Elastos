@@ -180,6 +180,12 @@ export default class extends Base {
 
     const currDraft = await this.draftModel.getDBInstance().findById(id)
     if (currDraft) {
+      if (_.isEmpty(doc.budgetIntro)) {
+        doc.budgetIntro = _.get(currDoc,'budgetIntro')
+      }
+      if (_.isEmpty(doc.planIntro)) {
+        doc.planIntro = _.get(currDoc,'planIntro')
+      }
       await this.draftModel.remove({ _id: ObjectId(id) })
     }
 
@@ -216,13 +222,15 @@ export default class extends Base {
       throw 'Only owner can edit suggestion'
     }
 
-    const currDraft = await this.draftModel.getDBInstance().findById(id)
-    if (currDraft) {
-      await this.draftModel.remove({ _id: ObjectId(id) })
-    }
-
     const doc = _.pick(param, BASE_FIELDS)
     doc.descUpdatedAt = new Date()
+
+    const currDraft = await this.draftModel.getDBInstance().findById(id)
+    if (currDraft) {
+      doc.budgetIntro =  _.get(currDraft,'budgetIntro')
+      doc.planIntro = _.get(currDraft,'planIntro')
+      await this.draftModel.remove({ _id: ObjectId(id) })
+    }
 
     if (update) {
       doc.version = await this.saveHistoryGetCurrentVersion(id, doc)
