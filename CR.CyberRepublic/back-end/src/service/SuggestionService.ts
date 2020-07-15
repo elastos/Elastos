@@ -26,7 +26,9 @@ const BASE_FIELDS = [
   'budget',
   'budgetAmount',
   'elaAddress',
-  'plan'
+  'plan',
+  'planIntro',
+  'budgetIntro'
 ]
 
 interface BudgetItem {

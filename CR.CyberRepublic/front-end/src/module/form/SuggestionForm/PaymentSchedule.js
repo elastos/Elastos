@@ -115,7 +115,7 @@ class PaymentSchedule extends Component {
   }
 
   render() {
-    const { paymentItems, index, total, address, errors, budgetIntro } = this.state
+    const { paymentItems, index, total, address, budgetIntro } = this.state
     const { getFieldDecorator } = this.props
     const milestone = this.getMilestone()
     const flag = milestone && milestone.length <= paymentItems.length
