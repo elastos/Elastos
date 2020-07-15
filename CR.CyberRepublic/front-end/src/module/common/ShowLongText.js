@@ -18,7 +18,7 @@ class ShowLongText extends Component {
     const { toggle } = this.state
     const { text } = this.props
     const arr = text && text.split('\n')
-    const content = toggle ? arr.slice(0, 5).join('\n') : text
+    const content = toggle ? arr && arr.slice(0, 5).join('\n') : text
     return (
       <div>
         <MarkdownPreview
@@ -26,7 +26,9 @@ class ShowLongText extends Component {
           style={{ p: { margin: '1em 0' } }}
         />
         {arr.length > 5 ? (
-          <a onClick={this.showMore}>{toggle ? 'Show More' : 'Show Less'}</a>
+          <a onClick={this.showMore} style={{ textDecoration: 'underline' }}>
+            {toggle ? 'Show More' : 'Show Less'}
+          </a>
         ) : null}
       </div>
     )
