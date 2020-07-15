@@ -1347,8 +1347,8 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
 
 /**
  * \~English
- * DISCARDED!
  * Send a message to a friend.
+ * Notice: this API will be deprecated next major release.
  *
  * The message length may not exceed ELA_MAX_BULK_MESSAGE_LEN. Larger messages
  * must be split by application and sent as separate fragments. Other carrier

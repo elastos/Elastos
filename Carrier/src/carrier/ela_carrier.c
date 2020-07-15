@@ -3106,7 +3106,7 @@ int ela_add_friend(ElaCarrier *w, const char *address, const char *hello)
 int ela_accept_friend(ElaCarrier *w, const char *userid)
 {
     uint32_t friend_number = UINT32_MAX;
-    uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
+    uint8_t pubkey[DHT_PUBLIC_KEY_SIZE];
     FriendInfo *fi;
     int rc;
 
@@ -3142,8 +3142,8 @@ int ela_accept_friend(ElaCarrier *w, const char *userid)
         return -1;
     }
 
-    base58_decode(userid, strlen(userid), public_key, sizeof(public_key));
-    rc = dht_friend_add_norequest(&w->dht, public_key, &friend_number);
+    base58_decode(userid, strlen(userid), pubkey, sizeof(pubkey));
+    rc = dht_friend_add_norequest(&w->dht, pubkey, &friend_number);
     if (rc < 0) {
         deref(fi);
         ela_set_error(rc);
@@ -3159,7 +3159,6 @@ int ela_accept_friend(ElaCarrier *w, const char *userid)
     friends_put(w->friends, fi);
 
     notify_friend_added(w, &fi->info);
-
     deref(fi);
 
     return 0;
@@ -3192,42 +3191,37 @@ int ela_remove_friend(ElaCarrier *w, const char *friendid)
         return -1;
     }
 
-    if (!friends_exist(w->friends, friend_number)) {
+    fi = friends_remove(w->friends, friend_number);
+    if (!fi) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
         return -1;
     }
 
     dht_friend_delete(&w->dht, friend_number);
 
-    fi = friends_remove(w->friends, friend_number);
-    assert(fi);
-
     notify_friend_removed(w, &fi->info);
-
     deref(fi);
 
     return 0;
 }
 
-static void parse_address(const char *addr, char **uid, char **ext)
+static void parse_address(const char *addr, char **userid, char **ext)
 {
     char *colon_pos = NULL;
 
     assert(addr);
-    assert(uid && ext);
+    assert(userid);
+    assert(ext);
 
-    /* address format: userid:extenison */
-    if (uid)
-        *uid = (char *)addr;
+    /* Parse address with scheme like 'userid:extension' */
+    *userid = (char *)addr;
 
     colon_pos = strchr(addr, ':');
     if (colon_pos) {
-        if (ext)
-            *ext = colon_pos+1;
+        *ext = colon_pos+1;
         *colon_pos = 0;
     } else {
-        if (ext)
-            *ext = NULL;
+        *ext = NULL;
     }
 }
 
