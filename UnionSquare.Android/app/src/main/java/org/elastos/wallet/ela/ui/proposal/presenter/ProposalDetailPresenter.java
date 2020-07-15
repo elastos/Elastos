@@ -245,7 +245,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                         case "CRCProposal":
                             while (it.hasNext()) {
                                 String key = (String) it.next();
-                                if (crcList == null || crcList.size() == 0) {
+                                if (voteList == null || voteList.size() == 0) {
                                     candidates.put(key);
                                     continue;
                                 }

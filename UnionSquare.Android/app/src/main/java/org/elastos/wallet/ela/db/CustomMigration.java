@@ -36,6 +36,9 @@ public class CustomMigration implements RealmMigration {
 
     @Override
     public void migrate(DynamicRealm realm, long oldVersion, long newVersion) {
+        if (newVersion == oldVersion) {
+            return;
+        }
         RealmSchema schema = realm.getSchema();
         if (oldVersion == 1) {
             updata1to2(schema);
