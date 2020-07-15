@@ -1610,7 +1610,7 @@ void notify_friend_request_cb(const uint8_t *public_key, const uint8_t* gretting
     elacp_free(cp);
 }
 
-static void handle_friend_added_event(EventBase *event, ElaCarrier *w)
+static void handle_add_friend_cb(EventBase *event, ElaCarrier *w)
 {
     FriendEvent *ev = (FriendEvent *)event;
 
@@ -1618,26 +1618,7 @@ static void handle_friend_added_event(EventBase *event, ElaCarrier *w)
         w->callbacks.friend_added(w, &ev->fi, w->context);
 }
 
-static void notify_friend_added(ElaCarrier *w, ElaFriendInfo *fi)
-{
-    FriendEvent *event;
-
-    assert(w);
-    assert(fi);
-
-    store_persistence_data(w);
-
-    event = (FriendEvent *)rc_alloc(sizeof(FriendEvent), NULL);
-    if (event) {
-        memcpy(&event->fi, fi, sizeof(*fi));
-        event->base.le.data = event;
-        event->base.handle = handle_friend_added_event;
-        list_push_tail(w->friend_events, &event->base.le);
-        deref(event);
-    }
-}
-
-static void handle_friend_removed_event(EventBase *event, ElaCarrier *w)
+static void handle_remove_friend_cb(EventBase *event, ElaCarrier *w)
 {
     FriendEvent *ev = (FriendEvent *)event;
 
@@ -1651,7 +1632,8 @@ static void handle_friend_removed_event(EventBase *event, ElaCarrier *w)
         w->callbacks.friend_removed(w, ev->fi.user_info.userid, w->context);
 }
 
-static void notify_friend_removed(ElaCarrier *w, ElaFriendInfo *fi)
+static void notify_friend_changed(ElaCarrier *w, ElaFriendInfo *fi,
+                                  void (*cb)(EventBase *, ElaCarrier *))
 {
     FriendEvent *event;
 
@@ -1664,7 +1646,7 @@ static void notify_friend_removed(ElaCarrier *w, ElaFriendInfo *fi)
     if (event) {
         memcpy(&event->fi, fi, sizeof(*fi));
         event->base.le.data = event;
-        event->base.handle = handle_friend_removed_event;
+        event->base.handle  = cb;
         list_push_tail(w->friend_events, &event->base.le);
         deref(event);
     }
@@ -3096,7 +3078,7 @@ int ela_add_friend(ElaCarrier *w, const char *address, const char *hello)
     fi->info.status   = ElaConnectionStatus_Disconnected;
     friends_put(w->friends, fi);
 
-    notify_friend_added(w, &fi->info);
+    notify_friend_changed(w, &fi->info, handle_add_friend_cb);
 
     deref(fi);
 
@@ -3158,7 +3140,7 @@ int ela_accept_friend(ElaCarrier *w, const char *userid)
 
     friends_put(w->friends, fi);
 
-    notify_friend_added(w, &fi->info);
+    notify_friend_changed(w, &fi->info, handle_add_friend_cb);
     deref(fi);
 
     return 0;
@@ -3199,7 +3181,7 @@ int ela_remove_friend(ElaCarrier *w, const char *friendid)
 
     dht_friend_delete(&w->dht, friend_number);
 
-    notify_friend_removed(w, &fi->info);
+    notify_friend_changed(w, &fi->info, handle_remove_friend_cb);
     deref(fi);
 
     return 0;

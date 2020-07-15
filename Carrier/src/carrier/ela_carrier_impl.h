@@ -87,19 +87,6 @@ typedef enum MsgCh {
     MSGCH_EXPRESS = 2,
 } MsgCh;
 
-typedef struct MsgReceiptEvent {
-    EventBase base;
-    char to[ELA_MAX_ADDRESS_LEN + 1];
-    MsgCh msgch;
-    int64_t msgid;
-
-    ElaFriendMessageReceiptCallback *callback;
-    void *context;
-
-    size_t size;
-    uint8_t data[0];
-} MsgReceiptEvent;
-
 typedef struct OfflineMsgEvent {
     EventBase base;
     char friendid[ELA_MAX_ADDRESS_LEN + 1];
