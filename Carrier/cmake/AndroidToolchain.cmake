@@ -52,3 +52,9 @@ set(CMAKE_ANDROID_STL_TYPE c++_static)
 # Notice: cmake(<3.9.2) has isssue of cross-build for android target.
 # Details in: https://gitlab.kitware.com/cmake/cmake/merge_requests/1237
 cmake_minimum_required(VERSION 3.10)
+
+SET("ARCH_HEADER_armeabi-v7a" "arm-linux-androideabi")
+SET("ARCH_HEADER_arm64-v8a" "aarch64-linux-android")
+SET("ARCH_HEADER_x86" "i686-linux-android")
+SET("ARCH_HEADER_x86_64" "x86_64-linux-android")
+set(CMAKE_ANDROID_ARCH_HEADER_TRIPLE "${ARCH_HEADER_${CMAKE_ANDROID_ARCH_ABI}}")

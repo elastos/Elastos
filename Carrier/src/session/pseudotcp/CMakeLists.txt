@@ -13,6 +13,8 @@ include_directories(
 if(WIN32)
     set(SYSTEM_LIBS Ws2_32)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4244 /wd4267")
+elseif(ANDROID)
+    set(SYSTEM_LIBS log)
 endif()
 
 if(ENABLE_SHARED)
