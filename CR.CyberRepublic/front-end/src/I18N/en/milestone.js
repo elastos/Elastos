@@ -27,5 +27,7 @@ export default {
   scanToWithdraw: 'Scan the QR code above to withdraw ELA',
   required: 'This field is required.',
   next: 'Next',
-  noUtxos: 'The business is busy, please try again later.'
+  noUtxos: 'The business is busy, please try again later.',
+  showMore: 'Show More',
+  showLess: 'Show Less'
 }

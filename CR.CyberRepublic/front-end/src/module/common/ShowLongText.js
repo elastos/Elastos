@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
+import I18N from '@/I18N'
 
 class ShowLongText extends Component {
   constructor(props) {
@@ -18,7 +19,7 @@ class ShowLongText extends Component {
     const { toggle } = this.state
     const { text } = this.props
     const arr = text && text.split('\n')
-    const content = toggle ? arr && arr.slice(0, 5).join('\n') : text
+    const content = toggle ? arr && `${arr.slice(0, 5).join('\n')}...` : text
     return (
       <div>
         <MarkdownPreview
@@ -27,7 +28,9 @@ class ShowLongText extends Component {
         />
         {arr.length > 5 ? (
           <a onClick={this.showMore} style={{ textDecoration: 'underline' }}>
-            {toggle ? 'Show More' : 'Show Less'}
+            {toggle
+              ? I18N.get('milestone.showMore')
+              : I18N.get('milestone.showMore')}
           </a>
         ) : null}
       </div>
