@@ -2107,7 +2107,7 @@ export default class extends Base {
     })
     const toUsers = []
     const toMails = _.map(user, 'email')
-    const subject = `【${status}】Your proposal #${cvote.vid} get ${EMAIL_PROPOSAL_STATUS[status]}`
+    const subject = `【${(EMAIL_PROPOSAL_STATUS[status]).toUpperCase()}】Your proposal #${cvote.vid} get ${EMAIL_PROPOSAL_STATUS[status]}`
     const body = `
         <p>Your proposal #${cvote.vid} get ${EMAIL_PROPOSAL_STATUS[status]} by the ${by}.</p>
         <br />
