@@ -260,7 +260,9 @@ func (a *arbitrators) RollbackTo(height uint32) error {
 
 func (a *arbitrators) GetDutyIndexByHeight(height uint32) (index int) {
 	a.mtx.Lock()
-	if height >= a.chainParams.CRCOnlyDPOSHeight-1 {
+	if height >= a.chainParams.CRClaimDPOSNodeStartHeight {
+		index = a.dutyIndex % len(a.crcArbiters)
+	} else if height >= a.chainParams.CRCOnlyDPOSHeight-1 {
 		index = a.dutyIndex % len(a.currentArbitrators)
 	} else {
 		index = int(height) % len(a.currentArbitrators)
@@ -758,11 +760,17 @@ func (a *arbitrators) GetNextCandidates() [][]byte {
 
 func (a *arbitrators) GetCRCArbiters() [][]byte {
 	a.mtx.Lock()
+	result := a.getCRCArbiters()
+	a.mtx.Unlock()
+
+	return result
+}
+
+func (a *arbitrators) getCRCArbiters() [][]byte {
 	result := make([][]byte, 0, len(a.crcArbiters))
 	for _, v := range a.crcArbiters {
 		result = append(result, v.GetNodePublicKey())
 	}
-	a.mtx.Unlock()
 
 	return result
 }
@@ -870,12 +878,12 @@ func (a *arbitrators) GetOnDutyCrossChainArbitrator() []byte {
 	if height < a.chainParams.CRCOnlyDPOSHeight-1 {
 		arbiter = a.GetOnDutyArbitrator()
 	} else {
-		crcArbiters := a.GetCRCArbiters()
+		crcArbiters := a.getCRCArbiters()
 		sort.Slice(crcArbiters, func(i, j int) bool {
 			return bytes.Compare(crcArbiters[i], crcArbiters[j]) < 0
 		})
-		ondutyIndex := int(height-a.chainParams.CRCOnlyDPOSHeight+1) % len(crcArbiters)
-		arbiter = crcArbiters[ondutyIndex]
+		index := a.dutyIndex % len(a.crcArbiters)
+		arbiter = crcArbiters[index]
 	}
 
 	return arbiter

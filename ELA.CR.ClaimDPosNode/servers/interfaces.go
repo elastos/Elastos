@@ -840,9 +840,13 @@ func GetArbitratorGroupByHeight(param Params) map[string]interface{} {
 	if block == nil {
 		return ResponsePack(InternalError, "not found block at given height")
 	}
+	crcArbiters := Arbiters.GetCRCArbiters()
+	sort.Slice(crcArbiters, func(i, j int) bool {
+		return bytes.Compare(crcArbiters[i], crcArbiters[j]) < 0
+	})
 
 	var arbitrators []string
-	for _, data := range Arbiters.GetArbitrators() {
+	for _, data := range crcArbiters {
 		arbitrators = append(arbitrators, common.BytesToHexString(data))
 	}
 
