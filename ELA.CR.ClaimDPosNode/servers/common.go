@@ -255,6 +255,47 @@ type CRCProposalInfo struct {
 	Hash                     string           `json:"hash"`
 }
 
+type CRCChangeProposalOwnerInfo struct {
+	ProposalType             string `json:"proposaltype"`
+	CategoryData             string `json:"categorydata"`
+	OwnerPublicKey           string `json:"ownerpublickey"`
+	DraftHash                string `json:"drafthash"`
+	TargetProposalHash       string `json:"targetproposalhash"`
+	NewRecipient             string `json:"newrecipient"`
+	NewOwnerPublicKey        string `json:"newownerpublickey"`
+	Signature                string `json:"signature"`
+	NewOwnerSignature        string `json:"newownersignature"`
+	CRCouncilMemberDID       string `json:"crcouncilmemberdid"`
+	CRCouncilMemberSignature string `json:"crcouncilmembersignature"`
+	Hash                     string `json:"hash"`
+}
+
+type CRCCloseProposalInfo struct {
+	ProposalType             string `json:"proposaltype"`
+	CategoryData             string `json:"categorydata"`
+	OwnerPublicKey           string `json:"ownerpublickey"`
+	DraftHash                string `json:"drafthash"`
+	TargetProposalHash       string `json:"targetproposalhash"`
+	Signature                string `json:"signature"`
+	CRCouncilMemberDID       string `json:"crcouncilmemberdid"`
+	CRCouncilMemberSignature string `json:"crcouncilmembersignature"`
+	Hash                     string `json:"hash"`
+}
+
+type CRCSecretaryGeneralProposalInfo struct {
+	ProposalType              string `json:"proposaltype"`
+	CategoryData              string `json:"categorydata"`
+	OwnerPublicKey            string `json:"ownerpublickey"`
+	DraftHash                 string `json:"drafthash"`
+	SecretaryGeneralPublicKey string
+	SecretaryGeneralDID       string
+	Signature                 string `json:"signature"`
+	SecretaryGeneraSignature  string
+	CRCouncilMemberDID        string `json:"crcouncilmemberdid"`
+	CRCouncilMemberSignature  string `json:"crcouncilmembersignature"`
+	Hash                      string `json:"hash"`
+}
+
 type CRCProposalReviewInfo struct {
 	ProposalHash string `json:"proposalhash"`
 	VoteResult   string `json:"voteresult"`
@@ -292,6 +333,10 @@ type NextTurnDPOSPayloadInfo struct {
 	WorkingHeight  uint32   `json:"workingheight"`
 	CRPublickeys   []string `json:"crpublickeys"`
 	DPOSPublicKeys []string `json:"dpospublickeys"`
+}
+
+type CRCProposalRealWithdrawInfo struct {
+	WithdrawTransactionHashes []string `json:"withdrawtransactionhashes"`
 }
 
 type UTXOInfo struct {
