@@ -7,7 +7,7 @@
   "text7":"UI Display Optimization;",
   "text8":"Personalized icon fix for participant nodes.",
   "text9":"Official release of ELA Wallet;",
-  "text10":"Download the latest version v 1.4.4",
+  "text10":"Download the latest version v 1.4.5",
   "text11":"July 22, 2019",
   "text12":"Fixed bugs.",
   "text13":"Optimized Supernode profit presentation.",
@@ -77,5 +77,16 @@
   "text70":"3. Add the function of resetting data to re-synchronize the synchronized data while keeping the wallet",
   "text71":"4. Fix bugs",
   "text72":"Notes:",
-  "text73":"-Please back up your wallet before you perform the upgrading."
+  "text73":"-Please back up your wallet before you perform the upgrading.",
+
+  "text74":"July 17, 2020",
+  "text75":"This edition of ELA Wallet contain the following upgrades:",
+  "text76":"1. Supported the short domain name function of Cryptoname for payment address;",
+  "text77":"2. Optimized wallet utxo processing capacity;",
+  "text78":"3. Optimized the display effect for the Proposals;",
+  "text79":"4. Optimize the main network DID synchronization function;",
+  "text80":"5. Improve the operation log recording function;",
+  "text81":"Notes:",
+  "text82":"-Please back up your wallet before you perform the upgrading."
+
 }
