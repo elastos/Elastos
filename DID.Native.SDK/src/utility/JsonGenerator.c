@@ -60,16 +60,17 @@ static int ensure_capacity(JsonGenerator *generator, size_t len)
     if (generator->pos + len + 1 <= generator->capacity)
         return 0;
 
-    buffer = (char *)realloc(generator->buffer, generator->capacity + EXPAND_SIZE);
+    len = (len + 1) > EXPAND_SIZE ? (len + 1) : EXPAND_SIZE;
+    buffer = (char *)realloc(generator->buffer, generator->capacity + len);
     if (!buffer)
         return -1;
 
 #ifndef NDEBUG
     // realloc does not guarantee that the additional memory is also zero-filled.
-    memset(buffer + generator->capacity, 0, EXPAND_SIZE);
+    memset(buffer + generator->capacity, 0, len);
 #endif
 
-    generator->capacity = generator->capacity + EXPAND_SIZE;
+    generator->capacity = generator->capacity + len;
     generator->buffer = buffer;
     return 0;
 }
@@ -181,8 +182,10 @@ int JsonGenerator_WriteEndObject(JsonGenerator *generator)
 {
     assert(generator);
     assert(generator->buffer);
-    assert(ensure_capacity(generator, 1) != -1);
     assert(get_state(generator) == STATE_OBJECT);
+
+    if (ensure_capacity(generator, 1) == -1)
+        return -1;
 
     generator->buffer[generator->pos++] = end_object_symbol;
     pop_state(generator);
@@ -196,8 +199,10 @@ int JsonGenerator_WriteStartArray(JsonGenerator *generator)
 {
     assert(generator);
     assert(generator->buffer);
-    assert(ensure_capacity(generator, 1) != -1);
     assert(get_state(generator) == STATE_FIELD);
+
+    if (ensure_capacity(generator, 1) == -1)
+        return -1;
 
     generator->buffer[generator->pos++] = start_array_symbol;
     push_state(generator, STATE_ARRAY);
@@ -209,8 +214,10 @@ int JsonGenerator_WriteEndArray(JsonGenerator *generator)
 {
     assert(generator);
     assert(generator->buffer);
-    assert(ensure_capacity(generator, 1) != -1);
     assert(get_state(generator) == STATE_ARRAY);
+
+    if (ensure_capacity(generator, 1) == -1)
+        return -1;
 
     generator->buffer[generator->pos++] = end_array_symbol;
     pop_state(generator);
