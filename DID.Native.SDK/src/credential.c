@@ -730,6 +730,30 @@ const char* Credential_ToJson(Credential *cred, bool normalized)
     return Credential_ToJson_ForSign(cred, !normalized, false);
 }
 
+const char *Credential_ToString(Credential *cred, bool normalized)
+{
+    const char *data;
+    cJSON *json;
+
+    if (!cred) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return NULL;
+    }
+
+    data = Credential_ToJson_ForSign(cred, !normalized, false);
+    if (!data)
+        return NULL;
+
+    json = cJSON_Parse(data);
+    free((void*)data);
+    if (!json){
+        DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Deserialize credential from json failed.");
+        return NULL;
+    }
+
+    return cJSON_Print(json);
+}
+
 Credential *Credential_FromJson(const char *json, DID *owner)
 {
     cJSON *root;

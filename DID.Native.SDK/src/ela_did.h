@@ -967,7 +967,7 @@ DID_API DIDDocument *DIDDocument_FromJson(const char* json);
 
 /**
  * \~English
- * Get json context from DID Document.
+ * Get json non-formatted context from DID Document.
  *
  * @param
  *      document             [in] A handle to DID Document.
@@ -981,6 +981,22 @@ DID_API DIDDocument *DIDDocument_FromJson(const char* json);
  */
 DID_API const char *DIDDocument_ToJson(DIDDocument *document, bool normalized);
 
+
+/**
+ * \~English
+ * Get json formatted context from DID Document.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @param
+ *      normalized           [in] Json context is normalized or not.
+ *                           true represents normalized, false represents not compact.
+ * @return
+ *      If no error occurs, return json context. Return value must be free after
+ *      finishing use.
+ *      Otherwise, return NULL.
+ */
+DID_API const char *DIDDocument_ToString(DIDDocument *document, bool normalized);
 /**
  * \~English
  * Destroy DID Document.
@@ -1969,7 +1985,7 @@ DID_API const char *Service_GetType(Service *service);
  *****************************************************************************/
 /**
  * \~English
- * Get json context from Credential.
+ * Get json non-formatted context from Credential.
  *
  * @param
  *      cred                 [in] A handle to Credential.
@@ -1982,6 +1998,22 @@ DID_API const char *Service_GetType(Service *service);
  *      Otherwise, return NULL.
  */
 DID_API const char *Credential_ToJson(Credential *cred, bool normalized);
+
+/**
+ * \~English
+ * Get json formatted context from Credential.
+ *
+ * @param
+ *      cred                 [in] A handle to Credential.
+ * @param
+ *      normalized           [in] Json context is normalized or not.
+ *                           true represents normalized, false represents not.
+ * @return
+ *      If no error occurs, return json context. Return value must be free after
+ *      finishing use.
+ *      Otherwise, return NULL.
+ */
+DID_API const char *Credential_ToString(Credential *cred, bool normalized);
 
 /**
  * \~English

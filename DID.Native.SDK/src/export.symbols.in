@@ -52,6 +52,7 @@ _CredentialMetaData_GetExtraAsDouble
 # DIDDocument
 _DIDDocument_FromJson
 _DIDDocument_ToJson
+_DIDDocument_ToString
 _DIDDocument_Destroy
 _DIDDocument_IsDeactivated
 _DIDDocument_IsGenuine
@@ -122,6 +123,7 @@ _Service_GetType
 
 # Credential
 _Credential_ToJson
+_Credential_ToString
 _Credential_FromJson
 _Credential_Destroy
 _Credential_GetId

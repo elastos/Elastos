@@ -825,6 +825,30 @@ const char *DIDDocument_ToJson(DIDDocument *document, bool normalized)
     return diddocument_tojson_forsign(document, !normalized, false);
 }
 
+const char *DIDDocument_ToString(DIDDocument *document, bool normalized)
+{
+    const char *data;
+    cJSON *json;
+
+    if (!document){
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return NULL;
+    }
+
+    data = diddocument_tojson_forsign(document, !normalized, false);
+    if (!data)
+        return NULL;
+
+    json = cJSON_Parse(data);
+    free((void*)data);
+    if (!json) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Deserialize document from json failed.");
+        return NULL;
+    }
+
+    return cJSON_Print(json);
+}
+
 void DIDDocument_Destroy(DIDDocument *document)
 {
     size_t i;
