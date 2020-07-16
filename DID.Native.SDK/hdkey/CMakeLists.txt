@@ -39,9 +39,14 @@ set(HDKEY_DEPENDS libressl)
 
 add_custom_target(hdkey)
 
+set(CMAKE_C_STANDARD 11)
+
 if(ENABLE_STATIC)
     add_library(hdkey-static STATIC ${SRC})
     add_dependencies(hdkey-static ${HDKEY_DEPENDS})
+    if(RASPBERRYPI)
+        target_compile_definitions(hdkey-static PRIVATE static_assert=_Static_assert)
+    endif()
 
     set_target_properties(hdkey-static PROPERTIES OUTPUT_NAME hdkey)
     if(WIN32)
@@ -59,6 +64,9 @@ endif()
 if(ENABLE_SHARED)
     add_library(hdkey-shared SHARED ${SRC})
     add_dependencies(hdkey-shared ${HDKEY_DEPENDS})
+    if(RASPBERRYPI)
+        target_compile_definitions(hdkey-shared PRIVATE static_assert=_Static_assert)
+    endif()
 
     set_target_properties(hdkey-shared PROPERTIES
         OUTPUT_NAME hdkey

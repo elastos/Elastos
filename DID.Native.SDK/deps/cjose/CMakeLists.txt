@@ -4,9 +4,14 @@ include(ExternalProject)
 include(ProjectDefaults)
 include(ExternalConfigureArgs)
 
+set(LIBS -lpthread)
+if(RASPBERRYPI)
+    string(APPEND LIBS " -lrt")
+endif()
+
 set(CONFIGURE_ARGS_INIT
     ${CONFIGURE_ARGS_INIT}
-    "LIBS=-lpthread")
+    "LIBS=${LIBS}")
 
 set(CONFIGURE_CMD
     aclocal &&

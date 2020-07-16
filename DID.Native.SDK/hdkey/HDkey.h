@@ -24,8 +24,10 @@
 #define __HDKEY_H__
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
 #ifdef __cplusplus
 extern "C" {

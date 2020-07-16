@@ -25,5 +25,6 @@ ExternalProject_Add(
         -DBUILD_EXAMPLES=OFF
         -DBUILD_DOC=OFF
         -DBUILD_REGRESS=OFF
+        -DCMAKE_FIND_ROOT_PATH=${PROJECT_INT_DIST_DIR}
         ${CMAKE_ARGS_INIT}
 )

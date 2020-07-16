@@ -134,10 +134,10 @@ set(LIBS
     curl
     ssl
     crypto
-    z
     jansson
     cjose
-    zip)
+    zip
+    z)
 
 if(WIN32)
     set(LIBS
@@ -156,6 +156,8 @@ if(WIN32)
         #libcrystal
         ${ELADID_DEPENDS})
 endif()
+
+set(CMAKE_C_STANDARD 99)
 
 if(ENABLE_STATIC)
     add_library(eladid-static STATIC ${SRC})

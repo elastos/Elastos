@@ -14,8 +14,10 @@ if (ENABLE_TESTS)
 endif()
 
 if(NOT HDKEY_ONLY)
-    add_submodule(libzip
+    add_submodule(zlib
         DEPENDS platform-specific)
+    add_submodule(libzip
+        DEPENDS zlib platform-specific)
     add_submodule(libcurl
         DEPENDS libressl platform-specific)
     add_submodule(libjansson
