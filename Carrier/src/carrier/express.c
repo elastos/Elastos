@@ -481,14 +481,14 @@ static int http_do(ExpressConnector *connector,
     rc = http_client_get_response_code(http_client, &http_client_rescode);
     if(rc != 0) {
         http_client_close(http_client);
-        vlogE("Express: Failed to get response code.(CURLE: %d)", rc);
+        vlogW("Express: Failed to get response code.(CURLE: %d)", rc);
         return ELA_EXPRESS_ERROR(conv_curlcode(rc));
     }
     if((method == HTTP_METHOD_POST && http_client_rescode != 201)
     || (method == HTTP_METHOD_GET && http_client_rescode != 200)
     || (method == HTTP_METHOD_DELETE && http_client_rescode != 205)) {
         http_client_close(http_client);
-        vlogE("Express: Failed to %s message from node. rescode=%d.(CURLE: %d)", dowhat, http_client_rescode, rc);
+        vlogW("Express: Failed to %s message from node. rescode=%d.(CURLE: %d)", dowhat, http_client_rescode, rc);
         return ELA_EXPRESS_ERROR(ELAERR_WRONG_STATE);
     }
 

@@ -166,6 +166,29 @@ int read_ack(const char *format, ...)
     return rc;
 }
 
+void clear_socket_buffer()
+{
+#ifdef _WIN32
+    struct timeval normal_timeout = {900000, 0};  // 900s
+    struct timeval clear_timeout = {100, 0};  // 100ms
+#else
+    struct timeval normal_timeout = {900, 0};  // 900s
+    struct timeval clear_timeout = {0, 100000};  // 100ms
+#endif
+    int rc;
+    char ch;
+
+    assert(cmd_sock != INVALID_SOCKET);
+
+    setsockopt(cmd_sock, SOL_SOCKET, SO_RCVTIMEO, (const char *)&clear_timeout, sizeof(clear_timeout));
+    while ((rc = recv(cmd_sock, &ch, 1, 0)) == 1) {
+        continue;
+    }
+    setsockopt(cmd_sock, SOL_SOCKET, SO_RCVTIMEO, (const char *)&normal_timeout, sizeof(normal_timeout));
+
+    vlogD("@@@@@@@@ Clear socket buffer.");
+}
+
 char robotid[ELA_MAX_ID_LEN + 1];
 char robotaddr[ELA_MAX_ADDRESS_LEN + 1];
 

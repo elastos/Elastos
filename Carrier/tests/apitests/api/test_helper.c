@@ -345,6 +345,7 @@ int add_friend_anyway(TestContext *context, const char *userid,
     CarrierContext *wctxt = context->carrier;
     int rc;
 
+    clear_socket_buffer();
     if (!ela_is_friend(wctxt->carrier, userid)) {
         rc = ela_add_friend(wctxt->carrier, address, "auto-reply");
         if (rc < 0) {
@@ -384,6 +385,7 @@ int remove_friend_anyway(TestContext *context, const char *userid)
     int rc;
     char me[ELA_MAX_ID_LEN + 1];
 
+    clear_socket_buffer();
     if (ela_is_friend(wctxt->carrier, userid)) {
         rc = ela_remove_friend(wctxt->carrier, userid);
         if (rc < 0) {
@@ -595,6 +597,7 @@ void test_group_scheme(TestContext *context,
     CU_ASSERT_STRING_EQUAL_FATAL(cmd, "ginvite");
     CU_ASSERT_STRING_EQUAL_FATAL(result, "received");
 
+    clear_socket_buffer();
     rc = write_cmd("gjoin\n");
     CU_ASSERT_FATAL(rc > 0);
 
@@ -612,6 +615,7 @@ void test_group_scheme(TestContext *context,
     rc = do_work_cb ? do_work_cb(context) : 0;
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
+    clear_socket_buffer();
     rc = write_cmd("gleave\n");
     CU_ASSERT_FATAL(rc > 0);
 

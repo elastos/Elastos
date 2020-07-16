@@ -3549,7 +3549,7 @@ static void handle_offline_message_receipt_cb(EventBase *base, ElaCarrier *w)
     if (event->msgid > 0)
         on_friend_message_receipt(w, state, event->msgid);
     else
-        vlogI("Carrier: offline request friend %s %s(%d).",
+        vlogI("Carrier: offline request friend %s %s(%x).",
               event->friendid, (event->errcode == 0 ? "success" : "failed"), event->errcode);
 
 }

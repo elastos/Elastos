@@ -68,5 +68,6 @@ void test_filetransfer_scheme(TestContext *context, int (*do_work_cb)(TestContex
 
 int write_cmd(const char *cmd, ...);
 int read_ack(const char *format, ...);
+void clear_socket_buffer();
 
 #endif /* __TEST_HELPER_H__ */

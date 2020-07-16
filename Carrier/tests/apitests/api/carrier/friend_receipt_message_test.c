@@ -67,6 +67,7 @@ static void kill_node()
     int rc;
     char buf[2][32] = {0};
 
+    clear_socket_buffer();
     rc = write_cmd("killnode\n");
     CU_ASSERT_FATAL(rc > 0);
 
@@ -81,6 +82,7 @@ static void start_node()
     int rc;
     char buf[2][32] = {0};
 
+    clear_socket_buffer();
     rc = write_cmd("restartnode %d\n", 10000);
     CU_ASSERT_FATAL(rc > 0);
 
@@ -140,6 +142,7 @@ static ElaCallbacks callbacks = {
 static Condition DEFINE_COND(ready_cond);
 static Condition DEFINE_COND(cond);
 static StatusCondition DEFINE_STATUS_COND(friend_status_cond);
+static Condition DEFINE_COND(receipts_cond);
 
 static CarrierContext carrier_context = {
     .cbs = &callbacks,
@@ -147,6 +150,7 @@ static CarrierContext carrier_context = {
     .ready_cond = &ready_cond,
     .cond = &cond,
     .friend_status_cond = &friend_status_cond,
+    .receipts_cond = &receipts_cond,
     .extra = &extra
 };
 
@@ -154,6 +158,7 @@ static void test_context_reset(TestContext *context)
 {
     cond_reset(context->carrier->cond);
     status_cond_reset(context->carrier->friend_status_cond);
+    cond_reset(context->carrier->receipts_cond);
 }
 
 static TestContext test_context = {
@@ -175,14 +180,20 @@ static void test_request_friend_by_express(void)
 
     test_context.context_reset(&test_context);
 
+    // ensure filter old offline request message
+    kill_node();
+    status_cond_wait(wctxt->friend_status_cond, OFFLINE);
+    start_node();
+    status_cond_wait(wctxt->friend_status_cond, ONLINE);
+
     rc = remove_friend_anyway(&test_context, robotid);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
     usleep(2000000);
 
     kill_node();
+    status_cond_wait(wctxt->friend_status_cond, OFFLINE);
 
-    usleep(2000000);
     rc = ela_add_friend(wctxt->carrier, robotaddr, "auto-reply");
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     cond_wait(wctxt->cond);
@@ -198,12 +209,12 @@ static void test_request_friend_by_express(void)
 
 static void test_message_receipt_cb(int64_t msgid,  ElaReceiptState state, void *context)
 {
-    vlogV("========= msgid=%lld, stat=%d", msgid, state);
+    vlogV("========= msgid=%llx, stat=%d", msgid, state);
     CarrierContextExtra *extra = ((CarrierContext *)context)->extra;
     extra->msgid  = msgid;
     extra->state  = state;
 
-    wakeup(context);
+    cond_signal(((CarrierContext *)context)->receipts_cond);
 }
 
 static void test_send_message_to_friend_with_receipt(void)
@@ -222,18 +233,18 @@ static void test_send_message_to_friend_with_receipt(void)
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
     const char* out = "message-receipt-test";
+
+    clear_socket_buffer();
     msgid = ela_send_message_with_receipt(wctxt->carrier, robotid, out, strlen(out),
                                           test_message_receipt_cb, wctxt);
     CU_ASSERT(msgid > 0);
 
-    is_wakeup = cond_trywait(wctxt->cond, 60000);
+    is_wakeup = cond_trywait(wctxt->receipts_cond, 60000);
     CU_ASSERT_TRUE(is_wakeup);
-    if (is_wakeup) {
-        CU_ASSERT(extra->msgid == msgid);
-        CU_ASSERT(extra->state == ElaReceipt_ByFriend);
-    }
+    CU_ASSERT(extra->msgid == msgid);
+    CU_ASSERT(extra->state == ElaReceipt_ByFriend);
 
-    char in[64];
+    char in[64] = {0};
     rc = read_ack("%64s", in);
     CU_ASSERT_EQUAL(rc, 1);
     CU_ASSERT_STRING_EQUAL(in, out);
@@ -256,22 +267,23 @@ static void test_send_bulkmsg_to_friend_with_receipt(void)
     rc = add_friend_anyway(&test_context, robotid, robotaddr);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
+    clear_socket_buffer();
 
     out = (char*)calloc(1, datalen);
     for(idx = 0; idx < datalen; idx++) {
         out[idx] = '0' + (idx % 8);
     }
     memcpy(out + datalen - 5, "end", 4);
+
+    clear_socket_buffer();
     msgid = ela_send_message_with_receipt(wctxt->carrier, robotid, out, strlen(out),
                                           test_message_receipt_cb, wctxt);
     CU_ASSERT(msgid > 0);
 
-    is_wakeup = cond_trywait(wctxt->cond, 60000);
+    is_wakeup = cond_trywait(wctxt->receipts_cond, 60000);
     CU_ASSERT_TRUE(is_wakeup);
-    if (is_wakeup) {
-        CU_ASSERT(extra->msgid == msgid);
-        CU_ASSERT(extra->state == ElaReceipt_ByFriend);
-    }
+    CU_ASSERT(extra->msgid == msgid);
+    CU_ASSERT(extra->state == ElaReceipt_ByFriend);
 
     in = (char*)calloc(1, datalen);
     rc = read_ack("%5192s", in);
@@ -301,24 +313,25 @@ static void test_send_offmsg_to_friend_with_receipt(void)
     kill_node();
 
     status_cond_wait(wctxt->friend_status_cond, OFFLINE);
+    clear_socket_buffer();
 
     const char* out = "offline-message-receipt-test";
+
+    clear_socket_buffer();
     msgid = ela_send_message_with_receipt(wctxt->carrier, robotid, out, strlen(out),
                                           test_message_receipt_cb, wctxt);
     CU_ASSERT(msgid > 0);
 
-    is_wakeup = cond_trywait(wctxt->cond, 60000);
+    is_wakeup = cond_trywait(wctxt->receipts_cond, 60000);
     CU_ASSERT_TRUE(is_wakeup);
-    if (is_wakeup) {
-        CU_ASSERT(extra->msgid == msgid);
-        CU_ASSERT(extra->state == ElaReceipt_Offline);
-    }
+    CU_ASSERT(extra->msgid == msgid);
+    CU_ASSERT(extra->state == ElaReceipt_Offline);
 
     start_node();
 
     status_cond_wait(wctxt->friend_status_cond, ONLINE);
 
-    char in[64];
+    char in[64] = {0};
     rc = read_ack("%64s", in);
     CU_ASSERT_EQUAL(rc, 1);
     CU_ASSERT_STRING_EQUAL(in, out);
@@ -352,16 +365,16 @@ static void test_send_offbmsg_to_friend_with_receipt(void)
         out[idx] = '0' + (idx % 8);
     }
     memcpy(out + datalen - 5, "end", 4);
+
+    clear_socket_buffer();
     msgid = ela_send_message_with_receipt(wctxt->carrier, robotid, out, strlen(out),
                                           test_message_receipt_cb, wctxt);
     CU_ASSERT(msgid > 0);
 
-    is_wakeup = cond_trywait(wctxt->cond, 60000);
+    is_wakeup = cond_trywait(wctxt->receipts_cond, 60000);
     CU_ASSERT_TRUE(is_wakeup);
-    if (is_wakeup) {
-        CU_ASSERT(extra->msgid == msgid);
-        CU_ASSERT(extra->state == ElaReceipt_Offline);
-    }
+    CU_ASSERT(extra->msgid == msgid);
+    CU_ASSERT(extra->state == ElaReceipt_Offline);
 
     start_node();
 
@@ -397,22 +410,22 @@ static void test_send_edgemsg_to_friend_with_receipt(void)
     // status_cond_wait(wctxt->friend_status_cond, OFFLINE);
 
     const char* out = "edge-message-receipt-test";
+
+    clear_socket_buffer();
     msgid = ela_send_message_with_receipt(wctxt->carrier, robotid, out, strlen(out),
                                           test_message_receipt_cb, wctxt);
     CU_ASSERT(msgid > 0);
 
-    is_wakeup = cond_trywait(wctxt->cond, 60000);
+    is_wakeup = cond_trywait(wctxt->receipts_cond, 60000);
     CU_ASSERT_TRUE(is_wakeup);
-    if (is_wakeup) {
-        CU_ASSERT(extra->msgid == msgid);
-        CU_ASSERT(extra->state == ElaReceipt_Offline);
-    }
+    CU_ASSERT(extra->msgid == msgid);
+    CU_ASSERT(extra->state == ElaReceipt_Offline);
 
     start_node();
 
     status_cond_wait(wctxt->friend_status_cond, ONLINE);
 
-    char in[64];
+    char in[64] = {0};
     rc = read_ack("%64s", in);
     CU_ASSERT_EQUAL(rc, 1);
     CU_ASSERT_STRING_EQUAL(in, out);

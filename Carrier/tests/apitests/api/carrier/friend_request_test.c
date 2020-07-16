@@ -156,6 +156,7 @@ static void test_add_friend(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
+    clear_socket_buffer();
     rc = ela_add_friend(wctxt->carrier, robotaddr, "hello");
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
@@ -166,6 +167,7 @@ static void test_add_friend(void)
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "hello");
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "hello");
 
+    clear_socket_buffer();
     ela_get_userid(wctxt->carrier, userid, sizeof(userid));
     rc = write_cmd("faccept %s\n", userid);
     CU_ASSERT_FATAL(rc > 0);
@@ -278,6 +280,7 @@ static void test_send_multiple_friend_requests(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
+    clear_socket_buffer();
     rc = ela_add_friend(wctxt->carrier, robotaddr, "hello-noaccept");
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
@@ -288,6 +291,7 @@ static void test_send_multiple_friend_requests(void)
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "hello");
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "hello-noaccept");
 
+    clear_socket_buffer();
     rc = ela_add_friend(wctxt->carrier, robotaddr, "hello-accept");
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
@@ -297,6 +301,7 @@ static void test_send_multiple_friend_requests(void)
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "hello");
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "hello-accept");
 
+    clear_socket_buffer();
     ela_get_userid(wctxt->carrier, userid, sizeof(userid));
     rc = write_cmd("faccept %s\n", userid);
     CU_ASSERT_FATAL(rc > 0);
