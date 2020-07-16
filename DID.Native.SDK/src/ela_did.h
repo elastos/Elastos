@@ -2132,15 +2132,15 @@ DID_API const char *Credential_GetProperties(Credential *cred);
 
 /**
  * \~English
- * Get specified subject property according to the key of property.
+ * Get specific subject property value in string with the given key of property.
  *
  * @param
  *      cred                 [in] A handle to Credential.
  * @param
  *      name                 [in] The key of property.
  * @return
- *      If no error occurs, return property value string. Free retuan value after used this api.
- *      Otherwise, return NULL.
+ *      If no error occurs, return property value string, otherwise return NULL.
+ *      Caller should free the return value after it's useless anymore.
  */
 DID_API const char *Credential_GetProperty(Credential *cred, const char *name);
 

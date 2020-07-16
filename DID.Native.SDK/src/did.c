@@ -241,7 +241,7 @@ int DID_Compare(DID *did1, DID *did2)
 
 void DID_Destroy(DID *did)
 {
-    if (!did) {
+    if (did) {
         DIDMetaData_Free(&did->metadata);
         free(did);
     }

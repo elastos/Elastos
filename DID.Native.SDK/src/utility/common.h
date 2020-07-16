@@ -52,6 +52,9 @@ extern "C" {
     }                                                     \
 } while(0)
 
+#define MAX(a,b) (((a)>(b))?(a):(b))
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
 const char *get_time_string(char *timestring, size_t len, time_t *p_time);
 
 int parse_time(time_t *time, const char *string);

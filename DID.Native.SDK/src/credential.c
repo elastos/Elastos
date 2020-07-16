@@ -69,7 +69,6 @@ static int parse_types(cJSON *json, Credential *credential)
 {
     size_t i, size, index = 0;
     char **types;
-    cJSON *item;
 
     assert(json);
     assert(credential);
@@ -87,15 +86,18 @@ static int parse_types(cJSON *json, Credential *credential)
     }
 
     for (i = 0; i < size; i++) {
+        cJSON *item;
+        char *typestr;
+
         item = cJSON_GetArrayItem(json, i);
         if (!item)
             continue;
 
-        char *typestr = (char*)calloc(1, strlen(item->valuestring) + 1);
+        typestr = (char*)calloc(1, strlen(item->valuestring) + 1);
         if (!typestr)
             continue;
 
-        strcpy((char*)typestr, item->valuestring);
+        strcpy(typestr, item->valuestring);
         types[index++] = typestr;
     }
 
@@ -179,36 +181,29 @@ static int proof_toJson(JsonGenerator *generator, Credential *cred, int compact)
 int Credential_ToJson_Internal(JsonGenerator *gen, Credential *cred, DID *did,
         bool compact, bool forsign)
 {
-    char id[ELA_MAX_DIDURL_LEN];
-    char _timestring[DOC_BUFFER_LEN];
+    char buf[MAX(DOC_BUFFER_LEN, ELA_MAX_DIDURL_LEN)];
 
     assert(gen);
     assert(gen->buffer);
     assert(cred);
 
-    if (!did)
-        DIDURL_ToString(&cred->id, id, sizeof(id), false);
-    else
-        DIDURL_ToString(&cred->id, id, sizeof(id), compact);
+    DIDURL_ToString(&cred->id, buf, sizeof(buf), did ? compact: false);
 
     CHECK(JsonGenerator_WriteStartObject(gen));
-    CHECK(JsonGenerator_WriteStringField(gen, "id", id));
+    CHECK(JsonGenerator_WriteStringField(gen, "id", buf));
     CHECK(JsonGenerator_WriteFieldName(gen, "type"));
     CHECK(types_toJson(gen, cred));
-    if (!compact) {
-        DID_ToString(&cred->issuer, id, sizeof(id));
+
+    if (!compact || !DID_Equals(&cred->issuer, &cred->subject.id)) {
         CHECK(JsonGenerator_WriteStringField(gen, "issuer",
-                DID_ToString(&cred->issuer, id, sizeof(id))));
-    } else {
-        if (!DID_Equals(&cred->issuer, &cred->subject.id))
-            CHECK(JsonGenerator_WriteStringField(gen, "issuer",
-                    DID_ToString(&cred->issuer, id, sizeof(id))));
+                DID_ToString(&cred->issuer, buf, sizeof(buf))));
     }
+
     CHECK(JsonGenerator_WriteStringField(gen, "issuanceDate",
-        get_time_string(_timestring, sizeof(_timestring), &cred->issuanceDate)));
+        get_time_string(buf, sizeof(buf), &cred->issuanceDate)));
     if (cred->expirationDate != 0)
         CHECK(JsonGenerator_WriteStringField(gen, "expirationDate",
-                get_time_string(_timestring, sizeof(_timestring), &cred->expirationDate)));
+                get_time_string(buf, sizeof(buf), &cred->expirationDate)));
     CHECK(JsonGenerator_WriteFieldName(gen, "credentialSubject"));
     CHECK(subject_toJson(gen, cred, did, compact));
     if (!forsign) {
@@ -243,7 +238,7 @@ bool Credential_IsSelfProclaimed(Credential *cred)
         return false;
     }
 
-    return DID_Equals(Credential_GetOwner(cred), Credential_GetIssuer(cred));
+    return DID_Equals(&cred->subject.id, &cred->issuer);
 }
 
 DIDURL *Credential_GetId(Credential *cred)
@@ -334,6 +329,9 @@ time_t Credential_GetExpirationDate(Credential *cred)
     if (!expire)
         return 0;
 
+    if (cred->expirationDate != 0)
+        expire = MIN(expire, cred->expirationDate);
+
     doc = DID_Resolve(&cred->issuer, false);
     if (!doc)
         return 0;
@@ -343,11 +341,7 @@ time_t Credential_GetExpirationDate(Credential *cred)
     if (!_expire)
         return 0;
 
-    expire = expire < _expire ? expire : _expire;
-    if (cred->expirationDate != 0)
-        expire = expire < cred->expirationDate ? expire : cred->expirationDate;
-
-    return expire;
+    return MIN(expire, _expire);
 }
 
 ssize_t Credential_GetPropertyCount(Credential *cred)
@@ -357,7 +351,7 @@ ssize_t Credential_GetPropertyCount(Credential *cred)
         return -1;
     }
     if (!cred->subject.properties) {
-        DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "No subject in credential.");
+        DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "No subjects in credential.");
         return -1;
     }
 
@@ -373,7 +367,7 @@ const char *Credential_GetProperties(Credential *cred)
         return NULL;
     }
     if (!cred->subject.properties) {
-        DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "No subject in credential.");
+        DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "No subjects in credential.");
         return NULL;
     }
 
@@ -430,7 +424,7 @@ const char *Credential_GetProperty(Credential *cred, const char *name)
     }
 
     if (!cred->subject.properties) {
-        DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "No subject in credential.");
+        DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "No subjects in credential.");
         return NULL;
     }
 
@@ -509,17 +503,18 @@ Credential *Parse_Credential(cJSON *json, DID *did)
 
     //issuer
     item = cJSON_GetObjectItem(json, "issuer");
-    if (item && (!cJSON_IsString(item) || Parse_DID(&credential->issuer, item->valuestring) < 0)) {
-        DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Invalid issuer.");
-        goto errorExit;
-    }
     if (!item) {
         if (!did) {
             DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "No issuer.");
             goto errorExit;
-        }
-        else
+        } else {
             DID_Copy(&credential->issuer, did);
+        }
+    } else {
+        if (!cJSON_IsString(item) || Parse_DID(&credential->issuer, item->valuestring) < 0) {
+            DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Invalid issuer.");
+            goto errorExit;
+        }
     }
 
     //issuanceDate
@@ -752,12 +747,8 @@ Credential *Credential_FromJson(const char *json, DID *owner)
     }
 
     cred = Parse_Credential(root, owner);
-    if (!cred) {
-        cJSON_Delete(root);
-        return NULL;
-    }
-
     cJSON_Delete(root);
+
     return cred;
 }
 
@@ -774,7 +765,6 @@ DIDURL *Credential_GetVerificationMethod(Credential *cred)
 int Credential_Verify(Credential *cred)
 {
     DIDDocument *doc;
-    DID *issuer;
     const char *data;
     int rc;
 
@@ -783,8 +773,7 @@ int Credential_Verify(Credential *cred)
         return -1;
     }
 
-    issuer = Credential_GetIssuer(cred);
-    doc = DID_Resolve(issuer, false);
+    doc = DID_Resolve(&cred->issuer, false);
     if (!doc)
         return -1;
 
@@ -795,35 +784,35 @@ int Credential_Verify(Credential *cred)
     }
 
     rc = DIDDocument_Verify(doc, &cred->proof.verificationMethod,
-            cred->proof.signatureValue, 1, data, strlen(data));
-    free((void*)data);
+                            cred->proof.signatureValue,
+                            1, data, strlen(data));
+
+    free((void *)data);
     DIDDocument_Destroy(doc);
+
     return rc;
 }
 
 bool Credential_IsExpired(Credential *cred)
 {
-    time_t curtime, credexpires;
+    time_t expires;
+    time_t now;
 
     if (!cred) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return true;
     }
 
-    credexpires = Credential_GetExpirationDate(cred);
-    curtime = time(NULL);
+    expires = Credential_GetExpirationDate(cred);
+    now = time(NULL);
 
-    if (curtime > credexpires)
-        return true;
-
-    return false;
+    return (now > expires);
 }
 
 bool Credential_IsGenuine(Credential *cred)
 {
     DIDDocument *doc;
-    int rc;
-    bool isauth;
+    bool authentic;
 
     if (!cred) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
@@ -831,141 +820,106 @@ bool Credential_IsGenuine(Credential *cred)
     }
 
     doc = DID_Resolve(&cred->issuer, false);
-    if (!doc) {
-        DIDError_Set(DIDERR_NOT_EXISTS, "Issuer don't already exist.");
+    if (!doc)
         return false;
-    }
 
-    isauth = DIDDocument_IsAuthenticationKey(doc, &cred->proof.verificationMethod);
+    authentic = DIDDocument_IsAuthenticationKey(doc, &cred->proof.verificationMethod);
     DIDDocument_Destroy(doc);
-    if (!isauth) {
-        DIDError_Set(DIDERR_INVALID_KEY, "Invalid authentication key.");
+
+    if (!authentic)
         return false;
-    }
 
     if (strcmp(cred->proof.type, ProofType)) {
         DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Unknow credential proof type.");
         return false;
     }
 
-    rc = Credential_Verify(cred);
-    return rc == 0 ? true : false;
+    return Credential_Verify(cred) == 0;
 }
 
 bool Credential_IsValid(Credential *cred)
 {
-    DID *did;
     DIDDocument *doc;
+    bool valid;
+
 
     if (!cred) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return false;
     }
 
-    did = Credential_GetOwner(cred);
-    if (!did) {
-        DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "No credential owner.");
+    doc = DID_Resolve(&cred->subject.id, false);
+    if (!doc)
         return false;
-    }
 
-    doc = DID_Resolve(did, false);
-    if (!doc) {
-        DIDError_Set(DIDERR_NOT_EXISTS, "Credential owner don't already exist.");
-        return false;
-    }
-
-    if (!DIDDocument_IsValid(doc)) {
-        DIDDocument_Destroy(doc);
-        return false;
-    }
-
+    valid = DIDDocument_IsValid(doc);
     DIDDocument_Destroy(doc);
 
+    if (!valid)
+        return false;
+
     if (!Credential_IsSelfProclaimed(cred)) {
-        did = Credential_GetIssuer(cred);
-        if (!did) {
-            DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "No issuer.");
+        doc = DID_Resolve(&cred->issuer, false);
+        if (!doc)
             return false;
-        }
 
-        doc = DID_Resolve(did, false);
-        if (!doc) {
-            DIDError_Set(DIDERR_NOT_EXISTS, "Issuer don't already exist.");
-            return false;
-        }
-
-        if (!DIDDocument_IsValid(doc)) {
-            DIDError_Set(DIDERR_MALFORMED_DID, "Issuer is invalid.");
-            DIDDocument_Destroy(doc);
-            return false;
-        }
+        valid = DIDDocument_IsValid(doc);
         DIDDocument_Destroy(doc);
+
+        if (!valid)
+            return false;
     }
 
-    if (!Credential_IsGenuine(cred)) {
-        DIDError_Set(DIDERR_NOT_GENUINE, "Credential is not genuine.");
-        return false;
-    }
-
-    if (Credential_IsExpired(cred)) {
-        DIDError_Set(DIDERR_EXPIRED, "Credential is expired.");
-        return false;
-    }
-
-    return true;
+    return Credential_IsGenuine(cred) && !Credential_IsExpired(cred);
 }
 
-int Credential_SaveMetaData(Credential *credential)
+int Credential_SaveMetaData(Credential *cred)
 {
-    if (credential && CredentialMetaData_AttachedStore(&credential->metadata))
-        return DIDStore_StoreCredMeta(credential->metadata.base.store, &credential->metadata, &credential->id);
-
-    return 0;
+    return (!cred || !CredentialMetaData_AttachedStore(&cred->metadata)) ? 0:
+            DIDStore_StoreCredMeta(cred->metadata.base.store, &cred->metadata, &cred->id);
 }
 
-CredentialMetaData *Credential_GetMetaData(Credential *credential)
+CredentialMetaData *Credential_GetMetaData(Credential *cred)
 {
-    if (!credential) {
+    if (!cred) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
     }
 
-    return &credential->metadata;
+    return &cred->metadata;
 }
 
-int Credential_Copy(Credential *tocred, Credential *fromcred)
+int Credential_Copy(Credential *dest, Credential *src)
 {
-    int rc, i;
+    int i;
 
-    assert(tocred);
-    assert(fromcred);
+    assert(dest);
+    assert(src);
 
-    if (!DIDURL_Copy(&tocred->id, &fromcred->id))
-        return -1;
+    DIDURL_Copy(&dest->id, &src->id);
 
-    tocred->type.types = (char**)calloc(fromcred->type.size, sizeof(char*));
-    if (!tocred->type.types) {
+    dest->type.types = (char**)calloc(src->type.size, sizeof(char*));
+    if (!dest->type.types) {
         DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for type failed.");
         return -1;
     }
 
-    for (i = 0; i < fromcred->type.size; i++)
-        tocred->type.types[i] = strdup(fromcred->type.types[i]);
-    tocred->type.size = fromcred->type.size;
+    for (i = 0; i < src->type.size; i++)
+        dest->type.types[i] = strdup(src->type.types[i]);
 
-    if (!DID_Copy(&tocred->issuer, &fromcred->issuer))
-        return -1;
+    dest->type.size = src->type.size;
 
-    tocred->issuanceDate = fromcred->issuanceDate;
-    tocred->expirationDate = fromcred->expirationDate;
+    DID_Copy(&dest->issuer, &src->issuer);
 
-    if (!DID_Copy(&tocred->subject.id, &fromcred->subject.id))
-        return -1;
+    dest->issuanceDate = src->issuanceDate;
+    dest->expirationDate = src->expirationDate;
 
-    tocred->subject.properties = cJSON_Duplicate(fromcred->subject.properties, 1);
+    DID_Copy(&dest->subject.id, &src->subject.id);
 
-    memcpy(&tocred->proof, &fromcred->proof, sizeof(CredentialProof));
-    CredentialMetaData_Copy(&tocred->metadata, &fromcred->metadata);
+    dest->subject.properties = cJSON_Duplicate(src->subject.properties, 1);
+
+    memcpy(&dest->proof, &src->proof, sizeof(CredentialProof));
+    CredentialMetaData_Copy(&dest->metadata, &src->metadata);
 
     return 0;
 }
