@@ -680,6 +680,9 @@ export default class extends BaseComponent {
       )
       .as('minutes')
     let surplusTime = Math.ceil(endsInFloat / 60 / 24) + ' ' + I18N.get('council.voting.votingEndsIn.days')
+    if (endsInFloat <= 0) {
+      surplusTime = '1 ' + I18N.get('council.voting.votingEndsIn.minutes')
+    }
     if (endsInFloat > 0 && endsInFloat <= 60) {
       surplusTime = Math.ceil(endsInFloat) + ' ' + I18N.get('council.voting.votingEndsIn.minutes')
     }
