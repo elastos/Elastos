@@ -45,10 +45,13 @@ class TeamInfoList extends BaseComponent {
                     <td>{item.member}</td>
                     <td>{item.role}</td>
                     <td>
-                      <ShowLongText text={item.responsibility} />
+                      <ShowLongText
+                        text={item.responsibility}
+                        id={'responsibility' + index}
+                      />
                     </td>
                     <td>
-                      <ShowLongText text={item.info} />
+                      <ShowLongText text={item.info} id={'info' + index} />
                     </td>
                     {visible && (
                       <td>

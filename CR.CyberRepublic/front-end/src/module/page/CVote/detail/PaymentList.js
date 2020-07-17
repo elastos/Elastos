@@ -176,7 +176,10 @@ class PaymentList extends Component {
         <td>{item.amount}</td>
         {isOld ? (
           <td>
-            <ShowLongText text={item.reasons} />
+            <ShowLongText
+              text={item.reasons}
+              id={'reasons' + item.milestoneKey}
+            />
           </td>
         ) : null}
         <td>
@@ -193,7 +196,10 @@ class PaymentList extends Component {
           ) : null}
         </td>
         <td>
-          <ShowLongText text={item.criteria} />
+          <ShowLongText
+            text={item.criteria}
+            id={'criteria' + item.milestoneKey}
+          />
         </td>
         {visible && (
           <td>{item.status && I18N.get(`milestone.${item.status}`)}</td>
