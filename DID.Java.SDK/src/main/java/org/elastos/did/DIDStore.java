@@ -503,7 +503,7 @@ public final class DIDStore {
 
 		String lastTxid = null;
 		String reolvedSignautre = null;
-		DIDDocument resolvedDoc = did.resolve();
+		DIDDocument resolvedDoc = did.resolve(true);
 		if (resolvedDoc != null) {
 			if (resolvedDoc.isDeactivated()) {
 				doc.getMetadataImpl().setDeactivated(true);
