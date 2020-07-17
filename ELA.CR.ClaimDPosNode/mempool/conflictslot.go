@@ -204,6 +204,10 @@ func (s *conflictSlot) txProcess(key interface{}, t keyType,
 	processHashKey func(common.Uint256) errors.ELAError,
 	processProgramHashKey func(common.Uint168) errors.ELAError) errors.ELAError {
 
+	if key == nil {
+		return nil
+	}
+
 	switch t {
 	case str:
 		str, ok := key.(string)

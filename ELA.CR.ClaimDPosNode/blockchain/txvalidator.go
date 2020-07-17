@@ -620,29 +620,6 @@ func (b *BlockChain) checkCRCProposalWithdrawOutput(txn *Transaction) error {
 		return errors.New("proposal not exist")
 	}
 
-	if txn.PayloadVersion == payload.CRCProposalWithdrawDefault {
-		//check output[0] must equal with Recipient
-		if txn.Outputs[0].ProgramHash != proposalState.Recipient {
-			return errors.New("txn.Outputs[0].ProgramHash != Recipient")
-		}
-		//check output[1] if exist must equal with CRCComitteeAddresss
-		if len(txn.Outputs) > 1 {
-			if txn.Outputs[1].ProgramHash != b.chainParams.CRExpensesAddress {
-				return errors.New("txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
-			}
-		}
-		if len(txn.Outputs) > 2 {
-			return errors.New("CRCProposalWithdraw tx should not have over two output")
-		}
-	} else if txn.PayloadVersion == payload.CRCProposalWithdrawVersion01 {
-
-		//check output[0] must equal with Recipient
-		if withdrawPayload.Recipient != proposalState.Recipient {
-			return errors.New("withdrawPayload.Recipient != Recipient")
-		}
-
-	}
-
 	return nil
 }
 
@@ -733,12 +710,6 @@ func (b *BlockChain) checkTransactionOutput(txn *Transaction,
 		return errors.New("transaction has no outputs")
 	}
 
-	if txn.IsCRCProposalWithdrawTx() {
-		err := b.checkCRCProposalWithdrawOutput(txn)
-		if err != nil {
-			return err
-		}
-	}
 	// check if output address is valid
 	specialOutputCount := 0
 	for _, output := range txn.Outputs {
@@ -1970,14 +1941,34 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 		return errors.New("no need to withdraw")
 	}
 	if txn.PayloadVersion == payload.CRCProposalWithdrawDefault {
+		// Check output[0] must equal with Recipient
+		if txn.Outputs[0].ProgramHash != proposalState.Recipient {
+			return errors.New("txn.Outputs[0].ProgramHash != Recipient")
+		}
+
+		// Check output[1] if exist must equal with CRCComitteeAddresss
+		if len(txn.Outputs) > 1 {
+			if txn.Outputs[1].ProgramHash != b.chainParams.CRExpensesAddress {
+				return errors.New("txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
+			}
+		}
+
+		if len(txn.Outputs) > 2 {
+			return errors.New("CRCProposalWithdraw tx should not have over two output")
+		}
+
 		//Recipient count + fee must equal to availableWithdrawalAmount
 		if txn.Outputs[0].Value+fee != withdrawAmount {
 			return errors.New("txn.Outputs[0].Value + fee != withdrawAmout ")
 		}
 	} else if txn.PayloadVersion == payload.CRCProposalWithdrawVersion01 {
+		// Recipient address must be the current recipient address
+		if withdrawPayload.Recipient != proposalState.Recipient {
+			return errors.New("withdrawPayload.Recipient != Recipient")
+		}
 		// Recipient Amount + fee must equal to availableWithdrawalAmount
-		if withdrawPayload.Amount+fee != withdrawAmount {
-			return errors.New("withdrawPayload.Amount + fee != withdrawAmount ")
+		if withdrawPayload.Amount != withdrawAmount {
+			return errors.New("withdrawPayload.Amount != withdrawAmount ")
 		}
 		if withdrawPayload.Amount < b.chainParams.RealWithdrawSingleFee {
 			return errors.New("withdraw amount is less than RealWithdrawSingleFee")
@@ -2629,20 +2620,6 @@ func (b *BlockChain) checkChangeOwnerSign(proposal *payload.CRCProposal, crMembe
 	if err != nil {
 		return err
 	}
-	// Check signature of new owner.
-	newOwnerPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
-	if err != nil {
-		return errors.New("invalid owner")
-	}
-	newOwnerContract, err := contract.CreateStandardContract(newOwnerPublicKey)
-	if err != nil {
-		return errors.New("invalid owner")
-	}
-
-	if err := checkCRTransactionSignature(proposal.NewOwnerSignature, newOwnerContract.Code,
-		signedBuf.Bytes()); err != nil {
-		return errors.New("new owner signature check failed")
-	}
 
 	// Check signature of owner.
 	publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
@@ -2658,12 +2635,27 @@ func (b *BlockChain) checkChangeOwnerSign(proposal *payload.CRCProposal, crMembe
 		return errors.New("owner signature check failed")
 	}
 
-	// Check signature of CR Council Member.
-	if err = common.WriteVarBytes(signedBuf, proposal.NewOwnerSignature); err != nil {
-		return errors.New("failed to write proposal new owner signature")
+	// Check signature of new owner.
+	newOwnerPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
 	}
+	newOwnerContract, err := contract.CreateStandardContract(newOwnerPublicKey)
+	if err != nil {
+		return errors.New("invalid owner")
+	}
+
+	if err := checkCRTransactionSignature(proposal.NewOwnerSignature, newOwnerContract.Code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("new owner signature check failed")
+	}
+
+	// Check signature of CR Council Member.
 	if err = common.WriteVarBytes(signedBuf, proposal.Signature); err != nil {
 		return errors.New("failed to write proposal owner signature")
+	}
+	if err = common.WriteVarBytes(signedBuf, proposal.NewOwnerSignature); err != nil {
+		return errors.New("failed to write proposal new owner signature")
 	}
 	if err = proposal.CRCouncilMemberDID.Serialize(signedBuf); err != nil {
 		return errors.New("failed to write CR Council Member's DID")

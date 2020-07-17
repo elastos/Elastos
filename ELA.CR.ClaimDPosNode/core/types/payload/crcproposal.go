@@ -123,7 +123,7 @@ type CRCProposal struct {
 	// The specified ELA address where the funds are to be sent.
 	Recipient common.Uint168
 
-	// Hash of proposal that need to change owner.
+	// Hash of proposal that need to change owner or need to be closed.
 	TargetProposalHash common.Uint256
 
 	// The specified ELA address where the funds are to be sent.
