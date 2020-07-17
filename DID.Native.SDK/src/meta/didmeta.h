@@ -35,9 +35,9 @@ extern "C" {
 
 #define MAX_DOC_SIGN                    128
 
-typedef struct DIDMetaData {
+struct DIDMetaData {
     MetaData base;
-} DIDMetaData;
+};
 
 const char *DIDMetaData_ToJson(DIDMetaData *metadata);
 

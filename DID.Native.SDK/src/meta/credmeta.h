@@ -32,9 +32,9 @@
 extern "C" {
 #endif
 
-typedef struct CredentialMetaData {
+struct CredentialMetaData {
     MetaData base;
-} CredentialMetaData;
+};
 
 int CredentialMetaData_ToJson_Internal(CredentialMetaData *metadata, JsonGenerator *gen);
 

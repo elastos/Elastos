@@ -240,7 +240,7 @@ static void test_didstore_initial_error(void)
     CU_ASSERT_PTR_NOT_NULL(store);
     DIDStore_Close(store);
 
-    adapter = TestData_GetAdapter(false);
+    adapter = TestData_GetAdapter(true);
     CU_ASSERT_PTR_NOT_NULL_FATAL(adapter);
 
     store = DIDStore_Open("", adapter);

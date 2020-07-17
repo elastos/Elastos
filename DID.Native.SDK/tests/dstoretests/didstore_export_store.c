@@ -61,7 +61,7 @@ static void test_didstore_export_import_did(void)
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     //create new store
-    DIDAdapter *adapter = TestData_GetAdapter(false);
+    DIDAdapter *adapter = TestData_GetAdapter(true);
     CU_ASSERT_PTR_NOT_NULL(adapter);
 
     path = get_store_path(_path2, "/restore");
@@ -110,7 +110,7 @@ static void test_didstore_export_import_privateidentity(void)
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     //create new store
-    DIDAdapter *adapter = TestData_GetAdapter(false);
+    DIDAdapter *adapter = TestData_GetAdapter(true);
     CU_ASSERT_PTR_NOT_NULL(adapter);
 
     path = get_store_path(_path2, "/restore");
@@ -157,7 +157,7 @@ static void test_didstore_export_import_store(void)
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     //create new store
-    DIDAdapter *adapter = TestData_GetAdapter(false);
+    DIDAdapter *adapter = TestData_GetAdapter(true);
     CU_ASSERT_PTR_NOT_NULL(adapter);
 
     path = get_store_path(_path2, "/restore");

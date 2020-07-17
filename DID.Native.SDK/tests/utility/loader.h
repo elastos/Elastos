@@ -55,7 +55,7 @@ DID *DID_Copy(DID *dest, DID *src);
 DIDURL *DIDURL_Copy(DIDURL *dest, DIDURL *src);
 
 ////////////////////////////////////////
-void TestData_Init(void);
+int TestData_Init(bool dummy);
 
 void TestData_Deinit(void);
 

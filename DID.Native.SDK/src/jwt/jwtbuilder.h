@@ -35,13 +35,13 @@
 extern "C" {
 #endif
 
-typedef struct JWTBuilder {
+struct JWTBuilder {
     cjose_header_t *header;
     cjose_jws_t *jws;
     json_t *claims;
     DID issuer;
     DIDDocument *doc;
-} JWTBuilder;
+};
 
 JWTBuilder *JWTBuilder_Create(DID *issuer);
 

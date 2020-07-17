@@ -36,8 +36,6 @@ extern "C" {
 
 #define MAX_PRIVATEKEY_BASE64           160
 
-typedef struct DIDBackend    DIDBackend;
-
 struct DIDStore {
     char root[PATH_MAX];
     DIDBackend backend;

@@ -26,16 +26,17 @@
 #include <cjose/cjose.h>
 #include <jansson.h>
 
+#include "ela_jwt.h"
 #include "HDkey.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct JWS {
+struct JWS {
     cjose_header_t *header;
     json_t *claims;
-} JWS;
+};
 
 #ifdef __cplusplus
 }

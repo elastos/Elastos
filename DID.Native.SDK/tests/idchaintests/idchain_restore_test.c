@@ -136,7 +136,6 @@ static void test_idchain_restore(void)
     memset(&dids, 0, sizeof(DIDs));
     rc = DIDStore_ListDIDs(store, 0, get_did, (void*)&dids);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
-    printf("dids count is %d\n", dids.index);
     CU_ASSERT_EQUAL(dids.index, 5);
 
     path = get_path(_path, "dids.restore");
@@ -311,8 +310,6 @@ static void test_sync_with_localmodification2(void)
     DIDURL *serviceid = DIDURL_NewByDid(modified_did, "test1");
     CU_ASSERT_PTR_NOT_NULL_FATAL(serviceid);
 
-    //add by chenyu
-    printf("----------\n");
     rc = DIDDocumentBuilder_AddService(builder, serviceid, "TestType", "http://test.com/");
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     DIDURL_Destroy(serviceid);
