@@ -745,11 +745,11 @@ export default class extends Base {
     ])
 
     const list = _.map(rs[0], (o: any) => {
-      let proposedEnds = (o.proposedEndsHeight - currentHeight) * 2 - 30
-      let notificationEnds = (o.notificationEndsHeight - currentHeight) * 2 - 30
+      let proposedEnds = (o.proposedEndsHeight - currentHeight) * 2 
+      let notificationEnds = (o.notificationEndsHeight - currentHeight) * 2 
       if (process.env.NODE_ENV === 'staging') {
-        proposedEnds = (o.proposedEndsHeight - currentHeight) * 252 - 30
-        notificationEnds = (o.notificationEndsHeight - currentHeight) * 252 - 30
+        proposedEnds = (o.proposedEndsHeight - currentHeight) * 252 
+        notificationEnds = (o.notificationEndsHeight - currentHeight) * 252 
       }
       return {
         ...o._doc,
