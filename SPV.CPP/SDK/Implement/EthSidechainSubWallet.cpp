@@ -31,6 +31,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
+
 		EthSidechainSubWallet::~EthSidechainSubWallet() {
 		}
 
@@ -82,7 +84,9 @@ namespace Elastos {
 		}
 
 		void EthSidechainSubWallet::getGasPrice(BREthereumWallet wid, int rid) {
-			ArgInfo("{}", GetFunName());
+			nlohmann::json j;
+			j["Rid"] = rid;
+			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
 
 		void EthSidechainSubWallet::getGasEstimate(BREthereumWallet wid,
@@ -92,38 +96,42 @@ namespace Elastos {
 												   const std::string &amount,
 												   const std::string &data,
 												   int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("from: {}", from);
-			ArgInfo("to: {}", to);
-			ArgInfo("amount: {}", amount);
-			ArgInfo("data: {}", data);
-			ArgInfo("rid: {}", rid);
+			nlohmann::json j;
+			j["From"] = from;
+			j["To"] = to;
+			j["Amount"] = amount;
+			j["Data"] = data;
+			j["Rid"] = rid;
+			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
 
 		void EthSidechainSubWallet::getBalance(BREthereumWallet wid, const std::string &address, int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("address: {}", address);
-			ArgInfo("rid: {}", rid);
+			nlohmann::json j;
+			j["Address"] = address;
+			j["Rid"] = rid;
+			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
 
 		void EthSidechainSubWallet::submitTransaction(BREthereumWallet wid,
 													  BREthereumTransfer tid,
 													  const std::string &rawTransaction,
 													  int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("rawTx: {}", rawTransaction);
-			ArgInfo("rid: {}", rid);
+			nlohmann::json j;
+			j["RawTx"] = rawTransaction;
+			j["Rid"] = rid;
+			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
 
 		void EthSidechainSubWallet::getTransactions(const std::string &address,
 													uint64_t begBlockNumber,
 													uint64_t endBlockNumber,
 													int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("address: {}", address);
-			ArgInfo("begBlockNumber: {}", begBlockNumber);
-			ArgInfo("endBlockNumber: {}", endBlockNumber);
-			ArgInfo("rid: {}", rid);
+			nlohmann::json j;
+			j["Address"] = address;
+			j["BegBlockNumber"] = begBlockNumber;
+			j["EndBlockNumber"] = endBlockNumber;
+			j["Rid"] = rid;
+			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
 
 		void EthSidechainSubWallet::getLogs(const std::string &contract,
@@ -132,12 +140,14 @@ namespace Elastos {
 											uint64_t begBlockNumber,
 											uint64_t endBlockNumber,
 											int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("contract: {}", contract);
-			ArgInfo("address: {}", address);
-			ArgInfo("event: {}", event);
-			ArgInfo("begBlockNumber: {}", begBlockNumber);
-			ArgInfo("endBlockNumber: {}", endBlockNumber);
+			nlohmann::json j;
+			j["Contract"] = contract;
+			j["Address"] = address;
+			j["Event"] = event;
+			j["BegBlockNumber"] = begBlockNumber;
+			j["EndBlockNumber"] = endBlockNumber;
+			j["Rid"] = rid;
+			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
 
 		void EthSidechainSubWallet::getBlocks(const std::string &address,
@@ -145,58 +155,65 @@ namespace Elastos {
 											  uint64_t blockNumberStart,
 											  uint64_t blockNumberStop,
 											  int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("address: {}", address);
-			ArgInfo("interests: {}", interests);
-			ArgInfo("blockNumberStart: {}", blockNumberStart);
-			ArgInfo("blockNumberStop: {}", blockNumberStop);
-			ArgInfo("rid: {}", rid);
+			nlohmann::json j;
+			j["Address"] = address;
+			j["Interests"] = interests;
+			j["BlockNumberStart"] = blockNumberStart;
+			j["BlockNumberStop"] = blockNumberStop;
+			j["Rid"] = rid;
+			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
 
 		void EthSidechainSubWallet::getTokens(int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("rid: {}", rid);
+			nlohmann::json j;
+			j["Rid"] = rid;
+			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
 
 		void EthSidechainSubWallet::getBlockNumber(int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("rid: {}", rid);
+			nlohmann::json j;
+			j["Rid"] = rid;
+			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
 
 		void EthSidechainSubWallet::getNonce(const std::string &address, int rid) {
-			ArgInfo("{}", GetFunName());
-			ArgInfo("address: {}", address);
-			ArgInfo("rid: {}", rid);
+			nlohmann::json j;
+			j["Address"] = address;
+			j["Rid"] = rid;
+			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
 
 		void EthSidechainSubWallet::handleEWMEvent(EthereumEWM::EWMEvent event, EthereumEWM::Status status,
 												   const std::string &errorDescription) {
+			nlohmann::json eJson;
+			eJson["Type"] = "EWMEvent";
+			eJson["Event"] = EthereumEWM::EWMEvent2String(event);
+			eJson["Status"] = EthereumEWM::Status2String(status);
+			eJson["ErrorDescription"] = errorDescription;
+			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
 
-			ArgInfo("{}", GetFunName());
 			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
-				nlohmann::json eJson;
-				eJson["Type"] = "EWMEvent";
-				eJson["Event"] = EthereumEWM::EWMEvent2String(event);
-				eJson["Status"] = EthereumEWM::Status2String(status);
-				eJson["ErrorDescription"] = errorDescription;
-				ArgInfo("e: {}", eJson.dump(4));
 				_callback->OnETHSCEventHandled(eJson);
+			} else {
+				Log::info(CALLBACK_IS_NULL_PROMPT);
 			}
 		}
 
 		void EthSidechainSubWallet::handlePeerEvent(EthereumEWM::PeerEvent event, EthereumEWM::Status status,
 													const std::string &errorDescription) {
-			ArgInfo("{}", GetFunName());
+			nlohmann::json eJson;
+			eJson["Type"] = "PeerEvent";
+			eJson["Event"] = EthereumEWM::PeerEvent2String(event);
+			eJson["Status"] = EthereumEWM::Status2String(status);
+			eJson["ErrorDescription"] = errorDescription;
+			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
+
 			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
-				nlohmann::json eJson;
-				eJson["Type"] = "PeerEvent";
-				eJson["Event"] = EthereumEWM::PeerEvent2String(event);
-				eJson["Status"] = EthereumEWM::Status2String(status);
-				eJson["ErrorDescription"] = errorDescription;
-				ArgInfo("e: {}", eJson.dump(4));
 				_callback->OnETHSCEventHandled(eJson);
+			} else {
+				Log::info(CALLBACK_IS_NULL_PROMPT);
 			}
 		}
 
@@ -204,30 +221,34 @@ namespace Elastos {
 													  EthereumEWM::WalletEvent event,
 													  EthereumEWM::Status status,
 													  const std::string &errorDescription) {
-			ArgInfo("{}", GetFunName());
+			nlohmann::json eJson;
+			eJson["Type"] = "WalletEvent";
+			eJson["Event"] = EthereumEWM::WalletEvent2String(event);
+			eJson["Status"] = EthereumEWM::Status2String(status);
+			eJson["ErrorDescription"] = errorDescription;
+			eJson["WalletSymbol"] = wallet->getSymbol();
+			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
+
 			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
-				nlohmann::json eJson;
-				eJson["Type"] = "WalletEvent";
-				eJson["Event"] = EthereumEWM::WalletEvent2String(event);
-				eJson["Status"] = EthereumEWM::Status2String(status);
-				eJson["ErrorDescription"] = errorDescription;
-				eJson["WalletSymbol"] = wallet->getSymbol();
-				ArgInfo("e: {}", eJson.dump(4));
 				_callback->OnETHSCEventHandled(eJson);
+			} else {
+				Log::info(CALLBACK_IS_NULL_PROMPT);
 			}
 		}
 
 		void EthSidechainSubWallet::handleTokenEvent(const EthereumTokenPtr &token, EthereumEWM::TokenEvent event) {
-			ArgInfo("{}", GetFunName());
+			nlohmann::json eJson;
+			eJson["Type"] = "TokenEvent";
+			eJson["Event"] = EthereumEWM::TokenEvent2String(event);
+			eJson["WalletSymbol"] = token->getSymbol();
+			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
+
 			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
-				nlohmann::json eJson;
-				eJson["Type"] = "TokenEvent";
-				eJson["Event"] = EthereumEWM::TokenEvent2String(event);
-				eJson["WalletSymbol"] = token->getSymbol();
-				ArgInfo("e: {}", eJson.dump(4));
 				_callback->OnETHSCEventHandled(eJson);
+			} else {
+				Log::info(CALLBACK_IS_NULL_PROMPT);
 			}
 		}
 
@@ -235,17 +256,19 @@ namespace Elastos {
 													 EthereumEWM::BlockEvent event,
 													 EthereumEWM::Status status,
 													 const std::string &errorDescription) {
-			ArgInfo("{}", GetFunName());
+			nlohmann::json eJson;
+			eJson["Type"] = "BlockEvent";
+			eJson["Event"] = EthereumEWM::BlockEvent2String(event);
+			eJson["Status"] = EthereumEWM::Status2String(status);
+			eJson["ErrorDescription"] = errorDescription;
+			eJson["BlockNumber"] = block->getBlockNumber();
+			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
+
 			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
-				nlohmann::json eJson;
-				eJson["Type"] = "BlockEvent";
-				eJson["Event"] = EthereumEWM::BlockEvent2String(event);
-				eJson["Status"] = EthereumEWM::Status2String(status);
-				eJson["ErrorDescription"] = errorDescription;
-				eJson["BlockNumber"] = block->getBlockNumber();
-				ArgInfo("e: {}", eJson.dump(4));
 				_callback->OnETHSCEventHandled(eJson);
+			} else {
+				Log::info(CALLBACK_IS_NULL_PROMPT);
 			}
 		}
 
@@ -254,18 +277,20 @@ namespace Elastos {
 														EthereumEWM::TransactionEvent event,
 														EthereumEWM::Status status,
 														const std::string &errorDescription) {
-			ArgInfo("{}", GetFunName());
+			nlohmann::json eJson;
+			eJson["Type"] = "TransferEvent";
+			eJson["Event"] = EthereumEWM::TransactionEvent2String(event);
+			eJson["Status"] = EthereumEWM::Status2String(status);
+			eJson["ErrorDescription"] = errorDescription;
+			eJson["WalletSymbol"] = wallet->getSymbol();
+			eJson["TxHash"] = transaction->getIdentifier();
+			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
+
 			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
-				nlohmann::json eJson;
-				eJson["Type"] = "TransferEvent";
-				eJson["Event"] = EthereumEWM::TransactionEvent2String(event);
-				eJson["Status"] = EthereumEWM::Status2String(status);
-				eJson["ErrorDescription"] = errorDescription;
-				eJson["WalletSymbol"] = wallet->getSymbol();
-				eJson["TxHash"] = transaction->getIdentifier();
-				ArgInfo("e: {}", eJson.dump(4));
 				_callback->OnETHSCEventHandled(eJson);
+			} else {
+				Log::info(CALLBACK_IS_NULL_PROMPT);
 			}
 		}
 

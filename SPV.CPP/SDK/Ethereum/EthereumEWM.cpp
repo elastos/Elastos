@@ -607,6 +607,7 @@ namespace Elastos {
 				clientTransferEventHandler
 			};
 
+			// TODO: set to correct time to replace ETHEREUM_TIMESTAMP_UNKNOWN
 			return ewmCreateWithPublicKey((BREthereumNetwork) network, key, ETHEREUM_TIMESTAMP_UNKNOWN,
 										  (BREthereumMode) mode, brClient, storagePath.data());
 		}

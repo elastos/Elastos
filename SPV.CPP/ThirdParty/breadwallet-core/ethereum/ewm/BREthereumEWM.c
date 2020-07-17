@@ -457,7 +457,7 @@ ewmCreate (BREthereumNetwork network,
     }
 
     // If we have no blocks; then add a checkpoint
-    if (0 == BRSetCount(blocks)) {
+    if (0 && 0 == BRSetCount(blocks)) {
         const BREthereumBlockCheckpoint *checkpoint = blockCheckpointLookupByTimestamp (network, accountTimestamp);
         BREthereumBlock block = blockCreate (blockCheckpointCreatePartialBlockHeader (checkpoint));
         blockSetTotalDifficulty (block, checkpoint->u.td);
