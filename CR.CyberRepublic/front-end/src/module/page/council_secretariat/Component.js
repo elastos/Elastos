@@ -137,9 +137,14 @@ export default class extends StandardPage {
                               : null}
                         </Popover>
                       </div>
+                      <Did>
+                        <Popover content={item.did} placement="topLeft">
+                          <Label>{I18N.get('cs.did')}:</Label> {item.did}
+                        </Popover>
+                      </Did>
                       <Email>
                         <Popover content={item.email} placement="topLeft">
-                          {I18N.get('cs.contact')}: {item.email}
+                          <Label>{I18N.get('cs.contact')}:</Label> {item.email}
                         </Popover>
                       </Email>
                     </div>
@@ -284,6 +289,16 @@ const TabTitle = styled.div`
     font-size: 48px;
   }
 `
+const Did = styled.div`
+  position: absolute;
+  bottom: 44px;
+  width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.9;
+  line-height: 20px;
+`
 const Email = styled.div`
   position: absolute;
   bottom: 17px;
@@ -291,4 +306,9 @@ const Email = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  opacity: 0.9;
+  line-height: 20px;
+`
+const Label = styled.span`
+  font-weight: 500;
 `

@@ -1535,6 +1535,7 @@ const en = {
       }
     },
     contact: 'Contact',
+    did: 'DID',
     no1: {
       name: 'Alex Shipp',
       intro: 'Elastos Foundation Writer, Era of Quantum Wealth co-author, Quantum Wealth Supernode Owner, without a home base.',
