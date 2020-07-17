@@ -875,12 +875,18 @@ func (a *arbitrators) CRCProducerCount() int {
 	return len(a.crcArbiters)
 }
 
+func (a *arbitrators) getOnDutyArbitrator() []byte {
+	return a.getNextOnDutyArbitratorV(a.bestHeight()+1, 0).GetNodePublicKey()
+}
+
 func (a *arbitrators) GetOnDutyArbitrator() []byte {
-	return a.GetNextOnDutyArbitratorV(a.bestHeight()+1, 0).GetNodePublicKey()
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+	return a.getNextOnDutyArbitratorV(a.bestHeight()+1, 0).GetNodePublicKey()
 }
 
 func (a *arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
-	return a.GetNextOnDutyArbitratorV(a.bestHeight()+1, offset).GetNodePublicKey()
+	return a.getNextOnDutyArbitratorV(a.bestHeight()+1, offset).GetNodePublicKey()
 }
 
 func (a *arbitrators) GetOnDutyCrossChainArbitrator() []byte {
@@ -889,12 +895,14 @@ func (a *arbitrators) GetOnDutyCrossChainArbitrator() []byte {
 	if height < a.chainParams.CRCOnlyDPOSHeight-1 {
 		arbiter = a.GetOnDutyArbitrator()
 	} else {
+		a.mtx.Lock()
 		crcArbiters := a.getCRCArbiters()
 		sort.Slice(crcArbiters, func(i, j int) bool {
 			return bytes.Compare(crcArbiters[i], crcArbiters[j]) < 0
 		})
 		index := a.dutyIndex % len(a.crcArbiters)
 		arbiter = crcArbiters[index]
+		a.mtx.Unlock()
 	}
 
 	return arbiter
@@ -921,7 +929,7 @@ func (a *arbitrators) GetCrossChainArbitersMajorityCount() int {
 	return minSignCount
 }
 
-func (a *arbitrators) GetNextOnDutyArbitratorV(height, offset uint32) ArbiterMember {
+func (a *arbitrators) getNextOnDutyArbitratorV(height, offset uint32) ArbiterMember {
 	// main version is >= H1
 	if height >= a.chainParams.CRCOnlyDPOSHeight {
 		arbitrators := a.currentArbitrators
@@ -1418,7 +1426,7 @@ func (a *arbitrators) dumpInfo(height uint32) {
 	crParams := make([]interface{}, 0)
 	if len(a.currentArbitrators) != 0 {
 		crInfo, crParams = getArbitersInfoWithOnduty("CURRENT ARBITERS",
-			a.currentArbitrators, a.dutyIndex, a.GetOnDutyArbitrator())
+			a.currentArbitrators, a.dutyIndex, a.getOnDutyArbitrator())
 	} else {
 		crInfo, crParams = getArbitersInfoWithoutOnduty("CURRENT ARBITERS", a.currentArbitrators)
 	}
