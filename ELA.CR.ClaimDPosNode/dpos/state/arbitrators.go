@@ -775,6 +775,17 @@ func (a *arbitrators) getCRCArbiters() [][]byte {
 	return result
 }
 
+func (a *arbitrators) GetNextCRCArbiters() [][]byte {
+	a.mtx.Lock()
+	result := make([][]byte, 0, len(a.nextCRCArbiters))
+	for _, v := range a.nextCRCArbiters {
+		result = append(result, v.GetNodePublicKey())
+	}
+	a.mtx.Unlock()
+
+	return result
+}
+
 func (a *arbitrators) GetCurrentRewardData() RewardData {
 	a.mtx.Lock()
 	result := a.CurrentReward

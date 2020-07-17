@@ -345,19 +345,30 @@ func SubmitSidechainIllegalData(param Params) map[string]interface{} {
 	return ResponsePack(Success, true)
 }
 
-func GetDPOSPeersInfo(params Params) map[string]interface{} {
+func GetCRCPeersInfo(params Params) map[string]interface{} {
 	if Arbiter == nil {
 		return ResponsePack(InternalError, "arbiter disabled")
 	}
 
-	peers := Arbiter.GetCurrentArbiters()
+	peers := Arbiter.GetCurrentCRCs()
 	type peerInfo struct {
 		NodePublicKeys []string `json:"nodepublickeys"`
 	}
 	var result peerInfo
 	result.NodePublicKeys = make([]string, 0)
+	peersMap := make(map[string]struct{})
 	for _, p := range peers {
 		pk := common.BytesToHexString(p)
+		peersMap[pk] = struct{}{}
+		result.NodePublicKeys = append(result.NodePublicKeys, pk)
+	}
+
+	nextPeers := Arbiter.GetNextCRCs()
+	for _, p := range nextPeers {
+		pk := common.BytesToHexString(p)
+		if _, ok := peersMap[pk]; ok {
+			continue
+		}
 		result.NodePublicKeys = append(result.NodePublicKeys, pk)
 	}
 

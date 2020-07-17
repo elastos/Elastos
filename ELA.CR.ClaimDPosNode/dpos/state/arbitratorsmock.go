@@ -46,6 +46,7 @@ func NewArbitratorsMock(arbitersByte []ArbiterMember, changeCount,
 type ArbitratorsMock struct {
 	CurrentArbitrators          []ArbiterMember
 	CRCArbitrators              []ArbiterMember
+	NextCRCArbitrators          []ArbiterMember
 	CurrentCandidates           []ArbiterMember
 	NextArbitrators             []ArbiterMember
 	NextCandidates              []ArbiterMember
@@ -259,6 +260,14 @@ func (a *ArbitratorsMock) GetNextCandidates() [][]byte {
 func (a *ArbitratorsMock) GetCRCArbiters() [][]byte {
 	result := make([][]byte, 0, len(a.CRCArbitrators))
 	for _, v := range a.CRCArbitrators {
+		result = append(result, v.GetNodePublicKey())
+	}
+	return result
+}
+
+func (a *ArbitratorsMock) GetNextCRCArbiters() [][]byte {
+	result := make([][]byte, 0, len(a.NextCRCArbitrators))
+	for _, v := range a.NextCRCArbitrators {
 		result = append(result, v.GetNodePublicKey())
 	}
 	return result

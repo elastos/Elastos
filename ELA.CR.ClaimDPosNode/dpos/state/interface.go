@@ -37,6 +37,7 @@ type Arbitrators interface {
 
 	GetConnectedProducer(publicKey []byte) ArbiterMember
 	GetCRCArbiters() [][]byte
+	GetNextCRCArbiters() [][]byte
 	CRCProducerCount() int
 	IsCRCArbitrator(pk []byte) bool
 	IsActiveProducer(pk []byte) bool

@@ -77,6 +77,13 @@ func (a *Arbitrator) GetCurrentArbiters() [][]byte {
 	return a.dposManager.GetArbitrators().GetArbitrators()
 }
 
+func (a *Arbitrator) GetCurrentCRCs() [][]byte {
+	return a.dposManager.GetArbitrators().GetCRCArbiters()
+}
+
+func (a *Arbitrator) GetNextCRCs() [][]byte {
+	return a.dposManager.GetArbitrators().GetNextCRCArbiters()
+}
 
 func (a *Arbitrator) GetArbiterPeersInfo() []*dp2p.PeerInfo {
 	return a.network.p2pServer.DumpPeersInfo()
