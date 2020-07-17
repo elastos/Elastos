@@ -27,13 +27,18 @@ const Component = ({
       voteStatus == 'failed' ||
       voteStatus == 'unchain'
     ) {
-      voteStatus = I18N.get(`council.voting.chainStatus.unchain`)
+      voteStatus = (
+        <div className="status unchain">
+          <div>{I18N.get(`council.voting.chainStatus.unchain`)}</div>
+        </div>
+      )
     }
     if (voteStatus == 'chained') {
-      voteStatus = I18N.get(`council.voting.chainStatus.chained`)
-    }
-    if (voteStatus == 'chaining') {
-      voteStatus = I18N.get(`council.voting.chainStatus.chaining`)
+      voteStatus = (
+        <div className="status chained">
+          <div>{I18N.get(`council.voting.chainStatus.chained`)}</div>
+        </div>
+      )
     }
     let isOwner = data.votedBy && data.votedBy === currentUserId
     const avatarName = data.name.split(' ')
@@ -61,7 +66,7 @@ const Component = ({
           </Avatar>
         )}
         <div>{data.didName}</div>
-        <div className="status">{data.reason !== '' ? voteStatus : null}</div>
+        {data.reason !== '' ? voteStatus : null}
         <div style={{ marginTop: '0.5rem' }}>
           {isProposed &&
           isCouncil &&
