@@ -92,7 +92,7 @@ typedef struct OfflineEvent {
 
 typedef struct MsgidEvent {
     EventBase base;
-    char friendid[ELA_MAX_ID_LEN + 1];
+    char friendid[ELA_MAX_ADDRESS_LEN + 1];
     int64_t msgid;
     int errcode;
 } MsgidEvent;
