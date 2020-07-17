@@ -11,25 +11,24 @@ import { breakPoint } from '@/constants/breakPoint'
 import Toast from '@/module/common/Toast'
 import './style.scss'
 
-const {TabPane} = Tabs
+const { TabPane } = Tabs
 
 export default class extends StandardPage {
   constructor(props) {
     super(props)
     this.state = {
       // save the page you are on
-      tab: this.props.council.tab || '1',
+      tab: this.props.council.tab || '1'
     }
   }
 
-  
   linkToRule() {
     this.props.history.push('/whitepaper')
   }
 
   async componentWillMount() {
     const data = await this.props.getCouncilsAndSecretariat()
-    this.setState({councils: data.councils, secretariat: data.secretariat})
+    this.setState({ councils: data.councils, secretariat: data.secretariat })
   }
 
   ord_renderContent() {
@@ -40,7 +39,10 @@ export default class extends StandardPage {
           className="btn-view-open"
           onClick={async () => {
             this.tabChange('SECRETARIAT')
-            window.scrollTo(0, document.getElementById('open-positions').offsetTop)
+            window.scrollTo(
+              0,
+              document.getElementById('open-positions').offsetTop
+            )
           }}
         >
           {I18N.get('cs.secretariat.positions.open')}
@@ -63,12 +65,10 @@ export default class extends StandardPage {
           <div className="council-rule">
             <h3 className="title">{I18N.get('cs.rule.tile')}</h3>
             <span className="view-rule">
-              {I18N.get('cs.rule.show.click')}
-              {' '}
+              {I18N.get('cs.rule.show.click')}{' '}
               <span className="click-here" onClick={this.linkToRule.bind(this)}>
                 {I18N.get('cs.rule.show.here')}
-              </span>
-              {' '}
+              </span>{' '}
               {I18N.get('cs.rule.show.view')}
             </span>
           </div>
@@ -79,78 +79,74 @@ export default class extends StandardPage {
   }
 
   buildIncumbent() {
-    const {councils} = this.state
+    const { councils } = this.state
     const lang = localStorage.getItem('lang') || 'en'
-    
+
     return (
       <div className="incumbent">
         <div className="title">{I18N.get('cs.incumbent')}</div>
         <Row className="members">
-          { councils !== undefined ? councils.councilMembers.map(item => (
-            <Col lg={8} md={8} sm={24} className="member" key={item.index}>
-              <div className="small-rect">
-                <Avatar
-                  src={item.avatar}
-                  shape="square"
-                  size={220}
-                  icon="user"
-                />
-              </div>
-
-              <div className="big-rect">
-                <div className="content">
-                  <h3 className="name">{item.didName}</h3>
-                  
-                  <div className="self-intro" >
-                    <Popover 
-                      content={
-                        lang === 'en' ? item.introduction ?
-                        item.introduction.split('\n').length > 1 ? 
-                        item.introduction.split('\n')[0]
-                        : 
-                        item.introduction.split('\n')[0]
-                        : null
-                        :
-                        item.introduction ?
-                        item.introduction.split('\n').length > 1 ? 
-                        item.introduction.split('\n')[1]
-                        : 
-                        item.introduction.split('\n')[0]
-                        : null}
-                        title={I18N.get('cs.intro')}
-                        overlayStyle={{width: 400+'px', padding: 10+'px',wordBreak: 'keep-all'}}
-                    >
-                      { lang === 'en' ? item.introduction ?
-                        item.introduction.split('\n').length > 1 ? 
-                        item.introduction.split('\n')[0]
-                        : 
-                        item.introduction.split('\n')[0]
-                        : null
-                        :
-                        item.introduction ?
-                        item.introduction.split('\n').length > 1 ? 
-                        item.introduction.split('\n')[1]
-                        : 
-                        item.introduction.split('\n')[0]
-                        : null
-                      }
-                    </Popover>
+          {councils !== undefined
+            ? councils.councilMembers.map((item) => (
+                <Col lg={8} md={8} sm={24} className="member" key={item.index}>
+                  <div className="small-rect">
+                    <Avatar
+                      src={item.avatar}
+                      shape="square"
+                      size={220}
+                      icon="user"
+                    />
                   </div>
-                  <Email>
-                  <Popover 
-                      content={item.email}
-                      placement="topLeft"
-                  >
-                    {I18N.get('cs.contact')}
-                    :
-                    {' '}
-                    {item.email}
-                    </Popover>
-                  </Email>
-                </div>
-              </div>
-            </Col>
-          )) : null}
+
+                  <div className="big-rect">
+                    <div className="content">
+                      <h3 className="name">{item.didName}</h3>
+
+                      <div className="self-intro">
+                        <Popover
+                          content={
+                            lang === 'en'
+                              ? item.introduction
+                                ? item.introduction.split('\n').length > 1
+                                  ? item.introduction.split('\n')[0]
+                                  : item.introduction.split('\n')[0]
+                                : null
+                              : item.introduction
+                                ? item.introduction.split('\n').length > 1
+                                  ? item.introduction.split('\n')[1]
+                                  : item.introduction.split('\n')[0]
+                                : null
+                          }
+                          title={I18N.get('cs.intro')}
+                          overlayStyle={{
+                            width: 400 + 'px',
+                            padding: 10 + 'px',
+                            wordBreak: 'keep-all'
+                          }}
+                        >
+                          {lang === 'en'
+                            ? item.introduction
+                              ? item.introduction.split('\n').length > 1
+                                ? item.introduction.split('\n')[0]
+                                : item.introduction.split('\n')[0]
+                              : null
+                            : item.introduction
+                              ? item.introduction.split('\n').length > 1
+                                ? item.introduction.split('\n')[1]
+                                : item.introduction.split('\n')[0]
+                              : null}
+                        </Popover>
+                      </div>
+                      <Email>
+                        <Popover content={item.email} placement="topLeft">
+                          {I18N.get('cs.contact')}: {item.email}
+                        </Popover>
+                      </Email>
+                    </div>
+                  </div>
+                </Col>
+              ))
+            : null}
         </Row>
       </div>
     )
@@ -192,7 +188,7 @@ export default class extends StandardPage {
           {I18N.get('cs.secretariat.positions.title')}
         </div>
         <Row className="members">
-          {[1, 2, 3, 4].map(item => (
+          {[1, 2, 3, 4].map((item) => (
             <PersonCard
               key={item}
               title={I18N.get(
@@ -241,7 +237,7 @@ export default class extends StandardPage {
     )
   }
 
-  tabChange = activeKey => {
+  tabChange = (activeKey) => {
     return this.props.changeTab(activeKey)
   }
 }
@@ -272,7 +268,8 @@ const StyledTabs = styled(Tabs)`
   .ant-tabs-ink-bar {
     display: none !important;
   }
-  .ant-tabs-tab-prev-icon-target, .ant-tabs-tab-next-icon-target {
+  .ant-tabs-tab-prev-icon-target,
+  .ant-tabs-tab-next-icon-target {
     color: ${text.green};
     svg {
       width: 2em;
@@ -291,7 +288,7 @@ const Email = styled.div`
   position: absolute;
   bottom: 17px;
   width: 220px;
-  white-space: nowrap; 
+  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; 
+  text-overflow: ellipsis;
 `
