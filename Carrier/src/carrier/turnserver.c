@@ -13,6 +13,7 @@
 #endif
 
 #include "ela_carrier.h"
+#include "ela_error.h"
 #include "ela_turnserver.h"
 #include "ela_carrier_impl.h"
 #include "dht.h"

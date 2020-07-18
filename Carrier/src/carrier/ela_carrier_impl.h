@@ -20,18 +20,21 @@
  * SOFTWARE.
  */
 
-#ifndef __ELA_CARRIER_IMPL_H__
-#define __ELA_CARRIER_IMPL_H__
-
-#include <stdlib.h>
+#ifndef __CARRIER_IMPL_H__
+#define __CARRIER_IMPL_H__
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
 
+#include <stdlib.h>
 #include <crystal.h>
 
 #include "ela_carrier.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "dht_callbacks.h"
 #include "dht.h"
@@ -189,14 +192,10 @@ typedef struct CarrierExtension {
 } CarrierExtension;
 
 CARRIER_API
-void ela_set_error(int error);
-
-typedef int (*strerror_t)(int errnum, char *, size_t);
-
-CARRIER_API
-int ela_register_strerror(int facility, strerror_t strerr);
-
-CARRIER_API
 int ela_leave_all_groups(ElaCarrier *w);
 
-#endif /* __ELA_CARRIER_IMPL_H__ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __CARRIER_IMPL_H__ */

@@ -64,7 +64,7 @@ set(SRC
     dht/dht.c
     elacp.c
     ela_carrier.c
-    ela_error.c
+    error.c
     extension.c
     express.c
     turnserver.c)

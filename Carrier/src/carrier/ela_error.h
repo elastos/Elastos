@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Elastos Foundation
+ * Copyright (c) 2020 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef __CARRIER_TURNSERVER_H__
-#define __CARRIER_TURNSERVER_H__
+#ifndef __CARRIER_ERROR_H__
+#define __CARRIER_ERROR_H__
 
 #include "ela_carrier.h"
 
@@ -29,24 +29,16 @@
 extern "C" {
 #endif
 
-#define ELA_MAX_TURN_SERVER_LEN         63
-#define ELA_MAX_TURN_USERNAME_LEN       127
-#define ELA_MAX_TURN_PASSWORD_LEN       63
-#define ELA_MAX_TURN_REALM_LEN          127
+CARRIER_API
+void ela_set_error(int error);
 
-typedef struct ElaTurnServer {
-    char server[ELA_MAX_TURN_SERVER_LEN + 1];
-    uint16_t port;
-    char username[ELA_MAX_TURN_USERNAME_LEN + 1];
-    char password[ELA_MAX_TURN_PASSWORD_LEN + 1];
-    char realm[ELA_MAX_TURN_REALM_LEN + 1];
-} ElaTurnServer;
+typedef int (*strerror_t)(int errnum, char *, size_t);
 
 CARRIER_API
-int ela_get_turn_server(ElaCarrier *carrier, ElaTurnServer *turn_server);
+int ela_register_strerror(int facility, strerror_t strerr);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // __CARRIER_TURNSERVER_H__
+#endif /* __CARRIER_ERROR_H__ */

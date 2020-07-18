@@ -21,6 +21,7 @@
  */
 
 #include "extension.h"
+#include "ela_error.h"
 #include "ela_carrier_impl.h"
 
 #if defined(_WIN32)

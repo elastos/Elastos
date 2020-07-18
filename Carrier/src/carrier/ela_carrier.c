@@ -65,6 +65,7 @@
 
 #include "version.h"
 #include "ela_carrier.h"
+#include "ela_error.h"
 #include "ela_carrier_impl.h"
 #include "friends.h"
 #include "tcallbacks.h"

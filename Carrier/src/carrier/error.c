@@ -27,8 +27,7 @@
 
 #include <crystal.h>
 
-#include "ela_carrier.h"
-#include "ela_carrier_impl.h"
+#include "ela_error.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #define __thread        __declspec(thread)
@@ -152,7 +151,7 @@ static int system_error(int errcode, char *buf, size_t len)
 #if defined(_WIN32) || defined(_WIN64)
     rc = strerror_s(buf, len, errcode);
 #else
-    rc = strerror_r(errcode, buf, len);        
+    rc = strerror_r(errcode, buf, len);
 #endif
     if (rc < 0)
         return ELA_SYS_ERROR(ELAERR_INVALID_ARGS);
