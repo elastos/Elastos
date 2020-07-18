@@ -24,11 +24,8 @@
 #define __ELA_TURNSERVER_H__
 
 #define ELA_MAX_TURN_SERVER_LEN         63
-
 #define ELA_MAX_TURN_USERNAME_LEN       127
-
 #define ELA_MAX_TURN_PASSWORD_LEN       63
-
 #define ELA_MAX_TURN_REALM_LEN          127
 
 typedef struct ElaTurnServer {

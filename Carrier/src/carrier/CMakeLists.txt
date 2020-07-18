@@ -66,7 +66,8 @@ set(SRC
     ela_carrier.c
     ela_error.c
     extension.c
-    express.c)
+    express.c
+    turnserver.c)
 
 set(HEADERS
     ela_carrier.h)
