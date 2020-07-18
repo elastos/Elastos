@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef __EXTENSION_H__
-#define __EXTENSION_H__
+#ifndef __CARRIER_EXTENSION_H__
+#define __CARRIER_EXTENSION_H__
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -29,33 +29,8 @@
 
 #include <ela_carrier.h>
 
-#if defined(__APPLE__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdocumentation"
-#endif
-
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#if defined(CARRIER_STATIC)
-#define CARRIER_API
-#elif defined(CARRIER_DYNAMIC)
-  #ifdef CARRIER_BUILD
-    #if defined(_WIN32) || defined(_WIN64)
-      #define CARRIER_API        __declspec(dllexport)
-    #else
-      #define CARRIER_API        __attribute__((visibility("default")))
-    #endif
-  #else
-    #if defined(_WIN32) || defined(_WIN64)
-      #define CARRIER_API        __declspec(dllimport)
-    #else
-      #define CARRIER_API        __attribute__((visibility("default")))
-    #endif
-  #endif
-#else
-#define CARRIER_API
 #endif
 
 typedef void ExtensionInviteCallback(ElaCarrier *carrier, const char *from,
@@ -86,8 +61,4 @@ int extension_reply_friend_invite(ElaCarrier *carrier, const char *to,
 }
 #endif
 
-#if defined(__APPLE__)
-#pragma GCC diagnostic pop
-#endif
-
-#endif /* __EXTENSION_H__ */
+#endif /* __CARRIER_EXTENSION_H__ */

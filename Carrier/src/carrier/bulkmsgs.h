@@ -20,24 +20,26 @@
  * SOFTWARE.
  */
 
-#ifndef __BULKMSGS_H__
-#define __BULKMSGS_H__
+#ifndef __CARRIER_BULKMSGS_H__
+#define __CARRIER_BULKMSGS_H__
 
-#include <time.h>
+#include <assert.h>
 #include <crystal.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct BulkMsg {
     char ext[ELA_MAX_EXTENSION_NAME_LEN + 1];
     char friendid[ELA_MAX_ID_LEN + 1];
     int64_t tid;
     uint8_t *data;
-    size_t  data_len;
-    size_t  data_off;
+    size_t  data_cap;
+    size_t  data_offset;
     struct timeval expire_time;
     hash_entry_t he;
 } BulkMsg;
-
-#define BIGMSG_TIMEOUT               (60) //60s.
 
 static inline
 int bulkmsgs_key_compare(const void *key1, size_t len1,
@@ -125,4 +127,8 @@ int bulkmsgs_iterator_remove(hashtable_iterator_t *iterator)
     return hashtable_iterator_remove(iterator);
 }
 
-#endif // __BULKMSGS_H__
+#ifdef __cplusplus
+}
+#endif
+
+#endif // __CARRIER_BULKMSGS_H__

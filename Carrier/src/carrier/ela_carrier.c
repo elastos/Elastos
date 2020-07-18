@@ -76,6 +76,7 @@
 #include "bulkmsgs.h"
 #include "express.h"
 #include "receipts.h"
+#include "utility.h"
 
 #define TASSEMBLY_TIMEOUT               (60) //60s.
 
@@ -1961,8 +1962,8 @@ void handle_friend_bulkmsg(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
         strcpy(msg->friendid, friendid);
 
         msg->tid = tid;
-        msg->data_len = totalsz;
-        msg->data_off = 0;
+        msg->data_cap = totalsz;
+        msg->data_offset = 0;
         msg->data = (uint8_t*)(msg + 1);
 
         gettimeofday_elapsed(&msg->expire_time, TASSEMBLY_TIMEOUT);
@@ -1971,21 +1972,21 @@ void handle_friend_bulkmsg(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 
     if ((name && strcmp(msg->ext, name)) ||
         strcmp(msg->friendid, friendid) || !len || len > ELA_MAX_APP_MESSAGE_LEN ||
-        msg->data_off + len < len || msg->data_off + len > msg->data_len) {
+        msg->data_offset + len < len || msg->data_offset + len > msg->data_cap) {
         vlogE("Carrier: Inavlid bulkmsg fragment (or HACKED), dropped.");
         deref(msg);
         return;
     }
 
-    memcpy(msg->data + msg->data_off, data, len);
-    msg->data_off += len;
+    memcpy(msg->data + msg->data_offset, data, len);
+    msg->data_offset += len;
 
-    if (msg->data_off == msg->data_len) {
+    if (msg->data_offset == msg->data_cap) {
         if (w->callbacks.friend_message && (!name || strlen(name) == 0)) {
             struct timeval now;
             gettimeofday(&now, NULL);
             int64_t timestamp = now.tv_sec * (int64_t)1000000 + now.tv_usec;
-            w->callbacks.friend_message(w, friendid, msg->data, msg->data_len, timestamp, false, w->context);
+            w->callbacks.friend_message(w, friendid, msg->data, msg->data_cap, timestamp, false, w->context);
         }
 
         if (!need_add)

@@ -20,13 +20,18 @@
  * SOFTWARE.
  */
 
-#ifndef __TCALLBACKS_H__
-#define __TCALLBACKS_H__
+#ifndef __CARRIER_TCALLBACKS_H__
+#define __CARRIER_TCALLBACKS_H__
 
 #include <stdint.h>
 #include <assert.h>
 
 #include <crystal.h>
+#include "utility.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define TRANSACTION_EXPIRE_INTERVAL     (5 * 60) // 5m
 
@@ -90,18 +95,14 @@ static inline
 void transacted_callbacks_put(hashtable_t *callbacks,
                               TransactedCallback *callback)
 {
-    struct timeval now, interval;
+    assert(callbacks);
+    assert(callback);
 
-    assert(callbacks && callback);
     callback->he.data = callback;
     callback->he.key = &callback->tid;
     callback->he.keylen = sizeof(callback->tid);
 
-    gettimeofday(&now, NULL);
-    interval.tv_sec = TRANSACTION_EXPIRE_INTERVAL;
-    interval.tv_usec = 0;
-    timeradd(&now, &interval, &callback->expire_time);
-
+    gettimeofday_elapsed(&callback->expire_time, TRANSACTION_EXPIRE_INTERVAL);
     hashtable_put(callbacks, &callback->he);
 }
 
@@ -156,4 +157,8 @@ void transacted_callbacks_iterator_remove(hashtable_iterator_t *iterator)
     hashtable_iterator_remove(iterator);
 }
 
-#endif /* __TCALLBACKS_H__ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __CARRIER_TCALLBACKS_H__ */
