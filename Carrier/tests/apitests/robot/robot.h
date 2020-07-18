@@ -32,9 +32,9 @@ extern "C" {
 #include "test_context.h"
 
 enum {
-    OffMsgCase_Zero = 0,
-    OffMsgCase_Single = 1,
-    OffMsgCase_Bulk = 2
+    OffmsgCase_Absence  = 0,
+    OffmsgCase_Once  = 1,
+    OffmsgCase_Multi = 2
 };
 
 struct CarrierContextExtra {
@@ -44,15 +44,18 @@ struct CarrierContextExtra {
     char *bundle;
     char *data;
     int len;
-    int test_offmsg;
-    int test_offmsg_count;
-    int expected_offmsg_count;
-    struct timeval test_offmsg_expires;
-    char offmsg_header[32];
+
+    int offmsg_case;
+    int offmsg_count_actual;
+    int offmsg_count_expection;
+    struct timeval offmsg_case_expireat;
+    char offmsg_prefix[32];
+
     char gcookie[128];
     int gcookie_len;
     char gfrom[ELA_MAX_ID_LEN + 1];
     char groupid[ELA_MAX_ID_LEN + 1];
+
     char fileid[ELA_MAX_FILE_ID_LEN + 1];
     char recv_file[ELA_MAX_FILE_NAME_LEN + 1];
 };

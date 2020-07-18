@@ -135,9 +135,10 @@ static TestContext test_context = {
 static void send_offmsg_to_friend(int count, int timeout)
 {
     CarrierContext *wctxt = test_context.carrier;
-    char ack[128] = {0};
-    char header[32] = {0};
+    char prefix[32] = {0};
     char buf[2][32] = {0};
+    char ack[32] = {0};
+    char out[32] = {0};
     char robot_id[ELA_MAX_ID_LEN + 1] = {0};
     char robot_addr[ELA_MAX_ADDRESS_LEN + 1] = {0};
     bool is_offline;
@@ -160,19 +161,18 @@ static void send_offmsg_to_friend(int count, int timeout)
 
     status_cond_wait(wctxt->friend_status_cond, OFFLINE);
 
-    sprintf(header, "%ld:", time(NULL));
-    rc = write_cmd("setmsgheader %s\n", header);
+    sprintf(prefix, "%ld:", time(NULL));
+    rc = write_cmd("offmsgprefix %s\n", prefix);
     CU_ASSERT_FATAL(rc > 0);
 
     rc = read_ack("%32s %32s", buf[0], buf[1]);
     CU_ASSERT_EQUAL(rc, 2);
-    CU_ASSERT_STRING_EQUAL(buf[0], "setmsgheader");
+    CU_ASSERT_STRING_EQUAL(buf[0], "offmsgprefix");
     CU_ASSERT_STRING_EQUAL(buf[1], "success");
 
-    char out[32] = {0};
     for (i = 0; i < count; i++) {
         memset(out, 0, sizeof(out));
-        sprintf(out, "%s%d", header, (count > 1) ? (i + 1) : i);
+        sprintf(out, "%s%d", prefix, (count > 1) ? (i + 1) : i);
         rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out), &is_offline);
         CU_ASSERT_EQUAL_FATAL(rc, 0);
         CU_ASSERT_EQUAL_FATAL(is_offline, true);
@@ -197,40 +197,40 @@ static void send_offmsg_to_friend(int count, int timeout)
     if (count > 1) {
         int recv_count = 0;
 
-        rc = read_ack("%d", &recv_count);
-        CU_ASSERT_EQUAL(rc, 1);
+        rc = read_ack("%s %d", buf[0], &recv_count);
+        CU_ASSERT_EQUAL(rc, 2);
+        CU_ASSERT_STRING_EQUAL(buf[0], "offmsg");
         CU_ASSERT_EQUAL(count, recv_count);
     } else {
-        char in[64] = {0};
-
-        rc = read_ack("%64s", in);
-        CU_ASSERT_EQUAL(rc, 1);
-        CU_ASSERT_STRING_EQUAL(in, out);
+        rc = read_ack("%32s %32s", buf[0], buf[1]);
+        CU_ASSERT_EQUAL(rc, 2);
+        CU_ASSERT_STRING_EQUAL(buf[0], "offmsg");
+        CU_ASSERT_STRING_EQUAL(buf[1], out);
     }
 }
 
-static void test_send_offline_msg_to_friend(void)
+static void test_send_offmsg_to_friend(void)
 {
     send_offmsg_to_friend(1, 900);
 }
 
-static void test_send_offline_msgs_to_friend(void)
+static void test_send_multi_offmsgs_to_friend(void)
 {
     send_offmsg_to_friend(10, 900);
 }
 
 static CU_TestInfo cases[] = {
-    { "test_send_offline_msg_to_friend",   test_send_offline_msg_to_friend  },
-    // { "test_send_offline_msgs_to_friend",  test_send_offline_msgs_to_friend },
+    { "test_send_offmsg_to_friend",   test_send_offmsg_to_friend  },
+    { "test_send_multi_offmsgs_to_friend",  test_send_multi_offmsgs_to_friend },
     {NULL, NULL }
 };
 
-CU_TestInfo *friend_offline_message_test_get_cases(void)
+CU_TestInfo *friend_offmsg_test_get_cases(void)
 {
     return cases;
 }
 
-int friend_offline_message_test_suite_init(void)
+int friend_offmsg_test_suite_init(void)
 {
     int rc;
 
@@ -243,7 +243,7 @@ int friend_offline_message_test_suite_init(void)
     return 0;
 }
 
-int friend_offline_message_test_suite_cleanup(void)
+int friend_offmsg_test_suite_cleanup(void)
 {
     test_suite_cleanup(&test_context);
 

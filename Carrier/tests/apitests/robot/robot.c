@@ -58,11 +58,11 @@ static CarrierContextExtra extra = {
     .bundle = NULL,
     .data   = NULL,
     .len    = 0,
-    .test_offmsg = OffMsgCase_Zero,
-    .test_offmsg_count = 0,
-    .expected_offmsg_count = 0,
-    .test_offmsg_expires = {0},
-    .offmsg_header = {0},
+    .offmsg_case = 0,
+    .offmsg_count_actual = 0,
+    .offmsg_count_expection = 0,
+    .offmsg_case_expireat = {0},
+    .offmsg_prefix = {0},
     .gcookie = {0},
     .gcookie_len = 0,
     .gfrom  = {0},
@@ -99,20 +99,28 @@ static void idle_cb(ElaCarrier *w, void *context)
     struct timeval now;
 
     pthread_mutex_lock(&extra->mutex);
-    if (extra->test_offmsg == OffMsgCase_Single) {
+
+    switch(extra->offmsg_case) {
+    case OffmsgCase_Once:
         gettimeofday(&now, NULL);
-        if (timercmp(&now, &extra->test_offmsg_expires, >)) {
-            write_ack("offmsglost\n");
-            extra->test_offmsg = OffMsgCase_Zero;
+        if (timercmp(&now, &extra->offmsg_case_expireat, >)) {
+            write_ack("offmsg lost");
+            extra->offmsg_case = OffmsgCase_Absence;
         }
-    } else if(extra->test_offmsg == OffMsgCase_Bulk) {
+        break;
+
+    case OffmsgCase_Multi:
         gettimeofday(&now, NULL);
-        if (timercmp(&now, &extra->test_offmsg_expires, >)) {
-            write_ack("%d\n", extra->test_offmsg_count);
-            extra->test_offmsg = OffMsgCase_Zero;
-            extra->test_offmsg_count = 0;
-            extra->expected_offmsg_count = 0;
+        if (timercmp(&now, &extra->offmsg_case_expireat, >)) {
+            write_ack("offmsg %d", extra->offmsg_count_actual);
+            extra->offmsg_case = OffmsgCase_Absence;
+            extra->offmsg_count_actual = 0;
+            extra->offmsg_count_expection = 0;
         }
+        break;
+
+    default:
+        break;
     }
     pthread_mutex_unlock(&extra->mutex);
 }
@@ -260,25 +268,38 @@ static void friend_message_cb(ElaCarrier *w, const char *from,
     vlogD(" msg: (%d) %.*s", len, len, (const char *)msg);
 
     pthread_mutex_lock(&extra->mutex);
-    if (is_offline && extra->test_offmsg == OffMsgCase_Single) {
-        if (strstr((const char*)msg, extra->offmsg_header)) {
-            write_ack("%.*s\n", len, msg);
-            extra->test_offmsg = OffMsgCase_Zero;
-        }
-    } else if (is_offline && extra->test_offmsg == OffMsgCase_Bulk) {
-        if (strstr((const char*)msg, extra->offmsg_header)) {
-            extra->test_offmsg_count++;
-            if (extra->test_offmsg_count == extra->expected_offmsg_count) {
-                write_ack("%d\n", extra->test_offmsg_count);
-                extra->test_offmsg = OffMsgCase_Zero;
-                extra->test_offmsg_count = 0;
-                extra->expected_offmsg_count = 0;
+
+    if (is_offline) {
+        switch(extra->offmsg_case) {
+        case OffmsgCase_Once:
+            if (strstr((char *)msg, extra->offmsg_prefix)) {
+                write_ack("offmsg %.*s\n", len, msg);
+                extra->offmsg_case = OffmsgCase_Absence;
             }
+            break;
+
+        case OffmsgCase_Multi:
+            if (strstr((char *)msg, extra->offmsg_prefix)) {
+                if (++extra->offmsg_count_actual < extra->offmsg_count_expection)
+                    break;
+
+                write_ack("offmsg %d\n", extra->offmsg_count_actual);
+                extra->offmsg_case = OffmsgCase_Absence;
+                extra->offmsg_count_actual = 0;
+                extra->offmsg_count_expection = 0;
+            }
+            break;
+
+        default:
+            break;
         }
     } else {
-        if (!is_offline)
+        if (len <= 4*1024)
             write_ack("%.*s\n", len, msg);
+        else
+            write_ack("bulkmsg %d\n", len);
     }
+
     pthread_mutex_unlock(&extra->mutex);
 }
 

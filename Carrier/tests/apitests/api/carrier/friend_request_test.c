@@ -191,7 +191,8 @@ static void test_accept_friend(void)
     CarrierContextExtra *extra = wctxt->extra;
     char userid[ELA_MAX_ID_LEN + 1];
     char useraddr[ELA_MAX_ADDRESS_LEN + 1];
-    const char *hello = "hello";
+    char hello[32] = {0};
+    bool bRet;
     int rc;
 
     test_context.context_reset(&test_context);
@@ -200,23 +201,29 @@ static void test_accept_friend(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
-    (void)ela_get_userid(wctxt->carrier, userid, sizeof(userid));
-    (void)ela_get_address(wctxt->carrier, useraddr, sizeof(useraddr));
+    ela_get_userid(wctxt->carrier, userid, sizeof(userid));
+    ela_get_address(wctxt->carrier, useraddr, sizeof(useraddr));
 
+    memset(hello, 'h', sizeof(hello) -1 );
     rc = write_cmd("fadd %s %s %s\n", userid, useraddr, hello);
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for friend_request callback invoked;
-    bool bRet = cond_trywait(wctxt->cond, 60000);
+    bRet = cond_trywait(wctxt->cond, 60000);
     CU_ASSERT_TRUE(bRet);
     if (bRet) {
+        char buf[2][32];
         CU_ASSERT_PTR_NOT_NULL_FATAL(extra->from);
         CU_ASSERT_PTR_NOT_NULL_FATAL(extra->hello);
 
         CU_ASSERT_STRING_EQUAL_FATAL(extra->from, robotid);
         CU_ASSERT_STRING_EQUAL_FATAL(extra->from, extra->info.userid);
         CU_ASSERT_STRING_EQUAL_FATAL(extra->hello, hello);
-        //TODO: test robot user info;
+
+        if (extra->from)
+            free(extra->from);
+        if (extra->hello)
+            free(extra->hello);
 
         rc = ela_accept_friend(wctxt->carrier, robotid);
         CU_ASSERT_EQUAL_FATAL(rc, 0);
@@ -229,16 +236,14 @@ static void test_accept_friend(void)
         status_cond_wait(wctxt->friend_status_cond, ONLINE);
         CU_ASSERT_TRUE(extra->connection_status == ElaConnectionStatus_Connected);
 
-        char result[32];
-        char buf[32];
-        rc = read_ack("%32s %32s", buf, result);
+        rc = read_ack("%32s %32s", buf[0], buf[1]);
         CU_ASSERT_EQUAL_FATAL(rc, 2);
-        CU_ASSERT_STRING_EQUAL(buf, "fadd");
-        CU_ASSERT_STRING_EQUAL(result, "succeeded");
+        CU_ASSERT_STRING_EQUAL(buf[0], "fadd");
+        CU_ASSERT_STRING_EQUAL(buf[1], "succeeded");
     }
 }
 
-static void test_add_friend_be_friend(void)
+static void test_add_friend_twice(void)
 {
     CarrierContext *wctxt = test_context.carrier;
     int rc;
@@ -253,14 +258,13 @@ static void test_add_friend_be_friend(void)
     CU_ASSERT_EQUAL(rc, 0);
 }
 
-static void test_add_self_be_friend(void)
+static void test_add_friend_self(void)
 {
     CarrierContext *wctxt = test_context.carrier;
+    char address[ELA_MAX_ADDRESS_LEN + 1];
     int rc;
 
-    char address[ELA_MAX_ADDRESS_LEN + 1];
-
-    (void)ela_get_address(wctxt->carrier, address, sizeof(address));
+    ela_get_address(wctxt->carrier, address, sizeof(address));
     rc = ela_add_friend(wctxt->carrier, address, "hello");
 
     CU_ASSERT_EQUAL(rc, -1);
@@ -272,6 +276,8 @@ static void test_send_multiple_friend_requests(void)
     CarrierContext *wctxt = test_context.carrier;
     CarrierContextExtra *extra = wctxt->extra;
     char userid[ELA_MAX_ID_LEN + 1];
+    char hello[32] = {0};
+    char buf[2][32];
     int rc;
 
     test_context.context_reset(&test_context);
@@ -281,25 +287,26 @@ static void test_send_multiple_friend_requests(void)
     CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
     clear_socket_buffer();
-    rc = ela_add_friend(wctxt->carrier, robotaddr, "hello-noaccept");
+    memset(hello, '1', sizeof(hello) - 1);
+    rc = ela_add_friend(wctxt->carrier, robotaddr, hello);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     // wait until robot having received "fadd” request.
-    char buf[2][32];
     rc = read_ack("%32s %32s", buf[0], buf[1]);
     CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "hello");
-    CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "hello-noaccept");
+    CU_ASSERT_STRING_EQUAL_FATAL(buf[1], hello);
 
     clear_socket_buffer();
-    rc = ela_add_friend(wctxt->carrier, robotaddr, "hello-accept");
+    memset(hello, '2', sizeof(hello) - 1);
+    rc = ela_add_friend(wctxt->carrier, robotaddr, hello);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     // wait until robot having received "fadd” request.
     rc = read_ack("%32s %32s", buf[0], buf[1]);
     CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "hello");
-    CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "hello-accept");
+    CU_ASSERT_STRING_EQUAL_FATAL(buf[1], hello);
 
     clear_socket_buffer();
     ela_get_userid(wctxt->carrier, userid, sizeof(userid));
@@ -320,10 +327,10 @@ static void test_send_multiple_friend_requests(void)
 }
 
 static CU_TestInfo cases[] = {
-    { "test_add_friend",                    test_add_friend           },
-    { "test_accept_friend",                 test_accept_friend        },
-    { "test_add_friend_be_friend",          test_add_friend_be_friend },
-    { "test_add_self_be_friend",            test_add_self_be_friend   },
+    { "test_add_friend",                    test_add_friend         },
+    { "test_accept_friend",                 test_accept_friend      },
+    { "test_add_friend_twice",              test_add_friend_twice   },
+    { "test_add_friend_self",               test_add_friend_self    },
     { "test_send_multiple_friend_requests", test_send_multiple_friend_requests },
     { NULL, NULL }
 };

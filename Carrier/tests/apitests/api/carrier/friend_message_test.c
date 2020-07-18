@@ -131,6 +131,8 @@ static TestContext test_context = {
 static void test_send_message_to_friend(void)
 {
     CarrierContext *wctxt = test_context.carrier;
+    char msg[1024] = {0};
+    char buf[1024] = {0};
     bool is_offline;
     int rc;
 
@@ -140,15 +142,15 @@ static void test_send_message_to_friend(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
-    const char* out = "message-test";
-    rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out), &is_offline);
+    memset(msg, 'm', sizeof(msg) -1 );
+    rc = ela_send_friend_message(wctxt->carrier, robotid, msg, sizeof(msg),
+                                 &is_offline);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_EQUAL_FATAL(is_offline, false);
 
-    char in[64];
-    rc = read_ack("%64s", in);
+    rc = read_ack("%1024s", buf);
     CU_ASSERT_EQUAL(rc, 1);
-    CU_ASSERT_STRING_EQUAL(in, out);
+    CU_ASSERT_STRING_EQUAL(msg, buf);
 }
 
 static void test_send_message_from_friend(void)
@@ -156,7 +158,9 @@ static void test_send_message_from_friend(void)
     CarrierContext *wctxt = test_context.carrier;
     CarrierContextExtra *extra = wctxt->extra;
     char userid[ELA_MAX_ID_LEN + 1];
+    char msg[256] = {0};
     int rc;
+    bool bRet;
 
     test_context.context_reset(&test_context);
 
@@ -165,13 +169,13 @@ static void test_send_message_from_friend(void)
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
     ela_get_userid(wctxt->carrier, userid, sizeof(userid));
-    const char* msg = "message-test";
 
+    memset(msg, 'm', sizeof(msg) - 1);
     rc = write_cmd("fmsg %s %s\n", userid, msg);
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for message from robot.
-    bool bRet = cond_trywait(wctxt->cond, 60000);
+    bRet = cond_trywait(wctxt->cond, 60000);
     CU_ASSERT_TRUE(bRet);
     if (bRet) {
         CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
@@ -186,6 +190,7 @@ static void test_send_message_from_friend(void)
 static void test_send_message_to_stranger(void)
 {
     CarrierContext *wctxt = test_context.carrier;
+    char msg[1024] = {0};
     int rc;
 
     test_context.context_reset(&test_context);
@@ -194,8 +199,8 @@ static void test_send_message_to_stranger(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
-    const char* msg = "test-message";
-    rc = ela_send_friend_message(wctxt->carrier, robotid, msg, strlen(msg), NULL);
+    memset(msg, '0', sizeof(msg) -1);
+    rc = ela_send_friend_message(wctxt->carrier, robotid, msg, sizeof(msg), NULL);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
 }
@@ -205,21 +210,27 @@ static void test_send_message_to_self(void)
     CarrierContext *wctxt = test_context.carrier;
     char userid[ELA_MAX_ID_LEN + 1];
     char nodeid[ELA_MAX_ID_LEN + 1];
-    const char* msg = "test-message";
+    char msg[1024] = {0};
     int rc;
 
     test_context.context_reset(&test_context);
 
     (void)ela_get_userid(wctxt->carrier, userid, sizeof(userid));
     (void)ela_get_nodeid(wctxt->carrier, nodeid, sizeof(nodeid));
-    rc = ela_send_friend_message(wctxt->carrier, userid, msg, strlen(msg), NULL);
+
+    memset(msg, 'm', sizeof(msg) -1 );
+    rc = ela_send_friend_message(wctxt->carrier, userid, msg, sizeof(msg), NULL);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL_FATAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
-static void test_send_big_message_to_friend(void)
+static void test_send_bulkmsg_to_friend(void)
 {
     CarrierContext *wctxt = test_context.carrier;
+    size_t bulksz = ELA_MAX_APP_BULKMSG_LEN;
+    char *bulkmsg;
+    char buf[32] = {0};
+    int size;
     int rc;
 
     test_context.context_reset(&test_context);
@@ -228,29 +239,22 @@ static void test_send_big_message_to_friend(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
-    static char out[(ELA_MAX_APP_MESSAGE_LEN << 1) + 1];
-    size_t outsz = sizeof(out) / sizeof(out[0]);
-    char outchar = 'l';
-    memset(out, outchar, outsz - 1);
-    out[outsz - 1] = '\0';
+    bulkmsg = (char *)calloc(1, bulksz);
+    if (!bulkmsg) {
+        vlogF("Panic::oom !!!");
+        return;
+    }
+    memset(bulkmsg, 'b', bulksz - 1);
 
-    rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out), NULL);
+    rc = ela_send_friend_message(wctxt->carrier, robotid, bulkmsg, bulksz, NULL);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
-    char in[(ELA_MAX_APP_MESSAGE_LEN << 1) + 1];
-    size_t insz = sizeof(in) / sizeof(in[0]);
-    rc = read_ack("%2049s", in);
-    CU_ASSERT_EQUAL(rc, 1);
-    CU_ASSERT_TRUE(!memcmp(out, in, insz - 1));
+    rc = read_ack("%64s %d", buf, &size);
+    CU_ASSERT_EQUAL(rc, 2);
+    CU_ASSERT_TRUE(strcmp(buf, "bulkmsg") == 0);
+    CU_ASSERT_EQUAL(size, bulksz);
 
-    rc = ela_send_friend_message(wctxt->carrier, robotid, out,
-                                 ELA_MAX_APP_MESSAGE_LEN - 1, NULL);
-    CU_ASSERT_EQUAL_FATAL(rc, 0);
-
-    memset(in, 0, sizeof(in));
-    rc = read_ack("%1024s", in);
-    CU_ASSERT_EQUAL(rc, 1);
-    CU_ASSERT_TRUE(!memcmp(out, in, ELA_MAX_APP_MESSAGE_LEN - 1));
+    free(bulkmsg);
 }
 
 static CU_TestInfo cases[] = {
@@ -258,7 +262,7 @@ static CU_TestInfo cases[] = {
     { "test_send_message_from_friend",   test_send_message_from_friend },
     { "test_send_message_to_stranger",   test_send_message_to_stranger },
     { "test_send_message_to_self",       test_send_message_to_self },
-    { "test_send_big_message_to_friend", test_send_big_message_to_friend },
+    { "test_send_bulkmsg_to_friend",     test_send_bulkmsg_to_friend },
     {NULL, NULL }
 };
 
