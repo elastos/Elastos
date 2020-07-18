@@ -25,6 +25,10 @@
 
 #include <stdlib.h>
 
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
 #include <crystal.h>
 
 #include "ela_carrier.h"
@@ -41,6 +45,17 @@
 static inline ElaConnectionStatus connection_status(bool connected)
 {
     return connected ? ElaConnectionStatus_Connected : ElaConnectionStatus_Disconnected;
+}
+
+static inline void gettimeofday_elapsed(struct timeval *tm, int elapsed)
+{
+    struct timeval interval;
+
+    interval.tv_sec  = elapsed;
+    interval.tv_usec = 0;
+
+    gettimeofday(tm, NULL);
+    timeradd(tm, &interval, tm);
 }
 
 typedef struct DHT {

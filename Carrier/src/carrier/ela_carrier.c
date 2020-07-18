@@ -1433,7 +1433,7 @@ void notify_friend_description_cb(uint32_t friend_number, const uint8_t *desc,
 
     fi = friends_get(w->friends, friend_number);
     if (!fi) {
-        vlogE("Carrier: Unknown friend number %u, friend description message "
+        vlogW("Carrier: Unknown friend number %u, friend description message "
               "dropped.", friend_number);
         return;
     }
@@ -1469,6 +1469,26 @@ static void notify_friend_connection(ElaCarrier *w, const char *friendid,
         w->callbacks.friend_connection(w, friendid, status, w->context);
 }
 
+static void trigger_pull_offmsg_instantly(ElaCarrier *w)
+{
+    struct timeval expireat;
+    struct timeval interval;
+    /*
+     * - when the status of friend connection changes, it would trigger
+     *   to pull offmsg in short interval (2m) for just once.
+     * - In general, it would trigger to pull offmsg in genral interval(5m)
+     */
+
+    gettimeofday(&expireat, NULL);
+
+    interval.tv_sec  = PULLMSG_INSTANT_INTERVAL;
+    interval.tv_usec = 0;
+    timeradd(&expireat, &interval, &expireat);
+
+    if (timercmp(&expireat, &w->express_expiretime, <))
+        w->express_expiretime = expireat;
+}
+
 static
 void notify_friend_connection_cb(uint32_t friend_number, bool connected,
                                  void *context)
@@ -1484,7 +1504,7 @@ void notify_friend_connection_cb(uint32_t friend_number, bool connected,
 
     fi = friends_get(w->friends, friend_number);
     if (!fi) {
-        vlogE("Carrier: Unknown friend number %u, connection status message "
+        vlogW("Carrier: Unknown friend number %u, connection status message "
               "dropped (%s).", friend_number, connected ? "true":"false");
         return;
     }
@@ -1500,18 +1520,7 @@ void notify_friend_connection_cb(uint32_t friend_number, bool connected,
     }
 
     deref(fi);
-
-    /* As friend status changes, it would trigger to pull offline messages
-     * in 2 minutes.
-     */
-    gettimeofday(&expireat, NULL);
-
-    interval.tv_sec  = PULLMSG_INSTANT_INTERVAL;
-    interval.tv_usec = 0;
-    timeradd(&expireat, &interval, &expireat);
-
-    if (timercmp(&expireat, &w->express_expiretime, <))
-        w->express_expiretime = expireat;
+    trigger_pull_offmsg_instantly(w);
 }
 
 static void notify_friend_presence(ElaCarrier *w, const char *friendid,
@@ -1530,35 +1539,36 @@ void notify_friend_status_cb(uint32_t friend_number, int status,
 {
     ElaCarrier *w = (ElaCarrier *)context;
     FriendInfo *fi;
-    char tmpid[ELA_MAX_ID_LEN + 1];
 
     assert(friend_number != UINT32_MAX);
 
     fi = friends_get(w->friends, friend_number);
     if (!fi) {
-        vlogE("Carrier: Unknown friend number (%u), friend presence message "
+        vlogW("Carrier: Unknown friend number (%u), friend presence message "
               "dropped.", friend_number);
         return;
     }
 
     if (status < ElaPresenceStatus_None ||
         status > ElaPresenceStatus_Busy) {
-        vlogE("Carrier: Invalid friend status %d received, dropped it.", status);
+        vlogW("Carrier: Invalid friend status %d received, dropped it.", status);
         return;
     }
 
     if (status != fi->info.presence) {
-        fi->info.presence = status;
-        strcpy(tmpid, fi->info.user_info.userid);
+        char friendid[ELA_MAX_ID_LEN + 1];
 
-        notify_friend_presence(w, tmpid, status);
+        fi->info.presence = status;
+        strcpy(friendid, fi->info.user_info.userid);
+
+        notify_friend_presence(w, friendid, status);
     }
 
     deref(fi);
 }
 
 static
-void notify_friend_request_cb(const uint8_t *public_key, const uint8_t* gretting,
+void notify_friend_request_cb(const uint8_t *public_key, const uint8_t* greeting,
                               size_t length, void *context)
 {
     ElaCarrier *w = (ElaCarrier *)context;
@@ -1567,12 +1577,13 @@ void notify_friend_request_cb(const uint8_t *public_key, const uint8_t* gretting
     ElaUserInfo ui;
     size_t _len = sizeof(ui.userid);
     const char *name;
-    const char *descr;
+    const char *desc;
     const char *hello;
     int rc;
 
     assert(public_key);
-    assert(gretting && length > 0);
+    assert(greeting);
+    assert(length > 0);
 
     rc = dht_get_friend_number(&w->dht, public_key, &friend_number);
     if (rc == 0 && friend_number != UINT32_MAX) {
@@ -1580,7 +1591,7 @@ void notify_friend_request_cb(const uint8_t *public_key, const uint8_t* gretting
         return;
     }
 
-    cp = elacp_decode(gretting, length);
+    cp = elacp_decode(greeting, length);
     if (!cp) {
         vlogE("Carrier: Inavlid friend request, dropped this request.");
         return;
@@ -1596,13 +1607,14 @@ void notify_friend_request_cb(const uint8_t *public_key, const uint8_t* gretting
     base58_encode(public_key, DHT_PUBLIC_KEY_SIZE, ui.userid, &_len);
 
     name  = elacp_get_name(cp)  ? elacp_get_name(cp)  : "";
-    descr = elacp_get_descr(cp) ? elacp_get_descr(cp) : "";
+    desc  = elacp_get_descr(cp) ? elacp_get_descr(cp) : "";
     hello = elacp_get_hello(cp) ? elacp_get_hello(cp) : "";
 
-    if (*name)
-        strcpy(ui.name, name);
-    if (*descr)
-        strcpy(ui.description, descr);
+    assert(strlen(name) < sizeof(ui.name));
+    assert(strlen(desc) < sizeof(ui.description));
+
+    strcpy(ui.name, name);
+    strcpy(ui.description, desc);
 
     if (w->callbacks.friend_request)
         w->callbacks.friend_request(w, ui.userid, &ui, hello, w->context);
@@ -1712,8 +1724,11 @@ void transacted_callback_expire(ElaCarrier *w, TransactedCallback *callback)
     FriendInfo *fi;
 
     fi = friends_get(w->friends, callback->friend_number);
-    if (!fi)
+    if (!fi) {
+        vlogW("Carrier: Unknown friend number (%u), friend presence message "
+              "dropped.", callback->friend_number);
         return;
+    }
 
     strcpy(friendid, fi->info.user_info.userid);
     deref(fi);
@@ -1846,7 +1861,6 @@ static void do_express_expire(ElaCarrier *w)
     struct timeval now;
 
     gettimeofday(&now, NULL);
-
     if (timercmp(&now, &w->express_expiretime, <=))
         return;
 
@@ -1859,6 +1873,15 @@ static void do_express_expire(ElaCarrier *w)
     timeradd(&now, &timeout, &w->express_expiretime);
 }
 
+
+static inline int64_t current_timestamp(void)
+{
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    return now.tv_sec * (int64_t)1000000 + now.tv_usec;
+}
+
 static
 void handle_friend_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 {
@@ -1869,8 +1892,8 @@ void handle_friend_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     size_t len;
 
     assert(w);
-    assert(friend_number != UINT32_MAX);
     assert(cp);
+    assert(friend_number != UINT32_MAX);
     assert(elacp_get_type(cp) == ELACP_TYPE_MESSAGE);
 
     fi = friends_get(w->friends, friend_number);
@@ -1887,12 +1910,9 @@ void handle_friend_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     msg  = elacp_get_raw_data(cp);
     len  = elacp_get_raw_data_length(cp);
 
-    if (w->callbacks.friend_message && (!name || strlen(name) == 0)) {
-        struct timeval now;
-        gettimeofday(&now, NULL);
-        int64_t timestampe = now.tv_sec * (int64_t)1000000 + now.tv_usec;
-        w->callbacks.friend_message(w, friendid, msg, len, timestampe, false, w->context);
-    }
+    if (w->callbacks.friend_message && (!name || !*name))
+        w->callbacks.friend_message(w, friendid, msg, len, current_timestamp(), false,
+                                    w->context);
 }
 
 static
@@ -1900,7 +1920,6 @@ void handle_friend_bulkmsg(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 {
     FriendInfo *fi;
     char friendid[ELA_MAX_ID_LEN + 1];
-    struct timeval now, expire_interval;
     BulkMsg *msg;
     const char *name;
     const void *data;
@@ -1939,23 +1958,18 @@ void handle_friend_bulkmsg(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
         }
 
         msg = (BulkMsg *)rc_zalloc(sizeof(*msg) + totalsz, NULL);
-        if (!msg) {
-            vlogW("Carrier: Out of memory, bulk message dropped.");
+        if (!msg)
             return;
-        }
 
         strcpy(msg->ext, name ? name : "");
         strcpy(msg->friendid, friendid);
+
         msg->tid = tid;
         msg->data_len = totalsz;
         msg->data_off = 0;
         msg->data = (uint8_t*)(msg + 1);
 
-        gettimeofday(&now, NULL);
-        expire_interval.tv_sec = TASSEMBLY_TIMEOUT;
-        expire_interval.tv_usec = 0;
-        timeradd(&now, &expire_interval, &msg->expire_time);
-
+        gettimeofday_elapsed(&msg->expire_time, TASSEMBLY_TIMEOUT);
         need_add = true;  //Ready to put into bulkmsgs hashtable.
     }
 
@@ -2030,8 +2044,6 @@ void handle_invite_request(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 
     ireq = tassemblies_get(w->tassembly_ireqs, &tid);
     if (!ireq) {
-        struct timeval now, expire_interval;
-
         if (!totalsz || totalsz > ELA_MAX_INVITE_DATA_LEN) {
             vlogW("Carrier: Received invite request fragment with invalid "
                   "totalsz %z, dropped.", totalsz);
@@ -2057,11 +2069,7 @@ void handle_invite_request(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
             ireq->bundle = NULL;
         }
 
-        gettimeofday(&now, NULL);
-        expire_interval.tv_sec = TASSEMBLY_TIMEOUT;
-        expire_interval.tv_usec = 0;
-        timeradd(&now, &expire_interval, &ireq->expire_time);
-
+        gettimeofday_elapsed(&ireq->expire_time, TASSEMBLY_TIMEOUT);
         need_add = true;  //Ready to put into tassembly hashtable.
     }
 
@@ -2171,8 +2179,6 @@ void handle_invite_response(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 
     irsp = tassemblies_get(w->tassembly_irsps, &tid);
     if (!irsp) {
-        struct timeval now, expire_interval;
-
         if (totalsz > ELA_MAX_INVITE_DATA_LEN) {
             vlogW("Carrier: Received overlong invite request fragment, "
                   "dropped.");
@@ -2205,11 +2211,7 @@ void handle_invite_response(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
             strcpy(irsp->reason, reason);
         }
 
-        gettimeofday(&now, NULL);
-        expire_interval.tv_sec = TASSEMBLY_TIMEOUT;
-        expire_interval.tv_usec = 0;
-        timeradd(&now, &expire_interval, &irsp->expire_time);
-
+        gettimeofday_elapsed(&irsp->expire_time, TASSEMBLY_TIMEOUT);
         need_add = true;
     }
 
