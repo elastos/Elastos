@@ -250,9 +250,9 @@ static void test_send_bulkmsg_to_friend(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     rc = read_ack("%64s %d", buf, &size);
-    CU_ASSERT_EQUAL(rc, 2);
-    CU_ASSERT_TRUE(strcmp(buf, "bulkmsg") == 0);
+    CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_EQUAL(size, bulksz);
+    CU_ASSERT_STRING_EQUAL(buf, "bulkmsg");
 
     free(bulkmsg);
 }

@@ -158,7 +158,7 @@ static void test_send_offline_friend_request(void)
     char userid[ELA_MAX_ID_LEN + 1];
     char prefix[32] = {0};
     char hello[32] = {0};
-    char buf[2][32] = {0};
+    char buf[2][64] = {0};
     int rc;
 
     test_context.context_reset(&test_context);
@@ -187,18 +187,21 @@ static void test_send_offline_friend_request(void)
     rc = write_cmd("restartnode %d\n", 900);
     CU_ASSERT_FATAL(rc > 0);
 
-    rc = read_ack("%32s", buf[0]);
-    CU_ASSERT_EQUAL_FATAL(rc, 1);
-    CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "ready");
-
     // wait until robot having received "fadd” request.
     rc = read_ack("%32s %32s", buf[0], buf[1]);
-
-    vlogD("<%s> buf[0]: %s, buf[1]: %s", __FUNCTION__, buf[0], buf[1]);
     CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "offreq");
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], hello);
 
+    // wait for robot to be ready.
+    rc = write_cmd("wready\n");
+    CU_ASSERT_FATAL(rc > 0);
+
+    rc = read_ack("%32s", buf[0]);
+    CU_ASSERT_EQUAL_FATAL(rc, 1);
+    CU_ASSERT_STRING_EQUAL(buf[0], "ready");
+
+    // tell robot to accept ourself as friend as long as robot is ready.
     ela_get_userid(wctxt->carrier, userid, sizeof(userid));
     rc = write_cmd("faccept %s\n", userid);
     CU_ASSERT_FATAL(rc > 0);
@@ -214,36 +217,6 @@ static void test_send_offline_friend_request(void)
     CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL(buf[0], "fadd");
     CU_ASSERT_STRING_EQUAL(buf[1], "succeeded");
-
-    /*
-
-    // ensure filter old offline request message
-    kill_node();
-    status_cond_wait(wctxt->friend_status_cond, OFFLINE);
-    start_node();
-    status_cond_wait(wctxt->friend_status_cond, ONLINE);
-
-    rc = remove_friend_anyway(&test_context, robotid);
-    CU_ASSERT_EQUAL_FATAL(rc, 0);
-    CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
-    usleep(2000000);
-
-    kill_node();
-    status_cond_wait(wctxt->friend_status_cond, OFFLINE);
-
-    rc = ela_add_friend(wctxt->carrier, robotaddr, "auto-reply");
-    CU_ASSERT_EQUAL_FATAL(rc, 0);
-    cond_wait(wctxt->cond);
-
-    start_node();
-
-    rc = read_ack("%32s %32s", buf[0], buf[1]);
-    CU_ASSERT_EQUAL_FATAL(rc, 2);
-    CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "fadd");
-    CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "succeeded");
-    status_cond_wait(wctxt->friend_status_cond, ONLINE);
-
-    */
 }
 
 static CU_TestInfo cases[] = {

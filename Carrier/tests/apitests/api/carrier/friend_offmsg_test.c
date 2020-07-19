@@ -139,9 +139,7 @@ static void send_offmsg_to_friend(int count, int timeout)
     char buf[2][32] = {0};
     char ack[32] = {0};
     char out[32] = {0};
-    char robot_id[ELA_MAX_ID_LEN + 1] = {0};
-    char robot_addr[ELA_MAX_ADDRESS_LEN + 1] = {0};
-    bool is_offline;
+    bool offline = false;
     int rc;
     int i;
 
@@ -173,9 +171,9 @@ static void send_offmsg_to_friend(int count, int timeout)
     for (i = 0; i < count; i++) {
         memset(out, 0, sizeof(out));
         sprintf(out, "%s%d", prefix, (count > 1) ? (i + 1) : i);
-        rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out), &is_offline);
+        rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out), &offline);
         CU_ASSERT_EQUAL_FATAL(rc, 0);
-        CU_ASSERT_EQUAL_FATAL(is_offline, true);
+        CU_ASSERT_EQUAL(offline, true);
     }
 
     usleep(5000000);
@@ -184,19 +182,14 @@ static void send_offmsg_to_friend(int count, int timeout)
         rc = write_cmd("restartnode %d %d\n", timeout, count);
     else
         rc = write_cmd("restartnode %d\n", timeout);
-    CU_ASSERT_FATAL(rc > 0);
+    CU_ASSERT_TRUE_FATAL(rc > 0);
 
+    // in offmsg casd,  robot will not ack "ready" to testcase,
+    // directly wating for friend connection.
     status_cond_wait(wctxt->friend_status_cond, ONLINE);
-
-    rc = read_ack("%32s %45s %52s", ack, robot_id, robot_addr);
-    CU_ASSERT_EQUAL(rc, 3);
-    CU_ASSERT_STRING_EQUAL(ack, "ready");
-    CU_ASSERT_STRING_EQUAL(robot_id, robotid);
-    CU_ASSERT_STRING_EQUAL(robot_addr, robotaddr);
 
     if (count > 1) {
         int recv_count = 0;
-
         rc = read_ack("%s %d", buf[0], &recv_count);
         CU_ASSERT_EQUAL(rc, 2);
         CU_ASSERT_STRING_EQUAL(buf[0], "offmsg");

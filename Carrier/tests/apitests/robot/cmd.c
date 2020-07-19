@@ -282,9 +282,14 @@ TestContext test_context = {
  */
 static void wready(TestContext *context, int argc, char *argv[])
 {
+    ElaCarrier *w = context->carrier->carrier;
+
     CHK_ARGS(argc == 1);
 
-    //ready_to_echo = 1;
+    while(!ela_is_ready(w))
+        usleep(1*1000*1000);
+
+    write_ack("ready\n");
 }
 
 /*

@@ -133,13 +133,18 @@ static void connection_status_cb(ElaCarrier *w, ElaConnectionStatus status,
 
 static void ready_cb(ElaCarrier *w, void *context)
 {
+    CarrierContextExtra *extra = ((TestContext*)context)->carrier->extra;
+
     char address[ELA_MAX_ADDRESS_LEN + 1];
     char robotid[ELA_MAX_ID_LEN + 1];
 
+    vlogI("Robot is ready");
+
+    if (extra->offmsg_case != OffmsgCase_Absence)
+        return;
+
     ela_get_userid(w, robotid, sizeof(robotid));
     ela_get_address(w, address, sizeof(address));
-
-    vlogI("Robot is ready");
     write_ack("ready %s %s\n", robotid, address);
 }
 
@@ -289,7 +294,10 @@ static void friend_message_cb(ElaCarrier *w, const char *from,
         switch(extra->offmsg_case) {
         case OffmsgCase_Once:
             if (strstr((char *)msg, extra->offmsg_prefix)) {
-                write_ack("offmsg %.*s\n", len, msg);
+                if (len < 4*1204)
+                    write_ack("offmsg %.*s\n", len, msg);
+                else
+                    write_ack("bulkmsg %d\n", len);
                 extra->offmsg_case = OffmsgCase_Absence;
             }
             break;

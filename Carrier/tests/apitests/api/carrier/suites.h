@@ -32,7 +32,7 @@ DECL_TESTSUITE(friend_label_test)
 DECL_TESTSUITE(friend_message_test)
 DECL_TESTSUITE(friend_offmsg_test)
 DECL_TESTSUITE(friend_offreq_test)
-DECL_TESTSUITE(friend_receipt_message_test)
+DECL_TESTSUITE(friend_message_with_receipt_test)
 DECL_TESTSUITE(friend_invite_test)
 DECL_TESTSUITE(friend_invite_assembly_test)
 DECL_TESTSUITE(group_new_test)
@@ -52,7 +52,7 @@ DECL_TESTSUITE(group_list_test)
     DEFINE_TESTSUITE(friend_message_test), \
     DEFINE_TESTSUITE(friend_offmsg_test), \
     DEFINE_TESTSUITE(friend_offreq_test), \
-    DEFINE_TESTSUITE(friend_receipt_message_test), \
+    DEFINE_TESTSUITE(friend_message_with_receipt_test), \
     DEFINE_TESTSUITE(friend_invite_test), \
     DEFINE_TESTSUITE(friend_invite_assembly_test), \
     DEFINE_TESTSUITE(group_new_test), \
