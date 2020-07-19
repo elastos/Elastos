@@ -237,7 +237,7 @@ static void test_send_bulkmsg_to_friend(void)
 
     rc = add_friend_anyway(&test_context, robotid, robotaddr);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
-    CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
+    CU_ASSERT_TRUE(ela_is_friend(wctxt->carrier, robotid));
 
     bulkmsg = (char *)calloc(1, bulksz);
     if (!bulkmsg) {

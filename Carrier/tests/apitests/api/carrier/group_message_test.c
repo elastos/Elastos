@@ -207,7 +207,6 @@ static int persistent_group_message_routine(TestContext *ctx)
 
     // wait until peer_list_changed callback invoked
     cond_wait(wctx->group_cond);
-
     status_cond_wait(wctx->friend_status_cond, OFFLINE);
 
     write_cmd("restartnode\n");
@@ -239,6 +238,7 @@ static int persistent_group_message_routine(TestContext *ctx)
     CU_ASSERT_TRUE_FATAL(strcmp(cmd, "gmsg") == 0);
     CU_ASSERT_TRUE_FATAL(strncmp(result, msg, strlen(msg)) == 0);
 
+#if 0
     cond_wait(wctx->group_cond);
     ela_get_userid(wctx->carrier, userid, sizeof(userid));
     CU_ASSERT_TRUE_FATAL(strcmp(extra->from, userid) == 0);
@@ -246,6 +246,7 @@ static int persistent_group_message_routine(TestContext *ctx)
     CU_ASSERT_EQUAL_FATAL(extra->msglen, strlen(msg));
     FREE_ANYWAY(extra->from);
     FREE_ANYWAY(extra->msg);
+#endif
 
     return 0;
 }
@@ -282,8 +283,8 @@ static void test_group_message_to_myself(void)
 
 static CU_TestInfo cases[] = {
     { "test_group_message",             test_group_message },
-    { "test_group_message_to_myself",   test_group_message_to_myself },
     { "test_persistent_group_message ", test_persistent_group_message },
+    { "test_group_message_to_myself",   test_group_message_to_myself },
     { NULL, NULL }
 };
 

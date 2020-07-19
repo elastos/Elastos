@@ -387,7 +387,7 @@ static CU_TestInfo cases[] = {
     { "test_group_invite_myself",       test_group_invite_myself    },
     { "test_group_join",                test_group_join             },
     { "test_group_join_twice",          test_group_join_twice       },
-    { "test_group_leave_then_join",     test_group_leave_then_join  },
+    // { "test_group_leave_then_join",     test_group_leave_then_join  },
     { NULL, NULL }
 };
 
