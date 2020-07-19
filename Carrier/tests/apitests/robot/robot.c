@@ -223,19 +223,35 @@ static void friend_request_cb(ElaCarrier *w, const char *userid,
 {
     TestContext *ctx = (TestContext *)context;
     CarrierContext *wctx = ctx->carrier;
+    CarrierContextExtra *extra = wctx->extra;
 
     vlogD("Received friend request from user %s", userid);
     print_user_info(info);
     vlogD("  hello: %s", hello);
 
-    if (!strcmp(hello, "auto-reply")) {
-        pthread_t tid;
+    switch(extra->offmsg_case) {
+    case OffmsgCase_Absence:
+        if (!strcmp(hello, "auto-reply")) {
+            pthread_t tid;
 
-        strcpy(wctx->extra->userid, userid);
-        pthread_create(&tid, 0, &ela_accept_friend_entry, ctx);
-        pthread_detach(tid);
-    } else {
-        write_ack("hello %s\n", hello);
+            strcpy(wctx->extra->userid, userid);
+            pthread_create(&tid, 0, &ela_accept_friend_entry, ctx);
+            pthread_detach(tid);
+        } else {
+            write_ack("hello %s\n", hello);
+        }
+        break;
+
+    case OffmsgCase_Once:
+        if (strstr(hello, extra->offmsg_prefix)) {
+            write_ack("offreq %s\n", hello);
+            extra->offmsg_case = OffmsgCase_Absence;
+        }
+        break;
+
+    case OffmsgCase_Multi:
+    default:
+        break;
     }
 }
 
