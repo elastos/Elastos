@@ -1593,6 +1593,7 @@ type RPCCRProposalBaseStateInfo struct {
 
 type RPCCRCProposal struct {
 	ProposalType       string       `json:"proposaltype"`
+	CategoryData       string       `json:"categorydata"`
 	OwnerPublicKey     string       `json:"ownerpublickey"`
 	CRCouncilMemberDID string       `json:"crcouncilmemberdid"`
 	DraftHash          string       `json:"drafthash"`
@@ -1602,7 +1603,7 @@ type RPCCRCProposal struct {
 
 type RPCProposalState struct {
 	Status             string            `json:"status"`
-	Proposal           RPCCRCProposal    `json:"proposal"`
+	Proposal           interface{}       `json:"proposal"`
 	ProposalHash       string            `json:"proposalhash"`
 	TxHash             string            `json:"txhash"`
 	CRVotes            map[string]string `json:"crvotes"`
@@ -1612,6 +1613,36 @@ type RPCProposalState struct {
 	TrackingCount      uint8             `json:"trackingcount"`
 	ProposalOwner      string            `json:"proposalowner"`
 	AvailableAmount    string            `json:"availableamount"`
+}
+
+type RPCChangeProposalOwnerProposal struct {
+	ProposalType       string `json:"proposaltype"`
+	CategoryData       string `json:"categorydata"`
+	OwnerPublicKey     string `json:"ownerpublickey"`
+	DraftHash          string `json:"drafthash"`
+	TargetProposalHash string `json:"targetproposalhash"`
+	NewRecipient       string `json:"newrecipient"`
+	NewOwnerPublicKey  string `json:"newownerpublickey"`
+	CRCouncilMemberDID string `json:"crcouncilmemberdid"`
+}
+
+type RPCCloseProposal struct {
+	ProposalType       string `json:"proposaltype"`
+	CategoryData       string `json:"categorydata"`
+	OwnerPublicKey     string `json:"ownerpublickey"`
+	DraftHash          string `json:"drafthash"`
+	TargetProposalHash string `json:"targetproposalhash"`
+	CRCouncilMemberDID string `json:"crcouncilmemberdid"`
+}
+
+type RPCSecretaryGeneralProposal struct {
+	ProposalType              string `json:"proposaltype"`
+	CategoryData              string `json:"categorydata"`
+	OwnerPublicKey            string `json:"ownerpublickey"`
+	DraftHash                 string `json:"drafthash"`
+	SecretaryGeneralPublicKey string
+	SecretaryGeneralDID       string
+	CRCouncilMemberDID        string `json:"crcouncilmemberdid"`
 }
 
 type RPCCRProposalStateInfo struct {
@@ -2004,30 +2035,8 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		}
 	}
 
-	var rpcProposal RPCCRCProposal
 	proposalHash := proposalState.Proposal.Hash()
 
-	did, _ := proposalState.Proposal.CRCouncilMemberDID.ToAddress()
-	rpcProposal.CRCouncilMemberDID = did
-	rpcProposal.DraftHash = ToReversedString(proposalState.Proposal.DraftHash)
-	rpcProposal.ProposalType = proposalState.Proposal.ProposalType.Name()
-	rpcProposal.OwnerPublicKey = common.BytesToHexString(proposalState.Proposal.OwnerPublicKey)
-	rpcProposal.Budgets = make([]BudgetInfo, 0)
-	for _, b := range proposalState.Proposal.Budgets {
-		budgetStatus := proposalState.BudgetsStatus[b.Stage]
-		rpcProposal.Budgets = append(rpcProposal.Budgets, BudgetInfo{
-			Type:   b.Type.Name(),
-			Stage:  b.Stage,
-			Amount: b.Amount.String(),
-			Status: budgetStatus.Name(),
-		})
-	}
-
-	var err error
-	rpcProposal.Recipient, err = proposalState.Recipient.ToAddress()
-	if err != nil {
-		return ResponsePack(InternalError, "invalidate Recipient")
-	}
 	crVotes := make(map[string]string)
 	for k, v := range proposalState.CRVotes {
 		did, _ := k.ToAddress()
@@ -2035,7 +2044,6 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	}
 	rpcProposalState := RPCProposalState{
 		Status:             proposalState.Status.String(),
-		Proposal:           rpcProposal,
 		ProposalHash:       ToReversedString(proposalHash),
 		TxHash:             ToReversedString(proposalState.TxHash),
 		CRVotes:            crVotes,
@@ -2046,6 +2054,75 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		ProposalOwner:      hex.EncodeToString(proposalState.ProposalOwner),
 		AvailableAmount:    crCommittee.AvailableWithdrawalAmount(proposalHash).String(),
 	}
+
+	switch proposalState.Proposal.ProposalType {
+	case payload.Normal, payload.ELIP:
+		var rpcProposal RPCCRCProposal
+		did, _ := proposalState.Proposal.CRCouncilMemberDID.ToAddress()
+		rpcProposal.CRCouncilMemberDID = did
+		rpcProposal.DraftHash = ToReversedString(proposalState.Proposal.DraftHash)
+		rpcProposal.ProposalType = proposalState.Proposal.ProposalType.Name()
+		rpcProposal.CategoryData = proposalState.Proposal.CategoryData
+		rpcProposal.OwnerPublicKey = common.BytesToHexString(proposalState.Proposal.OwnerPublicKey)
+		rpcProposal.Budgets = make([]BudgetInfo, 0)
+		for _, b := range proposalState.Proposal.Budgets {
+			budgetStatus := proposalState.BudgetsStatus[b.Stage]
+			rpcProposal.Budgets = append(rpcProposal.Budgets, BudgetInfo{
+				Type:   b.Type.Name(),
+				Stage:  b.Stage,
+				Amount: b.Amount.String(),
+				Status: budgetStatus.Name(),
+			})
+		}
+		var err error
+		rpcProposal.Recipient, err = proposalState.Recipient.ToAddress()
+		if err != nil {
+			return ResponsePack(InternalError, "invalidate Recipient")
+		}
+		rpcProposalState.Proposal = rpcProposal
+	case payload.SecretaryGeneral:
+		var rpcProposal RPCSecretaryGeneralProposal
+		rpcProposal.DraftHash = ToReversedString(proposalState.Proposal.DraftHash)
+		rpcProposal.ProposalType = proposalState.Proposal.ProposalType.Name()
+		rpcProposal.CategoryData = proposalState.Proposal.CategoryData
+		rpcProposal.OwnerPublicKey = common.BytesToHexString(proposalState.Proposal.OwnerPublicKey)
+		rpcProposal.SecretaryGeneralPublicKey = common.BytesToHexString(proposalState.Proposal.NewOwnerPublicKey)
+		sgDID, _ := proposalState.Proposal.SecretaryGeneralDID.ToAddress()
+		rpcProposal.SecretaryGeneralDID = sgDID
+		cmDID, _ := proposalState.Proposal.CRCouncilMemberDID.ToAddress()
+		rpcProposal.CRCouncilMemberDID = cmDID
+
+		rpcProposalState.Proposal = rpcProposal
+	case payload.ChangeProposalOwner:
+		var rpcProposal RPCChangeProposalOwnerProposal
+		rpcProposal.ProposalType = proposalState.Proposal.ProposalType.Name()
+		rpcProposal.CategoryData = proposalState.Proposal.CategoryData
+		rpcProposal.OwnerPublicKey = common.BytesToHexString(proposalState.Proposal.OwnerPublicKey)
+		rpcProposal.DraftHash = ToReversedString(proposalState.Proposal.DraftHash)
+		rpcProposal.TargetProposalHash = ToReversedString(proposalState.Proposal.TargetProposalHash)
+		var err error
+		rpcProposal.NewRecipient, err = proposalState.Proposal.NewRecipient.ToAddress()
+		if err != nil {
+			return ResponsePack(InternalError, "invalidate NewRecipient")
+		}
+		rpcProposal.NewOwnerPublicKey = common.BytesToHexString(proposalState.Proposal.NewOwnerPublicKey)
+		did, _ := proposalState.Proposal.CRCouncilMemberDID.ToAddress()
+		rpcProposal.CRCouncilMemberDID = did
+
+		rpcProposalState.Proposal = rpcProposal
+	case payload.CloseProposal:
+		var rpcProposal RPCCloseProposal
+		rpcProposal.ProposalType = proposalState.Proposal.ProposalType.Name()
+		rpcProposal.CategoryData = proposalState.Proposal.CategoryData
+		rpcProposal.OwnerPublicKey = common.BytesToHexString(proposalState.Proposal.OwnerPublicKey)
+		rpcProposal.DraftHash = ToReversedString(proposalState.Proposal.DraftHash)
+		rpcProposal.TargetProposalHash = ToReversedString(proposalState.Proposal.TargetProposalHash)
+		did, _ := proposalState.Proposal.CRCouncilMemberDID.ToAddress()
+		rpcProposal.CRCouncilMemberDID = did
+
+		rpcProposalState.Proposal = rpcProposal
+	}
+
 	result := &RPCCRProposalStateInfo{ProposalState: rpcProposalState}
 	return ResponsePack(Success, result)
 }

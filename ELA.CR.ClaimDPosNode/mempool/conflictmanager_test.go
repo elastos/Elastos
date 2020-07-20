@@ -7,7 +7,6 @@ package mempool
 
 import (
 	"crypto/rand"
-	"fmt"
 	mrand "math/rand"
 	"testing"
 
@@ -625,13 +624,7 @@ func verifyTxListWithConflictManager(txs []*types.Transaction,
 
 	manager := newConflictManager()
 	for _, addedTx := range txs {
-		err := manager.VerifyTx(addedTx)
-		if err !=nil {
-		fmt.Println("######## innerErr:", err.InnerError())
-		} else {
-			fmt.Println("########## nil Err")
-		}
-		assert.NoError(t, err)
+		assert.NoError(t, manager.VerifyTx(addedTx))
 		assert.NoError(t, manager.AppendTx(addedTx))
 		for _, candidate := range txs {
 			assert.True(t, manager.VerifyTx(candidate) != nil)

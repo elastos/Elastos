@@ -234,6 +234,7 @@ func (p *ProposalManager) terminatedProposal(proposalState *ProposalState,
 		oriBudgetsStatus[k] = v
 	}
 	p.history.Append(height, func() {
+		proposalState.TerminatedHeight = height
 		proposalState.Status = Terminated
 		for k, v := range proposalState.BudgetsStatus {
 			if v == Unfinished || v == Rejected {
@@ -241,6 +242,7 @@ func (p *ProposalManager) terminatedProposal(proposalState *ProposalState,
 			}
 		}
 	}, func() {
+		proposalState.TerminatedHeight = 0
 		proposalState.Status = oriStatus
 		proposalState.BudgetsStatus = oriBudgetsStatus
 	})
