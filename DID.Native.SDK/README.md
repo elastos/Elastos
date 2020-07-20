@@ -21,12 +21,18 @@ DID (Decentralized identifier) is a new type of identifier that enables verifiab
 		- [2. Install Pre-Requirements](#2-install-pre-requirements)
 		- [3. Build to run on host (Ubuntu / Debian / Linux)](#3-build-to-run-on-host-ubuntu--debian--linux)
 		- [4. Run DIDTest](#4-run-didtest)
+	    	- [4.1. Normal Test](#5-normal-test)
+	    	- [4.2. Stress Test](#5-stress-test)
+	    	- [4.3. Dummy Test](#5-dummy-test)
 		- [5. Cross-compilation for Android Platform](#5-cross-compilation-for-android-platform)
 	- [Build on MacOS Host](#build-on-macos-host)
 		- [1. Brief introduction](#1-brief-introduction-2)
 		- [2. Install Pre-Requirements](#2-install-pre-requirements-2)
 		- [3. Build to run on host](#3-build-to-run-on-host-1)
 		- [4. Run DIDTest](#4-run-didtest-2)
+		- 	- [4.1. Normal Test](#5-normal-test)
+	    	- [4.2. Stress Test](#5-stress-test)
+	    	- [4.3. Dummy Test](#5-dummy-test)
 		- [5. Cross-compilation for Android Platform](#5-cross-compilation-for-android-platform-1)
 		- [6. Cross-compilation for iOS Platform](#6-cross-compilation-for-ios-platform)
 	- [Build API Documentation](#build-api-documentation)
@@ -142,26 +148,60 @@ $ make dist
 
 DIDTest is a shell program to imitate every DID flow and to prove DID API . The output is displayed in the terminal for a simple evaluation of test results.
 
+DIDTest supports three modules: normal test, stress test and dummy test.
+
 To run DIDTest, first extract the distribution package created previously and enter the extracted folder. Then, change directory to the 'bin' folder.
 
 ```shell
 $ cd YOUR-DISTRIBUTION-PACKAGE-PATH/bin
 ```
 
-Run DIDTest:
+##### 4.1 Normal Test
+
+Run DIDTest as normal module, including dummy test cases and IDChain Transaction test case. Run normal module, test case needs spv wallet to pay coins for IDChain Transaction. So the first thing is creating spv wallet, detail operation is as follow:
 
 ```shell
-$ ./didtest
+$ ./wallet -d YOUR-WALLET-DATA-DIRECTORY -n NETWOR-NAME
+$ Wallet data directory: YOUR-WALLET-DATA-DIRECTORY
+$ -> wallet $ create YOUR-WALLET-NAME
+```
+'YOUR-WALLET-DATA-DIRECTORY' : wallet data directory with given path;
+
+'YOUR-WALLET-NAME' : a new wallet with given name.
+
+After inputing 'create' command, you also need choose the mnemonic language, mnemonic word count, passphrase for encoring mnemonic and payment password. After finishing a  
+series of operation, you has a new spv wallet.
+
+Second, open your test case folder:
+```shell
+$ cd YOUR-PATH/Elastos.DID.Native.SDK/tests
+```
+Modify 'walletdir', 'walletId' and 'walletpass' in constant.c file with your wallet parameter.
+
+Third, rebuild the DID project as above operation. (make && make install)
+
+Finally, Then, change directory to the 'bin' folder.
+
+```shell
+$ cd YOUR-DISTRIBUTION-PACKAGE-PATH/bin
+$./didtest
 ```
 
+##### 4.2 Stress Test
 At the same time, DIDTest support stress test. Use Available commands in the shell can be listed by using the command **help**. Specific command usage descriptions can be displayed by using **help [Command]** where [Command] must be replaced with the specific command name.
 
 For example:
 
 ```shell
-$ ./elatests -s 100 -m memcheck
+$ ./didtest -s 100 -m memcheck
 ```
 
+##### 4.3 Dummy Test
+Run DIDTest without IDChain Transaction, this module does not need spv wallet. If you no spv wallet or only want to run basic DID functions, you can choose this module.
+
+```shell
+$ ./didtest --dummy
+```
 
 #### 5. Cross-compilation for Android Platform
 
@@ -280,7 +320,10 @@ $ make dist
 
 #### 4. Run DIDTest
 
+
 DIDTest is a shell program to imitate every DID flow and to prove DID API . The output is displayed in the terminal for a simple evaluation of test results.
+
+DIDTest supports three modules: normal test, stress test and dummy test.
 
 To run DIDTest, first extract the distribution package created previously and enter the extracted folder. Then, change directory to the 'bin' folder.
 
@@ -288,18 +331,51 @@ To run DIDTest, first extract the distribution package created previously and en
 $ cd YOUR-DISTRIBUTION-PACKAGE-PATH/bin
 ```
 
-Run DIDTest:
+##### 4.1 Normal Test
+
+Run DIDTest as normal module, including dummy test cases and IDChain Transaction test case. Run normal module, test case needs spv wallet to pay coins for IDChain Transaction. So the first thing is creating spv wallet, detail operation is as follow:
 
 ```shell
-$ ./didtest
+$ ./wallet -d YOUR-WALLET-DATA-DIRECTORY -n NETWOR-NAME
+$ Wallet data directory: YOUR-WALLET-DATA-DIRECTORY
+$ -> wallet $ create YOUR-WALLET-NAME
+```
+'YOUR-WALLET-DATA-DIRECTORY' : wallet data directory with given path;
+
+'YOUR-WALLET-NAME' : a new wallet with given name.
+
+After inputing 'create' command, you also need choose the mnemonic language, mnemonic word count, passphrase for encoring mnemonic and payment password. After finishing a  
+series of operation, you has a new spv wallet.
+
+Second, open your test case folder:
+```shell
+$ cd YOUR-PATH/Elastos.DID.Native.SDK/tests
+```
+Modify 'walletdir', 'walletId' and 'walletpass' in constant.c file with your wallet parameter.
+
+Third, rebuild the DID project as above operation. (make && make install)
+
+Finally, Then, change directory to the 'bin' folder.
+
+```shell
+$ cd YOUR-DISTRIBUTION-PACKAGE-PATH/bin
+$./didtest
 ```
 
+##### 4.2 Stress Test
 At the same time, DIDTest support stress test. Use Available commands in the shell can be listed by using the command **help**. Specific command usage descriptions can be displayed by using **help [Command]** where [Command] must be replaced with the specific command name.
 
 For example:
 
 ```shell
 $ ./didtest -s 100 -m memcheck
+```
+
+##### 4.3 Dummy Test
+Run DIDTest without IDChain Transaction, this module does not need spv wallet. If you no spv wallet or only want to run basic DID functions, you can choose this module.
+
+```shell
+$ ./didtest --dummy
 ```
 
 #### 5. Cross-compilation for Android Platform
