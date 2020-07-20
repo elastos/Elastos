@@ -18,7 +18,14 @@ set(SYSTEM_LIBS
 if(LINUX)
 set(SYSTEM_LIBS
     ${SYSTEM_LIBS}
-    dl)
+    dl
+    resolv)
+endif()
+
+if(DARWIN)
+set(SYSTEM_LIBS
+    ${SYSTEM_LIBS}
+    resolv)
 endif()
 
 set(LIBS
