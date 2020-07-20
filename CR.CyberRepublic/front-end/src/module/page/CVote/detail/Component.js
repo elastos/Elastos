@@ -261,7 +261,7 @@ class C extends StandardPage {
           return (
             <div style={finalStyle}>
               <Row>
-                <Col span={isNotification ? 12 : 24}>
+                <Col span={this.state.smallSpace ? 24 : 12}>
                   <FixedHeader>
                     {metaNode}
                     {titleNode}
@@ -269,7 +269,7 @@ class C extends StandardPage {
                     {subTitleNode}
                   </FixedHeader>
                 </Col>
-                {isNotification ? (
+                {isNotification && !this.state.smallSpace ? (
                   <Col span={12}>
                     <FixedHeader>{memberVoteNode}</FixedHeader>
                   </Col>
