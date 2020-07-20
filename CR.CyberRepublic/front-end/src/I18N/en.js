@@ -984,7 +984,7 @@ const en = {
   'profile.submission.table.type': 'Type',
   'profile.submission.table.created': 'Created',
 
-  'profile.member.vote.qrcodeTip':'Open ELA wallet and scan vote',
+  'profile.member.vote.qrcodeTip':'Open ELA wallet and scan vote (for community review)',
 
   // Validate Form
   'ambassadors.form.required': 'This must be filled out',
