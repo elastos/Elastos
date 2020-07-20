@@ -2296,6 +2296,11 @@ func (b *BlockChain) checkCRCProposalOwnerTracking(
 		return errors.New("stage should assignment zero value")
 	}
 
+	// Check new owner public.
+	if !bytes.Equal(pState.ProposalOwner, cptPayload.NewOwnerPublicKey) {
+		return errors.New("invalid new owner public key")
+	}
+
 	// Check signature.
 	return b.checkCRCProposalTrackingSignature(cptPayload, pState)
 }
