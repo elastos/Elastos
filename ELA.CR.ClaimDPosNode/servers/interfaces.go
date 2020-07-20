@@ -1640,8 +1640,8 @@ type RPCSecretaryGeneralProposal struct {
 	CategoryData              string `json:"categorydata"`
 	OwnerPublicKey            string `json:"ownerpublickey"`
 	DraftHash                 string `json:"drafthash"`
-	SecretaryGeneralPublicKey string
-	SecretaryGeneralDID       string
+	SecretaryGeneralPublicKey string `json:"secretarygeneralpublickey"`
+	SecretaryGeneralDID       string `json:"secretarygeneraldid"`
 	CRCouncilMemberDID        string `json:"crcouncilmemberdid"`
 }
 
@@ -2082,11 +2082,12 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		rpcProposalState.Proposal = rpcProposal
 	case payload.SecretaryGeneral:
 		var rpcProposal RPCSecretaryGeneralProposal
-		rpcProposal.DraftHash = ToReversedString(proposalState.Proposal.DraftHash)
 		rpcProposal.ProposalType = proposalState.Proposal.ProposalType.Name()
 		rpcProposal.CategoryData = proposalState.Proposal.CategoryData
 		rpcProposal.OwnerPublicKey = common.BytesToHexString(proposalState.Proposal.OwnerPublicKey)
-		rpcProposal.SecretaryGeneralPublicKey = common.BytesToHexString(proposalState.Proposal.NewOwnerPublicKey)
+		rpcProposal.DraftHash = ToReversedString(proposalState.Proposal.DraftHash)
+		rpcProposal.SecretaryGeneralPublicKey =
+			common.BytesToHexString(proposalState.Proposal.SecretaryGeneralPublicKey)
 		sgDID, _ := proposalState.Proposal.SecretaryGeneralDID.ToAddress()
 		rpcProposal.SecretaryGeneralDID = sgDID
 		cmDID, _ := proposalState.Proposal.CRCouncilMemberDID.ToAddress()

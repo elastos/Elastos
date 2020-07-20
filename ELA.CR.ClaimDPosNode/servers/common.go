@@ -287,10 +287,10 @@ type CRCSecretaryGeneralProposalInfo struct {
 	CategoryData              string `json:"categorydata"`
 	OwnerPublicKey            string `json:"ownerpublickey"`
 	DraftHash                 string `json:"drafthash"`
-	SecretaryGeneralPublicKey string
-	SecretaryGeneralDID       string
+	SecretaryGeneralPublicKey string `json:"secretarygeneralpublickey"`
+	SecretaryGeneralDID       string `json:"secretarygeneraldid"`
 	Signature                 string `json:"signature"`
-	SecretaryGeneraSignature  string
+	SecretaryGeneraSignature  string `json:"secretarygenerasignature"`
 	CRCouncilMemberDID        string `json:"crcouncilmemberdid"`
 	CRCouncilMemberSignature  string `json:"crcouncilmembersignature"`
 	Hash                      string `json:"hash"`
