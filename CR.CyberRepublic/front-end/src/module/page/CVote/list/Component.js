@@ -703,8 +703,7 @@ export default class extends BaseComponent {
         I18N.get('council.voting.votingEndsIn.hours')
     }
     return <span style={{ whiteSpace: 'pre-wrap' }}>
-      {`${endsHeight}\n(${I18N.get(
-        'council.voting.votingEndsIn.approx')} ≈ ${surplusTime})`}
+      {`${endsHeight}\n( ≈ ${surplusTime})`}
     </span>
   }
 
