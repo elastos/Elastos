@@ -2297,7 +2297,7 @@ func (b *BlockChain) checkCRCProposalOwnerTracking(
 	}
 
 	// Check new owner public.
-	if !bytes.Equal(pState.ProposalOwner, cptPayload.NewOwnerPublicKey) {
+	if bytes.Equal(pState.ProposalOwner, cptPayload.NewOwnerPublicKey) {
 		return errors.New("invalid new owner public key")
 	}
 

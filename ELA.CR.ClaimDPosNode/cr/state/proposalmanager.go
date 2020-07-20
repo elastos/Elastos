@@ -306,6 +306,9 @@ func (p *ProposalManager) dealProposal(proposalState *ProposalState, unusedAmoun
 		})
 	case payload.CloseProposal:
 		closeProposal := p.Proposals[proposalState.Proposal.TargetProposalHash]
+		if closeProposal.Status == Terminated || closeProposal.Status == Finished {
+			return
+		}
 		*unusedAmount += getProposalUnusedBudgetAmount(closeProposal)
 		p.terminatedProposal(closeProposal, height)
 	case payload.SecretaryGeneral:
@@ -599,6 +602,9 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 	}
 
 	if trackingType == payload.Terminated {
+		if proposalState.Status == Terminated || proposalState.Status == Finished {
+			return
+		}
 		for _, budget := range proposalState.Proposal.Budgets {
 			if _, ok := proposalState.WithdrawableBudgets[budget.Stage]; !ok {
 				unusedBudget += budget.Amount
