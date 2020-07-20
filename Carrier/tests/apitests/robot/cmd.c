@@ -1650,7 +1650,7 @@ static struct command {
     const char* name;
     void (*cmd_cb) (TestContext *context, int argc, char *argv[]);
 } commands[] = {
-    { "ready",        wready       },
+    { "wready",       wready       },
     { "fadd",         fadd         },
     { "faccept",      faccept      },
     { "fmsg",         fmsg         },
