@@ -6,15 +6,24 @@
  * user guide available at https://docs.gradle.org/5.0/userguide/java_library_plugin.html
  */
 
+buildscript {
+    repositories {
+        google()
+	    mavenLocal()
+    }
+}
+
 plugins {
     // Apply the java-library plugin to add support for Java Library
     id 'java-library'
+    id 'maven-publish'
 }
 
 repositories {
     // Use jcenter for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+    mavenLocal()
 }
 
 dependencies {
@@ -28,17 +37,61 @@ dependencies {
     implementation 'com.madgag.spongycastle:prov:1.58.0.0'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.0'
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.0'
-    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.0' 
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.0'
     implementation 'org.slf4j:slf4j-api:1.7.30'
 
     // Use JUnit test framework
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0' 
-    testImplementation 'org.slf4j:slf4j-jdk14:1.7.30'  
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
+    testImplementation 'org.slf4j:slf4j-jdk14:1.7.30'
 }
 
 test {
     testLogging {
         outputs.upToDateWhen {false}
         showStandardStreams = true
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'org.elastos.did'
+            artifactId = 'didsdk'
+            //version = '1.0.0'
+
+            from components.java
+
+            pom {
+                name = 'Elastos DID SDK'
+                description = 'Elastos decentralized identity library'
+                url = 'https://www.elastos.org/'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://github.com/elastos/Elastos.DID.Java.SDK/blob/master/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'elastos'
+                        name = 'Elastos Foundation'
+                        email = 'support@elastos.org'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/elastos/Elastos.DID.Java.SDK.git'
+                    developerConnection = 'scm:git:ssh://github.com/elastos/Elastos.DID.Java.SDK.git'
+                    url = 'http://github.com/elastos/Elastos.DID.Java.SDK'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            def releasesRepoUrl = "$buildDir/repos/releases/$version"
+            def snapshotsRepoUrl = "$buildDir/repos/snapshots/$version"
+            url = project.hasProperty('release') ? releasesRepoUrl : snapshotsRepoUrl
+        }
     }
 }

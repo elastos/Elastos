@@ -21,6 +21,18 @@ $ ./gradlew build -x test
 
 Another choice to use **Eclipse** or **Android Studio** to import this grade project to make build and run tests.
 
+## Publish the Maven package
+
+Get the source code for this repository and create Maven package with commands listed below:
+
+```
+$ git clone https://github.com/elastos/Elastos.DID.Java.SDK
+$ cd Elastos.DID.Java.SDK
+$ ./gradlew -Prelease -Pversion=1.2.3 publish
+```
+
+You can change the `1.2.3` to the real version code. The Maven publications can be located at build/repos/*version*/ directory.
+
 ## Tests
 
 TODO
