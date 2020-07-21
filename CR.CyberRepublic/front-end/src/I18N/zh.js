@@ -951,7 +951,7 @@ const zh = {
   'profile.submission.table.type': '类型',
   'profile.submission.table.created': '创建日期',
 
-  'profile.member.vote.qrcodeTip':'打开 ELA 钱包扫码投票',
+  'profile.member.vote.qrcodeTip':'打开 ELA 钱包扫码投票（社区投票专用）',
 
   // Validate Form
   'ambassadors.form.required': '必填项目',
@@ -1535,7 +1535,7 @@ zh[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = '已完成'
 zh[`cvoteStatus.${CVOTE_STATUS.INCOMPLETED}`] = '未完成'
 zh[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = '已过期'
 zh[`cvoteStatus.${CVOTE_STATUS.NOTIFICATION}`] = '公示期'
-zh[`cvoteStatus.${CVOTE_STATUS.VETOED}`] = '已否决'
+zh[`cvoteStatus.${CVOTE_STATUS.VETOED}`] = '社区否决'
 
 
 export default zh
