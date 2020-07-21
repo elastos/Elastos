@@ -651,7 +651,7 @@ export default class extends StandardPage {
     const signature = _.get(detail, 'signature.data')
     const makeIntoProposalPanel = this.renderMakeIntoProposalPanel()
 
-    const considerBtn = (isCouncil || isAdmin) && (
+    const considerBtn = (isCouncil || isAdmin) && signature && (
       <Col xs={24} sm={8}>
         <Popconfirm
           title={I18N.get('suggestion.modal.consideration')}
