@@ -40,6 +40,7 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
 import org.elastos.wallet.ela.db.table.Contact;
+import org.elastos.wallet.ela.ui.did.fragment.DIDCardFragment;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -57,7 +58,6 @@ import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class ContactDetailFragment extends BaseFragment {
 
@@ -68,10 +68,14 @@ public class ContactDetailFragment extends BaseFragment {
     EditText etName;
     @BindView(R.id.et_walletaddr)
     EditText etWalletaddr;
+    @BindView(R.id.et_did)
+    EditText etDid;
     @BindView(R.id.iv_1)
     ImageView iv1;
     @BindView(R.id.iv_2)
     ImageView iv2;
+    @BindView(R.id.iv_did)
+    ImageView ivDid;
     @BindView(R.id.et_mobile)
     EditText etMobile;
     @BindView(R.id.et_email)
@@ -88,7 +92,6 @@ public class ContactDetailFragment extends BaseFragment {
     TextView tvDelete;
     @BindView(R.id.ll_edit)
     LinearLayout llEdit;
-    Unbinder unbinder;
     private RealmUtil realmUtil;
     private Contact contact;
     private String type;
@@ -131,9 +134,13 @@ public class ContactDetailFragment extends BaseFragment {
                 //查看联系人
                 iv1.setImageResource(R.mipmap.setting_adding_copy);
                 iv2.setImageResource(R.mipmap.setting_adding_code);
+                ivDid.setImageResource(R.mipmap.cr_arrow_right);
                 tvTitle.setText(R.string.showcontact);
-                etEnable(false);
                 contact = data.getParcelable("Contact");
+                if (TextUtils.isEmpty(contact.getDid())) {
+                    ivDid.setVisibility(View.GONE);
+                }
+                etEnable(false);
                 setEtData(contact);
                 tvAdd.setVisibility(View.GONE);
                 llEdit.setVisibility(View.VISIBLE);
@@ -152,6 +159,7 @@ public class ContactDetailFragment extends BaseFragment {
         }
         etName.setText(contact.getName());
         etWalletaddr.setText(contact.getWalletAddr());
+        etDid.setText(contact.getDid());
         etMobile.setText(contact.getMobile());
         etEmail.setText(contact.getEmail());
         etRemark.setText(contact.getRemark());
@@ -160,12 +168,13 @@ public class ContactDetailFragment extends BaseFragment {
     private void etEnable(Boolean type) {
         etName.setEnabled(type);
         etWalletaddr.setEnabled(type);
+        etDid.setEnabled(type);
         etMobile.setEnabled(type);
         etEmail.setEnabled(type);
         etRemark.setEnabled(type);
     }
 
-    @OnClick({R.id.tv_add, R.id.tv_edit, R.id.tv_delete, R.id.iv_1, R.id.iv_2, R.id.tv_change})
+    @OnClick({R.id.tv_add, R.id.tv_edit, R.id.tv_delete, R.id.iv_1, R.id.iv_2, R.id.iv_did, R.id.tv_change})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.iv_1:
@@ -175,6 +184,9 @@ public class ContactDetailFragment extends BaseFragment {
                 break;
             case R.id.iv_2:
                 doPicture(1);
+                break;
+            case R.id.iv_did:
+                doDID();
                 break;
             case R.id.tv_add:
                 addContact(null);
@@ -202,6 +214,21 @@ public class ContactDetailFragment extends BaseFragment {
 
                     }
                 });
+
+                break;
+        }
+    }
+
+    private void doDID() {
+
+        switch (type) {
+            case Constant.CONTACTADD:
+            case Constant.CONTACTEDIT:
+                //添加联系人
+                etDid.setText(ClipboardUtil.paste(getBaseActivity()));
+                break;
+            case Constant.CONTACTSHOW:
+                start(DIDCardFragment.class);
 
                 break;
         }
@@ -251,8 +278,7 @@ public class ContactDetailFragment extends BaseFragment {
             return;
         }
         //(String id, String name, String walletAddr, String mobile, String email, String remark, String filed1, String filed2, String filed3)
-        contact = new Contact(id,
-                name, wallletAddr, getText(etMobile), getText(etEmail), getText(etRemark));
+        contact = new Contact(id, name, wallletAddr, getText(etDid), getText(etMobile), getText(etEmail), getText(etRemark));
         realmUtil.insertContact(contact, new RealmTransactionAbs() {
             @Override
             public void onSuccess() {
@@ -300,6 +326,11 @@ public class ContactDetailFragment extends BaseFragment {
         int integer = result.getCode();
         if (integer == RxEnum.UPDATACONTACT.ordinal()) {
             contact = (Contact) result.getObj();
+            if (TextUtils.isEmpty(contact.getDid())) {
+                ivDid.setVisibility(View.GONE);
+            } else {
+                ivDid.setVisibility(View.VISIBLE);
+            }
             setEtData(contact);
 
         }

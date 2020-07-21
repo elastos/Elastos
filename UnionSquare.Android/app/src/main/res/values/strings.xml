@@ -71,7 +71,7 @@
     <string name="please_enter_your_mnemonic_password">请输入助记词密码</string>
     <string name="language">语言</string>
     <string name="contact">联系人</string>
-    <string name="nocontact">您尚未添加联系人</string>
+    <string name="nocontact">暂无联系人</string>
     <string name="setting">设置</string>
     <string name="pleaseinputname">请输入姓名(必填)</string>
     <string name="pleaseinputwalletaddr">请输入钱包地址(必填)</string>
@@ -762,4 +762,5 @@
     <string name="openresorcedetaile">1. 本程序是根据开源项目Elastos基础代码提供相应衍生功能的开源代码APP，并遵循开源MIT协议。\n\n 2. 使用本程序即认定为充分理解并有能力接受并能够承担可能存在的任何相关技术风险和其他风险。\n\n  3. 由于基于分布式节点网络情况，因网络状况、通讯线路、代码安全缺陷或分布式网络节点所在国家或地区监管要求等任何原因而导致网络中断、黑客攻击等节点服务不能使用任何情形，本程序的开发团队不承担相关风险和后果。</string>
     <string name="apperro">很抱歉，由于程序错误导致软件崩溃，是否转发运行日志？</string>
     <string name="CryptoNamewrongaddress">CryptoName地址错误</string>
+    <string name="plzinputdid">请输入DID</string>
 </resources>

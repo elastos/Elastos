@@ -37,38 +37,38 @@ public class Contact extends RealmObject implements Parcelable, Cloneable {
     public Contact() {
     }
 
-    public Contact(String id, String name, String walletAddr, String mobile, String email, String remark, String filed1, String filed2, String filed3) {
-        this.id = id;
-        this.name = name;
-        this.walletAddr = walletAddr;
-        this.mobile = mobile;
-        this.email = email;
-        this.remark = remark;
-
-    }
-
-    public Contact(String id, String name, String walletAddr, String mobile, String email, String remark) {
-        this.id = id;
-        this.name = name;
-        this.walletAddr = walletAddr;
-        this.mobile = mobile;
-        this.email = email;
-        this.remark = remark;
+    public Contact(String id, String name, String walletAddr, String did, String mobile, String email, String remark, String filed1, String filed2, String filed3) {
+        this(id, name, walletAddr, did, mobile, email, remark);
         this.filed1 = filed1;
         this.filed2 = filed2;
         this.filed3 = filed3;
+
     }
-public void setContact(Contact contact){
-    this.id =contact.getId();
-    this.name = contact.getName();
-    this.walletAddr = contact.getWalletAddr();
-    this.mobile = contact.getMobile();
-    this.email = contact.getEmail();
-    this.remark = contact.getRemark();
-    this.filed1 = contact.getFiled1();
-    this.filed2 = contact.getFiled2();
-    this.filed3 = contact.getFiled3();
-}
+
+    public Contact(String id, String name, String walletAddr, String did, String mobile, String email, String remark) {
+        this.id = id;
+        this.name = name;
+        this.walletAddr = walletAddr;
+        this.did = did;
+        this.mobile = mobile;
+        this.email = email;
+        this.remark = remark;
+
+    }
+
+    public void setContact(Contact contact) {
+        this.id = contact.getId();
+        this.name = contact.getName();
+        this.walletAddr = contact.getWalletAddr();
+        this.did = contact.getDid();
+        this.mobile = contact.getMobile();
+        this.email = contact.getEmail();
+        this.remark = contact.getRemark();
+        this.filed1 = contact.getFiled1();
+        this.filed2 = contact.getFiled2();
+        this.filed3 = contact.getFiled3();
+    }
+
     //尽量少用int  int在updata的时候不设置默认0
     @PrimaryKey
     private String id;//联系人唯一标示uuid
@@ -76,6 +76,7 @@ public void setContact(Contact contact){
     private String name;
     @Required
     private String walletAddr;
+    private String did;
     private String mobile;
     private String email;
     private String remark;
@@ -105,6 +106,14 @@ public void setContact(Contact contact){
 
     public void setWalletAddr(String walletAddr) {
         this.walletAddr = walletAddr;
+    }
+
+    public String getDid() {
+        return did;
+    }
+
+    public void setDid(String did) {
+        this.did = did;
     }
 
     public String getMobile() {
@@ -160,6 +169,7 @@ public void setContact(Contact contact){
         id = in.readString();
         name = in.readString();
         walletAddr = in.readString();
+        did = in.readString();
         mobile = in.readString();
         email = in.readString();
         remark = in.readString();
@@ -191,6 +201,7 @@ public void setContact(Contact contact){
         dest.writeString(id);
         dest.writeString(name);
         dest.writeString(walletAddr);
+        dest.writeString(did);
         dest.writeString(mobile);
         dest.writeString(email);
         dest.writeString(remark);
@@ -210,6 +221,7 @@ public void setContact(Contact contact){
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", walletAddr='" + walletAddr + '\'' +
+                ", did='" + did + '\'' +
                 ", mobile='" + mobile + '\'' +
                 ", email='" + email + '\'' +
                 ", remark='" + remark + '\'' +

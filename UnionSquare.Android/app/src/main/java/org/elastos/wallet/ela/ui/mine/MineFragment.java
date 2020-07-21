@@ -43,6 +43,7 @@ import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.adapter.ContactRecAdapetr;
 import org.elastos.wallet.ela.ui.mine.fragment.AboutFragment;
 import org.elastos.wallet.ela.ui.mine.fragment.ContactDetailFragment;
+import org.elastos.wallet.ela.ui.mine.fragment.ContractFragment;
 import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
@@ -61,7 +62,7 @@ import butterknife.OnClick;
  * tab-设置
  */
 
-public class MineFragment extends BaseFragment implements CommonRvListener {
+public class MineFragment extends BaseFragment  {
 
     @BindView(R.id.iv_title_left)
     ImageView ivTitleLeft;
@@ -81,20 +82,8 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
     LinearLayout llLanguge;
     @BindView(R.id.tv_language)
     TextView tvLanguage;
-    @BindView(R.id.iv_contact)
-    ImageView ivContact;
-    @BindView(R.id.rl_contact)
-    RelativeLayout rlContact;
-    @BindView(R.id.tv_contact_none)
-    TextView tvContactNone;
-    @BindView(R.id.rv)
-    RecyclerView rv;
-    @BindView(R.id.iv_contact_add)
-    ImageView ivContactAdd;
     private SPUtil sp;
-    private RealmUtil realmUtil;
-    private List<Contact> contacts = new ArrayList<>();
-    private ContactRecAdapetr adapter;
+
 
 
     @Override
@@ -117,7 +106,6 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
         llLanguge.getChildAt(sp.getLanguage()).setSelected(true);
         tvLanguage.setText(sp.getLanguage() == 0 ? "中文(简体)" : "English");
         llLanguge.getChildAt(sp.getLanguage()).setSelected(true);
-        realmUtil = new RealmUtil();
         registReceiver();
         if (sp.isOpenRedPoint() && ((AssetskFragment.messageList != null && AssetskFragment.messageList.size() > 0) || CacheUtil.getUnReadMessage().size() > 0)) {
             //有新消息
@@ -126,7 +114,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
     }
 
     @OnClick({R.id.rl_language, R.id.rl_contact, R.id.tv_chinese, R.id.tv_english,
-            R.id.iv_contact_add, R.id.rl_about, R.id.iv_title_right})
+            R.id.rl_about, R.id.iv_title_right})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_chinese:
@@ -160,35 +148,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
 
 
             case R.id.rl_contact:
-                List<Contact> tempContacts = realmUtil.queryAllContact();
-                if (ivContactAdd.getVisibility() == View.VISIBLE) {
-                    ivContactAdd.setVisibility(View.GONE);
-                    tvContactNone.setVisibility(View.GONE);
-                    rv.setVisibility(View.GONE);
-                    ivContact.setImageResource(R.mipmap.asset_list_arrow);
-                } else {
-                    ivContactAdd.setVisibility(View.VISIBLE);
-                    ivContact.setImageResource(R.mipmap.setting_list_arrow);
-                    if (tempContacts.size() == 0) {
-                        tvContactNone.setVisibility(View.VISIBLE);
-                        rv.setVisibility(View.GONE);
-                    } else {
-                        rv.setVisibility(View.VISIBLE);
-                        contacts.clear();
-                        contacts.addAll(tempContacts);
-                        setRecycleView();
-                    }
-
-                }
-
-                break;
-            case R.id.iv_contact_add:
-                Bundle bundle = new Bundle();
-                bundle.putString("type", Constant.CONTACTADD);
-                ContactDetailFragment contactDetailFragment = new ContactDetailFragment();
-                contactDetailFragment.setArguments(bundle);
-                ((BaseFragment) getParentFragment()).start(contactDetailFragment);
-
+                ((BaseFragment) getParentFragment()).start(ContractFragment.class);
                 break;
             case R.id.rl_about:
                 ((BaseFragment) getParentFragment()).start(AboutFragment.class);
@@ -221,20 +181,6 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
-        if (integer == RxEnum.UPDATACONTACT.ordinal()) {
-
-            List<Contact> tempContacts = realmUtil.queryAllContact();
-            if (tempContacts.size() == 0) {
-                tvContactNone.setVisibility(View.VISIBLE);
-                rv.setVisibility(View.GONE);
-            } else {
-                tvContactNone.setVisibility(View.GONE);
-                contacts.clear();
-                contacts.addAll(tempContacts);
-                rv.setVisibility(View.VISIBLE);
-                setRecycleView();
-            }
-        }
         if (integer == RxEnum.NOTICE.ordinal()) {
             //新的消息通知
             if (sp.isOpenRedPoint()) {
@@ -274,20 +220,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
         getActivity().finish();
     }
 
-    private void setRecycleView() {
-        if (adapter == null) {
-            adapter = new ContactRecAdapetr(getContext(), contacts);
-            rv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-            rv.setHasFixedSize(true);
-            rv.setNestedScrollingEnabled(false);
-            rv.setFocusableInTouchMode(false);
-            rv.setAdapter(adapter);
-            adapter.setCommonRvListener(this);
 
-        } else {
-            adapter.notifyDataSetChanged();
-        }
-    }
 
     /**
      * 处理回退事件
@@ -300,15 +233,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
     }
 
 
-    @Override
-    public void onRvItemClick(int position, Object o) {
-        Bundle bundle = new Bundle();
-        bundle.putParcelable("Contact", (Contact) o);
-        bundle.putString("type", Constant.CONTACTSHOW);
-        ContactDetailFragment contactDetailFragment = new ContactDetailFragment();
-        contactDetailFragment.setArguments(bundle);
-        ((BaseFragment) getParentFragment()).start(contactDetailFragment);
-    }
+
 
 
 }

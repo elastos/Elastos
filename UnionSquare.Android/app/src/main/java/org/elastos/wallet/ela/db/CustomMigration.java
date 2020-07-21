@@ -59,6 +59,10 @@ public class CustomMigration implements RealmMigration {
         }
         if (oldVersion == 5) {
             uodata5to6(schema);
+            oldVersion++;
+        }
+        if (oldVersion == 6) {
+            uodata6to7(schema);
             // oldVersion++;
         }
     }
@@ -108,6 +112,14 @@ public class CustomMigration implements RealmMigration {
         //新增@Required的id
         if (!wallet.hasField("did"))
             wallet.addField("did", String.class);
+
+    }
+
+    private void uodata6to7(RealmSchema schema) {
+        RealmObjectSchema contact = schema.get("Contact");
+        //新增@Required的id
+        if (!contact.hasField("did"))
+            contact.addField("did", String.class);
 
     }
 

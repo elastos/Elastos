@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/settingItem"
+    style="@style/settingItem_margin"
     android:layout_marginTop="@dimen/px10"
-    android:background="@drawable/selector_setting_item">
+    android:background="@color/a26ffffff">
 
 
     <TextView

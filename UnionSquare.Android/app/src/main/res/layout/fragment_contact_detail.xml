@@ -14,9 +14,9 @@
         android:layout_marginRight="@dimen/px60"
         android:background="@color/a26ffffff"
         android:orientation="vertical"
-        android:paddingBottom="15dp"
         android:paddingLeft="15dp"
-        android:paddingRight="15dp">
+        android:paddingRight="15dp"
+        android:paddingBottom="15dp">
 
         <EditText
             android:id="@+id/et_name"
@@ -40,7 +40,6 @@
             android:orientation="horizontal">
 
             <EditText
-                android:maxLength="100"
                 android:id="@+id/et_walletaddr"
                 android:layout_width="0dp"
                 android:layout_height="53dp"
@@ -48,6 +47,7 @@
                 android:background="@null"
                 android:ellipsize="end"
                 android:hint="@string/pleaseinputwalletaddr"
+                android:maxLength="100"
                 android:maxLines="1"
                 android:singleLine="true"
                 android:textColor="@color/white"
@@ -77,29 +77,58 @@
         <View style="@style/line1" />
 
         <EditText
-            android:inputType="phone"
-            android:singleLine="true"
-            android:maxLength="100"
             android:id="@+id/et_mobile"
             android:layout_width="match_parent"
             android:layout_height="53dp"
             android:background="@null"
             android:hint="@string/pleaseinputmobile"
+            android:inputType="phone"
+            android:maxLength="100"
+            android:singleLine="true"
             android:textColor="@color/white"
             android:textColorHint="#80ffffff"
             android:textSize="13sp" />
 
         <View style="@style/line1" />
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/et_did"
+                android:layout_width="match_parent"
+                android:layout_height="53dp"
+                android:background="@null"
+                android:hint="@string/plzinputdid"
+                android:inputType="phone"
+                android:maxLength="100"
+                android:singleLine="true"
+                android:textColor="@color/white"
+                android:textColorHint="#80ffffff"
+                android:textSize="13sp" />
+
+            <ImageView
+                android:id="@+id/iv_did"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:padding="@dimen/px10"
+                android:src="@mipmap/asset_transfer_stick" />
+        </RelativeLayout>
+
+        <View style="@style/line1" />
+
         <EditText
-            android:inputType="textEmailAddress"
-            android:singleLine="true"
-            android:maxLength="100"
             android:id="@+id/et_email"
             android:layout_width="match_parent"
             android:layout_height="53dp"
             android:background="@null"
             android:hint="@string/pleaseinputemail"
+            android:inputType="textEmailAddress"
+            android:maxLength="100"
+            android:singleLine="true"
             android:textColor="@color/white"
             android:textColorHint="#80ffffff"
             android:textSize="13sp" />
@@ -125,16 +154,16 @@
         android:id="@+id/tv_add"
         style="@style/button1"
         android:layout_marginLeft="60dp"
-        android:layout_marginRight="60dp"
         android:layout_marginTop="@dimen/px264"
+        android:layout_marginRight="60dp"
         android:text="@string/add" />
 
     <TextView
         android:id="@+id/tv_change"
         style="@style/button1"
         android:layout_marginLeft="60dp"
-        android:layout_marginRight="60dp"
         android:layout_marginTop="@dimen/px264"
+        android:layout_marginRight="60dp"
         android:text="@string/surechange"
         android:visibility="gone" />
 
@@ -143,8 +172,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/px60"
-        android:layout_marginRight="@dimen/px60"
         android:layout_marginTop="@dimen/px264"
+        android:layout_marginRight="@dimen/px60"
         android:orientation="horizontal"
         android:visibility="gone">
 

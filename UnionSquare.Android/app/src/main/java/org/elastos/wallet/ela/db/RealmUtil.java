@@ -45,7 +45,7 @@ import io.realm.RealmResults;
 
 public class RealmUtil {
 
-    public static final long DB_VERSION_CODE = 6;//当前数据库版本号
+    public static final long DB_VERSION_CODE = 7;//当前数据库版本号
     public static final String DB_NAME = "DB";//BuildConfig
 
     @Inject
