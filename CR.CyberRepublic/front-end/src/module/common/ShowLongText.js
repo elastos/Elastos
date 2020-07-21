@@ -14,8 +14,11 @@ class ShowLongText extends Component {
   }
 
   showMore = () => {
-    const { toggle } = this.state
-    this.setState({ toggle: !toggle, show: true })
+    this.setState({ toggle: true })
+  }
+
+  showLess = () => {
+    this.setState({ toggle: false })
   }
 
   componentDidMount() {
@@ -36,23 +39,25 @@ class ShowLongText extends Component {
   render() {
     const { toggle, show } = this.state
     const { text, id } = this.props
-    const content = text
     return (
       <Wrapper>
         <div className={toggle ? 'container more' : 'container'} id={id}>
           <MarkdownPreview
-            content={content ? content : ''}
+            content={text ? text : ''}
             style={{ p: { margin: 0 } }}
           />
         </div>
-
-        {show ? (
-          <a onClick={this.showMore} style={{ textDecoration: 'underline' }}>
-            {toggle
-              ? I18N.get('milestone.showLess')
-              : I18N.get('milestone.showMore')}
-          </a>
-        ) : null}
+        {show && <div>...</div>}
+        {show && (
+          <Button onClick={this.showMore}>
+            {I18N.get('milestone.showMore')}
+          </Button>
+        )}
+        {toggle && (
+          <Button onClick={this.showLess}>
+            {I18N.get('milestone.showLess')}
+          </Button>
+        )}
       </Wrapper>
     )
   }
@@ -62,12 +67,17 @@ export default ShowLongText
 
 const Wrapper = styled.div`
   .container {
-    height: 120px;
+    max-height: 125px;
     overflow: hidden;
     line-height: 1.5;
   }
   .container.more {
-    height: unset;
+    max-height: unset;
     overflow: unset;
   }
+`
+const Button = styled.a`
+  text-decoration: underline;
+  margin-top: 16px;
+  display: block;
 `
