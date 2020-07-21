@@ -11,7 +11,7 @@ protocol DIDStorage {
     func storePrivateIdentityIndex(_ index: Int) throws
     func loadPrivateIdentityIndex() throws -> Int
 
-    func containMnemonic() -> Bool
+    func containsMnemonic() -> Bool
     func storeMnemonic(_ mnemonic: String) throws
     func loadMnemonic() throws -> String
     

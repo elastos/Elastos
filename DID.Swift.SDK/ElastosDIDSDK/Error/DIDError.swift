@@ -17,8 +17,10 @@ public enum DIDError: Error {
     case didDeactivated (_ des: String? = nil)
     case didExpired     (_ des: String? = nil)
     case didtransactionError(_ des: String? = nil)
+    case didNotFoundError(_ des: String? = nil)
 
     case invalidState   (_ des: String? = nil)
+    case invalidKeyError(_ des: String? = nil)
 
     case notFoundError (_ des: String? = nil)
 }
@@ -62,6 +64,10 @@ extension DIDError {
 
         case .notFoundError(let des):
             return des ?? "not found"
+        case .didNotFoundError(let des):
+            return des ?? "did not found"
+        case .invalidKeyError(let des):
+            return des ?? "invalid key"
         }
     }
 }

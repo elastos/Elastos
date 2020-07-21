@@ -6,7 +6,7 @@ public class DID {
 
     private var _method: String?
     private var _methodSpecificId: String?
-    private var _meta: DIDMeta?
+    private var _metadata: DIDMeta?
 
     public static let METHOD: String = "elastos"
 
@@ -52,19 +52,19 @@ public class DID {
     }
 
     public func getMetadata() -> DIDMeta {
-        if  self._meta == nil {
-            self._meta = DIDMeta()
+        if  self._metadata == nil {
+            self._metadata = DIDMeta()
         }
-        return _meta!
+        return _metadata!
     }
 
     func setMetadata(_ newValue: DIDMeta) {
-        self._meta = newValue
+        self._metadata = newValue
     }
 
     public func saveMetadata() throws {
-        if (_meta != nil && _meta!.attachedStore) {
-            try _meta?.store?.storeDidMetadata(_meta!, for: self)
+        if (_metadata != nil && _metadata!.attachedStore) {
+            try _metadata?.store?.storeDidMetadata(self, _metadata!)
         }
     }
 

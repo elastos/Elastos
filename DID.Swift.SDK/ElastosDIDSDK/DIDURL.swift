@@ -32,7 +32,7 @@ public class DIDURL {
     private var _parameters: OrderedDictionary<String, String>?
     private var _path: String?
     private var _queryParameters: OrderedDictionary<String, String>?
-    private var _meta: CredentialMeta?
+    private var _metadata: CredentialMeta?
 
     public init(_ id: DID, _ url: String) throws {
         guard !url.isEmpty else {
@@ -143,19 +143,19 @@ public class DIDURL {
     }
 
     func setMetadata(_ metadata: CredentialMeta) {
-        self._meta = metadata
+        self._metadata = metadata
     }
 
     public func getMetadata() -> CredentialMeta {
-        if  self._meta == nil {
-            self._meta = CredentialMeta()
+        if  self._metadata == nil {
+            self._metadata = CredentialMeta()
         }
-        return self._meta!
+        return self._metadata!
     }
 
     public func saveMetadata() throws {
-        if (_meta != nil && _meta!.attachedStore) {
-            try _meta?.store?.storeCredentialMeta(for: did, key: self, meta: _meta!)
+        if (_metadata != nil && _metadata!.attachedStore) {
+            try _metadata?.store?.storeCredentialMetadata(did, self, _metadata!)
         }
     }
 }

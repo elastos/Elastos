@@ -7,7 +7,7 @@ class JwtTest: XCTestCase {
     func testJWT() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
 
             let doc = try testData.loadTestDocument()
@@ -76,7 +76,7 @@ class JwtTest: XCTestCase {
     func testSignWithDefaultKey() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
 
             let doc = try testData.loadTestDocument()
@@ -149,7 +149,7 @@ class JwtTest: XCTestCase {
     func testSignWithSpecificKey() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
 
             let doc = try testData.loadTestDocument()
@@ -216,7 +216,7 @@ class JwtTest: XCTestCase {
     func testAutoVerify() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
 
             let doc = try testData.loadTestDocument()
@@ -285,7 +285,7 @@ class JwtTest: XCTestCase {
     func testClaimJsonNode() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
 
             let doc = try testData.loadTestDocument()
@@ -359,7 +359,7 @@ class JwtTest: XCTestCase {
     func testClaimJsonText() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
 
             let doc = try testData.loadTestDocument()
@@ -431,7 +431,7 @@ class JwtTest: XCTestCase {
     func testSignSetClaimWithJsonNode() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
 
             let doc = try testData.loadTestDocument()
@@ -507,7 +507,7 @@ class JwtTest: XCTestCase {
     func testSetClaimWithJsonText() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
 
             let doc = try testData.loadTestDocument()
@@ -583,7 +583,7 @@ class JwtTest: XCTestCase {
     func testAddClaimWithJsonNode() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
 
             let doc = try testData.loadTestDocument()
@@ -658,7 +658,7 @@ class JwtTest: XCTestCase {
     func testAddClaimWithJsonText() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
 
             let doc = try testData.loadTestDocument()

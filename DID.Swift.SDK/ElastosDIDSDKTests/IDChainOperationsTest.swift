@@ -9,7 +9,7 @@ class IDChainOperationsTest: XCTestCase {
     public func testPublishAndResolve() throws {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(IDChainOperationsTest.DUMMY_TEST)
+            let store: DIDStore = try testData.setup(IDChainOperationsTest.DUMMY_TEST)
             _ = try testData.initIdentity()
             try testData.waitForWalletAvaliable()
 
@@ -17,6 +17,7 @@ class IDChainOperationsTest: XCTestCase {
             let doc = try store.newDid(using: storePass)
             let did = doc.subject
             print("Publishing new DID: \(did)...")
+//            try store.publishDid(for: did, using: storePass)
             try store.publishDid(for: did, using: storePass)
 
             // Resolve new DID document
@@ -33,7 +34,7 @@ class IDChainOperationsTest: XCTestCase {
     func testUpdateAndResolve() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(IDChainOperationsTest.DUMMY_TEST) 
+            let store = try testData.setup(IDChainOperationsTest.DUMMY_TEST)
             _ = try testData.initIdentity()
             try testData.waitForWalletAvaliable()
 
@@ -42,7 +43,7 @@ class IDChainOperationsTest: XCTestCase {
             let did = doc.subject
             //TODO:
             var lock = XCTestExpectation(description: "publishDidAsync")
-            _ = store.publishDidAsync(for: did, using: storePass).done { void in
+            _ = try store.publishDidAsync(for: did, using: storePass).done { void in
                 XCTAssertTrue(true)
                 lock.fulfill()
             }.catch { error in
@@ -77,7 +78,7 @@ class IDChainOperationsTest: XCTestCase {
     func testPublishAndResolveAsync() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(IDChainOperationsTest.DUMMY_TEST)
+            let store = try testData.setup(IDChainOperationsTest.DUMMY_TEST)
             _ = try testData.initIdentity()
             try testData.waitForWalletAvaliable()
 
@@ -122,7 +123,7 @@ class IDChainOperationsTest: XCTestCase {
     func testPublishAndResolveAsync2() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(IDChainOperationsTest.DUMMY_TEST)
+            let store = try testData.setup(IDChainOperationsTest.DUMMY_TEST)
             _ = try testData.initIdentity()
             try testData.waitForWalletAvaliable()
             // Create new DID and publish to ID sidechain.
@@ -131,7 +132,7 @@ class IDChainOperationsTest: XCTestCase {
             print("Publishing new DID and resolve: \(did)...")
             var resolved: DIDDocument?
             let lock = XCTestExpectation(description: "publishDidAsync")
-            store.publishDidAsync(for: did, using: storePass)
+            try store.publishDidAsync(for: did, using: storePass)
                 .done{ doc in
                     lock.fulfill()
             }
@@ -167,7 +168,7 @@ class IDChainOperationsTest: XCTestCase {
             var sigs: [String] = []
 
             let testData = TestData()
-            let store = try testData.setupStore(IDChainOperationsTest.DUMMY_TEST)
+            let store = try testData.setup(IDChainOperationsTest.DUMMY_TEST)
             _ = try testData.initIdentity()
             try testData.waitForWalletAvaliable()
 
@@ -177,7 +178,7 @@ class IDChainOperationsTest: XCTestCase {
             print("Publishing new DID:  \(did)...")
 
             var lock = XCTestExpectation()
-            store.publishDidAsync(for: did, using: storePass).done { void in
+            try store.publishDidAsync(for: did, using: storePass).done { void in
                 print("OK")
                 sigs.append(doc.proof.signature)
                 XCTAssertTrue(true)
@@ -220,7 +221,7 @@ class IDChainOperationsTest: XCTestCase {
             try store.storeDid(using: doc)
 
             lock = XCTestExpectation()
-            store.publishDidAsync(for: did, using: storePass).done { tx in
+            try store.publishDidAsync(for: did, using: storePass).done { tx in
                 print("OK")
                 sigs.append(doc.proof.signature)
                 XCTAssertTrue(true)
@@ -325,7 +326,7 @@ class IDChainOperationsTest: XCTestCase {
     public func testUpdateAndResolveWithCredentials() throws {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(IDChainOperationsTest.DUMMY_TEST)
+            let store: DIDStore = try testData.setup(IDChainOperationsTest.DUMMY_TEST)
             let mnemonic: String = try testData.initIdentity()
             print("Mnemonic: " + mnemonic)
             try testData.waitForWalletAvaliable()
@@ -450,7 +451,7 @@ class IDChainOperationsTest: XCTestCase {
     func testUpdateAndResolveWithCredentialsAsync() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(IDChainOperationsTest.DUMMY_TEST)
+            let store = try testData.setup(IDChainOperationsTest.DUMMY_TEST)
             _ =  try testData.initIdentity()
             try testData.waitForWalletAvaliable()
 
@@ -537,7 +538,7 @@ class IDChainOperationsTest: XCTestCase {
 
             lock = XCTestExpectation()
             print("Updating DID: \(did)...")
-            store.publishDidAsync(for: did, using: storePass).done { tx in
+            try store.publishDidAsync(for: did, using: storePass).done { tx in
                 print("OK")
                 lock.fulfill()
             }.catch { error in
@@ -594,7 +595,7 @@ class IDChainOperationsTest: XCTestCase {
 
             print("Updating DID: \(did)...")
             lock = XCTestExpectation()
-            store.publishDidAsync(for: did, using: storePass).done { tx in
+            try store.publishDidAsync(for: did, using: storePass).done { tx in
                 print("OK")
                 lock.fulfill()
             }.catch { error in
@@ -635,11 +636,11 @@ class IDChainOperationsTest: XCTestCase {
 
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(false)
+            let store: DIDStore = try testData.setup(false)
             let mnemonic: String = try testData.loadRestoreMnemonic()
-            try store.initializePrivateIdentity(Mnemonic.ENGLISH, mnemonic, passphrase, storePass, true)
-            try store.synchronize(using: storePass) //5
+            try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passphrase: passphrase, storePassword: storePass, true)
             print("Synchronizing from IDChain...")
+            try store.synchronize(using: storePass) //5
             print("OK")
 
             let dids: Array<DID> = try store.listDids(using: DIDStore.DID_HAS_PRIVATEKEY)
@@ -667,11 +668,11 @@ class IDChainOperationsTest: XCTestCase {
         }
         do {
             let testData = TestData()
-            let store = try testData.setupStore(false)
+            let store = try testData.setup(false)
 
             let mnemonic = try testData.loadRestoreMnemonic()
 
-            try store.initializePrivateIdentity(Mnemonic.ENGLISH, mnemonic, passphrase, storePass, true)
+            try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passphrase: passphrase, storePassword: storePass, true)
 
             print("Synchronizing from IDChain...")
 
@@ -727,11 +728,11 @@ class IDChainOperationsTest: XCTestCase {
         }
         do {
             let testData = TestData()
-            let store = try testData.setupStore(false)
+            let store = try testData.setup(false)
 
             let mnemonic = try testData.loadRestoreMnemonic()
 
-            try store.initializePrivateIdentity(Mnemonic.ENGLISH, mnemonic, passphrase, storePass, true)
+            try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passphrase: passphrase, storePassword: storePass, true)
             print("Synchronizing from IDChain...")
             try store.synchronize(using: storePass)
             print("OK")
@@ -825,11 +826,11 @@ class IDChainOperationsTest: XCTestCase {
         }
         do {
             let testData = TestData()
-            let store = try testData.setupStore(false)
+            let store = try testData.setup(false)
 
             let mnemonic = try testData.loadRestoreMnemonic()
 
-            try store.initializePrivateIdentity(Mnemonic.ENGLISH, mnemonic, passphrase, storePass, true)
+            try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passphrase: passphrase, storePassword: storePass, true)
             print("Synchronizing from IDChain...")
             try store.synchronize(using: storePass)
             print("OK")
@@ -893,9 +894,9 @@ class IDChainOperationsTest: XCTestCase {
             XCTAssertNotEqual(originSignature, doc!.proof.signature)
 
             print("Synchronizing again from IDChain...")
-            try store.synchronize(using: storePass) { (chain, loca) -> DIDDocument in
+            try store.synchronize(using: storePass, conflictHandler: { (chain, loca) -> DIDDocument in
                 return chain
-            }
+            })
             print("OK")
 
             dids = try store.listDids(using: DIDStore.DID_HAS_PRIVATEKEY)
@@ -943,11 +944,11 @@ class IDChainOperationsTest: XCTestCase {
         }
         do {
             let testData = TestData()
-            let store = try testData.setupStore(false)
+            let store = try testData.setup(false)
 
             let mnemonic = try testData.loadRestoreMnemonic()
 
-            try store.initializePrivateIdentity(Mnemonic.ENGLISH, mnemonic, passphrase, storePass, true)
+            try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passphrase: passphrase, storePassword: storePass, true)
             print("Synchronizing from IDChain...")
             var lock = XCTestExpectation()
             try store.synchronizeAsync(using: storePass).done{ _ in
@@ -1003,11 +1004,11 @@ class IDChainOperationsTest: XCTestCase {
 
             print("Synchronizing again from IDChain...")
             lock = XCTestExpectation()
-            _ = store.synchornizeAsync(using: storePass) { (c, l) -> DIDDocument in
-                print("OK")
+            _ = store.synchornizeAsync(using: storePass, conflictHandler: { (c, l) -> DIDDocument in
+                                print("OK")
                 lock.fulfill()
                 return c
-            }
+            })
             wait(for: [lock], timeout: 100.0)
 
             dids = try store.listDids(using: DIDStore.DID_HAS_PRIVATEKEY)

@@ -109,7 +109,9 @@ public class Metadata: NSObject {
     private func save(_ generator: JsonGenerator) throws {
         generator.writeStartObject()
 
-        try _extra.forEach { (key, value) in
+        let sortedKeys = _extra.keys.sorted()
+        for key in sortedKeys {
+            let value = _extra[key] as Any
             if case Optional<Any>.none = value {
                 // Continue
             } else if value is Int {

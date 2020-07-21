@@ -28,8 +28,12 @@ public class Mnemonic {
     }
     
     public class func isValid(_ language: String, _ mnemonic: String) throws -> Bool {
-        guard !language.isEmpty, !mnemonic.isEmpty else {
-            throw DIDError.illegalArgument()
+        guard !mnemonic.isEmpty else {
+            throw DIDError.illegalArgument("Invalid mnemonic.")
+        }
+
+        guard !language.isEmpty else {
+            throw DIDError.illegalArgument("Invalid password..")
         }
 
         return language.withCString { (clang) in
@@ -37,5 +41,10 @@ public class Mnemonic {
                 return HDKey_MnemonicIsValid(cmnemonic, clang)
             }
         }
+    }
+
+    public class func toSeed(_ mnemonic: String, _ passphrase: String) -> Data {
+        
+        return Data() // TODO: TODO
     }
 }

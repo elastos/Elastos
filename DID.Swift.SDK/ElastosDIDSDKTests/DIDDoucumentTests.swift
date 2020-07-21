@@ -12,7 +12,7 @@ class DIDDoucumentTests: XCTestCase {
     func testGetPublicKey() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             
             let doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -88,18 +88,18 @@ class DIDDoucumentTests: XCTestCase {
     func testAddPublicKey() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             var doc = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
             XCTAssertTrue(doc.isValid)
             var db: DIDDocumentBuilder = doc.editing()
-            
+
             // Add 2 public keys
-            let id: DIDURL = try DIDURL(doc.subject, "test1")
-            var key: HDKey.DerivedKey = try TestData.generateKeypair()
-            db = try db.appendPublicKey(with: id, controller: doc.subject.toString(), keyBase58: key.getPublicKeyBase58())
-            
+            let id = try DIDURL(doc.subject, "test1")
+            var key = try TestData.generateKeypair()
+            db = try db.appendPublicKey(id, doc.subject, key.getPublicKeyBase58())
+
             key = try TestData.generateKeypair()
             db = try db.appendPublicKey(with: "test2", controller: doc.subject.toString(),
                                         keyBase58: key.getPublicKeyBase58())
@@ -107,7 +107,7 @@ class DIDDoucumentTests: XCTestCase {
             doc = try db.sealed(using: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(doc.isValid)
-            
+
             // Check existence
             var pk: PublicKey = try doc.publicKey(ofId: "test1")!
             XCTAssertNotNil(pk)
@@ -131,7 +131,7 @@ class DIDDoucumentTests: XCTestCase {
     func testRemovePublicKey() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -199,7 +199,7 @@ class DIDDoucumentTests: XCTestCase {
     func testGetAuthenticationKey() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
@@ -266,7 +266,7 @@ class DIDDoucumentTests: XCTestCase {
     func testAddAuthenticationKey() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -277,7 +277,7 @@ class DIDDoucumentTests: XCTestCase {
             
             // Add 2 public keys for test.
             let id: DIDURL = try DIDURL(doc.subject, "test1")
-            var key: HDKey.DerivedKey  = try TestData.generateKeypair()
+            var key: HDKey = try TestData.generateKeypair()
             _ = try db.appendPublicKey(with: id, controller: doc.subject.toString(),
                                        keyBase58: key.getPublicKeyBase58())
             key = try TestData.generateKeypair()
@@ -350,7 +350,7 @@ class DIDDoucumentTests: XCTestCase {
     func testRemoveAuthenticationKey() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
         
@@ -361,7 +361,7 @@ class DIDDoucumentTests: XCTestCase {
             let db: DIDDocumentBuilder = doc.editing()
             
             // Add 2 public keys for test
-            var key: HDKey.DerivedKey  = try TestData.generateKeypair()
+            var key: HDKey = try TestData.generateKeypair()
             _ = try db.appendAuthenticationKey(
                 with: try DIDURL(doc.subject, "test1"), keyBase58: key.getPublicKeyBase58())
             
@@ -421,7 +421,7 @@ class DIDDoucumentTests: XCTestCase {
     func testGetAuthorizationKey() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
@@ -480,7 +480,7 @@ class DIDDoucumentTests: XCTestCase {
     func testAddAuthorizationKey() {
         do {
             let testData: TestData = TestData()
-            store = try testData.setupStore(true)
+            store = try testData.setup(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -491,7 +491,7 @@ class DIDDoucumentTests: XCTestCase {
             
             // Add 2 public keys for test.
             let id: DIDURL = try DIDURL(doc.subject, "test1")
-            var key: HDKey.DerivedKey = try TestData.generateKeypair()
+            var key: HDKey = try TestData.generateKeypair()
             let did = DID(DID.METHOD, key.getAddress())
             _ = try db.appendPublicKey(with: id, controller: did.toString(), keyBase58: key.getPublicKeyBase58())
             
@@ -563,7 +563,7 @@ class DIDDoucumentTests: XCTestCase {
     func testRemoveAuthorizationKey() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -574,7 +574,7 @@ class DIDDoucumentTests: XCTestCase {
             
             // Add 2 keys for test.
             let id: DIDURL = try DIDURL(doc.subject, "test1")
-            var key: HDKey.DerivedKey  = try TestData.generateKeypair()
+            var key: HDKey = try TestData.generateKeypair()
             let did = DID(DID.METHOD, key.getAddress())
             _ = try db.appendAuthorizationKey(id, did, key.getPublicKeyBase58())
             
@@ -623,7 +623,7 @@ class DIDDoucumentTests: XCTestCase {
     func testGetCredential() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
@@ -678,7 +678,7 @@ class DIDDoucumentTests: XCTestCase {
     func testAddCredential() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -730,7 +730,7 @@ class DIDDoucumentTests: XCTestCase {
     func testAddSelfClaimedCredential() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
 
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -781,7 +781,7 @@ class DIDDoucumentTests: XCTestCase {
     func testRemoveCredential() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -844,7 +844,7 @@ class DIDDoucumentTests: XCTestCase {
     func testGetService() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
@@ -905,7 +905,7 @@ class DIDDoucumentTests: XCTestCase {
     func testAddService() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -945,7 +945,7 @@ class DIDDoucumentTests: XCTestCase {
     func testRemoveService() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -989,7 +989,7 @@ class DIDDoucumentTests: XCTestCase {
     func testParseAndSerializeDocument() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let compact = try DIDDocument.convertToDIDDocument(fromJson: try testData.loadTestCompactJson())
@@ -1034,7 +1034,7 @@ class DIDDoucumentTests: XCTestCase {
     func testSignAndVerify() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
@@ -1073,7 +1073,7 @@ class DIDDoucumentTests: XCTestCase {
 
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()

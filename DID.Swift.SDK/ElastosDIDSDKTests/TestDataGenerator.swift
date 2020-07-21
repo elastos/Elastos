@@ -18,7 +18,7 @@ class TestDataGenerator: XCTestCase {
         try DIDBackend.initializeInstance(resolver, TestData.getResolverCacheDir())
 
         let mnemonic: String = try Mnemonic.generate(Mnemonic.ENGLISH)
-        try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passPhrase: passphrase, storePassword: storePass, true)
+        try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passphrase: passphrase, storePassword: storePass, true)
         outputDir = tempDir + "/" + "DIDTestFiles"
         
         return mnemonic
@@ -45,13 +45,14 @@ class TestDataGenerator: XCTestCase {
         _ = try db.appendCredential(with: vc)
         issuer = try db.sealed(using: storePass)
         try store.storeDid(using: issuer)
-        try store.storeCredential(using: vc, with: "Profile")
+        try store.storeCredential(using: vc)
         
         let id: DIDURL = issuer.defaultPublicKey
-        let sk: String = try store.loadPrivateKey(for: issuer.subject, byId: id)
-        let data: Data = try DIDStore.decryptFromBase64(sk, storePass)
-        let binSk: [UInt8] = [UInt8](data)
-        writeTo("issuer." + id.fragment! + ".sk", Base58.base58FromBytes(binSk))
+        let key = try HDKey.deserialize(try store.loadPrivateKey(issuer.subject, id, storePass))
+//        let sk: String = try store.loadPrivateKey(for: issuer.subject, byId: id)
+//        let data: Data = try DIDStore.decryptFromBase64(sk, storePass)
+//        let binSk: [UInt8] = [UInt8](data)
+        writeTo("issuer." + id.fragment! + ".sk", key.serializeBase58())
         
         var json = issuer.toString(true)
         writeTo("issuer.normalized.json", json)
@@ -79,7 +80,7 @@ class TestDataGenerator: XCTestCase {
         //            writeTo("document.key3.sk", Base58.encode(temp.serialize()))
         
         temp = try TestData.generateKeypair()
-        let controller  = HDKey.DerivedKey.getAddress(temp.getPublicKeyBytes())
+        let controller  = temp.getAddress()
         
         _ = try db.appendAuthorizationKey(with: "recovery", controller: DID(DID.METHOD, controller), keyBase58: temp.getPublicKeyBase58())
         _ = try db.appendService(with: "openid", type: "OpenIdConnectVersion1.0Service", endpoint: "https://openid.example.com/")
@@ -115,12 +116,17 @@ class TestDataGenerator: XCTestCase {
 
         test = try db.sealed(using: storePass)
         try store.storeDid(using: test)
-        
+        vcProfile.getMetadata().setAlias("Profile")
+        try store.storeCredential(using: vcProfile)
+        vcEmail.getMetadata().setAlias("Email")
+        try store.storeCredential(using: vcEmail)
+
         var id = test.defaultPublicKey
-        let sk = try store.loadPrivateKey(for: test.subject, byId: id)
-        let data: Data = try DIDStore.decryptFromBase64(sk, storePass)
-        let binSk = [UInt8](data)
-        writeTo("document." + id.fragment! + ".sk", Base58.base58FromBytes(binSk))
+//        let sk = try store.loadPrivateKey(test.subject, id, storePass)
+//        let data: Data = try DIDStore.decryptFromBase64(sk, storePass)
+//        let binSk = [UInt8](data)
+        let key = try HDKey.deserialize(try store.loadPrivateKey(test.subject, id, storePass))
+        writeTo("document." + id.fragment! + ".sk", key.serializeBase58())
         
         var json = test.toString(true)
         writeTo("document.normalized.json", json)
@@ -216,7 +222,8 @@ class TestDataGenerator: XCTestCase {
             .withProperties(jsonProps)
             .sealed(using: storePass)
 
-        try store.storeCredential(using: vcTwitter, with: "json")
+        vcJson.getMetadata().setAlias("json")
+        try store.storeCredential(using: vcTwitter)
         json = vcJson.toString(true)
         writeTo("vc-json.normalized.json", json)
         

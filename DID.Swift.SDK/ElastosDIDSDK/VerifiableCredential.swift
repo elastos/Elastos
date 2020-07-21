@@ -8,7 +8,7 @@ public class VerifiableCredential: DIDObject {
     private var _expirationDate: Date?
     private var _subject: VerifiableCredentialSubject?
     private var _proof: VerifiableCredentialProof?
-    private var _meta: CredentialMeta?
+    private var _metadata: CredentialMeta?
 
     private let RULE_EXPIRE : Int = 1
     private let RULE_GENUINE: Int = 2
@@ -110,16 +110,16 @@ public class VerifiableCredential: DIDObject {
     }
 
     func getMeta() -> CredentialMeta {
-        if  self._meta == nil {
-            self._meta = CredentialMeta()
+        if  self._metadata == nil {
+            self._metadata = CredentialMeta()
 
-            getId().setMetadata(_meta!)
+            getId().setMetadata(_metadata!)
         }
-        return self._meta!
+        return self._metadata!
     }
 
     func setMetadata(_ newValue: CredentialMeta) {
-        self._meta = newValue
+        self._metadata = newValue
         getId().setMetadata(newValue)
     }
 
@@ -128,8 +128,8 @@ public class VerifiableCredential: DIDObject {
     }
 
     public func saveMetadata() throws {
-        if _meta != nil && _meta!.attachedStore {
-            try _meta?.store?.storeCredentialMeta(for: subject.did, key: getId(), meta: _meta!)
+        if _metadata != nil && _metadata!.attachedStore {
+            try _metadata?.store?.storeCredentialMetadata(subject.did, getId(), _metadata!)
         }
     }
 

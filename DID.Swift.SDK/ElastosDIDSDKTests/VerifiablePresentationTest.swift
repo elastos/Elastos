@@ -7,7 +7,7 @@ class VerifiablePresentationTest: XCTestCase {
     func testReadPresentation() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             
             // For integrity check
             _ = try testData.loadTestIssuer()
@@ -43,10 +43,10 @@ class VerifiablePresentationTest: XCTestCase {
     func testBuild() {
         do {
             let testData = TestData()
-            let store = try! testData.setupStore(true)
+            let store = try testData.setup(true)
             // For integrity check
-            _ = try! testData.loadTestIssuer()
-            let testDoc = try! testData.loadTestDocument()
+            _ = try testData.loadTestIssuer()
+            let testDoc = try testData.loadTestDocument()
             
             let pb = try! VerifiablePresentation.editingVerifiablePresentation(for: testDoc.subject, using: store)
             let vp = try! pb.withCredentials(testData.loadProfileCredential()!,
@@ -87,7 +87,7 @@ class VerifiablePresentationTest: XCTestCase {
     func testParseAndSerialize() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             
             // For integrity check
             _ = try testData.loadTestIssuer()

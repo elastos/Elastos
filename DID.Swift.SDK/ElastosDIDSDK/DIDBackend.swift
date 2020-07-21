@@ -5,6 +5,8 @@ public class DIDBackend {
     private static var resolver: DIDResolver?
     private static var _ttl: Int = Constants.DEFAULT_TTL // milliseconds
     private var _adapter: DIDAdapter
+    public typealias ResolveHandle = (_ did: DID) throws -> DIDDocument?
+    private static var resolveHandle: ResolveHandle? = nil
 
     class TransactionResult: NSObject {
         private var _transactionId: String?
@@ -199,11 +201,11 @@ public class DIDBackend {
     private class func resolveFromBackend(_ did: DID, _ all: Bool) throws -> ResolveResult {
         let requestId = generateRequestId()
 
-        guard let _ = DIDBackend.resolver else {
+        guard let _ = resolver else {
             throw DIDError.didResolveError("DID resolver not initialized")
         }
 
-        let data = try DIDBackend.resolver!.resolve(requestId, did.toString(), all)
+        let data = try resolver!.resolve(requestId, did.toString(), all)
         let dict: [String: Any]?
         do {
             dict = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
@@ -254,8 +256,16 @@ public class DIDBackend {
         return rr
      }
     
+    public class func setResolveHandle(_ handle: @escaping ResolveHandle) {
+        DIDBackend.resolveHandle = handle
+    }
+
     class func resolve(_ did: DID, _ force: Bool) throws -> DIDDocument? {
         Log.i(TAG, "Resolving {\(did.toString())} ...")
+
+        guard DIDBackend.resolveHandle == nil else {
+           return try resolveHandle!(did)
+        }
 
         var result: ResolveResult?
         if (!force) {
@@ -279,7 +289,8 @@ public class DIDBackend {
             return nil
 
         default:
-            let transactionInfo = result!.transactionInfo(0)
+
+            let transactionInfo = try result!.transactionInfo(0)
             let doc = transactionInfo?.request.document
             let meta = DIDMeta()
 

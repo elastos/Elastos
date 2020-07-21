@@ -38,8 +38,13 @@ public class ResolveResult: DIDHistory{
         return self._idtransactionInfos.count
     }
 
-    func transactionInfo(_ index: Int) -> IDTransactionInfo? {
-        return self._idtransactionInfos[index]
+    func transactionInfo(_ index: Int) throws -> IDTransactionInfo? {
+        let tx = self._idtransactionInfos[index]
+        guard tx.request.isValid else {
+            throw DIDError.didtransactionError("Invalid ID transaction, can not verify the signature.")
+        }
+
+        return tx
     }
 
     func appendTransactionInfo( _ info: IDTransactionInfo) {

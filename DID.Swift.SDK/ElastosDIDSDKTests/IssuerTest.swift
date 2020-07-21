@@ -7,7 +7,7 @@ class IssuerTest: XCTestCase {
     func testnewIssuerTestWithSignKey() {
         do {
             let testData: TestData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             let signKey: DIDURL = issuerDoc.defaultPublicKey
@@ -22,7 +22,7 @@ class IssuerTest: XCTestCase {
     func testnewIssuerTestWithoutSignKey() {
         do {
             let testData: TestData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             let issuer = try VerifiableCredentialIssuer(issuerDoc.subject, store)
@@ -36,10 +36,10 @@ class IssuerTest: XCTestCase {
     func testnewIssuerTestWithInvalidKey() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             var issuerDoc: DIDDocument = try testData.loadTestIssuer()
             
-            let key: HDKey.DerivedKey = try TestData.generateKeypair()
+            let key: HDKey = try TestData.generateKeypair()
             let signKey: DIDURL = try DIDURL(issuerDoc.subject, "testKey")
             let db: DIDDocumentBuilder = issuerDoc.editing()
             _ = try db.appendAuthenticationKey(with: signKey, keyBase58: key.getPublicKeyBase58())
@@ -65,7 +65,7 @@ class IssuerTest: XCTestCase {
     func testnewIssuerTestWithInvalidKey2() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             let signKey: DIDURL = try DIDURL(issuerDoc.subject, "recovery")
@@ -88,7 +88,7 @@ class IssuerTest: XCTestCase {
     func testIssueKycCredentialTest() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             let testDoc: DIDDocument = try testData.loadTestDocument()
@@ -137,7 +137,7 @@ class IssuerTest: XCTestCase {
     func testIssueSelfProclaimedCredentialTest() {
         do {
             let testData: TestData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             
@@ -179,7 +179,7 @@ class IssuerTest: XCTestCase {
     func testIssueJsonPropsCredential() {
         do {
             let testData = TestData()
-            _ = try testData.setupStore(true)
+            _ = try testData.setup(true)
             let issuerDoc = try testData.loadTestIssuer()
             let props: String = "{\"name\":\"Jay Holtslander\",\"alternateName\":\"Jason Holtslander\",\"booleanValue\":true,\"numberValue\":1234,\"doubleValue\":9.5,\"nationality\":\"Canadian\",\"birthPlace\":{\"type\":\"Place\",\"address\":{\"type\":\"PostalAddress\",\"addressLocality\":\"Vancouver\",\"addressRegion\":\"BC\",\"addressCountry\":\"Canada\"}},\"affiliation\":[{\"type\":\"Organization\",\"name\":\"Futurpreneur\",\"sameAs\":[\"https://twitter.com/futurpreneur\",\"https://www.facebook.com/futurpreneur/\",\"https://www.linkedin.com/company-beta/100369/\",\"https://www.youtube.com/user/CYBF\"]}],\"alumniOf\":[{\"type\":\"CollegeOrUniversity\",\"name\":\"Vancouver Film School\",\"sameAs\":\"https://en.wikipedia.org/wiki/Vancouver_Film_School\",\"year\":2000},{\"type\":\"CollegeOrUniversity\",\"name\":\"CodeCore Bootcamp\"}],\"gender\":\"Male\",\"Description\":\"Technologist\",\"disambiguatingDescription\":\"Co-founder of CodeCore Bootcamp\",\"jobTitle\":\"Technical Director\",\"worksFor\":[{\"type\":\"Organization\",\"name\":\"Skunkworks Creative Group Inc.\",\"sameAs\":[\"https://twitter.com/skunkworks_ca\",\"https://www.facebook.com/skunkworks.ca\",\"https://www.linkedin.com/company/skunkworks-creative-group-inc-\",\"https://plus.google.com/+SkunkworksCa\"]}],\"url\":\"https://jay.holtslander.ca\",\"image\":\"https://s.gravatar.com/avatar/961997eb7fd5c22b3e12fb3c8ca14e11?s=512&r=g\",\"address\":{\"type\":\"PostalAddress\",\"addressLocality\":\"Vancouver\",\"addressRegion\":\"BC\",\"addressCountry\":\"Canada\"},\"sameAs\":[\"https://twitter.com/j_holtslander\",\"https://pinterest.com/j_holtslander\",\"https://instagram.com/j_holtslander\",\"https://www.facebook.com/jay.holtslander\",\"https://ca.linkedin.com/in/holtslander/en\",\"https://plus.google.com/+JayHoltslander\",\"https://www.youtube.com/user/jasonh1234\",\"https://github.com/JayHoltslander\",\"https://profiles.wordpress.org/jasonh1234\",\"https://angel.co/j_holtslander\",\"https://www.foursquare.com/user/184843\",\"https://jholtslander.yelp.ca\",\"https://codepen.io/j_holtslander/\",\"https://stackoverflow.com/users/751570/jay\",\"https://dribbble.com/j_holtslander\",\"http://jasonh1234.deviantart.com/\",\"https://www.behance.net/j_holtslander\",\"https://www.flickr.com/people/jasonh1234/\",\"https://medium.com/@j_holtslander\"]}"
             let issuer = try VerifiableCredentialIssuer(issuerDoc)

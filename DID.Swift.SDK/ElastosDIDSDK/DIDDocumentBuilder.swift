@@ -19,7 +19,7 @@ public class DIDDocumentBuilder {
         return document!.subject
     }
 
-    private func appendPublicKey(_ id: DIDURL,
+    public func appendPublicKey(_ id: DIDURL,
                                 _ controller: DID,
                                 _ keyBase58: String) throws -> DIDDocumentBuilder {
 

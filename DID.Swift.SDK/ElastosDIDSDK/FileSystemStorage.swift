@@ -382,7 +382,7 @@ public class FileSystemStorage: DIDStorage {
         }
     }
 
-    func containMnemonic() -> Bool {
+    func containsMnemonic() -> Bool {
         do {
             let handle = try openMnemonicFile()
             defer {
@@ -465,7 +465,7 @@ public class FileSystemStorage: DIDStorage {
 
             metadata.setLastModified(modificationDate)
         } catch {
-            print("Ignore")
+//            print("Ignore")
         }
 
         return metadata
@@ -622,7 +622,7 @@ public class FileSystemStorage: DIDStorage {
             let metadata = CredentialMeta()
             try metadata.load(reader: handle)
             let path = filePath(FileSystemStorage.DID_DIR, did.methodSpecificId, FileSystemStorage.CREDENTIALS_DIR, id.fragment!, FileSystemStorage.CREDENTIAL_FILE)
-            let modificationDate = try! getLastModificationDate(path)
+            let modificationDate = try getLastModificationDate(path)
             metadata.setLastModified(modificationDate)
 
             return metadata

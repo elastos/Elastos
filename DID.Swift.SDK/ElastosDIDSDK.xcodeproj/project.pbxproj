@@ -44,10 +44,11 @@
 		11133F5C23C48C3200BFDA3E /* SPVWrapper.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11133F5923C48B4600BFDA3E /* SPVWrapper.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		111BF480235467880043D570 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; };
 		111F4B7B239E315C00FEE4E0 /* Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B1235E06B7006E66F7 /* Base64.swift */; };
+		1134978824C5391600286294 /* HDKeyTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1134978724C5391600286294 /* HDKeyTest.swift */; };
 		1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
 		1147721523F6976800C7C36F /* Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1147721023F6976800C7C36F /* Mnemonic.swift */; };
 		1155D94B2352FACE00DF8C9D /* ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */; };
-		115A373E24404DA5005549CC /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 115A373B24404DA5005549CC /* HDkey.h */; };
+		115A373E24404DA5005549CC /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 115A373B24404DA5005549CC /* HDkey.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		115A373F24404DA5005549CC /* crypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 115A373C24404DA5005549CC /* crypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		115A374024404DA5005549CC /* CHDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115A373D24404DA5005549CC /* CHDKey.swift */; };
 		11641BB523B702FC0037016B /* AbstractAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11641BB423B702FC0037016B /* AbstractAdapter.swift */; };
@@ -266,6 +267,7 @@
 		1125B5922382351700D396B6 /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = "Externals/libhdkey/lib/-iphonesimulator/libcjson.a"; sourceTree = "<group>"; };
 		1125B5932382351700D396B6 /* libcunit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcunit.a; path = "Externals/libhdkey/lib/-iphonesimulator/libcunit.a"; sourceTree = "<group>"; };
 		1125B5942382351800D396B6 /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = "Externals/libhdkey/lib/-iphonesimulator/libsqlite3.a"; sourceTree = "<group>"; };
+		1134978724C5391600286294 /* HDKeyTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HDKeyTest.swift; sourceTree = "<group>"; };
 		1147721023F6976800C7C36F /* Mnemonic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mnemonic.swift; sourceTree = "<group>"; };
 		1155D9462352FACE00DF8C9D /* ElastosDIDSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosDIDSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1155D94A2352FACE00DF8C9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -566,6 +568,7 @@
 				11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */,
 				11C3EC702476734B00DF1B4F /* JwtTest.swift */,
 				11D4B9C623545A5700453218 /* DIDStoreTests.swift */,
+				1134978724C5391600286294 /* HDKeyTest.swift */,
 				11054F1E239D2088008A4500 /* DIDTest.swift */,
 				11054F1C239D1B31008A4500 /* DIDURLTest.swift */,
 				11E751DA23A774DD0022C592 /* IDChainOperationsTest.swift */,
@@ -1109,6 +1112,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1134978824C5391600286294 /* HDKeyTest.swift in Sources */,
 				11641BB523B702FC0037016B /* AbstractAdapter.swift in Sources */,
 				1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */,
 				11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */,

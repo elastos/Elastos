@@ -12,7 +12,7 @@ class DIDStoreTests: XCTestCase {
     func testCreateEmptyStore() {
         do {
             let testData: TestData = TestData()
-            try _ = testData.setupStore(true)
+            try _ = testData.setup(true)
             _ = testData.exists(storeRoot)
             
             let path = storeRoot + "/" + ".meta"
@@ -27,7 +27,7 @@ class DIDStoreTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try store.newDid(withAlias: "this will be fail", using: storePass)
         } catch {
             print(error)
@@ -38,7 +38,7 @@ class DIDStoreTests: XCTestCase {
     func testInitPrivateIdentity0() {
         do {
             let testData: TestData = TestData()
-            var store: DIDStore = try testData.setupStore(true)
+            var store: DIDStore = try testData.setup(true)
             XCTAssertFalse(store.containsPrivateIdentity())
             
             _ = try testData.initIdentity()
@@ -48,7 +48,7 @@ class DIDStoreTests: XCTestCase {
             path = storeRoot + "/" + "private" + "/" + "index"
             XCTAssertTrue(testData.existsFile(path))
             
-            store = try DIDStore.open(atPath: storeRoot, withType: "filesystem", adapter: testData.adapter!)
+            store = try DIDStore.open(atPath: storeRoot, withType:"filesystem", adapter: testData.adapter!)
             XCTAssertTrue(store.containsPrivateIdentity())
         } catch {
             print(error)
@@ -62,7 +62,7 @@ class DIDStoreTests: XCTestCase {
             let mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe"
 
             let testData = TestData()
-            var store = try testData.setupStore(true)
+            var store = try testData.setup(true)
             XCTAssertFalse(store.containsPrivateIdentity())
 
             try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passPhrase: "", storePassword: storePass)
@@ -96,7 +96,7 @@ class DIDStoreTests: XCTestCase {
             let rootKey = "xprv9s21ZrQH143K4biiQbUq8369meTb1R8KnstYFAKtfwk3vF8uvFd1EC2s49bMQsbdbmdJxUWRkuC48CXPutFfynYFVGnoeq8LJZhfd9QjvUt";
 
             let testData = TestData()
-            var store = try testData.setupStore(true)
+            var store = try testData.setup(true)
             XCTAssertFalse(store.containsPrivateIdentity())
 
             try store.initializePrivateIdentity(using: rootKey, storePassword: storePass)
@@ -125,7 +125,7 @@ class DIDStoreTests: XCTestCase {
     func testCreateDIDWithAlias() throws {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let alias: String = "my first did"
@@ -162,7 +162,7 @@ class DIDStoreTests: XCTestCase {
     func testCreateDIDWithoutAlias() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let doc: DIDDocument = try store.newDid(using: storePass)
@@ -189,7 +189,7 @@ class DIDStoreTests: XCTestCase {
     func testCreateDIDByIndex() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
 
             let alias = "my first did"
@@ -220,7 +220,7 @@ class DIDStoreTests: XCTestCase {
     func testGetDid() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
             for i in 0...100 {
                 let alias = "did#\(i)"
@@ -237,7 +237,7 @@ class DIDStoreTests: XCTestCase {
     func testUpdateDid() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let doc: DIDDocument = try store.newDid(using: storePass)
@@ -287,7 +287,7 @@ class DIDStoreTests: XCTestCase {
     func testUpdateDidWithoutPrevSignature() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
 
             var doc = try store.newDid(using: storePass)
@@ -338,7 +338,7 @@ class DIDStoreTests: XCTestCase {
     func testUpdateDidWithoutSignature() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
 
             var doc = try store.newDid(using: storePass)
@@ -395,7 +395,7 @@ class DIDStoreTests: XCTestCase {
     func testUpdateDidWithoutAllSignatures() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
 
             var doc = try store.newDid(using: storePass)
@@ -437,7 +437,7 @@ class DIDStoreTests: XCTestCase {
     func testUpdateDidWithWrongPrevSignature() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
 
             var doc = try store.newDid(using: storePass)
@@ -491,7 +491,7 @@ class DIDStoreTests: XCTestCase {
     func testUpdateDidWithWrongSignature() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
 
             var doc = try store.newDid(using: storePass)
@@ -547,7 +547,7 @@ class DIDStoreTests: XCTestCase {
     func testForceUpdateDidWithWrongPrevSignature() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
 
             var doc = try store.newDid(using: storePass)
@@ -583,7 +583,7 @@ class DIDStoreTests: XCTestCase {
     func testForceUpdateDidWithWrongSignature() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
 
             var doc = try store.newDid(using: storePass)
@@ -620,7 +620,7 @@ class DIDStoreTests: XCTestCase {
     func testDeactivateSelfAfterCreate() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let doc = try store.newDid(using: storePass)
@@ -629,7 +629,7 @@ class DIDStoreTests: XCTestCase {
             _ = try store.publishDid(for: doc.subject, using: storePass)
             let resolved: DIDDocument = try doc.subject.resolve(true)!
             XCTAssertNotNil(resolved)
-            
+
             _ = try store.deactivateDid(for: doc.subject, using: storePass)
             
             let resolvedNil = try doc.subject.resolve(true)
@@ -648,7 +648,7 @@ class DIDStoreTests: XCTestCase {
     func testDeactivateSelfAfterUpdate() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             var doc = try store.newDid(using: storePass)
@@ -693,7 +693,7 @@ class DIDStoreTests: XCTestCase {
     func testDeactivateWithAuthorization1() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             let doc = try store.newDid(using: storePass)
@@ -737,7 +737,7 @@ class DIDStoreTests: XCTestCase {
     func testDeactivateWithAuthorization2() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             var doc = try store.newDid(using: storePass)
@@ -791,7 +791,7 @@ class DIDStoreTests: XCTestCase {
     func testDeactivateWithAuthorization3() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             var doc = try store.newDid(using: storePass)
@@ -828,8 +828,9 @@ class DIDStoreTests: XCTestCase {
             resolved = try target.subject.resolve()
             XCTAssertNotNil(resolved)
             XCTAssertEqual(target.toString(), resolved!.toString())
-            
+
             _ = try store.deactivateDid(for: target.subject, withAuthroizationDid: doc.subject, storePassword: storePass)
+
             let did = target.subject
             XCTAssertThrowsError(try did.resolve(true)) { (error) in
                 switch error {
@@ -847,7 +848,7 @@ class DIDStoreTests: XCTestCase {
     func testBulkCreate() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             for i in 0..<100 {
@@ -890,7 +891,7 @@ class DIDStoreTests: XCTestCase {
     func testDeleteDID() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             // Create test DIDs
             var dids: Array<DID> = []
@@ -933,7 +934,7 @@ class DIDStoreTests: XCTestCase {
     func testStoreAndLoadDID() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             // Store test data into current store
@@ -967,7 +968,7 @@ class DIDStoreTests: XCTestCase {
     func testLoadCredentials() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             // Store test data into current store
@@ -1022,7 +1023,7 @@ class DIDStoreTests: XCTestCase {
     func testListCredentials() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try testData.setup(true)
             _ = try testData.initIdentity()
             
             // Store test data into current store
@@ -1055,7 +1056,7 @@ class DIDStoreTests: XCTestCase {
     func testDeleteCredential() {
         do {
             let testData: TestData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
             
             // Store test data into current store
@@ -1124,7 +1125,7 @@ class DIDStoreTests: XCTestCase {
         
         let adapter = DummyAdapter()
         try DIDBackend.initializeInstance(resolver, TestData.getResolverCacheDir())
-        let store = try DIDStore.open(atPath: jsonPath, withType: "filesystem", adapter: adapter)
+        let store = try DIDStore.open(atPath:jsonPath, withType: "filesystem", adapter: adapter)
         
         let dids = try store.listDids(using: DIDStore.DID_ALL)
         XCTAssertEqual(2, dids.count)
@@ -1161,7 +1162,7 @@ class DIDStoreTests: XCTestCase {
 
             let adapter = DummyAdapter()
             try DIDBackend.initializeInstance(adapter, TestData.getResolverCacheDir())
-            let store = try DIDStore.open(atPath: jsonPath, withType: "filesystem", adapter: adapter)
+            let store = try DIDStore.open(atPath: jsonPath, withType:"filesystem" , adapter: adapter)
 
             var doc = try store.newDid(using: storePass)
             XCTAssertNotNil(doc)
@@ -1256,7 +1257,6 @@ class DIDStoreTests: XCTestCase {
                         
             let mnemonic: String = try Mnemonic.generate("0")
             try store.initializePrivateIdentity(using: "0", mnemonic: mnemonic, passPhrase: passphrase, storePassword: storePass)
-            
             createDataForPerformanceTest(store)
             let dids: Array<DID> = try store.listDids(using: DIDStore.DID_ALL)
             XCTAssertEqual(10, dids.count)
@@ -1308,7 +1308,7 @@ class DIDStoreTests: XCTestCase {
                 let store = try DIDStore.open(atPath: storeRoot + String(i), withType: "filesystem", adapter: DummyAdapter())
                 stores.append(store)
                 let mnemonic: String = try Mnemonic.generate("0")
-                try store.initializePrivateIdentity(using: "0", mnemonic: mnemonic, passPhrase: passphrase, storePassword: storePass, true)
+                try store.initializePrivateIdentity(using: "0", mnemonic: mnemonic, passphrase: passphrase, storePassword: storePass, true)
             }
             
             for i in 0..<10 {
@@ -1332,7 +1332,7 @@ class DIDStoreTests: XCTestCase {
     func testChangePassword() {
         do {
             let testData: TestData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
             
             for i in 0..<10 {
@@ -1386,7 +1386,7 @@ class DIDStoreTests: XCTestCase {
     func testChangePasswordWithWrongPassword() {
         do {
             let testData: TestData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try testData.setup(true)
             _ = try testData.initIdentity()
             for i in 0..<10 {
                 let alias = "my did \(i)"

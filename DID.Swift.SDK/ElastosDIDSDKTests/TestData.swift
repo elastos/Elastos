@@ -42,7 +42,7 @@ class TestData: XCTestCase {
         return "\(NSHomeDirectory())/Library/Caches/.cache.did.elastos"
     }
         
-    public func setupStore(_ dummyBackend: Bool) throws -> DIDStore {
+    public func setup(_ dummyBackend: Bool) throws -> DIDStore {
         if dummyBackend {
             if TestData.dummyAdapter == nil {
                 TestData.dummyAdapter = DummyAdapter(verbose)
@@ -70,7 +70,7 @@ class TestData: XCTestCase {
     
     public func initIdentity() throws -> String {
         let mnemonic: String = try Mnemonic.generate(Mnemonic.ENGLISH)
-        try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passPhrase: passphrase, storePassword: storePass, true)
+        try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passphrase: passphrase, storePassword: storePass, true)
         return mnemonic
     }
     
@@ -338,14 +338,16 @@ class TestData: XCTestCase {
         return restoreMnemonic!
     }
     
-    public class func generateKeypair() throws -> HDKey.DerivedKey {
+    public class func generateKeypair() throws -> HDKey {
         if TestData.rootKey == nil {
             let mnemonic: String = try Mnemonic.generate(Mnemonic.ENGLISH)
-            TestData.rootKey = HDKey.fromMnemonic(mnemonic, "", Mnemonic.ENGLISH)
+            TestData.rootKey = HDKey(mnemonic, "", Mnemonic.ENGLISH)
             TestData.index = 0
         }
+        let path: String = HDKey.DERIVE_PATH_PREFIX + "\(TestData.index!)"
         TestData.index = TestData.index! + 1
-        return TestData.rootKey!.derivedKey(TestData.index!)
+
+        return try TestData.rootKey!.derive(path)
     }
 
    class func deleteFile(_ path: String) {
