@@ -81,7 +81,10 @@ class PaymentList extends BaseComponent {
                     <td>{item.amount}</td>
                     {isOld ? (
                       <td>
-                        <ShowLongText text={item.reasons} />
+                        <ShowLongText
+                          text={item.reasons}
+                          id={'reasons' + item.milestoneKey}
+                        />
                       </td>
                     ) : null}
                     <td>
@@ -100,7 +103,10 @@ class PaymentList extends BaseComponent {
                       ) : null}
                     </td>
                     <td>
-                      <ShowLongText text={item.criteria} />
+                      <ShowLongText
+                        text={item.criteria}
+                        id={'criteria' + item.milestoneKey}
+                      />
                     </td>
                     {visible && (
                       <td>

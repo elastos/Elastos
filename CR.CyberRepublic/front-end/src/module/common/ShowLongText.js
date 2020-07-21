@@ -24,6 +24,9 @@ class ShowLongText extends Component {
   componentDidMount() {
     const { id } = this.props
     const el = document.querySelector(`#${id}`)
+    if (!el) {
+      return
+    }
     const myObserver = new ResizeObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.contentRect.height < entry.target.scrollHeight) {
@@ -47,7 +50,7 @@ class ShowLongText extends Component {
             style={{ p: { margin: 0 } }}
           />
         </div>
-        {show && <div>...</div>}
+        {show && <div>......</div>}
         {show && (
           <Button onClick={this.showMore}>
             {I18N.get('milestone.showMore')}
@@ -78,6 +81,6 @@ const Wrapper = styled.div`
 `
 const Button = styled.a`
   text-decoration: underline;
-  margin-top: 16px;
+  margin: 16px 0;
   display: block;
 `
