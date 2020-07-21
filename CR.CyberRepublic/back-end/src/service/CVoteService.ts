@@ -95,7 +95,7 @@ const EMAIL_TITLE_PROPOSAL_STATUS = {
   [constant.CVOTE_STATUS.NOTIFICATION] : constant.CVOTE_STATUS.NOTIFICATION,
   [constant.CVOTE_STATUS.ACTIVE] : 'PASSED',
   [constant.CVOTE_STATUS.REJECT] : 'REJECTED',
-  [constant.CVOTE_STATUS.VETOED] : 'REJECTED',
+  [constant.CVOTE_STATUS.VETOED] : 'VETOED',
 }
 
 const DID_PREFIX = 'did:elastos:'
@@ -722,7 +722,9 @@ export default class extends Base {
       'vote_map',
       'registerHeight',
       'proposedEndsHeight',
-      'notificationEndsHeight'
+      'notificationEndsHeight',
+      'rejectAmount',
+      'rejectThroughAmount',
     ]
 
     // const list = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
@@ -1427,14 +1429,6 @@ export default class extends Base {
         this.notifyProposer(proposal, proposalStatus, 'community')
         return rs.data.registerheight + STAGE_BLOCKS * 2
       }
-    }
-    switch (proposalStatus) {
-      case constant.CVOTE_STATUS.VETOED:
-        rejectThroughAmount = rejectAmount
-        break
-      case constant.CVOTE_STATUS.NOTIFICATION:
-        rejectThroughAmount = (await ela.currentCirculatingSupply()) * 0.1
-        break
     }
 
     const updateStatus = await db_cvote.update(

@@ -258,7 +258,7 @@ export default class extends BaseComponent {
       },
       {
         title: I18N.get('council.voting.status'),
-        render: (id, item) => this.renderStatus(item.status)
+        render: (id, item) => this.renderStatus(item.status, item.rejectAmount, item.rejectThroughAmount)
       },
       {
         title: I18N.get('council.voting.proposedAt'),
@@ -578,7 +578,7 @@ export default class extends BaseComponent {
           this.renderEndsInForCSV(v),
           this.renderCommunityEndsInForCSV(v),
           this.voteDataByUserForCSV(v),
-          this.renderStatus(v.status),
+          this.renderStatus(v.status, v.rejectAmount, v.rejectThroughAmount),
           _.replace(
             this.renderProposed(v.published, v.proposedAt || v.createdAt) || '',
             ',',
@@ -632,8 +632,8 @@ export default class extends BaseComponent {
 
   toDetailPage(id) {
     // this.props.history.push(`/proposals/${id}`)
-    const w=window.open('about:blank')
-    w.location.href=`/proposals/${id}`
+    const w = window.open('about:blank')
+    w.location.href = `/proposals/${id}`
   }
 
   toEditPage(id) {
@@ -675,7 +675,7 @@ export default class extends BaseComponent {
     let endsInFloat = moment
       .duration(
         moment()
-          .add(endsIn,'minutes')
+          .add(endsIn, 'minutes')
           .diff(moment())
       )
       .as('minutes')
@@ -687,16 +687,16 @@ export default class extends BaseComponent {
       surplusTime = Math.ceil(endsInFloat) + ' ' + I18N.get('council.voting.votingEndsIn.minutes')
     }
     if (endsInFloat > 60 && endsInFloat <= 60 * 24) {
-      const hours = moment.duration(moment().add(endsIn,'minutes').diff(moment())).get('h')
-      const minute = moment.duration(moment().add(endsIn,'minutes').diff(moment())).get('m')
+      const hours = moment.duration(moment().add(endsIn, 'minutes').diff(moment())).get('h')
+      const minute = moment.duration(moment().add(endsIn, 'minutes').diff(moment())).get('m')
       surplusTime = hours + ' ' +
         I18N.get('council.voting.votingEndsIn.hours') + ' ' +
         minute + ' ' +
         I18N.get('council.voting.votingEndsIn.minutes')
     }
     if (endsInFloat > 60 * 24 && endsInFloat <= 60 * 24 * 2) {
-      const days = moment.duration(moment().add(endsIn,'minutes').diff(moment())).get('d')
-      const hours = moment.duration(moment().add(endsIn,'minutes').diff(moment())).get('h')
+      const days = moment.duration(moment().add(endsIn, 'minutes').diff(moment())).get('d')
+      const hours = moment.duration(moment().add(endsIn, 'minutes').diff(moment())).get('h')
       surplusTime = days + ' ' +
         I18N.get('council.voting.votingEndsIn.days') + ' ' +
         hours + ' ' +
@@ -707,8 +707,15 @@ export default class extends BaseComponent {
     </span>
   }
 
-  renderStatus = (status) => {
-    return I18N.get(`cvoteStatus.${status}`) || ''
+  renderStatus = (status, rejectAmount, rejectThroughAmount) => {
+    const percentage = rejectAmount  / (rejectThroughAmount / 0.1) * 100
+    let percentageStr = ""
+    if (status == 'VETOED') {
+      percentageStr = this.props.lang == 'en'
+        ? `(${parseInt(percentage)}%)`
+        : `（${parseInt(percentage)}%）`
+    }
+    return I18N.get(`cvoteStatus.${status}`) + percentageStr || ''
   }
 
   renderProposed = (published, createdAt) => {
