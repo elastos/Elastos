@@ -43,7 +43,7 @@ func NewService(cfg *Config) (*Service, error) {
 		ChainParams:    cfg.ChainParams,
 		PermanentPeers: cfg.PermanentPeers,
 		OnRollback:     nil, // Not implemented yet
-		FilterType: cfg.FilterType,
+		FilterType:     cfg.FilterType,
 	}
 
 	service, err := spv.NewSPVService(&spvCfg)
@@ -105,17 +105,18 @@ func (s *Service) VerifyTransaction(tx *types.Transaction) error {
 	return nil
 }
 
-func (s *Service) CheckCRCArbiterSignature(sideChainPowTx *ela.Transaction) error {
+func (s *Service) CheckCRCArbiterSignature(height uint32, sideChainPowTx *ela.Transaction) error {
 	payload, ok := sideChainPowTx.Payload.(*elapayload.SideChainPow)
 	if !ok {
 		return errors.New("[checkCRCArbiterSignature], invalid sideChainPow tx")
 	}
-	for _, v := range s.chainParams.CRCArbiters {
-		CRC, err := common.HexStringToBytes(v)
-		if err != nil {
-			return err
-		}
-		pubKey, err := crypto.DecodePoint(CRC)
+
+	crcArbiters, _, err := s.GetArbiters(height)
+	if err != nil {
+		return err
+	}
+	for _, v := range crcArbiters {
+		pubKey, err := crypto.DecodePoint(v)
 		if err != nil {
 			return err
 		}

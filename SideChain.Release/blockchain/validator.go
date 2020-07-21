@@ -110,10 +110,11 @@ func (v *Validator) checkHeader(params ...interface{}) (err error) {
 	header := block.Header
 	height := block.GetHeight()
 	if height >= v.chain.chainParams.CheckPowHeaderHeight {
-		if err := v.spvService.CheckCRCArbiterSignature(&header.GetAuxPow().SideAuxBlockTx); err != nil {
+		validateHeight := header.GetAuxPow().MainBlockHeader.Height
+		if err := v.spvService.CheckCRCArbiterSignature(validateHeight, &header.GetAuxPow().SideAuxBlockTx); err != nil {
 			return err
 		}
-		spvHeader, err := v.spvService.HeaderStore().GetByHeight(height)
+		spvHeader, err := v.spvService.HeaderStore().GetByHeight(validateHeight)
 		if err != nil {
 			return err
 		}
