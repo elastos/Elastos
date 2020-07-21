@@ -290,11 +290,11 @@ namespace Elastos {
 
 		void MasterWallet::CloseAllSubWallets() {
 			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ) {
-				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
+				ISubWallet *subWallet = it->second;
 				std::string id = _id + ":" + subWallet->GetChainID();
 				Log::info("{} closing...", id);
-				stopPeerManager(subWallet);
 
+				subWallet->SyncStop();
 				it = _createdWallets.erase(it);
 
 				delete subWallet;
@@ -310,11 +310,11 @@ namespace Elastos {
 			if (_createdWallets.find(chainID) == _createdWallets.end())
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "chainID not found");
 
-			SubWallet *subWallet = dynamic_cast<SubWallet *>(_createdWallets[chainID]);
-			_account->RemoveSubWalletInfo(subWallet->_info);
+			ISubWallet *subWallet = _createdWallets[chainID];
+			subWallet->SyncStop();
+			_account->RemoveSubWalletInfo(subWallet->GetChainID());
 			_account->Save();
 
-			stopPeerManager(subWallet);
 			_createdWallets.erase(chainID);
 
 			delete subWallet;
@@ -551,7 +551,8 @@ namespace Elastos {
 		void MasterWallet::FlushData() {
 			for (WalletMap::const_iterator it = _createdWallets.cbegin(); it != _createdWallets.cend(); ++it) {
 				SubWallet *subWallet = dynamic_cast<SubWallet*>(it->second);
-				subWallet->FlushData();
+				if (subWallet)
+					subWallet->FlushData();
 			}
 		}
 

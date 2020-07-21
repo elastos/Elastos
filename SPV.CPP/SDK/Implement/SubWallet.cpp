@@ -81,7 +81,9 @@ namespace Elastos {
 		}
 
 		SubWallet::~SubWallet() {
-
+			if (_walletManager) {
+				_walletManager->ExecutorStop();
+			}
 		}
 
 		std::string SubWallet::GetChainID() const {

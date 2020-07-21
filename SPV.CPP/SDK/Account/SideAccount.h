@@ -96,7 +96,7 @@ namespace Elastos {
 
 			void SetSubWalletInfoList(const std::vector<CoinInfoPtr> &) {}
 
-			void RemoveSubWalletInfo(const CoinInfoPtr &) {}
+			void RemoveSubWalletInfo(const std::string &) {}
 
 			KeyStore ExportKeystore(const std::string &) const { return KeyStore(); }
 

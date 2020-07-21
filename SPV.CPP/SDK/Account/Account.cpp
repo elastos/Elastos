@@ -577,8 +577,8 @@ namespace Elastos {
 			_localstore->SetSubWalletInfoList(info);
 		}
 
-		void Account::RemoveSubWalletInfo(const CoinInfoPtr &info) {
-			_localstore->RemoveSubWalletInfo(info);
+		void Account::RemoveSubWalletInfo(const std::string &chainID) {
+			_localstore->RemoveSubWalletInfo(chainID);
 		}
 
 		KeyStore Account::ExportKeystore(const std::string &payPasswd) const {
