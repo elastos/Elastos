@@ -28,12 +28,12 @@ const (
 	slotCRCProposalRealWithdrawKey            = "CRCProposalRealWithdrawKey"
 	slotCloseProposalTargetProposalHash       = "CloseProposalTargetProposalHash"
 	slotChangeProposalOwnerTargetProposalHash = "ChangeProposalOwnerTargetProposalHash"
-	slotCRCProposalSecretaryGeneralDID        = "CRCProposalSecretaryGeneralDID"
 	slotSpecialTxHash                         = "SpecialTxHash"
 	slotSidechainTxHashes                     = "SidechainTxHashes"
 	slotTxInputsReferKeys                     = "TxInputsReferKeys"
 	slotCRManagementPublicKey                 = "CRManagementPublicKey"
 	slotCRManagementDID                       = "CRCommitteeDID"
+	slotCRCSecretaryGeneral                   = "CRCSecretaryGeneral"
 )
 
 type conflict struct {
@@ -261,16 +261,6 @@ func newConflictManager() conflictManager {
 					},
 				),
 			},
-			// CRC proposal secretary-general DID
-			{
-				name: slotCRCProposalSecretaryGeneralDID,
-				slot: newConflictSlot(programHash,
-					keyTypeFuncPair{
-						Type: types.CRCProposal,
-						Func: hashCRCProposalSecretaryGeneralDID,
-					},
-				),
-			},
 			// CRC proposal draft hash
 			{
 				name: slotCRCProposalDraftHash,
@@ -328,6 +318,16 @@ func newConflictManager() conflictManager {
 					keyTypeFuncPair{
 						Type: types.CRCAppropriation,
 						Func: strCRCAppropriation,
+					},
+				),
+			},
+			// secretary general key
+			{
+				name: slotCRCSecretaryGeneral,
+				slot: newConflictSlot(str,
+					keyTypeFuncPair{
+						Type: types.CRCProposal,
+						Func: strSecretaryGeneral,
 					},
 				),
 			},

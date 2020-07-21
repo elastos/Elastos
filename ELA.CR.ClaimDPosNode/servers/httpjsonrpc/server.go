@@ -87,6 +87,8 @@ func StartRPCServer() {
 	mainMux["getcrproposalstate"] = GetCRProposalState
 	mainMux["getsecretarygeneral"] = GetSecretaryGeneral
 	mainMux["getcrrelatedstage"] = GetCRRelatedStage
+	mainMux["getcommitteecanuseamount"] = GetCommitteeCanUseAmount
+
 	// vote interfaces
 	mainMux["listproducers"] = ListProducers
 	mainMux["producerstatus"] = ProducerStatus

@@ -1542,6 +1542,10 @@ type RPCSecretaryGeneralInfo struct {
 	SecretaryGeneral string `json:"secretarygeneral"`
 }
 
+type RPCCommitteeCanUseAmount struct {
+	CommitteeCanUseAmount string `json:"committeecanuseamount"`
+}
+
 type RPCCRRelatedStage struct {
 	OnDuty            bool   `json:"onduty"`
 	OnDutyStartHeight uint32 `json:"ondutystartheight"`
@@ -1738,6 +1742,15 @@ func GetSecretaryGeneral(param Params) map[string]interface{} {
 
 	result := &RPCSecretaryGeneralInfo{
 		SecretaryGeneral: crCommittee.GetProposalManager().SecretaryGeneralPublicKey,
+	}
+	return ResponsePack(Success, result)
+}
+
+func GetCommitteeCanUseAmount(param Params) map[string]interface{} {
+	crCommittee := Chain.GetCRCommittee()
+
+	result := &RPCCommitteeCanUseAmount{
+		CommitteeCanUseAmount: crCommittee.GetCommitteeCanUseAmount().String(),
 	}
 	return ResponsePack(Success, result)
 }

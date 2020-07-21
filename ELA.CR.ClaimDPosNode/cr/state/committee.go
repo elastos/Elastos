@@ -560,6 +560,12 @@ func (c *Committee) resetProposalHashesSet(height uint32) {
 	})
 }
 
+func (c *Committee) GetCommitteeCanUseAmount() common.Fixed64 {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.CRCCurrentStageAmount - c.CRCCommitteeUsedAmount
+}
+
 func (c *Committee) recordCurrentStageAmount(height uint32) {
 	var lockedAmount common.Fixed64
 	for _, v := range c.CRCFoundationLockedAmounts {
@@ -567,7 +573,9 @@ func (c *Committee) recordCurrentStageAmount(height uint32) {
 	}
 	oriCurrentStageAmount := c.CRCCurrentStageAmount
 	oriAppropriationAmount := c.AppropriationAmount
+	oriCommitteeUsedAmount := c.CommitteeUsedAmount
 	c.appropriationHistory.Append(height, func() {
+		c.CommitteeUsedAmount = c.CRCCommitteeUsedAmount
 		c.AppropriationAmount = common.Fixed64(float64(c.CRCFoundationBalance-
 			lockedAmount) * c.params.CRCAppropriatePercentage / 100.0)
 		c.CRCCurrentStageAmount = c.CRCCommitteeBalance + c.AppropriationAmount
@@ -578,6 +586,7 @@ func (c *Committee) recordCurrentStageAmount(height uint32) {
 			c.CRCCommitteeBalance, c.CRCFoundationBalance,
 			lockedAmount, c.CRCCommitteeUsedAmount)
 	}, func() {
+		c.CommitteeUsedAmount = oriCommitteeUsedAmount
 		c.CRCCurrentStageAmount = oriCurrentStageAmount
 		c.AppropriationAmount = oriAppropriationAmount
 	})

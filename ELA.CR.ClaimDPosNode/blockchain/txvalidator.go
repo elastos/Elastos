@@ -2177,6 +2177,11 @@ func (b *BlockChain) checkCRDPOSManagementTransaction(txn *Transaction) error {
 	if !ok {
 		return errors.New("invalid payload")
 	}
+
+	if !b.crCommittee.IsInElectionPeriod() {
+		return errors.New("CRDPOSManagement must during election period")
+
+	}
 	did := manager.CRCommitteeDID
 	crMember := b.crCommittee.GetMember(did)
 	if crMember == nil {
@@ -2767,7 +2772,8 @@ func (b *BlockChain) checkNormalOrELIPProposal(proposal *payload.CRCProposal, pr
 	if finalPaymentCount != 1 {
 		return errors.New("final payment count invalid")
 	}
-	if amount > b.crCommittee.CRCCurrentStageAmount*CRCProposalBudgetsPercentage/100 {
+	if amount > (b.crCommittee.CRCCurrentStageAmount-
+		b.crCommittee.CommitteeUsedAmount)*CRCProposalBudgetsPercentage/100 {
 		return errors.New("budgets exceeds 10% of CRC committee balance")
 	} else if amount > b.crCommittee.CRCCurrentStageAmount-
 		b.crCommittee.CRCCommitteeUsedAmount-proposalsUsedAmount {
