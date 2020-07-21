@@ -138,8 +138,8 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	contentType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
-	if contentType != "application/json" {
-		RPCError(w, http.StatusUnsupportedMediaType, InternalError, "JSON-RPC need content type to be application/json")
+	if contentType != "application/json" && contentType != "text/plain" {
+		RPCError(w, http.StatusUnsupportedMediaType, InternalError, "JSON-RPC need content type to be application/json or text/plain")
 		return
 	}
 
