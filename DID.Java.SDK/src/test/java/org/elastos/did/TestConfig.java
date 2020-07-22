@@ -30,6 +30,8 @@ public final class TestConfig {
 	public static String networkConfig;
 	public static String resolver;
 
+	public static boolean dummyBackend;
+
 	public static boolean verbose;
 
 	public static String passphrase;
@@ -54,15 +56,19 @@ public final class TestConfig {
 			e.printStackTrace();
 		}
 
+		String sysTemp = System.getProperty("java.io.tmpdir");
+
 		networkConfig = config.getProperty("network");
 		resolver = config.getProperty("resolver");
+
+		dummyBackend = Boolean.valueOf(config.getProperty("backend.dummy"));
 		verbose = Boolean.valueOf(config.getProperty("dummystore.verbose"));
 
 		passphrase = config.getProperty("mnemnoic.passphrase");
 
-		tempDir = config.getProperty("temp.dir");
+		tempDir = config.getProperty("temp.dir", sysTemp);
 
-		storeRoot = config.getProperty("store.root");
+		storeRoot = config.getProperty("store.root", sysTemp + "/DIDStore");
 		storePass = config.getProperty("store.pass");
 
 		walletDir = config.getProperty("wallet.dir");

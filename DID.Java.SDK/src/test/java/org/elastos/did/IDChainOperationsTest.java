@@ -43,7 +43,7 @@ import org.junit.jupiter.api.Test;
 
 //@RunWith(Parameterized.class)
 public class IDChainOperationsTest {
-	private static final boolean DUMMY_TEST = false;
+	private static final boolean DUMMY_TEST = TestConfig.dummyBackend;
 	/*
 	@Parameterized.Parameters
 	public static Object[][] data() {
