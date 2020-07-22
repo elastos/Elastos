@@ -2,7 +2,7 @@
 ==========================
 |Linux && Mac|Windows|
 |:-:|:-:|:-:|
-|[![Build Status](https://github.com/elastos/Elastos.DID.Native.SDK/workflows/CI/badge.svg)](https://github.com/elastos/Elastos.DID.Native.SDK)|
+|[![Build Status](https://github.com/elastos/Elastos.DID.Native.SDK/workflows/CI/badge.svg)](https://github.com/elastos/Elastos.DID.Native.SDK/actions)|
 
 ## Introduction
 
@@ -169,7 +169,7 @@ $ -> wallet $ create YOUR-WALLET-NAME
 
 'YOUR-WALLET-NAME' : a new wallet with given name.
 
-After inputing 'create' command, you also need choose the mnemonic language, mnemonic word count, passphrase for encoring mnemonic and payment password. After finishing a  
+After inputing 'create' command, you also need choose the mnemonic language, mnemonic word count, passphrase for encoring mnemonic and payment password. After finishing a
 series of operation, you has a new spv wallet.
 
 Second, open your test case folder:
@@ -344,7 +344,7 @@ $ -> wallet $ create YOUR-WALLET-NAME
 
 'YOUR-WALLET-NAME' : a new wallet with given name.
 
-After inputing 'create' command, you also need choose the mnemonic language, mnemonic word count, passphrase for encoring mnemonic and payment password. After finishing a  
+After inputing 'create' command, you also need choose the mnemonic language, mnemonic word count, passphrase for encoring mnemonic and payment password. After finishing a
 series of operation, you has a new spv wallet.
 
 Second, open your test case folder:

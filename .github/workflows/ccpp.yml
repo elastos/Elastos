@@ -12,13 +12,16 @@ jobs:
         os: [ubuntu-18.04, ubuntu-16.04]
     steps:
       - uses: actions/checkout@v2
-      - name: make
+      - name: build and test
         run: |
           mkdir -p build/linux
           cd build/linux
           cmake -DCMAKE_INSTALL_PREFIX=dist ../..
           make
+          make install
           make dist
+          cd dist/bin
+          ./didtest --dummy
 
   build-macos:
     runs-on: ${{ matrix.os }}
@@ -28,7 +31,7 @@ jobs:
         os: [macos-10.15]
     steps:
       - uses: actions/checkout@v2
-      - name: make
+      - name: build and test
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
           if [[ $(brew list | grep 'autoconf') != *autoconf* ]]; then
@@ -48,4 +51,7 @@ jobs:
           cd build/macos
           cmake -DCMAKE_INSTALL_PREFIX=dist ../..
           make
+          make install
           make dist
+          cd dist/bin
+          ./didtest --dummy
