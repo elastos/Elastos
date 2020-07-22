@@ -8,6 +8,7 @@ package state
 import (
 	"bytes"
 	"errors"
+	"math"
 	"sort"
 	"strconv"
 	"sync"
@@ -316,6 +317,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	inElectionPeriod := c.tryStartVotingPeriod(block.Height)
 	c.updateProposals(block.Height, inElectionPeriod)
 	c.freshCirculationAmount(c.lastHistory, block.Height)
+	c.updateCRInactivePeriod(c.lastHistory, block.Height)
 	needChg := false
 	if c.shouldChange(block.Height) && c.changeCommittee(block.Height) {
 		needChg = true
@@ -339,6 +341,19 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		}
 	}
 
+}
+
+func (c *Committee) updateCRInactivePeriod(history *utils.History, height uint32) {
+	for _, v := range c.Members {
+		cr := v
+		if cr.MemberState == MemberInactive {
+			history.Append(height, func() {
+				cr.InactiveCount += 1
+			}, func() {
+				cr.InactiveCount -= 1
+			})
+		}
+	}
 }
 
 func (c *Committee) updateProposals(height uint32, inElectionPeriod bool) {
@@ -750,6 +765,19 @@ func (c *Committee) processCRCRealWithdraw(tx *types.Transaction,
 	}, func() {
 		c.manager.WithdrawableTxInfo = txs
 	})
+}
+
+func (c *Committee) activateProducer(tx *types.Transaction,
+	height uint32, history *utils.History) {
+	apPayload := tx.Payload.(*payload.ActivateProducer)
+	crMemebr := c.GetMemberByNodePublicKey(apPayload.NodePublicKey)
+	if crMemebr != nil && crMemebr.MemberState == MemberInactive {
+		history.Append(height, func() {
+			crMemebr.ActivateRequestHeight = height
+		}, func() {
+			crMemebr.ActivateRequestHeight = math.MaxUint32
+		})
+	}
 }
 
 func (c *Committee) processCRDPOSManagement(tx *types.Transaction,

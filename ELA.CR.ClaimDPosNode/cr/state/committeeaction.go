@@ -31,6 +31,28 @@ func (c *Committee) processTransactions(txs []*types.Transaction, height uint32)
 	for _, tx := range sortedTxs {
 		c.processTransaction(tx, height)
 	}
+
+	// Check if any pending inactive CR member has got 6 confirms, then set them
+	// to elected.
+	activateCRMemberFromInactive := func(cr *CRMember) {
+		oriState := cr.MemberState
+		c.state.history.Append(height, func() {
+			cr.MemberState = MemberElected
+		}, func() {
+			cr.MemberState = oriState
+		})
+	}
+
+	if c.InElectionPeriod {
+		for _, v := range c.Members {
+			m := v
+			if m.MemberState == MemberInactive &&
+				height > m.ActivateRequestHeight &&
+				height-m.ActivateRequestHeight+1 >= ActivateDuration {
+				activateCRMemberFromInactive(m)
+			}
+		}
+	}
 }
 
 // sortTransactions purpose is to process some transaction first.
@@ -89,6 +111,9 @@ func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.CRDPOSManagement:
 		c.processCRDPOSManagement(tx, height, c.state.history)
+
+	case types.ActivateProducer:
+		c.activateProducer(tx, height, c.state.history)
 	}
 
 	c.processCRCAddressRelatedTx(tx, height)

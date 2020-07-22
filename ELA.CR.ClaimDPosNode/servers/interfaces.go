@@ -1560,6 +1560,7 @@ type RPCCRMemberInfo struct {
 	Code             string `json:"code"`
 	CID              string `json:"cid"`
 	DID              string `json:"did"`
+	DPOSPublicKey    string `json:"dpospublickey"`
 	NickName         string `json:"nickname"`
 	Url              string `json:"url"`
 	Location         uint64 `json:"location"`
@@ -1893,6 +1894,7 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 			Code:             hex.EncodeToString(cr.Info.Code),
 			CID:              cidAddress,
 			DID:              didAddress,
+			DPOSPublicKey:    hex.EncodeToString(cr.DPOSPublicKey),
 			NickName:         cr.Info.NickName,
 			Url:              cr.Info.Url,
 			Location:         cr.Info.Location,

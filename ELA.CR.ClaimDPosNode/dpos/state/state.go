@@ -668,7 +668,6 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	defer s.mtx.Unlock()
 
 	s.tryInitProducerAssetAmounts(block.Height)
-	s.updateCRInactivePeriod()
 	s.processTransactions(block.Transactions, block.Height)
 	s.ProcessVoteStatisticsBlock(block)
 
@@ -723,17 +722,6 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 		})
 	}
 
-	// Check if any pending inactive CR member has got 6 confirms, then set them
-	// to elected.
-	activateCRMemberFromInactive := func(cr *state.CRMember) {
-		oriState := cr.MemberState
-		s.history.Append(height, func() {
-			cr.MemberState = state.MemberElected
-		}, func() {
-			cr.MemberState = oriState
-		})
-	}
-
 	// Check if any pending illegal producers has got 6 confirms,
 	// then set them to activate.
 	activateProducerFromIllegal := func(key string, producer *Producer) {
@@ -760,16 +748,6 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 			if height > producer.activateRequestHeight &&
 				height-producer.activateRequestHeight+1 >= ActivateDuration {
 				activateProducerFromInactive(key, producer)
-			}
-		}
-	}
-
-	if s.isInElectionPeriod != nil && s.isInElectionPeriod() {
-		for _, m := range s.getCRMembers() {
-			if m.MemberState == state.MemberInactive &&
-				height > m.ActivateRequestHeight &&
-				height-m.ActivateRequestHeight+1 >= ActivateDuration {
-				activateCRMemberFromInactive(m)
 			}
 		}
 	}
@@ -939,7 +917,6 @@ func (s *State) cancelProducer(payload *payload.ProcessProducer, height uint32) 
 func (s *State) activateProducer(p *payload.ActivateProducer, height uint32) {
 	producer := s.getProducer(p.NodePublicKey)
 	if producer == nil {
-		log.Error("can't find producer to activate")
 		return
 	}
 	s.history.Append(height, func() {
@@ -1278,17 +1255,6 @@ func (s *State) processEmergencyInactiveArbitrators(
 		})
 	}
 
-	addEmergencyInactiveCRMember := func(key string, crMember *state.CRMember) {
-		s.history.Append(height, func() {
-			s.setInactiveCRMember(crMember, height, true)
-			s.EmergencyInactiveArbiters[key] = struct{}{}
-		}, func() {
-			s.revertSettingInactiveCRMember(crMember, height, true)
-			delete(s.EmergencyInactiveArbiters, key)
-		})
-	}
-
-	crMembersMap := s.getCRMembersMap()
 	for _, v := range inactivePayload.Arbitrators {
 		nodeKey := hex.EncodeToString(v)
 		key, ok := s.NodeOwnerKeys[nodeKey]
@@ -1296,11 +1262,7 @@ func (s *State) processEmergencyInactiveArbitrators(
 			continue
 		}
 
-		if s.isInElectionPeriod != nil && s.isInElectionPeriod() {
-			if cr, ok := crMembersMap[nodeKey]; ok {
-				addEmergencyInactiveCRMember(key, cr)
-			}
-		}
+		// todo consider CR member
 
 		if p, ok := s.ActivityProducers[key]; ok {
 			addEmergencyInactiveArbitrator(key, p)
@@ -1434,17 +1396,6 @@ func (s *State) ProcessSpecialTxPayload(p types.Payload, height uint32) {
 	s.history.Commit(height)
 }
 
-func (s *State) updateCRInactivePeriod() {
-	if s.getCRMembers != nil {
-		crMembers := s.getCRMembers()
-		for _, cr := range crMembers {
-			if cr.MemberState == state.MemberInactive {
-				cr.InactiveCount += 1
-			}
-		}
-	}
-}
-
 // setInactiveProducer set active producer to inactive state
 func (s *State) setInactiveProducer(producer *Producer, key string,
 	height uint32, emergency bool) {
@@ -1483,34 +1434,6 @@ func (s *State) revertSettingInactiveProducer(producer *Producer, key string,
 		} else {
 			producer.penalty -= penalty
 		}
-	}
-}
-
-// setInactiveCRMember set elected CR member to inactive state
-func (s *State) setInactiveCRMember(crMember *state.CRMember,
-	height uint32, emergency bool) {
-	crMember.InactiveSince = height
-	crMember.ActivateRequestHeight = math.MaxUint32
-	crMember.MemberState = state.MemberInactive
-
-	if height < s.VersionStartHeight || height >= s.VersionEndHeight {
-		if !emergency {
-			// todo add inactive penalty
-		} else {
-			// todo add emergency inactive penalty
-		}
-	}
-}
-
-// revertSettingInactiveCRMember revert operation about setInactiveProducer
-func (s *State) revertSettingInactiveCRMember(crMember *state.CRMember,
-	height uint32, emergency bool) {
-	crMember.InactiveSince = 0
-	crMember.ActivateRequestHeight = math.MaxUint32
-	crMember.MemberState = state.MemberElected
-
-	if height < s.VersionStartHeight || height >= s.VersionEndHeight {
-		// todo minus inactive penalty
 	}
 }
 
