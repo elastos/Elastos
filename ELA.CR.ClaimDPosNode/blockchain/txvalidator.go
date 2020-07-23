@@ -954,10 +954,10 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 		}
 	case CRCAppropriation, CRAssetsRectify, CRCProposalRealWithdraw:
 		if len(tx.Programs) != 0 {
-			return errors.New("CRCAppropriation txs should have no programs")
+			return errors.New("txs should have no programs")
 		}
 		if len(tx.Attributes) != 0 {
-			return errors.New("CRCAppropriation txs should have no attributes")
+			return errors.New("txs should have no attributes")
 		}
 		return nil
 	case ReturnDepositCoin:
@@ -1114,6 +1114,10 @@ func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) 
 	case CRAssetsRectify, CRCProposalRealWithdraw:
 		if blockHeight < b.chainParams.CRAssetsRectifyTransactionHeight {
 			return errors.New("not support before CRAssetsRectifyTransactionHeight")
+		}
+	case CRDPOSManagement:
+		if blockHeight < b.chainParams.CRClaimDPOSNodeStartHeight {
+			return errors.New("not support before CRClaimDPOSNodeStartHeight")
 		}
 	case TransferAsset:
 		if blockHeight >= b.chainParams.CRVotingStartHeight {
@@ -2187,6 +2191,13 @@ func (b *BlockChain) checkCRDPOSManagementTransaction(txn *Transaction) error {
 	if crMember == nil {
 		return errors.New("the originator must be members")
 	}
+
+	if crMember.DPOSPublicKey != nil {
+		if bytes.Equal(crMember.DPOSPublicKey, manager.CRManagementPublicKey) {
+			return errors.New("CRManagementPublicKey is the same as crMember.DPOSPublicKey")
+		}
+	}
+
 	publicKey, err := crypto.DecodePoint(manager.CRManagementPublicKey)
 	log.Debugf("operating public key: %s", *publicKey)
 	if err != nil {

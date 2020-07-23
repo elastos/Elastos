@@ -58,6 +58,9 @@ const (
 
 	//ETNextTurnDPOSInfo indicates need add an NextTurnDPOSInfo to tx pool
 	ETAppendTxToTxPool
+
+	//ETCRCChangeCommittee indicates need add crc chaged committee
+	ETCRCChangeCommittee
 )
 
 // notificationTypeStrings is a map of notification types back to their constant

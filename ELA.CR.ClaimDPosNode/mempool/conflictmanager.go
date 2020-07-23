@@ -160,6 +160,10 @@ func newConflictManager() conflictManager {
 						Type: types.RegisterCR,
 						Func: strRegisterCRPublicKey,
 					},
+					keyTypeFuncPair{
+						Type: types.CRDPOSManagement,
+						Func: strCRManagementPublicKey,
+					},
 				),
 			},
 			// CR claim DPOS node public key

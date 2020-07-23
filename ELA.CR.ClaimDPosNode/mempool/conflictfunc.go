@@ -165,16 +165,6 @@ func strProducerInfoNickname(tx *types.Transaction) (interface{}, error) {
 	return p.NickName, nil
 }
 
-func strActivateProducerNodePublicKey(
-	tx *types.Transaction) (interface{}, error) {
-	p, ok := tx.Payload.(*payload.ActivateProducer)
-	if !ok {
-		return nil, fmt.Errorf(
-			"activate producer payload cast failed, tx:%s", tx.Hash())
-	}
-	return common.BytesToHexString(p.NodePublicKey), nil
-}
-
 func strRegisterCRPublicKey(tx *types.Transaction) (interface{}, error) {
 	p, err := comGetCRInfo(tx)
 	if err != nil {
@@ -191,6 +181,16 @@ func strRegisterCRPublicKey(tx *types.Transaction) (interface{}, error) {
 	} else {
 		return nil, fmt.Errorf("unsupported sign script type: %d", signType)
 	}
+}
+
+func strActivateProducerNodePublicKey(
+	tx *types.Transaction) (interface{}, error) {
+	p, ok := tx.Payload.(*payload.ActivateProducer)
+	if !ok {
+		return nil, fmt.Errorf(
+			"activate producer payload cast failed, tx:%s", tx.Hash())
+	}
+	return common.BytesToHexString(p.NodePublicKey), nil
 }
 
 func strCRInfoNickname(tx *types.Transaction) (interface{}, error) {

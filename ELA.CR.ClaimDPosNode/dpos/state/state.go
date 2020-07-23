@@ -20,6 +20,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/cr/state"
+	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
@@ -380,6 +381,33 @@ func (s *State) getAllProducers() []*Producer {
 		producers = append(producers, producer)
 	}
 	return producers
+}
+
+func (s *State) getAllNodePublicKey() map[string]struct{} {
+
+	nodePublicKeyMap := make(map[string]struct{})
+
+	for _, producer := range s.PendingProducers {
+		strNodePublicKey := common.BytesToHexString(producer.info.NodePublicKey)
+		nodePublicKeyMap[strNodePublicKey] = struct{}{}
+	}
+	for _, producer := range s.ActivityProducers {
+		strNodePublicKey := common.BytesToHexString(producer.info.NodePublicKey)
+		nodePublicKeyMap[strNodePublicKey] = struct{}{}
+	}
+	for _, producer := range s.InactiveProducers {
+		strNodePublicKey := common.BytesToHexString(producer.info.NodePublicKey)
+		nodePublicKeyMap[strNodePublicKey] = struct{}{}
+	}
+	for _, producer := range s.CanceledProducers {
+		strNodePublicKey := common.BytesToHexString(producer.info.NodePublicKey)
+		nodePublicKeyMap[strNodePublicKey] = struct{}{}
+	}
+	for _, producer := range s.IllegalProducers {
+		strNodePublicKey := common.BytesToHexString(producer.info.NodePublicKey)
+		nodePublicKeyMap[strNodePublicKey] = struct{}{}
+	}
+	return nodePublicKeyMap
 }
 
 // GetPendingProducers returns all producers that in pending state.
@@ -814,6 +842,9 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.NextTurnDPOSInfo:
 		s.processNextTurnDPOSInfo(tx, height)
+	case types.CRDPOSManagement:
+		s.processCRDPOSManagement(tx, height)
+
 	}
 
 	s.processCancelVotes(tx, height)
@@ -1208,6 +1239,50 @@ func (s *State) processNextTurnDPOSInfo(tx *types.Transaction, height uint32) {
 	})
 }
 
+func (s *State) getCRMembersOwnerPublicKey(CRCommitteeDID common.Uint168) []byte {
+	if s.getCRMembers != nil {
+		for _, cr := range s.getCRMembers() {
+			if cr.Info.DID.IsEqual(CRCommitteeDID) {
+				return cr.Info.Code[1 : len(cr.Info.Code)-1]
+			}
+		}
+	}
+	return nil
+}
+
+func (s *State) getNodePublicKeyStr(strOwnerPublicKey string) string {
+	for nodePubKey, nodeOwnerPubKey := range s.NodeOwnerKeys {
+		if strOwnerPublicKey == nodeOwnerPubKey {
+			return nodePubKey
+		}
+	}
+	return ""
+}
+
+func (s *State) processCRDPOSManagement(tx *types.Transaction, height uint32) {
+	dposManagementPayload := tx.Payload.(*payload.CRDPOSManagement)
+	strNewNodePublicKey := common.BytesToHexString(dposManagementPayload.CRManagementPublicKey)
+
+	ownerPublicKey := s.getCRMembersOwnerPublicKey(dposManagementPayload.CRCommitteeDID)
+	if ownerPublicKey == nil {
+		return
+	}
+	strOwnerPubkey := common.BytesToHexString(ownerPublicKey)
+	strOldNodePublicKey := s.getNodePublicKeyStr(strOwnerPubkey)
+
+	s.history.Append(height, func() {
+		s.NodeOwnerKeys[strNewNodePublicKey] = strOwnerPubkey
+		if strOldNodePublicKey != "" {
+			delete(s.NodeOwnerKeys, strOldNodePublicKey)
+		}
+	}, func() {
+		delete(s.NodeOwnerKeys, strNewNodePublicKey)
+		if strOldNodePublicKey != "" {
+			s.NodeOwnerKeys[strOldNodePublicKey] = strOwnerPubkey
+		}
+	})
+}
+
 // updateVersion record the update period during that inactive arbitrators
 // will not need to pay the penalty
 func (s *State) updateVersion(tx *types.Transaction, height uint32) {
@@ -1578,12 +1653,28 @@ func (s *State) GetHistory(height uint32) (*StateKeyFrame, error) {
 	return s.snapshot(), nil
 }
 
+func (s *State) handleEvents(event *events.Event) {
+	switch event.Type {
+	case events.ETCRCChangeCommittee:
+		s.mtx.RLock()
+		nodePublicKeyMap := s.getAllNodePublicKey()
+		for nodePubKey := range s.NodeOwnerKeys {
+			_, ok := nodePublicKeyMap[nodePubKey]
+			if !ok {
+				delete(s.NodeOwnerKeys, nodePubKey)
+			}
+		}
+		s.mtx.RUnlock()
+	}
+}
+
 // NewState returns a new State instance.
 func NewState(chainParams *config.Params, getArbiters func() [][]byte,
 	getCRMembers func() []*state.CRMember,
 	isInElectionPeriod func() bool,
 	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error)) *State {
-	return &State{
+
+	state := State{
 		chainParams:              chainParams,
 		getArbiters:              getArbiters,
 		getCRMembers:             getCRMembers,
@@ -1592,4 +1683,6 @@ func NewState(chainParams *config.Params, getArbiters func() [][]byte,
 		history:                  utils.NewHistory(maxHistoryCapacity),
 		StateKeyFrame:            NewStateKeyFrame(),
 	}
+	events.Subscribe(state.handleEvents)
+	return &state
 }
