@@ -254,7 +254,7 @@ public abstract class NetworkParameters {
     }
 
     /**
-     * The key used to sign {@link AlertMessage}s. You can use {@link ECKey#verify(byte[], byte[], byte[])} to verify
+     * The key used to sign AlertMessages. You can use {@link ECKey#verify(byte[], byte[], byte[])} to verify
      * signatures using it.
      */
     public byte[] getAlertSigningKey() {

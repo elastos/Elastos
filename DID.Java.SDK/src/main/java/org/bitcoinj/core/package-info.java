@@ -1,6 +1,6 @@
 /*
  * Copyright by the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,9 +15,8 @@
  */
 
 /**
- * The core package contains classes for network messages like {@link org.bitcoinj.core.Block} and
- * {@link org.bitcoinj.core.Transaction}, peer connectivity via {@link org.bitcoinj.core.PeerGroup},
- * and block chain management.
+ * The core package contains classes for network messages and transaction,
+ * peer connectivity and block chain management.
  * If what you're doing can be described as basic bitcoin tasks, the code is probably found here.
  * To learn more please consult the documentation on the website.
  */

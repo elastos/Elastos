@@ -28,8 +28,7 @@ import org.bitcoinj.script.Script.ScriptType;
 
 /**
  * <p>A Bitcoin address looks like 1MsScoe2fTJoq4ZPdQgqyhgWeoNamYPevy and is derived from an elliptic curve public key
- * plus a set of network parameters. Not to be confused with a {@link PeerAddress} or {@link AddressMessage}
- * which are about network (TCP) addresses.</p>
+ * plus a set of network parameters.
  *
  * <p>A standard address is built by taking the RIPE-MD160 hash of the public key bytes, with a version prefix and a
  * checksum suffix, then encoding it textually as base58. The version prefix is used to both denote the network for
@@ -50,7 +49,7 @@ public class LegacyAddress extends Address {
      * Private constructor. Use {@link #fromBase58(NetworkParameters, String)},
      * {@link #fromPubKeyHash(NetworkParameters, byte[])}, {@link #fromScriptHash(NetworkParameters, byte[])} or
      * {@link #fromKey(NetworkParameters, ECKey)}.
-     * 
+     *
      * @param params
      *            network this address is valid for
      * @param p2sh
@@ -69,7 +68,7 @@ public class LegacyAddress extends Address {
     /**
      * Construct a {@link LegacyAddress} that represents the given pubkey hash. The resulting address will be a P2PKH type of
      * address.
-     * 
+     *
      * @param params
      *            network this address is valid for
      * @param hash160
@@ -83,7 +82,7 @@ public class LegacyAddress extends Address {
     /**
      * Construct a {@link LegacyAddress} that represents the public part of the given {@link ECKey}. Note that an address is
      * derived from a hash of the public key and is not the public key itself.
-     * 
+     *
      * @param params
      *            network this address is valid for
      * @param key
@@ -96,7 +95,7 @@ public class LegacyAddress extends Address {
 
     /**
      * Construct a {@link LegacyAddress} that represents the given P2SH script hash.
-     * 
+     *
      * @param params
      *            network this address is valid for
      * @param hash160
@@ -109,7 +108,7 @@ public class LegacyAddress extends Address {
 
     /**
      * Construct a {@link LegacyAddress} from its base58 form.
-     * 
+     *
      * @param params
      *            expected network this address is valid for, or null if if the network should be derived from the
      *            base58
@@ -144,7 +143,7 @@ public class LegacyAddress extends Address {
 
     /**
      * Get the version header of an address. This is the first byte of a base58 encoded address.
-     * 
+     *
      * @return version header as one byte
      */
     public int getVersion() {
@@ -153,7 +152,7 @@ public class LegacyAddress extends Address {
 
     /**
      * Returns the base58-encoded textual form, including version and checksum bytes.
-     * 
+     *
      * @return textual form
      */
     public String toBase58() {
@@ -169,7 +168,7 @@ public class LegacyAddress extends Address {
     /**
      * Get the type of output script that will be used for sending to the address. This is either
      * {@link ScriptType#P2PKH} or {@link ScriptType#P2SH}.
-     * 
+     *
      * @return type of output script
      */
     @Override
@@ -181,7 +180,7 @@ public class LegacyAddress extends Address {
      * Given an address, examines the version byte and attempts to find a matching NetworkParameters. If you aren't sure
      * which network the address is intended for (eg, it was provided by a user), you can use this to decide if it is
      * compatible with the current wallet.
-     * 
+     *
      * @return network the address is valid for
      * @throws AddressFormatException if the given base58 doesn't parse or the checksum is invalid
      */

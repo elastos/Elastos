@@ -18,8 +18,7 @@
 package org.bitcoinj.params;
 
 /**
- * Network parameters used by the bitcoinj unit tests (and potentially your own). This lets you solve a block using
- * {@link Block#solve()} by setting difficulty to the easiest possible.
+ * Network parameters used by the bitcoinj unit tests (and potentially your own).
  */
 public class UnitTestParams extends AbstractBitcoinNetParams {
     public static final int UNITNET_MAJORITY_WINDOW = 8;

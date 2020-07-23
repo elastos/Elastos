@@ -52,7 +52,7 @@ import org.bitcoinj.script.Script.ScriptType;
 
 /**
  * <p>Tools for the construction of commonly used script types. You don't normally need this as it's hidden behind
- * convenience methods on {@link Transaction}, but they are useful when working with the
+ * convenience methods on Transaction, but they are useful when working with the
  * protocol at a lower level.</p>
  */
 public class ScriptBuilder {

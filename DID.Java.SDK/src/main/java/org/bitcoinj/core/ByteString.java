@@ -20,15 +20,10 @@ import java.util.NoSuchElementException;
 
 /**
  * Immutable sequence of bytes. Provides conversions to and from {@code byte[]}, {@link
- * java.lang.String}, {@link ByteBuffer}, {@link InputStream}, {@link OutputStream}. Also provides a
- * conversion to {@link CodedInputStream}.
+ * java.lang.String}, {@link ByteBuffer}, {@link InputStream}, {@link OutputStream}.
  *
  * <p>Like {@link String}, the contents of a {@link ByteString} can never be observed to change, not
  * even in the presence of a data race or incorrect API usage in the client code.
- *
- * <p>Substring is supported by sharing the reference to the immutable underlying bytes.
- * Concatenation is likewise supported without copying (long strings) by building a tree of pieces
- * in {@link RopeByteString}.
  *
  * @author crazybob@google.com Bob Lee
  * @author kenton@google.com Kenton Varda
@@ -634,7 +629,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
   /**
    * Return {@code true} if this ByteString is literal (a leaf node) or a flat-enough tree in the
-   * sense of {@link RopeByteString}.
+   * sense of RopeByteString.
    *
    * @return true if the tree is flat enough
    */
@@ -691,7 +686,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
-   * This class implements a {@link com.google.protobuf.ByteString} backed by a single array of
+   * This class implements a com.google.protobuf.ByteString backed by a single array of
    * bytes, contiguous in memory. It supports substring by pointing to only a sub-range of the
    * underlying byte array, meaning that a substring will reference the full byte-array of the
    * string it's made from, exactly as with {@link String}.

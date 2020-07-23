@@ -97,7 +97,7 @@ public class JwtBuilder {
 	/**
 	 * Sets (and replaces) any existing header with the specified header. If you
 	 * do not want to replace the existing header and only want to append to it,
-	 * use the {@link #setHeaderParams(java.util.Map)} method instead.
+	 * use the {@link #setHeader(java.util.Map)} method instead.
 	 *
 	 * @param header the header to set (and potentially replace any existing
 	 *               header).
@@ -111,7 +111,7 @@ public class JwtBuilder {
 	/**
 	 * Sets (and replaces) any existing header with the specified header. If you
 	 * do not want to replace the existing header and only want to append to it,
-	 * use the {@link #setHeaderParams(java.util.Map)} method instead.
+	 * use the {@link #setHeader(java.util.Map)} method instead.
 	 *
 	 * @param header the header to set (and potentially replace any existing
 	 *               header).
@@ -597,7 +597,7 @@ public class JwtBuilder {
 	 * recommended signature algorithm, producing a JWS.
 	 *
 	 * @param key       the key id to use for signing
-	 * @param storepass the password for DID store
+	 * @param password  the password for DID store
 	 * @return the builder instance for method chaining.
 	 * @throws DIDStoreException
 	 * @throws InvalidKeyException
@@ -614,10 +614,9 @@ public class JwtBuilder {
 	 * Signs the constructed JWT with the default key using the key's
 	 * recommended signature algorithm, producing a JWS.
 	 *
-	 * @param storepass the password for DID store
+	 * @param password the password for DID store
 	 * @return the builder instance for method chaining.
 	 * @throws DIDStoreException
-	 * @throws InvalidKeyException
 	 */
 	public JwtBuilder sign(String password) throws DIDStoreException {
 		try {
@@ -658,8 +657,6 @@ public class JwtBuilder {
 	 *
 	 * @param codec compress codec name, could be "deflate" or "gzip".
 	 * @return the builder for method chaining.
-	 * @see io.jsonwebtoken.CompressionCodecs
-	 * @since 0.6.0
 	 */
 	public JwtBuilder compressWith(String codec) {
 		CompressionCodec cc = null;
