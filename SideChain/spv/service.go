@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"errors"
 
-	"github.com/elastos/Elastos.ELA.SideChain/types"
-
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
+	"github.com/elastos/Elastos.ELA.SPV/util"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	ela "github.com/elastos/Elastos.ELA/core/types"
@@ -55,6 +55,11 @@ func NewService(cfg *Config) (*Service, error) {
 		address: cfg.GenesisAddress,
 		service: service,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = service.RegisterBlockListener(&BlockListener{})
 	if err != nil {
 		return nil, err
 	}
@@ -150,4 +155,45 @@ func (l *listener) Flags() uint64 {
 
 func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx ela.Transaction) {
 	l.service.SubmitTransactionReceipt(id, tx.Hash())
+}
+
+type BlockListener struct {
+	blockNumber uint32
+	param       auxParam
+	handle      func(block interface{}) error
+}
+
+type auxParam struct {
+	block  *types.Block
+	height uint32
+}
+
+func (param *auxParam) clean() {
+	param.height = 0
+	param.block = nil
+}
+
+func (l *BlockListener) NotifyBlock(block *util.Block) {
+	l.blockNumber = block.Height
+	if l.blockNumber >= l.param.height && l.param.height != 0 {
+		log.Info("BlockListener handle block ", block.Height)
+		l.handle(l.param.block)
+		l.param.clean()
+	}
+}
+
+func (l *BlockListener) BlockHeight() uint32 {
+	return l.blockNumber
+}
+
+func (l *BlockListener) RegisterFunc(handleFunc func(block interface{}) error) {
+	l.handle = handleFunc
+}
+
+func (l *BlockListener) StoreAuxBlock(block interface{}) {
+	b := block.(*types.Block)
+	l.param = auxParam{
+		b,
+		b.GetAuxPow().MainBlockHeader.Height,
+	}
 }
