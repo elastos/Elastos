@@ -43,6 +43,8 @@ type Config struct {
 	CreateCoinBaseTx          func(cfg *Config, nextBlockHeight uint32, addr string) (*types.Transaction, error)
 	GenerateBlock             func(cfg *Config) (*types.Block, error)
 	GenerateBlockTransactions func(cfg *Config, msgBlock *types.Block, coinBaseTx *types.Transaction)
+	GetSpvHeight              func() uint32
+	StoreAuxBlock             func(block interface{})
 }
 
 type Service struct {
@@ -52,8 +54,9 @@ type Service struct {
 	manualMining bool
 
 	// This params are protected by blockMtx
-	blockMtx       sync.Mutex
-	msgBlocks      map[string]*types.Block
+	blockMtx  sync.Mutex
+	msgBlocks map[string]*types.Block
+
 	preChainHeight uint32
 	preTime        int64
 	preTxCount     int
@@ -208,7 +211,30 @@ func (s *Service) SubmitAuxBlock(blockHash string, sideAuxData []byte) error {
 		return fmt.Errorf("deserialize side aux pow failed")
 	}
 
+	spvHeight := s.cfg.GetSpvHeight()
+	if spvHeight < msgBlock.GetAuxPow().MainBlockHeader.Height {
+		s.cfg.StoreAuxBlock(msgBlock)
+		return errors.New("SideChain spv syncing not ready")
+	}
 	inMainChain, isOrphan, err := s.cfg.Chain.ProcessBlock(msgBlock)
+	if err != nil {
+		return err
+	}
+
+	if isOrphan || !inMainChain {
+		return fmt.Errorf("aux block can not be accepted")
+	}
+
+	s.msgBlocks = make(map[string]*types.Block)
+
+	return nil
+}
+
+func (s *Service) SubmitAuxBlockWithBlock(block interface{}) error {
+	s.blockMtx.Lock()
+	defer s.blockMtx.Unlock()
+
+	inMainChain, isOrphan, err := s.cfg.Chain.ProcessBlock(block.(*types.Block))
 	if err != nil {
 		return err
 	}
