@@ -106,7 +106,7 @@ type Config struct {
 	// addresses.
 	NAFilter p2p.NAFilter
 
-	// NewVersionHeight is the new version message height
+	// NewP2PProtocolVersionHeight is the new version message height
 	NewVersionHeight uint64
 
 	// NodeVersion is the version of node

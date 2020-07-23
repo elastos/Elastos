@@ -217,7 +217,7 @@ func GetNodeState(param Params) map[string]interface{} {
 	}
 	height := Chain.GetHeight()
 	ver := pact.DPOSStartVersion
-	if height > uint32(ChainParams.NewVersionHeight) {
+	if height > uint32(ChainParams.NewP2PProtocolVersionHeight) {
 		ver = pact.CRProposalVersion
 	}
 	return ResponsePack(Success, ServerInfo{

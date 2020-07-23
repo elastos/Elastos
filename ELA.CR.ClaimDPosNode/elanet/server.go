@@ -992,7 +992,7 @@ func NewServer(dataDir string, cfg *Config, nodeVersion string) (*server, error)
 	}
 
 	var pver = pact.DPOSStartVersion
-	if cfg.Chain.GetHeight() >= uint32(params.NewVersionHeight) {
+	if cfg.Chain.GetHeight() >= uint32(params.NewP2PProtocolVersionHeight) {
 		pver = pact.CRProposalVersion
 	}
 
@@ -1001,7 +1001,7 @@ func NewServer(dataDir string, cfg *Config, nodeVersion string) (*server, error)
 		params.DefaultPort, params.DNSSeeds, params.ListenAddrs,
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(cfg.Chain.GetHeight()) },
-		params.NewVersionHeight, nodeVersion,
+		params.NewP2PProtocolVersionHeight, nodeVersion,
 	)
 	svrCfg.DataDir = dataDir
 	svrCfg.NAFilter = &naFilter{}

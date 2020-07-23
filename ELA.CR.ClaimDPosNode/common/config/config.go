@@ -123,7 +123,7 @@ type CRConfiguration struct {
 	CRClaimDPOSNodePeriod              uint32         `json:"CRClaimDPOSNodePeriod"`
 	RectifyTxFee                       common.Fixed64 `json:"RectifyTxFee"`
 	RealWithdrawSingleFee              common.Fixed64 `json:"RealWithdrawSingleFee"`
-	NewVersionHeight                   uint64         `json:"NewVersionHeight"`
+	NewP2PProtocolVersionHeight        uint64         `json:"NewP2PProtocolVersionHeight"`
 }
 
 type RPCServiceLevel byte

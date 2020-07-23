@@ -907,8 +907,8 @@ func NewSettings() *Settings {
 	result.Add(&settingItem{
 		Flag:         cmdcom.NewVersionHeight,
 		DefaultValue: uint64(0),
-		ConfigPath:   "CRConfiguration.NewVersionHeight",
-		ParamName:    "NewVersionHeight"})
+		ConfigPath:   "CRConfiguration.NewP2PProtocolVersionHeight",
+		ParamName:    "NewP2PProtocolVersionHeight"})
 
 	return result
 }
