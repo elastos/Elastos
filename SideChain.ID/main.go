@@ -90,7 +90,7 @@ func main() {
 		ChainParams:    spvNetParams,
 		PermanentPeers: cfg.SPVPermanentPeers,
 		GenesisAddress: genesisAddress,
-		FilterType:  filter.FTNexTTurnDPOSInfo,
+		FilterType:     filter.FTNexTTurnDPOSInfo,
 	}
 	spvService, err := spv.NewService(&spvCfg)
 	if err != nil {
@@ -100,6 +100,7 @@ func main() {
 
 	defer spvService.Stop()
 	spvService.Start()
+	spvBlockListener := spvService.GetBlockListener()
 
 	mempoolCfg := mempool.Config{
 		ChainParams: activeNetParams,
@@ -156,6 +157,8 @@ func main() {
 		CreateCoinBaseTx:          pow.CreateCoinBaseTx,
 		GenerateBlock:             pow.GenerateBlock,
 		GenerateBlockTransactions: pow.GenerateBlockTransactions,
+		GetSpvHeight:              spvBlockListener.BlockHeight,
+		StoreAuxBlock:             spvBlockListener.StoreAuxBlock,
 	}
 
 	powService := pow.NewService(&powCfg)
@@ -163,6 +166,8 @@ func main() {
 		eladlog.Info("Start POW Services")
 		go powService.Start()
 	}
+
+	spvBlockListener.RegisterFunc(powService.SubmitAuxBlockWithBlock)
 
 	eladlog.Info("5. --Start the RPC service")
 	serviceCfg := sv.Config{
