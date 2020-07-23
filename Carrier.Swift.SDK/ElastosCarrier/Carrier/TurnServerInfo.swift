@@ -2,11 +2,11 @@
 import Foundation
 
 public class TurnServerInfo: NSObject {
-    var server: String
-    var port: Int
-    var username: String
-    var password: String
-    var realm: String
+    public var server: String
+    public var port: Int
+    public var username: String
+    public var password: String
+    public var realm: String
 
     init(_ server: String, _ username: String, _ password: String, _ realm: String, _ port: Int) {
         self.server = server
