@@ -33,6 +33,8 @@ public class DIDObject {
         self._type = type
     }
 
+    /// Get 'DIDURL'
+    /// - Returns: 'DIDURL'
     public func getId() -> DIDURL {
         return _id!
     }
@@ -41,6 +43,8 @@ public class DIDObject {
         self._id = id
     }
 
+    /// Get 'Type'
+    /// - Returns: 'Type'
     public func getType() -> String {
         return _type!
     }

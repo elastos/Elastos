@@ -22,6 +22,8 @@
 
 import Foundation
 
+/// Public keys are used for digital signatures, encryption and other cryptographic operations,
+/// which are the basis for purposes such as authentication or establishing secure communication with service endpoints.
 public class PublicKey: DIDObject {
     private var _controller: DID
     private var _keyBase58: String
@@ -43,14 +45,17 @@ public class PublicKey: DIDObject {
         self.init(id, Constants.DEFAULT_PUBLICKEY_TYPE, controller, keyBase58)
     }
 
+    /// DID of the corresponding private key controller
     public var controller: DID {
         return _controller
     }
 
+    /// Base58 encoded public key
     public var publicKeyBase58: String {
         return _keyBase58
     }
 
+    /// [UInt8] public key
     public var publicKeyBytes: [UInt8] {
         return Base58.bytesFromBase58(_keyBase58)
     }
@@ -59,6 +64,7 @@ public class PublicKey: DIDObject {
 //        return _keyBase58.data(using: .utf8)!
 //    }
 
+    /// Check publickey is authentication key or not.
     public var isAuthenticationKey: Bool {
         return authenticationKey
     }
@@ -67,6 +73,7 @@ public class PublicKey: DIDObject {
         self.authenticationKey = newValue
     }
 
+    /// Check publickey is athorization key or not.
     public var isAthorizationKey: Bool {
         return authorizationKey
     }
