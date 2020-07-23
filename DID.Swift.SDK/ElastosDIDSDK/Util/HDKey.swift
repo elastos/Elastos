@@ -185,8 +185,17 @@ public class HDKey: NSObject {
     }
 
     public func derive(_ index: Int, _ hardened: Bool) -> HDKey {
-        // TODO: TODO
-        return HDKey(key)
+        var childNum: [CVarArg] = []
+        let cderivedkey: UnsafeMutablePointer<CHDKey> = UnsafeMutablePointer<CHDKey>.allocate(capacity: 256)
+        if hardened {
+            childNum.append(UInt32(index) | 0x80000000)
+        }
+        else {
+            childNum.append(index)
+        }
+        let hkey = HDKey_GetvDerivedKey(key, cderivedkey, Int32(childNum.count), getVaList(childNum))
+
+        return HDKey(hkey)
     }
 
     public func derive(_ index: Int) -> HDKey {
@@ -210,7 +219,7 @@ public class HDKey: NSObject {
         return (String(cString: cid!))
     }
 
-    class func PEM_ReadPublicKey(_ publicKey: Data) -> String {
+    class func PEM_ReadPublicKey(_ publicKey: Data) throws -> String {
         let cpub: UnsafePointer<UInt8> = publicKey.withUnsafeBytes { (bytes) -> UnsafePointer<UInt8> in
             return bytes
         }
@@ -218,7 +227,7 @@ public class HDKey: NSObject {
         var size: Int32 = 512
         let re = PEM_WritePublicKey(cpub, cprivateKey, &size)
         if re < 0 {
-            //TODO: throws
+            throw DIDError.unknownFailure("PEM_ReadPublicKey error.")
         }
         let cstr = String(cString: cprivateKey)
         return cstr
@@ -235,7 +244,7 @@ public class HDKey: NSObject {
         var count = 512
         let re = PEM_WritePrivateKey(cpub, cpri, cPEM_privateKey, &count)
         if re < 0 {
-            //TODO: throws
+            throw DIDError.unknownFailure("PEM_ReadPublicKey error.")
         }
         let cstr = String(cString: cPEM_privateKey)
         return cstr

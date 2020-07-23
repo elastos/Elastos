@@ -50,7 +50,10 @@ public class JsonNode {
     }
 
     var isEmpty: Bool {
-        // TODO:
+        // TODO: check
+        if case Optional<Any>.none = node {
+            return true
+        }
         return false
     }
 
@@ -192,7 +195,17 @@ public class JsonNode {
     }
 
     func put(forKey key: String, value: Bool) {
-        // TODO:
+        guard self.node is [String: JsonNode] else {
+            return
+        }
+        let node: JsonNode = JsonNode(value)
+        var temp = self.node as? [String: JsonNode]
+        if temp == nil {
+            temp = [: ]
+        }
+        // TODO:CHECK
+        temp![key] = node
+        self.node = temp as Any
     }
 
     func remove(_ key: String) {

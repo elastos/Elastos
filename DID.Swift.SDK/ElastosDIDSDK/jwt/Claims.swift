@@ -183,7 +183,7 @@ public class Claims {
             let data = try JSONSerialization.data(withJSONObject: v as Any, options: [])
             return (String(data: data, encoding: .utf8)!)
         }
-        throw DIDError.illegalArgument("TODO")
+        throw DIDError.illegalArgument("Data parsing error in method in getAsJson().")
     }
 
     public func put(key: String, value: Any) {
@@ -209,7 +209,7 @@ public class Claims {
     public func putAllWithJson(json: String) throws {
         let dic = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: []) as? [String : Any]
         guard dic != nil else {
-            throw DIDError.illegalArgument("TODO")
+            throw DIDError.illegalArgument("Data parsing error in method in putAllWithJson().")
         }
         putAll(dic: dic!)
     }

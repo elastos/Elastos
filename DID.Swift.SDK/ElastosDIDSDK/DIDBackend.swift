@@ -228,9 +228,9 @@ public class DIDBackend {
 
         let resultNode = node.get(forKey: Constants.RESULT)
         guard let _ = resultNode, !resultNode!.isEmpty else {
-            let errorNode = node.get(forKey: Constants.ERROR)!
-            let errorCode = errorNode.get(forKey: Constants.ERROR_CODE)?.asString() ?? "<null>"
-            let errorMsg  = errorNode.get(forKey: Constants.ERROR_MESSAGE)? .asString() ?? "<null>"
+            let errorNode = node.get(forKey: Constants.ERROR)
+            let errorCode = errorNode?.get(forKey: Constants.ERROR_CODE)?.asString() ?? "<null>"
+            let errorMsg  = errorNode?.get(forKey: Constants.ERROR_MESSAGE)? .asString() ?? "<null>"
 
             throw DIDError.didResolveError("resolve DID error(\(errorCode)):\(errorMsg)")
         }

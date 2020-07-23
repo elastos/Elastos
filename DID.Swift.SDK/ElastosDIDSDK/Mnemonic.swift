@@ -42,9 +42,4 @@ public class Mnemonic {
             }
         }
     }
-
-    public class func toSeed(_ mnemonic: String, _ passphrase: String) -> Data {
-        
-        return Data() // TODO: TODO
-    }
 }

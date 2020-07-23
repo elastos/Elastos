@@ -252,7 +252,7 @@ public class DIDDocument {
         let pubKey = publicKey(ofId: ofId)
         let pubs = pubKey!.publicKeyBytes
         let pubData = Data(bytes: pubs, count: pubs.count)
-        let publicKeyData = HDKey.PEM_ReadPublicKey(pubData)
+        let publicKeyData = try HDKey.PEM_ReadPublicKey(pubData)
 
         return publicKeyData.data(using: .utf8)!
     }
