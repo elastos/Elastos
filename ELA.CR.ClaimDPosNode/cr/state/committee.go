@@ -318,6 +318,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	c.updateProposals(block.Height, inElectionPeriod)
 	c.freshCirculationAmount(c.lastHistory, block.Height)
 	c.updateCRInactivePeriod(c.lastHistory, block.Height)
+	c.updateCRInactiveStatus(c.lastHistory, block.Height)
 	needChg := false
 	if c.shouldChange(block.Height) && c.changeCommittee(block.Height) {
 		needChg = true
@@ -353,6 +354,35 @@ func (c *Committee) updateCRInactivePeriod(history *utils.History, height uint32
 				cr.InactiveCount -= 1
 			})
 		}
+	}
+}
+
+func (c *Committee) checkAndSetMemberToInactive(history *utils.History, height uint32) {
+	for _, v := range c.Members {
+		m := v
+		if m.DPOSPublicKey == nil && m.MemberState == MemberElected {
+			history.Append(height, func() {
+				m.MemberState = MemberInactive
+			}, func() {
+				m.MemberState = MemberElected
+			})
+		}
+	}
+}
+
+func (c *Committee) updateCRInactiveStatus(history *utils.History, height uint32) {
+	if c.state.CurrentSession == 0 {
+		return
+	} else if c.state.CurrentSession == 1 {
+		if height < c.params.CRClaimDPOSNodeStartHeight+c.params.CRClaimDPOSNodePeriod {
+			return
+		}
+		c.checkAndSetMemberToInactive(history, height)
+	} else {
+		if height < c.LastCommitteeHeight+c.params.CRClaimDPOSNodePeriod {
+			return
+		}
+		c.checkAndSetMemberToInactive(history, height)
 	}
 }
 
@@ -788,10 +818,15 @@ func (c *Committee) processCRDPOSManagement(tx *types.Transaction,
 		return
 	}
 	oriPublicKey := cr.DPOSPublicKey
+	oriMemberState := cr.MemberState
 	history.Append(height, func() {
 		cr.DPOSPublicKey = dposManagementPayload.CRManagementPublicKey
+		if cr.MemberState == MemberInactive {
+			cr.MemberState = MemberElected
+		}
 	}, func() {
 		cr.DPOSPublicKey = oriPublicKey
+		cr.MemberState = oriMemberState
 	})
 }
 

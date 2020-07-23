@@ -857,6 +857,7 @@ func TestCommittee_RollbackCRCProposal(t *testing.T) {
 	cfg.CRCArbiters = cfg.CRCArbiters[0:2]
 	cfg.CRMemberCount = 2
 	cfg.CRAgreementCount = 2
+	cfg.CRClaimDPOSNodePeriod = 1000000
 
 	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
