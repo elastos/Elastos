@@ -41,6 +41,12 @@ set(LIBS
 set(SYSTEM_LIBS
     z)
 
+if(LINUX OR DARWIN)
+set(SYSTEM_LIBS
+    ${SYSTEM_LIBS}
+    resolv)
+endif()
+
 include_directories(
     BEFORE
     ../spvadapter

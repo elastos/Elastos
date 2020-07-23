@@ -148,8 +148,6 @@ int main(int argc, char *argv[])
     do {
         if (TestData_Init(dummy) == -1) {
             printf("If you run test cases without wallet dir, please use command option: --dummy. But there are no cases to publishing DID into real chain.\n");
-            printf("Please press any key to exit....");
-            getchar();
             exit(-1);
         }
 
