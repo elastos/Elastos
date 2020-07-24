@@ -13,6 +13,19 @@ import (
 
 type Params map[string]interface{}
 
+type Request struct {
+	Method string      `json:"method"`
+	ID     interface{} `json:"id"`
+	Params interface{} `json:"params"`
+}
+
+type Response struct {
+	JSONRPC string      `json:"jsonrpc"`
+	Result  interface{} `json:"result"`
+	ID      interface{} `json:"id"`
+	Error   interface{} `json:"error"`
+}
+
 func FromArray(array []interface{}, fields ...string) Params {
 	params := make(Params)
 	for i := 0; i < len(array); i++ {
