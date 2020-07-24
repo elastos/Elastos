@@ -39,18 +39,24 @@ public class DIDDocumentProof {
         self.init(Constants.DEFAULT_PUBLICKEY_TYPE, DateHelper.currentDate(), creator, signature)
     }
 
+    /// The default type is ECDSAsecp256r1, which can be omitted.
     public var type: String {
         return self._type
     }
 
+    /// The signature creation time can be omitted.
     public var createdDate: Date {
         return self._createdDate
     }
 
+    /// Key reference to verify the signature,
+    /// the value must be a reference to the key corresponding to the DID topic,
+    /// can be omitted
     public var creator: DIDURL {
         return self._creator
     }
 
+    /// The signed value, using Base64 encoding
     public var signature: String {
         return self._signature
     }
