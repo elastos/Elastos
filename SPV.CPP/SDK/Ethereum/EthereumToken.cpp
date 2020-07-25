@@ -81,21 +81,5 @@ namespace Elastos {
 			return _token;
 		}
 
-		std::vector<EthereumTokenPtr> EthereumToken::getTokenAll() const {
-			std::vector<EthereumTokenPtr> allTokens;
-			int count = tokenCount();
-			// A uint32_t array on x86 platforms - we *require* a long array
-			BREthereumToken *tokens = tokenGetAll();
-
-			for (int i = 0; i < count; ++i) {
-				EthereumTokenPtr token(new EthereumToken(tokens[i]));
-				allTokens.push_back(token);
-			}
-
-			free(tokens);
-
-			return allTokens;
-		}
-
 	}
 }

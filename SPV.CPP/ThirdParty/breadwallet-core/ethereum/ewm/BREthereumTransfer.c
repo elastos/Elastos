@@ -3,7 +3,7 @@
 //  Core
 //
 //  Created by Ed Gamble on 7/9/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -366,6 +366,12 @@ transferGetToken (BREthereumTransfer transfer) {
 extern BREthereumFeeBasis
 transferGetFeeBasis (BREthereumTransfer transfer) {
     return transfer->feeBasis;
+}
+
+extern void
+transferSetFeeBasis (BREthereumTransfer transfer,
+                     BREthereumFeeBasis feeBasis) {
+    transfer->feeBasis = feeBasis;
 }
 
 extern BREthereumGas
@@ -752,6 +758,16 @@ transferGetEffectiveAmountInEther(BREthereumTransfer transfer) {
                                         ? transfer->basis.u.transaction
                                         : transfer->originatingTransaction);
     }
+}
+
+private_extern BREthereumAddress
+transferGetEffectiveTargetAddress (BREthereumTransfer transfer) {
+    return transferProvideOriginatingTransactionTargetAddress (transfer);
+}
+
+private_extern BREthereumAddress
+transferGetEffectiveSourceAddress (BREthereumTransfer transfer) {
+    return transfer->sourceAddress;
 }
 
 extern BREthereumComparison

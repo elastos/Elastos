@@ -127,7 +127,7 @@ namespace Elastos {
 		}
 
 		void EthereumWallet::estimateGas(const EthereumTransferPtr &transaction) {
-			ewmUpdateGasEstimate(_ewm->getRaw(), getRaw(), transaction->getRaw());
+//			ewmUpdateGasEstimate(_ewm->getRaw(), getRaw(), transaction->getRaw());
 		}
 
 		// Transactions

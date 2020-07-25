@@ -62,9 +62,6 @@ namespace Elastos {
 
 			BREthereumToken getRaw() const;
 
-		protected:
-			std::vector<EthereumTokenPtr> getTokenAll() const;
-
 		private:
 			BREthereumToken _token;
 		};

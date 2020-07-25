@@ -40,7 +40,7 @@ namespace Elastos {
 									 "pubkey should be 65 bytes and begin with 0x04");
 
 			_ewm = EthereumEWMPtr(
-				new EthereumEWM(this, EthereumEWM::Mode::P2P_ONLY, _network, _storagePath, pubkey));
+				new EthereumEWM(this, CRYPTO_SYNC_MODE_P2P_ONLY, _network, _storagePath, pubkey, 0, 6));
 		}
 
 		void EthereumClient::getGasPrice(BREthereumWallet wid, int rid) {
@@ -48,13 +48,14 @@ namespace Elastos {
 		}
 
 		void EthereumClient::getGasEstimate(BREthereumWallet wid,
-											BREthereumTransfer tid,
+											BREthereumCookie cookie,
 											const std::string &from,
 											const std::string &to,
 											const std::string &amount,
+											const std::string &gasPrice,
 											const std::string &data,
 											int rid) {
-			_client->getGasEstimate(wid, tid, from, to, amount, data, rid);
+			_client->getGasEstimate(wid, cookie, from, to, amount, gasPrice, data, rid);
 		}
 
 		void EthereumClient::getBalance(BREthereumWallet wid, const std::string &address, int rid) {
@@ -104,37 +105,27 @@ namespace Elastos {
 			_client->getNonce(address, rid);
 		}
 
-		void EthereumClient::handleEWMEvent(EthereumEWM::EWMEvent event, EthereumEWM::Status status,
-											const std::string &errorDescription) {
-			_client->handleEWMEvent(event, status, errorDescription);
+		void EthereumClient::handleEWMEvent(const BREthereumEWMEvent &event) {
+			_client->handleEWMEvent(event);
 		}
 
-		void EthereumClient::handlePeerEvent(EthereumEWM::PeerEvent event, EthereumEWM::Status status,
-											 const std::string &errorDescription) {
-			_client->handlePeerEvent(event, status, errorDescription);
+		void EthereumClient::handlePeerEvent(const BREthereumPeerEvent &event) {
+			_client->handlePeerEvent(event);
 		}
 
 		void EthereumClient::handleWalletEvent(const EthereumWalletPtr &wallet,
-											   EthereumEWM::WalletEvent event, EthereumEWM::Status status,
-											   const std::string &errorDescription) {
-			_client->handleWalletEvent(wallet, event, status, errorDescription);
+											   const BREthereumWalletEvent &event) {
+			_client->handleWalletEvent(wallet, event);
 		}
 
-		void EthereumClient::handleTokenEvent(const EthereumTokenPtr &token, EthereumEWM::TokenEvent event) {
+		void EthereumClient::handleTokenEvent(const EthereumTokenPtr &token, const BREthereumTokenEvent &event) {
 			_client->handleTokenEvent(token, event);
-		}
-
-		void EthereumClient::handleBlockEvent(const EthereumBlockPtr &block,
-											  EthereumEWM::BlockEvent event, EthereumEWM::Status status,
-											  const std::string &errorDescription) {
-			_client->handleBlockEvent(block, event, status, errorDescription);
 		}
 
 		void EthereumClient::handleTransferEvent(const EthereumWalletPtr &wallet,
 												 const EthereumTransferPtr &transaction,
-												 EthereumEWM::TransactionEvent event, EthereumEWM::Status status,
-												 const std::string &errorDescription) {
-			_client->handleTransferEvent(wallet, transaction, event, status, errorDescription);
+												 const BREthereumTransferEvent &event) {
+			_client->handleTransferEvent(wallet, transaction, event);
 		}
 
 	}

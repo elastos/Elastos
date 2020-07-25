@@ -27,6 +27,7 @@
 #include <WalletCore/CoinInfo.h>
 #include <Common/ErrorChecker.h>
 #include <Common/hash.h>
+#include <ethereum/ewm/BREthereumClient.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -90,17 +91,26 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 		}
 
 		void EthSidechainSubWallet::getGasEstimate(BREthereumWallet wid,
-												   BREthereumTransfer tid,
+												   BREthereumCookie cookie,
 												   const std::string &from,
 												   const std::string &to,
 												   const std::string &amount,
+												   const std::string &gasPrice,
 												   const std::string &data,
 												   int rid) {
 			nlohmann::json j;
+			BREthereumTransfer transfer = (BREthereumTransfer) cookie;
+			BREthereumHash hash = transferGetIdentifier(transfer);
+			char *phash =  hashAsString(hash);
+			std::string h = phash;
+			free(phash);
+
+			j["Hash"] = h;
 			j["From"] = from;
 			j["To"] = to;
 			j["Amount"] = amount;
 			j["Data"] = data;
+			j["GasPrice"] = gasPrice;
 			j["Rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
@@ -183,13 +193,8 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 		}
 
-		void EthSidechainSubWallet::handleEWMEvent(EthereumEWM::EWMEvent event, EthereumEWM::Status status,
-												   const std::string &errorDescription) {
-			nlohmann::json eJson;
-			eJson["Type"] = "EWMEvent";
-			eJson["Event"] = EthereumEWM::EWMEvent2String(event);
-			eJson["Status"] = EthereumEWM::Status2String(status);
-			eJson["ErrorDescription"] = errorDescription;
+		void EthSidechainSubWallet::handleEWMEvent(const BREthereumEWMEvent &event) {
+			nlohmann::json eJson = EthereumEWM::EWMEvent2Json(event);
 			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
 
 			boost::mutex::scoped_lock scoped_lock(lock);
@@ -200,13 +205,8 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			}
 		}
 
-		void EthSidechainSubWallet::handlePeerEvent(EthereumEWM::PeerEvent event, EthereumEWM::Status status,
-													const std::string &errorDescription) {
-			nlohmann::json eJson;
-			eJson["Type"] = "PeerEvent";
-			eJson["Event"] = EthereumEWM::PeerEvent2String(event);
-			eJson["Status"] = EthereumEWM::Status2String(status);
-			eJson["ErrorDescription"] = errorDescription;
+		void EthSidechainSubWallet::handlePeerEvent(const BREthereumPeerEvent &event) {
+			nlohmann::json eJson = EthereumEWM::PeerEvent2Json(event);;
 			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
 
 			boost::mutex::scoped_lock scoped_lock(lock);
@@ -218,14 +218,8 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 		}
 
 		void EthSidechainSubWallet::handleWalletEvent(const EthereumWalletPtr &wallet,
-													  EthereumEWM::WalletEvent event,
-													  EthereumEWM::Status status,
-													  const std::string &errorDescription) {
-			nlohmann::json eJson;
-			eJson["Type"] = "WalletEvent";
-			eJson["Event"] = EthereumEWM::WalletEvent2String(event);
-			eJson["Status"] = EthereumEWM::Status2String(status);
-			eJson["ErrorDescription"] = errorDescription;
+													  const BREthereumWalletEvent &event) {
+			nlohmann::json eJson = EthereumEWM::WalletEvent2Json(event);
 			eJson["WalletSymbol"] = wallet->getSymbol();
 			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
 
@@ -237,31 +231,9 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			}
 		}
 
-		void EthSidechainSubWallet::handleTokenEvent(const EthereumTokenPtr &token, EthereumEWM::TokenEvent event) {
-			nlohmann::json eJson;
-			eJson["Type"] = "TokenEvent";
-			eJson["Event"] = EthereumEWM::TokenEvent2String(event);
+		void EthSidechainSubWallet::handleTokenEvent(const EthereumTokenPtr &token, const BREthereumTokenEvent &event) {
+			nlohmann::json eJson = EthereumEWM::TokenEvent2Json(event);
 			eJson["WalletSymbol"] = token->getSymbol();
-			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
-
-			boost::mutex::scoped_lock scoped_lock(lock);
-			if (_callback != nullptr) {
-				_callback->OnETHSCEventHandled(eJson);
-			} else {
-				Log::info(CALLBACK_IS_NULL_PROMPT);
-			}
-		}
-
-		void EthSidechainSubWallet::handleBlockEvent(const EthereumBlockPtr &block,
-													 EthereumEWM::BlockEvent event,
-													 EthereumEWM::Status status,
-													 const std::string &errorDescription) {
-			nlohmann::json eJson;
-			eJson["Type"] = "BlockEvent";
-			eJson["Event"] = EthereumEWM::BlockEvent2String(event);
-			eJson["Status"] = EthereumEWM::Status2String(status);
-			eJson["ErrorDescription"] = errorDescription;
-			eJson["BlockNumber"] = block->getBlockNumber();
 			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
 
 			boost::mutex::scoped_lock scoped_lock(lock);
@@ -274,14 +246,8 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 
 		void EthSidechainSubWallet::handleTransferEvent(const EthereumWalletPtr &wallet,
 														const EthereumTransferPtr &transaction,
-														EthereumEWM::TransactionEvent event,
-														EthereumEWM::Status status,
-														const std::string &errorDescription) {
-			nlohmann::json eJson;
-			eJson["Type"] = "TransferEvent";
-			eJson["Event"] = EthereumEWM::TransactionEvent2String(event);
-			eJson["Status"] = EthereumEWM::Status2String(status);
-			eJson["ErrorDescription"] = errorDescription;
+														const BREthereumTransferEvent &event) {
+			nlohmann::json eJson = EthereumEWM::TransferEvent2Json(event);
 			eJson["WalletSymbol"] = wallet->getSymbol();
 			eJson["TxHash"] = transaction->getIdentifier();
 			ArgInfo("{} {}", GetFunName(), eJson.dump(4));

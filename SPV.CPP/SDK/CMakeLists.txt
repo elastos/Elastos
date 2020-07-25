@@ -27,6 +27,7 @@ add_custom_target(libspvsdk)
 include_directories(
 	.
 	../ThirdParty/breadwallet-core
+	../ThirdParty/breadwallet-core/include
 	../Interface
 	${CMAKE_CURRENT_BINARY_DIR}/..
 	${CMAKE_CURRENT_BINARY_DIR}/../ThirdParty/secp256k1/${PROJECT_DEPS_BUILD_PREFIX}/src

@@ -3,7 +3,7 @@
 //  Core
 //
 //  Created by Ed Gamble on 8/14/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -143,14 +143,21 @@ nodeEndpointCreateLocal (BREthereumLESRandomContext randomContext) {
 extern BREthereumNodeEndpoint
 nodeEndpointCreateEnode (const char *enode) {
     size_t enodeLen = strlen (enode);
-    assert (enodeLen < 1024);
+    if (enodeLen >= 1024)
+        return NULL;
 
     char buffer[1024], *buf = buffer;
-    assert (1 == sscanf (enode, "enode://%s", buffer));
+
+    if (1 != sscanf (enode, "enode://%s", buffer))
+        return NULL;
 
     char *id = strsep (&buf, "@:");
     char *ip = strsep (&buf, "@:");
     char *pt = strsep (&buf, "@:");
+
+    if (NULL == id || NULL == ip || NULL == pt)
+        return NULL;
+
     int port = atoi (pt);
 
     BREthereumDISEndpoint disEndpoint = {
@@ -271,7 +278,8 @@ nodeEndpointDefineHello (BREthereumNodeEndpoint endpoint,
 
     // The NodeID is the 64-byte (uncompressed) public key
     uint8_t pubKey[65];
-    assert (65 == BRKeyPubKey (&endpoint->dis.key, pubKey, 65));
+    size_t pubKeyLen = BRKeyPubKey (&endpoint->dis.key, pubKey, 65);
+    assert (65 == pubKeyLen);
     memcpy (endpoint->hello.nodeId.u8, &pubKey[1], 64);
 }
 

@@ -3,13 +3,12 @@
 //  BRCore
 //
 //  Created by Ed Gamble on 5/15/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
 
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 #include "BREthereumTransactionStatus.h"
 
@@ -60,8 +59,7 @@ transactionStatusCreateErrored (BREthereumTransactionErrorType type,
     BREthereumTransactionStatus status;
     status.type = TRANSACTION_STATUS_ERRORED;
     status.u.errored.type = type;
-    strncpy (status.u.errored.detail, detail, sizeof(status.u.errored.detail));
-    status.u.errored.detail[TRANSACTION_STATUS_DETAIL_BYTES] = '\0';
+    strlcpy (status.u.errored.detail, detail, TRANSACTION_STATUS_DETAIL_BYTES);
     return status;
 }
 
@@ -100,7 +98,6 @@ transactionStatusEqual (BREthereumTransactionStatus ts1,
                                  0 == strcmp (ts1.u.errored.detail, ts2.u.errored.detail))));
 }
 
-
 extern BREthereumTransactionErrorType
 lookupTransactionErrorType (const char *reasons[],
                             const char *reason) {
@@ -114,9 +111,6 @@ lookupTransactionErrorType (const char *reasons[],
     return TRANSACTION_ERROR_UNKNOWN;
 }
 
-//
-// NOTE: THIS IS LES SPECIFIC
-//
 extern BREthereumTransactionStatus
 transactionStatusRLPDecode (BRRlpItem item,
                             const char *reasons[],
@@ -149,13 +143,20 @@ transactionStatusRLPDecode (BRRlpItem item,
         case TRANSACTION_STATUS_INCLUDED: {
             size_t othersCount;
             const BRRlpItem *others = rlpDecodeList(coder, items[1], &othersCount);
-            assert (3 == othersCount);
+
+            // The 'encode' function produces '5' others; however, for consistency with delivered
+            // code with an existing archival value, we keep '3' around.
+            assert (5 == othersCount || 3 == othersCount);
 
             return transactionStatusCreateIncluded (hashRlpDecode(others[0], coder),
                                                     rlpDecodeUInt64(coder, others[1], 0),
                                                     rlpDecodeUInt64(coder, others[2], 0),
-                                                    TRANSACTION_STATUS_BLOCK_TIMESTAMP_UNKNOWN,
-                                                    gasCreate(0));
+                                                    (3 == othersCount
+                                                     ? TRANSACTION_STATUS_BLOCK_TIMESTAMP_UNKNOWN
+                                                     : rlpDecodeUInt64(coder, others[3], 0)),
+                                                    (3 == othersCount
+                                                     ? gasCreate(0)
+                                                     : gasRlpDecode(others[4], coder)));
         }
         
         case TRANSACTION_STATUS_ERRORED: {
@@ -168,9 +169,6 @@ transactionStatusRLPDecode (BRRlpItem item,
     }
 }
 
-//
-// NOTE: THIS IS LES SPECIFIC
-//
 extern BRRlpItem
 transactionStatusRLPEncode (BREthereumTransactionStatus status,
                             BRRlpCoder coder) {
@@ -187,10 +185,12 @@ transactionStatusRLPEncode (BREthereumTransactionStatus status,
             break;
 
         case TRANSACTION_STATUS_INCLUDED:
-            items[1] = rlpEncodeList(coder, 3,
-                                     hashRlpEncode(status.u.included.blockHash, coder),
-                                     rlpEncodeUInt64(coder, status.u.included.blockNumber, 0),
-                                     rlpEncodeUInt64(coder, status.u.included.transactionIndex, 0));
+            items[1] = rlpEncodeList (coder, 5,
+                                      hashRlpEncode(status.u.included.blockHash, coder),
+                                      rlpEncodeUInt64(coder, status.u.included.blockNumber, 0),
+                                      rlpEncodeUInt64(coder, status.u.included.transactionIndex, 0),
+                                      rlpEncodeUInt64(coder, status.u.included.blockTimestamp, 0),
+                                      gasRlpEncode(status.u.included.gasUsed, coder));
             items[2] = rlpEncodeString(coder, "");
 
             break;

@@ -35,61 +35,27 @@ namespace Elastos {
 						   const std::string &storagePath,
 						   const bytes_t &pubkey);
 		public:
-			// implement EthereumEWM::Client
-			//        typedef void (*BREthereumClientHandlerGetGasPrice) (BREthereumClientContext context,
-			//                                    BREthereumEWM ewm,
-			//                                    BREthereumWalletId wid,
-			//                                    int rid);
 			virtual void getGasPrice(BREthereumWallet wid, int rid);
 
-			//        typedef void (*BREthereumClientHandlerEstimateGas) (BREthereumClientContext context,
-			//                                    BREthereumEWM ewm,
-			//                                    BREthereumWalletId wid,
-			//                                    BREthereumTransactionId tid,
-			//                                    const char *from,
-			//                                    const char *to,
-			//                                    const char *amount,
-			//                                    const char *data,
-			//                                    int rid);
 			virtual void getGasEstimate(BREthereumWallet wid,
-										BREthereumTransfer tid,
+										BREthereumCookie cookie,
 										const std::string &from,
 										const std::string &to,
 										const std::string &amount,
+										const std::string &gasPrice,
 										const std::string &data,
 										int rid);
 
-			//        typedef void (*BREthereumClientHandlerGetBalance) (BREthereumClientContext context,
-			//                                   BREthereumEWM ewm,
-			//                                   BREthereumWalletId wid,
-			//                                   const char *address,
-			//                                   int rid);
 			virtual void getBalance(BREthereumWallet wid, const std::string &address, int rid);
 
-			//        typedef void (*BREthereumClientHandlerSubmitTransaction) (BREthereumClientContext context,
-			//                                          BREthereumEWM ewm,
-			//                                          BREthereumWalletId wid,
-			//                                          BREthereumTransactionId tid,
-			//                                          const char *transaction,
-			//                                          int rid);
 			virtual void
 			submitTransaction(BREthereumWallet wid, BREthereumTransfer tid, const std::string &rawTransaction,
 							  int rid);
 
-			//        &:wtypedef void (*BREthereumClientHandlerGetTransactions) (BREthereumClientContext context,
-			//                                        BREthereumEWM ewm,
-			//                                        const char *address,
-			//                                        int rid);
 			virtual void
 			getTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber,
 							int rid);
 
-			//        typedef void (*BREthereumClientHandlerGetLogs) (BREthereumClientContext context,
-			//                                BREthereumEWM ewm,
-			//                                const char *contract,
-			//                                const char *address,
-			//                                const char *event,
-			//                                int rid);
 			virtual void getLogs(const std::string &contract,
 								 const std::string &address,
 								 const std::string &event,
@@ -97,15 +63,6 @@ namespace Elastos {
 								 uint64_t endBlockNumber,
 								 int rid);
 
-
-			//typedef void
-			//(*BREthereumClientHandlerGetBlocks) (BREthereumClientContext context,
-			//                                     BREthereumEWM ewm,
-			//                                     const char *address,
-			//                                     BREthereumSyncInterestSet interests,
-			//                                     uint64_t blockNumberStart,
-			//                                     uint64_t blockNumberStop,
-			//                                     int rid);
 			virtual void getBlocks(const std::string &address,
 								   int interests,
 								   uint64_t blockNumberStart,
@@ -125,26 +82,18 @@ namespace Elastos {
 			//                                                        int rid);
 			virtual void getNonce(const std::string &address, int rid);
 
-			virtual void handleEWMEvent(EthereumEWM::EWMEvent event, EthereumEWM::Status status,
-										const std::string &errorDescription);
+			virtual void handleEWMEvent(const BREthereumEWMEvent &event);
 
-			virtual void handlePeerEvent(EthereumEWM::PeerEvent event, EthereumEWM::Status status,
-										 const std::string &errorDescription);
+			virtual void handlePeerEvent(const BREthereumPeerEvent &event);
 
 			virtual void handleWalletEvent(const EthereumWalletPtr &wallet,
-										   EthereumEWM::WalletEvent event, EthereumEWM::Status status,
-										   const std::string &errorDescription);
+										   const BREthereumWalletEvent &event);
 
-			virtual void handleTokenEvent(const EthereumTokenPtr &token, EthereumEWM::TokenEvent event);
-
-			virtual void handleBlockEvent(const EthereumBlockPtr &block,
-										  EthereumEWM::BlockEvent event, EthereumEWM::Status status,
-										  const std::string &errorDescription);
+			virtual void handleTokenEvent(const EthereumTokenPtr &token, const BREthereumTokenEvent &event);
 
 			virtual void handleTransferEvent(const EthereumWalletPtr &wallet,
 											 const EthereumTransferPtr &transaction,
-											 EthereumEWM::TransactionEvent event, EthereumEWM::Status status,
-											 const std::string &errorDescription);
+											 const BREthereumTransferEvent &event);
 
 		protected:
 			friend class EthSidechainSubWallet;

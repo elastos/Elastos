@@ -3,7 +3,7 @@
 //  BRCore
 //
 //  Created by Ed Gamble on 5/17/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -42,9 +42,6 @@ addressValidateString(const char *string) {
 extern BREthereumAddress
 addressCreateKey (const BRKey *key) {
     BREthereumAddress address;
-
-    //assert ( 0 == key->compressed);
-    //assert (65 == BRKeyPubKey(key, NULL, 0));
 
     // We interrupt your regularly scheduled programming...
 

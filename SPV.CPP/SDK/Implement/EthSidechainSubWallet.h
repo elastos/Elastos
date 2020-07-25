@@ -55,10 +55,11 @@ namespace Elastos {
 			virtual void getGasPrice(BREthereumWallet wid, int rid);
 
 			virtual void getGasEstimate(BREthereumWallet wid,
-										BREthereumTransfer tid,
+										BREthereumCookie cookie,
 										const std::string &from,
 										const std::string &to,
 										const std::string &amount,
+										const std::string &gasPrice,
 										const std::string &data,
 										int rid);
 
@@ -91,26 +92,18 @@ namespace Elastos {
 
 			virtual void getNonce(const std::string &address, int rid);
 
-			virtual void handleEWMEvent(EthereumEWM::EWMEvent event, EthereumEWM::Status status,
-										const std::string &errorDescription);
+			virtual void handleEWMEvent(const BREthereumEWMEvent &event);
 
-			virtual void handlePeerEvent(EthereumEWM::PeerEvent event, EthereumEWM::Status status,
-										 const std::string &errorDescription);
+			virtual void handlePeerEvent(const BREthereumPeerEvent &event);
 
 			virtual void handleWalletEvent(const EthereumWalletPtr &wallet,
-										   EthereumEWM::WalletEvent event, EthereumEWM::Status status,
-										   const std::string &errorDescription);
+										   const BREthereumWalletEvent &event);
 
-			virtual void handleTokenEvent(const EthereumTokenPtr &token, EthereumEWM::TokenEvent event);
-
-			virtual void handleBlockEvent(const EthereumBlockPtr &block,
-										  EthereumEWM::BlockEvent event, EthereumEWM::Status status,
-										  const std::string &errorDescription);
+			virtual void handleTokenEvent(const EthereumTokenPtr &token, const BREthereumTokenEvent &event);
 
 			virtual void handleTransferEvent(const EthereumWalletPtr &wallet,
 											 const EthereumTransferPtr &transaction,
-											 EthereumEWM::TransactionEvent event, EthereumEWM::Status status,
-											 const std::string &errorDescription);
+											 const BREthereumTransferEvent &event);
 			// implement ISubWallet
 		public:
 			virtual std::string GetChainID() const;

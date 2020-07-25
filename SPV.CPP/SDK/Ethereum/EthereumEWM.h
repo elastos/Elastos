@@ -41,176 +41,52 @@
 
 #include <string>
 #include <boost/weak_ptr.hpp>
+#include <nlohmann/json.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class EthereumEWM {
 		public:
-			// The LES sync mode
-			enum Mode {
-				API_ONLY,
-				API_WITH_P2P_SEND,
-				P2P_WITH_API_SYNC,
-				P2P_ONLY
-			};
+			static std::string Status2String(const BREthereumStatus &s);
 
-			enum Status {
-				SUCCESS,
-				// Reference access,
-					ERROR_UNKNOWN_NODE,
-				ERROR_UNKNOWN_TRANSACTION,
-				ERROR_UNKNOWN_ACCOUNT,
-				ERROR_UNKNOWN_WALLET,
-				ERROR_UNKNOWN_BLOCK,
-				ERROR_UNKNOWN_LISTENER,
+			static nlohmann::json WalletEvent2Json(const BREthereumWalletEvent &e);
 
-				// Node
-					ERROR_NODE_NOT_CONNECTED,
+			static nlohmann::json TokenEvent2Json(const BREthereumTokenEvent &e);
 
-				// Transaction
-					ERROR_TRANSACTION_X,
+			static nlohmann::json TransferEvent2Json(const BREthereumTransferEvent &e);
 
-				// Acount
-				// Wallet
-				// Block
-				// Listener
+			static nlohmann::json EWMEvent2Json(const BREthereumEWMEvent &e);
 
-				// Numeric
-					ERROR_NUMERIC_PARSE,
-				NUMBER_OF_STATUS_EVENTS
-			};
+			static nlohmann::json PeerEvent2Json(const BREthereumPeerEvent &e);
 
-			// Wallet Event
-			enum WalletEvent {
-				WalletEvent_CREATED,
-				WalletEvent_BALANCE_UPDATED,
-				WalletEvent_DEFAULT_GAS_LIMIT_UPDATED,
-				WalletEvent_DEFAULT_GAS_PRICE_UPDATED,
-				WalletEvent_DELETED,
-				WalletEvent_NUMBER_OF_WALLET_EVENTS
-			};
-
-			// Token Event
-			enum TokenEvent {
-				TokenEvent_CREATED,
-				TokenEvent_DELETED,
-				TokenEvent_NUMBER_OF_TOKEN_EVENTS
-			};
-
-			// Block Event
-			enum BlockEvent {
-				BlockEvent_CREATED,
-				BlockEvent_CHAINED,
-				BlockEvent_ORPHANED,
-				BlockEvent_DELETED,
-				BlockEvent_NUMBER_OF_BLOCK_EVENT
-			};
-
-			// Transaction Event
-			enum TransactionEvent {
-				TransactionEvent_CREATED,
-				TransactionEvent_SIGNED,
-				TransactionEvent_SUBMITTED,
-				TransactionEvent_INCLUDED,  // aka confirmed
-				TransactionEvent_ERRORED,
-				TransactionEvent_GAS_ESTIMATE_UPDATED,
-				TransactionEvent_BLOCK_CONFIRMATIONS_UPDATED,
-				TransactionEvent_DELETED,
-				TransactionEvent_NUMBER_OF_TRANSACTION_EVENTS
-			};
-
-			// EWM Event
-			enum EWMEvent {
-				EWMEvent_CREATED,
-				EWMEvent_SYNC_STARTED,
-				EWMEvent_SYNC_CONTINUES,
-				EWMEvent_SYNC_STOPPED,
-				EWMEvent_NETWORK_UNAVAILABLE,
-				EWMEvent_DELETED,
-				EWMEvent_NUMBER_OF_EWM_EVENTS
-			};
-
-			// Peer Event
-			enum PeerEvent {
-				PeerEvent_CREATED,
-				PeerEvent_DELETED,
-				PeerEvent_NUMBER_OF_PEER_EVENTS
-			};
-
-		public:
-			static std::string Status2String(Status s);
-
-			static std::string WalletEvent2String(WalletEvent e);
-
-			static std::string TokenEvent2String(TokenEvent e);
-
-			static std::string BlockEvent2String(BlockEvent e);
-
-			static std::string TransactionEvent2String(TransactionEvent e);
-
-			static std::string EWMEvent2String(EWMEvent e);
-
-			static std::string PeerEvent2String(PeerEvent e);
+			static std::string EWMState2String(const BREthereumEWMState &s);
 
 		public:
 			// Client
 			class Client {
 			public:
-				//        typedef void (*BREthereumClientHandlerGetGasPrice) (BREthereumClientContext context,
-				//                                    BREthereumEWM ewm,
-				//                                    BREthereumWalletId wid,
-				//                                    int rid);
 				virtual void getGasPrice(BREthereumWallet wid, int rid) = 0;
 
-				//        typedef void (*BREthereumClientHandlerEstimateGas) (BREthereumClientContext context,
-				//                                    BREthereumEWM ewm,
-				//                                    BREthereumWalletId wid,
-				//                                    BREthereumTransactionId tid,
-				//                                    const char *from,
-				//                                    const char *to,
-				//                                    const char *amount,
-				//                                    const char *data,
-				//                                    int rid);
 				virtual void getGasEstimate(BREthereumWallet wid,
-											BREthereumTransfer tid,
+											BREthereumCookie cookie,
 											const std::string &from,
 											const std::string &to,
 											const std::string &amount,
+											const std::string &gasPrice,
 											const std::string &data,
 											int rid) = 0;
 
-				//        typedef void (*BREthereumClientHandlerGetBalance) (BREthereumClientContext context,
-				//                                   BREthereumEWM ewm,
-				//                                   BREthereumWalletId wid,
-				//                                   const char *address,
-				//                                   int rid);
 				virtual void getBalance(BREthereumWallet wid, const std::string &address, int rid) = 0;
 
-				//        typedef void (*BREthereumClientHandlerSubmitTransaction) (BREthereumClientContext context,
-				//                                          BREthereumEWM ewm,
-				//                                          BREthereumWalletId wid,
-				//                                          BREthereumTransactionId tid,
-				//                                          const char *transaction,
-				//                                          int rid);
 				virtual void
 				submitTransaction(BREthereumWallet wid, BREthereumTransfer tid, const std::string &rawTransaction,
 								  int rid) = 0;
 
-				//        &:wtypedef void (*BREthereumClientHandlerGetTransactions) (BREthereumClientContext context,
-				//                                        BREthereumEWM ewm,
-				//                                        const char *address,
-				//                                        int rid);
 				virtual void
 				getTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber,
 								int rid) = 0;
 
-				//        typedef void (*BREthereumClientHandlerGetLogs) (BREthereumClientContext context,
-				//                                BREthereumEWM ewm,
-				//                                const char *contract,
-				//                                const char *address,
-				//                                const char *event,
-				//                                int rid);
 				virtual void getLogs(const std::string &contract,
 									 const std::string &address,
 									 const std::string &event,
@@ -219,14 +95,6 @@ namespace Elastos {
 									 int rid) = 0;
 
 
-				//typedef void
-				//(*BREthereumClientHandlerGetBlocks) (BREthereumClientContext context,
-				//                                     BREthereumEWM ewm,
-				//                                     const char *address,
-				//                                     BREthereumSyncInterestSet interests,
-				//                                     uint64_t blockNumberStart,
-				//                                     uint64_t blockNumberStop,
-				//                                     int rid);
 				virtual void getBlocks(const std::string &address,
 									   int interests,
 									   uint64_t blockNumberStart,
@@ -235,37 +103,22 @@ namespace Elastos {
 
 				virtual void getTokens(int rid) = 0;
 
-				//        typedef void (*BREthereumClientHandlerGetBlockNumber) (BREthereumClientContext context,
-				//                                                    BREthereumEWM ewm,
-				//                                                    int rid);
 				virtual void getBlockNumber(int rid) = 0;
 
-				//        typedef void (*BREthereumClientHandlerGetNonce) (BREthereumClientContext context,
-				//                                                        BREthereumEWM ewm,
-				//                                                        const char *address,
-				//                                                        int rid);
 				virtual void getNonce(const std::string &address, int rid) = 0;
 
-				virtual void handleEWMEvent(EWMEvent event, Status status,
-											const std::string &errorDescription) = 0;
+				virtual void handleEWMEvent(const BREthereumEWMEvent &event) = 0;
 
-				virtual void handlePeerEvent(PeerEvent event, Status status,
-											 const std::string &errorDescription) = 0;
+				virtual void handlePeerEvent(const BREthereumPeerEvent &event) = 0;
 
 				virtual void handleWalletEvent(const EthereumWalletPtr &wallet,
-											   WalletEvent event, Status status,
-											   const std::string &errorDescription) = 0;
+											   const BREthereumWalletEvent &event) = 0;
 
-				virtual void handleTokenEvent(const EthereumTokenPtr &token, TokenEvent event) = 0;
-
-				virtual void handleBlockEvent(const EthereumBlockPtr &block,
-											  BlockEvent event, Status status,
-											  const std::string &errorDescription) = 0;
+				virtual void handleTokenEvent(const EthereumTokenPtr &token, const BREthereumTokenEvent &event) = 0;
 
 				virtual void handleTransferEvent(const EthereumWalletPtr &wallet,
 												 const EthereumTransferPtr &transaction,
-												 TransactionEvent event, Status status,
-												 const std::string &errorDescription) = 0;
+												 const BREthereumTransferEvent &event) = 0;
 			};
 
 		public:
@@ -328,13 +181,13 @@ namespace Elastos {
 			void announceNonce(const std::string &address, const std::string &nonce, int rid);
 
 			void announceToken(const std::string &address,
+							   int rid,
 							   const std::string &symbol,
 							   const std::string &name,
 							   const std::string &description,
 							   int decimals,
 							   const std::string &defaultGasLimit,
-							   const std::string &defaultGasPrice,
-							   int rid);
+							   const std::string &defaultGasPrice);
 
 			void announceTokenComplete(int rid, bool success);
 
@@ -385,25 +238,35 @@ namespace Elastos {
 
 			// Constructor
 		public:
-			EthereumEWM(Client *client, Mode mode, const EthereumNetworkPtr &network,
+			EthereumEWM(Client *client, BRCryptoSyncMode mode, const EthereumNetworkPtr &network,
 						const std::string &storagePath, const std::string &paperKey,
-						const std::vector<std::string> &wordList);
+						const std::vector<std::string> &wordList,
+						uint64_t blockHeight,
+						uint64_t confirmationsUntilFinal);
 
-			EthereumEWM(Client *client, Mode mode, const EthereumNetworkPtr &network,
-						const std::string &storagePath, const bytes_t &publicKey);
+			EthereumEWM(Client *client, BRCryptoSyncMode mode, const EthereumNetworkPtr &network,
+						const std::string &storagePath, const bytes_t &publicKey,
+						uint64_t blockHeight,
+						uint64_t confirmationsUntilFinal);
 
 		private:
 			EthereumEWM(BREthereumEWM identifier, Client *client, const EthereumNetworkPtr &network);
 
-			BREthereumEWM createRawEWM(Mode mode, BREthereumNetwork network,
-									   const std::string &storagePath, BREthereumAccount account);
+			BREthereumEWM createRawEWM(BRCryptoSyncMode mode, BREthereumNetwork network,
+									   const std::string &storagePath, BREthereumAccount account,
+									   uint64_t blockHeight,
+									   uint64_t confirmationsUntilFinal);
 
-			BREthereumEWM createRawEWM(Mode mode, BREthereumNetwork network,
+			BREthereumEWM createRawEWM(BRCryptoSyncMode mode, BREthereumNetwork network,
 									   const std::string &storagePath, const std::string &paperKey,
-									   const std::vector<std::string> &wordList);
+									   const std::vector<std::string> &wordList,
+									   uint64_t blockHeight,
+									   uint64_t confirmationsUntilFinal);
 
-			BREthereumEWM createRawEWMPublicKey(Mode mode, BREthereumNetwork network,
-												const std::string &storagePath, const bytes_t &pubkey);
+			BREthereumEWM createRawEWMPublicKey(BRCryptoSyncMode mode, BREthereumNetwork network,
+												const std::string &storagePath, const bytes_t &pubkey,
+												uint64_t blockHeight,
+												uint64_t confirmationsUntilFinal);
 
 			// Connect / Disconnect
 		public:
@@ -423,9 +286,10 @@ namespace Elastos {
 			//
 			void trampolineGetGasPrice(BREthereumEWM eid, BREthereumWallet wid, int rid);
 
-			void trampolineGetGasEstimate(BREthereumEWM eid, BREthereumWallet wid, BREthereumTransfer tid,
+			void trampolineGetGasEstimate(BREthereumEWM ewm, BREthereumWallet wid, BREthereumCookie cookie,
 										  const std::string &from, const std::string &to,
-										  const std::string &amount, const std::string &data, int rid);
+										  const std::string &amount, const std::string &gasPrice,
+										  const std::string &data, int rid);
 
 			void trampolineGetBalance(BREthereumEWM eid, BREthereumWallet wid, const std::string &address, int rid);
 
@@ -445,19 +309,18 @@ namespace Elastos {
 
 			void trampolineGetBlockNumber(BREthereumEWM eid, int rid);
 
-			void trampolineGetNonce(BREthereumEWM eid, const std::string &address, int rid);
+			void trampolineGetNonce(BREthereumEWM ewm, const std::string &address, int rid);
 
-			void trampolineEWMEvent(BREthereumEWM eid, int event, int status, const std::string &errorDescription);
+			void trampolineEWMEvent(BREthereumEWM ewm, const BREthereumEWMEvent &event);
 
-			void trampolinePeerEvent(BREthereumEWM eid, int event, int status, const std::string &errorDescription);
+			void trampolinePeerEvent(BREthereumEWM ewm, const BREthereumPeerEvent &event);
 
-			void trampolineWalletEvent(BREthereumEWM eid, BREthereumWallet wid, int event, int status,
-									   const std::string &errorDescription);
+			void trampolineWalletEvent(BREthereumEWM eid, BREthereumWallet wid, const BREthereumWalletEvent &event);
 
-			void trampolineTokenEvent(BREthereumEWM eid, BREthereumToken tokenId, int event);
+			void trampolineTokenEvent(BREthereumEWM eid, BREthereumToken tokenId, const BREthereumTokenEvent &event);
 
-			void trampolineTransferEvent(BREthereumEWM eid, BREthereumWallet wid, BREthereumTransfer tid, int event,
-										 int status, const std::string &errorDescription);
+			void trampolineTransferEvent(BREthereumEWM eid, BREthereumWallet wid, BREthereumTransfer tid,
+										 const BREthereumTransferEvent &event);
 
 		public:
 			BREthereumEWM getRaw() const;

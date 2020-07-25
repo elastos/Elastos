@@ -1,9 +1,9 @@
 //
 //  BBRUtilMathParse.c
-//  breadwallet-core Ethereum
+//  Core Ethereum
 //
 //  Created by Ed Gamble on 3/16/2018.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -13,20 +13,38 @@
 #include <assert.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #include "support/BRAssert.h"
 #include "BRUtil.h"
 
 //
 // Parsing
 //
+static BRCoreParseStatus
+parseInIntegerInBase (const char *number, int base) {
+    // This isn't the right way to handle an empty `number` string.
+    if (NULL == number || '\0' == *number) return CORE_PARSE_STRANGE_DIGITS;
+    while (*number) {
+        switch (base) {
+            case 2:
+                if ('0' != *number && '1' != *number) return CORE_PARSE_STRANGE_DIGITS;
+                break;
+            case 10:
+                if (!isdigit (*number)) return CORE_PARSE_STRANGE_DIGITS;
+                break;
+
+            case 16:
+                if (!isxdigit(*number)) return CORE_PARSE_STRANGE_DIGITS;
+                break;
+        }
+        number++;
+    }
+    return CORE_PARSE_OK;
+}
 
 extern BRCoreParseStatus
 parseIsInteger(const char *number) {
-    // Number contains only digits and has at least one digit
-    if (NULL == number || '\0' == *number) return CORE_PARSE_STRANGE_DIGITS;
-    while (*number)
-        if (!isdigit (*number++)) return CORE_PARSE_STRANGE_DIGITS;
-    return CORE_PARSE_OK;
+    return parseInIntegerInBase (number, 10);
  }
 
 extern BRCoreParseStatus
@@ -180,11 +198,14 @@ parseUInt64 (const char *string, int digits, int base) {
     assert (digits <= maxDigits );
     
     //
-    char number[1 + maxDigits];
+    char number[1 + maxDigits], *numberEnd;
     strncpy (number, string, maxDigits);
     number[maxDigits] = '\0';
-    
-    uint64_t value = strtoull (number, NULL, base);
+
+    errno = 0;
+    uint64_t value = strtoull (number, &numberEnd, base);
+    if (0 == errno && (*number == '\0' || numberEnd == NULL || *numberEnd != '\0'))
+        errno = EINVAL;
     return createUInt256 (value);
 }
 
@@ -209,7 +230,22 @@ createUInt256Parse (const char *string, int base, BRCoreParseStatus *status) {
     // Strip leading '0's
     while ('0' == *string) string++;
 
-    UInt256 value = UINT256_ZERO;
+    // If the string is now empty, we've a value of '0'
+    if ('\0' == *string) {
+        *status = CORE_PARSE_OK;
+        return UINT256_ZERO;
+    }
+
+    if ('\0' != *string && ('-' == *string || '+' == *string)) {
+        *status = CORE_PARSE_STRANGE_DIGITS;
+        return UINT256_ZERO;
+    }
+
+    // Confirm that we in fact have a integer string.
+    *status = parseInIntegerInBase (string, base);
+    if (CORE_PARSE_OK != *status)
+        return UINT256_ZERO;
+
     int maxDigits = parseMaximumDigitsForUInt256InBase(base);
     long length = strlen (string);
     
@@ -220,14 +256,22 @@ createUInt256Parse (const char *string, int base, BRCoreParseStatus *status) {
     
     // We'll process this many digits in `string`.
     int stringChunks = parseMaximumDigitsForUInt64InBase(base);
-    
+
+    // Fill this in.
+    UInt256 value = UINT256_ZERO;
+
     // For parsing a string like "123.45", the character at index 0 is '1'.  So by parsing chunks
     // with ascending index, we naturally treat `string` as big endian - no matter the base.
     // Eventually, when `parseUInt64()` calls `strtoull` we'll still be using big endian.
     for (long index = 0; index < length; index += stringChunks) {
         // On the first time through, get an initial value
-        if (index == 0)
+        if (index == 0) {
             value = parseUInt64(string, stringChunks, base);
+            if (errno != 0) {
+                *status = CORE_PARSE_STRANGE_DIGITS;
+                return UINT256_ZERO;
+            }
+        }
         
         // Otherwise, we'll scale value and add in the next chunk.
         else {
@@ -282,6 +326,8 @@ coerceString (UInt256 x, int base) {
             // Reverse and 'strip zeros'
             UInt256 xr = UInt256Reverse(x);  // TODO: LITTLE ENDIAN only
             int xrIndex = 0;
+            // We explicitly handled the '0 == x' case up-front.  Thus xr.u8 *always*
+            // eventually has a non-zero value.
             while (0 == xr.u8[xrIndex]) xrIndex++;
             // Encode
             return encodeHexCreate (NULL, &xr.u8[xrIndex], sizeof (xr.u8) - xrIndex);
@@ -329,8 +375,8 @@ coerceStringPrefaced (UInt256 x, int base, const char *preface) {
     if (NULL == preface || 0 == strcmp ("", preface)) return string;
     char *stringToFree = string; // save the pointer to string
 
-    // Strip off leading zeros in `string`
-    while ('\0' != string[0] && '0' == string[0]) string++;
+    // Strip off leading zeros in `string` but be sure to leave at least one digit
+    while ('\0' != string[0] && '0' == string[0] && '\0' != string[1]) string++;
 
     char *result = malloc (strlen(preface) + strlen (string) + 1);
     strcpy (result, preface);
