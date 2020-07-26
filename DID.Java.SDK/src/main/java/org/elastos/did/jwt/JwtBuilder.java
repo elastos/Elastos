@@ -584,11 +584,11 @@ public class JwtBuilder {
 		return this;
 	}
 
-	JwtBuilder claim(String name, JsonNode value) {
+	public JwtBuilder claim(String name, JsonNode value) {
 		return claim(name, Claims.jsonNode2Map(value));
 	}
 
-	JwtBuilder claimWithJson(String name, String jsonValue) {
+	public JwtBuilder claimWithJson(String name, String jsonValue) {
 		return claim(name, Claims.json2Map(jsonValue));
 	}
 

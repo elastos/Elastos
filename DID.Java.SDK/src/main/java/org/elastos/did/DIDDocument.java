@@ -1488,7 +1488,7 @@ public class DIDDocument {
 	}
 
 	public JwtParserBuilder jwtParserBuilder() {
-		return new JwtParserBuilder(new KeyProvider() {
+		JwtParserBuilder jpb = new JwtParserBuilder(new KeyProvider() {
 
 			@Override
 			public java.security.PublicKey getPublicKey(String id)
@@ -1504,6 +1504,9 @@ public class DIDDocument {
 				return null;
 			}
 		});
+
+		jpb.requireIssuer(getSubject().toString());
+		return jpb;
 	}
 
 	public static class Builder {

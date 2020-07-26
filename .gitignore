@@ -29,3 +29,6 @@ local.properties
 # ANTLR ignores
 *.interp
 *.tokens
+
+# Visual Studio Code
+.vscode
