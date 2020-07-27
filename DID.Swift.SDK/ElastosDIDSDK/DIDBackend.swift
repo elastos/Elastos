@@ -157,6 +157,11 @@ public class DIDBackend {
         self._adapter = adapter
     }
 
+    /// Initialize DIDBackend to resolve by url.
+    /// - Parameters:
+    ///   - resolverURL: The URL string.
+    ///   - cacheDir: The directory for cache.
+    /// - Throws:  if an error occurred, throw error.
     public class func initializeInstance(_ resolverURL: String, _ cacheDir: String) throws {
         guard !resolverURL.isEmpty, !cacheDir.isEmpty else {
             throw DIDError.illegalArgument()
@@ -165,6 +170,11 @@ public class DIDBackend {
         try initializeInstance(DefaultResolver(resolverURL), cacheDir)
     }
 
+    /// Initialize DIDBackend to resolve by url.
+    /// - Parameters:
+    ///   - resolverURL: The URL string.
+    ///   - cacheDir: The directory for cache.
+    /// - Throws: if an error occurred, throw error.
     public class func initializeInstance(_ resolverURL: String, _ cacheDir: URL) throws {
         guard !resolverURL.isEmpty, !cacheDir.isFileURL else {
             throw DIDError.illegalArgument()
@@ -173,6 +183,11 @@ public class DIDBackend {
         try initializeInstance(DefaultResolver(resolverURL), cacheDir)
     }
 
+    /// Initialize DIDBackend to resolve by DIDResolver.
+    /// - Parameters:
+    ///   - resolver: The handle to DIDResolver.
+    ///   - cacheDir: The directory for cache.
+    /// - Throws: if an error occurred, throw error.
     public class func initializeInstance(_ resolver: DIDResolver, _ cacheDir: String) throws {
         guard !cacheDir.isEmpty else {
             throw DIDError.illegalArgument()
@@ -186,6 +201,11 @@ public class DIDBackend {
         }
     }
 
+    /// Initialize DIDBackend to resolve by DIDResolver.
+    /// - Parameters:
+    ///   - resolver: The handle to DIDResolver.
+    ///   - cacheDir: The directory for cache.
+    /// - Throws: if an error occurred, throw error.
     public class func initializeInstance(_ resolver: DIDResolver, _ cacheDir: URL) throws {
         guard !cacheDir.isFileURL else {
             throw DIDError.illegalArgument()
@@ -199,6 +219,9 @@ public class DIDBackend {
         }
     }
 
+    /// Get DIDBackend instance.
+    /// - Parameter adapter: A handle to DIDAdapter.
+    /// - Returns: DIDBackend instance.
     public class func getInstance(_ adapter: DIDAdapter) -> DIDBackend {
         return DIDBackend(adapter)
     }
@@ -277,7 +300,10 @@ public class DIDBackend {
         }
         return rr
      }
-    
+
+    ///  User set DID Local Resolve handle in order to give which did document to verify.
+    ///  If handle != NULL, set DID Local Resolve Handle.
+    /// - Parameter handle: A handle to ResolveHandle.
     public class func setResolveHandle(_ handle: @escaping ResolveHandle) {
         DIDBackend.resolveHandle = handle
     }

@@ -22,6 +22,16 @@
 
 import Foundation
 
+/// DIDResolver is support method to resolve did document from chain.
+/// User need to implement ‘resolve’ function.
 public protocol DIDResolver {
+
+    /// User need to implement ‘createIdTransaction’ function.
+    /// An application-defined function that resolve data from chain.
+    /// - Parameters:
+    ///   - requestId: Specified request id.
+    ///   - did: Specified DID.
+    ///   - all: Resolve all transaction data or the lastest one.
+    ///   all = 1: all transaction; all = 0: only the lastest transaction.
     func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> Data
 }
