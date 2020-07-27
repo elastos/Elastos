@@ -263,7 +263,7 @@ func (a *arbitrators) GetDutyIndexByHeight(height uint32) (index int) {
 	if height >= a.chainParams.CRClaimDPOSNodeStartHeight {
 		index = a.dutyIndex % len(a.crcArbiters)
 	} else if height >= a.chainParams.CRCOnlyDPOSHeight-1 {
-		index = a.dutyIndex % len(a.currentArbitrators)
+		index = int(height-a.chainParams.CRCOnlyDPOSHeight+1) % len(a.crcArbiters)
 	} else {
 		index = int(height) % len(a.currentArbitrators)
 	}
@@ -438,6 +438,12 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 
 func (a *arbitrators) accumulateReward(block *types.Block) {
 	if block.Height < a.chainParams.PublicDPOSHeight {
+		oriDutyIndex := a.dutyIndex
+		a.history.Append(block.Height, func() {
+			a.dutyIndex = oriDutyIndex + 1
+		}, func() {
+			a.dutyIndex = oriDutyIndex
+		})
 		return
 	}
 
@@ -894,6 +900,15 @@ func (a *arbitrators) GetOnDutyCrossChainArbitrator() []byte {
 	height := a.bestHeight()
 	if height < a.chainParams.CRCOnlyDPOSHeight-1 {
 		arbiter = a.GetOnDutyArbitrator()
+	} else if height < a.chainParams.CRClaimDPOSNodeStartHeight {
+		a.mtx.Lock()
+		crcArbiters := a.getCRCArbiters()
+		sort.Slice(crcArbiters, func(i, j int) bool {
+			return bytes.Compare(crcArbiters[i], crcArbiters[j]) < 0
+		})
+		ondutyIndex := int(height-a.chainParams.CRCOnlyDPOSHeight+1) % len(crcArbiters)
+		arbiter = crcArbiters[ondutyIndex]
+		a.mtx.Unlock()
 	} else {
 		a.mtx.Lock()
 		crcArbiters := a.getCRCArbiters()

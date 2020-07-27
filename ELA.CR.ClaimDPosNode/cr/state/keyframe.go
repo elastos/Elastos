@@ -52,6 +52,10 @@ func (s *MemberState) String() string {
 		return "Returned"
 	case MemberTerminated:
 		return "Terminated"
+	case MemberInactive:
+		return "Inactive"
+	case MemberIllegal:
+		return "Illegal"
 	}
 
 	return "Unknown"
@@ -1243,7 +1247,7 @@ func NewStateKeyFrame() *StateKeyFrame {
 		Candidates:           make(map[common.Uint168]*Candidate),
 		HistoryCandidates:    make(map[uint64]map[common.Uint168]*Candidate),
 		depositInfo:          make(map[common.Uint168]*DepositInfo),
-		CurrentSession:       1,
+		CurrentSession:       0,
 		Nicknames:            make(map[string]struct{}),
 		Votes:                make(map[string]struct{}),
 		DepositOutputs:       make(map[string]common.Fixed64),
