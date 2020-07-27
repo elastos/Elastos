@@ -112,7 +112,7 @@ public class ShowPersonalInfoFragemnt extends BaseFragment {
                 if (personalInfoItemEntity.getIndex() == 7) {
                     //去个人简介详情
                     Bundle bundle = new Bundle();
-                    bundle.putString("personalIntro", personalInfoItemEntity.getText1());
+                    bundle.putString("content", personalInfoItemEntity.getText1());
                     start(ShowPersonalIntroFragemnt.class, bundle);
                 }
             }

@@ -26,6 +26,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import java.util.ArrayList;
+
 public class CredentialSubjectBean implements Parcelable {
     //一共17
     private String didName;//did的name
@@ -45,14 +47,18 @@ public class CredentialSubjectBean implements Parcelable {
     private String weibo;
     private String facebook;
     private String googleAccount;
+    private ArrayList<CustomInfo> customInfos;//自定义信息
     private long editTime;//s
+
+
 
     public boolean whetherEmpty() {
         return TextUtils.isEmpty(nickname) && TextUtils.isEmpty(gender) && TextUtils.isEmpty(birthday)
                 && TextUtils.isEmpty(avatar) && TextUtils.isEmpty(email) && TextUtils.isEmpty(phone)
                 && TextUtils.isEmpty(phoneCode) && TextUtils.isEmpty(nation) && TextUtils.isEmpty(introduction)
                 && TextUtils.isEmpty(homePage) && TextUtils.isEmpty(wechat) && TextUtils.isEmpty(twitter)
-                && TextUtils.isEmpty(weibo) && TextUtils.isEmpty(facebook) && TextUtils.isEmpty(googleAccount);
+                && TextUtils.isEmpty(weibo) && TextUtils.isEmpty(facebook) && TextUtils.isEmpty(googleAccount)
+                && (customInfos == null || customInfos.size() == 0);
     }
 
     public String getDidName() {
@@ -199,8 +205,16 @@ public class CredentialSubjectBean implements Parcelable {
         this.googleAccount = googleAccount;
     }
 
+    public ArrayList<CustomInfo> getCustomInfos() {
+        return customInfos;
+    }
+
+    public void setCustomInfos(ArrayList<CustomInfo> customInfos) {
+        this.customInfos = customInfos;
+    }
+
     /* public CredentialSubjectBean() {
-    }*/
+            }*/
     public CredentialSubjectBean(String did, String didName) {
         this.did = did;
         this.didName = didName;
@@ -229,9 +243,12 @@ public class CredentialSubjectBean implements Parcelable {
                 ", weibo='" + weibo + '\'' +
                 ", facebook='" + facebook + '\'' +
                 ", googleAccount='" + googleAccount + '\'' +
+                ", customInfos=" + customInfos +
                 ", editTime=" + editTime +
                 '}';
     }
+
+
 
     @Override
     public int describeContents() {
@@ -257,10 +274,11 @@ public class CredentialSubjectBean implements Parcelable {
         dest.writeString(this.weibo);
         dest.writeString(this.facebook);
         dest.writeString(this.googleAccount);
+        dest.writeTypedList(this.customInfos);
         dest.writeLong(this.editTime);
     }
 
-    protected CredentialSubjectBean(Parcel in) {
+    public CredentialSubjectBean(Parcel in) {
         this.didName = in.readString();
         this.did = in.readString();
         this.nickname = in.readString();
@@ -278,6 +296,7 @@ public class CredentialSubjectBean implements Parcelable {
         this.weibo = in.readString();
         this.facebook = in.readString();
         this.googleAccount = in.readString();
+        this.customInfos = in.createTypedArrayList(CustomInfo.CREATOR);
         this.editTime = in.readLong();
     }
 
@@ -292,5 +311,67 @@ public class CredentialSubjectBean implements Parcelable {
             return new CredentialSubjectBean[size];
         }
     };
+  public  static class CustomInfo implements Parcelable {
+        private String title;
+        private String content;
+        private int type;//-1 单行 -2多行 ......
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public void setContent(String content) {
+            this.content = content;
+        }
+
+        public int getType() {
+            return type;
+        }
+
+        public void setType(int type) {
+            this.type = type;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(this.title);
+            dest.writeString(this.content);
+            dest.writeInt(this.type);
+        }
+
+        public CustomInfo() {
+        }
+
+        protected CustomInfo(Parcel in) {
+            this.title = in.readString();
+            this.content = in.readString();
+            this.type = in.readInt();
+        }
+
+        public static final Creator<CustomInfo> CREATOR = new Creator<CustomInfo>() {
+            @Override
+            public CustomInfo createFromParcel(Parcel source) {
+                return new CustomInfo(source);
+            }
+
+            @Override
+            public CustomInfo[] newArray(int size) {
+                return new CustomInfo[size];
+            }
+        };
+    }
 }
 

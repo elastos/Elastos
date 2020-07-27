@@ -340,7 +340,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         } else if (index == 7) {
             //个人简介
             Bundle bundle = new Bundle();
-            bundle.putString("personalIntro", getText(v));
+            bundle.putString("content", getText(v));
             bundle.putAll(getArguments());
             start(PersonalIntroFragment.class, bundle);
             tvPersonalIntro = v;

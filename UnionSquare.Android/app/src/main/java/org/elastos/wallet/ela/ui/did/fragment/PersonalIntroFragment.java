@@ -37,6 +37,9 @@ import org.elastos.wallet.ela.utils.RxEnum;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+/**
+ * 个人简介和自定义多行的编辑页面
+ */
 public class PersonalIntroFragment extends BaseFragment {
 
     @BindView(R.id.tv_title)
@@ -56,7 +59,14 @@ public class PersonalIntroFragment extends BaseFragment {
 
     @Override
     protected void setExtraData(Bundle data) {
-        personalIntro = data.getString("personalIntro", "");
+        personalIntro = data.getString("content", "");
+        String title = data.getString("title", null);
+        if(title==null){
+            tvTitle.setText(getString(R.string.personalintro));
+        }else {
+            tvTitle.setText(title);
+            etIntro.setHint(R.string.plzinputcontent);
+        }
         tvProgress.setText(personalIntro.length() + "/800");
 
     }
@@ -64,7 +74,6 @@ public class PersonalIntroFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
-        tvTitle.setText(getString(R.string.personalintro));
         if (!TextUtils.isEmpty(personalIntro)) {
             etIntro.setText(personalIntro);
         }

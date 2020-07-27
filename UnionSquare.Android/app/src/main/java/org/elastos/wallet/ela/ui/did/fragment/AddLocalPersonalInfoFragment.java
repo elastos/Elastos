@@ -75,7 +75,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class AddPersonalInfoFragment extends BaseFragment implements CommonRvListener1, NewBaseViewData {
+public class AddLocalPersonalInfoFragment extends BaseFragment implements CommonRvListener1, NewBaseViewData {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
@@ -112,7 +112,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
 
     @Override
     protected int getLayoutId() {
-        return R.layout.fragment_personalinfo;
+        return R.layout.fragment_localpersonalinfo;
     }
 
 
@@ -220,7 +220,9 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
         if (listShow.size() == 19) {//14项确定项和5项自定义项
             ivAdd.setVisibility(View.GONE);
         }
-        listChose.remove(personalInfoItemEntity);
+        //确定项执行  自定义项不需
+        if (listChose.remove(personalInfoItemEntity))
+            adapterChose.notifyDataSetChanged();
     }
 
     @OnClick({R.id.tv_title_right, R.id.iv_add, R.id.iv_showshow, R.id.rl_custom,
@@ -262,7 +264,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 Log.i("??", JSON.toJSONString(credentialSubjectBean));
                 Bundle bundle = getArguments();
                 bundle.putParcelable("netCredentialSubjectBean",credentialSubjectBean);
-                start(AddLocalPersonalInfoFragment.class, bundle);
+                start(AddPersonalInfoFragment.class, bundle);
                 break;
             case R.id.iv_add:
                 svChose.setVisibility(View.VISIBLE);
@@ -332,6 +334,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
         PersonalInfoItemEntity personalInfoItemEntity = (PersonalInfoItemEntity) o;
         if (svChose.getVisibility() == View.VISIBLE) {
             //选择添加某一项 数据会重新渲染
+
             int insetPosition = listShow.size();
             for (int i = 0; i < listShow.size(); i++) {
                 if (personalInfoItemEntity.getIndex() < listShow.get(i).getIndex()) {
@@ -460,6 +463,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
             int index = personalInfoItemEntity.getIndex();
             String text1 = personalInfoItemEntity.getText1();
             String text2 = personalInfoItemEntity.getText2();
+
             switch (index) {
                 case 0:
                     result.setNickname(text1);

@@ -100,11 +100,25 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
             });
 
         } else if (holder instanceof ViewHolder2) {
+            //自定义项
             //手机号
+            ((ViewHolder2) holder).et2.setOnClickListener(null);
             ((ViewHolder2) holder).et1.setText(personalInfoItemEntity.getText1());
             ((ViewHolder2) holder).et2.setText(personalInfoItemEntity.getText2());
             ((ViewHolder2) holder).et1.setHint(personalInfoItemEntity.getHintShow1());
             ((ViewHolder2) holder).et2.setHint(personalInfoItemEntity.getHintShow2());
+            if (commonRvListener != null && index > 13 && personalInfoItemEntity.getType() == -2) {
+                //自定义项多行
+                ((ViewHolder2) holder).et2.setFocusable(false);
+                ((ViewHolder2) holder).et2.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        personalInfoItemEntity.setText1(((ViewHolder2) holder).et1.getText().toString());
+                        commonRvListener.onRvItemClick(v, position, personalInfoItemEntity);
+                    }
+                });
+            }
+
         } else if (holder instanceof ViewHolder3) {
             //个人简介
             ((ViewHolder3) holder).tv1.setHint(personalInfoItemEntity.getHintShow1());
@@ -144,7 +158,7 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
         if (index == 1 || index == 2 || index == 6) {
             return 1;
         }
-        if (index == 5) {
+        if (index == 5 || index > 13) {
             //手机号
             return 2;
         }

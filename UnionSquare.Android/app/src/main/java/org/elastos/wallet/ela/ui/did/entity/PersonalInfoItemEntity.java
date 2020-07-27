@@ -27,13 +27,14 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 
 public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity>, Parcelable {
-    private int index;
-    private String hintShow1;//初始化后不会再修改 提示语句
-    private String hintShow2;//初始化后不会再修改 提示语句
-    private String hintChose;//初始化后不会再修改 提示语句
-    private String text1;//第一个可编辑的结果
-    private String text2;//第二个可编辑的结果
-    private boolean check;//第二个可编辑的结果
+    private int index; //唯一标识 目前还关联着显示顺序 14开始包括14是自定义的,在有删除的情况index可能你不连续
+    private String hintShow1;//初始化后不会再修改 提示语句 index的show的提示1
+    private String hintShow2;//初始化后不会再修改 提示语句 index的show的提示2
+    private String hintChose;//初始化后不会再修改 提示语句 index的chose的提示
+    private String text1;//index的第一个输入框或者选择框的结构
+    private String text2;//index的第二个输入框或者选择框的结构
+    private boolean check;//  index是否被选中  认证授权使用
+    private int type;//默认0是确定的信息类型  -1自定义单行  -2自定义多行
 
     public boolean isCheck() {
         return check;
@@ -91,6 +92,14 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
         this.text2 = text2;
     }
 
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
     @Override
     public int compareTo(PersonalInfoItemEntity o) {
         return this.index - o.index;
@@ -141,4 +150,18 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
             return new PersonalInfoItemEntity[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "PersonalInfoItemEntity{" +
+                "index=" + index +
+                ", hintShow1='" + hintShow1 + '\'' +
+                ", hintShow2='" + hintShow2 + '\'' +
+                ", hintChose='" + hintChose + '\'' +
+                ", text1='" + text1 + '\'' +
+                ", text2='" + text2 + '\'' +
+                ", check=" + check +
+                ", type=" + type +
+                '}';
+    }
 }

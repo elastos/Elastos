@@ -49,7 +49,7 @@ public class ShowPersonalIntroFragemnt extends BaseFragment {
 
     @Override
     protected void setExtraData(Bundle data) {
-        personalIntro = data.getString("personalIntro");
+        personalIntro = data.getString("content");
     }
 
     @Override

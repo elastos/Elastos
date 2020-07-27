@@ -762,4 +762,11 @@
     <string name="apperro">很抱歉，由于程序错误导致软件崩溃，是否转发运行日志？</string>
     <string name="CryptoNamewrongaddress">Address Error</string>
     <string name="plzinputdid">请输入DID</string>
+    <string name="adddidinfo">添加DID信息</string>
+    <string name="didinfonettip">本页面内容均非必填，且将作为DID信息发布上链并完全公开。请注意隐私保护，谨慎填写。</string>
+    <string name="custominfor">自定义信息</string>
+    <string name="addcustominfo">添加自定义信息</string>
+    <string name="singletext">单行文本</string>
+    <string name="multtext">多行文本</string>
+    <string name="plzinputcontent">请输入内容</string>
 </resources>
