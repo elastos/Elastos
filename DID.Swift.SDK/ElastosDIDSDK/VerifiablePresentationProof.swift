@@ -41,22 +41,27 @@ public class VerifiablePresentationProof {
         self.init(Constants.DEFAULT_PUBLICKEY_TYPE, method, realm, nonce, signature)
     }
 
+    /// The type of target data is a verifiable expression
     public var type: String {
         return _type
     }
 
+    /// Proof method, the value is the public key reference used for signing and verification in the provider DID document
     public var verificationMethod: DIDURL {
         return _verificationMethod
     }
 
+    /// Target areas to which the expression applies, such as website domain names, application names, etc.
     public var realm: String {
         return _realm
     }
 
+    /// Random value used for signature operation
     public var nonce: String {
         return _nonce
     }
 
+    /// The signed value, using Base64 encoding
     public var signature: String {
         return _signature
     }

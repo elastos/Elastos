@@ -37,12 +37,20 @@ public class VerifiablePresentationBuilder {
         self.presentation = VerifiablePresentation()
     }
 
+    /// Set verifiable credentials for presentation.
+    /// - Parameter credentials: Verifiable credentials
+    /// - Throws: if an error occurred, throw error.
+    /// - Returns: VerifiablePresentationBuilder instance.
     public func withCredentials(_ credentials: VerifiableCredential...) throws
         -> VerifiablePresentationBuilder {
 
         return try withCredentials(credentials)
     }
 
+    /// Set verifiable credentials for presentation.
+    /// - Parameter credentials: Verifiable credentials
+    /// - Throws: if an error occurred, throw error.
+    /// - Returns: VerifiablePresentationBuilder instance.
     public func withCredentials(_ credentials: Array<VerifiableCredential>) throws
         -> VerifiablePresentationBuilder {
 
@@ -65,6 +73,10 @@ public class VerifiablePresentationBuilder {
         return self
     }
 
+    /// Set realm for presentation.
+    /// - Parameter realm: Target areas to which the expression applies, such as website domain names, application names, etc.
+    /// - Throws: if an error occurred, throw error.
+    /// - Returns: VerifiablePresentationBuilder instance.
     public func withRealm(_ realm: String) throws -> VerifiablePresentationBuilder {
         guard let _ = presentation else {
             throw DIDError.invalidState(Errors.PRESENTATION_ALREADY_SEALED)
@@ -77,6 +89,10 @@ public class VerifiablePresentationBuilder {
         return self
     }
 
+    /// Set nonce for presentation.
+    /// - Parameter nonce: Random value used for signature operation
+    /// - Throws: if an error occurred, throw error.
+    /// - Returns: VerifiablePresentationBuilder instance.
     public func withNonce(_ nonce: String) throws -> VerifiablePresentationBuilder {
         guard let _ = presentation else {
             throw DIDError.invalidState(Errors.PRESENTATION_ALREADY_SEALED)
@@ -89,6 +105,10 @@ public class VerifiablePresentationBuilder {
         return self
     }
 
+    /// Finish modiy VerifiablePresentation.
+    /// - Parameter storePassword: Pass word to sign.
+    /// - Throws: if an error occurred, throw error.
+    /// - Returns: A handle to VerifiablePresentation.
     public func sealed(using storePassword: String) throws -> VerifiablePresentation {
         guard let _ = presentation else {
             throw DIDError.invalidState(Errors.PRESENTATION_ALREADY_SEALED)

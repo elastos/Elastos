@@ -33,14 +33,17 @@ public class VerifiableCredentialProof {
         self._signature = signature
     }
 
+    /// The cryptographic signature suite that was used to generate the signature
     public var type: String {
         return _type
     }
 
+    /// The public key identifier that created the signature
     public var verificationMethod: DIDURL {
         return _verificationMethod
     }
 
+    /// The signed value, using Base64 encoding
     public var signature: String {
         return _signature
     }

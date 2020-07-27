@@ -61,34 +61,62 @@ public class VerifiableCredentialIssuer {
         try self.init(doc: doc!, signKey: signKey)
     }
 
+    /// Create a issuer to issue Credential.
+    /// - Parameters:
+    ///   - doc: Specified DID document
+    ///   - signKey:  Issuer’s key to sign credential.
+    /// - Throws: if an error occurred, throw error.
     public convenience init(_ doc: DIDDocument, _ signKey: DIDURL) throws {
         try self.init(doc: doc, signKey: signKey)
     }
 
+    /// Create a issuer to issue Credential.
+    /// - Parameter doc: Specified DID document
+    /// - Throws: if an error occurred, throw error.
     public convenience init(_ doc: DIDDocument) throws {
         try self.init(doc: doc, signKey: nil)
     }
 
+    /// Create a issuer to issue Credential.
+    /// - Parameters:
+    ///   - did: Issuer’s did.
+    ///   - signKey: Issuer’s key to sign credential.
+    ///   - store: The handle to DIDStore.
+    /// - Throws: if an error occurred, throw error.
     public convenience init(_ did: DID, _ signKey: DIDURL, _ store: DIDStore) throws {
         try self.init(did, signKey: signKey, store)
     }
 
+    /// Create a issuer to issue Credential.
+    /// - Parameters:
+    ///   - did: Issuer’s did.
+    ///   - store: Issuer’s key to sign credential.
+    /// - Throws: if an error occurred, throw error.
     public convenience init(_ did: DID, _ store: DIDStore) throws {
         try self.init(did, signKey: nil, store)
     }
 
+    /// Issuer’s did.
     public var did: DID {
         return _issuerDoc.subject
     }
-    
+
+    /// Get the DID of this issuer.
     public var signKey: DIDURL {
         return _signKey
     }
 
+    /// Get VerifiableCredential Builder to modify VerifiableCredential.
+    /// - Parameter did: Issuer’s did.
+    /// - Throws: if an error occurred, throw error.
+    /// - Returns: VerifiableCredentialBuilder instance.
     public func editingVerifiableCredentialFor(did: String) throws -> VerifiableCredentialBuilder {
         return VerifiableCredentialBuilder(try DID(did), _issuerDoc, signKey)
     }
 
+    /// Get VerifiableCredential Builder to modify VerifiableCredential.
+    /// - Parameter did: Issuer’s did.
+    /// - Returns: VerifiableCredentialBuilder instance.
     public func editingVerifiableCredentialFor(did: DID) -> VerifiableCredentialBuilder {
         return VerifiableCredentialBuilder(did, _issuerDoc, signKey)
     }
