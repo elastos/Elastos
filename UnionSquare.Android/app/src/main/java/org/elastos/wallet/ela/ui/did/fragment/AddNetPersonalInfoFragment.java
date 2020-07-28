@@ -75,7 +75,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class AddLocalPersonalInfoFragment extends BaseFragment implements CommonRvListener1, NewBaseViewData {
+public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRvListener1, NewBaseViewData {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
@@ -112,7 +112,7 @@ public class AddLocalPersonalInfoFragment extends BaseFragment implements Common
 
     @Override
     protected int getLayoutId() {
-        return R.layout.fragment_localpersonalinfo;
+        return R.layout.fragment_netpersonalinfo;
     }
 
 
@@ -220,9 +220,7 @@ public class AddLocalPersonalInfoFragment extends BaseFragment implements Common
         if (listShow.size() == 19) {//14项确定项和5项自定义项
             ivAdd.setVisibility(View.GONE);
         }
-        //确定项执行  自定义项不需
-        if (listChose.remove(personalInfoItemEntity))
-            adapterChose.notifyDataSetChanged();
+        listChose.remove(personalInfoItemEntity);
     }
 
     @OnClick({R.id.tv_title_right, R.id.iv_add, R.id.iv_showshow, R.id.rl_custom,
@@ -237,6 +235,7 @@ public class AddLocalPersonalInfoFragment extends BaseFragment implements Common
                 int curentMaxIndex = listShow.get(insetPosition - 1).getIndex();
                 personalInfoItemEntity.setIndex(curentMaxIndex > 13 ? curentMaxIndex + 1 : 14);
                 personalInfoItemEntity.setType(-1);
+                personalInfoItemEntity.setHintShow1(getString(R.string.singletextitem));
                 personalInfoItemEntity.setHintShow2(getString(R.string.plzinputcontent));
                 insertShow(insetPosition, personalInfoItemEntity);
 
@@ -249,6 +248,7 @@ public class AddLocalPersonalInfoFragment extends BaseFragment implements Common
                 int curentMaxIndex1 = listShow.get(insetPosition1 - 1).getIndex();
                 personalInfoItemEntity1.setIndex(curentMaxIndex1 > 13 ? curentMaxIndex1 + 1 : 14);
                 personalInfoItemEntity1.setType(-2);
+                personalInfoItemEntity1.setHintShow1(getString(R.string.mutiltextitem));
                 personalInfoItemEntity1.setHintShow2(getString(R.string.plzinputcontent));
                 insertShow(insetPosition1, personalInfoItemEntity1);
                 break;
@@ -334,7 +334,6 @@ public class AddLocalPersonalInfoFragment extends BaseFragment implements Common
         PersonalInfoItemEntity personalInfoItemEntity = (PersonalInfoItemEntity) o;
         if (svChose.getVisibility() == View.VISIBLE) {
             //选择添加某一项 数据会重新渲染
-
             int insetPosition = listShow.size();
             for (int i = 0; i < listShow.size(); i++) {
                 if (personalInfoItemEntity.getIndex() < listShow.get(i).getIndex()) {
@@ -463,7 +462,6 @@ public class AddLocalPersonalInfoFragment extends BaseFragment implements Common
             int index = personalInfoItemEntity.getIndex();
             String text1 = personalInfoItemEntity.getText1();
             String text2 = personalInfoItemEntity.getText2();
-
             switch (index) {
                 case 0:
                     result.setNickname(text1);

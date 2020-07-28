@@ -45,6 +45,7 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.did.adapter.PersonalAddRecAdapetr;
 import org.elastos.wallet.ela.ui.did.adapter.PersonalChoseRecAdapetr;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
@@ -100,6 +101,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
     ScrollView svChose;
 
     private CredentialSubjectBean credentialSubjectBean;
+    private CredentialSubjectBean netCredentialSubjectBean;
     private long birthday;
     private Wallet wallet;
     private String didName;
@@ -118,7 +120,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
 
     @Override
     protected void setExtraData(Bundle data) {
-
+        netCredentialSubjectBean =data.getParcelable("netCredentialSubjectBean");
         String type = data.getString("type");
         if (Constant.EDITCREDENTIAL.equals(type)) {
             //新增did凭证  从凭证信息进入
@@ -128,7 +130,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
             wallet = data.getParcelable("wallet");
             didName = data.getString("didName");
             didEndDate = (Date) data.getSerializable("didEndDate");
-            tvTitleRight.setText(getString(R.string.next));
+            tvTitleRight.setText(getString(R.string.publish));
         }
     }
 
@@ -173,7 +175,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 personalInfoItemEntity.setHintShow2(getString(R.string.pleaseinputmobile));
             }
             personalInfoItemEntity.setHintChose(choseData[i]);
-            if (i == 2 || i == 3 || i == 4 || i == 6 || i == 8 || i == 10 || i == 12)
+            if (i == 1 || i == 2 || i == 3 || i ==4 || i == 7 || i == 8 || i == 9|| i == 12)
                 listShow.add(personalInfoItemEntity);
             else
                 listChose.add(personalInfoItemEntity);
@@ -235,6 +237,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 int curentMaxIndex = listShow.get(insetPosition - 1).getIndex();
                 personalInfoItemEntity.setIndex(curentMaxIndex > 13 ? curentMaxIndex + 1 : 14);
                 personalInfoItemEntity.setType(-1);
+                personalInfoItemEntity.setHintShow1(getString(R.string.singletextitem));
                 personalInfoItemEntity.setHintShow2(getString(R.string.plzinputcontent));
                 insertShow(insetPosition, personalInfoItemEntity);
 
@@ -246,6 +249,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 PersonalInfoItemEntity personalInfoItemEntity1 = new PersonalInfoItemEntity();
                 int curentMaxIndex1 = listShow.get(insetPosition1 - 1).getIndex();
                 personalInfoItemEntity1.setIndex(curentMaxIndex1 > 13 ? curentMaxIndex1 + 1 : 14);
+                personalInfoItemEntity1.setHintShow1(getString(R.string.mutiltextitem));
                 personalInfoItemEntity1.setType(-2);
                 personalInfoItemEntity1.setHintShow2(getString(R.string.plzinputcontent));
                 insertShow(insetPosition1, personalInfoItemEntity1);
@@ -257,12 +261,12 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 llAddcustom.setVisibility(View.VISIBLE);
                 break;
             case R.id.tv_title_right:
-                //下一步
+                //发布  保留在重写的方法里
                 credentialSubjectBean = convertCredentialSubjectBean();
                 Log.i("??", JSON.toJSONString(credentialSubjectBean));
-                Bundle bundle = getArguments();
-                bundle.putParcelable("netCredentialSubjectBean",credentialSubjectBean);
-                start(AddLocalPersonalInfoFragment.class, bundle);
+                //模拟手续费
+                new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
+
                 break;
             case R.id.iv_add:
                 svChose.setVisibility(View.VISIBLE);
@@ -332,6 +336,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
         PersonalInfoItemEntity personalInfoItemEntity = (PersonalInfoItemEntity) o;
         if (svChose.getVisibility() == View.VISIBLE) {
             //选择添加某一项 数据会重新渲染
+
             int insetPosition = listShow.size();
             for (int i = 0; i < listShow.size(); i++) {
                 if (personalInfoItemEntity.getIndex() < listShow.get(i).getIndex()) {
@@ -532,6 +537,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 intent.putExtra("didName", didName);
                 intent.putExtra("didEndDate", didEndDate);
                 intent.putExtra("credentialSubjectBean", credentialSubjectBean);
+                intent.putExtra("netCredentialSubjectBean", netCredentialSubjectBean);
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", MyWallet.IDChain);
                 // intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());

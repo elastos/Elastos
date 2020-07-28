@@ -93,7 +93,7 @@ public class AddDIDFragment extends BaseFragment {
                 Bundle bundle = getArguments();
                 bundle.putString("didName", didName);
                 bundle.putSerializable("didEndDate", didEndDate);
-                start(AddPersonalInfoFragment.class, bundle);
+                start(AddNetPersonalInfoFragment.class, bundle);
                 break;
 
             case R.id.rl_outdate:

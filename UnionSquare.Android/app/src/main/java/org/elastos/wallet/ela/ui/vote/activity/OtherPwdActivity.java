@@ -50,6 +50,7 @@ import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 
 import java.util.Date;
@@ -74,7 +75,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     private JSONObject paylodJson;
     private String didName;
     private Date didEndDate;
-    private CredentialSubjectBean credentialSubjectBean;
+    private CredentialSubjectBean credentialSubjectBean, netCredentialSubjectBean;
 
     @Override
     protected int getLayoutId() {
@@ -115,6 +116,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
 
         transType = data.getIntExtra("transType", 13);
         credentialSubjectBean = data.getParcelableExtra("credentialSubjectBean");
+        netCredentialSubjectBean = data.getParcelableExtra("netCredentialSubjectBean");
 
 
     }
@@ -157,7 +159,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         break;
                     case Constant.DIDSIGNUP:
                     case Constant.DIDUPDEATE:
-                        getMyDID().setDIDDocument(didEndDate, pwd, didName);
+                        getMyDID().setDIDDocument(didEndDate, pwd, didName, JSON.toJSONString(netCredentialSubjectBean));
                         getMyDID().getMyDIDAdapter().setMyDIDTransactionCallback(this);
                         presenter.DIDPublish(pwd, this);
                         break;
@@ -174,7 +176,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
 
 
             case "signTransaction":
-                presenter.publishTransaction(wallet.getWalletId(), chainId, data, this);
+                //  presenter.publishTransaction(wallet.getWalletId(), chainId, data, this);
                 break;
             case "publishTransaction":
                 String hash = "";
@@ -186,7 +188,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         getMyDID().getMyDIDAdapter().setTxId(hash);
                     } else if (Constant.DIDUPDEATE.equals(type)) {
                         getMyDID().getMyDIDAdapter().setTxId(hash);
-                    }else if (Constant.CRUPDATE.equals(type)) {
+                    } else if (Constant.CRUPDATE.equals(type)) {
                         //凭证授权页面更新did同时上传中心化服务器的情况
                         post(RxEnum.TRANSFERSUCESSPWD.ordinal(), type, pwd);
                     }
@@ -258,6 +260,8 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     @Override
     public void createIdTransaction(String payload, String memo, int confirms, DIDAdapter.TransactionCallback callback) {
         Looper.prepare();
+        //DIDURL didurl = new DIDURL( getMyDID().getDid(), "primary");
+        // boolean b=getMyDID().getDIDDocument().ver(didurl,payload.getBytes());
         presenter.createIDTransaction(wallet.getWalletId(), payload, this);
         Looper.loop();// 进入loop中的循环，查看消息队列
 

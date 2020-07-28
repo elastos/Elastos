@@ -213,15 +213,13 @@ public class CredentialSubjectBean implements Parcelable {
         this.customInfos = customInfos;
     }
 
-    /* public CredentialSubjectBean() {
-            }*/
+
     public CredentialSubjectBean(String did, String didName) {
         this.did = did;
         this.didName = didName;
     }
 
-    public CredentialSubjectBean() {
-    }
+
 
     @Override
     public String toString() {

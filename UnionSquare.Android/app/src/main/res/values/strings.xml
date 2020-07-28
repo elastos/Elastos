@@ -770,4 +770,6 @@
     <string name="singletext">单行文本</string>
     <string name="multtext">多行文本</string>
     <string name="plzinputcontent">请输入内容</string>
+    <string name="mutiltextitem">多行文本项目</string>
+    <string name="singletextitem">单行文本项目</string>
 </resources>

@@ -22,12 +22,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/white20"
-                android:drawableLeft="@mipmap/tips_warning_icon"
                 android:drawablePadding="5dp"
                 android:paddingLeft="15dp"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
-                android:text="@string/didinfonettip"
+                android:text="@string/tipcanjump"
                 android:textSize="11sp" />
 
             <!-- <RelativeLayout
@@ -59,7 +58,7 @@
         android:fillViewport="true"
         android:background="@color/c262626"
         android:visibility="gone"
-       >
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -90,7 +89,7 @@
             <RelativeLayout
                 android:id="@+id/rl_custom"
                 style="@style/settingItem_pading15"
-               >
+                >
 
                 <TextView
                     android:id="@+id/tv"

@@ -207,9 +207,9 @@ public class MyDID {
             VerifiableCredential cre = doc.getCredential("name");
             return cre.getSubject().getPropertyAsString("name");
         } catch (Exception e) {
-            //ToastUtils.showShort(e.getMessage());
-            return null;
+            e.printStackTrace();
         }
+        return null;
 
 
     }
@@ -383,21 +383,31 @@ public class MyDID {
         return null;
     }
 
-    public void setDIDDocument(Date expires, String pwd, String name) {
 
+    public void setDIDDocument(Date expires, String pwd, String name, String credencialJson) {
+        //Log.i("???", expires.getTime() + pwd + name + credencialJson);
         try {
             DIDDocument document = didStore.loadDid(did);
             DIDDocument.Builder build = document.edit();
             build.setExpires(expires);
             String[] SelfProclaimedCredential = {"SelfProclaimedCredential"};
-            Map<String, String> props = new HashMap<String, String>();
-            props.put("name", name);
-            DIDURL didurl = new DIDURL(did, "name");
-            VerifiableCredential vc1 = document.getCredential(didurl);
-            if (vc1 != null) {
-                build.removeCredential(didurl);
+            DIDURL didurlName = new DIDURL(did, "name");
+            Map<String, String> propsName = new HashMap<String, String>();
+            propsName.put("name", name);
+            VerifiableCredential vcName = document.getCredential(didurlName);
+            if (vcName != null) {
+                build.removeCredential(didurlName);
             }
-            build.addCredential(didurl, SelfProclaimedCredential, props, pwd);
+            build.addCredential(didurlName, SelfProclaimedCredential, propsName, pwd);
+
+            DIDURL didurlC = new DIDURL(did, "credencial");
+            Map<String, String> propsC = new HashMap<String, String>();
+            propsC.put("credencialJson", credencialJson);
+            VerifiableCredential vcC = document.getCredential(didurlC);
+            if (vcC != null) {
+                build.removeCredential(didurlC);
+            }
+            build.addCredential(didurlC, SelfProclaimedCredential, propsC, pwd);
             DIDDocument newDoc = build.seal(pwd);
             didStore.storeDid(newDoc);//存储本地
         } catch (DIDException e) {
