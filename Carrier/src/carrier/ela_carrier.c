@@ -3751,6 +3751,7 @@ int ela_invite_friend(ElaCarrier *w, const char *to, const char *bundle,
 
             tcb->tid = tid;
             tcb->callback_func = callback;
+            tcb->friend_number = friend_number;
             tcb->callback_context = context;
             if (bundle) {
                 tcb->bundle = (char*)(tcb + 1);
