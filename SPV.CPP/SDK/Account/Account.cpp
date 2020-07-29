@@ -926,7 +926,8 @@ namespace Elastos {
 			bytes = rootkey.getChild("44'/0'/1'/0/0").pubkey();
 			_localstore->SetOwnerPubKey(bytes.getHex());
 
-			if (_localstore->GetSeed().empty() && !_localstore->HasPassPhrase() && !_localstore->GetMnemonic().empty()) {
+			if ((_localstore->GetSeed().empty() || _localstore->GetETHSCPrimaryPubKey().empty()) &&
+				!_localstore->HasPassPhrase() && !_localstore->GetMnemonic().empty()) {
 				if (mnemonic.empty()) {
 					bytes = AES::DecryptCCM(_localstore->GetMnemonic(), payPasswd);
 					mnemonic = std::string((char *) &bytes[0], bytes.size());

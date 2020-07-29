@@ -38,6 +38,15 @@ include_directories(
 link_directories(
 	${PROJECT_INT_DIST_DIR}/lib)
 
+if(MSVC)
+	add_definitions(/FI"${CMAKE_CURRENT_SOURCE_DIR}/Common/BRNameFix.h")
+	add_definitions(/FI"${CMAKE_CURRENT_SOURCE_DIR}/Common/secp256k1_name_fix.h")
+else()
+	# GCC or Clang
+	add_definitions(-include ${CMAKE_CURRENT_SOURCE_DIR}/Common/BRNameFix.h)
+	add_definitions(-include ${CMAKE_CURRENT_SOURCE_DIR}/Common/secp256k1_name_fix.h)
+endif()
+
 if(SPV_ENABLE_STATIC)
 	add_library(spvsdk-static STATIC ${SPVSDK_SOURCE_FILES})
 	add_dependencies(spvsdk-static ${SPVSDK_DEPENDS})
