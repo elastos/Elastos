@@ -70,26 +70,28 @@ if(ENABLE_TESTS)
         ${SRC}
         adapter/dummyadapter.c)
 
-    set(DUMMYADAPTER_CREATE
-        "_DummyAdapter_Create")
-    set(DUMMYADAPTER_DESTROY
-        "_DummyAdapter_Destroy")
-    set(DIDMETADATA_GETPREVSIGNATURE
-        "_DIDMetaData_GetPrevSignature")
-    set(DIDMETADATA_GETTXID
-        "_DIDMetaData_GetTxid")
-    set(DIDMETADATA_SETTXID
-        "_DIDMetaData_SetTxid")
-    set(DIDMETADATA_SETPREVSIGNATURE
-        "_DIDMetaData_SetPrevSignature")
-    set(DIDMETADATA_SETSIGNATURE
-        "_DIDMetaData_SetSignature")
+    set(HEADER_FILTER
+        "*.h")
+else()
+    set(HEADER_FILTER
+        "ela_*.h")
 endif()
 
-configure_file(
-    export.symbols.in
-    export.symbols
-    "@ONLY")
+set(SYMBOL_FORMAT
+    "{printf \"_%s\\n\",$1}")
+
+add_custom_command(
+    COMMAND grep -r --include=${HEADER_FILTER} "^DID_API" ${CMAKE_CURRENT_SOURCE_DIR} | grep -o "[A-Za-z0-9_]*(" | awk -F "(" ${SYMBOL_FORMAT} > ${CMAKE_CURRENT_BINARY_DIR}/export.symbols
+    DEPENDS ela_did.h jwt/ela_jwt.h
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/export.symbols
+    VERBATIM
+)
+
+add_custom_target(exportSymbols
+    ALL
+    COMMAND echo Generate export symbols...
+    DEPENDS export.symbols
+)
 
 if(WIN32)
     set(SYSTEM_LIBS Ws2_32 Iphlpapi)
@@ -150,7 +152,7 @@ add_definitions(-DDID_BUILD)
 
 add_custom_target(ela-did)
 
-set(ELADID_DEPENDS libressl libcurl cJSON hdkey libjansson libcjose libzip)
+set(ELADID_DEPENDS libressl libcurl cJSON hdkey libjansson libcjose libzip exportSymbols)
 
 if(WIN32)
     set(ELADID_DEPENDS

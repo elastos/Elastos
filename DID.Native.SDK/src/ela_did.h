@@ -389,7 +389,7 @@ typedef enum DIDLogLevel {
  * @param
  *      log_printer [in] the user defined log printer. Can be NULL.
  */
-DID_API void DID_Log_Init(DIDLogLevel level, const char *log_file,
+/* DID_API */ void DID_Log_Init(DIDLogLevel level, const char *log_file,
         void (*log_printer)(const char *format, va_list args));
 
 /******************************************************************************
