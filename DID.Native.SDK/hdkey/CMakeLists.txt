@@ -32,6 +32,15 @@ if(WIN32)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /utf-8")
 endif()
 
+if(MSVC)
+    add_definitions(/FI"BRNameFix.h")
+    add_definitions(/FI"secp256k1_name_fix.h")
+else()
+    # GCC or Clang
+    add_definitions(-include BRNameFix.h)
+    add_definitions(-include secp256k1_name_fix.h)
+endif()
+
 link_directories(
     ${PROJECT_INT_DIST_DIR}/lib)
 
