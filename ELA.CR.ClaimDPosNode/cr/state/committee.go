@@ -239,6 +239,10 @@ func (c *Committee) getMember(did common.Uint168) *CRMember {
 func (c *Committee) GetMemberByNodePublicKey(nodePK []byte) *CRMember {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
+	return c.getMemberByNodePublicKey(nodePK)
+}
+
+func (c *Committee) getMemberByNodePublicKey(nodePK []byte) *CRMember {
 	for _, m := range c.Members {
 		if bytes.Equal(m.DPOSPublicKey, nodePK) {
 			return m
@@ -803,7 +807,7 @@ func (c *Committee) processCRCRealWithdraw(tx *types.Transaction,
 func (c *Committee) activateProducer(tx *types.Transaction,
 	height uint32, history *utils.History) {
 	apPayload := tx.Payload.(*payload.ActivateProducer)
-	crMemebr := c.GetMemberByNodePublicKey(apPayload.NodePublicKey)
+	crMemebr := c.getMemberByNodePublicKey(apPayload.NodePublicKey)
 	if crMemebr != nil && crMemebr.MemberState == MemberInactive {
 		history.Append(height, func() {
 			crMemebr.ActivateRequestHeight = height

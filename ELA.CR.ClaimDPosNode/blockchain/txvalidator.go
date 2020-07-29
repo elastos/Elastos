@@ -1197,6 +1197,11 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 			if m < int(minCount) {
 				return errors.New("invalid arbiters sign count in code")
 			}
+		} else {
+			if m < 1 || m > n || n != int(DefaultLedger.Arbitrators.GetCrossChainArbitersCount()) ||
+				m <= int(DefaultLedger.Arbitrators.GetCrossChainArbitersMajorityCount()) {
+				return errors.New("invalid multi sign script code")
+			}
 		}
 		if err := b.checkCrossChainArbitrators(publicKeys); err != nil {
 			return err
