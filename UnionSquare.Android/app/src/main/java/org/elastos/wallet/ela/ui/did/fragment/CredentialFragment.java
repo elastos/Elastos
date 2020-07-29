@@ -29,6 +29,7 @@ import android.widget.TextView;
 import com.alibaba.fastjson.JSON;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.DID.MyDID;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
@@ -69,7 +70,7 @@ public class CredentialFragment extends BaseFragment {
     }
 
     private void viewInfo() {
-        String json = getMyDID().getCredentialProFromStore(getMyDID().getDidString());
+        String json = getMyDID().getCredentialPro(MyDID.CREDENCIALID_LOCAL,getMyDID().getDidString());
         credentialSubjectBean = JSON.parseObject(json, CredentialSubjectBean.class);
         Log.i("??", json + "\n" + (JSON.parseObject("{}", CredentialSubjectBean.class) == null));//false
         if (credentialSubjectBean == null || credentialSubjectBean.whetherEmpty()) {

@@ -29,6 +29,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -88,7 +90,10 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
     ScrollView svChose;
     @BindView(R.id.iv_add)
     ImageView ivAdd;
-
+    @BindView(R.id.rl_custom)
+    RelativeLayout rlCustom;
+    @BindView(R.id.ll_addcustom)
+    LinearLayout llAddcustom;
     private long birthday;
 
     private List<PersonalInfoItemEntity> listShow;
@@ -122,29 +127,18 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         registReceiver();
     }
 
-/*    private void initItemDate() {
-        String showData[] = getResources().getStringArray(R.array.personalinfo_chose);
-        String choseData[] = showData;
-        *//*  Map<Integer, String>*//*
-        listShow = new ArrayList<>();
-        listChose = new ArrayList<>();
-        for (int i = 0; i < showData.length; i++) {
-            PersonalInfoItemEntity personalInfoItemEntity = getPersonalInfoItemEntity(i, showData[i], choseData[i]);
-            if (i == 1 || i == 2 || i == 3 || i == 4 || i == 7 || i == 8 || i == 9 || i == 12)
-                listShow.add(personalInfoItemEntity);
-            else
-                listChose.add(personalInfoItemEntity);
 
-        }
-
-
-    }*/
-
+    /**
+     * 通过已经有数据的show 获得Chose
+     *
+     * @param listShow
+     */
     private void getChoseItem(List<PersonalInfoItemEntity> listShow) {
         String choseData[] = getResources().getStringArray(R.array.personalinfo_chose);
+        String showData[] = getResources().getStringArray(R.array.personalinfo_show);
         listChose = new ArrayList<>();
         for (int i = 0; i < choseData.length; i++) {
-            PersonalInfoItemEntity personalInfoItemEntity = getPersonalInfoItemEntity(i, choseData[i], choseData[i]);
+            PersonalInfoItemEntity personalInfoItemEntity = getPersonalInfoItemEntity(i, choseData[i],showData[i]);
             listChose.add(personalInfoItemEntity);
 
         }
@@ -156,15 +150,16 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
 
     }
 
-    private PersonalInfoItemEntity getPersonalInfoItemEntity(int i, String choseDatum, String choseDatum2) {
+    private PersonalInfoItemEntity getPersonalInfoItemEntity(int i, String choseDatum, String showDatum) {
         PersonalInfoItemEntity personalInfoItemEntity = new PersonalInfoItemEntity();
         personalInfoItemEntity.setIndex(i);
-        personalInfoItemEntity.setHintShow1(choseDatum);
+        personalInfoItemEntity.setHintShow1(showDatum);
+        personalInfoItemEntity.setHintChose(choseDatum);
         if (i == 5) {
-            personalInfoItemEntity.setHintShow1(getString(R.string.phonecode));
-            personalInfoItemEntity.setHintShow2(getString(R.string.phonenumber));
+            personalInfoItemEntity.setHintShow2(getString(R.string.pleaseinputmobile));
+            personalInfoItemEntity.setHintChose2(getString(R.string.phonecode));
         }
-        personalInfoItemEntity.setHintChose(choseDatum2);
+
         return personalInfoItemEntity;
     }
 
@@ -181,6 +176,8 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
     }
 
     private void setRecycleViewChose() {
+        customVisible();
+        Collections.sort(listChose);
         if (adapterChose == null) {
             adapterChose = new PersonalChoseRecAdapetr(getContext(), listChose);
             rvChose.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
@@ -190,6 +187,19 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         } else {
             adapterChose.notifyDataSetChanged();
         }
+    }
+
+    private void insertShow(int insetPosition, PersonalInfoItemEntity personalInfoItemEntity) {
+        storePersonalInfo();
+        listShow.add(personalInfoItemEntity);
+        Collections.sort(listShow);
+        adapterShow.notifyItemInserted(insetPosition);//加动画
+        adapterShow.notifyItemRangeChanged(insetPosition, listShow.size() - insetPosition);
+        svChose.setVisibility(View.GONE);
+        if (listShow.size() == 19) {//14项确定项和5项自定义项
+            ivAdd.setVisibility(View.GONE);
+        }
+        listChose.remove(personalInfoItemEntity);
     }
 
     @OnClick({R.id.tv_title_right, R.id.iv_add, R.id.iv_showshow})
@@ -445,6 +455,20 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
             return true;
         } else {
             return super.onBackPressedSupport();
+        }
+    }
+
+    private void customVisible() {
+        int customCount = 0;
+        for (int i = 0; i < listShow.size(); i++) {
+            if (listShow.get(i).getIndex() > 13) {
+                customCount++;
+            }
+        }
+        if (customCount >= 5) {//最多5项自定义项
+            rlCustom.setVisibility(View.GONE);
+        } else {
+            rlCustom.setVisibility(View.VISIBLE);
         }
     }
 }

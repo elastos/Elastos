@@ -91,8 +91,6 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
     TextView tvTitleRight;
     @BindView(R.id.iv_add)
     ImageView ivAdd;
-    @BindView(R.id.tv_tip)
-    TextView tvTip;
     @BindView(R.id.rv_show)
     RecyclerView rvShow;
     @BindView(R.id.rv_chose)
@@ -120,7 +118,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
 
     @Override
     protected void setExtraData(Bundle data) {
-        netCredentialSubjectBean =data.getParcelable("netCredentialSubjectBean");
+        netCredentialSubjectBean = data.getParcelable("netCredentialSubjectBean");
         String type = data.getString("type");
         if (Constant.EDITCREDENTIAL.equals(type)) {
             //新增did凭证  从凭证信息进入
@@ -175,7 +173,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 personalInfoItemEntity.setHintShow2(getString(R.string.pleaseinputmobile));
             }
             personalInfoItemEntity.setHintChose(choseData[i]);
-            if (i == 1 || i == 2 || i == 3 || i ==4 || i == 7 || i == 8 || i == 9|| i == 12)
+            if (i == 1 || i == 2 || i == 3 || i == 4 || i == 7 || i == 8 || i == 9 || i == 12)
                 listShow.add(personalInfoItemEntity);
             else
                 listChose.add(personalInfoItemEntity);
@@ -249,8 +247,8 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 PersonalInfoItemEntity personalInfoItemEntity1 = new PersonalInfoItemEntity();
                 int curentMaxIndex1 = listShow.get(insetPosition1 - 1).getIndex();
                 personalInfoItemEntity1.setIndex(curentMaxIndex1 > 13 ? curentMaxIndex1 + 1 : 14);
-                personalInfoItemEntity1.setHintShow1(getString(R.string.mutiltextitem));
                 personalInfoItemEntity1.setType(-2);
+                personalInfoItemEntity1.setHintShow1(getString(R.string.mutiltextitem));
                 personalInfoItemEntity1.setHintShow2(getString(R.string.plzinputcontent));
                 insertShow(insetPosition1, personalInfoItemEntity1);
                 break;
@@ -262,11 +260,16 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 break;
             case R.id.tv_title_right:
                 //发布  保留在重写的方法里
-                credentialSubjectBean = convertCredentialSubjectBean();
-                Log.i("??", JSON.toJSONString(credentialSubjectBean));
-                //模拟手续费
-                new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
 
+                new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.whetherpublishdid), null, null, false, new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        credentialSubjectBean = convertCredentialSubjectBean();
+                        Log.i("??", JSON.toJSONString(credentialSubjectBean));
+                        //模拟手续费
+                        new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", AddPersonalInfoFragment.this);
+                    }
+                });
                 break;
             case R.id.iv_add:
                 svChose.setVisibility(View.VISIBLE);
@@ -457,7 +460,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
         //这种情况考虑去除全局变量credentialSubjectBean
         storePersonalInfo();
         CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(), didName);
-        ArrayList<CredentialSubjectBean.CustomInfo> customInfos =new ArrayList<>();
+        ArrayList<CredentialSubjectBean.CustomInfo> customInfos = new ArrayList<>();
         result.setCustomInfos(customInfos);
         for (int i = 0; i < listShow.size(); i++) {
             //只遍历show的数据
@@ -516,7 +519,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                     result.setGoogleAccount(text1);
                     break;
                 default:
-                    CredentialSubjectBean.CustomInfo info=new CredentialSubjectBean.CustomInfo();
+                    CredentialSubjectBean.CustomInfo info = new CredentialSubjectBean.CustomInfo();
                     info.setTitle(text1);
                     info.setContent(text2);
                     info.setType(personalInfoItemEntity.getType());

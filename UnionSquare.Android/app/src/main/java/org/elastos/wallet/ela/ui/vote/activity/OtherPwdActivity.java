@@ -33,6 +33,7 @@ import android.view.ViewGroup;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
 
 import org.elastos.did.DIDAdapter;
 import org.elastos.wallet.R;
@@ -159,7 +160,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         break;
                     case Constant.DIDSIGNUP:
                     case Constant.DIDUPDEATE:
-                        getMyDID().setDIDDocument(didEndDate, pwd, didName, JSON.toJSONString(netCredentialSubjectBean));
+                        getMyDID().setDIDDocument(didEndDate, pwd, didName, new Gson().toJson(netCredentialSubjectBean));
                         getMyDID().getMyDIDAdapter().setMyDIDTransactionCallback(this);
                         presenter.DIDPublish(pwd, this);
                         break;
@@ -173,10 +174,8 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     @Override
     public void onGetCommonData(String methodname, String data) {
         switch (methodname) {
-
-
             case "signTransaction":
-                //  presenter.publishTransaction(wallet.getWalletId(), chainId, data, this);
+                presenter.publishTransaction(wallet.getWalletId(), chainId, data, this);
                 break;
             case "publishTransaction":
                 String hash = "";
@@ -262,6 +261,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
         Looper.prepare();
         //DIDURL didurl = new DIDURL( getMyDID().getDid(), "primary");
         // boolean b=getMyDID().getDIDDocument().ver(didurl,payload.getBytes());
+        Log.i("???payload", payload);
         presenter.createIDTransaction(wallet.getWalletId(), payload, this);
         Looper.loop();// 进入loop中的循环，查看消息队列
 

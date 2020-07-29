@@ -23,18 +23,26 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.elastos.did.DIDDocument;
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.DID.MyDID;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
+import org.elastos.wallet.ela.ui.did.adapter.PersonalShowRecAdapetr;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
+import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
+import org.elastos.wallet.ela.ui.did.presenter.DIDUIPresenter;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.DateUtil;
-import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -56,8 +64,14 @@ public class DidDetailFragment extends BaseFragment {
     TextView tvValiddate;
     @BindView(R.id.tv_edit)
     TextView tvEdit;
+    @BindView(R.id.tv_netline)
+    TextView tvNetline;
     Wallet wallet;
-
+    @BindView(R.id.rv_show)
+    RecyclerView rvShow;
+    private CredentialSubjectBean credentialSubjectBean;
+    private ArrayList<PersonalInfoItemEntity> listShow;
+    private DIDUIPresenter diduiPresenter;
 
     @Override
     protected int getLayoutId() {
@@ -83,8 +97,65 @@ public class DidDetailFragment extends BaseFragment {
     @Override
     protected void initView(View view) {
         tvTitle.setText("DID");
-        // ivTitleRight.setVisibility(View.VISIBLE);
-        ivTitleRight.setImageResource(R.mipmap.del_icon);
+        ivTitleRight.setVisibility(View.VISIBLE);
+        ivTitleRight.setImageResource(R.mipmap.mine_did_id_card);
+        //ivTitleRight.setImageResource(R.mipmap.del_icon);
+        diduiPresenter = new DIDUIPresenter();
+        initItemDate();
+    }
+
+    private void initItemDate() {
+        String showData[] = getResources().getStringArray(R.array.personalinfo_chose);
+        //  String choseData[] = getResources().getStringArray(R.array.personalinfo_chose);
+        /*  Map<Integer, String>*/
+        listShow = new ArrayList<>();
+
+        for (int i = 0; i < showData.length; i++) {
+            PersonalInfoItemEntity personalInfoItemEntity = new PersonalInfoItemEntity();
+            personalInfoItemEntity.setIndex(i);
+            personalInfoItemEntity.setHintChose(showData[i]);
+            personalInfoItemEntity.setHintShow1(showData[i]);
+            if (i == 5) {
+                personalInfoItemEntity.setHintShow1(getString(R.string.phonecode));
+                personalInfoItemEntity.setHintShow2(getString(R.string.phonenumber));
+            }
+            listShow.add(personalInfoItemEntity);
+        }
+
+        credentialSubjectBean = getMyDID().getCredentialProObj(MyDID.CREDENCIALID_NET, getMyDID().getDidString());
+        if (credentialSubjectBean.whetherEmpty()) {
+            tvNetline.setVisibility(View.GONE);
+        } else {
+            diduiPresenter.convertCredentialSubjectBean(this, listShow, credentialSubjectBean);
+            setRecycleViewShow();
+        }
+
+    }
+
+
+    private void setRecycleViewShow() {
+        PersonalShowRecAdapetr adapterShow = new PersonalShowRecAdapetr(getContext(), listShow);
+        rvShow.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        adapterShow.setCommonRvListener(new CommonRvListener1() {
+            @Override
+            public void onRvItemClick(View view, int position, Object o) {
+                PersonalInfoItemEntity personalInfoItemEntity = (PersonalInfoItemEntity) o;
+                if (personalInfoItemEntity.getIndex() == 7) {
+                    //去个人简介详情
+                    Bundle bundle = new Bundle();
+                    bundle.putString("content", personalInfoItemEntity.getText1());
+                    start(ShowPersonalIntroFragemnt.class, bundle);
+                }
+                if (personalInfoItemEntity.getIndex() > 13) {
+                    //去个人简介详情
+                    Bundle bundle = new Bundle();
+                    bundle.putString("title", personalInfoItemEntity.getText1() == null ? "" : personalInfoItemEntity.getText1());
+                    bundle.putString("content", personalInfoItemEntity.getText2());
+                    start(ShowPersonalIntroFragemnt.class, bundle);
+                }
+            }
+        });
+        rvShow.setAdapter(adapterShow);
     }
 
     @OnClick({R.id.tv_edit, R.id.tv_credentialinfo, R.id.tv_did, R.id.tv_didpk, R.id.iv_title_right})
@@ -100,6 +171,9 @@ public class DidDetailFragment extends BaseFragment {
             case R.id.tv_edit:
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
+                bundle.putParcelable("credentialSubjectBean", credentialSubjectBean);
+                bundle.putParcelableArrayList("listShow", listShow);
+
                 start(EditDIDFragment.class, bundle);
                 break;
             case R.id.tv_credentialinfo:
@@ -110,17 +184,18 @@ public class DidDetailFragment extends BaseFragment {
                 break;
             case R.id.iv_title_right:
                 //  new CRSignUpPresenter().getFee(didInfo.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", DidDetailFragment.this);
-                new DialogUtil().showWarmPrompt1(getBaseActivity(), getString(R.string.abandondidornot), new WarmPromptListener() {
+                /*new DialogUtil().showWarmPrompt1(getBaseActivity(), getString(R.string.abandondidornot), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        /*try {
+                        *//*try {
                            // didStore.deleteDid(did);//删除钱包 没有wallt settore
                         } catch (DIDStoreException e) {
                             e.printStackTrace();
-                        }*/
+                        }*//*
                         // didStore.deactivateDid() todo x
                     }
-                });
+                });*/
+                //展示名片
                 break;
         }
     }

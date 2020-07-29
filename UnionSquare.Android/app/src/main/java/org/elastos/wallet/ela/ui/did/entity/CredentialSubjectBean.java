@@ -219,7 +219,8 @@ public class CredentialSubjectBean implements Parcelable {
         this.didName = didName;
     }
 
-
+    private CredentialSubjectBean() {
+    }
 
     @Override
     public String toString() {

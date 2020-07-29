@@ -90,8 +90,6 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
     TextView tvTitleRight;
     @BindView(R.id.iv_add)
     ImageView ivAdd;
-    @BindView(R.id.tv_tip)
-    TextView tvTip;
     @BindView(R.id.rv_show)
     RecyclerView rvShow;
     @BindView(R.id.rv_chose)

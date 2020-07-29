@@ -23,7 +23,6 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -32,15 +31,15 @@ import org.elastos.wallet.ela.base.BaseFragment;
 
 import butterknife.BindView;
 
+/**
+ * 负责个人简介和自定义多行项目的展示
+ */
 public class ShowPersonalIntroFragemnt extends BaseFragment {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.tv_intro)
     TextView tvIntro;
-
-
-    String personalIntro;
 
     @Override
     protected int getLayoutId() {
@@ -49,15 +48,19 @@ public class ShowPersonalIntroFragemnt extends BaseFragment {
 
     @Override
     protected void setExtraData(Bundle data) {
-        personalIntro = data.getString("content");
+        String personalIntro = data.getString("content", "");
+        tvIntro.setText(personalIntro);
+        String title = data.getString("title", null);
+        if (title == null) {
+            tvTitle.setText(getString(R.string.personalintro));
+        } else {
+            tvTitle.setText(title);
+        }
     }
 
     @Override
     protected void initView(View view) {
-        tvTitle.setText(getString(R.string.personalintro));
-        if (!TextUtils.isEmpty(personalIntro)) {
-            tvIntro.setText(personalIntro);
-        }
+
     }
 
 

@@ -31,6 +31,7 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
     private String hintShow1;//初始化后不会再修改 提示语句 index的show的提示1
     private String hintShow2;//初始化后不会再修改 提示语句 index的show的提示2
     private String hintChose;//初始化后不会再修改 提示语句 index的chose的提示
+    private String hintChose2;//初始化后不会再修改 提示语句 index的chose的提示 目前只有电话用打 getHintChose2为code hintChose 为电话号
     private String text1;//index的第一个输入框或者选择框的结构
     private String text2;//index的第二个输入框或者选择框的结构
     private boolean check;//  index是否被选中  认证授权使用
@@ -74,6 +75,14 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
 
     public void setHintChose(String hintChose) {
         this.hintChose = hintChose;
+    }
+
+    public String getHintChose2() {
+        return hintChose2;
+    }
+
+    public void setHintChose2(String hintChose2) {
+        this.hintChose2 = hintChose2;
     }
 
     public String getText1() {
@@ -124,6 +133,7 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
         dest.writeString(this.hintShow1);
         dest.writeString(this.hintShow2);
         dest.writeString(this.hintChose);
+        dest.writeString(this.hintChose2);
         dest.writeString(this.text1);
         dest.writeString(this.text2);
         dest.writeByte(this.check ? (byte) 1 : (byte) 0);
@@ -134,6 +144,7 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
         this.hintShow1 = in.readString();
         this.hintShow2 = in.readString();
         this.hintChose = in.readString();
+        this.hintChose2 = in.readString();
         this.text1 = in.readString();
         this.text2 = in.readString();
         this.check = in.readByte() != 0;
@@ -158,6 +169,7 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
                 ", hintShow1='" + hintShow1 + '\'' +
                 ", hintShow2='" + hintShow2 + '\'' +
                 ", hintChose='" + hintChose + '\'' +
+                ", hintChose2='" + hintChose2 + '\'' +
                 ", text1='" + text1 + '\'' +
                 ", text2='" + text2 + '\'' +
                 ", check=" + check +

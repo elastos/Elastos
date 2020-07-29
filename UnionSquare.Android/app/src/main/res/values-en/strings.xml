@@ -581,7 +581,7 @@
     <string name="wechataccount">Wechat account</string>
     <string name="alipayaccount">Alipay account</string>
     <string name="editsocialaccount">Edit community account</string>
-    <string name="editdid">Edit DID</string>
+    <string name="editdid">编辑DID基本信息</string>
     <string name="updatepublish">Publish update</string>
     <string name="wallet">Wallet</string>
     <string name="transation">Transaction</string>
@@ -771,4 +771,6 @@
     <string name="plzinputcontent">请输入内容</string>
     <string name="mutiltextitem">多行文本项目</string>
     <string name="singletextitem">单行文本项目</string>
+    <string name="whetherpublishdid">DID信息一旦发布将完全公开，是否立即发布？</string>
+    <string name="netlineinfo">上链信息</string>
 </resources>

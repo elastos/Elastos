@@ -87,14 +87,20 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
         PersonalInfoItemEntity personalInfoItemEntity = list.get(position);
         int index = personalInfoItemEntity.getIndex();
         if (holder instanceof ViewHolder2) {
-            ((ViewHolder2) holder).tv1.setText(personalInfoItemEntity.getHintShow1());
-            ((ViewHolder2) holder).tv2.setText(personalInfoItemEntity.getHintShow2());
+            ((ViewHolder2) holder).tv1.setText(personalInfoItemEntity.getHintChose2());
+            ((ViewHolder2) holder).tv2.setText(personalInfoItemEntity.getHintChose());
             ((ViewHolder2) holder).et1.setText(personalInfoItemEntity.getText1());
             ((ViewHolder2) holder).et2.setText(personalInfoItemEntity.getText2());
 
         } else if (holder instanceof ViewHolder1) {
-            ((ViewHolder1) holder).tv1.setText(personalInfoItemEntity.getHintShow1());
+            /*if (index > 13) {
+                //自定义项多行  是否是单独的新布局
+                ((ViewHolder1) holder).tv1.setText(personalInfoItemEntity.getText1());
+                ((ViewHolder1) holder).tv2.setText(personalInfoItemEntity.getText2());
+            } else {*/
+            ((ViewHolder1) holder).tv1.setText(personalInfoItemEntity.getHintChose());
             ((ViewHolder1) holder).tv2.setText(personalInfoItemEntity.getText1());
+            //}
             ((ViewHolder1) holder).itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

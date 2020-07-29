@@ -38,7 +38,6 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
-import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.Constant;
@@ -61,7 +60,8 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
-
+    @BindView(R.id.tv_title_right)
+    TextView tvTitleRight;
     Wallet wallet;
     @BindView(R.id.et_didname)
     EditText etDidname;
@@ -102,6 +102,8 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
 
     @Override
     protected void initView(View view) {
+        tvTitleRight.setVisibility(View.VISIBLE);
+        tvTitleRight.setText(getString(R.string.next));
         tvTitle.setText(getString(R.string.editdid));
     }
 
@@ -109,6 +111,12 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
     public void onViewClicked(View view) {
         Bundle bundle;
         switch (view.getId()) {
+            case R.id.tv_title_right:
+                //下一步
+                Bundle bundle1 = getArguments();
+                bundle1.putString("type", "net");
+               // start(EditPersonalInfoFragemnt.class, bundle1);
+                break;
             case R.id.tv_updata:
                 //更新
                 didName = etDidname.getText().toString().trim();
@@ -131,7 +139,7 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
                 long minData = calendar.getTimeInMillis();
                 calendar.add(Calendar.DAY_OF_MONTH, -1);
                 calendar.add(Calendar.YEAR, 5);
-                new DialogUtil().showTime(getBaseActivity(),getString(R.string.plzselctoutdate), minData, calendar.getTimeInMillis(), new WarmPromptListener() {
+                new DialogUtil().showTime(getBaseActivity(), getString(R.string.plzselctoutdate), minData, calendar.getTimeInMillis(), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
                         String date = ((TextConfigDataPicker) view).getYear() + "." + (((TextConfigDataPicker) view).getMonth() + 1)
@@ -156,7 +164,7 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
                 intent.putExtra("didEndDate", didEndDate);
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", MyWallet.IDChain);
-                intent.putExtra("fee",20000L);
+                intent.putExtra("fee", 20000L);
                 intent.putExtra("type", Constant.DIDUPDEATE);
                 intent.putExtra("transType", 10);
                 startActivity(intent);
@@ -172,7 +180,7 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
             new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
-                   popBackFragment();
+                    popBackFragment();
                 }
             });
         }

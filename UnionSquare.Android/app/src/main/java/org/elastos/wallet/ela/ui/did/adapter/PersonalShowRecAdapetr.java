@@ -85,8 +85,6 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<RecyclerView.Vi
             GlideApp.with(context).load(logo).error(R.mipmap.mine_did_default_avator)
                     .into(((ViewHolder1) holder).iv1);
         } else {
-            ((ViewHolder0) holder).tv1.setText(personalInfoItemEntity.getHintShow1());
-            ((ViewHolder0) holder).tv2.setText(personalInfoItemEntity.getText1());
             if (index == 5) {
                 //电话
                 ((ViewHolder0) holder).tv1.setText(personalInfoItemEntity.getHintShow2());
@@ -97,8 +95,14 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<RecyclerView.Vi
                     result = personalInfoItemEntity.getText1();
                 }
                 ((ViewHolder0) holder).tv2.setText(result);
+            } else if (index > 13) {
+                ((ViewHolder0) holder).tv1.setText(personalInfoItemEntity.getText1());
+                ((ViewHolder0) holder).tv2.setText(personalInfoItemEntity.getText2());
+            } else {
+                ((ViewHolder0) holder).tv1.setText(personalInfoItemEntity.getHintShow1());
+                ((ViewHolder0) holder).tv2.setText(personalInfoItemEntity.getText1());
             }
-            if (index == 7) {
+            if (index == 7 || index > 13) {
                 ((ViewHolder0) holder).itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

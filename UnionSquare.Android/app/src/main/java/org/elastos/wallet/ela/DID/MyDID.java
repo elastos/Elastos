@@ -24,6 +24,7 @@ package org.elastos.wallet.ela.DID;
 
 import android.text.TextUtils;
 
+import com.alibaba.fastjson.JSON;
 import com.blankj.utilcode.util.ToastUtils;
 
 import org.elastos.did.DID;
@@ -42,6 +43,7 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.CommonEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.utils.JwtUtils;
 import org.elastos.wallet.ela.utils.Log;
 
@@ -53,6 +55,9 @@ import java.util.Map;
 import static org.elastos.wallet.ela.ElaWallet.MyWallet.SUCCESSCODE;
 
 public class MyDID {
+    public static final String CREDENCIALID_LOCAL = "outPut";
+    public static final String CREDENCIALID_NAME = "name";
+    public static final String CREDENCIALID_NET = "credencial";
     private static final String DIDSDKEXCEPTIOM = "DIDException";
     private DIDStore didStore;
     private String walletId;
@@ -204,7 +209,7 @@ public class MyDID {
 
     public String getName(DIDDocument doc) {
         try {
-            VerifiableCredential cre = doc.getCredential("name");
+            VerifiableCredential cre = doc.getCredential(CREDENCIALID_NAME);
             return cre.getSubject().getPropertyAsString("name");
         } catch (Exception e) {
             e.printStackTrace();
@@ -236,13 +241,13 @@ public class MyDID {
         try {
             if (TextUtils.isEmpty(credencialJson) || credencialJson.equals("null")) {
                 //如果上次发送失败但是 setCredential保存成功   若重新发布时为空判空覆盖
-                didStore.deleteCredential(did.toString(), "outPut");
+                didStore.deleteCredential(did.toString(), CREDENCIALID_LOCAL);
                 return true;
             }
             Issuer issuer = new Issuer(did, didStore);//发布者的did
             String[] SelfProclaimedCredential = {"BasicProfileCredential"};
             VerifiableCredential vc = issuer.issueFor(did)//被发布的did
-                    .id("outPut")//唯一标识一个VerifiableCredential 相同会覆盖
+                    .id(CREDENCIALID_LOCAL)//唯一标识一个VerifiableCredential 相同会覆盖
                     .type(SelfProclaimedCredential)
                     .expirationDate(expires)
                     .properties(credencialJson)
@@ -266,7 +271,7 @@ public class MyDID {
     public String getCredentialJSon(String didString) {
 
         try {
-            VerifiableCredential vc1 = didStore.loadCredential(didString, "outPut");
+            VerifiableCredential vc1 = didStore.loadCredential(didString, CREDENCIALID_LOCAL);
             if (vc1 == null || vc1.getSubject() == null) {
                 return null;
             }
@@ -283,12 +288,46 @@ public class MyDID {
     public String getCredentialProFromStore(String didString) {
 
         try {
-            VerifiableCredential vc1 = didStore.loadCredential(didString, "outPut");
+            VerifiableCredential vc1 = didStore.loadCredential(didString, CREDENCIALID_LOCAL);
             if (vc1 == null || vc1.getSubject() == null) {
                 return null;
             }
             //Log.i("??", vc1.toString());
             return vc1.getSubject().getPropertiesAsString();
+
+        } catch (Exception e) {
+            ToastUtils.showShort(e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public String getCredentialPro(String credencialId, String didString) {
+
+        try {
+            VerifiableCredential vc1 = didStore.loadCredential(didString, credencialId);
+            if (vc1 == null || vc1.getSubject() == null) {
+                return null;
+            }
+            return vc1.getSubject().getPropertiesAsString();
+
+        } catch (Exception e) {
+            ToastUtils.showShort(e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public CredentialSubjectBean getCredentialProObj(String credencialId, String didString) {
+
+        try {
+            VerifiableCredential vc1 = didStore.loadCredential(didString, credencialId);
+            if (vc1 == null || vc1.getSubject() == null) {
+                return null;
+            }
+            return JSON.parseObject(vc1.getSubject().getPropertiesAsString(), CredentialSubjectBean.class);
 
         } catch (Exception e) {
             ToastUtils.showShort(e.getMessage());
@@ -320,7 +359,7 @@ public class MyDID {
             Issuer issuer = new Issuer(did, didStore);//发布者的did
             String[] SelfProclaimedCredential = {"BasicProfileCredential"};
             VerifiableCredential vc = issuer.issueFor(did)//被发布的did
-                    .id("outPut")//唯一标识一个VerifiableCredential 相同会覆盖
+                    .id(CREDENCIALID_LOCAL)//唯一标识一个VerifiableCredential 相同会覆盖
                     .type(SelfProclaimedCredential)
                     .expirationDate(expires)
                     .properties(props)
@@ -338,7 +377,7 @@ public class MyDID {
     /* DID did = vc.getSubject().getId();//issueFor()的did 被发布的did
                 vc.getId();//didurl
                 String id = vc.getId().getFragment();//.id
-                 DIDURL didurl = new DIDURL(did, "outPut");
+                 DIDURL didurl = new DIDURL(did, CREDENCIALID_LOCAL);
                VerifiableCredential vc1 = didStore.loadCredential(did, didurl);
                if (vc1 != null) {
                    didStore.deleteCredential(did, didurl);
@@ -354,7 +393,7 @@ public class MyDID {
             Issuer issuer = new Issuer(did, didStore);//发布者的did
             String[] SelfProclaimedCredential = {"BasicProfileCredential"};
             VerifiableCredential vc = issuer.issueFor(did)//被发布的did
-                    .id("outPut")//唯一标识一个VerifiableCredential 相同会覆盖
+                    .id(CREDENCIALID_LOCAL)//唯一标识一个VerifiableCredential 相同会覆盖
                     .type(SelfProclaimedCredential)
                     .expirationDate(expires)
                     .properties(props)
@@ -385,13 +424,15 @@ public class MyDID {
 
 
     public void setDIDDocument(Date expires, String pwd, String name, String credencialJson) {
-        //Log.i("???", expires.getTime() + pwd + name + credencialJson);
+        Log.i("???", expires.getTime() + "//" + pwd + "//" + name + "//" + credencialJson);
         try {
+            //credencialJson="aa";
             DIDDocument document = didStore.loadDid(did);
+            Log.i("??oldDoc", document.toString(true));
             DIDDocument.Builder build = document.edit();
             build.setExpires(expires);
             String[] SelfProclaimedCredential = {"SelfProclaimedCredential"};
-            DIDURL didurlName = new DIDURL(did, "name");
+            DIDURL didurlName = new DIDURL(did, CREDENCIALID_NAME);
             Map<String, String> propsName = new HashMap<String, String>();
             propsName.put("name", name);
             VerifiableCredential vcName = document.getCredential(didurlName);
@@ -400,21 +441,23 @@ public class MyDID {
             }
             build.addCredential(didurlName, SelfProclaimedCredential, propsName, pwd);
 
-            DIDURL didurlC = new DIDURL(did, "credencial");
-            Map<String, String> propsC = new HashMap<String, String>();
-            propsC.put("credencialJson", credencialJson);
+            DIDURL didurlC = new DIDURL(did, CREDENCIALID_NET);
+           /* Map<String, String> propsC = new HashMap<String, String>();
+            propsC.put("credencialJson", credencialJson);*/
             VerifiableCredential vcC = document.getCredential(didurlC);
             if (vcC != null) {
                 build.removeCredential(didurlC);
             }
-            build.addCredential(didurlC, SelfProclaimedCredential, propsC, pwd);
+            build.addCredential(didurlC, SelfProclaimedCredential, credencialJson, pwd);
             DIDDocument newDoc = build.seal(pwd);
+            Log.i("??newDoc", newDoc.toString(true));
             didStore.storeDid(newDoc);//存储本地
+            Log.i("??credencialJson原数据", credencialJson);
+            Log.i("??credencialJsonstore数据", didStore.loadDid(did).getCredential(CREDENCIALID_NET).getSubject().getPropertiesAsString());
         } catch (DIDException e) {
             ToastUtils.showShort(e.getMessage());
             e.printStackTrace();
         }
-
 
     }
 
