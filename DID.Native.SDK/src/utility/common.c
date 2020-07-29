@@ -120,7 +120,7 @@ int list_dir(const char *path, const char *pattern,
 {
     char full_pattern[PATH_MAX];
     size_t len;
-    int rc = 0;
+    int rc = 0, i;
 
     if (!path || !*path || !pattern || !callback)
         return -1;
@@ -151,7 +151,7 @@ int list_dir(const char *path, const char *pattern,
     memset(&gl, 0, sizeof(gl));
     glob(full_pattern, GLOB_DOOFFS | GLOB_BRACE, NULL, &gl);
 
-    for (int i = 0; i < gl.gl_pathc; i++) {
+    for (i = 0; i < gl.gl_pathc; i++) {
         char *fn = gl.gl_pathv[i] + pos;
         rc = callback(fn, context);
         if(rc < 0)
@@ -212,13 +212,13 @@ void delete_file(const char *path)
 static int get_dirv(char *path, bool create, int count, va_list components)
 {
     struct stat st;
-    int rc;
+    int rc, i;
 
     assert(path);
     assert(count > 0);
 
     *path = 0;
-    for (int i = 0; i < count; i++) {
+    for (i = 0; i < count; i++) {
         const char *component = va_arg(components, const char *);
         assert(component != NULL);
         strcat(path, component);
@@ -268,7 +268,7 @@ int get_file(char *path, bool create, int count, ...)
 {
     const char *filename;
     va_list components;
-    int rc;
+    int rc, i;
 
     if (!path || count <= 0)
         return -1;
@@ -280,7 +280,7 @@ int get_file(char *path, bool create, int count, ...)
 
     va_end(components);
     va_start(components, count);
-    for (int i = 0; i < count - 1; i++)
+    for (i = 0; i < count - 1; i++)
         va_arg(components, const char *);
 
     filename = va_arg(components, const char *);

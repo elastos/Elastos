@@ -23,7 +23,7 @@ static void test_diddoc_get_publickey(void)
     PublicKey *pk;
     DIDURL *id, *defaultkey, *primaryid;
     ssize_t size;
-    int rc;
+    int rc, i;
     bool isEquals;
 
     CU_ASSERT_EQUAL(DIDDocument_GetPublicKeyCount(doc), 4);
@@ -31,7 +31,7 @@ static void test_diddoc_get_publickey(void)
     size = DIDDocument_GetPublicKeys(doc, pks, sizeof(pks));
     CU_ASSERT_EQUAL(size, 4);
 
-    for (int i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         pk = pks[i];
         id = PublicKey_GetId(pk);
 
@@ -227,13 +227,14 @@ static void test_diddoc_get_authentication_key(void)
     PublicKey *pk;
     DIDURL *keyid, *id;
     bool isEquals;
+    int i;
 
     CU_ASSERT_EQUAL(3, DIDDocument_GetAuthenticationCount(doc));
 
     size = DIDDocument_GetAuthenticationKeys(doc, pks, sizeof(pks));
     CU_ASSERT_EQUAL(3, size);
 
-    for (int i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         pk = pks[i];
         id = PublicKey_GetId(pk);
 
@@ -480,13 +481,14 @@ static void test_diddoc_get_authorization_key(void)
     PublicKey *pk;
     DIDURL *keyid, *id;
     bool isEquals;
+    int i;
 
     CU_ASSERT_EQUAL(1, DIDDocument_GetAuthorizationCount(doc));
 
     size = DIDDocument_GetAuthorizationKeys(doc, pks, sizeof(pks));
     CU_ASSERT_EQUAL(1, size);
 
-    for (int i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         pk = pks[i];
         id = PublicKey_GetId(pk);
 
@@ -736,13 +738,14 @@ static void test_diddoc_get_credential(void)
     Credential *vc;
     DIDURL *id;
     bool isEquals;
+    int i;
 
     CU_ASSERT_EQUAL(2, DIDDocument_GetCredentialCount(doc));
 
     size = DIDDocument_GetCredentials(doc, vcs, sizeof(vcs));
     CU_ASSERT_EQUAL(2, size);
 
-    for (int i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         vc = vcs[i];
 
         id = Credential_GetId(vc);
@@ -857,7 +860,7 @@ static void test_diddoc_add_selfclaimed_credential(void)
     DIDDocumentBuilder *builder;
     Credential *vc;
     bool isEquals;
-    int rc;
+    int rc, i;
     const char *provalue;
 
     // Add self claim credential.
@@ -897,7 +900,7 @@ static void test_diddoc_add_selfclaimed_credential(void)
     rc = Credential_GetTypes(vc, types1, sizeof(types1));
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    for (int i = 0; i < 2; i++) {
+    for (i = 0; i < 2; i++) {
         const char *type = types1[i];
         CU_ASSERT_TRUE(!strcmp(type, "BasicProfileCredential") ||
                 !strcmp(type, "SelfProclaimedCredential"));
@@ -966,13 +969,14 @@ static void test_diddoc_get_service(void)
     ssize_t size;
     Service *service;
     bool isEquals;
+    int i;
 
     CU_ASSERT_EQUAL(3, DIDDocument_GetServiceCount(doc));
 
     size = DIDDocument_GetServices(doc, services, sizeof(services));
     CU_ASSERT_EQUAL(3, size);
 
-    for (int i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         service = services[i];
 
         DIDURL *id = Service_GetId(service);

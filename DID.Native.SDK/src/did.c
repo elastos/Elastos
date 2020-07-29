@@ -247,14 +247,14 @@ void DID_Destroy(DID *did)
     }
 }
 
-DIDDocument **DID_ResolveAll(DID *did)
+DIDHistory *DID_ResolveHistory(DID *did)
 {
     if (!did) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
     }
 
-    return DIDBackend_ResolveAll(did);
+    return DIDBackend_ResolveHistory(did);
 }
 
 DIDDocument *DID_Resolve(DID *did, bool force)

@@ -48,6 +48,7 @@ set(SRC
     credential.c
     didstore.c
     didbackend.c
+    didhistory.c
     mnemonic.c
     presentation.c
     issuer.c

@@ -31,7 +31,7 @@ static void test_didstore_bulk_newdid(void)
     char alias[ELA_MAX_ALIAS_LEN], _path[PATH_MAX];
     const char *gAlias, *storePath;
     DIDStore *store;
-    int rc, count = 0;
+    int rc, i, count = 0;
 
     storePath = get_store_path(_path, "/servet");
     store = TestData_SetupStore(true, storePath);
@@ -40,7 +40,7 @@ static void test_didstore_bulk_newdid(void)
     rc = TestData_InitIdentity(store);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    for (int i = 0; i < 100; i++) {
+    for (i = 0; i < 100; i++) {
         int size = snprintf(alias, sizeof(alias), "my did %d", i);
         if (size < 0 || size > sizeof(alias))
             continue;
@@ -103,7 +103,7 @@ static void test_didstore_op_deletedid(void)
     char alias[ELA_MAX_ALIAS_LEN], _path[PATH_MAX];
     const char *storePath;
     DIDStore *store;
-    int rc, count = 0;
+    int rc, i, count = 0;
 
     storePath = get_store_path(_path, "/servet");
     store = TestData_SetupStore(true, storePath);
@@ -112,7 +112,7 @@ static void test_didstore_op_deletedid(void)
     rc = TestData_InitIdentity(store);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    for(int i = 0; i < 100; i++) {
+    for(i = 0; i < 100; i++) {
         int size = snprintf(alias, sizeof(alias), "my did %d", i);
         if (size < 0 || size > sizeof(alias))
             continue;
@@ -127,7 +127,7 @@ static void test_didstore_op_deletedid(void)
         DIDDocument_Destroy(doc);
     }
 
-    for (int i = 0; i < 100; i++) {
+    for (i = 0; i < 100; i++) {
         if (i % 5 != 0)
             continue;
 

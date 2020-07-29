@@ -267,8 +267,9 @@ static void test_base64_compatible(void)
 {
     char intput[256];
     char base64[512];
+    int i;
 
-    for (int i = 0; i < 256; i++) {
+    for (i = 0; i < 256; i++) {
         intput[i] = i;
 
         base64_url_encode(base64, (uint8_t *)intput, i+1);

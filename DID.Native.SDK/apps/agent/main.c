@@ -104,7 +104,7 @@ static void list_dids(int argc, char *argv[])
     }
 
     printf("DIDs listed:\n  did \t alias\n");
-    rc = DIDStore_ListDIDs(ctx.store, DID_FILTER_ALL, iterate_did_cb, &num);
+    rc = DIDStore_ListDIDs(ctx.store, DIDFilter_All, iterate_did_cb, &num);
     if (rc < 0) {
         printf("Error: list DIDs failed.\n");
         return;

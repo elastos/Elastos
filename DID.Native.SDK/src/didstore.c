@@ -2304,7 +2304,8 @@ int DIDStore_LoadPrivateKey_Internal(DIDStore *store, const char *storepass, DID
     if (loadsize == PRIVATEKEY_BYTES) {
         identity = load_privateIdentity(store, storepass, &_identity);
         if (identity) {
-            for (int i = 0; i < 100; i++) {
+            int i;
+            for (i = 0; i < 100; i++) {
                 memset(&_derivedkey, 0, sizeof(HDKey));
                 memset(extendedkey, 0, size);
                 derivedkey = HDKey_GetDerivedKey(identity, &_derivedkey, 5, 44 | HARDENED,
@@ -2904,7 +2905,7 @@ static int export_privatekey(JsonGenerator *gen, DIDStore *store, const char *st
         const char *password, DIDDocument *doc, Sha256_Digest *digest)
 {
     ssize_t size;
-    int rc;
+    int rc, i;
     DID *did;
     DIDURL *keyid;
     char _idstring[ELA_MAX_DIDURL_LEN], *idstring;
@@ -2932,7 +2933,7 @@ static int export_privatekey(JsonGenerator *gen, DIDStore *store, const char *st
         CHECK_TO_MSG(JsonGenerator_WriteStartArray(gen),
                 DIDERR_OUT_OF_MEMORY, "Start 'privatekey' array failed.");
 
-        for (int i = 0; i < size; i++) {
+        for (i = 0; i < size; i++) {
             char base64[512];
             uint8_t extendedkey[EXTENDEDKEY_BYTES];
             keyid = &pks[i]->id;
@@ -3550,7 +3551,7 @@ int DIDStore_ImportDID(DIDStore *store, const char *storepass,
     DIDDocument *doc = NULL;
     Credential **creds = NULL;
     Prvkey_Export *prvs;
-    int rc = -1;
+    int rc = -1, i;
 
     if (!store || !storepass || !*storepass || !file || !*file ||
             !password || !*password) {
@@ -3626,12 +3627,12 @@ int DIDStore_ImportDID(DIDStore *store, const char *storepass,
     if (DIDStore_StoreDID(store, doc) < 0)
         goto errorExit;
 
-    for (int i = 0; i < cred_size; i++) {
+    for (i = 0; i < cred_size; i++) {
         if (DIDStore_StoreCredential(store, creds[i]) < 0)
             goto errorExit;
     }
 
-    for (int i = 0; i < prv_size; i++) {
+    for (i = 0; i < prv_size; i++) {
         if (DIDStore_StorePrivateKey_Internal(store, did, &prvs[i].keyid, prvs[i].key) < 0)
             goto errorExit;
     }
@@ -4121,7 +4122,7 @@ int DIDStore_ImportStore(DIDStore *store, const char *storepass, const char *zip
     zip_t *zip = NULL;
     zip_int64_t count;
     zip_stat_t stat;
-    int rc = -1;
+    int i, rc = -1;
     char filename[] = "/tmp/storeexport.json";
 
     if (!store || !storepass || !*storepass || !zipfile || !*zipfile ||
@@ -4138,7 +4139,7 @@ int DIDStore_ImportStore(DIDStore *store, const char *storepass, const char *zip
     if (count == 0)
         goto errorExit;
 
-    for (int i = 0; i < count; i++) {
+    for (i = 0; i < count; i++) {
         zip_int64_t readed;
         int code;
         zip_stat_init(&stat);

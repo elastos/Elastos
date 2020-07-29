@@ -95,6 +95,8 @@ int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc,
 
 DIDDocument *DIDDocument_FromJson_Internal(cJSON *root);
 
+int DIDDocument_Copy(DIDDocument *destdoc, DIDDocument *srcdoc);
+
 #ifdef __cplusplus
 }
 #endif

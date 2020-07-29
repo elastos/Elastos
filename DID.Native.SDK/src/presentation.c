@@ -327,7 +327,7 @@ Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *store,
     const char *data;
     char signature[SIGNATURE_BYTES * 2 + 16];
     Credential **creds = NULL;
-    int rc;
+    int rc, i;
 
     if (!did || !store || !storepass || !*storepass || !nonce || !*nonce ||
             !realm || !*realm || count < 0) {
@@ -371,7 +371,7 @@ Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *store,
         }
 
         va_start(list, count);
-        for (int i = 0; i < count; i++) {
+        for (i = 0; i < count; i++) {
             cred = va_arg(list, Credential*);
             if (Credential_Verify(cred) == -1) {
                 DIDError_Set(DIDERR_NOT_GENUINE, "Credential is invalid.");
@@ -422,11 +422,13 @@ errorExit:
 
 void Presentation_Destroy(Presentation *pre)
 {
+    int i;
+
     if (!pre)
         return;
 
     if (pre->credentials.credentials) {
-        for (int i = 0; i < pre->credentials.size; i++) {
+        for (i = 0; i < pre->credentials.size; i++) {
             Credential *cred = pre->credentials.credentials[i];
             if (cred)
                 Credential_Destroy(cred);

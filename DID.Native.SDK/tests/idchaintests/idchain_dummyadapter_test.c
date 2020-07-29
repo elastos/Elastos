@@ -25,8 +25,9 @@ static void test_idchain_publishdid(void)
     DIDURL *signkey;
     char publickeybase58[MAX_PUBLICKEY_BASE58];
     char previous_txid[ELA_MAX_TXID_LEN];
+    char *signs[3];
     DIDDocument *resolvedoc = NULL, *doc;
-    const char *mnemonic, *txid, *keybase, *alias = "littlefish";
+    const char *mnemonic, *txid, *keybase, *alias = "littlefish", *sign;
     bool successed;
     DID did;
     int i = 0, rc;
@@ -69,7 +70,11 @@ static void test_idchain_publishdid(void)
     CU_ASSERT_PTR_NOT_NULL(txid);
     strcpy(previous_txid, txid);
 
+    sign = DIDDocument_GetProofSignature(doc);
     CU_ASSERT_STRING_EQUAL(DIDDocument_GetProofSignature(doc), DIDDocument_GetProofSignature(resolvedoc));
+    signs[0] = alloca(strlen(sign) + 1);
+    strcpy(signs[0], sign);
+
     DIDDocument_Destroy(doc);
     printf("\n   txid = %s\n-- resolve result: successfully!\n-- publish begin(update), waiting...\n", txid);
     DIDDocument_Destroy(resolvedoc);
@@ -112,6 +117,10 @@ static void test_idchain_publishdid(void)
     nalias = DIDMetaData_GetAlias(metadata);
     CU_ASSERT_PTR_NOT_NULL(nalias);
     CU_ASSERT_STRING_EQUAL(alias, nalias);
+
+    sign = DIDDocument_GetProofSignature(doc);
+    signs[1] = alloca(strlen(sign) + 1);
+    strcpy(signs[1], sign);
     DIDDocument_Destroy(doc);
 
     successed = DIDStore_PublishDID(store, storepass, &did, NULL, false);
@@ -170,6 +179,10 @@ static void test_idchain_publishdid(void)
 
     rc = DIDStore_StoreDID(store, doc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    sign = DIDDocument_GetProofSignature(doc);
+    signs[2] = alloca(strlen(sign) + 1);
+    strcpy(signs[2], sign);
     DIDDocument_Destroy(doc);
 
     successed = DIDStore_PublishDID(store, storepass, &did, NULL, false);
@@ -202,6 +215,25 @@ static void test_idchain_publishdid(void)
 
     printf("\n   txid = %s\n-- resolve result: successfully!\n------------------------------------------------------------\n", txid);
     DIDDocument_Destroy(resolvedoc);
+
+    //didhistory
+    DIDHistory *history = DID_ResolveHistory(&did);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(history);
+    CU_ASSERT_EQUAL(3, DIDHistory_GetTransactionCount(history));
+    CU_ASSERT_EQUAL(0, DIDHistory_GetStatus(history));
+
+    DID *owner = DIDHistory_GetOwner(history);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(owner);
+    bool bEqual = DID_Equals(&did, owner);
+    CU_ASSERT_TRUE_FATAL(bEqual);
+
+    for (i = 0; i < 3; i++) {
+        doc = DIDHistory_GetDocumentByIndex(history, i);
+        CU_ASSERT_PTR_NOT_NULL_FATAL(doc);
+        CU_ASSERT_STRING_EQUAL(signs[2-i], DIDDocument_GetProofSignature(doc));
+        DIDDocument_Destroy(doc);
+    }
+    DIDHistory_Destroy(history);
 }
 
 static void test_idchain_publishdid_without_txid(void)

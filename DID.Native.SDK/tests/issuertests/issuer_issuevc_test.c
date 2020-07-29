@@ -18,10 +18,12 @@ static DIDStore *store;
 
 static bool has_type(const char **types, size_t size, const char *type)
 {
+    int i;
+
     if (!types || size <= 0 || !type || !*type)
         return false;
 
-    for (int i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         if (!strcmp(types[i], type))
             return true;
     }

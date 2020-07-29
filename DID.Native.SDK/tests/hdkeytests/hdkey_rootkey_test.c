@@ -58,6 +58,7 @@ static void test_derive_publiconly(void)
     HDKey _derivedpub, *derivedpub;
     char prvbase58[MAX_PUBLICKEY_BASE58], pubbse58[MAX_PUBLICKEY_BASE58];
     char extendedkeybase[512];
+    int i;
 
     root = HDKey_FromMnemonic(mnemonic, passphrase, "english", &_root);
     CU_ASSERT_PTR_NOT_NULL(root);
@@ -72,7 +73,7 @@ static void test_derive_publiconly(void)
     pubhdkey = HDKey_FromExtendedKeyBase58(extendedkeybase, strlen(extendedkeybase) + 1, &_pubhdkey);
     CU_ASSERT_PTR_NOT_NULL(pubhdkey);
 
-    for (int i = 0; i < 100; i++) {
+    for (i = 0; i < 100; i++) {
         derivedkey = HDKey_GetDerivedKey(prederivekey, &_derivedkey, 1, i);
         derivedpub = HDKey_GetDerivedKey(pubhdkey, &_derivedpub, 1, i);
 
@@ -153,7 +154,7 @@ static void test_hdkey_sign_verify(void)
     HDKey hk, *privateIdentity;
     HDKey _derivedkey, *derivedkey;
     ssize_t size;
-    int rc;
+    int rc, i;
 
     const char *newmnemonic = Mnemonic_Generate("english");
     CU_ASSERT_PTR_NOT_NULL(newmnemonic);
@@ -162,7 +163,7 @@ static void test_hdkey_sign_verify(void)
     Mnemonic_Free((void*)newmnemonic);
     CU_ASSERT_PTR_NOT_NULL(privateIdentity);
 
-    for (int i = 0; i < 10; i++) {
+    for (i = 0; i < 10; i++) {
         memset(data, i, sizeof(data));
         derivedkey = HDKey_GetDerivedKey(privateIdentity, &_derivedkey, 5, 44 | HARDENED,
                0 | HARDENED, 0 | HARDENED, 0, i++);

@@ -169,14 +169,14 @@ static const char *getpassword(const char *walletDir, const char *walletId)
 char *get_file_path(char *path, size_t size, int count, ...)
 {
     va_list list;
-    int totalsize = 0;
+    int i, totalsize = 0;
 
     if (!path || size <= 0 || count <= 0)
         return NULL;
 
     *path = 0;
     va_start(list, count);
-    for (int i = 0; i < count; i++) {
+    for (i = 0; i < count; i++) {
         const char *suffix = va_arg(list, const char*);
         assert(suffix);
         int len = strlen(suffix);
@@ -196,6 +196,7 @@ static int list_dir(const char *path, const char *pattern,
 {
     char full_pattern[PATH_MAX];
     size_t len;
+    int i;
 
     assert(path);
     assert(pattern);
@@ -225,7 +226,7 @@ static int list_dir(const char *path, const char *pattern,
 
     glob(full_pattern, GLOB_DOOFFS, NULL, &gl);
 
-    for (int i = 0; i < gl.gl_pathc; i++) {
+    for (i = 0; i < gl.gl_pathc; i++) {
         char *fn = gl.gl_pathv[i] + pos;
         if(callback(fn, context) < 0)
             break;

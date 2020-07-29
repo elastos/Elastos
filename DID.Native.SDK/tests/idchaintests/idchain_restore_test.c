@@ -57,10 +57,12 @@ static int load_restore(DIDs *dids, const char *path)
 
 static bool contain_did(DIDs *dids, DID *did)
 {
+    int i;
+
     if (!dids || !did)
         return -1;
 
-    for (int i = 0; i < dids->index; i++) {
+    for (i = 0; i < dids->index; i++) {
         if (DID_Equals(&(dids->dids[i]), did))
             return true;
     }
@@ -115,6 +117,7 @@ static void test_idchain_restore(void)
     DIDStore *store;
     DIDs dids;
     DIDs restore_dids;
+    int i;
 
     path = get_store_path(_path, "/idchain");
     delete_file(path);
@@ -147,7 +150,7 @@ static void test_idchain_restore(void)
 
     CU_ASSERT_EQUAL_FATAL(dids.index, restore_dids.index);
 
-    for(int i = 0; i < restore_dids.index; i++) {
+    for(i = 0; i < restore_dids.index; i++) {
         DID *did = &restore_dids.dids[i];
         bool iscontain = contain_did(&dids, did);
         CU_ASSERT_TRUE(iscontain);
@@ -161,7 +164,8 @@ static void test_idchain_restore(void)
         ssize_t size = DIDDocument_GetCredentials(doc, creds, 4);
         CU_ASSERT_EQUAL_FATAL(4, size);
 
-        for (int j = 0; j < size; j++) {
+        int j;
+        for (j = 0; j < size; j++) {
             Credential *cred = creds[j];
             CU_ASSERT_PTR_NOT_NULL_FATAL(cred);
             CU_ASSERT_TRUE_FATAL(DID_Equals(did, Credential_GetOwner(cred)));
@@ -175,7 +179,7 @@ static void test_idchain_restore(void)
 
 static void test_sync_with_localmodification1(void)
 {
-    int rc;
+    int rc, i;
     char _path[PATH_MAX], modified_signature[MAX_DOC_SIGN], cachedir[PATH_MAX];
     const char *path, *mnemonic;
     DIDStore *store;
@@ -236,7 +240,7 @@ static void test_sync_with_localmodification1(void)
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(dids.index, 5);
 
-    for(int i = 0; i < dids.index; i++) {
+    for(i = 0; i < dids.index; i++) {
         DID *did = &dids.dids[i];
         bool iscontain = contain_did(&dids, did);
         CU_ASSERT_TRUE(iscontain);
@@ -250,7 +254,8 @@ static void test_sync_with_localmodification1(void)
         ssize_t size = DIDDocument_GetCredentials(doc, creds, 4);
         CU_ASSERT_EQUAL_FATAL(4, size);
 
-        for (int j = 0; j < size; j++) {
+        int j;
+        for (j = 0; j < size; j++) {
             Credential *cred = creds[j];
             CU_ASSERT_PTR_NOT_NULL_FATAL(cred);
             CU_ASSERT_TRUE_FATAL(DID_Equals(did, Credential_GetOwner(cred)));
@@ -270,7 +275,7 @@ static void test_sync_with_localmodification1(void)
 
 static void test_sync_with_localmodification2(void)
 {
-    int rc;
+    int rc, i;
     char _path[PATH_MAX], origin_signature[MAX_DOC_SIGN], cachedir[PATH_MAX];
     const char *path, *mnemonic;
     DIDStore *store;
@@ -331,7 +336,7 @@ static void test_sync_with_localmodification2(void)
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(dids.index, 5);
 
-    for(int i = 0; i < dids.index; i++) {
+    for(i = 0; i < dids.index; i++) {
         DID *did = &dids.dids[i];
         bool iscontain = contain_did(&dids, did);
         CU_ASSERT_TRUE(iscontain);
@@ -345,7 +350,8 @@ static void test_sync_with_localmodification2(void)
         ssize_t size = DIDDocument_GetCredentials(doc, creds, 4);
         CU_ASSERT_EQUAL_FATAL(4, size);
 
-        for (int j = 0; j < size; j++) {
+        int j;
+        for (j = 0; j < size; j++) {
             Credential *cred = creds[j];
             CU_ASSERT_PTR_NOT_NULL_FATAL(cred);
             CU_ASSERT_TRUE_FATAL(DID_Equals(did, Credential_GetOwner(cred)));

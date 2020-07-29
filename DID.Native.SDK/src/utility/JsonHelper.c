@@ -42,6 +42,8 @@ static int item_compr(const void *a, const void *b)
 //free the return value
 static cJSON **item_sort(cJSON *json, size_t size)
 {
+    int i;
+
     assert(json);
     assert(size == cJSON_GetArraySize(json));
 
@@ -49,7 +51,7 @@ static cJSON **item_sort(cJSON *json, size_t size)
     if (!jsonlist)
         return NULL;
 
-    for (int i = 0; i < size; i++)
+    for (i = 0; i < size; i++)
         jsonlist[i] = cJSON_GetArrayItem(json, i);
 
     qsort(jsonlist, size, sizeof(cJSON *), item_compr);

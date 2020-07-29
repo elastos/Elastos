@@ -24,9 +24,9 @@ static void test_diddoc_sign_verify(void)
 {
     uint8_t data[124];
     char signature[SIGNATURE_BYTES * 2 + 16];
-    int rc;
+    int rc, i;
 
-    for (int i = 0; i < 10; i++) {
+    for (i = 0; i < 10; i++) {
         memset(data, i, sizeof(data));
 
         rc = DIDDocument_Sign(document, keyid, storepass, signature, 1, data, sizeof(data));
@@ -45,9 +45,9 @@ static void test_diddoc_digest_sign_verify(void)
 {
     uint8_t digest[32];
     char signature[SIGNATURE_BYTES * 2 + 16];
-    int rc;
+    int rc, i;
 
-    for (int i = 0; i < 10; i++) {
+    for (i = 0; i < 10; i++) {
         memset(digest, i, sizeof(digest));
 
         rc = DIDDocument_SignDigest(document, keyid, storepass, signature, digest, sizeof(digest));

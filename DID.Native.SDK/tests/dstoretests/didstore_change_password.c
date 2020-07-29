@@ -38,7 +38,7 @@ static void test_didstore_change_password(void)
     char alias[ELA_MAX_ALIAS_LEN], _path[PATH_MAX];
     const char *gAlias, *storePath;
     DIDStore *store;
-    int rc, count = 0;
+    int rc, i, count = 0;
     DIDDocument *newdoc;
 
     storePath = get_store_path(_path, "/servet");
@@ -48,7 +48,7 @@ static void test_didstore_change_password(void)
     rc = TestData_InitIdentity(store);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    for (int i = 0; i < 10; i++) {
+    for (i = 0; i < 10; i++) {
         int size = snprintf(alias, sizeof(alias), "my did %d", i);
         if (size < 0 || size > sizeof(alias))
             continue;
@@ -134,7 +134,7 @@ static void test_didstore_change_with_wrongpassword(void)
     char alias[ELA_MAX_ALIAS_LEN], _path[PATH_MAX];
     const char *gAlias, *storePath;
     DIDStore *store;
-    int rc, count = 0;
+    int rc, i, count = 0;
 
     storePath = get_store_path(_path, "/servet");
     store = TestData_SetupStore(true, storePath);
@@ -143,7 +143,7 @@ static void test_didstore_change_with_wrongpassword(void)
     rc = TestData_InitIdentity(store);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    for (int i = 0; i < 10; i++) {
+    for (i = 0; i < 10; i++) {
         int size = snprintf(alias, sizeof(alias), "my did %d", i);
         if (size < 0 || size > sizeof(alias))
             continue;

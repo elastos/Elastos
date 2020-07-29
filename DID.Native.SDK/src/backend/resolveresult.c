@@ -31,11 +31,12 @@
 #include "diddocument.h"
 #include "JsonGenerator.h"
 #include "resolveresult.h"
+#include "didhistory.h"
 
 int ResolveResult_FromJson(ResolveResult *result, cJSON *json, bool all)
 {
     cJSON *root, *item, *field;
-    int size = 0;
+    int i, size = 0;
 
     assert(result);
     assert(json);
@@ -61,13 +62,13 @@ int ResolveResult_FromJson(ResolveResult *result, cJSON *json, bool all)
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid resolve result status.");
         return -1;
     }
-    if (item->valueint > STATUS_NOT_FOUND) {
+    if (item->valueint > DIDStatus_NotFound) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Unknown DID status code.");
         return -1;
     }
     result->status = item->valueint;
 
-    if (result->status != STATUS_NOT_FOUND) {
+    if (result->status != DIDStatus_NotFound) {
         item = cJSON_GetObjectItem(json, "transaction");
         if (!item) {
             DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing transaction.");
@@ -94,7 +95,7 @@ int ResolveResult_FromJson(ResolveResult *result, cJSON *json, bool all)
             return -1;
         }
 
-        for (int i = 0; i < size; i++) {
+        for (i = 0; i < size; i++) {
             field = cJSON_GetArrayItem(item, i);
             if (!field) {
                 DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing resovled transaction.");
@@ -130,10 +131,12 @@ int ResolveResult_FromJson(ResolveResult *result, cJSON *json, bool all)
 
 void ResolveResult_Destroy(ResolveResult *result)
 {
+    int i;
+
     if (!result || !result->txinfos.infos)
         return;
 
-    for (int i = 0; i < result->txinfos.size; i++)
+    for (i = 0; i < result->txinfos.size; i++)
         DIDTransactionInfo_Destroy(&result->txinfos.infos[i]);
 
     free(result->txinfos.infos);
@@ -141,10 +144,12 @@ void ResolveResult_Destroy(ResolveResult *result)
 
 void ResolveResult_Free(ResolveResult *result)
 {
+    int i;
+
     if (!result || !result->txinfos.infos)
         return;
 
-    for (int i = 0; i < result->txinfos.size; i++)
+    for (i = 0; i < result->txinfos.size; i++)
         DIDTransactionInfo_Free(&result->txinfos.infos[i]);
 
     free(result->txinfos.infos);
@@ -153,6 +158,8 @@ void ResolveResult_Free(ResolveResult *result)
 static int resolveresult_tojson_internal(JsonGenerator *gen, ResolveResult *result)
 {
     char id[ELA_MAX_DIDURL_LEN];
+    int i;
+
     assert(gen);
     assert(result);
 
@@ -161,10 +168,10 @@ static int resolveresult_tojson_internal(JsonGenerator *gen, ResolveResult *resu
             DID_ToString(&result->did, id, sizeof(id))));
     CHECK(JsonGenerator_WriteFieldName(gen, "status"));
     CHECK(JsonGenerator_WriteNumber(gen, result->status));
-    if (result->status != STATUS_NOT_FOUND) {
+    if (result->status != DIDStatus_NotFound) {
         CHECK(JsonGenerator_WriteFieldName(gen, "transaction"));
         CHECK(JsonGenerator_WriteStartArray(gen));
-        for (int i = 0; i < result->txinfos.size; i++)
+        for (i = 0; i < result->txinfos.size; i++)
             //todo: check
             CHECK(DIDTransactionInfo_ToJson_Internal(gen, &result->txinfos.infos[i]));
         CHECK(JsonGenerator_WriteEndArray(gen));
@@ -218,4 +225,27 @@ DIDTransactionInfo *ResolveResult_GetTransactionInfo(ResolveResult *result, int 
     assert(index >= 0);
 
     return &result->txinfos.infos[index];
+}
+
+DIDHistory *ResolveResult_ToDIDHistory(ResolveResult *result)
+{
+    DIDHistory *history;
+    size_t size;
+
+    assert(result);
+
+    size = result->txinfos.size;
+    if (size == 0) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "No transaction from resolve result.");
+        return NULL;
+    }
+
+    history = (DIDHistory*)calloc(1, sizeof(DIDHistory));
+    if (!history) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for didhistory failed.");
+        return NULL;
+    }
+
+    memcpy(history, result, sizeof(DIDHistory));
+    return history;
 }

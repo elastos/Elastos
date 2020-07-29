@@ -26,11 +26,11 @@ static int num;
 static int get_txid(char *txid)
 {
     static char *chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    int flag;
+    int flag, i;
 
     assert(txid);
 
-    for (int i = 0; i < TXID_LEN; i++)
+    for (i = 0; i < TXID_LEN; i++)
         txid[i] = chars[rand() % 62];
 
     txid[TXID_LEN] = 0;
@@ -40,15 +40,27 @@ static int get_txid(char *txid)
 static DIDTransactionInfo *get_lasttransaction(DID *did)
 {
     DIDTransactionInfo *info;
+    int i;
 
     assert(did);
 
-    for (int i = num - 1; i >= 0; i--) {
+    for (i = num - 1; i >= 0; i--) {
         info = infos[i];
         if (DID_Equals(did, DIDTransactionInfo_GetOwner(info)))
             return info;
     }
     return NULL;
+}
+
+static DIDTransactionInfo *get_transaction(DID *did, int index)
+{
+    DIDTransactionInfo *info;
+
+    assert(did);
+    assert(index >= 0 && index < num);
+
+    info = infos[index];
+    return DID_Equals(did, DIDTransactionInfo_GetOwner(info)) ? info : NULL;
 }
 
 static bool DummyAdapter_CreateIdTransaction(DIDAdapter *_adapter, const char *payload, const char *memo)
@@ -135,18 +147,21 @@ errorExit:
     return false;
 }
 
-static int result_tojson(JsonGenerator *gen, DIDTransactionInfo *info)
+static int result_tojson(JsonGenerator *gen, DID *did, bool all)
 {
-    DIDTransactionInfo *lastinfo;
+    DIDTransactionInfo *info;
     char idstring[ELA_MAX_DID_LEN];
     int status;
 
     assert(gen);
-    assert(info);
 
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "did",
-            DID_ToString(DIDTransactionInfo_GetOwner(info), idstring, sizeof(idstring))));
+            DID_ToString(did, idstring, sizeof(idstring))));
+
+    info = get_lasttransaction(did);
+    if (!info)
+        return -1;
 
     if (!strcmp(info->request.header.op, "deactivate")) {
         status = 2;
@@ -160,25 +175,38 @@ static int result_tojson(JsonGenerator *gen, DIDTransactionInfo *info)
     CHECK(JsonGenerator_WriteFieldName(gen, "status"));
     CHECK(JsonGenerator_WriteNumber(gen, status));
 
-    if (status != 3) {
-        CHECK(JsonGenerator_WriteFieldName(gen, "transaction"));
-        CHECK(JsonGenerator_WriteStartArray(gen));
-        CHECK(DIDTransactionInfo_ToJson_Internal(gen, info));
-        CHECK(JsonGenerator_WriteEndArray(gen));
+    if (status == 3) {
+        CHECK(JsonGenerator_WriteEndObject(gen));
+        return 0;
     }
+
+    CHECK(JsonGenerator_WriteFieldName(gen, "transaction"));
+    CHECK(JsonGenerator_WriteStartArray(gen));
+    if (all) {
+        int i;
+        for (i = num - 1; i >= 0; i--) {
+            info = get_transaction(did, i);
+            if (info)
+                CHECK(DIDTransactionInfo_ToJson_Internal(gen, info));
+        }
+    } else {
+        info = get_lasttransaction(did);
+        CHECK(DIDTransactionInfo_ToJson_Internal(gen, info));
+    }
+    CHECK(JsonGenerator_WriteEndArray(gen));
     CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
 }
 
-static int transactioninfo_tojson(JsonGenerator *gen, DIDTransactionInfo *info)
+static int resolve_tojson(JsonGenerator *gen, DID *did, bool all)
 {
     assert(gen);
-    assert(info);
+    assert(did);
 
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "jsonrpc", "2.0"));
     CHECK(JsonGenerator_WriteFieldName(gen, "result"));
-    CHECK(result_tojson(gen, info));
+    CHECK(result_tojson(gen, did, all));
     CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
 }
@@ -188,6 +216,7 @@ const char* DummyAdapter_Resolve(DIDResolver *resolver, const char *did, int all
     DIDTransactionInfo *info;
     JsonGenerator g, *gen;
     DID *_did;
+    int rc;
 
     if (!resolver || !did) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
@@ -203,16 +232,13 @@ const char* DummyAdapter_Resolve(DIDResolver *resolver, const char *did, int all
     if (!_did)
         return NULL;
 
-    info = get_lasttransaction(_did);
-    DID_Destroy(_did);
-    if (!info)
-        return NULL;
-
     gen = JsonGenerator_Initialize(&g);
     if (!gen)
         return NULL;
 
-    if (transactioninfo_tojson(gen, info) == -1) {
+    rc = resolve_tojson(gen, _did, all);
+    DID_Destroy(_did);
+    if (rc < 0) {
         JsonGenerator_Destroy(gen);
         return NULL;
     }
@@ -222,7 +248,8 @@ const char* DummyAdapter_Resolve(DIDResolver *resolver, const char *did, int all
 
 static void DummyAdapter_Reset(DummyAdapter *adapter)
 {
-    for (int i = 0; i < num; i++) {
+    int i;
+    for (i = 0; i < num; i++) {
         DIDTransactionInfo_Destroy(infos[i]);
         free(infos[i]);
     }
@@ -240,7 +267,8 @@ DummyAdapter *DummyAdapter_Create(void)
 
 void DummyAdapter_Destroy(void)
 {
-    for (int i = 0; i < num; i++) {
+    int i;
+    for (i = 0; i < num; i++) {
         DIDTransactionInfo_Destroy(infos[i]);
         free(infos[i]);
     }

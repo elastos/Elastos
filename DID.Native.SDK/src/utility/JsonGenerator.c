@@ -34,11 +34,11 @@
 #define EXPAND_SIZE         2048
 
 typedef enum {
-    STATE_UNKNOWN           = 0,
-    STATE_ROOT              = 1,
-    STATE_OBJECT            = 2,
-    STATE_ARRAY             = 3,
-    STATE_FIELD             = 4,
+    State_Unknow           = 0,
+    State_Root              = 1,
+    State_Object            = 2,
+    State_Array             = 3,
+    State_Field             = 4,
 } state_t;
 
 static const char colon_symbol          = ':';
@@ -91,7 +91,7 @@ static inline state_t pop_state(JsonGenerator *generator)
     assert(generator->deep > 0);
 
     if (generator->deep <= 0)
-        return STATE_UNKNOWN;
+        return State_Unknow;
 
     state = (state_t)(generator->state[--generator->deep] & 0x7F);
     return state;
@@ -105,7 +105,7 @@ static inline state_t get_state(JsonGenerator *generator)
     assert(generator->deep > 0);
 
     if (generator->deep <= 0)
-        return STATE_UNKNOWN;
+        return State_Unknow;
 
     state = (state_t)(generator->state[generator->deep - 1] & 0x7F);
     return state;
@@ -125,7 +125,7 @@ static inline int is_state_sticky(JsonGenerator *generator)
     assert(generator->deep > 0);
 
     if (generator->deep <= 0)
-        return STATE_UNKNOWN;
+        return State_Unknow;
 
     return (generator->state[generator->deep - 1] & 0x80) == 0x80;
 }
@@ -149,7 +149,7 @@ JsonGenerator *JsonGenerator_Initialize(JsonGenerator *generator)
     generator->deep = 0;
     generator->buffer[0] = 0;
 
-    push_state(generator, STATE_ROOT);
+    push_state(generator, State_Root);
     return generator;
 }
 
@@ -159,9 +159,9 @@ int JsonGenerator_WriteStartObject(JsonGenerator *generator)
 
     assert(generator);
     assert(generator->buffer);
-    assert(get_state(generator) == STATE_ROOT
-           || get_state(generator) == STATE_ARRAY
-           || get_state(generator) == STATE_FIELD);
+    assert(get_state(generator) == State_Root
+           || get_state(generator) == State_Array
+           || get_state(generator) == State_Field);
 
     is_sticky = is_state_sticky(generator);
 
@@ -173,7 +173,7 @@ int JsonGenerator_WriteStartObject(JsonGenerator *generator)
 
     generator->buffer[generator->pos++] = start_object_symbol;
     set_state_sticky(generator);
-    push_state(generator, STATE_OBJECT);
+    push_state(generator, State_Object);
 
     return 0;
 }
@@ -182,14 +182,14 @@ int JsonGenerator_WriteEndObject(JsonGenerator *generator)
 {
     assert(generator);
     assert(generator->buffer);
-    assert(get_state(generator) == STATE_OBJECT);
+    assert(get_state(generator) == State_Object);
 
     if (ensure_capacity(generator, 1) == -1)
         return -1;
 
     generator->buffer[generator->pos++] = end_object_symbol;
     pop_state(generator);
-    if (get_state(generator) == STATE_FIELD)
+    if (get_state(generator) == State_Field)
         pop_state(generator); /* pop field state */
 
     return 0;
@@ -199,13 +199,13 @@ int JsonGenerator_WriteStartArray(JsonGenerator *generator)
 {
     assert(generator);
     assert(generator->buffer);
-    assert(get_state(generator) == STATE_FIELD);
+    assert(get_state(generator) == State_Field);
 
     if (ensure_capacity(generator, 1) == -1)
         return -1;
 
     generator->buffer[generator->pos++] = start_array_symbol;
-    push_state(generator, STATE_ARRAY);
+    push_state(generator, State_Array);
 
     return 0;
 }
@@ -214,14 +214,14 @@ int JsonGenerator_WriteEndArray(JsonGenerator *generator)
 {
     assert(generator);
     assert(generator->buffer);
-    assert(get_state(generator) == STATE_ARRAY);
+    assert(get_state(generator) == State_Array);
 
     if (ensure_capacity(generator, 1) == -1)
         return -1;
 
     generator->buffer[generator->pos++] = end_array_symbol;
     pop_state(generator);
-    if (get_state(generator) == STATE_FIELD)
+    if (get_state(generator) == State_Field)
         pop_state(generator); /* pop field state */
 
     return 0;
@@ -235,7 +235,7 @@ int JsonGenerator_WriteFieldName(JsonGenerator *generator, const char *name)
     assert(generator);
     assert(generator->buffer);
     assert(name && *name);
-    assert(get_state(generator) == STATE_OBJECT);
+    assert(get_state(generator) == State_Object);
 
     is_sticky = is_state_sticky(generator);
 
@@ -253,7 +253,7 @@ int JsonGenerator_WriteFieldName(JsonGenerator *generator, const char *name)
     generator->buffer[generator->pos++] = colon_symbol;
 
     set_state_sticky(generator);
-    push_state(generator, STATE_FIELD);
+    push_state(generator, State_Field);
 
     return 0;
 }
@@ -265,7 +265,7 @@ int JsonGenerator_WriteString(JsonGenerator *generator, const char *value)
 
     assert(generator);
     assert(generator->buffer);
-    assert(get_state(generator) == STATE_FIELD || get_state(generator) == STATE_ARRAY);
+    assert(get_state(generator) == State_Field || get_state(generator) == State_Array);
 
     is_sticky = is_state_sticky(generator);
 
@@ -286,7 +286,7 @@ int JsonGenerator_WriteString(JsonGenerator *generator, const char *value)
         generator->pos += 4;
     }
 
-    if (get_state(generator) == STATE_FIELD)
+    if (get_state(generator) == State_Field)
         pop_state(generator);
     else
         set_state_sticky(generator);
@@ -302,8 +302,8 @@ int JsonGenerator_WriteNumber(JsonGenerator *generator, int value)
 
     assert(generator);
     assert(generator->buffer);
-    assert(get_state(generator) == STATE_FIELD
-           || get_state(generator) == STATE_ARRAY);
+    assert(get_state(generator) == State_Field
+           || get_state(generator) == State_Array);
 
     is_sticky = is_state_sticky(generator);
 
@@ -317,7 +317,7 @@ int JsonGenerator_WriteNumber(JsonGenerator *generator, int value)
     strcpy(generator->buffer + generator->pos, valuestring);
     generator->pos += len;
 
-    if (get_state(generator) == STATE_FIELD)
+    if (get_state(generator) == State_Field)
         pop_state(generator);
     else
         set_state_sticky(generator);
@@ -333,8 +333,8 @@ int JsonGenerator_WriteDouble(JsonGenerator *generator, double value)
 
     assert(generator);
     assert(generator->buffer);
-    assert(get_state(generator) == STATE_FIELD
-           || get_state(generator) == STATE_ARRAY);
+    assert(get_state(generator) == State_Field
+           || get_state(generator) == State_Array);
 
     is_sticky = is_state_sticky(generator);
 
@@ -348,7 +348,7 @@ int JsonGenerator_WriteDouble(JsonGenerator *generator, double value)
     strcpy(generator->buffer + generator->pos, valuestring);
     generator->pos += len;
 
-    if (get_state(generator) == STATE_FIELD)
+    if (get_state(generator) == State_Field)
         pop_state(generator);
     else
         set_state_sticky(generator);
@@ -364,8 +364,8 @@ int JsonGenerator_WriteBoolean(JsonGenerator *generator, bool value)
 
     assert(generator);
     assert(generator->buffer);
-    assert(get_state(generator) == STATE_FIELD
-           || get_state(generator) == STATE_ARRAY);
+    assert(get_state(generator) == State_Field
+           || get_state(generator) == State_Array);
 
     is_sticky = is_state_sticky(generator);
 
@@ -380,7 +380,7 @@ int JsonGenerator_WriteBoolean(JsonGenerator *generator, bool value)
     strcpy(generator->buffer + generator->pos, valuestring);
     generator->pos += len;
 
-    if (get_state(generator) == STATE_FIELD)
+    if (get_state(generator) == State_Field)
         pop_state(generator);
     else
         set_state_sticky(generator);
@@ -406,7 +406,7 @@ const char *JsonGenerator_Finish(JsonGenerator *generator)
 
     assert(generator);
     assert(generator->buffer);
-    assert(get_state(generator) == STATE_ROOT);
+    assert(get_state(generator) == State_Root);
 
     if (generator->buffer[generator->pos] != 0)
         generator->buffer[generator->pos] = 0;

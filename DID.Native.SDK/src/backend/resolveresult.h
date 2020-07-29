@@ -24,29 +24,14 @@
 #define __RESOLVERRESULT_H__
 
 #include "ela_did.h"
+#include "didhistory.h"
 #include "didtransactioninfo.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum DIDStatus
-{
-    STATUS_VALID,
-    STATUS_EXPIRED,
-    STATUS_DEACTIVATED,
-    STATUS_NOT_FOUND
-} DIDStatus;
-
-typedef struct ResolveResult {
-    DID did;
-    DIDStatus status;
-
-    struct {
-        size_t size;
-        DIDTransactionInfo *infos;
-    } txinfos;
-} ResolveResult;
+typedef struct DIDHistory   ResolveResult;
 
 int ResolveResult_FromJson(ResolveResult *result, cJSON *json, bool all);
 
@@ -63,6 +48,8 @@ DIDStatus ResolveResult_GetStatus(ResolveResult *result);
 ssize_t ResolveResult_GetTransactionCount(ResolveResult *result);
 
 DIDTransactionInfo *ResolveResult_GetTransactionInfo(ResolveResult *result, int index);
+
+DIDHistory *ResolveResult_ToDIDHistory(ResolveResult *result);
 
 #ifdef __cplusplus
 }

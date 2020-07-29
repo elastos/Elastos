@@ -23,6 +23,7 @@ static void test_vc_kycvc(void)
     ssize_t size;
     const char* types[3];
     const char *data;
+    int i;
 
     issuerdoc = TestData_LoadIssuerDoc();
     CU_ASSERT_PTR_NOT_NULL_FATAL(issuerdoc);
@@ -38,7 +39,7 @@ static void test_vc_kycvc(void)
     size = Credential_GetTypes(cred, types, sizeof(types));
     CU_ASSERT_EQUAL(size, 3);
 
-    for (int i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         const char *type = types[i];
         CU_ASSERT_TRUE(!strcmp(type, "BasicProfileCredential") ||
                 !strcmp(type, "InternetAccountCredential") ||
@@ -67,6 +68,7 @@ static void test_vc_selfclaimvc(void)
     ssize_t size;
     const char* types[2];
     const char *prop;
+    int i;
 
     cred = TestData_LoadProfileVc();
     CU_ASSERT_PTR_NOT_NULL_FATAL(cred);
@@ -79,7 +81,7 @@ static void test_vc_selfclaimvc(void)
     size = Credential_GetTypes(cred, types, sizeof(types));
     CU_ASSERT_EQUAL(size, 2);
 
-    for (int i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         const char *type = types[i];
         CU_ASSERT_TRUE(!strcmp(type, "BasicProfileCredential") ||
                 !strcmp(type, "SelfProclaimedCredential"));

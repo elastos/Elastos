@@ -196,6 +196,7 @@ Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
         time_t expires, const char *storepass)
 {
     cJSON *root, *item;
+    int i;
 
     if (!issuer ||!owner || !credid || !types || typesize <= 0||
             !subject || size <= 0 || expires <= 0 ||
@@ -210,7 +211,7 @@ Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
         return NULL;
     }
 
-    for (int i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         item = cJSON_AddStringToObject(root, subject[i].key, subject[i].value);
         if (!item) {
            DIDError_Set(DIDERR_OUT_OF_MEMORY, "Add property failed.");

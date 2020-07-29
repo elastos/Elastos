@@ -15,9 +15,9 @@ static const char *languagelists[] = {"chinese_simplified", "chinese_traditional
 
 static void test_build_wordlist(void)
 {
-    int rc, size;
+    int rc, i, size;
 
-    for (int i = 0; i < 9; i++) {
+    for (i = 0; i < 9; i++) {
         char wmnemonic[256];
         const char *lang = languagelists[i];
         const char *mnemonic = Mnemonic_Generate(lang);

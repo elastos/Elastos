@@ -242,7 +242,7 @@ errorExit:
 
 JWS *JWTParser_Parse(const char *token)
 {
-    int idx = 0;
+    int i, idx = 0;
     int dots[2] = {0, 0};
 
     if (!token || !*token) {
@@ -251,7 +251,7 @@ JWS *JWTParser_Parse(const char *token)
     }
 
     // find the indexes of the dots
-    for (int i = 0; i < strlen(token) && idx < 2; ++i) {
+    for (i = 0; i < strlen(token) && idx < 2; ++i) {
         if (token[i] == '.')
             dots[idx++] = i;
     }

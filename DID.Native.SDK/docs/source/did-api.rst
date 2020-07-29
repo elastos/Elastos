@@ -57,7 +57,7 @@ DID
    :project: DIDAPI
 
 DIDMetaData
-###
+############
 
 .. doxygentypedef:: DID
    :project: DIDAPI
@@ -66,6 +66,12 @@ DIDURL
 ######
 
 .. doxygentypedef:: DIDURL
+   :project: DIDAPI
+
+DIDHistory
+############
+
+.. doxygentypedef:: DID
    :project: DIDAPI
 
 PublicKey
@@ -225,8 +231,8 @@ DID_Resolve
 .. doxygenfunction:: DID_Resolve
    :project: DIDAPI
 
-DID_ResolveAll
-~~~~~~~~~~~~~~
+DID_ResolveHistory
+~~~~~~~~~~~~~~~~~~~
 
 .. doxygenfunction:: DID_ResolveAll
    :project: DIDAPI
@@ -367,6 +373,57 @@ DIDURL_SaveMetaData
 ~~~~~~~~~~~~~~~~~~~~
 
 .. doxygenfunction:: DIDURL_SaveMetaData
+   :project: DIDAPI
+
+DIDHistory Functions
+#####################
+
+DIDHistory_GetOwner
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDHistory_GetOwner
+   :project: DIDAPI
+
+DIDHistory_GetStatus
+~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDHistory_GetStatus
+   :project: DIDAPI
+
+DIDHistory_GetTransactionCount
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDHistory_GetTransactionCount
+   :project: DIDAPI
+
+DIDHistory_GetTxDocumentByIndex
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDHistory_GetTxDocumentByIndex
+   :project: DIDAPI
+
+DIDHistory_GetTxIDByIndex
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDHistory_GetTxIDByIndex
+   :project: DIDAPI
+
+DIDHistory_GetTxPublishedByIndex
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDHistory_GetTxPublishedByIndex
+   :project: DIDAPI
+
+DIDHistory_GetTxOperationByIndex
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDHistory_GetTxOperationByIndex
+   :project: DIDAPI
+
+DIDHistory_Destroy
+~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: DIDHistory_Destroy
    :project: DIDAPI
 
 CredentialMetaData Functions

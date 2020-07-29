@@ -10,9 +10,19 @@ _DID_Equals
 _DID_Compare
 _DID_Destroy
 _DID_Resolve
-_DID_ResolveAll
+_DID_ResolveHistory
 _DID_GetMetaData
 _DID_SaveMetaData
+
+# DIDHistory
+_DIDHistory_GetOwner
+_DIDHistory_GetStatus
+_DIDHistory_GetTransactionCount
+_DIDHistory_GetDocumentByIndex
+_DIDHistory_GetTransactionIdByIndex
+_DIDHistory_GetPublishedByIndex
+_DIDHistory_GetOperationByIndex
+_DIDHistory_Destroy
 
 # DIDMetaData
 _DIDMetaData_GetAlias

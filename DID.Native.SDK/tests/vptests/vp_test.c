@@ -25,6 +25,7 @@ static void test_vp_getelem(void)
     Credential *creds[4], **cred;
     DIDURL*id;
     DID *signer;
+    int i;
 
     vp = TestData_LoadVp();
     CU_ASSERT_PTR_NOT_NULL_FATAL(vp);
@@ -40,7 +41,7 @@ static void test_vp_getelem(void)
     CU_ASSERT_EQUAL(size, 4);
 
     cred = creds;
-    for (int i = 0; i < size; i++, cred++) {
+    for (i = 0; i < size; i++, cred++) {
         isEqual = DID_Equals(DIDDocument_GetSubject(testdoc), Credential_GetOwner(*cred));
         CU_ASSERT_TRUE(isEqual);
 
@@ -118,6 +119,7 @@ static void test_vp_create(void)
     ssize_t size;
     DIDURL *id;
     DID *signer;
+    int i;
 
     did = DIDDocument_GetSubject(testdoc);
     CU_ASSERT_PTR_NOT_NULL_FATAL(did);
@@ -138,7 +140,7 @@ static void test_vp_create(void)
     CU_ASSERT_EQUAL(size, 4);
 
     cred = creds;
-    for (int i = 0; i < size; i++, cred++) {
+    for (i = 0; i < size; i++, cred++) {
         isEqual = DID_Equals(DIDDocument_GetSubject(testdoc), Credential_GetOwner(*cred));
         CU_ASSERT_TRUE(isEqual);
 
