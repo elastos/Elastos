@@ -374,24 +374,6 @@ typedef enum DIDLogLevel {
     DIDLogLevel_Verbose = 7
 } DIDLogLevel;
 
-/**
- * \~English
- * Initialize log options for DID.
- * If this API is never called, the default log level is 'Info'; The default log
- * file is stdout.
- *
- * @param
- *      level       [in] The log level to control internal log output.
- * @param
- *      log_file    [in] the log file name.
- *                       If the log_file is NULL, DID will not write
- *                       log to file.
- * @param
- *      log_printer [in] the user defined log printer. Can be NULL.
- */
-/* DID_API */ void DID_Log_Init(DIDLogLevel level, const char *log_file,
-        void (*log_printer)(const char *format, va_list args));
-
 /******************************************************************************
  * DID
  *****************************************************************************/

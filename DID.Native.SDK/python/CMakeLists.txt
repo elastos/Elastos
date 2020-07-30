@@ -39,7 +39,7 @@ add_custom_command(
 
 add_custom_command(
     COMMAND source ${CMAKE_CURRENT_BINARY_DIR}/venv/bin/activate && python ${CMAKE_CURRENT_SOURCE_DIR}/build.py
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/venv ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/lib
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/venv ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/lib ${CMAKE_CURRENT_SOURCE_DIR}/build.py
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/eladid.cpython-37m-darwin.so
     VERBATIM
 )

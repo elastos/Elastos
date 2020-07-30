@@ -1,4 +1,3 @@
-import re
 from cffi import FFI
 
 ffibuilder = FFI()
@@ -13,8 +12,10 @@ ffibuilder.cdef(cdef)
 
 ffibuilder.set_source("eladid",
 """
-     #include "ela_did.h"
-     #include "ela_jwt.h"
+   #define DID_DYNAMIC
+   #define DID_BUILD
+   #include "ela_did.h"
+   #include "ela_jwt.h"
 """,
      libraries=['eladid', 'hdkey', 'cjson', 'curl', 'ssl', 'crypto', 'jansson', 'cjose', 'zip', 'z'],
      include_dirs=['include'],
