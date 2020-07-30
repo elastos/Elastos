@@ -2203,8 +2203,7 @@ func (b *BlockChain) checkCRDPOSManagementTransaction(txn *Transaction) error {
 		}
 	}
 
-	publicKey, err := crypto.DecodePoint(manager.CRManagementPublicKey)
-	log.Debugf("operating public key: %s", *publicKey)
+	_, err := crypto.DecodePoint(manager.CRManagementPublicKey)
 	if err != nil {
 		return errors.New("invalid operating public key")
 	}

@@ -220,9 +220,17 @@ func strCRCAppropriation(*types.Transaction) (interface{}, error) {
 	return "CRC Appropriation", nil
 }
 
-func strSecretaryGeneral(*types.Transaction) (interface{}, error) {
+func strSecretaryGeneral(tx *types.Transaction) (interface{}, error) {
 	// const string to ensure only one tx added to the tx pool
-	return "Secretary General", nil
+	p, ok := tx.Payload.(*payload.CRCProposal)
+	if !ok {
+		return nil, fmt.Errorf(
+			"CRC proposal payload cast failed, tx:%s", tx.Hash())
+	}
+	if p.ProposalType == payload.SecretaryGeneral {
+		return "Secretary General", nil
+	}
+	return nil, nil
 }
 
 func hashArrayCRCProposalRealWithdrawTransactionHashes(
