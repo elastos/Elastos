@@ -15,7 +15,7 @@ add_custom_command(
     COMMAND cp -f ${CMAKE_CURRENT_SOURCE_DIR}/../src/jwt/ela_jwt.h ${CMAKE_CURRENT_BINARY_DIR}/include
     COMMAND cp -f ${CMAKE_CURRENT_SOURCE_DIR}/ela_did.ffi.h ${CMAKE_CURRENT_BINARY_DIR}
     COMMAND cp -f ${CMAKE_CURRENT_SOURCE_DIR}/ela_jwt.ffi.h ${CMAKE_CURRENT_BINARY_DIR}
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../src/ela_did.h ${CMAKE_CURRENT_SOURCE_DIR}/../src/jwt/ela_jwt.h
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../src/ela_did.h ${CMAKE_CURRENT_SOURCE_DIR}/../src/jwt/ela_jwt.h ${CMAKE_CURRENT_SOURCE_DIR}/ela_did.ffi.h ${CMAKE_CURRENT_SOURCE_DIR}/ela_jwt.ffi.h
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include
     VERBATIM
 )
