@@ -173,8 +173,8 @@ $maxWithContent: 888px;
           // overflow: hidden;
           // text-overflow: ellipsis;
           /*! autoprefixer: off */
-          -webkit-box-orient: vertical; // 避免压缩后删除此行
-          -webkit-line-clamp: 5; // 显示省略号行数
+          -webkit-box-orient: vertical; 
+          -webkit-line-clamp: 3;
           overflow: hidden;
           text-overflow: ellipsis;
           display: -webkit-box;
