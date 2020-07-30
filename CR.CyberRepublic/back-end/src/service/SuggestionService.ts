@@ -26,7 +26,9 @@ const BASE_FIELDS = [
   'budget',
   'budgetAmount',
   'elaAddress',
-  'plan'
+  'plan',
+  'planIntro',
+  'budgetIntro'
 ]
 
 interface BudgetItem {
@@ -178,6 +180,12 @@ export default class extends Base {
 
     const currDraft = await this.draftModel.getDBInstance().findById(id)
     if (currDraft) {
+      if (_.isEmpty(doc.budgetIntro)) {
+        doc.budgetIntro = _.get(currDoc,'budgetIntro')
+      }
+      if (_.isEmpty(doc.planIntro)) {
+        doc.planIntro = _.get(currDoc,'planIntro')
+      }
       await this.draftModel.remove({ _id: ObjectId(id) })
     }
 
@@ -214,13 +222,15 @@ export default class extends Base {
       throw 'Only owner can edit suggestion'
     }
 
-    const currDraft = await this.draftModel.getDBInstance().findById(id)
-    if (currDraft) {
-      await this.draftModel.remove({ _id: ObjectId(id) })
-    }
-
     const doc = _.pick(param, BASE_FIELDS)
     doc.descUpdatedAt = new Date()
+
+    const currDraft = await this.draftModel.getDBInstance().findById(id)
+    if (currDraft) {
+      doc.budgetIntro =  _.get(currDraft,'budgetIntro')
+      doc.planIntro = _.get(currDraft,'planIntro')
+      await this.draftModel.remove({ _id: ObjectId(id) })
+    }
 
     if (update) {
       doc.version = await this.saveHistoryGetCurrentVersion(id, doc)
@@ -706,8 +716,8 @@ export default class extends Base {
       .getDBInstance()
       .findOne(query)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-      .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-
+      .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS_HASH_TXID)
+      
     if (!doc) {
       return { success: true, empty: true }
     }

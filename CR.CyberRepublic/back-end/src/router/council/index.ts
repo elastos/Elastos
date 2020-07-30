@@ -13,7 +13,7 @@ export default Base.setRouter([
         method: 'get'
     },
     {
-        path: '/list/:id',
+        path: '/list/:id?',
         router: council_list,
         method: 'get'
     },

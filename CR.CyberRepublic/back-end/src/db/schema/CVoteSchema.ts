@@ -84,7 +84,7 @@ export const CVote = {
     type: String
   },
   budgetAmount: {
-    type: Number
+    type: Schema.Types.Mixed
   },
   elaAddress: {
     type: String
@@ -220,5 +220,8 @@ export const CVote = {
   },
   notificationEnds: {
     type: Date
+  },
+  txHash: {
+    type: String
   }
 }

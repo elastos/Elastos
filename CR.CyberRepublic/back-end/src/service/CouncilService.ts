@@ -48,6 +48,7 @@ export default class extends Base {
     const fields = [
       'status',
       'councilMembers.didName',
+      'councilMembers.cid',
       'councilMembers.avatar',
       'councilMembers.did',
       'councilMembers.user.did',
@@ -66,9 +67,17 @@ export default class extends Base {
       'status'
     ]
 
+    const query = {}
+
+    if (id) {
+      query['index'] = id
+    } else {
+      query['status'] = constant.TERM_COUNCIL_STATUS.CURRENT
+    }
+
     const result = await this.model
       .getDBInstance()
-      .findOne({ index: id }, fields)
+      .findOne(query, fields)
       .populate(
         'councilMembers.user',
         constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID

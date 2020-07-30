@@ -13,9 +13,9 @@ const { ADVANCE, COMPLETION, CONDITIONED } = SUGGESTION_BUDGET_TYPE
 class BudgetForm extends Component {
   constructor(props) {
     super(props)
+    const { item } = props
     this.state = {
-      activeKey:
-        props.item && props.item.milestoneKey ? props.item.milestoneKey : '0'
+      activeKey: item && item.milestoneKey ? item.milestoneKey : '0'
     }
   }
 
@@ -156,28 +156,6 @@ class BudgetForm extends Component {
               rules: [{ validator: this.validateAmount }],
               initialValue: item && item.amount ? item.amount : ''
             })(<Input />)}
-          </FormItem>
-
-          <Label gutter={-8}>
-            <span>*</span>
-            {I18N.get('suggestion.budget.reasons')}
-          </Label>
-          <FormItem>
-            {getFieldDecorator('reasons', {
-              rules: [
-                {
-                  required: true,
-                  message: I18N.get('suggestion.form.error.required')
-                }
-              ],
-              initialValue: item && item.reasons ? item.reasons : ''
-            })(
-              <CodeMirrorEditor
-                content={item && item.reasons ? item.reasons : ''}
-                name="reasons"
-                autofocus={false}
-              />
-            )}
           </FormItem>
 
           <Label>

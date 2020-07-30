@@ -325,7 +325,8 @@ export const DB_SELECTED_FIELDS = {
   },
   CVOTE: {
     ID: 'vid',
-    ID_STATUS: 'vid status'
+    ID_STATUS: 'vid status',
+    ID_STATUS_HASH_TXID: 'vid status proposalHash txHash'
   }
 }
 

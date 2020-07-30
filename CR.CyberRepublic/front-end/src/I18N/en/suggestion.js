@@ -19,7 +19,9 @@ export default {
       status: 'Status',
       created: 'Created',
       updated: 'Updated',
-      signature: 'Signature'
+      signature: 'Signature',
+      txHash: 'TxID',
+      proposalHash: 'Hash'
     },
     abstract: 'Abstract',
     goal: 'Goal',
@@ -43,7 +45,8 @@ export default {
     signSuggetion: 'Sign Suggestion',
     associateDid: 'Associate DID',
     viewOldData: 'View old data',
-    viewNewData: 'View new data'
+    viewNewData: 'View new data',
+    copyHash: 'Copy'
   },
   status: {
     posted: 'Posted',
@@ -173,7 +176,8 @@ export default {
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Project Milestone Payment',
     goal: 'Goal',
     milestone: 'milestone',
-    introduction: 'Budget Statement'
+    introduction: 'Budget Statement',
+    totalBudget: 'Total Budget(ELA): '
   },
   plan: {
     teamMember: 'Team Member',

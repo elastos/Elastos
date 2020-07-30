@@ -951,7 +951,7 @@ const zh = {
   'profile.submission.table.type': '类型',
   'profile.submission.table.created': '创建日期',
 
-  'profile.member.vote.qrcodeTip':'打开 ELA 钱包扫码投票',
+  'profile.member.vote.qrcodeTip':'打开 ELA 钱包扫码投票（社区投票专用）',
 
   // Validate Form
   'ambassadors.form.required': '必填项目',
@@ -1266,6 +1266,8 @@ const zh = {
   'from.UserProfileForm.text.slogan': '个人标语',
   'from.UserProfileForm.text.motto': '个人座右铭',
 
+  'btn.CopyHash': '复制成功',
+
   // CR Video / Earn ELA page
   'cr-video.here': '点击这里',
   'cr-video.header.1': '重新获得属于您的互联网',
@@ -1474,6 +1476,7 @@ const zh = {
       }
     },
     contact: '联系',
+    did: 'DID',
     no1: {
       name: 'Alex Shipp',
       intro: '亦来云基金会编辑、量子财富观共同作者、量子财富节点拥有者，暂时没有固定驻地。',
@@ -1532,7 +1535,7 @@ zh[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = '已完成'
 zh[`cvoteStatus.${CVOTE_STATUS.INCOMPLETED}`] = '未完成'
 zh[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = '已过期'
 zh[`cvoteStatus.${CVOTE_STATUS.NOTIFICATION}`] = '公示期'
-zh[`cvoteStatus.${CVOTE_STATUS.VETOED}`] = '已否决'
+zh[`cvoteStatus.${CVOTE_STATUS.VETOED}`] = '社区否决'
 
 
 export default zh

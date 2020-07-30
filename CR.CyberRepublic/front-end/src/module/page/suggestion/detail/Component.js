@@ -62,7 +62,8 @@ import {
   StyledAnchor,
   Subtitle,
   CreateProposalText,
-  Paragraph
+  Paragraph,
+  CopyButton
 } from './style'
 
 import './style.scss'
@@ -208,12 +209,21 @@ export default class extends StandardPage {
 
   renderPreambleItem(header, value, item) {
     let text = <ItemText>{value}</ItemText>
+    let btn = null
     const {
       detail: { createdBy },
       user
     } = this.props
     if (item === 'username') {
       text = <PopoverProfile owner={createdBy} curUser={user} />
+    }
+    if (item === 'txHash') {
+      text = <a href={`https://blockchain.elastos.org/tx/${value}`}>{value}</a>
+    }
+    if (item === 'proposalHash') {
+      btn = <CopyButton onClick={() => this.copyToClip(value)} >
+          {I18N.get('suggestion.btn.copyHash')}
+        </CopyButton>
     }
     return (
       <Item>
@@ -222,9 +232,22 @@ export default class extends StandardPage {
         </Col>
         <Col span={18} style={{ wordBreak: 'break-all' }}>
           {text}
+          {btn}
         </Col>
       </Item>
     )
+  }
+
+  copyToClip(content) {
+    var aux = document.createElement("input"); 
+    aux.setAttribute("value", content); 
+    document.body.appendChild(aux); 
+    aux.select();
+    const err = document.execCommand("copy"); 
+    document.body.removeChild(aux)
+    if (err) {
+      message.success(I18N.get('btn.CopyHash'))
+    }
   }
 
   renderDetail(detail) {
@@ -294,6 +317,18 @@ export default class extends StandardPage {
             detail.signature.data,
             'signature'
           )}
+        {_.get(detail, 'reference.0.txHash') &&
+          this.renderPreambleItem(
+            I18N.get('suggestion.fields.preambleSub.txHash'),
+            _.get(detail, 'reference.0.txHash'),
+            'txHash'
+          )}
+        {_.get(detail, 'reference.0.proposalHash') &&
+          this.renderPreambleItem(
+            I18N.get('suggestion.fields.preambleSub.proposalHash'),
+            _.get(detail, 'reference.0.proposalHash'),
+            'proposalHash'
+          )}
         {sections.map((section) => {
           if (
             section === 'plan' &&
@@ -312,11 +347,11 @@ export default class extends StandardPage {
                     editable={false}
                   />
                 ) : (
-                  <MilestonesReadonly
-                    initialValue={detail.plan.milestone}
-                    editable={false}
-                  />
-                )}
+                    <MilestonesReadonly
+                      initialValue={detail.plan.milestone}
+                      editable={false}
+                    />
+                  )}
                 <Subtitle>{I18N.get('suggestion.plan.teamInfo')}</Subtitle>
                 <TeamInfoList list={detail.plan.teamInfo} editable={false} />
                 <Subtitle>{I18N.get('suggestion.plan.introduction')}</Subtitle>
@@ -532,8 +567,8 @@ export default class extends StandardPage {
         return `
           <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
           <p>${convertMarkdownToHtml(
-            removeImageFromMarkdown(detail[section])
-          )}</p>
+          removeImageFromMarkdown(detail[section])
+        )}</p>
           `
       })
       .join('')
@@ -617,7 +652,7 @@ export default class extends StandardPage {
     const signature = _.get(detail, 'signature.data')
     const makeIntoProposalPanel = this.renderMakeIntoProposalPanel()
 
-    const considerBtn = (isCouncil || isAdmin) && (
+    const considerBtn = (isCouncil || isAdmin) && signature && (
       <Col xs={24} sm={8}>
         <Popconfirm
           title={I18N.get('suggestion.modal.consideration')}
@@ -681,13 +716,13 @@ export default class extends StandardPage {
         {makeIntoProposalPanel}
         <Row type="flex" justify="start">
           {considerBtn}
-          {needMoreInfoBtn}
+          {/* {needMoreInfoBtn} */}
           {makeIntoProposalBtn}
         </Row>
-        <Row type="flex" justify="start">
+        {/* <Row type="flex" justify="start">
           {needDueDiligenceBtn}
           {needAdvisoryBtn}
-        </Row>
+        </Row> */}
       </BtnGroup>
     )
     return !oldData && res

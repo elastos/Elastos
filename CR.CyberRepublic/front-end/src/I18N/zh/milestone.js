@@ -27,5 +27,7 @@ export default {
   scanToWithdraw: '扫码上面二维码取款',
   required: '必填项',
   next: '下一步',
-  noUtxos: '提款业务繁忙，请稍后再试'
+  noUtxos: '提款业务繁忙，请稍后再试',
+  showMore: '展开',
+  showLess: '隐藏'
 }

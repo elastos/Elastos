@@ -6,20 +6,20 @@ import moment from 'moment'
 import linkifyStr from 'linkifyjs/string'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
-import MarkdownPreview from '@/module/common/MarkdownPreview'
 import DeleteSvgIcon from '@/module/common/DeleteSvgIcon'
 import EditSvgIcon from '@/module/common/EditSvgIcon'
+import ShowLongText from '@/module/common/ShowLongText'
 
 class PaymentList extends BaseComponent {
-  handleDelete = index => {
+  handleDelete = (index) => {
     this.props.onDelete(index)
   }
 
-  handleEdit = index => {
+  handleEdit = (index) => {
     this.props.onEdit(index)
   }
 
-  renderMilestone = item => {
+  renderMilestone = (item) => {
     const date = (
       <div className="square-date">
         {moment(item.date).format('MMM D, YYYY')}
@@ -45,20 +45,18 @@ class PaymentList extends BaseComponent {
   ord_render() {
     const { list, editable, milestone } = this.props
     const visible = editable === false ? editable : true
+    const isOld = list && list.find((item) => item.reasons)
     return (
       <StyledTable>
         <StyledHead>
           <StyledRow>
-            <th>
-              {I18N.get('suggestion.budget.payment')}
-#
-            </th>
+            <th>{I18N.get('suggestion.budget.payment')}#</th>
             <th>{I18N.get('suggestion.budget.type')}</th>
             <th>
               {I18N.get('suggestion.budget.amount')}
               (ELA)
             </th>
-            <th>{I18N.get('suggestion.budget.reasons')}</th>
+            {isOld ? <th>{I18N.get('suggestion.budget.reasons')}</th> : null}
             <th>{I18N.get('suggestion.budget.goal')}</th>
             <th>{I18N.get('suggestion.budget.criteria')}</th>
             {visible && (
@@ -70,56 +68,63 @@ class PaymentList extends BaseComponent {
         </StyledHead>
         <tbody>
           {list &&
-            list.map((item, index) => item && (
-              <StyledRow key={index}>
-                <td>{index + 1}</td>
-                <td>
-                  {item.type ? I18N.get(`suggestion.budget.${item.type}`) : ''}
-                </td>
-                <td>{item.amount}</td>
-                <td>
-                  <MarkdownPreview
-                    content={item.reasons ? item.reasons : ''}
-                    style={{ p: { margin: '1em 0' } }}
-                  />
-                </td>
-                <td>
-                  {item.milestoneKey ? (
-                    <Popover
-                      content={this.renderMilestone(
-                        milestone[item.milestoneKey]
-                      )}
-                    >
-                      <a>
-                        {`${I18N.get('suggestion.budget.milestone')} #${Number(
-                          item.milestoneKey
-                        ) + 1}`}
-                      </a>
-                    </Popover>
-                  ) : null}
-                </td>
-                <td>
-                  <MarkdownPreview
-                    content={item.criteria ? item.criteria : ''}
-                    style={{ p: { margin: '1em 0' } }}
-                  />
-                </td>
-                {visible && (
-                  <td>
-                    <EditSvgIcon
-                      type="edit"
-                      onClick={this.handleEdit.bind(this, index)}
-                      style={{ marginRight: 22, cursor: 'pointer' }}
-                    />
-                    <DeleteSvgIcon
-                      type="delete"
-                      onClick={this.handleDelete.bind(this, index)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                  </td>
-                )}
-              </StyledRow>
-            ))}
+            list.map(
+              (item, index) =>
+                item && (
+                  <StyledRow key={index}>
+                    <td>{index + 1}</td>
+                    <td>
+                      {item.type
+                        ? I18N.get(`suggestion.budget.${item.type}`)
+                        : ''}
+                    </td>
+                    <td>{item.amount}</td>
+                    {isOld ? (
+                      <td>
+                        <ShowLongText
+                          text={item.reasons}
+                          id={'reasons' + item.milestoneKey}
+                        />
+                      </td>
+                    ) : null}
+                    <td>
+                      {item.milestoneKey ? (
+                        <Popover
+                          content={this.renderMilestone(
+                            milestone[item.milestoneKey]
+                          )}
+                        >
+                          <a>
+                            {`${I18N.get(
+                              'suggestion.budget.milestone'
+                            )} #${Number(item.milestoneKey) + 1}`}
+                          </a>
+                        </Popover>
+                      ) : null}
+                    </td>
+                    <td>
+                      <ShowLongText
+                        text={item.criteria}
+                        id={'criteria' + item.milestoneKey}
+                      />
+                    </td>
+                    {visible && (
+                      <td>
+                        <EditSvgIcon
+                          type="edit"
+                          onClick={this.handleEdit.bind(this, index)}
+                          style={{ marginRight: 22, cursor: 'pointer' }}
+                        />
+                        <DeleteSvgIcon
+                          type="delete"
+                          onClick={this.handleDelete.bind(this, index)}
+                          style={{ cursor: 'pointer' }}
+                        />
+                      </td>
+                    )}
+                  </StyledRow>
+                )
+            )}
         </tbody>
       </StyledTable>
     )

@@ -984,7 +984,7 @@ const en = {
   'profile.submission.table.type': 'Type',
   'profile.submission.table.created': 'Created',
 
-  'profile.member.vote.qrcodeTip':'Open ELA wallet and scan vote',
+  'profile.member.vote.qrcodeTip':'Open ELA wallet and scan vote (for community review)',
 
   // Validate Form
   'ambassadors.form.required': 'This must be filled out',
@@ -1316,6 +1316,8 @@ const en = {
   'from.UserProfileForm.text.slogan': 'Bio',
   'from.UserProfileForm.text.motto': 'Profile Motto',
 
+  'btn.CopyHash': 'Copy successful',
+
   // CR Video / Earn ELA page
   'cr-video.here': 'here',
   'cr-video.header.1': 'Reclaim Your Internet',
@@ -1533,6 +1535,7 @@ const en = {
       }
     },
     contact: 'Contact',
+    did: 'DID',
     no1: {
       name: 'Alex Shipp',
       intro: 'Elastos Foundation Writer, Era of Quantum Wealth co-author, Quantum Wealth Supernode Owner, without a home base.',

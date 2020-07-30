@@ -27,6 +27,10 @@ const mapDispatch = () => {
     async getCVoteData(param) {
       return serviceCVote.getData(param)
     },
+    async getSecretariat() {
+      const rs = serviceCVote.getSecretariat()
+      return rs
+    }
   }
 }
 

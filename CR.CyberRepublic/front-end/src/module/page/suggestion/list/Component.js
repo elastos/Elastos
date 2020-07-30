@@ -709,7 +709,7 @@ export default class extends StandardPage {
     const href = `/suggestion/${data._id}`
     const actionsNode = this.renderActionsNode(data, this.refetch)
     const metaNode = this.renderMetaNode(data)
-    const title = <ItemTitle to={href}>{data.title}</ItemTitle>
+    const title = <ItemTitle to={href} target={`_blank`}>{data.title}</ItemTitle>
     const tagsNode = this.renderTagsNode(data)
     return (
       <div key={data._id} className="item-container">

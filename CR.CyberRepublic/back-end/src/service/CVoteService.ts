@@ -84,6 +84,20 @@ const CHAIN_STATUS_TO_PROPOSAL_STATUS = {
   }
 }
 
+const EMAIL_PROPOSAL_STATUS = {
+  [constant.CVOTE_STATUS.NOTIFICATION] : 'Passed',
+  [constant.CVOTE_STATUS.ACTIVE] : 'Passed',
+  [constant.CVOTE_STATUS.REJECT] : 'Rejected',
+  [constant.CVOTE_STATUS.VETOED] : 'Rejected',
+} 
+
+const EMAIL_TITLE_PROPOSAL_STATUS = {
+  [constant.CVOTE_STATUS.NOTIFICATION] : constant.CVOTE_STATUS.NOTIFICATION,
+  [constant.CVOTE_STATUS.ACTIVE] : 'PASSED',
+  [constant.CVOTE_STATUS.REJECT] : 'REJECTED',
+  [constant.CVOTE_STATUS.VETOED] : 'VETOED',
+}
+
 const DID_PREFIX = 'did:elastos:'
 const STAGE_BLOCKS = process.env.NODE_ENV == 'staging' ? 40 : 7 * 720 
 
@@ -139,6 +153,7 @@ export default class extends Base {
     ])
     const result = await getProposalData(proposalHash)
     const registerHeight = result && result.data.registerheight
+    const txHash = result && result.data.txhash
     const { proposedEnds, notificationEnds } = await ela.calHeightTime(
       registerHeight
     )
@@ -163,7 +178,8 @@ export default class extends Base {
       proposedEndsHeight,
       notificationEndsHeight,
       proposedEnds: new Date(proposedEnds),
-      notificationEnds: new Date(notificationEnds)
+      notificationEnds: new Date(notificationEnds),
+      txHash
     }
 
     Object.assign(doc, _.pick(suggestion, BASE_FIELDS))
@@ -469,23 +485,16 @@ export default class extends Base {
   public async notifyCouncilToVote(DateTime: any) {
     // find cvote before 1 day expiration without vote yet for each council member
     const db_cvote = this.getDBModel('CVote')
-    // prettier-ignore
-    const nearExpiredTime = Date.now() - (constant.CVOTE_COUNCIL_EXPIRATION - DateTime)
-    // prettier-ignore
-    const createTime = DateTime == constant.ONE_DAY
-      ? Date.now() - constant.CVOTE_COUNCIL_EXPIRATION
-      : Date.now() - constant.CVOTE_COUNCIL_EXPIRATION + constant.ONE_DAY
-
-    const isNotifiedThreeDay = DateTime == constant.THREE_DAY ? false : true
-    const isNotifiedOneDay = DateTime == constant.ONE_DAY ? true : false
+    let startHeight = process.env.NODE_ENV == 'staging' ? 17 : 2160
+    let endHeight = process.env.NODE_ENV == 'staging' ? 16 : 2150
+    const isOneDay = DateTime == constant.ONE_DAY
+    if (isOneDay) {
+      startHeight = process.env.NODE_ENV == 'staging' ? 5 : 720
+      endHeight = process.env.NODE_ENV == 'staging' ? 4 : 710
+    }
     let unvotedCVotes = await db_cvote
       .getDBInstance()
       .find({
-        proposedAt: {
-          $lt: nearExpiredTime,
-          $gt: createTime
-        },
-        notified: isNotifiedThreeDay,
         status: constant.CVOTE_STATUS.PROPOSED,
         'voteResult.value': constant.CVOTE_RESULT.UNDECIDED,
         old: {
@@ -496,10 +505,20 @@ export default class extends Base {
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
       )
-    if (DateTime == constant.ONE_DAY) {
+    const currentHeight = await ela.height()
+    unvotedCVotes = _.filter(unvotedCVotes, (o: any) => {
+      const lastHeight = o.proposedEndsHeight - currentHeight
+      if (lastHeight >= endHeight && lastHeight <= startHeight) {
+        return o
+      }
+    })
+    if (isOneDay) {
       unvotedCVotes = _.filter(unvotedCVotes, ['notifiedOneDay', false])
+    } else {
+      unvotedCVotes = _.filter(unvotedCVotes, ['notified', false])
     }
-    const promptTime = DateTime == constant.ONE_DAY ? '24 hours' : '3 days'
+    const cvoteIds = []
+    const promptTime = isOneDay ? '24 hours' : '3 days'
     _.each(unvotedCVotes, (cvote) => {
       _.each(cvote.voteResult, (result) => {
         if (result.value === constant.CVOTE_RESULT.UNDECIDED) {
@@ -525,13 +544,21 @@ export default class extends Base {
           mail.send(mailObj)
 
           // update notified to true
-          db_cvote.update(
-            { _id: cvote._id },
-            { $set: { notified: true, notifiedOneDay: isNotifiedOneDay } }
-          )
+          cvoteIds.push(cvote._id)
         }
       })
     })
+    if (isOneDay) {
+      await db_cvote.update(
+        { _id: {$in:cvoteIds} },
+        { $set: { notifiedOneDay: true } }
+      )
+    } else {
+      await db_cvote.update(
+        { _id: {$in:cvoteIds} },
+        { $set: { notified: true } }
+      )
+    }
   }
 
   /**
@@ -695,7 +722,9 @@ export default class extends Base {
       'vote_map',
       'registerHeight',
       'proposedEndsHeight',
-      'notificationEndsHeight'
+      'notificationEndsHeight',
+      'rejectAmount',
+      'rejectThroughAmount',
     ]
 
     // const list = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
@@ -718,11 +747,11 @@ export default class extends Base {
     ])
 
     const list = _.map(rs[0], (o: any) => {
-      let proposedEnds = (o.proposedEndsHeight - currentHeight) * 2 - 30
-      let notificationEnds = (o.notificationEndsHeight - currentHeight) * 2 - 30
+      let proposedEnds = (o.proposedEndsHeight - currentHeight) * 2 
+      let notificationEnds = (o.notificationEndsHeight - currentHeight) * 2 
       if (process.env.NODE_ENV === 'staging') {
-        proposedEnds = (o.proposedEndsHeight - currentHeight) * 252 - 30
-        notificationEnds = (o.notificationEndsHeight - currentHeight) * 252 - 30
+        proposedEnds = (o.proposedEndsHeight - currentHeight) * 252 
+        notificationEnds = (o.notificationEndsHeight - currentHeight) * 252 
       }
       return {
         ...o._doc,
@@ -1385,14 +1414,6 @@ export default class extends Base {
         this.notifyProposer(proposal, proposalStatus, 'community')
         return rs.data.registerheight + STAGE_BLOCKS * 2
       }
-    }
-    switch (proposalStatus) {
-      case constant.CVOTE_STATUS.VETOED:
-        rejectThroughAmount = rejectAmount
-        break
-      case constant.CVOTE_STATUS.NOTIFICATION:
-        rejectThroughAmount = (await ela.currentCirculatingSupply()) * 0.1
-        break
     }
 
     const updateStatus = await db_cvote.update(
@@ -2072,9 +2093,9 @@ export default class extends Base {
     })
     const toUsers = []
     const toMails = _.map(user, 'email')
-    const subject = `【${status}】Your proposal #${cvote.vid} get ${status}`
+    const subject = `【${(EMAIL_TITLE_PROPOSAL_STATUS[status])}】Your proposal #${cvote.vid} get ${EMAIL_PROPOSAL_STATUS[status]}`
     const body = `
-        <p>Your proposal #${cvote.vid} get ${status} by the ${by}.</p>
+        <p>Your proposal #${cvote.vid} get ${EMAIL_PROPOSAL_STATUS[status]} by the ${by}.</p>
         <br />
         <p>Click here to view more:</p>
         <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>

@@ -3,16 +3,16 @@ import BaseComponent from '@/model/BaseComponent'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import I18N from '@/I18N'
-import MarkdownPreview from '@/module/common/MarkdownPreview'
 import DeleteSvgIcon from '@/module/common/DeleteSvgIcon'
 import EditSvgIcon from '@/module/common/EditSvgIcon'
+import ShowLongText from '@/module/common/ShowLongText'
 
 class TeamInfoList extends BaseComponent {
-  handleDelete = index => {
+  handleDelete = (index) => {
     this.props.onDelete(index)
   }
 
-  handleEdit = index => {
+  handleEdit = (index) => {
     this.props.onEdit(index)
   }
 
@@ -38,38 +38,39 @@ class TeamInfoList extends BaseComponent {
         </StyledHead>
         <tbody>
           {list &&
-            list.map((item, index) => item && (
-              <StyledRow key={index}>
-                <td>{item.member}</td>
-                <td>{item.role}</td>
-                <td>
-                  <MarkdownPreview
-                    content={item.responsibility}
-                    style={{ p: { margin: '1em 0' } }}
-                  />
-                </td>
-                <td>
-                  <MarkdownPreview
-                    content={item.info}
-                    style={{ p: { margin: '1em 0' } }}
-                  />
-                </td>
-                {visible && (
-                  <td>
-                    <EditSvgIcon
-                      type="edit"
-                      onClick={this.handleEdit.bind(this, index)}
-                      style={{ marginRight: 22, cursor: 'pointer' }}
-                    />
-                    <DeleteSvgIcon
-                      type="delete"
-                      onClick={this.handleDelete.bind(this, index)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                  </td>
-                )}
-              </StyledRow>
-            ))}
+            list.map((item, index) => {
+              return (
+                item && (
+                  <StyledRow key={index}>
+                    <td>{item.member}</td>
+                    <td>{item.role}</td>
+                    <td>
+                      <ShowLongText
+                        text={item.responsibility}
+                        id={'responsibility' + index}
+                      />
+                    </td>
+                    <td>
+                      <ShowLongText text={item.info} id={'info' + index} />
+                    </td>
+                    {visible && (
+                      <td>
+                        <EditSvgIcon
+                          type="edit"
+                          onClick={this.handleEdit.bind(this, index)}
+                          style={{ marginRight: 22, cursor: 'pointer' }}
+                        />
+                        <DeleteSvgIcon
+                          type="delete"
+                          onClick={this.handleDelete.bind(this, index)}
+                          style={{ cursor: 'pointer' }}
+                        />
+                      </td>
+                    )}
+                  </StyledRow>
+                )
+              )
+            })}
         </tbody>
       </StyledTable>
     )

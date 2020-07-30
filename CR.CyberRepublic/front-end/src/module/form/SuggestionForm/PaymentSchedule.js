@@ -7,6 +7,7 @@ import BudgetForm from '@/module/form/BudgetForm/Container'
 import PaymentList from './PaymentList'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import _ from 'lodash'
+import Big from 'big.js'
 
 class PaymentSchedule extends Component {
   constructor(props) {
@@ -14,11 +15,10 @@ class PaymentSchedule extends Component {
     const value = props.initialValue
     this.state = {
       visible: false,
-      total: _.get(value, 'budgetAmount'),
+      total: _.get(value, 'budgetAmount') || 0,
       address: (value && value.elaAddress) || '',
       paymentItems: (value && value.paymentItems) || [],
-      budgetIntro: (value && value.budgetIntro) || '',
-      errors: {}
+      budgetIntro: (value && value.budgetIntro) || ''
     }
   }
 
@@ -31,13 +31,12 @@ class PaymentSchedule extends Component {
   passDataToParent() {
     const { total, address, paymentItems, budgetIntro } = this.state
     this.changeValue({
-      budgetAmount: total && Number(total),
+      budgetAmount: total,
       elaAddress: address,
       paymentItems,
       budgetIntro
     })
   }
-
 
   handleChange = (e, field) => {
     this.setState({ [field]: e.target.value }, () => {
@@ -64,20 +63,26 @@ class PaymentSchedule extends Component {
       ...paymentItems.slice(index + 1)
     ]
     const sortedItems = this.sortPayments(rs)
-    this.setState(
-      { paymentItems: sortedItems },
-      () => {
-        this.passDataToParent()
-      }
-    )
+    const total = this.getTotalBudget(sortedItems)
+    this.setState({ total, paymentItems: sortedItems }, () => {
+      this.passDataToParent()
+    })
   }
 
   handleEdit = (index) => {
     this.setState({ index, visible: true })
   }
 
+  getTotalBudget = (items) => {
+    const total = items.reduce((sum, item) => {
+      return sum.add(item.amount)
+    }, Big(0))
+    return total.toFixed()
+  }
+
   handleSubmit = (values) => {
     const { paymentItems, index } = this.state
+    // update a payment item
     if (index >= 0) {
       const rs = paymentItems.map((item, key) => {
         if (index === key) {
@@ -86,15 +91,22 @@ class PaymentSchedule extends Component {
         return item
       })
       const sortedItems = this.sortPayments(rs)
-      this.setState({ paymentItems: sortedItems, visible: false }, () => {
-        this.passDataToParent()
-      })
+      const total = this.getTotalBudget(sortedItems)
+      this.setState(
+        { total, paymentItems: sortedItems, visible: false },
+        () => {
+          this.passDataToParent()
+        }
+      )
       return
     }
+    // add a payment item
     const rs = [...paymentItems, values]
     const sortedItems = this.sortPayments(rs)
+    const total = this.getTotalBudget(sortedItems)
     this.setState(
       {
+        total,
         paymentItems: sortedItems,
         visible: false
       },
@@ -108,27 +120,20 @@ class PaymentSchedule extends Component {
     const milestone = sessionStorage.getItem('plan-milestone') || []
     try {
       const rs = JSON.parse(milestone)
-      return Array.isArray(rs) ? rs : []
+      return _.isArray(rs) ? rs : []
     } catch (err) {
       return []
     }
   }
 
   render() {
-    const { paymentItems, index, total, address, errors, budgetIntro } = this.state
+    const { paymentItems, index, total, address, budgetIntro } = this.state
     const { getFieldDecorator } = this.props
     const milestone = this.getMilestone()
     const flag = milestone && milestone.length <= paymentItems.length
     const disabled = !milestone || flag
     return (
       <Wrapper>
-        <Section>
-          <Label>{`${I18N.get('suggestion.budget.total')} (ELA)`}</Label>
-          <StyledInput
-            value={total}
-            onChange={(e) => this.handleChange(e, 'total')}
-          />
-        </Section>
         <Section>
           <Label>{I18N.get('suggestion.budget.address')}</Label>
           <StyledInput
@@ -151,6 +156,20 @@ class PaymentSchedule extends Component {
             onEdit={this.handleEdit}
           />
         ) : null}
+        <Section>
+          <Label>{`${I18N.get('suggestion.budget.introduction')}`}</Label>
+          {getFieldDecorator('budgetIntro')(
+            <CodeMirrorEditor
+              content={budgetIntro}
+              activeKey="budgetIntro"
+              name="budgetIntro"
+            />
+          )}
+        </Section>
+        <Total>
+          <span>{`${I18N.get('suggestion.budget.totalBudget')}`}</span>
+          <Digit>{total}</Digit>
+        </Total>
         <Modal
           maskClosable={false}
           visible={this.state.visible}
@@ -170,17 +189,6 @@ class PaymentSchedule extends Component {
             />
           ) : null}
         </Modal>
-        <Section>
-          <Label>{`${I18N.get('suggestion.budget.introduction')}`}</Label>
-          {getFieldDecorator('budgetIntro')(
-            <CodeMirrorEditor
-              content={budgetIntro}
-              activeKey='budgetIntro'
-              name='budgetIntro'
-            />
-          )
-          }
-        </Section>
       </Wrapper>
     )
   }
@@ -227,16 +235,21 @@ const StyledInput = styled.input`
   }
   &:focus {
     border-color: ${(props) => (props.error ? '#f5222d' : '#66bda3')};
-    box-shadow: ${(props) =>
-    props.error
-      ? '0 0 0 2px rgba(245, 34, 45, 0.2);'
-      : '0 0 0 2px rgba(67, 175, 146, 0.2)'};
+    box-shadow: ${(props) => {
+      return props.error
+        ? '0 0 0 2px rgba(245, 34, 45, 0.2)'
+        : '0 0 0 2px rgba(67, 175, 146, 0.2)'
+    }};
   }
-`
-const Error = styled.div`
-  color: #f5222d;
 `
 const Tip = styled.div`
   color: #666;
   font-size: 13px;
+`
+const Total = styled.div`
+  text-align: right;
+`
+const Digit = styled.span`
+  font-size: 18px;
+  color: #000;
 `

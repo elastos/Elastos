@@ -83,18 +83,7 @@ class C extends BaseComponent {
       }
 
       const milestone = _.get(values, 'plan.milestone')
-      const amount = _.get(values, 'budget.budgetAmount')
       const pItems = _.get(values, 'budget.paymentItems')
-
-      const sum = pItems.reduce((sum, item) => {
-        return (sum += Number(item.amount))
-      }, 0)
-
-      if (Number(amount) !== sum) {
-        this.setState({ loading: false })
-        message.error(I18N.get('suggestion.form.error.notEqual'))
-        return
-      }
 
       const initiation = pItems.filter(
         (item) => item.type === ADVANCE && item.milestoneKey === '0'
@@ -119,7 +108,7 @@ class C extends BaseComponent {
       // exclude old suggestion data
       if (budget && typeof budget !== 'string') {
         values.budget = budget.paymentItems
-        values.budgetAmount = Number(budget.budgetAmount)
+        values.budgetAmount = budget.budgetAmount
         values.elaAddress = budget.elaAddress
       }
 
@@ -145,7 +134,7 @@ class C extends BaseComponent {
       const budget = form.getFieldValue('budget')
       if (budget) {
         values.budget = budget.paymentItems
-        values.budgetAmount = budget.budgetAmount && Number(budget.budgetAmount)
+        values.budgetAmount = budget.budgetAmount
         values.elaAddress = budget.elaAddress
       }
       this.props.onSaveDraft(values)
@@ -217,24 +206,15 @@ class C extends BaseComponent {
     return cb()
   }
 
-  validateAmount = (value) => {
-    const reg = /^(0|[1-9][0-9]*)(\.[0-9]*)?$/
-    return (!isNaN(value) && reg.test(value)) || value === '' ? true : false
-  }
-
   validateAddress = (value) => {
     const reg = /^[E8][a-zA-Z0-9]{33}$/
     return reg.test(value)
   }
 
   validateBudget = (rule, value, cb) => {
-    const amount = _.get(value, 'budgetAmount')
     const address = _.get(value, 'elaAddress')
     const pItems = _.get(value, 'paymentItems')
 
-    if (!this.validateAmount(amount)) {
-      return cb(I18N.get('suggestion.form.error.isNaN'))
-    }
     if (!this.validateAddress(address)) {
       return cb(I18N.get('suggestion.form.error.elaAddress'))
     }
@@ -307,13 +287,15 @@ class C extends BaseComponent {
         initialBudget = initialValues.budget && {
           budgetAmount: initialValues.budgetAmount,
           elaAddress: initialValues.elaAddress,
-          paymentItems: initialValues.budget
+          paymentItems: initialValues.budget,
+          budgetIntro: initialValues.budgetIntro
         }
       } else {
         initialBudget = {
           budgetAmount: initialValues.budget,
           elaAddress: '',
-          paymentItems: []
+          paymentItems: [],
+          budgetIntro: ''
         }
       }
 
