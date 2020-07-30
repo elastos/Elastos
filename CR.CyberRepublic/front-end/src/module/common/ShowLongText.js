@@ -73,9 +73,13 @@ export default ShowLongText
 
 const Wrapper = styled.div`
   .container {
-    max-height: 122px;
+    max-height: 125px;
     overflow: hidden;
     line-height: 1.8;
+    > div * {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
     ul,
     ol {
       margin-bottom: 0 !important;
@@ -87,6 +91,9 @@ const Wrapper = styled.div`
   .container.more {
     max-height: unset;
     overflow: unset;
+    > div * {
+      margin-top: 1em;
+    }
   }
 `
 const Button = styled.a`
