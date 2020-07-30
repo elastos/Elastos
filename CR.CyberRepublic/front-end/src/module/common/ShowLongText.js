@@ -47,7 +47,10 @@ class ShowLongText extends Component {
         <div className={toggle ? 'container more' : 'container'} id={id}>
           <MarkdownPreview
             content={text ? text : ''}
-            style={{ p: { margin: 0 } }}
+            style={{
+              p: { margin: 0 },
+              '>:last-child': { marginBottom: 0, lineHeight: 1.8 }
+            }}
           />
         </div>
         {show && <div>......</div>}
@@ -70,9 +73,16 @@ export default ShowLongText
 
 const Wrapper = styled.div`
   .container {
-    max-height: 125px;
+    max-height: 122px;
     overflow: hidden;
-    line-height: 1.5;
+    line-height: 1.8;
+    ul,
+    ol {
+      margin-bottom: 0 !important;
+    }
+    li:last-child {
+      margin-bottom: 0 !important;
+    }
   }
   .container.more {
     max-height: unset;
