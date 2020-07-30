@@ -69,7 +69,7 @@ public class DidDetailFragment extends BaseFragment {
     Wallet wallet;
     @BindView(R.id.rv_show)
     RecyclerView rvShow;
-    private CredentialSubjectBean credentialSubjectBean;
+    private CredentialSubjectBean netCredentialSubjectBean;
     private ArrayList<PersonalInfoItemEntity> listShow;
     private DIDUIPresenter diduiPresenter;
 
@@ -122,11 +122,11 @@ public class DidDetailFragment extends BaseFragment {
             listShow.add(personalInfoItemEntity);
         }
 
-        credentialSubjectBean = getMyDID().getCredentialProObj(MyDID.CREDENCIALID_NET, getMyDID().getDidString());
-        if (credentialSubjectBean.whetherEmpty()) {
+        netCredentialSubjectBean = getMyDID().getCredentialProObj(MyDID.CREDENCIALID_NET, getMyDID().getDidString());
+        if (netCredentialSubjectBean.whetherEmpty()) {
             tvNetline.setVisibility(View.GONE);
         } else {
-            diduiPresenter.convertCredentialSubjectBean(this, listShow, credentialSubjectBean);
+            diduiPresenter.convertCredential2List(this, listShow, netCredentialSubjectBean);
             setRecycleViewShow();
         }
 
@@ -146,8 +146,8 @@ public class DidDetailFragment extends BaseFragment {
                     bundle.putString("content", personalInfoItemEntity.getText1());
                     start(ShowPersonalIntroFragemnt.class, bundle);
                 }
-                if (personalInfoItemEntity.getIndex() > 13) {
-                    //去个人简介详情
+                if (personalInfoItemEntity.getIndex() > 13&&personalInfoItemEntity.getType()==-2) {
+                    //自定义项
                     Bundle bundle = new Bundle();
                     bundle.putString("title", personalInfoItemEntity.getText1() == null ? "" : personalInfoItemEntity.getText1());
                     bundle.putString("content", personalInfoItemEntity.getText2());
@@ -171,7 +171,7 @@ public class DidDetailFragment extends BaseFragment {
             case R.id.tv_edit:
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
-                bundle.putParcelable("credentialSubjectBean", credentialSubjectBean);
+                bundle.putParcelable("netCredentialSubjectBean", netCredentialSubjectBean);
                 bundle.putParcelableArrayList("listShow", listShow);
 
                 start(EditDIDFragment.class, bundle);

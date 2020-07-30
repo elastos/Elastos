@@ -38,7 +38,6 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
-import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
@@ -73,8 +72,6 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
     TextView tvDate;
     @BindView(R.id.rl_outdate)
     RelativeLayout rlOutdate;
-    @BindView(R.id.tv_updata)
-    TextView tvUpdata;
     private Date didEndDate;
     private String didName;
 
@@ -107,18 +104,12 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
         tvTitle.setText(getString(R.string.editdid));
     }
 
-    @OnClick({R.id.tv_updata, R.id.rl_outdate})
+    @OnClick({R.id.tv_title_right, R.id.rl_outdate})
     public void onViewClicked(View view) {
         Bundle bundle;
         switch (view.getId()) {
             case R.id.tv_title_right:
-                //下一步
-                Bundle bundle1 = getArguments();
-                bundle1.putString("type", "net");
-               // start(EditPersonalInfoFragemnt.class, bundle1);
-                break;
-            case R.id.tv_updata:
-                //更新
+                //下一
                 didName = etDidname.getText().toString().trim();
                 if (TextUtils.isEmpty(didName)) {
                     showToast(getString(R.string.plzinputname));
@@ -129,7 +120,10 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
                     showToast(getString(R.string.plzselctoutdate));
                     break;
                 }
-                new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
+                Bundle bundle1 = getArguments();
+                bundle1.putString("type", "net");
+                start(EditPersonalInfoFragemnt.class, bundle1);
+                // new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
 
                 break;
             case R.id.rl_outdate:

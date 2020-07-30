@@ -49,11 +49,11 @@ import org.elastos.wallet.ela.ui.did.adapter.PersonalAddRecAdapetr;
 import org.elastos.wallet.ela.ui.did.adapter.PersonalChoseRecAdapetr;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
+import org.elastos.wallet.ela.ui.did.presenter.DIDUIPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.OtherPwdActivity;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
-import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -107,6 +107,7 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
     private PersonalAddRecAdapetr adapterShow;
     private PersonalChoseRecAdapetr adapterChose;
     private TextView curentTextView;//需要在别的页面获取数据的view
+    private DIDUIPresenter diduiPresenter;
 
     @Override
     protected int getLayoutId() {
@@ -135,7 +136,8 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
         tvTitleRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CredentialSubjectBean credentialSubjectBean = convertCredentialSubjectBean();
+                storePersonalInfo();
+                credentialSubjectBean = diduiPresenter.convertCredentialSubjectBean(AddNetPersonalInfoFragment.this, getMyDID().getName(getMyDID().getDIDDocument()), listShow);
                 Log.i("??", JSON.toJSONString(credentialSubjectBean));
                 DIDDocument doc = getMyDID().getDIDDocument();
                 Date didEndDate = getMyDID().getExpires(doc);
@@ -152,6 +154,7 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
     protected void initView(View view) {
         tvTitle.setText(R.string.adddidinfo);
         tvTitleRight.setVisibility(View.VISIBLE);
+        diduiPresenter = new DIDUIPresenter();
         initItemDate();
         sexs = new String[]{getString(R.string.man), getString(R.string.woman)};
         registReceiver();
@@ -258,10 +261,12 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
                 break;
             case R.id.tv_title_right:
                 //下一步
-                credentialSubjectBean = convertCredentialSubjectBean();
+                curentTextView=null;
+                storePersonalInfo();
+                credentialSubjectBean = diduiPresenter.convertCredentialSubjectBean(AddNetPersonalInfoFragment.this, didName, listShow);
                 Log.i("??", JSON.toJSONString(credentialSubjectBean));
                 Bundle bundle = getArguments();
-                bundle.putParcelable("netCredentialSubjectBean",credentialSubjectBean);
+                bundle.putParcelable("netCredentialSubjectBean", credentialSubjectBean);
                 start(AddPersonalInfoFragment.class, bundle);
                 break;
             case R.id.iv_add:
@@ -293,6 +298,9 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.AREA.ordinal()) {
+            if (curentTextView==null){
+                return;
+            }
             Area area = (Area) result.getObj();
             int Language = new SPUtil(getContext()).getLanguage();
             String name;
@@ -304,6 +312,9 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
             curentTextView.setText(name);
         }
         if (integer == RxEnum.EDITPERSONALINTRO.ordinal()) {
+            if (curentTextView==null){
+                return;
+            }
             String intro = (String) result.getObj();
             curentTextView.setText(intro);
         }
@@ -448,81 +459,6 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
         }
     }
 
-    private CredentialSubjectBean convertCredentialSubjectBean() {
-        //这种情况考虑去除全局变量credentialSubjectBean
-        storePersonalInfo();
-        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(), didName);
-        ArrayList<CredentialSubjectBean.CustomInfo> customInfos =new ArrayList<>();
-        result.setCustomInfos(customInfos);
-        for (int i = 0; i < listShow.size(); i++) {
-            //只遍历show的数据
-            PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);
-            int index = personalInfoItemEntity.getIndex();
-            String text1 = personalInfoItemEntity.getText1();
-            String text2 = personalInfoItemEntity.getText2();
-            switch (index) {
-                case 0:
-                    result.setNickname(text1);
-                    break;
-                case 1:
-                    if (getString(R.string.man).equals(text1))
-                        result.setGender("1");
-                    else if (getString(R.string.woman).equals(text1))
-                        result.setGender("2");
-                    break;
-                case 2:
-                    String birthDate = DateUtil.parseToLongWithLanguage(text1, getContext(), true);
-                    result.setBirthday(birthDate);
-                    break;
-                case 3:
-                    result.setAvatar(text1);
-                    break;
-                case 4:
-                    result.setEmail(text1);
-                    break;
-                case 5:
-                    result.setPhoneCode(text1);
-                    result.setPhone(text2);
-                    break;
-                case 6:
-                    result.setNation(AppUtlis.getLocCode(text1));
-                    break;
-                case 7:
-
-                    result.setIntroduction(text2);
-
-                    break;
-                case 8:
-                    result.setHomePage(text1);
-                    break;
-                case 9:
-                    result.setWechat(text1);
-                    break;
-                case 10:
-                    result.setTwitter(text1);
-                    break;
-                case 11:
-                    result.setWeibo(text1);
-                    break;
-                case 12:
-                    result.setFacebook(text1);
-                    break;
-                case 13:
-                    result.setGoogleAccount(text1);
-                    break;
-                default:
-                    CredentialSubjectBean.CustomInfo info=new CredentialSubjectBean.CustomInfo();
-                    info.setTitle(text1);
-                    info.setContent(text2);
-                    info.setType(personalInfoItemEntity.getType());
-                    customInfos.add(info);
-                    break;
-            }
-
-        }
-        result.setEditTime(new Date().getTime() / 1000);
-        return result;
-    }
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {

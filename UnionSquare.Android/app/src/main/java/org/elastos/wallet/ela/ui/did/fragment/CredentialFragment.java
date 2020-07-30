@@ -70,7 +70,7 @@ public class CredentialFragment extends BaseFragment {
     }
 
     private void viewInfo() {
-        String json = getMyDID().getCredentialPro(MyDID.CREDENCIALID_LOCAL,getMyDID().getDidString());
+        String json = getMyDID().getCredentialPro(MyDID.CREDENCIALID_LOCAL, getMyDID().getDidString());
         credentialSubjectBean = JSON.parseObject(json, CredentialSubjectBean.class);
         Log.i("??", json + "\n" + (JSON.parseObject("{}", CredentialSubjectBean.class) == null));//false
         if (credentialSubjectBean == null || credentialSubjectBean.whetherEmpty()) {
@@ -106,10 +106,10 @@ public class CredentialFragment extends BaseFragment {
                     showToast(getString(R.string.credencialisnull));
                     break;
                 }
-                start(ExportCredencialFragment.class, getArguments());
+                start(ExportCredencialFragment.class);
                 break;
             case R.id.tv_in:
-                start(ImportCredencialFragment.class, getArguments());
+                start(ImportCredencialFragment.class, bundle);
                 break;
         }
     }

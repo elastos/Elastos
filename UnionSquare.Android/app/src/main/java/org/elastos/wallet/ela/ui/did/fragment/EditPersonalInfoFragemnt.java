@@ -45,10 +45,10 @@ import org.elastos.wallet.ela.ui.did.adapter.PersonalChoseRecAdapetr;
 import org.elastos.wallet.ela.ui.did.adapter.PersonalEditRecAdapetr;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
+import org.elastos.wallet.ela.ui.did.presenter.DIDUIPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.OtherPwdActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
-import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -100,7 +100,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
     private List<PersonalInfoItemEntity> listChose;
     private PersonalEditRecAdapetr adapterShow;
     private PersonalChoseRecAdapetr adapterChose;
-    private TextView tvPersonalIntro;
+    private TextView curentTextView;
 
     @Override
     protected int getLayoutId() {
@@ -138,7 +138,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         String showData[] = getResources().getStringArray(R.array.personalinfo_show);
         listChose = new ArrayList<>();
         for (int i = 0; i < choseData.length; i++) {
-            PersonalInfoItemEntity personalInfoItemEntity = getPersonalInfoItemEntity(i, choseData[i],showData[i]);
+            PersonalInfoItemEntity personalInfoItemEntity = getPersonalInfoItemEntity(i, choseData[i], showData[i]);
             listChose.add(personalInfoItemEntity);
 
         }
@@ -202,12 +202,45 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         listChose.remove(personalInfoItemEntity);
     }
 
-    @OnClick({R.id.tv_title_right, R.id.iv_add, R.id.iv_showshow})
+    @OnClick({R.id.tv_title_right, R.id.iv_add, R.id.iv_showshow, R.id.rl_custom,
+            R.id.iv_addcustom_back, R.id.rl_addcustom_single, R.id.rl_addcustom_mult})
     public void onViewClicked(View view) {
         switch (view.getId()) {
+            case R.id.rl_addcustom_single:
+                //增加单行自定义信息
+                llAddcustom.setVisibility(View.GONE);
+                int insetPosition = listShow.size();//插入位置最后的位置
+                PersonalInfoItemEntity personalInfoItemEntity = new PersonalInfoItemEntity();
+                int curentMaxIndex = listShow.get(insetPosition - 1).getIndex();
+                personalInfoItemEntity.setIndex(curentMaxIndex > 13 ? curentMaxIndex + 1 : 14);
+                personalInfoItemEntity.setType(-1);
+                personalInfoItemEntity.setHintShow1(getString(R.string.singletextitem));
+                personalInfoItemEntity.setHintShow2(getString(R.string.plzinputcontent));
+                insertShow(insetPosition, personalInfoItemEntity);
+
+                break;
+            case R.id.rl_addcustom_mult:
+                //增加多行自定义信息
+                llAddcustom.setVisibility(View.GONE);
+                int insetPosition1 = listShow.size();//插入位置最后的位置
+                PersonalInfoItemEntity personalInfoItemEntity1 = new PersonalInfoItemEntity();
+                int curentMaxIndex1 = listShow.get(insetPosition1 - 1).getIndex();
+                personalInfoItemEntity1.setIndex(curentMaxIndex1 > 13 ? curentMaxIndex1 + 1 : 14);
+                personalInfoItemEntity1.setType(-2);
+                personalInfoItemEntity1.setHintShow1(getString(R.string.mutiltextitem));
+                personalInfoItemEntity1.setHintShow2(getString(R.string.plzinputcontent));
+                insertShow(insetPosition1, personalInfoItemEntity1);
+                break;
+            case R.id.iv_addcustom_back:
+                llAddcustom.setVisibility(View.GONE);
+                break;
+            case R.id.rl_custom:
+                llAddcustom.setVisibility(View.VISIBLE);
+                break;
             case R.id.tv_title_right:
                 //发布  保留在重写的方法里
-                CredentialSubjectBean credentialSubjectBean = convertCredentialSubjectBean();
+                storePersonalInfo();
+                CredentialSubjectBean credentialSubjectBean = new DIDUIPresenter().convertCredentialSubjectBean(this, getMyDID().getName(getMyDID().getDIDDocument()), listShow);
                 Log.i("??", JSON.toJSONString(credentialSubjectBean));
                 DIDDocument doc = getMyDID().getDIDDocument();
                 //String didName = getMyDID().getName(doc);
@@ -220,6 +253,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
                 break;
             case R.id.iv_add:
                 svChose.setVisibility(View.VISIBLE);
+                setRecycleViewChose();
                 break;
             case R.id.iv_showshow:
                 svChose.setVisibility(View.GONE);
@@ -227,8 +261,19 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         }
     }
 
-
-    TextView tvArea;
+    private void customVisible() {
+        int customCount = 0;
+        for (int i = 0; i < listShow.size(); i++) {
+            if (listShow.get(i).getIndex() > 13) {
+                customCount++;
+            }
+        }
+        if (customCount >= 5) {//最多5项自定义项
+            rlCustom.setVisibility(View.GONE);
+        } else {
+            rlCustom.setVisibility(View.VISIBLE);
+        }
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
@@ -242,11 +287,11 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
             } else {
                 name = area.getEn();
             }
-            tvArea.setText(name);
+            curentTextView.setText(name);
         }
         if (integer == RxEnum.EDITPERSONALINTRO.ordinal()) {
             String intro = (String) result.getObj();
-            tvPersonalIntro.setText(intro);
+            curentTextView.setText(intro);
         }
         if (integer == RxEnum.EDITPERSONALINFO.ordinal()) {
             new DialogUtil().showTransferSucess(getString(R.string.savesucess), getBaseActivity(), new WarmPromptListener() {
@@ -264,7 +309,6 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         PersonalInfoItemEntity personalInfoItemEntity = (PersonalInfoItemEntity) o;
         if (svChose.getVisibility() == View.VISIBLE) {
             //选择添加某一项 数据会重新渲染
-            storePersonalInfo();
             int insetPosition = listShow.size();
             for (int i = 0; i < listShow.size(); i++) {
                 if (personalInfoItemEntity.getIndex() < listShow.get(i).getIndex()) {
@@ -272,16 +316,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
                     break;
                 }
             }
-            listShow.add(personalInfoItemEntity);
-            Collections.sort(listShow);
-            adapterShow.notifyItemInserted(insetPosition);//加动画
-            adapterShow.notifyItemRangeChanged(position, listShow.size() - insetPosition);
-            listChose.remove(personalInfoItemEntity);
-            adapterChose.notifyDataSetChanged();
-            svChose.setVisibility(View.GONE);
-            if (listChose.size() == 0) {
-                ivAdd.setVisibility(View.GONE);
-            }
+            insertShow(insetPosition, personalInfoItemEntity);
         } else {
             if (v instanceof ImageView) {
                 //去除某一项 数据会重新渲染
@@ -290,16 +325,14 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
                     @Override
                     public void affireBtnClick(View view) {
                         storePersonalInfo();
-                        personalInfoItemEntity.setText1(null);
-                        personalInfoItemEntity.setText2(null);
-                        //通过右边的iv类型判断是条目的增减还是特殊条目数据填充
-                        listChose.add(personalInfoItemEntity);
-                        Collections.sort(listChose);
+                        if (personalInfoItemEntity.getIndex() <= 13) {
+                            //自定义项目
+                            personalInfoItemEntity.setText1(null);
+                            personalInfoItemEntity.setText2(null);
+                            listChose.add(personalInfoItemEntity);
+                        }
                         listShow.remove(personalInfoItemEntity);
-                        // adapterShow.notifyItemRemoved(position);//加动画
-                        // adapterShow.notifyItemRangeChanged(position, listShow.size() - position);
-                        adapterChose.notifyDataSetChanged();
-                        adapterShow.notifyDataSetChanged();
+                        setRecycleViewShow();
                         if (ivAdd.getVisibility() == View.GONE) {
                             ivAdd.setVisibility(View.VISIBLE);
                         }
@@ -308,7 +341,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
 
             } else {
                 //特殊条目数据填充 序号是 1 2 6 7
-                onRvTextViewClick((TextView) v, personalInfoItemEntity.getIndex());
+                onRvTextViewClick((TextView) v, personalInfoItemEntity);
             }
 
 
@@ -317,7 +350,8 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
     }
 
 
-    private void onRvTextViewClick(TextView v, int index) {
+    private void onRvTextViewClick(TextView v, PersonalInfoItemEntity personalInfoItemEntity) {
+        int index = personalInfoItemEntity.getIndex();
         if (index == 1) {
             //选择性别
             new DialogUtil().showCommonSelect(getBaseActivity(), getString(R.string.plzselcetsex), sexs, new WarmPromptListener() {
@@ -346,14 +380,22 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         } else if (index == 6) {
             //国家地区
             start(AreaCodeFragment.class);
-            tvArea = v;
+            curentTextView = v;
         } else if (index == 7) {
             //个人简介
             Bundle bundle = new Bundle();
             bundle.putString("content", getText(v));
             bundle.putAll(getArguments());
             start(PersonalIntroFragment.class, bundle);
-            tvPersonalIntro = v;
+            curentTextView = v;
+        } else if (index > 13 && personalInfoItemEntity.getType() == -2) {
+            //自定义项多行
+            Bundle bundle = new Bundle();
+            bundle.putString("title", personalInfoItemEntity.getText1() == null ? "" : personalInfoItemEntity.getText1());
+            bundle.putString("content", getText(v));
+            bundle.putAll(getArguments());
+            start(PersonalIntroFragment.class, bundle);
+            curentTextView = v;
         }
     }
 
@@ -367,90 +409,35 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
             if (view == null) {
                 break;
             }
-            TextView child1 = (TextView) view.getChildAt(1);
 
-            personalInfoItemEntity.setText1(getText(child1));
             if (personalInfoItemEntity.getIndex() == 5) {
                 //电话号的特殊情况
+                TextView child1 = (TextView) view.getChildAt(1);
+                personalInfoItemEntity.setText1(getText(child1));
                 View child4 = view.getChildAt(4);
                 personalInfoItemEntity.setText2(getText((TextView) child4));
+            } else if (personalInfoItemEntity.getIndex() > 13) {
+                TextView child0 = (TextView) view.getChildAt(0);
+                personalInfoItemEntity.setText1(getText(child0));
+                View child2 = view.getChildAt(2);
+                personalInfoItemEntity.setText2(getText((TextView) child2));
+
+            } else {
+                TextView child1 = (TextView) view.getChildAt(1);
+                personalInfoItemEntity.setText1(getText(child1));
 
             }
 
         }
-    }
-
-    private CredentialSubjectBean convertCredentialSubjectBean() {
-        //这种情况考虑去除全局变量credentialSubjectBean
-        storePersonalInfo();
-        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(), getMyDID().getName(getMyDID().getDIDDocument()));
-        for (int i = 0; i < listShow.size(); i++) {
-            //只遍历show的数据
-            PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);
-            int index = personalInfoItemEntity.getIndex();
-            String text1 = personalInfoItemEntity.getText1();
-            String text2 = personalInfoItemEntity.getText2();
-            switch (index) {
-                case 0:
-                    result.setNickname(text1);
-                    break;
-                case 1:
-                    if (getString(R.string.man).equals(text1))
-                        result.setGender("1");
-                    else if (getString(R.string.woman).equals(text1))
-                        result.setGender("2");
-                    break;
-                case 2:
-                    String birthDate = DateUtil.parseToLongWithLanguage(text1, getContext(), true);
-                    result.setBirthday(birthDate);
-                    break;
-                case 3:
-                    result.setAvatar(text1);
-                    break;
-                case 4:
-                    result.setEmail(text1);
-                    break;
-                case 5:
-                    result.setPhoneCode(text1);
-                    result.setPhone(text2);
-                    break;
-                case 6:
-                    result.setNation(AppUtlis.getLocCode(text1));
-                    break;
-                case 7:
-
-                    result.setIntroduction(text1);
-
-                    break;
-                case 8:
-                    result.setHomePage(text1);
-                    break;
-                case 9:
-                    result.setWechat(text1);
-                    break;
-                case 10:
-                    result.setTwitter(text1);
-                    break;
-                case 11:
-                    result.setWeibo(text1);
-                    break;
-                case 12:
-                    result.setFacebook(text1);
-                    break;
-                case 13:
-                    result.setGoogleAccount(text1);
-                    break;
-            }
-
-        }
-        result.setEditTime(new Date().getTime() / 1000);
-        return result;
     }
 
 
     @Override
     public boolean onBackPressedSupport() {
-        if (svChose.getVisibility() == View.VISIBLE) {
+        if (llAddcustom.getVisibility() == View.VISIBLE) {
+            llAddcustom.setVisibility(View.GONE);
+            return true;
+        } else if (svChose.getVisibility() == View.VISIBLE) {
             svChose.setVisibility(View.GONE);
             return true;
         } else {
@@ -458,17 +445,5 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         }
     }
 
-    private void customVisible() {
-        int customCount = 0;
-        for (int i = 0; i < listShow.size(); i++) {
-            if (listShow.get(i).getIndex() > 13) {
-                customCount++;
-            }
-        }
-        if (customCount >= 5) {//最多5项自定义项
-            rlCustom.setVisibility(View.GONE);
-        } else {
-            rlCustom.setVisibility(View.VISIBLE);
-        }
-    }
+
 }

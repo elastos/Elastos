@@ -67,11 +67,4 @@
     </RelativeLayout>
 
     <View style="@style/line_margin15" />
-
-    <TextView
-        android:visibility="gone"
-        android:id="@+id/tv_updata"
-        style="@style/button_margin"
-        android:layout_marginTop="100dp"
-        android:text="@string/updatepublish" />
 </LinearLayout>

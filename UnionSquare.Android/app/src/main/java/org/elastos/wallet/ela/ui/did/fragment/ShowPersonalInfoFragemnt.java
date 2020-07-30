@@ -97,7 +97,7 @@ public class ShowPersonalInfoFragemnt extends BaseFragment {
             }
             listShow.add(personalInfoItemEntity);
         }
-        diduiPresenter.convertCredentialSubjectBean(this, listShow, credentialSubjectBean);
+        diduiPresenter.convertCredential2List(this, listShow, credentialSubjectBean);
         setRecycleViewShow();
 
     }

@@ -102,7 +102,7 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<RecyclerView.Vi
                 ((ViewHolder0) holder).tv1.setText(personalInfoItemEntity.getHintShow1());
                 ((ViewHolder0) holder).tv2.setText(personalInfoItemEntity.getText1());
             }
-            if (index == 7 || index > 13) {
+            if (index == 7 || (index > 13&&personalInfoItemEntity.getType()==-2)) {
                 ((ViewHolder0) holder).itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

@@ -52,17 +52,11 @@ public class ExportCredencialFragment extends BaseFragment implements NewBaseVie
     TextView tvTitle;
     @BindView(R.id.tv)
     TextView tv;
-    Unbinder unbinder;
-    private Wallet wallet;
+
 
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_credential_export;
-    }
-
-    @Override
-    protected void setExtraData(Bundle data) {
-        wallet = data.getParcelable("wallet");
     }
 
     @Override

@@ -50,11 +50,11 @@ import org.elastos.wallet.ela.ui.did.adapter.PersonalAddRecAdapetr;
 import org.elastos.wallet.ela.ui.did.adapter.PersonalChoseRecAdapetr;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
+import org.elastos.wallet.ela.ui.did.presenter.DIDUIPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.OtherPwdActivity;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
-import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -109,6 +109,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
     private PersonalAddRecAdapetr adapterShow;
     private PersonalChoseRecAdapetr adapterChose;
     private TextView curentTextView;//需要在别的页面获取数据的view
+    private DIDUIPresenter diduiPresenter;
 
     @Override
     protected int getLayoutId() {
@@ -118,13 +119,14 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
 
     @Override
     protected void setExtraData(Bundle data) {
-        netCredentialSubjectBean = data.getParcelable("netCredentialSubjectBean");
+
         String type = data.getString("type");
         if (Constant.EDITCREDENTIAL.equals(type)) {
             //新增did凭证  从凭证信息进入
             onAddPartCredential();
         } else {
             //新增did凭证  从新增did进入
+            netCredentialSubjectBean = data.getParcelable("netCredentialSubjectBean");
             wallet = data.getParcelable("wallet");
             didName = data.getString("didName");
             didEndDate = (Date) data.getSerializable("didEndDate");
@@ -137,7 +139,8 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
         tvTitleRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CredentialSubjectBean credentialSubjectBean = convertCredentialSubjectBean();
+                storePersonalInfo();
+                credentialSubjectBean = diduiPresenter.convertCredentialSubjectBean(AddPersonalInfoFragment.this, getMyDID().getName(getMyDID().getDIDDocument()), listShow);
                 Log.i("??", JSON.toJSONString(credentialSubjectBean));
                 DIDDocument doc = getMyDID().getDIDDocument();
                 Date didEndDate = getMyDID().getExpires(doc);
@@ -154,6 +157,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
     protected void initView(View view) {
         tvTitle.setText(R.string.adddidinfo);
         tvTitleRight.setVisibility(View.VISIBLE);
+        diduiPresenter = new DIDUIPresenter();
         initItemDate();
         sexs = new String[]{getString(R.string.man), getString(R.string.woman)};
         registReceiver();
@@ -264,7 +268,8 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.whetherpublishdid), null, null, false, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        credentialSubjectBean = convertCredentialSubjectBean();
+                        storePersonalInfo();
+                        credentialSubjectBean = diduiPresenter.convertCredentialSubjectBean(AddPersonalInfoFragment.this, didName, listShow);
                         Log.i("??", JSON.toJSONString(credentialSubjectBean));
                         //模拟手续费
                         new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", AddPersonalInfoFragment.this);
@@ -454,82 +459,6 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
 
             }
         }
-    }
-
-    private CredentialSubjectBean convertCredentialSubjectBean() {
-        //这种情况考虑去除全局变量credentialSubjectBean
-        storePersonalInfo();
-        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(), didName);
-        ArrayList<CredentialSubjectBean.CustomInfo> customInfos = new ArrayList<>();
-        result.setCustomInfos(customInfos);
-        for (int i = 0; i < listShow.size(); i++) {
-            //只遍历show的数据
-            PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);
-            int index = personalInfoItemEntity.getIndex();
-            String text1 = personalInfoItemEntity.getText1();
-            String text2 = personalInfoItemEntity.getText2();
-            switch (index) {
-                case 0:
-                    result.setNickname(text1);
-                    break;
-                case 1:
-                    if (getString(R.string.man).equals(text1))
-                        result.setGender("1");
-                    else if (getString(R.string.woman).equals(text1))
-                        result.setGender("2");
-                    break;
-                case 2:
-                    String birthDate = DateUtil.parseToLongWithLanguage(text1, getContext(), true);
-                    result.setBirthday(birthDate);
-                    break;
-                case 3:
-                    result.setAvatar(text1);
-                    break;
-                case 4:
-                    result.setEmail(text1);
-                    break;
-                case 5:
-                    result.setPhoneCode(text1);
-                    result.setPhone(text2);
-                    break;
-                case 6:
-                    result.setNation(AppUtlis.getLocCode(text1));
-                    break;
-                case 7:
-
-                    result.setIntroduction(text2);
-
-                    break;
-                case 8:
-                    result.setHomePage(text1);
-                    break;
-                case 9:
-                    result.setWechat(text1);
-                    break;
-                case 10:
-                    result.setTwitter(text1);
-                    break;
-                case 11:
-                    result.setWeibo(text1);
-                    break;
-                case 12:
-                    result.setFacebook(text1);
-                    break;
-                case 13:
-                    result.setGoogleAccount(text1);
-                    break;
-                default:
-                    CredentialSubjectBean.CustomInfo info = new CredentialSubjectBean.CustomInfo();
-                    info.setTitle(text1);
-                    info.setContent(text2);
-                    info.setType(personalInfoItemEntity.getType());
-                    customInfos.add(info);
-                    break;
-            }
-
-        }
-        result.setEditTime(new Date().getTime() / 1000);
-        return result;
     }
 
     @Override

@@ -8,11 +8,14 @@ import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.DateUtil;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 public class DIDUIPresenter {
     /**
      * 对list <PersonalInfoItemEntity>的iterator中的内容赋值或删除
+     *
      * @param iterator
      * @param personalInfoItemEntity
      * @param text1
@@ -33,20 +36,21 @@ public class DIDUIPresenter {
             personalInfoItemEntity.setText2(text2);
         }
     }
+
     /**
      * 将CredentialSubjectBean的数据转换到listShow
      *
      * @return
      */
-    public void convertCredentialSubjectBean(BaseFragment fragment,ArrayList<PersonalInfoItemEntity> listShow, CredentialSubjectBean credentialSubjectBean) {
-       if (credentialSubjectBean==null){
-           listShow.clear();
-       }
+    public ArrayList<PersonalInfoItemEntity> convertCredential2List(BaseFragment fragment, ArrayList<PersonalInfoItemEntity> listShow, CredentialSubjectBean credentialSubjectBean) {
+        if (credentialSubjectBean == null) {
+            listShow.clear();
+        }
         ArrayList<CredentialSubjectBean.CustomInfo> infos = credentialSubjectBean.getCustomInfos();
         if (infos != null) {
             for (CredentialSubjectBean.CustomInfo info : infos) {
                 PersonalInfoItemEntity personalInfoItemEntity = new PersonalInfoItemEntity();
-                personalInfoItemEntity.setIndex(listShow.size());
+                personalInfoItemEntity.setIndex(listShow.size());//保证自定义项你的index大于13
                 personalInfoItemEntity.setText1(info.getTitle());
                 personalInfoItemEntity.setText2(info.getContent());
                 int type = info.getType();
@@ -127,6 +131,82 @@ public class DIDUIPresenter {
         }
 
 
-
+        return listShow;
     }
+
+    public CredentialSubjectBean convertCredentialSubjectBean(BaseFragment fragment, String didName, List<PersonalInfoItemEntity> listShow) {
+        //这种情况考虑去除全局变量credentialSubjectBean
+        CredentialSubjectBean result = new CredentialSubjectBean(fragment.getMyDID().getDidString(), didName);
+        ArrayList<CredentialSubjectBean.CustomInfo> customInfos = new ArrayList<>();
+        result.setCustomInfos(customInfos);
+        for (int i = 0; i < listShow.size(); i++) {
+            //只遍历show的数据
+            PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);
+            int index = personalInfoItemEntity.getIndex();
+            String text1 = personalInfoItemEntity.getText1();
+            String text2 = personalInfoItemEntity.getText2();
+            switch (index) {
+                case 0:
+                    result.setNickname(text1);
+                    break;
+                case 1:
+                    if (fragment.getString(R.string.man).equals(text1))
+                        result.setGender("1");
+                    else if (fragment.getString(R.string.woman).equals(text1))
+                        result.setGender("2");
+                    break;
+                case 2:
+                    String birthDate = DateUtil.parseToLongWithLanguage(text1, fragment.getContext(), true);
+                    result.setBirthday(birthDate);
+                    break;
+                case 3:
+                    result.setAvatar(text1);
+                    break;
+                case 4:
+                    result.setEmail(text1);
+                    break;
+                case 5:
+                    result.setPhoneCode(text1);
+                    result.setPhone(text2);
+                    break;
+                case 6:
+                    result.setNation(AppUtlis.getLocCode(text1));
+                    break;
+                case 7:
+
+                    result.setIntroduction(text2);
+
+                    break;
+                case 8:
+                    result.setHomePage(text1);
+                    break;
+                case 9:
+                    result.setWechat(text1);
+                    break;
+                case 10:
+                    result.setTwitter(text1);
+                    break;
+                case 11:
+                    result.setWeibo(text1);
+                    break;
+                case 12:
+                    result.setFacebook(text1);
+                    break;
+                case 13:
+                    result.setGoogleAccount(text1);
+                    break;
+                default:
+                    CredentialSubjectBean.CustomInfo info = new CredentialSubjectBean.CustomInfo();
+                    info.setTitle(text1);
+                    info.setContent(text2);
+                    info.setType(personalInfoItemEntity.getType());
+                    customInfos.add(info);
+                    break;
+            }
+
+        }
+        result.setEditTime(new Date().getTime() / 1000);
+        return result;
+    }
+
 }

@@ -69,7 +69,10 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
 
     @Override
     public ViewHolderParent onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == 2)
+        if (viewType == 3)
+            //两个输入框
+            return new ViewHolder3(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_personalinfo_2input, parent, false));
+        else if (viewType == 2)
             //两个输入框+两个textview 电话
             return new ViewHolder2(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_personalinfo_2input_2tv, parent, false));
         else if (viewType == 1)
@@ -86,7 +89,24 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
         //  holder.setIsRecyclable(false);
         PersonalInfoItemEntity personalInfoItemEntity = list.get(position);
         int index = personalInfoItemEntity.getIndex();
-        if (holder instanceof ViewHolder2) {
+        if (holder instanceof ViewHolder3) {
+
+            ((ViewHolder3) holder).et1.setHint(personalInfoItemEntity.getHintShow1());
+            ((ViewHolder3) holder).et2.setHint(personalInfoItemEntity.getHintShow2());
+            ((ViewHolder3) holder).et1.setText(personalInfoItemEntity.getText1());
+            ((ViewHolder3) holder).et2.setText(personalInfoItemEntity.getText2());
+            if (personalInfoItemEntity.getType()==-2){
+                ((ViewHolder3) holder).et2.setFocusable(false);
+                ((ViewHolder3) holder).et2.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        personalInfoItemEntity.setText1(((ViewHolder3) holder).et1.getText().toString());
+                        commonRvListener.onRvItemClick(v, position, personalInfoItemEntity);
+                    }
+                });
+            }
+
+        } else if (holder instanceof ViewHolder2) {
             ((ViewHolder2) holder).tv1.setText(personalInfoItemEntity.getHintChose2());
             ((ViewHolder2) holder).tv2.setText(personalInfoItemEntity.getHintChose());
             ((ViewHolder2) holder).et1.setText(personalInfoItemEntity.getText1());
@@ -142,6 +162,10 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
             //手机号
             return 2;
         }
+        if (index > 13) {
+            //手机号
+            return 3;
+        }
         return 0;
     }
 
@@ -168,6 +192,18 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
         TextView tv1;
 
         ViewHolder0(View view) {
+            super(view);
+            ButterKnife.bind(this, view);
+        }
+    }
+
+    public static class ViewHolder3 extends ViewHolderParent {
+        @BindView(R.id.et1)
+        EditText et1;
+        @BindView(R.id.et2)
+        EditText et2;
+
+        ViewHolder3(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }
