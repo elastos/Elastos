@@ -173,7 +173,6 @@ public class DidDetailFragment extends BaseFragment {
                 bundle.putParcelable("wallet", wallet);
                 bundle.putParcelable("netCredentialSubjectBean", netCredentialSubjectBean);
                 bundle.putParcelableArrayList("listShow", listShow);
-
                 start(EditDIDFragment.class, bundle);
                 break;
             case R.id.tv_credentialinfo:

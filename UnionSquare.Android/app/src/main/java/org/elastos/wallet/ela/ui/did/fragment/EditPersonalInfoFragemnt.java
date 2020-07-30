@@ -38,8 +38,10 @@ import com.alibaba.fastjson.JSON;
 
 import org.elastos.did.DIDDocument;
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
+import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.did.adapter.PersonalChoseRecAdapetr;
 import org.elastos.wallet.ela.ui.did.adapter.PersonalEditRecAdapetr;
@@ -47,6 +49,7 @@ import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
 import org.elastos.wallet.ela.ui.did.presenter.DIDUIPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.OtherPwdActivity;
+import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
 import org.elastos.wallet.ela.utils.Constant;
@@ -55,6 +58,7 @@ import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
+import org.elastos.wallet.ela.utils.ScreenUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.widget.TextConfigDataPicker;
 import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
@@ -70,6 +74,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+/**
+ * 本地和上链的都在这里编辑
+ */
 public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvListener1 {
 
     @BindView(R.id.tv_title)
@@ -101,6 +108,8 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
     private PersonalEditRecAdapetr adapterShow;
     private PersonalChoseRecAdapetr adapterChose;
     private TextView curentTextView;
+    private String type;
+
 
     @Override
     protected int getLayoutId() {
@@ -110,18 +119,61 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
 
     @Override
     protected void setExtraData(Bundle data) {
+        type = data.getString("type", Constant.EDITCREDENTIAL);
         listShow = data.getParcelableArrayList("listShow");
-        getChoseItem(listShow);
+        if (type.equals(Constant.DIDUPDEATE)) {
+            //edit上链的credencial
+            tvTitleRight.setText(getString(R.string.keep));
+            tvTip.setCompoundDrawablePadding(ScreenUtil.dp2px(getContext(), 5));
+            tvTip.setCompoundDrawables(DIDUIPresenter.getDrawable(getContext(), R.mipmap.tips_warning_icon), null, null, null);
+            tvTip.setText(R.string.didinfonettip);
+            onAddPartCredential(data);
+        } else {
+            //edit本地credencial  默认
+            tvTitleRight.setText(getString(R.string.publish));
+        }
+
+
     }
 
+    private void onAddPartCredential(Bundle data) {
+        tvTitleRight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.whetherpublishdid), null, null, false, new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        storePersonalInfo();
+                        String didName = getMyDID().getName(getMyDID().getDIDDocument());
+                        CredentialSubjectBean netCredentialSubjectBean = new DIDUIPresenter().convertCredentialSubjectBean(EditPersonalInfoFragemnt.this, didName, listShow);
+                        Log.i("??", JSON.toJSONString(netCredentialSubjectBean));
+                        DIDDocument doc = getMyDID().getDIDDocument();
+                        Date didEndDate = getMyDID().getExpires(doc);
+                        Wallet wallet = data.getParcelable("wallet");
+                        Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                        intent.putExtra("didName", didName);
+                        intent.putExtra("didEndDate", didEndDate);
+                        intent.putExtra("wallet", wallet);
+                        intent.putExtra("netCredentialSubjectBean", netCredentialSubjectBean);
+                        intent.putExtra("chainId", MyWallet.IDChain);
+                        intent.putExtra("fee", 20000L);
+                        intent.putExtra("type", Constant.DIDUPDEATE);
+                        intent.putExtra("transType", 10);
+                        startActivity(intent);
+                    }
+                });
+
+
+            }
+        });
+    }
 
     @Override
     protected void initView(View view) {
-
         tvTitleRight.setVisibility(View.VISIBLE);
-        tvTitleRight.setText(getString(R.string.keep));
         tvTitle.setText(getString(R.string.editpersonalinfo));
         sexs = new String[]{getString(R.string.man), getString(R.string.woman)};
+        getChoseItem(listShow);
         setRecycleViewShow();
         setRecycleViewChose();
         registReceiver();
@@ -298,6 +350,14 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
                 @Override
                 public void affireBtnClick(View view) {
                     popTo(CredentialFragment.class, false);
+                }
+            });
+        }
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    toDIDDetailFragment();
                 }
             });
         }

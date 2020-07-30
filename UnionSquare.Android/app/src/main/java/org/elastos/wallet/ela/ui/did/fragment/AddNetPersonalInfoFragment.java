@@ -50,7 +50,6 @@ import org.elastos.wallet.ela.ui.did.adapter.PersonalChoseRecAdapetr;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
 import org.elastos.wallet.ela.ui.did.presenter.DIDUIPresenter;
-import org.elastos.wallet.ela.ui.vote.activity.OtherPwdActivity;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
@@ -108,6 +107,7 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
     private PersonalChoseRecAdapetr adapterChose;
     private TextView curentTextView;//需要在别的页面获取数据的view
     private DIDUIPresenter diduiPresenter;
+    private String type;
 
     @Override
     protected int getLayoutId() {
@@ -118,10 +118,11 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
     @Override
     protected void setExtraData(Bundle data) {
 
-        String type = data.getString("type");
-        if (Constant.EDITCREDENTIAL.equals(type)) {
+        type = data.getString("type");
+        if (Constant.DIDUPDEATE.equals(type)) {
             //新增did凭证  从凭证信息进入
-            onAddPartCredential();
+            tvTitleRight.setText(getString(R.string.publish));
+            onAddPartCredential(data);
         } else {
             //新增did凭证  从新增did进入
             wallet = data.getParcelable("wallet");
@@ -131,21 +132,37 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
         }
     }
 
-    private void onAddPartCredential() {
-        tvTitleRight.setText(getString(R.string.keep));
+    /**
+     * 发布   重写方法
+     *
+     * @param data
+     */
+    private void onAddPartCredential(Bundle data) {
         tvTitleRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                storePersonalInfo();
-                credentialSubjectBean = diduiPresenter.convertCredentialSubjectBean(AddNetPersonalInfoFragment.this, getMyDID().getName(getMyDID().getDIDDocument()), listShow);
-                Log.i("??", JSON.toJSONString(credentialSubjectBean));
-                DIDDocument doc = getMyDID().getDIDDocument();
-                Date didEndDate = getMyDID().getExpires(doc);
-                Intent intent = new Intent(getActivity(), OtherPwdActivity.class);
-                intent.putExtra("didEndDate", didEndDate);
-                intent.putExtra("credentialSubjectBean", credentialSubjectBean);
-                intent.putExtra("type", Constant.EDITCREDENTIAL);
-                startActivity(intent);
+                new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.whetherpublishdid), null, null, false, new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        storePersonalInfo();
+                        String didName = getMyDID().getName(getMyDID().getDIDDocument());
+                        CredentialSubjectBean netCredentialSubjectBean = new DIDUIPresenter().convertCredentialSubjectBean(AddNetPersonalInfoFragment.this, didName, listShow);
+                        Log.i("??", JSON.toJSONString(netCredentialSubjectBean));
+                        DIDDocument doc = getMyDID().getDIDDocument();
+                        Date didEndDate = getMyDID().getExpires(doc);
+                        Wallet wallet = data.getParcelable("wallet");
+                        Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                        intent.putExtra("didName", didName);
+                        intent.putExtra("didEndDate", didEndDate);
+                        intent.putExtra("wallet", wallet);
+                        intent.putExtra("netCredentialSubjectBean", netCredentialSubjectBean);
+                        intent.putExtra("chainId", MyWallet.IDChain);
+                        intent.putExtra("fee", 20000L);
+                        intent.putExtra("type", Constant.DIDUPDEATE);
+                        intent.putExtra("transType", 10);
+                        startActivity(intent);
+                    }
+                });
             }
         });
     }
@@ -261,7 +278,7 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
                 break;
             case R.id.tv_title_right:
                 //下一步
-                curentTextView=null;
+                curentTextView = null;//防止下一页的对本页curentTextView有影响
                 storePersonalInfo();
                 credentialSubjectBean = diduiPresenter.convertCredentialSubjectBean(AddNetPersonalInfoFragment.this, didName, listShow);
                 Log.i("??", JSON.toJSONString(credentialSubjectBean));
@@ -298,7 +315,7 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.AREA.ordinal()) {
-            if (curentTextView==null){
+            if (curentTextView == null) {
                 return;
             }
             Area area = (Area) result.getObj();
@@ -312,7 +329,7 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
             curentTextView.setText(name);
         }
         if (integer == RxEnum.EDITPERSONALINTRO.ordinal()) {
-            if (curentTextView==null){
+            if (curentTextView == null) {
                 return;
             }
             String intro = (String) result.getObj();
@@ -322,16 +339,10 @@ public class AddNetPersonalInfoFragment extends BaseFragment implements CommonRv
             new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
-                    toMainFragment();
-                }
-            });
-        }
-        if (integer == RxEnum.EDITPERSONALINFO.ordinal()) {
-            //保留did成功
-            new DialogUtil().showTransferSucess(getString(R.string.savesucess), getBaseActivity(), new WarmPromptListener() {
-                @Override
-                public void affireBtnClick(View view) {
-                    popTo(CredentialFragment.class, false);
+                    if (Constant.DIDUPDEATE.equals(type))
+                        toDIDDetailFragment();
+                    else
+                        toMainFragment();
                 }
             });
         }

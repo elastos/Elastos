@@ -1,5 +1,8 @@
 package org.elastos.wallet.ela.ui.did.presenter;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
@@ -209,4 +212,9 @@ public class DIDUIPresenter {
         return result;
     }
 
+    public static Drawable getDrawable(Context context, int id) {
+        Drawable drawable = context.getDrawable(id);
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        return drawable;
+    }
 }

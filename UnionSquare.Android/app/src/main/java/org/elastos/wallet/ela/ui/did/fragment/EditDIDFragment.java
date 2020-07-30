@@ -22,7 +22,6 @@
 
 package org.elastos.wallet.ela.ui.did.fragment;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -32,13 +31,10 @@ import android.widget.TextView;
 
 import org.elastos.did.DIDDocument;
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
-import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
-import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -54,7 +50,7 @@ import java.util.Date;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
+public class EditDIDFragment extends BaseFragment {
 
 
     @BindView(R.id.tv_title)
@@ -74,6 +70,7 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
     RelativeLayout rlOutdate;
     private Date didEndDate;
     private String didName;
+    private CredentialSubjectBean netCredentialSubjectBean;
 
     @Override
     protected int getLayoutId() {
@@ -84,6 +81,7 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
     protected void setExtraData(Bundle data) {
         wallet = data.getParcelable("wallet");
         putData(getMyDID().getDIDDocument());
+        netCredentialSubjectBean = data.getParcelable("netCredentialSubjectBean");
 
     }
 
@@ -94,7 +92,6 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
         tvDid.setText(getMyDID().getDidString());
         tvDidpk.setText(getMyDID().getDidPublicKey(doc));
         tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(didEndDate, getContext()));
-        registReceiver();
     }
 
     @Override
@@ -106,7 +103,7 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
 
     @OnClick({R.id.tv_title_right, R.id.rl_outdate})
     public void onViewClicked(View view) {
-        Bundle bundle;
+
         switch (view.getId()) {
             case R.id.tv_title_right:
                 //下一
@@ -120,10 +117,16 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
                     showToast(getString(R.string.plzselctoutdate));
                     break;
                 }
-                Bundle bundle1 = getArguments();
-                bundle1.putString("type", "net");
-                start(EditPersonalInfoFragemnt.class, bundle1);
-                // new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
+                Bundle bundle = getArguments();
+
+                if (netCredentialSubjectBean == null || netCredentialSubjectBean.whetherEmpty()) {
+                    bundle.putString("type", Constant.DIDUPDEATE);
+                    start(AddNetPersonalInfoFragment.class, bundle);
+                } else {
+
+                    bundle.putString("type", Constant.DIDUPDEATE);
+                    start(EditPersonalInfoFragemnt.class, bundle);
+                }
 
                 break;
             case R.id.rl_outdate:
@@ -149,35 +152,5 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
         }
     }
 
-    @Override
-    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
-        switch (methodName) {
-            case "getFee":
-                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
-                intent.putExtra("didName", didName);
-                intent.putExtra("didEndDate", didEndDate);
-                intent.putExtra("wallet", wallet);
-                intent.putExtra("chainId", MyWallet.IDChain);
-                intent.putExtra("fee", 20000L);
-                intent.putExtra("type", Constant.DIDUPDEATE);
-                intent.putExtra("transType", 10);
-                startActivity(intent);
-                break;
-        }
-
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void Event(BusEvent result) {
-        int integer = result.getCode();
-        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
-            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
-                @Override
-                public void affireBtnClick(View view) {
-                    popBackFragment();
-                }
-            });
-        }
-    }
 
 }
