@@ -201,6 +201,8 @@ typedef struct JWTBuilder           JWTBuilder;
  *      If no error occurs, return 0. Otherwise, return -1.
  */
 typedef int DIDStore_DIDsCallback(DID *did, void *context);
+extern "Python" int ListDIDsCallback(DID *did, void *context);
+
 /**
  * \~English
  * Credential list callbacks, return alias about credential.
@@ -212,6 +214,7 @@ typedef int DIDStore_DIDsCallback(DID *did, void *context);
  *      If no error occurs, return 0. Otherwise, return -1.
  */
 typedef int DIDStore_CredentialsCallback(DIDURL *id, void *context);
+extern "Python" int ListCredentialsCallback(DIDURL *id, void *context);
 /**
  * \~English
  * The function indicate how to resolve the confict, if the local document is different
@@ -224,6 +227,7 @@ typedef int DIDStore_CredentialsCallback(DIDURL *id, void *context);
  *      If no error occurs, return merged document. Otherwise, return NULL.
  */
 typedef DIDDocument* DIDStore_MergeCallback(DIDDocument *chaincopy, DIDDocument *localcopy);
+extern "Python" DIDDocument* DocumentMergeCallback(DIDDocument *chaincopy, DIDDocument *localcopy);
 /**
  * \~English
  * The function indicate how to get local did document, if this did is not published to chain.
@@ -233,6 +237,7 @@ typedef DIDDocument* DIDStore_MergeCallback(DIDDocument *chaincopy, DIDDocument 
  *      If no error occurs, return the handle to DIDDocument. Otherwise, return NULL.
  */
 typedef DIDDocument* DIDLocalResovleHandle(DID *did);
+extern "Python" DIDDocument* MyDIDLocalResovleHandle(DID *did);
 /**
  * \~English
  * DIDAdapter is support method to create did transaction.
@@ -254,6 +259,8 @@ struct DIDAdapter {
     bool (*createIdTransaction) (DIDAdapter *adapter,
             const char *payload, const char *memo);
 };
+extern "Python" bool CreateIdTransactionHandle(DIDAdapter *adapter,
+            const char *payload, const char *memo);
 /**
  * \~English
  * DIDResolver is support method to resolve did document from chain.
@@ -277,6 +284,7 @@ struct DIDResolver {
      */
     const char* (*resolve) (DIDResolver *resolver, const char *did, int all);
 };
+extern "Python" const char* ResolveHandle(DIDResolver *resolver, const char *did, int all);
 
 /******************************************************************************
  * Log configuration.
