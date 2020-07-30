@@ -2197,6 +2197,10 @@ func (b *BlockChain) checkCRDPOSManagementTransaction(txn *Transaction) error {
 		return errors.New("the originator must be members")
 	}
 
+	if crMember.MemberState != crstate.MemberElected {
+		return errors.New("CR Council Member should be an elected CR members")
+	}
+
 	if crMember.DPOSPublicKey != nil {
 		if bytes.Equal(crMember.DPOSPublicKey, manager.CRManagementPublicKey) {
 			return errors.New("CRManagementPublicKey is the same as crMember.DPOSPublicKey")
