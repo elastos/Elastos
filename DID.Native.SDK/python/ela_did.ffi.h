@@ -20,46 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef __ELA_DID_H__
-#define __ELA_DID_H__
-
-#include <stdbool.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <stdint.h>
-
-#if defined(__APPLE__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdocumentation"
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#if defined(DID_STATIC)
-    #define DID_API
-#elif defined(DID_DYNAMIC)
-    #ifdef DID_BUILD
-        #if defined(_WIN32) || defined(_WIN64)
-            #define DID_API         __declspec(dllexport)
-        #else
-            #define DID_API         __attribute__((visibility("default")))
-        #endif
-    #else
-        #if defined(_WIN32) || defined(_WIN64)
-            #define DID_API         __declspec(dllimport)
-        #else
-            #define DID_API         __attribute__((visibility("default")))
-        #endif
-    #endif
-#else
-    #define DID_API
-#endif
-
-#if defined(_WIN32) || defined(_WIN64)
-typedef ptrdiff_t       ssize_t;
-#endif
+typedef long time_t;
+typedef struct va_list va_list;
 
 /**
  * \~English
@@ -389,7 +351,7 @@ typedef enum DIDLogLevel {
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DID *DID_FromString(const char *idstring);
+/* DID_API */ DID *DID_FromString(const char *idstring);
 
 /**
  * \~English
@@ -405,7 +367,7 @@ DID_API DID *DID_FromString(const char *idstring);
  *      retrieved by calling ela_get_error().
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DID *DID_New(const char *method_specific_string);
+/* DID_API */ DID *DID_New(const char *method_specific_string);
 
 /**
  * \~English
@@ -418,7 +380,7 @@ DID_API DID *DID_New(const char *method_specific_string);
  *      Otherwise, return NULL, and a specific error code can be
  *      retrieved by calling ela_get_error().
  */
-DID_API const char *DID_GetMethod(DID *did);
+/* DID_API */ const char *DID_GetMethod(DID *did);
 
 /**
  * \~English
@@ -431,7 +393,7 @@ DID_API const char *DID_GetMethod(DID *did);
  *      Otherwise, return NULL, and a specific error code can be
  *      retrieved by calling ela_get_error().
  */
-DID_API const char *DID_GetMethodSpecificId(DID *did);
+/* DID_API */ const char *DID_GetMethodSpecificId(DID *did);
 
 /**
  * \~English
@@ -447,7 +409,7 @@ DID_API const char *DID_GetMethodSpecificId(DID *did);
  * @return
  *      The id string pointer, or NULL if buffer is too small.
  */
-DID_API char *DID_ToString(DID *did, char *idstring, size_t len);
+/* DID_API */ char *DID_ToString(DID *did, char *idstring, size_t len);
 
 /**
  * \~English
@@ -460,7 +422,7 @@ DID_API char *DID_ToString(DID *did, char *idstring, size_t len);
  * @return
  *      true if two DID are same, or false if not.
  */
-DID_API bool DID_Equals(DID *did1, DID *did2);
+/* DID_API */ bool DID_Equals(DID *did1, DID *did2);
 
 /**
  * \~English
@@ -475,7 +437,7 @@ DID_API bool DID_Equals(DID *did1, DID *did2);
  *      return value = 0, it indicates did1 is equal to did2.
  *      return value > 0, it indicates did1 is greater than did2.
  */
-DID_API int DID_Compare(DID *did1, DID *did2);
+/* DID_API */ int DID_Compare(DID *did1, DID *did2);
 
 /**
  * \~English
@@ -484,7 +446,7 @@ DID_API int DID_Compare(DID *did1, DID *did2);
  * @param
  *      did                   [in] A handle to DID to be destroied.
  */
-DID_API void DID_Destroy(DID *did);
+/* DID_API */ void DID_Destroy(DID *did);
 
 /**
  * \~English
@@ -502,7 +464,7 @@ DID_API void DID_Destroy(DID *did);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDDocument *DID_Resolve(DID *did, bool force);
+/* DID_API */ DIDDocument *DID_Resolve(DID *did, bool force);
 
 /**
  * \~English
@@ -515,7 +477,7 @@ DID_API DIDDocument *DID_Resolve(DID *did, bool force);
  *      otherwise, it returns NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDHistory *DID_ResolveHistory(DID *did);
+/* DID_API */ DIDHistory *DID_ResolveHistory(DID *did);
 
 /**
  * \~English
@@ -527,7 +489,7 @@ DID_API DIDHistory *DID_ResolveHistory(DID *did);
  *      If no error occurs, return the handle to DIDMetaData.
  *      Otherwise, return -1.
  */
-DID_API DIDMetaData *DID_GetMetaData(DID *did);
+/* DID_API */ DIDMetaData *DID_GetMetaData(DID *did);
 
 /**
  * \~English
@@ -539,7 +501,7 @@ DID_API DIDMetaData *DID_GetMetaData(DID *did);
  *      If no error occurs, return 0.
  *      Otherwise, return -1.
  */
-DID_API int DID_SaveMetaData(DID *did);
+/* DID_API */ int DID_SaveMetaData(DID *did);
 
 /**
  * \~English
@@ -551,7 +513,7 @@ DID_API int DID_SaveMetaData(DID *did);
  *      If no error occurs, return alias string.
  *      Otherwise, return NULL.
  */
-DID_API const char *DIDMetaData_GetAlias(DIDMetaData *metadata);
+/* DID_API */ const char *DIDMetaData_GetAlias(DIDMetaData *metadata);
 
 /**
  * \~English
@@ -563,7 +525,7 @@ DID_API const char *DIDMetaData_GetAlias(DIDMetaData *metadata);
  *      If no error occurs, return status.
  *      Otherwise, return false.
  */
-DID_API bool DIDMetaData_GetDeactivated(DIDMetaData *metadata);
+/* DID_API */ bool DIDMetaData_GetDeactivated(DIDMetaData *metadata);
 
 /**
  * \~English
@@ -575,7 +537,7 @@ DID_API bool DIDMetaData_GetDeactivated(DIDMetaData *metadata);
  *      If no error occurs, return time stamp.
  *      Otherwise, return 0.
  */
-DID_API time_t DIDMetaData_GetPublished(DIDMetaData *metadata);
+/* DID_API */ time_t DIDMetaData_GetPublished(DIDMetaData *metadata);
 
 /**
  * \~English
@@ -588,7 +550,7 @@ DID_API time_t DIDMetaData_GetPublished(DIDMetaData *metadata);
  * @return
  *      If no error occurs, return 0. Otherwise, return -1.
  */
-DID_API int DIDMetaData_SetAlias(DIDMetaData *metadata, const char *alias);
+/* DID_API */ int DIDMetaData_SetAlias(DIDMetaData *metadata, const char *alias);
 
 /**
  * \~English
@@ -603,7 +565,7 @@ DID_API int DIDMetaData_SetAlias(DIDMetaData *metadata, const char *alias);
  * @return
  *      If no error occurs, return 0. Otherwise, return -1.
  */
-DID_API int DIDMetaData_SetExtra(DIDMetaData *metadata, const char* key, const char *value);
+/* DID_API */ int DIDMetaData_SetExtra(DIDMetaData *metadata, const char* key, const char *value);
 
 /**
  * \~English
@@ -618,7 +580,7 @@ DID_API int DIDMetaData_SetExtra(DIDMetaData *metadata, const char* key, const c
  * @return
  *      If no error occurs, return 0. Otherwise, return -1.
  */
-DID_API int DIDMetaData_SetExtraWithBoolean(DIDMetaData *metadata, const char *key, bool value);
+/* DID_API */ int DIDMetaData_SetExtraWithBoolean(DIDMetaData *metadata, const char *key, bool value);
 
 /**
  * \~English
@@ -633,7 +595,7 @@ DID_API int DIDMetaData_SetExtraWithBoolean(DIDMetaData *metadata, const char *k
  * @return
  *      If no error occurs, return 0. Otherwise, return -1.
  */
-DID_API int DIDMetaData_SetExtraWithDouble(DIDMetaData *metadata, const char *key, double value);
+/* DID_API */ int DIDMetaData_SetExtraWithDouble(DIDMetaData *metadata, const char *key, double value);
 
 /**
  * \~English
@@ -646,7 +608,7 @@ DID_API int DIDMetaData_SetExtraWithDouble(DIDMetaData *metadata, const char *ke
  * @return
  *      If no error occurs, return the elem string. Otherwise, return NULL.
  */
-DID_API const char *DIDMetaData_GetExtra(DIDMetaData *metadata, const char *key);
+/* DID_API */ const char *DIDMetaData_GetExtra(DIDMetaData *metadata, const char *key);
 
 /**
  * \~English
@@ -659,7 +621,7 @@ DID_API const char *DIDMetaData_GetExtra(DIDMetaData *metadata, const char *key)
  * @return
  *      'boolean' elem value.
  */
-DID_API bool DIDMetaData_GetExtraAsBoolean(DIDMetaData *metadata, const char *key);
+/* DID_API */ bool DIDMetaData_GetExtraAsBoolean(DIDMetaData *metadata, const char *key);
 
 /**
  * \~English
@@ -672,7 +634,7 @@ DID_API bool DIDMetaData_GetExtraAsBoolean(DIDMetaData *metadata, const char *ke
  * @return
  *      'double' elem value.
  */
-DID_API double DIDMetaData_GetExtraAsDouble(DIDMetaData *metadata, const char *key);
+/* DID_API */ double DIDMetaData_GetExtraAsDouble(DIDMetaData *metadata, const char *key);
 
 /******************************************************************************
  * DIDURL
@@ -692,7 +654,7 @@ DID_API double DIDMetaData_GetExtraAsDouble(DIDMetaData *metadata, const char *k
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDURL *DIDURL_FromString(const char *idstring, DID *ref);
+/* DID_API */ DIDURL *DIDURL_FromString(const char *idstring, DID *ref);
 
 /**
  * \~English
@@ -709,7 +671,7 @@ DID_API DIDURL *DIDURL_FromString(const char *idstring, DID *ref);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDURL *DIDURL_New(const char *method_specific_string, const char *fragment);
+/* DID_API */ DIDURL *DIDURL_New(const char *method_specific_string, const char *fragment);
 
 /**
  * \~English
@@ -724,7 +686,7 @@ DID_API DIDURL *DIDURL_New(const char *method_specific_string, const char *fragm
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDURL *DIDURL_NewByDid(DID *did, const char *fragment);
+/* DID_API */ DIDURL *DIDURL_NewByDid(DID *did, const char *fragment);
 
 /**
  * \~English
@@ -736,7 +698,7 @@ DID_API DIDURL *DIDURL_NewByDid(DID *did, const char *fragment);
  *      If no error occurs, return the handle to DID.
  *      Otherwise, return NULL.
  */
-DID_API DID *DIDURL_GetDid(DIDURL *id);
+/* DID_API */ DID *DIDURL_GetDid(DIDURL *id);
 
 /**
  * \~English
@@ -748,7 +710,7 @@ DID_API DID *DIDURL_GetDid(DIDURL *id);
  *      If no error occurs, return fragment string.
  *      Otherwise, return NULL.
  */
-DID_API const char *DIDURL_GetFragment(DIDURL *id);
+/* DID_API */ const char *DIDURL_GetFragment(DIDURL *id);
 
 /**
  * \~English
@@ -767,7 +729,7 @@ DID_API const char *DIDURL_GetFragment(DIDURL *id);
  * @return
  *      If no error occurs, return id string. Otherwise, return NULL.
  */
-DID_API char *DIDURL_ToString(DIDURL *id, char *idstring, size_t len, bool compact);
+/* DID_API */ char *DIDURL_ToString(DIDURL *id, char *idstring, size_t len, bool compact);
 
 /**
  * \~English
@@ -780,7 +742,7 @@ DID_API char *DIDURL_ToString(DIDURL *id, char *idstring, size_t len, bool compa
  * @return
  *      true if two DID URL are same, or false if not.
  */
-DID_API bool DIDURL_Equals(DIDURL *id1, DIDURL *id2);
+/* DID_API */ bool DIDURL_Equals(DIDURL *id1, DIDURL *id2);
 
 /**
  * \~English
@@ -795,7 +757,7 @@ DID_API bool DIDURL_Equals(DIDURL *id1, DIDURL *id2);
  *      return value = 0, it indicates id1 is equal to id2.
  *      return value > 0, it indicates id1 is greater than id2.
  */
-DID_API int DIDURL_Compare(DIDURL *id1, DIDURL *id2);
+/* DID_API */ int DIDURL_Compare(DIDURL *id1, DIDURL *id2);
 
 /**
  * \~English
@@ -804,7 +766,7 @@ DID_API int DIDURL_Compare(DIDURL *id1, DIDURL *id2);
  * @param
  *      id                  [in] A handle to DID URL to be destroied.
  */
-DID_API void DIDURL_Destroy(DIDURL *id);
+/* DID_API */ void DIDURL_Destroy(DIDURL *id);
 
 /**
  * \~English
@@ -815,7 +777,7 @@ DID_API void DIDURL_Destroy(DIDURL *id);
  * @return
  *      If no error occurs, return the handle to CredentialMetaData. Otherwise, return NULL.
  */
-DID_API CredentialMetaData *DIDURL_GetMetaData(DIDURL *id);
+/* DID_API */ CredentialMetaData *DIDURL_GetMetaData(DIDURL *id);
 
 /**
  * \~English
@@ -827,7 +789,7 @@ DID_API CredentialMetaData *DIDURL_GetMetaData(DIDURL *id);
  *      If no error occurs, return 0.
  *      Otherwise, return -1.
  */
-DID_API int DIDURL_SaveMetaData(DIDURL *id);
+/* DID_API */ int DIDURL_SaveMetaData(DIDURL *id);
 
 /**
  * \~English
@@ -840,7 +802,7 @@ DID_API int DIDURL_SaveMetaData(DIDURL *id);
  * @return
  *      If no error occurs, return the 0. Otherwise, return -1.
  */
-DID_API int CredentialMetaData_SetAlias(CredentialMetaData *metadata, const char *alias);
+/* DID_API */ int CredentialMetaData_SetAlias(CredentialMetaData *metadata, const char *alias);
 
 /**
  * \~English
@@ -855,7 +817,7 @@ DID_API int CredentialMetaData_SetAlias(CredentialMetaData *metadata, const char
  * @return
  *      If no error occurs, return the 0. Otherwise, return -1.
  */
-DID_API int CredentialMetaData_SetExtra(CredentialMetaData *metadata,
+/* DID_API */ int CredentialMetaData_SetExtra(CredentialMetaData *metadata,
         const char* key, const char *value);
 
 /**
@@ -871,7 +833,7 @@ DID_API int CredentialMetaData_SetExtra(CredentialMetaData *metadata,
  * @return
  *      If no error occurs, return the 0. Otherwise, return -1.
  */
-DID_API int CredentialMetaData_SetExtraWithBoolean(CredentialMetaData *metadata,
+/* DID_API */ int CredentialMetaData_SetExtraWithBoolean(CredentialMetaData *metadata,
         const char *key, bool value);
 
 /**
@@ -887,7 +849,7 @@ DID_API int CredentialMetaData_SetExtraWithBoolean(CredentialMetaData *metadata,
  * @return
  *      If no error occurs, return the 0. Otherwise, return -1.
  */
-DID_API int CredentialMetaData_SetExtraWithDouble(CredentialMetaData *metadata,
+/* DID_API */ int CredentialMetaData_SetExtraWithDouble(CredentialMetaData *metadata,
         const char *key, double value);
 
 /**
@@ -899,7 +861,7 @@ DID_API int CredentialMetaData_SetExtraWithDouble(CredentialMetaData *metadata,
  * @return
  *      If no error occurs, return alias string. Otherwise, return NULL.
  */
-DID_API const char *CredentialMetaData_GetAlias(CredentialMetaData *metadata);
+/* DID_API */ const char *CredentialMetaData_GetAlias(CredentialMetaData *metadata);
 
 /**
  * \~English
@@ -912,7 +874,7 @@ DID_API const char *CredentialMetaData_GetAlias(CredentialMetaData *metadata);
  * @return
  *      If no error occurs, return the elem string. Otherwise, return NULL.
  */
-DID_API const char *CredentialMetaData_GetExtra(CredentialMetaData *metadata,
+/* DID_API */ const char *CredentialMetaData_GetExtra(CredentialMetaData *metadata,
         const char *key);
 
 /**
@@ -926,7 +888,7 @@ DID_API const char *CredentialMetaData_GetExtra(CredentialMetaData *metadata,
  * @return
  *      'boolean' elem value.
  */
-DID_API bool CredentialMetaData_GetExtraAsBoolean(CredentialMetaData *metadata,
+/* DID_API */ bool CredentialMetaData_GetExtraAsBoolean(CredentialMetaData *metadata,
         const char *key);
 
 /**
@@ -940,7 +902,7 @@ DID_API bool CredentialMetaData_GetExtraAsBoolean(CredentialMetaData *metadata,
  * @return
  *      'double' elem value.
  */
-DID_API double CredentialMetaData_GetExtraAsDouble(CredentialMetaData *metadata,
+/* DID_API */ double CredentialMetaData_GetExtraAsDouble(CredentialMetaData *metadata,
         const char *key);
 
 /******************************************************************************
@@ -957,7 +919,7 @@ DID_API double CredentialMetaData_GetExtraAsDouble(CredentialMetaData *metadata,
  *      If no error occurs, return the handle to DID. Destroy DID after finishing use.
  *      Otherwise, return NULL.
  */
-DID_API DID *DIDHistory_GetOwner(DIDHistory *history);
+/* DID_API */ DID *DIDHistory_GetOwner(DIDHistory *history);
 
 /**
  * \~English
@@ -968,7 +930,7 @@ DID_API DID *DIDHistory_GetOwner(DIDHistory *history);
  * @return
 *      If no error occurs, return DID status. Otherwise, return -1.
  */
-DID_API int DIDHistory_GetStatus(DIDHistory *history);
+/* DID_API */ int DIDHistory_GetStatus(DIDHistory *history);
 
 /**
  * \~English
@@ -979,7 +941,7 @@ DID_API int DIDHistory_GetStatus(DIDHistory *history);
  * @return
 *      If no error occurs, return count. Otherwise, return -1.
  */
-DID_API ssize_t DIDHistory_GetTransactionCount(DIDHistory *history);
+/* DID_API */ ssize_t DIDHistory_GetTransactionCount(DIDHistory *history);
 
 /**
  * \~English
@@ -994,7 +956,7 @@ DID_API ssize_t DIDHistory_GetTransactionCount(DIDHistory *history);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDDocument *DIDHistory_GetDocumentByIndex(DIDHistory *history, int index);
+/* DID_API */ DIDDocument *DIDHistory_GetDocumentByIndex(DIDHistory *history, int index);
 
 /**
  * \~English
@@ -1008,7 +970,7 @@ DID_API DIDDocument *DIDHistory_GetDocumentByIndex(DIDHistory *history, int inde
  *      If no error occurs, return transaction.
  *      Otherwise, return NULL.
  */
-DID_API const char *DIDHistory_GetTransactionIdByIndex(DIDHistory *history, int index);
+/* DID_API */ const char *DIDHistory_GetTransactionIdByIndex(DIDHistory *history, int index);
 
 /**
  * \~English
@@ -1021,7 +983,7 @@ DID_API const char *DIDHistory_GetTransactionIdByIndex(DIDHistory *history, int 
  * @return
 *      If no error occurs, return published time. Otherwise, return 0.
  */
-DID_API time_t DIDHistory_GetPublishedByIndex(DIDHistory *history, int index);
+/* DID_API */ time_t DIDHistory_GetPublishedByIndex(DIDHistory *history, int index);
 
 /**
  * \~English
@@ -1035,7 +997,7 @@ DID_API time_t DIDHistory_GetPublishedByIndex(DIDHistory *history, int index);
  *       If no error occurs, return operation string.
  *       Otherwise, return -1.
  */
-DID_API const char *DIDHistory_GetOperationByIndex(DIDHistory *history, int index);
+/* DID_API */ const char *DIDHistory_GetOperationByIndex(DIDHistory *history, int index);
 
 /**
  * \~English
@@ -1044,7 +1006,7 @@ DID_API const char *DIDHistory_GetOperationByIndex(DIDHistory *history, int inde
  * @param
  *      history               [in] A handle to DIDHistory.
  */
-DID_API void DIDHistory_Destroy(DIDHistory *history);
+/* DID_API */ void DIDHistory_Destroy(DIDHistory *history);
 
 /******************************************************************************
  * DIDDocument
@@ -1060,7 +1022,7 @@ DID_API void DIDHistory_Destroy(DIDHistory *history);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDDocument *DIDDocument_FromJson(const char* json);
+/* DID_API */ DIDDocument *DIDDocument_FromJson(const char* json);
 
 /**
  * \~English
@@ -1075,7 +1037,7 @@ DID_API DIDDocument *DIDDocument_FromJson(const char* json);
  *      If no error occurs, return json context. Otherwise, return NULL.
  *      Notice that user need to free the returned value that it's memory.
  */
-DID_API const char *DIDDocument_ToJson(DIDDocument *document, bool normalized);
+/* DID_API */ const char *DIDDocument_ToJson(DIDDocument *document, bool normalized);
 
 
 /**
@@ -1091,7 +1053,7 @@ DID_API const char *DIDDocument_ToJson(DIDDocument *document, bool normalized);
  *      If no error occurs, return json context. Otherwise, return NULL.
  *      Notice that user need to free the returned value that it's memory.
  */
-DID_API const char *DIDDocument_ToString(DIDDocument *document, bool normalized);
+/* DID_API */ const char *DIDDocument_ToString(DIDDocument *document, bool normalized);
 /**
  * \~English
  * Destroy DID Document.
@@ -1099,7 +1061,7 @@ DID_API const char *DIDDocument_ToString(DIDDocument *document, bool normalized)
  * @param
  *      document             [in] A handle to DID Document to be destroied.
  */
-DID_API void DIDDocument_Destroy(DIDDocument *document);
+/* DID_API */ void DIDDocument_Destroy(DIDDocument *document);
 
 /**
  * \~English
@@ -1110,7 +1072,7 @@ DID_API void DIDDocument_Destroy(DIDDocument *document);
  * @return
  *      true if document is deactivated, otherwise false.
 */
-DID_API bool DIDDocument_IsDeactivated(DIDDocument *document);
+/* DID_API */ bool DIDDocument_IsDeactivated(DIDDocument *document);
 
 /**
  * \~English
@@ -1121,7 +1083,7 @@ DID_API bool DIDDocument_IsDeactivated(DIDDocument *document);
  * @return
  *      true if document is genuine, otherwise false.
 */
-DID_API bool DIDDocument_IsGenuine(DIDDocument *document);
+/* DID_API */ bool DIDDocument_IsGenuine(DIDDocument *document);
 
 /**
  * \~English
@@ -1132,7 +1094,7 @@ DID_API bool DIDDocument_IsGenuine(DIDDocument *document);
  * @return
  *      true if document is expired, otherwise false.
 */
-DID_API bool DIDDocument_IsExpires(DIDDocument *document);
+/* DID_API */ bool DIDDocument_IsExpires(DIDDocument *document);
 
 /**
  * \~English
@@ -1143,7 +1105,7 @@ DID_API bool DIDDocument_IsExpires(DIDDocument *document);
  * @return
  *      true if document is valid, otherwise false.
 */
-DID_API bool DIDDocument_IsValid(DIDDocument *document);
+/* DID_API */ bool DIDDocument_IsValid(DIDDocument *document);
 
 /**
  * \~English
@@ -1156,7 +1118,7 @@ DID_API bool DIDDocument_IsValid(DIDDocument *document);
  *      If no error occurs, return a handle to DID.
  *      Otherwise, return NULL.
  */
-DID_API DID* DIDDocument_GetSubject(DIDDocument *document);
+/* DID_API */ DID* DIDDocument_GetSubject(DIDDocument *document);
 
 /**
  * \~English
@@ -1169,7 +1131,7 @@ DID_API DID* DIDDocument_GetSubject(DIDDocument *document);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDDocumentBuilder* DIDDocument_Edit(DIDDocument *document);
+/* DID_API */ DIDDocumentBuilder* DIDDocument_Edit(DIDDocument *document);
 
 /**
  * \~English
@@ -1178,7 +1140,7 @@ DID_API DIDDocumentBuilder* DIDDocument_Edit(DIDDocument *document);
  * @param
  *      builder             [in] A handle to DIDDocument Builder.
  */
-DID_API void DIDDocumentBuilder_Destroy(DIDDocumentBuilder *builder);
+/* DID_API */ void DIDDocumentBuilder_Destroy(DIDDocumentBuilder *builder);
 
 /**
  * \~English
@@ -1193,7 +1155,7 @@ DID_API void DIDDocumentBuilder_Destroy(DIDDocumentBuilder *builder);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder,
+/* DID_API */ DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder,
             const char *storepass);
 
 /**
@@ -1215,7 +1177,7 @@ DID_API DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *builder,
         DIDURL *keyid, DID *controller, const char *key);
 
 /**
@@ -1232,7 +1194,7 @@ DID_API int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *builder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_RemovePublicKey(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_RemovePublicKey(DIDDocumentBuilder *builder,
         DIDURL *keyid, bool force);
 
 /**
@@ -1252,7 +1214,7 @@ DID_API int DIDDocumentBuilder_RemovePublicKey(DIDDocumentBuilder *builder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *builder,
         DIDURL *keyid, const char *key);
 
 /**
@@ -1266,7 +1228,7 @@ DID_API int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *builder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_RemoveAuthenticationKey(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_RemoveAuthenticationKey(DIDDocumentBuilder *builder,
         DIDURL *keyid);
 
 /**
@@ -1289,7 +1251,7 @@ DID_API int DIDDocumentBuilder_RemoveAuthenticationKey(DIDDocumentBuilder *build
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_AddAuthorizationKey(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_AddAuthorizationKey(DIDDocumentBuilder *builder,
         DIDURL *keyid, DID *controller, const char *key);
 
 /**
@@ -1311,7 +1273,7 @@ DID_API int DIDDocumentBuilder_AddAuthorizationKey(DIDDocumentBuilder *builder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_AuthorizationDid(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_AuthorizationDid(DIDDocumentBuilder *builder,
         DIDURL *keyid, DID *controller, DIDURL *authorkeyid);
 
 /**
@@ -1325,7 +1287,7 @@ DID_API int DIDDocumentBuilder_AuthorizationDid(DIDDocumentBuilder *builder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_RemoveAuthorizationKey(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_RemoveAuthorizationKey(DIDDocumentBuilder *builder,
         DIDURL *keyid);
 
 /**
@@ -1339,7 +1301,7 @@ DID_API int DIDDocumentBuilder_RemoveAuthorizationKey(DIDDocumentBuilder *builde
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder,
         Credential *credential);
 /**
  * \~English
@@ -1367,7 +1329,7 @@ DID_API int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder,
  *      If no error occurs, return 0.
  *      Otherwise, return -1.
  */
-DID_API int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
         DIDURL *credid, const char **types, size_t typesize,
         Property *properties, int propsize, time_t expires, const char *storepass);
 /**
@@ -1381,7 +1343,7 @@ DID_API int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *buil
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_RemoveCredential(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_RemoveCredential(DIDDocumentBuilder *builder,
         DIDURL *credid);
 
 /**
@@ -1399,7 +1361,7 @@ DID_API int DIDDocumentBuilder_RemoveCredential(DIDDocumentBuilder *builder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_AddService(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_AddService(DIDDocumentBuilder *builder,
         DIDURL *serviceid, const char *type, const char *endpoint);
 
 /**
@@ -1413,7 +1375,7 @@ DID_API int DIDDocumentBuilder_AddService(DIDDocumentBuilder *builder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_RemoveService(DIDDocumentBuilder *builder,
+/* DID_API */ int DIDDocumentBuilder_RemoveService(DIDDocumentBuilder *builder,
         DIDURL *serviceid);
 
 /**
@@ -1427,7 +1389,7 @@ DID_API int DIDDocumentBuilder_RemoveService(DIDDocumentBuilder *builder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_SetExpires(DIDDocumentBuilder *builder, time_t expires);
+/* DID_API */ int DIDDocumentBuilder_SetExpires(DIDDocumentBuilder *builder, time_t expires);
 
 /**
  * \~English
@@ -1438,7 +1400,7 @@ DID_API int DIDDocumentBuilder_SetExpires(DIDDocumentBuilder *builder, time_t ex
  * @return
  *      size of public keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetPublicKeyCount(DIDDocument *document);
+/* DID_API */ ssize_t DIDDocument_GetPublicKeyCount(DIDDocument *document);
 
 /**
  * \~English
@@ -1453,7 +1415,7 @@ DID_API ssize_t DIDDocument_GetPublicKeyCount(DIDDocument *document);
  * @return
  *      size of public keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetPublicKeys(DIDDocument *document,
+/* DID_API */ ssize_t DIDDocument_GetPublicKeys(DIDDocument *document,
         PublicKey **pks, size_t size);
 
 /**
@@ -1468,7 +1430,7 @@ DID_API ssize_t DIDDocument_GetPublicKeys(DIDDocument *document,
  *      If no error occurs, return the handle to public key.
  *      Otherwise, return NULL
  */
-DID_API PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *keyid);
+/* DID_API */ PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -1487,7 +1449,7 @@ DID_API PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *keyid
  * @return
  *      size of public keys selected on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectPublicKeys(DIDDocument *document, const char *type,
+/* DID_API */ ssize_t DIDDocument_SelectPublicKeys(DIDDocument *document, const char *type,
         DIDURL *keyid, PublicKey **pks, size_t size);
 
 /**
@@ -1500,7 +1462,7 @@ DID_API ssize_t DIDDocument_SelectPublicKeys(DIDDocument *document, const char *
  *      If no error occurs, return the handle to identifier.
  *      Otherwise, return NULL
  */
-DID_API DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document);
+/* DID_API */ DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document);
 
 /**
  * \~English
@@ -1512,7 +1474,7 @@ DID_API DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document);
  * @return
  *      size of authentication keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetAuthenticationCount(DIDDocument *document);
+/* DID_API */ ssize_t DIDDocument_GetAuthenticationCount(DIDDocument *document);
 
 /**
  * \~English
@@ -1529,7 +1491,7 @@ DID_API ssize_t DIDDocument_GetAuthenticationCount(DIDDocument *document);
  * @return
  *      size of authentication keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetAuthenticationKeys(DIDDocument *document,
+/* DID_API */ ssize_t DIDDocument_GetAuthenticationKeys(DIDDocument *document,
         PublicKey **pks, size_t size);
 
 /**
@@ -1545,7 +1507,7 @@ DID_API ssize_t DIDDocument_GetAuthenticationKeys(DIDDocument *document,
  *       If no error occurs, return the handle to public key.
  *       Otherwise, return NULL
  */
-DID_API PublicKey *DIDDocument_GetAuthenticationKey(DIDDocument *document, DIDURL *keyid);
+/* DID_API */ PublicKey *DIDDocument_GetAuthenticationKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -1564,7 +1526,7 @@ DID_API PublicKey *DIDDocument_GetAuthenticationKey(DIDDocument *document, DIDUR
  * @return
  *      size of authentication key selected, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectAuthenticationKeys(DIDDocument *document, const char *type,
+/* DID_API */ ssize_t DIDDocument_SelectAuthenticationKeys(DIDDocument *document, const char *type,
         DIDURL *keyid, PublicKey **pks, size_t size);
 
 
@@ -1579,7 +1541,7 @@ DID_API ssize_t DIDDocument_SelectAuthenticationKeys(DIDDocument *document, cons
  * @return
  *      true if has authentication key, or false.
  */
-DID_API bool DIDDocument_IsAuthenticationKey(DIDDocument *document, DIDURL *keyid);
+/* DID_API */ bool DIDDocument_IsAuthenticationKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -1592,7 +1554,7 @@ DID_API bool DIDDocument_IsAuthenticationKey(DIDDocument *document, DIDURL *keyi
  * @return
  *      true if has authorization key, or false.
  */
-DID_API bool DIDDocument_IsAuthorizationKey(DIDDocument *document, DIDURL *keyid);
+/* DID_API */ bool DIDDocument_IsAuthorizationKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -1603,7 +1565,7 @@ DID_API bool DIDDocument_IsAuthorizationKey(DIDDocument *document, DIDURL *keyid
  * @return
  *      size of authorization keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetAuthorizationCount(DIDDocument *document);
+/* DID_API */ ssize_t DIDDocument_GetAuthorizationCount(DIDDocument *document);
 
 /**
  * \~English
@@ -1619,7 +1581,7 @@ DID_API ssize_t DIDDocument_GetAuthorizationCount(DIDDocument *document);
  * @return
  *      size of authorization keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetAuthorizationKeys(DIDDocument *document,
+/* DID_API */ ssize_t DIDDocument_GetAuthorizationKeys(DIDDocument *document,
         PublicKey **pks, size_t size);
 
 /**
@@ -1634,7 +1596,7 @@ DID_API ssize_t DIDDocument_GetAuthorizationKeys(DIDDocument *document,
  *       If no error occurs, return the handle to public key.
  *       Otherwise, return NULL
  */
-DID_API PublicKey *DIDDocument_GetAuthorizationKey(DIDDocument *document, DIDURL *keyid);
+/* DID_API */ PublicKey *DIDDocument_GetAuthorizationKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -1653,7 +1615,7 @@ DID_API PublicKey *DIDDocument_GetAuthorizationKey(DIDDocument *document, DIDURL
  * @return
  *      size of authorization key selected, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectAuthorizationKeys(DIDDocument *document, const char *type,
+/* DID_API */ ssize_t DIDDocument_SelectAuthorizationKeys(DIDDocument *document, const char *type,
         DIDURL *keyid, PublicKey **pks, size_t size);
 
 
@@ -1666,7 +1628,7 @@ DID_API ssize_t DIDDocument_SelectAuthorizationKeys(DIDDocument *document, const
  * @return
  *      size of credentials on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetCredentialCount(DIDDocument *document);
+/* DID_API */ ssize_t DIDDocument_GetCredentialCount(DIDDocument *document);
 
 /**
  * \~English
@@ -1681,7 +1643,7 @@ DID_API ssize_t DIDDocument_GetCredentialCount(DIDDocument *document);
  * @return
  *      size of credentials on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetCredentials(DIDDocument *document,
+/* DID_API */ ssize_t DIDDocument_GetCredentials(DIDDocument *document,
         Credential **creds, size_t size);
 
 /**
@@ -1696,7 +1658,7 @@ DID_API ssize_t DIDDocument_GetCredentials(DIDDocument *document,
  *       If no error occurs, return the handle to Credential.
  *       Otherwise, return NULL
  */
-DID_API Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *credid);
+/* DID_API */ Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *credid);
 
 /**
  * \~English
@@ -1715,7 +1677,7 @@ DID_API Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *cre
  * @return
  *      size of credentials selected, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectCredentials(DIDDocument *document, const char *type,
+/* DID_API */ ssize_t DIDDocument_SelectCredentials(DIDDocument *document, const char *type,
         DIDURL *credid, Credential **creds, size_t size);
 
 
@@ -1728,7 +1690,7 @@ DID_API ssize_t DIDDocument_SelectCredentials(DIDDocument *document, const char 
  * @return
  *      size of services on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetServiceCount(DIDDocument *document);
+/* DID_API */ ssize_t DIDDocument_GetServiceCount(DIDDocument *document);
 
 /**
  * \~English
@@ -1743,7 +1705,7 @@ DID_API ssize_t DIDDocument_GetServiceCount(DIDDocument *document);
  * @return
  *      size of services on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetServices(DIDDocument *document, Service **services,
+/* DID_API */ ssize_t DIDDocument_GetServices(DIDDocument *document, Service **services,
         size_t size);
 
 /**
@@ -1758,7 +1720,7 @@ DID_API ssize_t DIDDocument_GetServices(DIDDocument *document, Service **service
  *       If no error occurs, return the handle to Service.
  *       Otherwise, return NULL
  */
-DID_API Service *DIDDocument_GetService(DIDDocument *document, DIDURL *serviceid);
+/* DID_API */ Service *DIDDocument_GetService(DIDDocument *document, DIDURL *serviceid);
 
 /**
  * \~English
@@ -1777,7 +1739,7 @@ DID_API Service *DIDDocument_GetService(DIDDocument *document, DIDURL *serviceid
  * @return
  *      size of services selected, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectServices(DIDDocument *document, const char *type,
+/* DID_API */ ssize_t DIDDocument_SelectServices(DIDDocument *document, const char *type,
         DIDURL *serviceid, Service **services, size_t size);
 
 /**
@@ -1789,7 +1751,7 @@ DID_API ssize_t DIDDocument_SelectServices(DIDDocument *document, const char *ty
  * @return
  *      expire time on success, 0 if failed.
  */
-DID_API time_t DIDDocument_GetExpires(DIDDocument *document);
+/* DID_API */ time_t DIDDocument_GetExpires(DIDDocument *document);
 
 /**
  * \~English
@@ -1810,7 +1772,7 @@ DID_API time_t DIDDocument_GetExpires(DIDDocument *document);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass,
+/* DID_API */ int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass,
         char *sig, int count, ...);
 
 /**
@@ -1834,7 +1796,7 @@ DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *s
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_SignDigest(DIDDocument *document, DIDURL *keyid,
+/* DID_API */ int DIDDocument_SignDigest(DIDDocument *document, DIDURL *keyid,
         const char *storepass, char *sig, uint8_t *digest, size_t size);
 
 /**
@@ -1854,7 +1816,7 @@ DID_API int DIDDocument_SignDigest(DIDDocument *document, DIDURL *keyid,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_Verify(DIDDocument *document, DIDURL *keyid, char *sig,
+/* DID_API */ int DIDDocument_Verify(DIDDocument *document, DIDURL *keyid, char *sig,
         int count, ...);
 /**
  * \~English
@@ -1875,7 +1837,7 @@ DID_API int DIDDocument_Verify(DIDDocument *document, DIDURL *keyid, char *sig,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_VerifyDigest(DIDDocument *document, DIDURL *keyid,
+/* DID_API */ int DIDDocument_VerifyDigest(DIDDocument *document, DIDURL *keyid,
         char *sig, uint8_t *digest, size_t size);
 
 /**
@@ -1888,7 +1850,7 @@ DID_API int DIDDocument_VerifyDigest(DIDDocument *document, DIDURL *keyid,
  *      If no error occurs, return the handle to DIDMetadata.
  *      Otherwise, return NULL.
  */
-DID_API DIDMetaData *DIDDocument_GetMetaData(DIDDocument *document);
+/* DID_API */ DIDMetaData *DIDDocument_GetMetaData(DIDDocument *document);
 
 /**
  * \~English
@@ -1899,7 +1861,7 @@ DID_API DIDMetaData *DIDDocument_GetMetaData(DIDDocument *document);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_SaveMetaData(DIDDocument *document);
+/* DID_API */ int DIDDocument_SaveMetaData(DIDDocument *document);
 
 /**
  * \~English
@@ -1911,7 +1873,7 @@ DID_API int DIDDocument_SaveMetaData(DIDDocument *document);
  *      If no error occurs, return type string.
  *      Otherwise, return NULL.
  */
-DID_API const char *DIDDocument_GetProofType(DIDDocument *document);
+/* DID_API */ const char *DIDDocument_GetProofType(DIDDocument *document);
 
 /**
  * \~English
@@ -1925,7 +1887,7 @@ DID_API const char *DIDDocument_GetProofType(DIDDocument *document);
  *      If no error occurs, return the handle to identifier of public key.
  *      Otherwise, return NULL.
  */
-DID_API DIDURL *DIDDocument_GetProofCreater(DIDDocument *document);
+/* DID_API */ DIDURL *DIDDocument_GetProofCreater(DIDDocument *document);
 
 /**
  * \~English
@@ -1937,7 +1899,7 @@ DID_API DIDURL *DIDDocument_GetProofCreater(DIDDocument *document);
  *      If no error occurs, return 0.
  *      Otherwise, return time.
  */
-DID_API time_t DIDDocument_GetProofCreatedTime(DIDDocument *document);
+/* DID_API */ time_t DIDDocument_GetProofCreatedTime(DIDDocument *document);
 
 /**
  * \~English
@@ -1951,7 +1913,7 @@ DID_API time_t DIDDocument_GetProofCreatedTime(DIDDocument *document);
  *      If no error occurs, return signature string.
  *      Otherwise, return NULL.
  */
-DID_API const char *DIDDocument_GetProofSignature(DIDDocument *document);
+/* DID_API */ const char *DIDDocument_GetProofSignature(DIDDocument *document);
 
 /**
  * \~English
@@ -1965,7 +1927,7 @@ DID_API const char *DIDDocument_GetProofSignature(DIDDocument *document);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API JWTBuilder *DIDDocument_GetJwtBuilder(DIDDocument *document);
+/* DID_API */ JWTBuilder *DIDDocument_GetJwtBuilder(DIDDocument *document);
 /**
  * \~English
  * Get identifier of public key.
@@ -1977,7 +1939,7 @@ DID_API JWTBuilder *DIDDocument_GetJwtBuilder(DIDDocument *document);
  *      Otherwise, return NULL.
  */
 
-DID_API DIDURL *PublicKey_GetId(PublicKey *publickey);
+/* DID_API */ DIDURL *PublicKey_GetId(PublicKey *publickey);
 
 /**
  * \~English
@@ -1989,7 +1951,7 @@ DID_API DIDURL *PublicKey_GetId(PublicKey *publickey);
  *      If no error occurs, return the handle to DID controller.
  *      Otherwise, return NULL.
  */
-DID_API DID *PublicKey_GetController(PublicKey *publickey);
+/* DID_API */ DID *PublicKey_GetController(PublicKey *publickey);
 
 /**
  * \~English
@@ -2001,7 +1963,7 @@ DID_API DID *PublicKey_GetController(PublicKey *publickey);
  *      If no error occurs, return key property string.
  *      Otherwise, return NULL.
  */
-DID_API const char *PublicKey_GetPublicKeyBase58(PublicKey *publickey);
+/* DID_API */ const char *PublicKey_GetPublicKeyBase58(PublicKey *publickey);
 
 /**
  * \~English
@@ -2013,7 +1975,7 @@ DID_API const char *PublicKey_GetPublicKeyBase58(PublicKey *publickey);
  *      If no error occurs, return key type string.
  *      Otherwise, return NULL.
  */
-DID_API const char *PublicKey_GetType(PublicKey *publickey);
+/* DID_API */ const char *PublicKey_GetType(PublicKey *publickey);
 
 /**
  * \~English
@@ -2025,7 +1987,7 @@ DID_API const char *PublicKey_GetType(PublicKey *publickey);
  *      If publickey is authentication key, return true.
  *      Otherwise, return false.
  */
-DID_API bool PublicKey_IsAuthenticationKey(PublicKey *publickey);
+/* DID_API */ bool PublicKey_IsAuthenticationKey(PublicKey *publickey);
 
 /**
  * \~English
@@ -2037,7 +1999,7 @@ DID_API bool PublicKey_IsAuthenticationKey(PublicKey *publickey);
  *      If publickey is authorization key, return true.
  *      Otherwise, return false.
  */
-DID_API bool PublicKey_IsAuthorizationKey(PublicKey *publickey);
+/* DID_API */ bool PublicKey_IsAuthorizationKey(PublicKey *publickey);
 
 /**
  * \~English
@@ -2049,7 +2011,7 @@ DID_API bool PublicKey_IsAuthorizationKey(PublicKey *publickey);
  *      If no error occurs, return identifier of service.
  *      Otherwise, return NULL.
  */
-DID_API DIDURL *Service_GetId(Service *service);
+/* DID_API */ DIDURL *Service_GetId(Service *service);
 
 /**
  * \~English
@@ -2061,7 +2023,7 @@ DID_API DIDURL *Service_GetId(Service *service);
  *      If no error occurs, return service point string.
  *      Otherwise, return NULL.
  */
-DID_API const char *Service_GetEndpoint(Service *service);
+/* DID_API */ const char *Service_GetEndpoint(Service *service);
 
 /**
  * \~English
@@ -2073,7 +2035,7 @@ DID_API const char *Service_GetEndpoint(Service *service);
  *      If no error occurs, return service type string.
  *      Otherwise, return NULL.
  */
-DID_API const char *Service_GetType(Service *service);
+/* DID_API */ const char *Service_GetType(Service *service);
 
 /******************************************************************************
  * Credential
@@ -2091,7 +2053,7 @@ DID_API const char *Service_GetType(Service *service);
  *      If no error occurs, return json context. Otherwise, return NULL.
  *      Notice that user need to free the returned value that it's memory.
  */
-DID_API const char *Credential_ToJson(Credential *cred, bool normalized);
+/* DID_API */ const char *Credential_ToJson(Credential *cred, bool normalized);
 
 /**
  * \~English
@@ -2106,7 +2068,7 @@ DID_API const char *Credential_ToJson(Credential *cred, bool normalized);
  *      If no error occurs, return json context. Otherwise, return NULL.
  *      Notice that user need to free the returned value that it's memory.
  */
-DID_API const char *Credential_ToString(Credential *cred, bool normalized);
+/* DID_API */ const char *Credential_ToString(Credential *cred, bool normalized);
 
 /**
  * \~English
@@ -2121,7 +2083,7 @@ DID_API const char *Credential_ToString(Credential *cred, bool normalized);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API Credential *Credential_FromJson(const char *json, DID *owner);
+/* DID_API */ Credential *Credential_FromJson(const char *json, DID *owner);
 
 /**
  * \~English
@@ -2130,7 +2092,7 @@ DID_API Credential *Credential_FromJson(const char *json, DID *owner);
  * @param
  *      cred                 [in] A handle to Credential.
  */
-DID_API void Credential_Destroy(Credential *cred);
+/* DID_API */ void Credential_Destroy(Credential *cred);
 
 /**
  * \~English
@@ -2142,7 +2104,7 @@ DID_API void Credential_Destroy(Credential *cred);
  *      true if Credential is self claimed.
  *      Otherwise, return false.
  */
-DID_API bool Credential_IsSelfProclaimed(Credential *cred);
+/* DID_API */ bool Credential_IsSelfProclaimed(Credential *cred);
 
 /**
  * \~English
@@ -2154,7 +2116,7 @@ DID_API bool Credential_IsSelfProclaimed(Credential *cred);
  *      If no error occurs, return id property of credential.
  *      Otherwise, return NULL.
  */
-DID_API DIDURL *Credential_GetId(Credential *cred);
+/* DID_API */ DIDURL *Credential_GetId(Credential *cred);
 
 /**
  * \~English
@@ -2166,7 +2128,7 @@ DID_API DIDURL *Credential_GetId(Credential *cred);
  *      If no error occurs, return owner DID.
  *      Otherwise, return NULL.
  */
-DID_API DID *Credential_GetOwner(Credential *cred);
+/* DID_API */ DID *Credential_GetOwner(Credential *cred);
 
 /**
  * \~English
@@ -2177,7 +2139,7 @@ DID_API DID *Credential_GetOwner(Credential *cred);
  * @return
  *      size of Credential types on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_GetTypeCount(Credential *cred);
+/* DID_API */ ssize_t Credential_GetTypeCount(Credential *cred);
 
 /**
  * \~English
@@ -2192,7 +2154,7 @@ DID_API ssize_t Credential_GetTypeCount(Credential *cred);
  * @return
  *      size of Credential types on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_GetTypes(Credential *cred, const char **types, size_t size);
+/* DID_API */ ssize_t Credential_GetTypes(Credential *cred, const char **types, size_t size);
 
 /**
  * \~English
@@ -2204,7 +2166,7 @@ DID_API ssize_t Credential_GetTypes(Credential *cred, const char **types, size_t
  *      If no error occurs, return the handle to DID issuer.
  *      Otherwise, return NULL.
  */
-DID_API DID *Credential_GetIssuer(Credential *cred);
+/* DID_API */ DID *Credential_GetIssuer(Credential *cred);
 
 /**
  * \~English
@@ -2216,7 +2178,7 @@ DID_API DID *Credential_GetIssuer(Credential *cred);
  *      If no error occurs, return the date.
  *      Otherwise, return 0.
  */
-DID_API time_t Credential_GetIssuanceDate(Credential *cred);
+/* DID_API */ time_t Credential_GetIssuanceDate(Credential *cred);
 
 /**
  * \~English
@@ -2228,7 +2190,7 @@ DID_API time_t Credential_GetIssuanceDate(Credential *cred);
  *      If no error occurs, return the time.
  *      Otherwise, return 0.
  */
-DID_API time_t Credential_GetExpirationDate(Credential *cred);
+/* DID_API */ time_t Credential_GetExpirationDate(Credential *cred);
 
 /**
  * \~English
@@ -2243,7 +2205,7 @@ DID_API time_t Credential_GetExpirationDate(Credential *cred);
  * @return
  *      size of subject porperties on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_GetPropertyCount(Credential *cred);
+/* DID_API */ ssize_t Credential_GetPropertyCount(Credential *cred);
 
 /**
  * \~English
@@ -2255,7 +2217,7 @@ DID_API ssize_t Credential_GetPropertyCount(Credential *cred);
  *      size of subject porperties on success, -1 if an error occurred.
  *      Notice that user need to free the returned value it's memory.
  */
-DID_API const char *Credential_GetProperties(Credential *cred);
+/* DID_API */ const char *Credential_GetProperties(Credential *cred);
 
 /**
  * \~English
@@ -2269,7 +2231,7 @@ DID_API const char *Credential_GetProperties(Credential *cred);
  *      If no error occurs, return property value string, otherwise return NULL.
  *      Notice that user need to free the returned value it's memory.
  */
-DID_API const char *Credential_GetProperty(Credential *cred, const char *name);
+/* DID_API */ const char *Credential_GetProperty(Credential *cred, const char *name);
 
 /**
  * \~English
@@ -2283,7 +2245,7 @@ DID_API const char *Credential_GetProperty(Credential *cred, const char *name);
  *      If no error occurs, return the handle to identifier of public key.
  *      Otherwise, return NULL.
  */
-DID_API DIDURL *Credential_GetProofMethod(Credential *cred);
+/* DID_API */ DIDURL *Credential_GetProofMethod(Credential *cred);
 
 /**
  * \~English
@@ -2295,7 +2257,7 @@ DID_API DIDURL *Credential_GetProofMethod(Credential *cred);
  *      If no error occurs, return type string.
  *      Otherwise, return NULL.
  */
-DID_API const char *Credential_GetProofType(Credential *cred);
+/* DID_API */ const char *Credential_GetProofType(Credential *cred);
 
 /**
  * \~English
@@ -2309,7 +2271,7 @@ DID_API const char *Credential_GetProofType(Credential *cred);
  *      If no error occurs, return signature string.
  *      Otherwise, return NULL.
  */
-DID_API const char *Credential_GetProofSignture(Credential *cred);
+/* DID_API */ const char *Credential_GetProofSignture(Credential *cred);
 
 /**
  * \~English
@@ -2321,7 +2283,7 @@ DID_API const char *Credential_GetProofSignture(Credential *cred);
  * @return
  *      flase if not expired, true if expired.
  */
-DID_API bool Credential_IsExpired(Credential *cred);
+/* DID_API */ bool Credential_IsExpired(Credential *cred);
 
 /**
  * \~English
@@ -2333,7 +2295,7 @@ DID_API bool Credential_IsExpired(Credential *cred);
  * @return
  *      flase if not genuine, true if genuine.
  */
-DID_API bool Credential_IsGenuine(Credential *cred);
+/* DID_API */ bool Credential_IsGenuine(Credential *cred);
 
 /**
  * \~English
@@ -2345,7 +2307,7 @@ DID_API bool Credential_IsGenuine(Credential *cred);
  * @return
  *      flase if not valid, true if valid.
  */
-DID_API bool Credential_IsValid(Credential *cred);
+/* DID_API */ bool Credential_IsValid(Credential *cred);
 
 /**
  * \~English
@@ -2358,7 +2320,7 @@ DID_API bool Credential_IsValid(Credential *cred);
  * @return
 *      0 on success, -1 if an error occurred.
  */
-DID_API int Credential_SaveMetaData(Credential *credential);
+/* DID_API */ int Credential_SaveMetaData(Credential *credential);
 
 /**
  * \~English
@@ -2370,7 +2332,7 @@ DID_API int Credential_SaveMetaData(Credential *credential);
  *      If no error occurs, return alias string.
  *      Otherwise, return NULL.
  */
-DID_API CredentialMetaData *Credential_GetMetaData(Credential *credential);
+/* DID_API */ CredentialMetaData *Credential_GetMetaData(Credential *credential);
 
 /******************************************************************************
  * Issuer
@@ -2389,7 +2351,7 @@ DID_API CredentialMetaData *Credential_GetMetaData(Credential *credential);
  *      If no error occurs, return the handle to Issuer. Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API Issuer *Issuer_Create(DID *did, DIDURL *signkey, DIDStore *store);
+/* DID_API */ Issuer *Issuer_Create(DID *did, DIDURL *signkey, DIDStore *store);
 
 /**
  * \~English
@@ -2398,7 +2360,7 @@ DID_API Issuer *Issuer_Create(DID *did, DIDURL *signkey, DIDStore *store);
  * @param
  *      issuer                    [in] the handle of Issuer..
  */
-DID_API void Issuer_Destroy(Issuer *issuer);
+/* DID_API */ void Issuer_Destroy(Issuer *issuer);
 
 /**
  * \~English
@@ -2428,7 +2390,7 @@ DID_API void Issuer_Destroy(Issuer *issuer);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
+/* DID_API */ Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
         const char **types, size_t typesize, Property *subject, int size,
         time_t expires, const char *storepass);
 
@@ -2458,7 +2420,7 @@ DID_API Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API Credential *Issuer_CreateCredentialByString(Issuer *issuer, DID *owner,
+/* DID_API */ Credential *Issuer_CreateCredentialByString(Issuer *issuer, DID *owner,
         DIDURL *credid, const char **types, size_t typesize, const char *subject,
         time_t expires, const char *storepass);
 
@@ -2472,7 +2434,7 @@ DID_API Credential *Issuer_CreateCredentialByString(Issuer *issuer, DID *owner,
  *      If no error occurs, return the handle to DID of this issuer.
  *      Otherwise, return NULL.
  */
-DID_API DID *Issuer_GetSigner(Issuer *issuer);
+/* DID_API */ DID *Issuer_GetSigner(Issuer *issuer);
 
 /**
  * \~English
@@ -2484,7 +2446,7 @@ DID_API DID *Issuer_GetSigner(Issuer *issuer);
  *      If no error occurs, return the handle to key.
  *      Otherwise, return NULL.
  */
-DID_API DIDURL *Issuer_GetSignKey(Issuer *issuer);
+/* DID_API */ DIDURL *Issuer_GetSignKey(Issuer *issuer);
 
 /******************************************************************************
  * DIDStore
@@ -2500,7 +2462,7 @@ DID_API DIDURL *Issuer_GetSignKey(Issuer *issuer);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API DIDStore* DIDStore_Open(const char *root, DIDAdapter *adapter);
+/* DID_API */ DIDStore* DIDStore_Open(const char *root, DIDAdapter *adapter);
 
 /**
  * \~English
@@ -2509,7 +2471,7 @@ DID_API DIDStore* DIDStore_Open(const char *root, DIDAdapter *adapter);
  * @param
  *      store                 [in] The handle to DIDStore.
  */
-DID_API void DIDStore_Close(DIDStore *store);
+/* DID_API */ void DIDStore_Close(DIDStore *store);
 
 /**
  * \~English
@@ -2520,7 +2482,7 @@ DID_API void DIDStore_Close(DIDStore *store);
  * @return
  *      ture if it has identity, false if it has not.
  */
-DID_API bool DIDStore_ContainsPrivateIdentity(DIDStore *store);
+/* DID_API */ bool DIDStore_ContainsPrivateIdentity(DIDStore *store);
 
 /**
  * \~English
@@ -2549,7 +2511,7 @@ DID_API bool DIDStore_ContainsPrivateIdentity(DIDStore *store);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
+/* DID_API */ int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
         const char *mnemonic, const char *passphrase, const char *language, bool force);
 
 /**
@@ -2572,7 +2534,7 @@ DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store,
+/* DID_API */ int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store,
         const char *storepass, const char *extendedkey, bool force);
 
 /**
@@ -2589,7 +2551,7 @@ DID_API int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_Synchronize(DIDStore *store, const char *storepass,
+/* DID_API */ int DIDStore_Synchronize(DIDStore *store, const char *storepass,
         DIDStore_MergeCallback *callback);
 
 /**
@@ -2608,7 +2570,7 @@ DID_API int DIDStore_Synchronize(DIDStore *store, const char *storepass,
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass,
+/* DID_API */ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass,
         const char *alias);
 
 /**
@@ -2629,7 +2591,7 @@ DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass,
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
+/* DID_API */ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
         int index, const char *alias);
 
 /**
@@ -2644,7 +2606,7 @@ DID_API DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepa
  *      If no error occurs, return DID object. Free DID after use it.
  *      Otherwise, return NULL.
  */
-DID_API DID *DIDStore_GetDIDByIndex(DIDStore *store, int index);
+/* DID_API */ DID *DIDStore_GetDIDByIndex(DIDStore *store, int index);
 /**
  * \~English
  * Create new DID Document and store in the DID Store.
@@ -2663,7 +2625,7 @@ DID_API DID *DIDStore_GetDIDByIndex(DIDStore *store, int index);
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
  */
-DID_API int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
+/* DID_API */ int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
         char *mnemonic, size_t size);
 
 /**
@@ -2677,7 +2639,7 @@ DID_API int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_StoreDID(DIDStore *store, DIDDocument *document);
+/* DID_API */ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document);
 
 /**
  * \~English
@@ -2692,7 +2654,7 @@ DID_API int DIDStore_StoreDID(DIDStore *store, DIDDocument *document);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did);
+/* DID_API */ DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -2705,7 +2667,7 @@ DID_API DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did);
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_ContainsDID(DIDStore *store, DID *did);
+/* DID_API */ bool DIDStore_ContainsDID(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -2718,7 +2680,7 @@ DID_API bool DIDStore_ContainsDID(DIDStore *store, DID *did);
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_DeleteDID(DIDStore *store, DID *did);
+/* DID_API */ bool DIDStore_DeleteDID(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -2736,7 +2698,7 @@ DID_API bool DIDStore_DeleteDID(DIDStore *store, DID *did);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ListDIDs(DIDStore *store, ELA_DID_FILTER filer,
+/* DID_API */ int DIDStore_ListDIDs(DIDStore *store, ELA_DID_FILTER filer,
         DIDStore_DIDsCallback *callback, void *context);
 
 /**
@@ -2750,7 +2712,7 @@ DID_API int DIDStore_ListDIDs(DIDStore *store, ELA_DID_FILTER filer,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_StoreCredential(DIDStore *store, Credential *credential);
+/* DID_API */ int DIDStore_StoreCredential(DIDStore *store, Credential *credential);
 
 /**
  * \~English
@@ -2767,7 +2729,7 @@ DID_API int DIDStore_StoreCredential(DIDStore *store, Credential *credential);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API Credential *DIDStore_LoadCredential(DIDStore *store, DID *did, DIDURL *credid);
+/* DID_API */ Credential *DIDStore_LoadCredential(DIDStore *store, DID *did, DIDURL *credid);
 
 /**
  * \~English
@@ -2780,7 +2742,7 @@ DID_API Credential *DIDStore_LoadCredential(DIDStore *store, DID *did, DIDURL *c
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_ContainsCredentials(DIDStore *store, DID *did);
+/* DID_API */ bool DIDStore_ContainsCredentials(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -2795,7 +2757,7 @@ DID_API bool DIDStore_ContainsCredentials(DIDStore *store, DID *did);
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_ContainsCredential(DIDStore *store, DID *did, DIDURL *credid);
+/* DID_API */ bool DIDStore_ContainsCredential(DIDStore *store, DID *did, DIDURL *credid);
 
 /**
  * \~English
@@ -2810,7 +2772,7 @@ DID_API bool DIDStore_ContainsCredential(DIDStore *store, DID *did, DIDURL *cred
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id);
+/* DID_API */ bool DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id);
 
 /**
  * \~English
@@ -2827,7 +2789,7 @@ DID_API bool DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ListCredentials(DIDStore *store, DID *did,
+/* DID_API */ int DIDStore_ListCredentials(DIDStore *store, DID *did,
         DIDStore_CredentialsCallback *callback, void *context);
 
 /**
@@ -2849,7 +2811,7 @@ DID_API int DIDStore_ListCredentials(DIDStore *store, DID *did,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *credid,
+/* DID_API */ int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *credid,
         const char *type, DIDStore_CredentialsCallback *callback, void *context);
 
 /**
@@ -2863,7 +2825,7 @@ DID_API int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *credid
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDSotre_ContainsPrivateKeys(DIDStore *store, DID *did);
+/* DID_API */ bool DIDSotre_ContainsPrivateKeys(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -2878,7 +2840,7 @@ DID_API bool DIDSotre_ContainsPrivateKeys(DIDStore *store, DID *did);
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *keyid);
+/* DID_API */ bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *keyid);
 
 /**
  * \~English
@@ -2899,7 +2861,7 @@ DID_API bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *keyi
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass,
+/* DID_API */ int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass,
         DID *did, DIDURL *id, const uint8_t *privatekey, size_t size);
 
 /**
@@ -2913,7 +2875,7 @@ DID_API int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass,
  * @param
  *      keyid                    [in] The identifier of public key.
  */
-DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid);
+/* DID_API */ void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid);
 
 /**
  * \~English
@@ -2932,7 +2894,7 @@ DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid)
  * @return
  *      true on success, false if an error occurred. Caller should free the returned value.
  */
-DID_API bool DIDStore_PublishDID(DIDStore *store, const char *storepass,
+/* DID_API */ bool DIDStore_PublishDID(DIDStore *store, const char *storepass,
         DID *did, DIDURL *signkey, bool force);
 
 /**
@@ -2950,7 +2912,7 @@ DID_API bool DIDStore_PublishDID(DIDStore *store, const char *storepass,
  * @return
  *      true on success, false if an error occurred. Caller should free the returned value.
  */
-DID_API bool DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
+/* DID_API */ bool DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         DID *did, DIDURL *signkey);
 
 /**
@@ -2966,7 +2928,7 @@ DID_API bool DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
  * @return
  *      0 on success, -1 if an error occurred. Caller should free the returned value.
  */
-DID_API int DIDStore_ChangePassword(DIDStore *store, const char *new, const char *old);
+/* DID_API */ int DIDStore_ChangePassword(DIDStore *store, const char *new, const char *old);
 
 /**
  * \~English
@@ -2986,7 +2948,7 @@ DID_API int DIDStore_ChangePassword(DIDStore *store, const char *new, const char
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ExportDID(DIDStore *store, const char *storepass, DID *did,
+/* DID_API */ int DIDStore_ExportDID(DIDStore *store, const char *storepass, DID *did,
         const char *file, const char *password);
 
 /**
@@ -3004,7 +2966,7 @@ DID_API int DIDStore_ExportDID(DIDStore *store, const char *storepass, DID *did,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ImportDID(DIDStore *store, const char *storepass,
+/* DID_API */ int DIDStore_ImportDID(DIDStore *store, const char *storepass,
         const char *file, const char *password);
 
 /**
@@ -3024,7 +2986,7 @@ DID_API int DIDStore_ImportDID(DIDStore *store, const char *storepass,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ExportPrivateIdentity(DIDStore *store, const char *storepass,
+/* DID_API */ int DIDStore_ExportPrivateIdentity(DIDStore *store, const char *storepass,
         const char *file, const char *password);
 
 /**
@@ -3044,7 +3006,7 @@ DID_API int DIDStore_ExportPrivateIdentity(DIDStore *store, const char *storepas
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ImportPrivateIdentity(DIDStore *store, const char *storepass,
+/* DID_API */ int DIDStore_ImportPrivateIdentity(DIDStore *store, const char *storepass,
         const char *file, const char *password);
 /**
  * \~English
@@ -3061,7 +3023,7 @@ DID_API int DIDStore_ImportPrivateIdentity(DIDStore *store, const char *storepas
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ExportStore(DIDStore *store, const char *storepass,
+/* DID_API */ int DIDStore_ExportStore(DIDStore *store, const char *storepass,
         const char *zipfile, const char *password);
 
 /**
@@ -3079,7 +3041,7 @@ DID_API int DIDStore_ExportStore(DIDStore *store, const char *storepass,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ImportStore(DIDStore *store, const char *storepass,
+/* DID_API */ int DIDStore_ImportStore(DIDStore *store, const char *storepass,
         const char *zipfile, const char *password);
 
 /******************************************************************************
@@ -3097,7 +3059,7 @@ DID_API int DIDStore_ImportStore(DIDStore *store, const char *storepass,
  * @return
  *      mnemonic string. Use Mnemonic_free after finish using mnemonic string.
  */
-DID_API const char *Mnemonic_Generate(const char *language);
+/* DID_API */ const char *Mnemonic_Generate(const char *language);
 
 /**
  * \~English
@@ -3106,7 +3068,7 @@ DID_API const char *Mnemonic_Generate(const char *language);
  * @param
  *      mnemonic               [in] mnemonic buffter.
  */
-DID_API void Mnemonic_Free(void *mnemonic);
+/* DID_API */ void Mnemonic_Free(void *mnemonic);
 
 /**
  * \~English
@@ -3123,7 +3085,7 @@ DID_API void Mnemonic_Free(void *mnemonic);
  * @return
  *      true, if mnemonic is valid. or else, return false.
  */
-DID_API bool Mnemonic_IsValid(const char *mnemonic, const char *language);
+/* DID_API */ bool Mnemonic_IsValid(const char *mnemonic, const char *language);
 
 /******************************************************************************
  * Presentation
@@ -3151,7 +3113,7 @@ DID_API bool Mnemonic_IsValid(const char *mnemonic, const char *language);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *store,
+/* DID_API */ Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *store,
         const char *storepass, const char *nonce, const char *realm, int count, ...);
 
 /**
@@ -3161,7 +3123,7 @@ DID_API Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *s
  * @param
  *      pre                      [in] The handle to Presentation.
  */
-DID_API void Presentation_Destroy(Presentation *pre);
+/* DID_API */ void Presentation_Destroy(Presentation *pre);
 
 /**
  * \~English
@@ -3176,7 +3138,7 @@ DID_API void Presentation_Destroy(Presentation *pre);
  *      If no error occurs, return json context. Otherwise, return NULL.
  *      Notice that user need to free the returned value that it's memory.
  */
-DID_API const char* Presentation_ToJson(Presentation *pre, bool normalized);
+/* DID_API */ const char* Presentation_ToJson(Presentation *pre, bool normalized);
 
 /**
  * \~English
@@ -3189,7 +3151,7 @@ DID_API const char* Presentation_ToJson(Presentation *pre, bool normalized);
  *      Otherwise, return NULL.
  *      Notice that user need to release the handle of returned instance to destroy it's memory.
  */
-DID_API Presentation *Presentation_FromJson(const char *json);
+/* DID_API */ Presentation *Presentation_FromJson(const char *json);
 
 /**
  * \~English
@@ -3201,7 +3163,7 @@ DID_API Presentation *Presentation_FromJson(const char *json);
  *      If no error occurs, return the handle to DID.
  *      Otherwise, return NULL.
  */
-DID_API DID *Presentation_GetSigner(Presentation *pre);
+/* DID_API */ DID *Presentation_GetSigner(Presentation *pre);
 
 /**
  * \~English
@@ -3213,7 +3175,7 @@ DID_API DID *Presentation_GetSigner(Presentation *pre);
  *      If no error occurs, return the count of Credential.
  *      Otherwise, return -1.
  */
-DID_API ssize_t Presentation_GetCredentialCount(Presentation *pre);
+/* DID_API */ ssize_t Presentation_GetCredentialCount(Presentation *pre);
 
 /**
  * \~English
@@ -3229,7 +3191,7 @@ DID_API ssize_t Presentation_GetCredentialCount(Presentation *pre);
  *      If no error occurs, return the count of Credential.
  *      Otherwise, return -1.
  */
-DID_API ssize_t Presentation_GetCredentials(Presentation *pre,
+/* DID_API */ ssize_t Presentation_GetCredentials(Presentation *pre,
         Credential **creds, size_t size);
 
 /**
@@ -3244,7 +3206,7 @@ DID_API ssize_t Presentation_GetCredentials(Presentation *pre,
  *      If no error occurs, return the handle to Credential.
  *      Otherwise, return NULL.
  */
-DID_API Credential *Presentation_GetCredential(Presentation *pre, DIDURL *credid);
+/* DID_API */ Credential *Presentation_GetCredential(Presentation *pre, DIDURL *credid);
 
 /**
  * \~English
@@ -3256,7 +3218,7 @@ DID_API Credential *Presentation_GetCredential(Presentation *pre, DIDURL *credid
  *      If no error occurs, return the Presentation Type string.
  *      Otherwise, return NULL.
  */
-DID_API const char *Presentation_GetType(Presentation *pre);
+/* DID_API */ const char *Presentation_GetType(Presentation *pre);
 
 /**
  * \~English
@@ -3268,7 +3230,7 @@ DID_API const char *Presentation_GetType(Presentation *pre);
  *      If no error occurs, return the time created Presentation.
  *      Otherwise, return 0.
  */
-DID_API time_t Presentation_GetCreatedTime(Presentation *pre);
+/* DID_API */ time_t Presentation_GetCreatedTime(Presentation *pre);
 
 /**
  * \~English
@@ -3280,7 +3242,7 @@ DID_API time_t Presentation_GetCreatedTime(Presentation *pre);
  *      If no error occurs, return the handle to sign key.
  *      Otherwise, return NULL.
  */
-DID_API DIDURL *Presentation_GetVerificationMethod(Presentation *pre);
+/* DID_API */ DIDURL *Presentation_GetVerificationMethod(Presentation *pre);
 
 /**
  * \~English
@@ -3292,7 +3254,7 @@ DID_API DIDURL *Presentation_GetVerificationMethod(Presentation *pre);
  *      If no error occurs, return the Presentaton nonce string.
  *      Otherwise, return NULL.
  */
-DID_API const char *Presentation_GetNonce(Presentation *pre);
+/* DID_API */ const char *Presentation_GetNonce(Presentation *pre);
 
 /**
  * \~English
@@ -3304,7 +3266,7 @@ DID_API const char *Presentation_GetNonce(Presentation *pre);
  *      If no error occurs, return the Presentaton realm string.
  *      Otherwise, return NULL.
  */
-DID_API const char *Presentation_GetRealm(Presentation *pre);
+/* DID_API */ const char *Presentation_GetRealm(Presentation *pre);
 
 /**
  * \~English
@@ -3315,7 +3277,7 @@ DID_API const char *Presentation_GetRealm(Presentation *pre);
  * @return
  *      flase if not genuine, true if genuine.
  */
-DID_API bool Presentation_IsGenuine(Presentation *pre);
+/* DID_API */ bool Presentation_IsGenuine(Presentation *pre);
 
 /**
  * \~English
@@ -3326,7 +3288,7 @@ DID_API bool Presentation_IsGenuine(Presentation *pre);
  * @return
  *      flase if not valid, true if valid.
  */
-DID_API bool Presentation_IsValid(Presentation *pre);
+/* DID_API */ bool Presentation_IsValid(Presentation *pre);
 
 /**
  * \~English
@@ -3339,7 +3301,7 @@ DID_API bool Presentation_IsValid(Presentation *pre);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDBackend_InitializeDefault(const char *url, const char *cachedir);
+/* DID_API */ int DIDBackend_InitializeDefault(const char *url, const char *cachedir);
 
 /**
  * \~English
@@ -3352,7 +3314,7 @@ DID_API int DIDBackend_InitializeDefault(const char *url, const char *cachedir);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDBackend_Initialize(DIDResolver *resolver, const char *cachedir);
+/* DID_API */ int DIDBackend_Initialize(DIDResolver *resolver, const char *cachedir);
 
 /**
  * \~English
@@ -3361,7 +3323,7 @@ DID_API int DIDBackend_Initialize(DIDResolver *resolver, const char *cachedir);
  * @param
  *      ttl            [in] The time for cache.
  */
-DID_API void DIDBackend_SetTTL(long ttl);
+/* DID_API */ void DIDBackend_SetTTL(long ttl);
 
 /**
  * \~English
@@ -3371,7 +3333,7 @@ DID_API void DIDBackend_SetTTL(long ttl);
  * @param
  *      handle            [in] The pointer to DIDLocalResovleHandle function.
  */
-DID_API void DIDBackend_SetLocalResolveHandle(DIDLocalResovleHandle *handle);
+/* DID_API */ void DIDBackend_SetLocalResolveHandle(DIDLocalResovleHandle *handle);
 
 /******************************************************************************
  * Error handling
@@ -3506,61 +3468,33 @@ DID_API void DIDBackend_SetLocalResolveHandle(DIDLocalResovleHandle *handle);
 
 /**
  * \~English
- * Get the last error code.
- */
-#define DIDERRCODE                                 (DIDError_GetCode())
-/**
- * \~English
- * Get the last error message.
- */
-#define DIDERRMSG                                  (DIDError_GetMessage())
-/**
- * \~English
- * Get file about the last error.
- */
-#define DIDERRFILE                                 (DIDError_GetFile())
-/**
- * \~English
- * Get line about the last error.
- */
-#define DIDERRLINE                                 (DIDError_GetLine())
-
-/**
- * \~English
  * Clear the last-error code.
  */
-DID_API void DIDError_Clear(void);
+/* DID_API */ void DIDError_Clear(void);
 /**
  * \~English
  * Print the whole information of last-error code.
  */
-DID_API void DIDError_Print(void);
+/* DID_API */ void DIDError_Print(void);
 
 /**
  * \~English
  * Get the last-error code.
  */
-DID_API int DIDError_GetCode(void);
+/* DID_API */ int DIDError_GetCode(void);
 /**
  * \~English
  * Get the last-error message.
  */
-DID_API const char *DIDError_GetMessage(void);
+/* DID_API */ const char *DIDError_GetMessage(void);
 
 /**
  * \~English
  * Get the file for last-error.
  */
-DID_API const char *DIDError_GetFile(void);
+/* DID_API */ const char *DIDError_GetFile(void);
 /**
  * \~English
  * Get line for last-error.
  */
-DID_API int DIDError_GetLine(void);
-
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __ELA_DID_H__ */
+/* DID_API */ int DIDError_GetLine(void);
