@@ -773,4 +773,11 @@
     <string name="singletextitem">单行文本项目</string>
     <string name="whetherpublishdid">DID信息一旦发布将完全公开，是否立即发布？</string>
     <string name="netlineinfo">上链信息</string>
+    <string name="scandidinfo">- 扫码查看DID信息 -</string>
+    <string name="didcard">DID名片</string>
+    <string name="containwalletaddress">包含收款地址</string>
+    <string name="addtocontact">添加到联系人</string>
+    <string name="cardinfo">名片信息</string>
+    <string name="address">收款地址</string>
+    <string name="cannotgetdidiinfo">无法获取该DID信息</string>
 </resources>

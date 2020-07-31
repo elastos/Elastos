@@ -27,10 +27,13 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.view.View;
 
+import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.base.BaseActivity;
 
 import java.io.File;
@@ -59,7 +62,13 @@ public class ShareUtil {
         view.draw(canvas);
         return bitmap;
     }
-
+    private Bitmap getBitmap(View view) {
+        view.setDrawingCacheEnabled(true);
+        view.buildDrawingCache();  //启用DrawingCache并创建位图
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache()); //创建一个DrawingCache的拷贝，因为DrawingCache得到的位图在禁用后会被回收
+        view.setDrawingCacheEnabled(false);  //禁用DrawingCahce否则会影响性能
+        return bitmap;
+    }
     /**
      * 分享
      **/
@@ -91,7 +100,7 @@ public class ShareUtil {
             bm.compress(Bitmap.CompressFormat.PNG, 90, out);
             out.flush();
             out.close();
-            Uri uri = Uri.fromFile(f);
+            Uri uri = getUri(context, BuildConfig.APPLICATION_ID + ".fileProvider", f);
             return uri;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -104,5 +113,16 @@ public class ShareUtil {
 
         }
         return null;
+    }
+    public static Uri getUri(Context context, String authorites, File file) {
+        Uri uri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            //设置7.0以上共享文件，分享路径定义在xml/file_paths.xml
+            uri = FileProvider.getUriForFile(context, authorites, file);
+        } else {
+            // 7.0以下,共享文件
+            uri = Uri.fromFile(file);
+        }
+        return uri;
     }
 }

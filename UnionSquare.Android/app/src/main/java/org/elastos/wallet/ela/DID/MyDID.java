@@ -319,6 +319,22 @@ public class MyDID {
 
         return null;
     }
+    public String getCredentialPro(String credencialId,DIDDocument doc) {
+
+        try {
+            VerifiableCredential vc1 = doc.getCredential(credencialId);
+            if (vc1 == null || vc1.getSubject() == null) {
+                return null;
+            }
+            return vc1.getSubject().getPropertiesAsString();
+
+        } catch (Exception e) {
+            ToastUtils.showShort(e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 
     public CredentialSubjectBean getCredentialProObj(String credencialId, String didString) {
 

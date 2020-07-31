@@ -51,6 +51,7 @@ import org.elastos.did.DIDStore;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.DID.MyDID;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
@@ -97,6 +98,7 @@ import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewDa
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
 import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
+import org.elastos.wallet.ela.ui.did.fragment.DIDCardDetailFragment;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.bean.MessageEntity;
 import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
@@ -298,6 +300,15 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             Bundle bundle = new Bundle();
 
             switch (type) {
+                case Constant.DIDCARD:
+                    //did名片
+                    com.alibaba.fastjson.JSONObject json = JSON.parseObject(qrBean.getData());
+                    String address = json.getString("address");
+                    String didString = json.getString("didString");
+                    didString = didString.contains("did:elastos:") ? didString : "did:elastos:" + didString;
+                    new WalletManagePresenter().forceDIDResolve1(didString, this, address);
+
+                    break;
                 case Constant.TRANSFER:
                     //扫描联系人到转账页面
                     bundle.putParcelable("wallet", wallet);
@@ -1208,6 +1219,21 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 RecieveWithdrawJwtEntity.DataBean dataBean = ((RecieveWithdrawJwtEntity) curentJwtEntity).getData();
                 JSONArray utxos = converWithDrawPayLoadUtxo(dataBean.getUtxos());
                 proposalPresenter.createProposalWithdrawTransaction(wallet.getWalletId(), dataBean.getRecipient(), dataBean.getAmount(), utxos.toString(), new Gson().toJson(withdrawPayLoad), this);
+                break;
+            case "forceDIDResolve1":
+                //目前只有扫码didcard用到
+                DIDDocument document = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
+                if (document == null) {
+                    showToast(getString(R.string.cannotgetdidiinfo));
+                    break;
+                }
+                Bundle bundle = new Bundle();
+                bundle.putString("address", (String) o);
+                bundle.putString("pro", getMyDID().getCredentialPro(MyDID.CREDENCIALID_NET, document));
+                bundle.putSerializable("expires", getMyDID().getExpires(document));
+                bundle.putString("name", getMyDID().getName(document));////兼容链上没有CredentialSubjectBean的情况
+                bundle.putString("didString", document.getSubject().toString());//兼容链上没有CredentialSubjectBean的情况
+                ((BaseFragment) getParentFragment()).start(DIDCardDetailFragment.class, bundle);
                 break;
             case "forceDIDResolve":
                 //未传递paypas网站提供的did验签

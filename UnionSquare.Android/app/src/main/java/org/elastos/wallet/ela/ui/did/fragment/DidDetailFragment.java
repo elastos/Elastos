@@ -101,7 +101,13 @@ public class DidDetailFragment extends BaseFragment {
         ivTitleRight.setImageResource(R.mipmap.mine_did_id_card);
         //ivTitleRight.setImageResource(R.mipmap.del_icon);
         diduiPresenter = new DIDUIPresenter();
-        initItemDate();
+        netCredentialSubjectBean = getMyDID().getCredentialProObj(MyDID.CREDENCIALID_NET, getMyDID().getDidString());
+        if (netCredentialSubjectBean.whetherEmpty()) {
+            tvNetline.setVisibility(View.GONE);
+        }else {
+            initItemDate();
+        }
+
     }
 
     private void initItemDate() {
@@ -122,13 +128,8 @@ public class DidDetailFragment extends BaseFragment {
             listShow.add(personalInfoItemEntity);
         }
 
-        netCredentialSubjectBean = getMyDID().getCredentialProObj(MyDID.CREDENCIALID_NET, getMyDID().getDidString());
-        if (netCredentialSubjectBean.whetherEmpty()) {
-            tvNetline.setVisibility(View.GONE);
-        } else {
-            diduiPresenter.convertCredential2List(this, listShow, netCredentialSubjectBean);
-            setRecycleViewShow();
-        }
+        diduiPresenter.convertCredential2List(this, listShow, netCredentialSubjectBean);
+        setRecycleViewShow();
 
     }
 
@@ -146,7 +147,7 @@ public class DidDetailFragment extends BaseFragment {
                     bundle.putString("content", personalInfoItemEntity.getText1());
                     start(ShowPersonalIntroFragemnt.class, bundle);
                 }
-                if (personalInfoItemEntity.getIndex() > 13&&personalInfoItemEntity.getType()==-2) {
+                if (personalInfoItemEntity.getIndex() > 13 && personalInfoItemEntity.getType() == -2) {
                     //自定义项
                     Bundle bundle = new Bundle();
                     bundle.putString("title", personalInfoItemEntity.getText1() == null ? "" : personalInfoItemEntity.getText1());
@@ -182,6 +183,7 @@ public class DidDetailFragment extends BaseFragment {
                 start(CredentialFragment.class, bundle);
                 break;
             case R.id.iv_title_right:
+                //删除
                 //  new CRSignUpPresenter().getFee(didInfo.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", DidDetailFragment.this);
                 /*new DialogUtil().showWarmPrompt1(getBaseActivity(), getString(R.string.abandondidornot), new WarmPromptListener() {
                     @Override
@@ -195,6 +197,11 @@ public class DidDetailFragment extends BaseFragment {
                     }
                 });*/
                 //展示名片
+                bundle = new Bundle();
+                bundle.putString("didName", tvDidname.getText().toString());
+                bundle.putString("walletId", wallet.getWalletId());
+                bundle.putString("didString", tvDid.getText().toString());
+                start(DIDCardFragment.class,bundle);
                 break;
         }
     }

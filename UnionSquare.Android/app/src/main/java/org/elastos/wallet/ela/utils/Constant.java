@@ -50,12 +50,12 @@ public class Constant {
     public static final int CREATEMUL = 0x2;//打开创建多签钱包页面 已经打开了的情况直接填入
     public static final int SIGN = 0x3;//打开签名页面
     public static final int TRANSFER = 0x4;//打开转账页面
+    public static final int DIDCARD = 0x5;//打开did详情
     public static final String PROPOSALINPUT = "proposalInput";//建议变提案
-    public static final String PROPOSALREVIEW= "proposalReview";//提案评议期
-    public static final String PROPOSALPROCESS= "proposalPROCESS";//提案公执行期 提案人反馈
-    public static final String PROPOSALSECRET= "proposalSecret";//提案公执行期 秘书长签名
-    public static final String PROPOSALWITHDRAW= "proposalWithDraw";//提案公执行期 提现
-
+    public static final String PROPOSALREVIEW = "proposalReview";//提案评议期
+    public static final String PROPOSALPROCESS = "proposalPROCESS";//提案公执行期 提案人反馈
+    public static final String PROPOSALSECRET = "proposalSecret";//提案公执行期 秘书长签名
+    public static final String PROPOSALWITHDRAW = "proposalWithDraw";//提案公执行期 提现
 
 
     public static final String EDITCREDENTIAL = "editPersonalinfo";//保留凭证  新增或编辑did  从凭证信息进入三部分凭证

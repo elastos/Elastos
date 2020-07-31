@@ -26,7 +26,6 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
-import org.elastos.wallet.ela.ui.Assets.bean.qr.RecieveJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.listener.DestroyWalletListner;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
 
@@ -126,7 +125,25 @@ public class WalletManagePresenter extends NewPresenterAbstract {
 
 
     public void forceDIDResolve(String didString, BaseFragment baseFragment, Object data) {
-        Observer observer = createObserver(baseFragment, "forceDIDResolve",data);
+        Observer observer = createObserver(baseFragment, "forceDIDResolve", data);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyDID().forceDIDResolve(didString);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    /**
+     * 同上 为了不同方法名儿写
+     *目前只有扫码didcard用到
+     * @param didString
+     * @param baseFragment
+     * @param data
+     */
+    public void forceDIDResolve1(String didString, BaseFragment baseFragment, Object data) {
+        Observer observer = createObserver(baseFragment, "forceDIDResolve1", data);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {

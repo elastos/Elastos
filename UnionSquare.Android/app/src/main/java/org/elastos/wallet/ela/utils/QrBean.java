@@ -37,13 +37,13 @@ public class QrBean implements Parcelable {
      * extra : {"Type":1,"SubWallet":"ELA","transType":1}
      */
 
-    private int version;
-    private String name;
-    private int total;
-    private int index;
-    private String data;
-    private String md5;
-    private ExtraBean extra;
+    private int version;//版本  必填  0开始
+    private String name;//MultiQrContent 表示可能有多个连续二维码
+    private int total;//一共多少个二维码
+    private int index;//当前是第几个二维码
+    private String data;//数据
+    private String md5;//data的md5 必填
+    private ExtraBean extra;//额外数据 其中type 唯一标识二维码的作用
 
     public int getVersion() {
         return version;
@@ -107,9 +107,9 @@ public class QrBean implements Parcelable {
          * SubWallet : ELA
          */
 
-        private int Type;
-        private String SubWallet;
-        private int transType;
+        private int Type;//标识是哪一种二维码 必填
+        private String SubWallet;//子钱包id
+        private int transType;//交易类型 默认-1
 
         public int getType() {
             return Type;

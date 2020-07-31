@@ -449,6 +449,16 @@ public class QRCodeUtils {
     public static Bitmap createQrCodeBitmap(String content, int width, int height, int type, String chainID, int transType) {
         String jsonObject = getQrJson(0, "MultiQrContent", 1
                 , 1, content, MD5Utils.md5Encode(content), type, chainID, transType);
+        Log.i("MultiQrContent", jsonObject);
         return createQrCodeBitmap(jsonObject, width, height);
     }
+
+    public static void createQrCodeLogoBitmap(Bitmap logo, String content, int width, int height, int type, String chainID, int transType, QRCodeCreateListener listener) {
+        String jsonObject = getQrJson(0, "MultiQrContent", 1
+                , 1, content, MD5Utils.md5Encode(content), type, chainID, transType);
+        Log.i("MultiQrContent", jsonObject);
+
+        createImage(jsonObject, width, height, logo, listener);
+    }
+
 }
