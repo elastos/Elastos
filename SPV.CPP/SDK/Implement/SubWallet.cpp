@@ -709,5 +709,18 @@ namespace Elastos {
 			return info;
 		}
 
+		nlohmann::json SubWallet::GetLastBlockInfo() const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+
+			nlohmann::json j;
+			j["Height"] = _walletManager->GetPeerManager()->GetLastBlockHeight();
+			j["Timestamp"] = _walletManager->GetPeerManager()->GetLastBlockTimestamp();
+			j["Hash"] = _walletManager->GetPeerManager()->GetLastBlockHash().GetHex();
+
+			ArgInfo("r => {}", j.dump());
+
+			return j;
+		}
+
 	}
 }

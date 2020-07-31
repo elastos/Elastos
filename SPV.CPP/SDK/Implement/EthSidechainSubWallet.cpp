@@ -557,6 +557,14 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			return j;
 		}
 
+		nlohmann::json EthSidechainSubWallet::GetLastBlockInfo() const {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			nlohmann::json j;
+
+			ArgInfo("r => {}", j.dump());
+			return j;
+		}
+
 		bool EthSidechainSubWallet::SetFixedPeer(const std::string &address, uint16_t port) {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("addr: {}, port: {}", address, port);

@@ -485,13 +485,13 @@ namespace Elastos {
 		}
 
 		uint32_t PeerManager::GetLastBlockTimestamp() const {
-			uint32_t timestamp;
+			boost::mutex::scoped_lock scoped_lock(lock);
+			return _lastBlock->GetTimestamp();
+		}
 
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				timestamp = _lastBlock->GetTimestamp();
-			}
-			return timestamp;
+		uint256 PeerManager::GetLastBlockHash() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _lastBlock->GetHash();
 		}
 
 		time_t PeerManager::GetKeepAliveTimestamp() const {

@@ -172,6 +172,8 @@ namespace Elastos {
 
 			virtual bool SetFixedPeer(const std::string &address, uint16_t port);
 
+			virtual nlohmann::json GetLastBlockInfo() const;
+
 			virtual void SyncStart();
 
 			virtual void SyncStop();
