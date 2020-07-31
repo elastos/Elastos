@@ -137,7 +137,7 @@ namespace Elastos {
 
             env->CallVoidMethod(_obj, methodId, jevent);
 
-            env->DeleteGlobalRef(jevent);
+            env->DeleteLocalRef(jevent);
             env->DeleteLocalRef(clazz);
         }
 
