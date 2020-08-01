@@ -30,10 +30,16 @@ public class JwtParserBuilder: NSObject {
 
     var claimsJwt : String?
 
+    /// Parse jwt token.
+    /// - Parameter claimsJwt: Jwt token.
+    /// - Throws: If no error occurs, throw error.
+    /// - Returns: The handle of JWT.
     public func parseClaimsJwt(_ claimsJwt: String) throws -> JWT {
         return try JWT(jwtString: claimsJwt)
     }
 
+    /// Create JwtParser
+    /// - Returns: JwtParser instance.
     public func build() -> JwtParser {
         return JwtParser()
     }
@@ -43,15 +49,24 @@ public class JwtParser: NSObject {
 
     var jwt: JWT?
 
+    /// Parse jwt token.
+    /// - Parameter claimsJwt: Jwt token.
+    /// - Throws: If no error occurs, throw error.
+    /// - Returns: The handle of JWT.
     public func parseClaimsJwt(_ claimsJwt: String) throws -> JWT {
         return try JWT(jwtString: claimsJwt)
     }
 
-
+    /// Get jwt header.
+    /// - Throws: If no error occurs, throw error.
+    /// - Returns: Jwt Header.
     public func getHeader() throws -> Header {
         return jwt!.header;
     }
 
+    /// Get jwt claims.
+    /// - Throws: If no error occurs, throw error.
+    /// - Returns: Jwt Claims.
     public func getBody() throws -> Claims {
         return jwt!.claims;
     }

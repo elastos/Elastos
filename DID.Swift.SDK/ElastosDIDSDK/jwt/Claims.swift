@@ -88,82 +88,127 @@ public class Claims {
 
     public init() { }
 
+    /// Get jwt issuer.
+    /// - Returns: If has, return issuer string. Otherwise, return nil.
     public func getIssuer() -> String? {
         return claims[Claims.iss] as? String
     }
 
+    /// Set JWT issuer.
+    /// - Parameter issuer: The issuer value.
+    /// - Returns: Claims instance.
     public func setIssuer(issuer: String) -> Claims {
         claims[Claims.iss] = issuer
         return self
     }
 
+    /// Set JWT subject.
+    /// - Parameter subject: The subject value.
+    /// - Returns: Claims instance.
     public func setSubject(subject: String) -> Claims {
         claims[Claims.sub] = subject
         return self
     }
 
+    /// Get JWT subject.
+    /// - Returns: If has, return subject string. Otherwise, return nil.
     public func getSubject() -> String? {
         return claims[Claims.sub] as? String
     }
 
+    /// Get jwt audience.
+    /// - Returns: If has, return audience string. Otherwise, return nil.
     public func getAudience() -> String? {
         return claims[Claims.aud] as? String
     }
 
+    /// Set JWT audience.
+    /// - Parameter audience: The audience value.
+    /// - Returns: Claims instance.
     public func setAudience(audience: String) -> Claims {
         claims[Claims.aud] = audience
         return self
     }
 
+    /// Get expirate date.
+    /// - Returns: If has, return jwt expiration Date. Otherwise, return nil.
     public func getExpiration() -> Date? {
         return DateHelper.getDateFromTimeStamp(claims[Claims.exp] as? Int)
     }
 
+    /// Set expirate date.
+    /// - Parameter expiration: The date of jwt expiration.
+    /// - Returns: JwtBuilder instance.
     public func setExpiration(expiration: Date) -> Claims {
         claims[Claims.exp] = DateHelper.getTimeStamp(expiration)
         return self
     }
 
+    /// Get jwt 'nbf' time.
+    /// - Returns: If has, return not before Date. Otherwise, return nil.
     public func getNotBefore() -> Date? {
         return DateHelper.getDateFromTimeStamp(claims[Claims.nbf] as? Int)
     }
 
+    /// Set JWT ‘nbf’ value.
+    /// - Parameter notBefore: The ‘nbf’ value.
+    /// - Returns: Claims instance.
     public func setNotBefore(notBefore: Date) -> Claims {
         claims[Claims.nbf] = DateHelper.getTimeStamp(notBefore)
         return self
     }
 
+    /// Get jwt issued time.
+    /// - Returns: If has, return 'iat' Date. Otherwise, return nil.
     public func getIssuedAt() -> Date? {
         
         return DateHelper.getDateFromTimeStamp(claims[Claims.iat] as? Int)
     }
 
+    /// Set JWT issued time.
+    /// - Parameter issuedAt: The ‘iat’ value.
+    /// - Returns: Claims instance.
     public func setIssuedAt(issuedAt: Date) -> Claims {
         claims[Claims.iat] = DateHelper.getTimeStamp(issuedAt)
         return self
     }
 
+    /// Get jwt id.
+    /// - Returns: If has, return id string. Otherwise, return nil.
     public func getId() -> String? {
         return claims[Claims.jti] as? String
     }
 
+    /// Set JWT id.
+    /// - Parameter id: The Id value
+    /// - Returns: Claims instance.
     public func setId(id: String) -> Claims {
         claims[Claims.jti] = id
         return self
     }
 
+    /// Get claims count.
+    /// - Returns: The count of claim.
     public func size() -> Int {
         return claims.count
     }
 
+    /// Check claim is empty or not.
+    /// - Returns: true if claim is empty, otherwise false.
     public func isEmpty() -> Bool {
         return claims.isEmpty
     }
 
+    ///  Check key if claims key or not.
+    /// - Parameter key: The key string.
+    /// - Returns: True if has claims key, or false.
     public func containsKey(key: String) -> Bool {
         return claims[key] != nil
     }
 
+    /// Check key if claims value or not.
+    /// - Parameter value: The value string.
+    /// - Returns: True if has claims value, or false.
     public func containsValue(value: Any) -> Bool {
         for v in claims.values {
             if v as AnyObject === value as AnyObject {
@@ -173,10 +218,17 @@ public class Claims {
         return false
     }
 
+    /// Get claim value by claim key.
+    /// - Parameter key: The key string.
+    /// - Returns: If has, return value. Otherwise, return nil.
     public func get(key: String) -> Any {
         return claims[key] as Any
     }
 
+    /// Get value string by claim key
+    /// - Parameter key: The key string.
+    /// - Throws: If error occurs,throw error.
+    /// - Returns: Claim value string
     public func getAsJson(key: String) throws -> String {
         let v = claims[key]
         if !(v is String) && v != nil {
@@ -186,15 +238,27 @@ public class Claims {
         throw DIDError.illegalArgument("Data parsing error in method in getAsJson().")
     }
 
+    /// Add claim value by key-value.
+    /// - Parameters:
+    ///   - key: The key string.
+    ///   - value: The value string.
     public func put(key: String, value: Any) {
         claims[key] = value
     }
 
+    /// Add claim value by key-value.
+    /// - Parameters:
+    ///   - key: The key string.
+    ///   - value: The value string.
+    /// - Throws: If error occurs,throw error.
     public func putWithJson(key: String, value: String) throws {
         let dic = try JSONSerialization.jsonObject(with: value.data(using: .utf8)!, options: [])
         claims[key] = dic
     }
 
+    /// Remove claim value by claim key.
+    /// - Parameter key: The key string.
+    /// - Returns: If has, return value. Otherwise, return nil.
     public func remove(key: String) -> Any? {
         let value = claims[key]
         claims.removeValue(forKey: key)
@@ -202,10 +266,15 @@ public class Claims {
         return value
     }
 
+    /// Add claim value by dictionary.
+    /// - Parameter dic: The header key-value.
     public func putAll(dic: [String: Any]) {
         claims.merge(dict: dic)
     }
 
+    /// Add claim value by json string.
+    /// - Parameter json: The header json string.
+    /// - Throws: If error occurs,throw error.
     public func putAllWithJson(json: String) throws {
         let dic = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: []) as? [String : Any]
         guard dic != nil else {
@@ -214,10 +283,13 @@ public class Claims {
         putAll(dic: dic!)
     }
 
+    /// Clear claim
     public func clear() {
         claims.removeAll()
     }
 
+    /// Get claim values.
+    /// - Returns: Array of claim.
     public func values() -> [Any] {
         var values = [Any]()
         claims.forEach { k, v in
@@ -226,6 +298,11 @@ public class Claims {
         return values
     }
 
+    /// Add claim value by key-value.
+    /// - Parameters:
+    ///   - key: The key string.
+    ///   - value: The value string
+    /// - Returns: Claims instnce.
     public func setValue(key: String, value: Any) -> Claims {
         claims[key] = value
         return self
