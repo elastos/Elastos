@@ -35,40 +35,59 @@ public class Metadata: NSObject {
         setStore(store)
     }
 
+    /// Get store.
     public var store: DIDStore? {
         return self._store
     }
 
+    /// Check is attached store or not.
     public var attachedStore: Bool {
         return self._store != nil
     }
 
+    /// Set store for did.
+    /// - Parameter store: The handle of DIDStore.
     public func setStore(_ store: DIDStore) {
         self._store = store
     }
 
+    /// Set last modify for metadata.
+    /// - Parameter timestamp: The time of metadata modified.
     public func setLastModified(_ timestamp: Date) {
         put(key: Metadata.LAST_MODIFIED, value: DateHelper.getTimeStampForString(timestamp))
     }
 
+    /// Get last modify for metadata.
+    /// - Returns: The time of metadata modified.
     public func getLastModified() -> Date? {
         let date = get(key: Metadata.LAST_MODIFIED) as? String
         let time = DateHelper.getDateFromTimeStampWithString(date)
         return time
     }
 
+    /// Clear last modified for metadata.
     public func clearLastModified() {
         _extra.removeValue(forKey: Metadata.LAST_MODIFIED)
     }
 
+    /// Set ‘string’ extra elemfor did.
+    /// - Parameters:
+    ///   - key: The key string.
+    ///   - value: The value string.
     public func setExtra(_ key: String, _ value: String?) {
         self._extra[key] = value
     }
 
+    /// Get ‘string’ extra elem from DID.
+    /// - Parameter key: The key string.
+    /// - Returns: The elem string
     public func getExtra(_ key: String) -> String? {
         return self._extra[key] as? String
     }
 
+    /// Merge meta.
+    /// - Parameter meta: The metadata foe merge.
+    /// - Throws: If error occurs, throw error.
     public func merge(_ meta: Metadata) throws {
         meta._extra.forEach{ (key, value) in
             if _extra.keys.contains(key) {
@@ -85,6 +104,9 @@ public class Metadata: NSObject {
         }
     }
 
+    /// Load metadata.
+    /// - Parameter reader: The FileHandle of metadata data.
+    /// - Throws: If error occurs, throw error.
     public func load(reader: FileHandle) throws {
         let data = reader.readDataToEndOfFile()
         defer {
@@ -98,6 +120,9 @@ public class Metadata: NSObject {
         try load(node)
     }
 
+    /// Load metadata.
+    /// - Parameter node: The JsonNode of metadata data.
+    /// - Throws: If error occurs, throw error.
     public func load(_ node: JsonNode) throws {
         let dic = node.asDictionary()
         try dic?.forEach{ (key, value) in
@@ -120,10 +145,17 @@ public class Metadata: NSObject {
         }
     }
 
+    /// Add key-value for metadata.
+    /// - Parameters:
+    ///   - key: The key string.
+    ///   - value: The value string.
     public func put(key: String, value: Any) {
         _extra[key] = value
     }
 
+    /// Get metadata value by key.
+    /// - Parameter key: The key string.
+    /// - Returns: If error occurs, throw error.
     public func get(key: String) -> Any {
         return _extra[key] as Any
     }
@@ -151,6 +183,9 @@ public class Metadata: NSObject {
         generator.writeEndObject()
     }
 
+    /// Save metada.
+    /// - Parameter path: The path to save metada.
+    /// - Throws: If error occurs, throw error.
     public func save(path: FileHandle) throws {
         defer {
             path.closeFile()
@@ -161,19 +196,28 @@ public class Metadata: NSObject {
         path.write(generator.toString().data(using: .utf8)!)
     }
 
+    /// Get string of metadata.
+    /// - Throws: If error occurs, throw error.
+    /// - Returns: Metadata string.
     public func toJson() throws -> String {
         let generator = JsonGenerator()
         try save(generator)
 
         return generator.toString()
     }
-    
+
+    /// Check metadata is empty or not.
+    /// - Returns: true if metadata is empty, otherwise false.
     public func isEmpty() -> Bool {
         return _extra.isEmpty
     }
 }
 
 extension Metadata {
+
+    /// Get string of metadata.
+    /// - Throws: If error occurs, throw error.
+    /// - Returns: Metadata string.
     public func toString() throws -> String {
         return try toJson()
     }

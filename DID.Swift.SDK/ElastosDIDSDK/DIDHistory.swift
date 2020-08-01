@@ -24,12 +24,16 @@ import Foundation
 
 public protocol DIDHistory {
 
+    /// Get did.
     func getDid() -> DID
 
+    /// Get resolve result status.
     func getsStatus() -> ResolveResultStatus
 
+    /// Get all DIDTransaction.
     func getAllTransactions() -> [DIDTransaction]
 
+    /// The count of transaction.
     func getTransactionCount() -> Int
 
 }

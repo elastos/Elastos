@@ -29,14 +29,18 @@ public class CredentialMeta: Metadata {
         super.init(store: store)
     }
 
+    /// init
     public required init() {
         super.init()
     }
 
+    /// The name of alias.
     public var aliasName: String? {
         return self.get(key: ALIAS) as? String
     }
 
+    /// Set alias for did.
+    /// - Parameter alias: The ailas string.
     public func setAlias(_ alias: String?) {
         self.put(key: ALIAS, value: alias as Any)
     }

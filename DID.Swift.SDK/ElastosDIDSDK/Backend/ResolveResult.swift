@@ -32,18 +32,26 @@ public class ResolveResult: DIDHistory{
         self._status = ResolveResultStatus(rawValue: status)!
     }
 
+    /// Get did.
+    /// - Returns: The handle of did.
     public func getDid() -> DID {
         return _did
     }
 
+    /// Get resolve result status.
+    /// - Returns: The handle of resolve result status.
     public func getsStatus() -> ResolveResultStatus {
         return _status
     }
 
+    /// Get all DIDTransaction.
+    /// - Returns: Array of DIDTransaction.
     public func getAllTransactions() -> [DIDTransaction] {
         return _idtransactionInfos
     }
 
+    /// The count of transaction.
+    /// - Returns: Transaction count.
     public func getTransactionCount() -> Int {
         return _idtransactionInfos.count
     }

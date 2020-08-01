@@ -40,47 +40,65 @@ public class DIDMeta: Metadata {
         super.init()
     }
 
+    /// The name of alias.
     public var aliasName: String? {
         return self.get(key: ALIAS) as? String
     }
 
+    /// Set alias for did.
+    /// - Parameter alias: The ailas string.
     public func setAlias(_ alias: String?) {
         put(key: ALIAS, value: alias as Any)
     }
 
+    /// Get transactionId.
     public var transactionId: String? {
         return self.get(key: TXID) as? String
     }
 
+    /// Set transactionId.
+    /// - Parameter newValue: The transactionId string.
     public func setTransactionId(_ newValue: String?) {
         put(key: TXID, value: newValue as Any)
     }
+
+    /// Get the time of previous signature for did.
     public var previousSignature: String? {
        return self.get(key: PREV_SIGNATURE) as? String
     }
 
+    /// Set the time of previous signature for did.
+    /// - Parameter newValue: The time of previous signature.
     public func setPreviousSignature(_ newValue: String?) {
          put(key: PREV_SIGNATURE, value: newValue as Any)
     }
 
+    /// Get signature.
     public var signature: String? {
         return self.get(key: SIGNATURE) as? String
     }
 
+    /// Set signature.
+    /// - Parameter newValue: The signature string.
     public func setSignature(_ newValue: String?) {
         put(key: SIGNATURE, value: newValue as Any)
     }
 
+    /// Get the time of transaction id for did.
+    /// - Returns: The time of transaction.
     public func getPublished() -> Date? {
         let time = self.get(key: PUBLISHED) as? Int
         return DateHelper.getDateFromTimeStamp(time)
     }
 
+    /// Set the time of transaction id for did.
+    /// - Parameter timestamp: The time of transaction.
     public func setPublished(_ timestamp: Date) {
         let timestampDate = DateHelper.getTimeStamp(timestamp)
         put(key: PUBLISHED, value: timestampDate as Any)
     }
 
+    /// Get did status, deactived or not.
     public var isDeactivated: Bool {
         let v =  self.get(key: DEACTIVATED)
         if case Optional<Any>.none = v {
@@ -91,6 +109,8 @@ public class DIDMeta: Metadata {
         }
     }
 
+    /// Set  did status, deactived or not.
+    /// - Parameter newValue: Did status.
     public func setDeactivated(_ newValue: Bool) {
         put(key: DEACTIVATED, value: newValue as Any)
     }

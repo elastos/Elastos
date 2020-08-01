@@ -24,13 +24,18 @@ import Foundation
 
 public protocol DIDTransaction {
 
+    /// Get did.
     func getDid() -> DID
 
+    /// Get transaction id.
     func getTransactionId() -> String
 
+    /// Get timestamp.
     func getTimestamp() -> Date
 
+    /// Get IDChain request operation.
     func getOperation() -> IDChainRequestOperation
 
+    /// Get DIDDocument.
     func getDocument() -> DIDDocument
 }

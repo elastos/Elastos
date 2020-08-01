@@ -29,6 +29,9 @@ public class ResolverCache {
     private static var rootDir: String = ""
     private static var cache: LRUCache = LRUCache<AnyHashable, Any>(CACHE_MAX_CAPACITY)
 
+    /// Set cache path.
+    /// - Parameter rootPath: The path for cache.
+    /// - Throws: if an error occurred, throw error.
     public class func setCacheDir(_ rootPath: String) throws {
         ResolverCache.rootDir = rootPath
         if try !exists_dir(rootPath) {
@@ -37,6 +40,9 @@ public class ResolverCache {
         }
     }
 
+    /// Set cache path.
+    /// - Parameter url: The path for cache.
+    /// - Throws: if an error occurred, throw error.
     public class func setCacheDir(_ url: URL) throws {
         try setCacheDir(url.absoluteString)
     }
@@ -53,12 +59,17 @@ public class ResolverCache {
 //        return root + "/" + ".did.elastos" + "/" + id
         return root + "/" + id
     }
-    
+
+    /// Clear cachei.
+    /// - Throws: if an error occurred, throw error.
     public class func reset() throws {
         cache.clear()
         deleteFile(try getCacheDir())
     }
-    
+
+    /// Store resolve result in DID Store.
+    /// - Parameter rr: The handle of ResolveResult.
+    /// - Throws: if an error occurred, throw error.
     public class func store(_ rr: ResolveResult) throws {
         let id = rr.did.methodSpecificId
         let path = try getFile(id)
@@ -70,6 +81,12 @@ public class ResolverCache {
         cache.setValue(rr, for: rr.did)
     }
 
+    /// Load resolve result.
+    /// - Parameters:
+    ///   - did: The identify of resolve result.
+    ///   - ttl: The timestamp of load resolve result.
+    /// - Throws: if an error occurred, throw error.
+    /// - Returns: If no error occurs, return the handle to ResolveResult. Otherwise, return nil.
     public class func load(_ did: DID, _ ttl: Int) throws -> ResolveResult? {
         let path = try getFile(did.methodSpecificId)
         
@@ -144,7 +161,10 @@ public class ResolverCache {
             Log.e(ResolverCache.TAG, "deleteFile error: \(error)")
          }
      }
-    
+
+    /// Invali date.
+    /// - Parameter did: The identify of resolve result.
+    /// - Throws: if an error occurred, throw error.
     public class func invalidate(_ did: DID) throws {
         let filePath = try getFile(did.methodSpecificId)
         deleteFile(filePath)

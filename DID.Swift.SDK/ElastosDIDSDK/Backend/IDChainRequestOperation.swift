@@ -58,6 +58,7 @@ public enum IDChainRequestOperation: Int, CustomStringConvertible {
         return operation
     }
 
+    /// Get IDChainRequestOperation string.
     public var description: String {
         return toString()
     }

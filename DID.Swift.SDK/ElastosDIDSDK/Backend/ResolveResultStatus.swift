@@ -45,6 +45,7 @@ public enum ResolveResultStatus: Int, CustomStringConvertible {
         return desc;
     }
 
+    /// ResolveResultStatus string.
     public var description: String {
         return toString()
     }

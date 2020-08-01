@@ -33,22 +33,32 @@ class IDTransactionInfo: DIDTransaction {
         self._request = request;
     }
 
+    /// Get did.
+    /// - Returns: The handle of did.
     public func getDid() -> DID {
         return request.did!
     }
 
+    /// Get transaction id.
+    /// - Returns: The handle of transaction id.
     public func getTransactionId() -> String {
         return self.transactionId
     }
 
+    /// Get time stamp.
+    /// - Returns: The handle time stamp.
     public func getTimestamp() -> Date {
         return self.timestamp
     }
 
+    /// Get IDChain request operation.
+    /// - Returns: The handle of operation.
     public func getOperation() -> IDChainRequestOperation {
         return request.operation
     }
 
+    /// Get DID Document.
+    /// - Returns: The handle of DID Document.
     public func getDocument() -> DIDDocument {
         return request.document!
     }
