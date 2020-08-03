@@ -116,8 +116,8 @@
 		11E751A523A75A120022C592 /* DummyAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E751A423A75A120022C592 /* DummyAdapter.swift */; };
 		11E751DB23A774DD0022C592 /* IDChainOperationsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E751DA23A774DD0022C592 /* IDChainOperationsTest.swift */; };
 		11F262AF23260CF40009C103 /* ElastosDIDSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* ElastosDIDSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		11FB0A6123F0FF1D001941CF /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11FB0A6023F0FF0B001941CF /* libcrypto.a */; };
-		11FB0A6223F0FF1D001941CF /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11FB0A5F23F0FF0B001941CF /* libhdkey.a */; };
+		11F3A8FC24D7E330007ABB70 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F3A8FA24D7E312007ABB70 /* libcrypto.a */; };
+		11F3A8FD24D7E330007ABB70 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F3A8FB24D7E316007ABB70 /* libhdkey.a */; };
 		9BBAD7558D040C7F910B6F81 /* Pods_ElastosDIDSDKTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52B39FB18C79DF653202E046 /* Pods_ElastosDIDSDKTests.framework */; };
 		A31801A324015EA30087E074 /* DIDResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31801A224015EA30087E074 /* DIDResolver.swift */; };
 		A31801A9240277190087E074 /* JsonNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31801A8240277180087E074 /* JsonNode.swift */; };
@@ -375,6 +375,8 @@
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* ElastosDIDSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosDIDSDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		11F3A8FA24D7E312007ABB70 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = Externals/HDKey/lib/libcrypto.a; sourceTree = "<group>"; };
+		11F3A8FB24D7E316007ABB70 /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhdkey.a; path = Externals/HDKey/lib/libhdkey.a; sourceTree = "<group>"; };
 		11FB0A5F23F0FF0B001941CF /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhdkey.a; path = "Externals/HDKey/lib/-iphoneos/libhdkey.a"; sourceTree = "<group>"; };
 		11FB0A6023F0FF0B001941CF /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "Externals/HDKey/lib/-iphoneos/libcrypto.a"; sourceTree = "<group>"; };
 		2C9D52CBC88BB3D458134F3E /* Pods-ElastosDIDSDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.release.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.release.xcconfig"; sourceTree = "<group>"; };
@@ -446,10 +448,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11FB0A6223F0FF1D001941CF /* libhdkey.a in Frameworks */,
-				11FB0A6123F0FF1D001941CF /* libcrypto.a in Frameworks */,
 				111BF480235467880043D570 /* Antlr4.framework in Frameworks */,
+				11F3A8FD24D7E330007ABB70 /* libhdkey.a in Frameworks */,
 				0E568F5F89CD94B76CE6213E /* Pods_ElastosDIDSDK.framework in Frameworks */,
+				11F3A8FC24D7E330007ABB70 /* libcrypto.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -459,8 +461,10 @@
 		1109D08723275DC600A03D56 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				11F3A8FB24D7E316007ABB70 /* libhdkey.a */,
 				11A6B159238FD77E00D3C1F1 /* libcrypto.a */,
 				11FB0A6023F0FF0B001941CF /* libcrypto.a */,
+				11F3A8FA24D7E312007ABB70 /* libcrypto.a */,
 				11A6B15A238FD77E00D3C1F1 /* libhdkey.a */,
 				11FB0A5F23F0FF0B001941CF /* libhdkey.a */,
 				1125B5912382351700D396B6 /* libboost_filesystem.a */,
@@ -1461,10 +1465,12 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Externals/HDKey/lib/$(EFFECTIVE_PLATFORM_NAME)",
+					"$(PROJECT_DIR)/Externals/HDKey/lib",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = elastos.ElastosDIDSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1500,10 +1506,12 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Externals/HDKey/lib/$(EFFECTIVE_PLATFORM_NAME)",
+					"$(PROJECT_DIR)/Externals/HDKey/lib",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = elastos.ElastosDIDSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestHost.app/TestHost";
