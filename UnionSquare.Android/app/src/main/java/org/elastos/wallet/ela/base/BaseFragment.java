@@ -223,7 +223,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
 
     @Override
     public <V> LifecycleTransformer<V> bindToLife() {
-       // return this.bindToLifecycle();
+        // return this.bindToLifecycle();
         return bindUntilEvent(FragmentEvent.DESTROY);
     }
 
@@ -506,12 +506,12 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         return true;
     }
 
-    public void toDIDListFragment() {
-        Fragment fragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(DIDListFragment.class.getName());
+    public void toTargetFragment(BaseFragment c) {
+        Fragment fragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(c.getClass().getName());
         if (fragment != null) {
-            popTo(DIDListFragment.class, false);
+            popTo(c.getClass(), false);
         } else {
-            startWithPopTo(new DIDListFragment(), MainFragment.class, false);
+            startWithPopTo(c, MainFragment.class, false);
 
         }
     }

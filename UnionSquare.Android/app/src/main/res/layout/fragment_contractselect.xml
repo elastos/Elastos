@@ -2,23 +2,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/asset_bg"
+    android:background="@color/blue1"
     android:orientation="vertical">
 
     <include layout="@layout/title" />
 
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv"
-        android:layout_width="match_parent"
+        style="@style/settingItem"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginLeft="@dimen/common_margin_30"
-        android:layout_marginRight="@dimen/common_margin_30" />
+        android:layout_weight="1" />
+
     <LinearLayout
-        android:visibility="gone"
         android:id="@+id/ll_add"
         android:layout_width="match_parent"
         android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
         android:background="@color/qmui_config_color_25_pure_black"
         android:orientation="vertical">
 
@@ -40,4 +40,5 @@
 
 
     </LinearLayout>
+
 </LinearLayout>

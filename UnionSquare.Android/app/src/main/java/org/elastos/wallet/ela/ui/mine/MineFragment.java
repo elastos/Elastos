@@ -24,8 +24,6 @@ package org.elastos.wallet.ela.ui.mine;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,25 +33,16 @@ import android.widget.TextView;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
-import org.elastos.wallet.ela.db.RealmUtil;
-import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.ui.Assets.AssetskFragment;
-import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.main.MainActivity;
-import org.elastos.wallet.ela.ui.mine.adapter.ContactRecAdapetr;
 import org.elastos.wallet.ela.ui.mine.fragment.AboutFragment;
-import org.elastos.wallet.ela.ui.mine.fragment.ContactDetailFragment;
-import org.elastos.wallet.ela.ui.mine.fragment.ContractFragment;
+import org.elastos.wallet.ela.ui.mine.fragment.ContactFragment;
 import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
 import org.elastos.wallet.ela.utils.CacheUtil;
-import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -62,7 +51,7 @@ import butterknife.OnClick;
  * tab-设置
  */
 
-public class MineFragment extends BaseFragment  {
+public class MineFragment extends BaseFragment {
 
     @BindView(R.id.iv_title_left)
     ImageView ivTitleLeft;
@@ -83,7 +72,6 @@ public class MineFragment extends BaseFragment  {
     @BindView(R.id.tv_language)
     TextView tvLanguage;
     private SPUtil sp;
-
 
 
     @Override
@@ -148,7 +136,7 @@ public class MineFragment extends BaseFragment  {
 
 
             case R.id.rl_contact:
-                ((BaseFragment) getParentFragment()).start(ContractFragment.class);
+                ((BaseFragment) getParentFragment()).start(ContactFragment.class);
                 break;
             case R.id.rl_about:
                 ((BaseFragment) getParentFragment()).start(AboutFragment.class);
@@ -221,7 +209,6 @@ public class MineFragment extends BaseFragment  {
     }
 
 
-
     /**
      * 处理回退事件
      *
@@ -231,9 +218,6 @@ public class MineFragment extends BaseFragment  {
     public boolean onBackPressedSupport() {
         return closeApp();
     }
-
-
-
 
 
 }

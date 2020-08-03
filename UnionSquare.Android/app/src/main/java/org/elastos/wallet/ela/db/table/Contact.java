@@ -24,6 +24,9 @@ package org.elastos.wallet.ela.db.table;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
+
+import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
@@ -208,6 +211,11 @@ public class Contact extends RealmObject implements Parcelable, Cloneable {
         dest.writeString(filed1);
         dest.writeString(filed2);
         dest.writeString(filed3);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return this.getId().equals(((Contact) obj).getId());
     }
 
     @Override

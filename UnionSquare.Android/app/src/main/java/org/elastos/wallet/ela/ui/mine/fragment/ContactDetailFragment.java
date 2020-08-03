@@ -34,13 +34,19 @@ import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 
+import org.elastos.did.DIDDocument;
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.DID.MyDID;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
 import org.elastos.wallet.ela.db.table.Contact;
-import org.elastos.wallet.ela.ui.did.fragment.DIDCardFragment;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
+import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
+import org.elastos.wallet.ela.ui.did.fragment.DIDCardDetailFragment;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -59,7 +65,7 @@ import java.util.UUID;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class ContactDetailFragment extends BaseFragment {
+public class ContactDetailFragment extends BaseFragment implements NewBaseViewData {
 
 
     @BindView(R.id.tv_title)
@@ -118,6 +124,11 @@ public class ContactDetailFragment extends BaseFragment {
         super.setExtraData(data);
         type = data.getString("type");
         switch (type) {
+            case Constant.CONTACTADDDID:
+                tvTitle.setText(R.string.addcontact);
+                etWalletaddr.setText(data.getString("address"));
+                etDid.setText(data.getString("didString"));
+                break;
             case Constant.CONTACTADD:
                 //添加联系人
                 tvTitle.setText(R.string.addcontact);
@@ -223,12 +234,13 @@ public class ContactDetailFragment extends BaseFragment {
 
         switch (type) {
             case Constant.CONTACTADD:
+            case Constant.CONTACTADDDID:
             case Constant.CONTACTEDIT:
                 //添加联系人
                 etDid.setText(ClipboardUtil.paste(getBaseActivity()));
                 break;
             case Constant.CONTACTSHOW:
-                start(DIDCardFragment.class);
+                new WalletManagePresenter().forceDIDResolve1(etDid.getText().toString(), this, etWalletaddr.getText().toString());
 
                 break;
         }
@@ -237,6 +249,7 @@ public class ContactDetailFragment extends BaseFragment {
     private void doPicture(int i) {
         switch (type) {
             case Constant.CONTACTADD:
+            case Constant.CONTACTADDDID:
             case Constant.CONTACTEDIT:
                 //添加联系人
                 if (i == 0) {
@@ -283,7 +296,13 @@ public class ContactDetailFragment extends BaseFragment {
             @Override
             public void onSuccess() {
                 post(RxEnum.UPDATACONTACT.ordinal(), "增加或者修改", contact);
-                popBackFragment();
+                if (Constant.CONTACTADDDID.equals(type)) {
+                    toMainFragment();
+                } else {
+                    popBackFragment();
+                }
+
+
             }
         });
     }
@@ -340,5 +359,26 @@ public class ContactDetailFragment extends BaseFragment {
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
         super.onDestroy();
+    }
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "forceDIDResolve1":
+                //目前只有扫码didcard用到
+                DIDDocument document = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
+                if (document == null) {
+                    showToast(getString(R.string.cannotgetdidiinfo));
+                    break;
+                }
+                Bundle bundle = new Bundle();
+              //  bundle.putString("address", (String) o);
+                bundle.putString("pro", getMyDID().getCredentialPro(MyDID.CREDENCIALID_NET, document));
+                bundle.putSerializable("expires", getMyDID().getExpires(document));
+                bundle.putString("name", getMyDID().getName(document));////兼容链上没有CredentialSubjectBean的情况
+                bundle.putString("didString", document.getSubject().toString());//兼容链上没有CredentialSubjectBean的情况
+                start(DIDCardDetailFragment.class, bundle);
+                break;
+        }
     }
 }

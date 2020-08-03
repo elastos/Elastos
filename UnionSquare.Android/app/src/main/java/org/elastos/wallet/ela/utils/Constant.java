@@ -26,6 +26,7 @@ package org.elastos.wallet.ela.utils;
 public class Constant {
     public static final String CONTACTSHOW = "contact_show";
     public static final String CONTACTADD = "contact_add";
+    public static final String CONTACTADDDID = "contact_add_did";
     public static final String CONTACTEDIT = "contact_edit";
     public static final String INNER = "inner";//油钱包列表打开
     public static final String SIDEWITHDRAW = "sideWithdraw";//侧链充值

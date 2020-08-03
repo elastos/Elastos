@@ -40,15 +40,14 @@
             android:orientation="horizontal">
 
             <EditText
+                android:ellipsize="middle"
                 android:id="@+id/et_walletaddr"
                 android:layout_width="0dp"
                 android:layout_height="53dp"
                 android:layout_weight="1"
                 android:background="@null"
-                android:ellipsize="end"
                 android:hint="@string/pleaseinputwalletaddr"
                 android:maxLength="100"
-                android:maxLines="1"
                 android:singleLine="true"
                 android:textColor="@color/white"
                 android:textColorHint="#80ffffff"
@@ -91,13 +90,16 @@
 
         <View style="@style/line1" />
 
-        <RelativeLayout
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <EditText
+                android:ellipsize="middle"
                 android:id="@+id/et_did"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="53dp"
                 android:background="@null"
                 android:hint="@string/plzinputdid"
@@ -111,12 +113,12 @@
             <ImageView
                 android:id="@+id/iv_did"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:padding="@dimen/px10"
                 android:src="@mipmap/asset_transfer_stick" />
-        </RelativeLayout>
+        </LinearLayout>
 
         <View style="@style/line1" />
 

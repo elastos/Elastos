@@ -780,4 +780,7 @@
     <string name="cardinfo">名片信息</string>
     <string name="address">收款地址</string>
     <string name="cannotgetdidiinfo">无法获取该DID信息</string>
+    <string name="newcontact">新建联系人</string>
+    <string name="plzselectcontact">请选择联系人</string>
+    <string name="whetheroverridecontact">是否覆盖联系人信息？</string>
 </resources>

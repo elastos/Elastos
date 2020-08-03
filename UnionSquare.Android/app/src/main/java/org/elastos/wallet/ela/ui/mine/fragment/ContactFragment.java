@@ -48,7 +48,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class ContractFragment extends BaseFragment implements CommonRvListener {
+public class ContactFragment extends BaseFragment implements CommonRvListener {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;

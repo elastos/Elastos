@@ -5,6 +5,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -12,6 +13,7 @@ import com.alibaba.fastjson.JSON;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.ui.Assets.fragment.ChooseContactFragment;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.did.adapter.PersonalShowRecAdapetr;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
@@ -38,6 +40,8 @@ public class DIDCardDetailFragment extends BaseFragment {
     TextView tvAddress;
     @BindView(R.id.rl_address)
     RelativeLayout rlAddress;
+    @BindView(R.id.ll_add)
+    LinearLayout llAdd;
     @BindView(R.id.tv_didname)
     TextView tvDidname;
     @BindView(R.id.tv_didpk)
@@ -66,6 +70,7 @@ public class DIDCardDetailFragment extends BaseFragment {
             rlAddress.setVisibility(View.GONE);
         } else {
             tvAddress.setText(address);
+            llAdd.setVisibility(View.VISIBLE);
         }
         Date expries = (Date) data.getSerializable("expires");
         tvDidname.setText(data.getString("name", ""));
@@ -141,9 +146,9 @@ public class DIDCardDetailFragment extends BaseFragment {
                 break;
             case R.id.tv_add:
                 //添加联系人
-                /*Bundle bundle = new Bundle();
-                bundle.putParcelableArrayList("listShow", listShow);
-                start(EditPersonalInfoFragemnt.class, bundle);*/
+                Bundle bundle = getArguments();
+                bundle.putString("type", "update");
+                start(ChooseContactFragment.class, bundle);
                 break;
         }
     }
