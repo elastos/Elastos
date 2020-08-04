@@ -72,15 +72,15 @@ namespace Elastos {
 			enum Type {
 				normal = 0x0000,
 				elip = 0x0100,
-//				flowElip = 0x0101,
-//				infoElip = 0x0102,
-//				mainChainUpgradeCode = 0x0200,
-//				sideChainUpgradeCode = 0x0300,
-//				registerSideChain = 0x0301,
-//				secretaryGeneral = 0x0400,
-//				changeSponsor = 0x0401,
-//				closeProposal = 0x0402,
-//				dappConsensus = 0x0500,
+				flowElip = 0x0101,
+				infoElip = 0x0102,
+				mainChainUpgradeCode = 0x0200,
+				sideChainUpgradeCode = 0x0300,
+				registerSideChain = 0x0301,
+				secretaryGeneral = 0x0400,
+				changeProposalOwner = 0x0401,
+				closeProposal = 0x0402,
+				dappConsensus = 0x0500,
 				maxType
 			};
 
@@ -131,17 +131,40 @@ namespace Elastos {
 		public:
 			size_t EstimateSize(uint8_t version) const override;
 
+			// normal or elip
 			void SerializeOwnerUnsigned(ByteStream &ostream, uint8_t version) const;
 
-			bool DeserializeOwnerUnsigned(const ByteStream &istream, uint8_t version);
+			bool DeserializeOwnerUnsigned(const ByteStream &stream, uint8_t version);
 
 			void SerializeCRCouncilMemberUnsigned(ByteStream &ostream, uint8_t version) const;
 
 			bool DeserializeCRCouncilMemberUnsigned(const ByteStream &istream, uint8_t version);
 
-			void Serialize(ByteStream &ostream, uint8_t version) const override;
+			void SerializeNormalOrELIP(ByteStream &stream, uint8_t version) const;
 
-			bool Deserialize(const ByteStream &istream, uint8_t version) override;
+			bool DeserializeNormalOrELIP(const ByteStream &stream, uint8_t version);
+
+			// change owner
+			void SerializeChangeOwnerUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeChangeOwnerUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeChangeOwnerNewOwnerUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeChangeOwnerNewOwnerUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeChangeOwnerCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeChangeOwnerCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeChangeOwner(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeChangeOwner(const ByteStream &stream, uint8_t version);
+
+			// top serialize or deserialize
+			void Serialize(ByteStream &stream, uint8_t version) const override;
+
+			bool Deserialize(const ByteStream &stream, uint8_t version) override;
 
 			nlohmann::json ToJsonOwnerUnsigned(uint8_t version) const;
 
@@ -176,7 +199,14 @@ namespace Elastos {
 			uint256 _draftHash;
 			std::vector <Budget> _budgets;
 			Address _recipient;
+			uint256 _targetProposalHash;
+			Address _newRecipient;
+			bytes_t _newOwnerPublicKey;
+			bytes_t _secretaryGeneralPublicKey;
+			Address _secretaryGeneralDID;
 			bytes_t _signature;
+			bytes_t _newOwnerSignature;
+			bytes_t _secretaryGeneraSignature;
 
 			// cr council member did
 			Address _crCouncilMemberDID;

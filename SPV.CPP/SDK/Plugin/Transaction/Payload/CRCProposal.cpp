@@ -260,6 +260,7 @@ namespace Elastos {
 			return size;
 		}
 
+		// normal or elip
 		void CRCProposal::SerializeOwnerUnsigned(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteUint16(_type);
 			ostream.WriteVarString(_categoryData);
@@ -272,45 +273,38 @@ namespace Elastos {
 			ostream.WriteBytes(_recipient.ProgramHash());
 		}
 
-		bool CRCProposal::DeserializeOwnerUnsigned(const ByteStream &istream, uint8_t version) {
-			uint16_t type = 0;
-			if (!istream.ReadUint16(type)) {
-				SPVLOG_ERROR("deserialize type");
-				return false;
-			}
-			_type = CRCProposal::Type(type);
-
-			if (!istream.ReadVarString(_categoryData)) {
+		bool CRCProposal::DeserializeOwnerUnsigned(const ByteStream &stream, uint8_t version) {
+			if (!stream.ReadVarString(_categoryData)) {
 				SPVLOG_ERROR("deserialize categoryData");
 				return false;
 			}
 
-			if (!istream.ReadVarBytes(_ownerPublicKey)) {
+			if (!stream.ReadVarBytes(_ownerPublicKey)) {
 				SPVLOG_ERROR("deserialize owner PublicKey");
 				return false;
 			}
 
-			if (!istream.ReadBytes(_draftHash)) {
+			if (!stream.ReadBytes(_draftHash)) {
 				SPVLOG_ERROR("deserialize draftHash");
 				return false;
 			}
 
 			uint64_t count = 0;
-			if (!istream.ReadVarUint(count)) {
+			if (!stream.ReadVarUint(count)) {
 				SPVLOG_ERROR("deserialize budgets size");
 				return false;
 			}
 			_budgets.resize(count);
 			for (size_t i = 0; i < count; ++i) {
-				if (!_budgets[i].Deserialize(istream)) {
+				if (!_budgets[i].Deserialize(stream)) {
 					SPVLOG_ERROR("deserialize bugets");
 					return false;
 				}
 			}
 
 			uint168 programHash;
-			if (!istream.ReadBytes(programHash)) {
-				SPVLOG_ERROR("deserialize recipient key");
+			if (!stream.ReadBytes(programHash)) {
+				SPVLOG_ERROR("deserialize recipient");
 				return false;
 			}
 			_recipient = Address(programHash);
@@ -347,24 +341,199 @@ namespace Elastos {
 			return true;
 		}
 
-		void CRCProposal::Serialize(ByteStream &ostream, uint8_t version) const {
-			SerializeCRCouncilMemberUnsigned(ostream, version);
+		void CRCProposal::SerializeNormalOrELIP(ByteStream &stream, uint8_t version) const {
+			SerializeCRCouncilMemberUnsigned(stream, version);
 
-			ostream.WriteVarBytes(_crCouncilMemberSignature);
+			stream.WriteVarBytes(_crCouncilMemberSignature);
 		}
 
-		bool CRCProposal::Deserialize(const ByteStream &istream, uint8_t version) {
-			if (!DeserializeCRCouncilMemberUnsigned(istream, version)) {
+		bool CRCProposal::DeserializeNormalOrELIP(const ByteStream &stream, uint8_t version) {
+			if (!DeserializeCRCouncilMemberUnsigned(stream, version)) {
 				SPVLOG_ERROR("CRCProposal deserialize crc unsigned");
 				return false;
 			}
 
-			if (!istream.ReadVarBytes(_crCouncilMemberSignature)) {
+			if (!stream.ReadVarBytes(_crCouncilMemberSignature)) {
 				SPVLOG_ERROR("CRCProposal deserialize crc signature");
 				return false;
 			}
 
 			return true;
+		}
+
+		// change owner
+		void CRCProposal::SerializeChangeOwnerUnsigned(ByteStream &stream, uint8_t version) const {
+			uint16_t type = _type;
+			stream.WriteUint16(type);
+
+			stream.WriteVarBytes(_categoryData);
+			stream.WriteVarBytes(_ownerPublicKey);
+			stream.WriteBytes(_draftHash);
+			stream.WriteBytes(_targetProposalHash);
+			stream.WriteBytes(_newRecipient.ProgramHash());
+			stream.WriteVarBytes(_newOwnerPublicKey);
+		}
+
+		bool CRCProposal::DeserializeChangeOwnerUnsigned(const ByteStream &stream, uint8_t version) {
+			if (!stream.ReadVarString(_categoryData)) {
+				SPVLOG_ERROR("deserialize categoryData");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_ownerPublicKey)) {
+				SPVLOG_ERROR("deserialize owner PublicKey");
+				return false;
+			}
+
+			if (!stream.ReadBytes(_draftHash)) {
+				SPVLOG_ERROR("deserialize draftHash");
+				return false;
+			}
+
+			if (!stream.ReadBytes(_targetProposalHash)) {
+				SPVLOG_ERROR("deserialize target proposal hash");
+				return false;
+			}
+
+			uint168 programHash;
+			if (!stream.ReadBytes(programHash)) {
+				SPVLOG_ERROR("deserialize new recipient");
+				return false;
+			}
+			_newRecipient = Address(programHash);
+
+			if (!stream.ReadVarBytes(_newOwnerPublicKey)) {
+				SPVLOG_ERROR("deserialize new owner PublicKey");
+				return false;
+			}
+
+			return true;
+		}
+
+		void CRCProposal::SerializeChangeOwnerNewOwnerUnsigned(ByteStream &stream, uint8_t version) const {
+			SerializeChangeOwnerUnsigned(stream, version);
+
+			stream.WriteVarBytes(_signature);
+		}
+
+		bool CRCProposal::DeserializeChangeOwnerNewOwnerUnsigned(const ByteStream &stream, uint8_t version) {
+			if (!DeserializeChangeOwnerUnsigned(stream, version)) {
+				SPVLOG_ERROR("deserialize change owner unsigned");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_signature)) {
+				SPVLOG_ERROR("deserialize change owner signature");
+				return false;
+			}
+
+			return true;
+		}
+
+		void CRCProposal::SerializeChangeOwnerCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const {
+			SerializeChangeOwnerNewOwnerUnsigned(stream, version);
+
+			stream.WriteVarBytes(_newOwnerSignature);
+
+			stream.WriteBytes(_crCouncilMemberDID.ProgramHash());
+		}
+
+		bool CRCProposal::DeserializeChangeOwnerCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version) {
+			if (!DeserializeChangeOwnerNewOwnerUnsigned(stream, version)) {
+				SPVLOG_ERROR("deserialize change owner new owner unsigned");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_newOwnerSignature)) {
+				SPVLOG_ERROR("deserialize change owner new owner signature");
+				return false;
+			}
+
+			uint168 programHash;
+			if (!stream.ReadBytes(programHash)) {
+				SPVLOG_ERROR("deserialize sponsor did");
+				return false;
+			}
+			_crCouncilMemberDID = Address(programHash);
+
+			return true;
+		}
+
+		void CRCProposal::SerializeChangeOwner(ByteStream &stream, uint8_t version) const {
+			SerializeChangeOwnerCRCouncilMemberUnsigned(stream, version);
+
+			stream.WriteVarBytes(_crCouncilMemberSignature);
+		}
+
+		bool CRCProposal::DeserializeChangeOwner(const ByteStream &stream, uint8_t version) {
+			if (!DeserializeChangeOwnerCRCouncilMemberUnsigned(stream, version)) {
+				SPVLOG_ERROR("deserialize change owner cr council member unsigned");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_crCouncilMemberSignature)) {
+				SPVLOG_ERROR("deserialize change owner cr council member signature");
+				return false;
+			}
+
+			return true;
+		}
+
+		// top serialize or deserialize
+		void CRCProposal::Serialize(ByteStream &stream, uint8_t version) const {
+			switch (_type) {
+				case changeProposalOwner:
+					SerializeChangeOwner(stream, version);
+					break;
+
+				case closeProposal:
+					break;
+
+				case secretaryGeneral:
+					break;
+
+				case elip:
+				case normal:
+					SerializeNormalOrELIP(stream, version);
+					break;
+
+				default:
+					SPVLOG_ERROR("serialize cr proposal unknown type");
+					break;
+			}
+		}
+
+		bool CRCProposal::Deserialize(const ByteStream &stream, uint8_t version) {
+			uint16_t type = 0;
+			if (!stream.ReadUint16(type)) {
+				SPVLOG_ERROR("deserialize type");
+				return false;
+			}
+			_type = CRCProposal::Type(type);
+
+			bool r = false;
+			switch (_type) {
+				case changeProposalOwner:
+					r = DeserializeChangeOwner(stream, version);
+					break;
+
+				case closeProposal:
+					break;
+
+				case secretaryGeneral:
+					break;
+
+				case elip:
+				case normal:
+					r = DeserializeNormalOrELIP(stream, version);
+					break;
+
+				default:
+					r = false;
+					break;
+			}
+
+			return r;
 		}
 
 		nlohmann::json CRCProposal::ToJsonOwnerUnsigned(uint8_t version) const {
