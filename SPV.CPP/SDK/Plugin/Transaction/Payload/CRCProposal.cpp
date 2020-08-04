@@ -479,6 +479,88 @@ namespace Elastos {
 			return true;
 		}
 
+		// terminate proposal
+		void CRCProposal::SerializeTerminateProposalUnsigned(ByteStream &stream, uint8_t version) const {
+			uint16_t type = _type;
+			stream.WriteUint16(type);
+			stream.WriteVarString(_categoryData);
+			stream.WriteVarBytes(_ownerPublicKey);
+			stream.WriteBytes(_draftHash);
+			stream.WriteBytes(_targetProposalHash);
+		}
+
+		bool CRCProposal::DeserializeTerminateProposalUnsigned(const ByteStream &stream, uint8_t version) {
+			if (!stream.ReadVarString(_categoryData)) {
+				SPVLOG_ERROR("deserialize terminate proposal category data");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_ownerPublicKey)) {
+				SPVLOG_ERROR("deserialize terminate proposal owner pubkey");
+				return false;
+			}
+
+			if (!stream.ReadBytes(_draftHash)) {
+				SPVLOG_ERROR("deserialize terminate proposal draft hash");
+				return false;
+			}
+
+			if (!stream.ReadBytes(_targetProposalHash)) {
+				SPVLOG_ERROR("deserialize terminate proposal target proposal hash");
+				return false;
+			}
+
+			return true;
+		}
+
+		void CRCProposal::SerializeTerminateProposalCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const {
+			SerializeTerminateProposalUnsigned(stream, version);
+
+			stream.WriteVarBytes(_signature);
+			stream.WriteBytes(_crCouncilMemberDID.ProgramHash());
+		}
+
+		bool CRCProposal::DeserializeTerminateProposalCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version) {
+			if (!DeserializeTerminateProposalUnsigned(stream, version)) {
+				SPVLOG_ERROR("deserialize terminate proposal unsigned");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_signature)) {
+				SPVLOG_ERROR("deserialize terminate proposal signature");
+				return false;
+			}
+
+			uint168 programHash;
+			if (!stream.ReadBytes(programHash)) {
+				SPVLOG_ERROR("deserialize sponsor did");
+				return false;
+			}
+			_crCouncilMemberDID = Address(programHash);
+
+			return true;
+		}
+
+		void CRCProposal::SerializeTerminateProposal(ByteStream &stream, uint8_t version) const {
+			SerializeTerminateProposalCRCouncilMemberUnsigned(stream, version);
+
+			stream.WriteVarBytes(_crCouncilMemberSignature);
+		}
+
+		bool CRCProposal::DeserializeTerminateProposal(const ByteStream &stream, uint8_t version) {
+			if (!DeserializeTerminateProposalCRCouncilMemberUnsigned(stream, version)) {
+				SPVLOG_ERROR("deserialize terminate proposal cr council member unsigned");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_crCouncilMemberSignature)) {
+				SPVLOG_ERROR("deserialize change owner cr council member signature");
+				return false;
+			}
+
+			return true;
+		}
+
 		// top serialize or deserialize
 		void CRCProposal::Serialize(ByteStream &stream, uint8_t version) const {
 			switch (_type) {
@@ -486,7 +568,8 @@ namespace Elastos {
 					SerializeChangeOwner(stream, version);
 					break;
 
-				case closeProposal:
+				case terminateProposal:
+					SerializeTerminateProposal(stream, version);
 					break;
 
 				case secretaryGeneral:
@@ -517,7 +600,8 @@ namespace Elastos {
 					r = DeserializeChangeOwner(stream, version);
 					break;
 
-				case closeProposal:
+				case terminateProposal:
+					r = DeserializeTerminateProposal(stream, version);
 					break;
 
 				case secretaryGeneral:

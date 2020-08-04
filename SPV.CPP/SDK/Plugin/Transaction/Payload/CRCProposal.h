@@ -79,7 +79,7 @@ namespace Elastos {
 				registerSideChain = 0x0301,
 				secretaryGeneral = 0x0400,
 				changeProposalOwner = 0x0401,
-				closeProposal = 0x0402,
+				terminateProposal = 0x0402,
 				dappConsensus = 0x0500,
 				maxType
 			};
@@ -160,6 +160,19 @@ namespace Elastos {
 			void SerializeChangeOwner(ByteStream &stream, uint8_t version) const;
 
 			bool DeserializeChangeOwner(const ByteStream &stream, uint8_t version);
+
+			// terminate proposal
+			void SerializeTerminateProposalUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeTerminateProposalUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeTerminateProposalCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeTerminateProposalCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeTerminateProposal(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeTerminateProposal(const ByteStream &stream, uint8_t version);
 
 			// top serialize or deserialize
 			void Serialize(ByteStream &stream, uint8_t version) const override;
