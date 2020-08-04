@@ -6,6 +6,20 @@
 	objectVersion = 51;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		11F3A90724D927E2007ABB70 /* ElastosDIDSDKFramework */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 11F3A90F24D927E2007ABB70 /* Build configuration list for PBXAggregateTarget "ElastosDIDSDKFramework" */;
+			buildPhases = (
+				11F3A91024D927FA007ABB70 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = ElastosDIDSDKFramework;
+			productName = ElastosDIDSDKFramework;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		0E568F5F89CD94B76CE6213E /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED7485A64A06C161BCD31D48 /* Pods_ElastosDIDSDK.framework */; };
 		11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1C239D1B31008A4500 /* DIDURLTest.swift */; };
@@ -940,6 +954,9 @@
 						CreatedOnToolsVersion = 10.3;
 						LastSwiftMigration = 1030;
 					};
+					11F3A90724D927E2007ABB70 = {
+						CreatedOnToolsVersion = 11.6;
+					};
 				};
 			};
 			buildConfigurationList = 11F262A423260CF40009C103 /* Build configuration list for PBXProject "ElastosDIDSDK" */;
@@ -967,6 +984,7 @@
 			targets = (
 				11F262A923260CF40009C103 /* ElastosDIDSDK */,
 				1155D9452352FACE00DF8C9D /* ElastosDIDSDKTests */,
+				11F3A90724D927E2007ABB70 /* ElastosDIDSDKFramework */,
 			);
 		};
 /* End PBXProject section */
@@ -1048,6 +1066,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		11F3A91024D927FA007ABB70 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "FMK_NAME=${PROJECT_NAME}\nINSTALL_DIR=${SRCROOT}/'Products'/${FMK_NAME}'.framework'\nFINAL_DIR=${SRCROOT}/Products\nWRK_DIR=${BUILD_DIR}\nDEVICE_DIR=${WRK_DIR}'/Debug-iphoneos'/${FMK_NAME}'.framework'\nSIMULATOR_DIR=${WRK_DIR}'/Debug-iphonesimulator'/${FMK_NAME}'.framework'\nxcodebuild -workspace ${FMK_NAME}\".xcworkspace\" -scheme ${FMK_NAME} OTHER_CFLAGS=\"-fembed-bitcode\" -configuration \"Debug\" -sdk iphoneos -arch arm64 clean build -UseModernBuildSystem=NO || exit 1\nxcodebuild -workspace ${FMK_NAME}\".xcworkspace\" -scheme ${FMK_NAME} OTHER_CFLAGS=\"-fembed-bitcode\" -configuration \"Debug\" -sdk iphonesimulator -arch x86_64 clean build -UseModernBuildSystem=NO || exit 1\n# Cleaning the oldest.\nif [ -d \"${INSTALL_DIR}\" ]\nthen\nrm -rf \"${INSTALL_DIR}\"\nfi\nmkdir -p \"${INSTALL_DIR}\"\ncp -R \"${DEVICE_DIR}/\" \"${INSTALL_DIR}/\"\ncp -R \"${SIMULATOR_DIR}/Modules/${FMK_NAME}.swiftmodule/\" \"${INSTALL_DIR}/Modules/${FMK_NAME}.swiftmodule/\"\nlipo -create \"${DEVICE_DIR}/${FMK_NAME}\" \"${SIMULATOR_DIR}/${FMK_NAME}\" -output \"${INSTALL_DIR}/${FMK_NAME}\"\nrm -r \"${WRK_DIR}\"\nopen \"${FINAL_DIR}\"\n";
+		};
 		48DAA1C7EA250401C94634D2 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1519,6 +1554,22 @@
 			};
 			name = Release;
 		};
+		11F3A90824D927E2007ABB70 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		11F3A90924D927E2007ABB70 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1545,6 +1596,15 @@
 			buildConfigurations = (
 				11F262B323260CF40009C103 /* Debug */,
 				11F262B423260CF40009C103 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		11F3A90F24D927E2007ABB70 /* Build configuration list for PBXAggregateTarget "ElastosDIDSDKFramework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				11F3A90824D927E2007ABB70 /* Debug */,
+				11F3A90924D927E2007ABB70 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
