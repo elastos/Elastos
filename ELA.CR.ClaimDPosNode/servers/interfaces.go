@@ -2473,7 +2473,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 			obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 			obj.DraftHash = ToReversedString(object.DraftHash)
 			obj.TargetProposalHash = ToReversedString(object.TargetProposalHash)
-			addr, _ := object.Recipient.ToAddress()
+			addr, _ := object.NewRecipient.ToAddress()
 			obj.NewRecipient = addr
 			obj.NewOwnerPublicKey = common.BytesToHexString(object.NewOwnerPublicKey)
 			obj.Signature = common.BytesToHexString(object.Signature)
@@ -2570,7 +2570,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.WithdrawTransactionHashes = make([]string, 0)
 		for _, hash := range object.WithdrawTransactionHashes {
 			obj.WithdrawTransactionHashes =
-				append(obj.WithdrawTransactionHashes, hash.String())
+				append(obj.WithdrawTransactionHashes, ToReversedString(hash))
 		}
 		return obj
 	}
