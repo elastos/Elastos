@@ -2023,7 +2023,7 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 	case payload.Progress:
 		result = b.checkCRCProposalProgressTracking(cptPayload, proposalState)
 	case payload.Rejected:
-		result = b.checkCRCProposalRejectedTracking(cptPayload, proposalState)
+		result = b.checkCRCProposalRejectedTracking(cptPayload, proposalState, blockHeight)
 	case payload.Terminated:
 		result = b.checkCRCProposalTerminatedTracking(cptPayload, proposalState)
 	case payload.ChangeOwner:
@@ -2270,8 +2270,11 @@ func (b *BlockChain) checkCRCProposalProgressTracking(
 	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
 }
 
-func (b *BlockChain) checkCRCProposalRejectedTracking(
-	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
+func (b *BlockChain) checkCRCProposalRejectedTracking(cptPayload *payload.CRCProposalTracking,
+	pState *crstate.ProposalState, blockHeight uint32) error {
+	if blockHeight < b.chainParams.CRCProposalWithdrawPayloadV1Height {
+		return b.checkCRCProposalProgressTracking(cptPayload, pState)
+	}
 	// Check stage of proposal
 	if int(cptPayload.Stage) >= len(pState.Proposal.Budgets) {
 		return errors.New("invalid tracking Stage")
