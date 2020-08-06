@@ -96,6 +96,11 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32,
 // CheckTransactionContext verifies a transaction with history transaction in ledger
 func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 	txn *Transaction, proposalsUsedAmount common.Fixed64) (map[*Input]Output, elaerr.ELAError) {
+
+	if err := b.checkTxHeightVersion(txn, blockHeight); err != nil {
+		return nil, elaerr.Simple(elaerr.ErrTxHeightVersion, nil)
+	}
+
 	// check if duplicated with transaction in ledger
 	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")

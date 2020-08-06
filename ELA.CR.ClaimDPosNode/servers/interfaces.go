@@ -372,6 +372,10 @@ func GetCRCPeersInfo(params Params) map[string]interface{} {
 		result.NodePublicKeys = append(result.NodePublicKeys, pk)
 	}
 
+	sort.Slice(result.NodePublicKeys, func(i, j int) bool {
+		return result.NodePublicKeys[i] < result.NodePublicKeys[j]
+	})
+
 	return ResponsePack(Success, result)
 }
 
