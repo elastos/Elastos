@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -70,7 +70,7 @@ func (a *arbitrators) distributeWithNormalArbitratorsV0(
 		individualProducerReward := common.Fixed64(math.Floor(float64(
 			votes) * rewardPerVote))
 		r := individualBlockConfirmReward + individualProducerReward
-		if _, ok := a.crcArbiters[ownerHash]; ok {
+		if _, ok := a.currentCRCArbitersMap[ownerHash]; ok {
 			r = individualBlockConfirmReward
 			roundReward[a.chainParams.CRCAddress] += r
 		} else {

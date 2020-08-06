@@ -73,9 +73,12 @@ type arbitrators struct {
 	currentCandidates  []ArbiterMember
 	nextArbitrators    []ArbiterMember
 	nextCandidates     []ArbiterMember
-	//current cr arbiters
-	crcArbiters map[common.Uint168]ArbiterMember
-	//next cr arbiters
+
+	// current cr arbiters map
+	currentCRCArbitersMap map[common.Uint168]ArbiterMember
+	// next cr arbiters map
+	nextCRCArbitersMap map[common.Uint168]ArbiterMember
+	// next cr arbiters
 	nextCRCArbiters []ArbiterMember
 
 	crcChangedHeight           uint32
@@ -261,9 +264,9 @@ func (a *arbitrators) RollbackTo(height uint32) error {
 func (a *arbitrators) GetDutyIndexByHeight(height uint32) (index int) {
 	a.mtx.Lock()
 	if height >= a.chainParams.CRClaimDPOSNodeStartHeight {
-		index = a.dutyIndex % len(a.crcArbiters)
+		index = a.dutyIndex % len(a.currentCRCArbitersMap)
 	} else if height >= a.chainParams.CRCOnlyDPOSHeight-1 {
-		index = int(height-a.chainParams.CRCOnlyDPOSHeight+1) % len(a.crcArbiters)
+		index = int(height-a.chainParams.CRCOnlyDPOSHeight+1) % len(a.currentCRCArbitersMap)
 	} else {
 		index = int(height) % len(a.currentArbitrators)
 	}
@@ -566,7 +569,7 @@ func (a *arbitrators) distributeWithNormalArbitratorsV2(height uint32, reward co
 		ownerHash := arbiter.GetOwnerProgramHash()
 		rewardHash := ownerHash
 		var r common.Fixed64
-		if _, ok := a.crcArbiters[ownerHash]; ok {
+		if _, ok := a.currentCRCArbitersMap[ownerHash]; ok {
 			r = individualBlockConfirmReward
 			m, ok := arbiter.(*crcArbiter)
 			if !ok || m.crMember.MemberState != state.MemberElected {
@@ -629,7 +632,7 @@ func (a *arbitrators) distributeWithNormalArbitratorsV1(height uint32, reward co
 		ownerHash := arbiter.GetOwnerProgramHash()
 		rewardHash := ownerHash
 		var r common.Fixed64
-		if _, ok := a.crcArbiters[ownerHash]; ok {
+		if _, ok := a.currentCRCArbitersMap[ownerHash]; ok {
 			r = individualBlockConfirmReward
 			m, ok := arbiter.(*crcArbiter)
 			if !ok || m.crMember.MemberState != state.MemberElected {
@@ -678,7 +681,13 @@ func (a *arbitrators) getNeedConnectArbiters() []peer.PID {
 	}
 
 	pids := make(map[string]peer.PID)
-	for _, p := range a.crcArbiters {
+	for _, p := range a.currentCRCArbitersMap {
+		var pid peer.PID
+		copy(pid[:], p.GetNodePublicKey())
+		pids[common.BytesToHexString(p.GetNodePublicKey())] = pid
+	}
+
+	for _, p := range a.nextCRCArbitersMap {
 		var pid peer.PID
 		copy(pid[:], p.GetNodePublicKey())
 		pids[common.BytesToHexString(p.GetNodePublicKey())] = pid
@@ -773,8 +782,8 @@ func (a *arbitrators) GetCRCArbiters() [][]byte {
 }
 
 func (a *arbitrators) getCRCArbiters() [][]byte {
-	result := make([][]byte, 0, len(a.crcArbiters))
-	for _, v := range a.crcArbiters {
+	result := make([][]byte, 0, len(a.currentCRCArbitersMap))
+	for _, v := range a.currentCRCArbitersMap {
 		result = append(result, v.GetNodePublicKey())
 	}
 
@@ -812,11 +821,16 @@ func (a *arbitrators) IsCRCArbitrator(pk []byte) bool {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	return a.isCRCArbitrator(pk)
+	for _, v := range a.currentCRCArbitersMap {
+		if bytes.Equal(v.GetNodePublicKey(), pk) {
+			return true
+		}
+	}
+	return false
 }
 
-func (a *arbitrators) isCRCArbitrator(pk []byte) bool {
-	for _, v := range a.crcArbiters {
+func (a *arbitrators) isNextCRCArbitrator(pk []byte) bool {
+	for _, v := range a.nextCRCArbitersMap {
 		if bytes.Equal(v.GetNodePublicKey(), pk) {
 			return true
 		}
@@ -845,7 +859,13 @@ func (a *arbitrators) GetConnectedProducer(publicKey []byte) ArbiterMember {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	for _, v := range a.crcArbiters {
+	for _, v := range a.currentCRCArbitersMap {
+		if bytes.Equal(v.GetNodePublicKey(), publicKey) {
+			return v
+		}
+	}
+
+	for _, v := range a.nextCRCArbitersMap {
 		if bytes.Equal(v.GetNodePublicKey(), publicKey) {
 			return v
 		}
@@ -878,7 +898,7 @@ func (a *arbitrators) GetConnectedProducer(publicKey []byte) ArbiterMember {
 func (a *arbitrators) CRCProducerCount() int {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
-	return len(a.crcArbiters)
+	return len(a.currentCRCArbitersMap)
 }
 
 func (a *arbitrators) getOnDutyArbitrator() []byte {
@@ -915,7 +935,7 @@ func (a *arbitrators) GetOnDutyCrossChainArbitrator() []byte {
 		sort.Slice(crcArbiters, func(i, j int) bool {
 			return bytes.Compare(crcArbiters[i], crcArbiters[j]) < 0
 		})
-		index := a.dutyIndex % len(a.crcArbiters)
+		index := a.dutyIndex % len(a.currentCRCArbitersMap)
 		arbiter = crcArbiters[index]
 		a.mtx.Unlock()
 	}
@@ -970,7 +990,7 @@ func (a *arbitrators) GetArbitersCount() int {
 
 func (a *arbitrators) GetCRCArbitersCount() int {
 	a.mtx.Lock()
-	result := len(a.crcArbiters)
+	result := len(a.currentCRCArbitersMap)
 	a.mtx.Unlock()
 	return result
 }
@@ -1024,6 +1044,7 @@ func (a *arbitrators) getChangeType(height uint32) (ChangeType, uint32) {
 
 func (a *arbitrators) changeCurrentArbitrators(height uint32) error {
 
+	oriCurrentCRCArbitersMap := copyCRCArbitersMap(a.currentCRCArbitersMap)
 	oriCurrentArbitrators := a.currentArbitrators
 	oriCurrentCandidates := a.currentCandidates
 	oriCurrentReward := a.CurrentReward
@@ -1033,11 +1054,13 @@ func (a *arbitrators) changeCurrentArbitrators(height uint32) error {
 			return bytes.Compare(a.nextArbitrators[i].GetNodePublicKey(),
 				a.nextArbitrators[j].GetNodePublicKey()) < 0
 		})
+		a.currentCRCArbitersMap = copyCRCArbitersMap(a.nextCRCArbitersMap)
 		a.currentArbitrators = a.nextArbitrators
 		a.currentCandidates = a.nextCandidates
 		a.CurrentReward = a.NextReward
 		a.dutyIndex = 0
 	}, func() {
+		a.currentCRCArbitersMap = oriCurrentCRCArbitersMap
 		a.currentArbitrators = oriCurrentArbitrators
 		a.currentCandidates = oriCurrentCandidates
 		a.CurrentReward = oriCurrentReward
@@ -1174,7 +1197,6 @@ func (a *arbitrators) updateNextArbitrators(versionHeight, height uint32) error 
 
 func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32) error {
 	if a.crCommittee != nil && a.crCommittee.IsInElectionPeriod() {
-
 		var crcArbiters map[common.Uint168]ArbiterMember
 		if versionHeight >= a.chainParams.CRClaimDPOSNodeStartHeight {
 			var err error
@@ -1188,13 +1210,13 @@ func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32)
 			}
 		}
 
-		oriArbiters := a.crcArbiters
+		oriNextArbitersMap := a.nextCRCArbitersMap
 		oriCRCChangedHeight := a.crcChangedHeight
 		a.history.Append(height, func() {
-			a.crcArbiters = crcArbiters
+			a.nextCRCArbitersMap = crcArbiters
 			a.crcChangedHeight = a.crCommittee.LastCommitteeHeight
 		}, func() {
-			a.crcArbiters = oriArbiters
+			a.nextCRCArbitersMap = oriNextArbitersMap
 			a.crcChangedHeight = oriCRCChangedHeight
 		})
 	} else if versionHeight >= a.chainParams.CRCommitteeStartHeight {
@@ -1218,13 +1240,13 @@ func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32)
 			crcArbiters[ar.GetOwnerProgramHash()] = ar
 		}
 
-		oriArbiters := a.crcArbiters
+		oriNextArbitersMap := a.nextCRCArbitersMap
 		oriCRCChangedHeight := a.crcChangedHeight
 		a.history.Append(height, func() {
-			a.crcArbiters = crcArbiters
+			a.nextCRCArbitersMap = crcArbiters
 			a.crcChangedHeight = a.crCommittee.LastCommitteeHeight
 		}, func() {
-			a.crcArbiters = oriArbiters
+			a.nextCRCArbitersMap = oriNextArbitersMap
 			a.crcChangedHeight = oriCRCChangedHeight
 		})
 	}
@@ -1232,7 +1254,7 @@ func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32)
 	oriNextArbiters := a.nextArbitrators
 	a.history.Append(height, func() {
 		a.nextArbitrators = make([]ArbiterMember, 0)
-		for _, v := range a.crcArbiters {
+		for _, v := range a.nextCRCArbitersMap {
 			a.nextArbitrators = append(a.nextArbitrators, v)
 		}
 	}, func() {
@@ -1377,7 +1399,7 @@ func (a *arbitrators) snapshotVotesStates(height uint32) error {
 	nextReward.OwnerVotesInRound = make(map[common.Uint168]common.Fixed64, 0)
 	nextReward.TotalVotesInRound = 0
 	for _, ar := range a.nextArbitrators {
-		if !a.isCRCArbitrator(ar.GetNodePublicKey()) {
+		if !a.isNextCRCArbitrator(ar.GetNodePublicKey()) {
 			producer := a.GetProducer(ar.GetNodePublicKey())
 			if producer == nil {
 				return errors.New("get producer by node public key failed")
@@ -1393,7 +1415,7 @@ func (a *arbitrators) snapshotVotesStates(height uint32) error {
 	}
 
 	for _, ar := range a.nextCandidates {
-		if a.isCRCArbitrator(ar.GetNodePublicKey()) {
+		if a.isNextCRCArbitrator(ar.GetNodePublicKey()) {
 			continue
 		}
 		producer := a.GetProducer(ar.GetNodePublicKey())
@@ -1470,7 +1492,8 @@ func (a *arbitrators) newCheckPoint(height uint32) *CheckPoint {
 		NextCandidates:             make([]ArbiterMember, 0),
 		CurrentReward:              *NewRewardData(),
 		NextReward:                 *NewRewardData(),
-		crcArbiters:                make(map[common.Uint168]ArbiterMember),
+		CurrentCRCArbiters:         make(map[common.Uint168]ArbiterMember),
+		NextCRCArbiters:            make(map[common.Uint168]ArbiterMember),
 		crcChangedHeight:           a.crcChangedHeight,
 		accumulativeReward:         a.accumulativeReward,
 		finalRoundChange:           a.finalRoundChange,
@@ -1486,7 +1509,8 @@ func (a *arbitrators) newCheckPoint(height uint32) *CheckPoint {
 	point.NextCandidates = copyByteList(a.nextCandidates)
 	point.CurrentReward = *copyReward(&a.CurrentReward)
 	point.NextReward = *copyReward(&a.NextReward)
-	point.crcArbiters = copyCRCArbitersMap(a.crcArbiters)
+	point.NextCRCArbiters = copyCRCArbitersMap(a.nextCRCArbitersMap)
+	point.CurrentCRCArbiters = copyCRCArbitersMap(a.currentCRCArbitersMap)
 	for k, v := range a.arbitersRoundReward {
 		point.arbitersRoundReward[k] = v
 	}
@@ -1625,7 +1649,8 @@ func (a *arbitrators) initArbitrators(chainParams *config.Params) error {
 
 	a.currentArbitrators = originArbiters
 	a.nextArbitrators = originArbiters
-	a.crcArbiters = crcArbiters
+	a.nextCRCArbitersMap = crcArbiters
+	a.currentCRCArbitersMap = crcArbiters
 	a.CurrentReward = RewardData{
 		OwnerVotesInRound: make(map[common.Uint168]common.Fixed64),
 		TotalVotesInRound: 0,

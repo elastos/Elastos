@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -43,7 +43,8 @@ type CheckPoint struct {
 	CurrentCandidates          []ArbiterMember
 	CurrentReward              RewardData
 	NextReward                 RewardData
-	crcArbiters                map[common.Uint168]ArbiterMember
+	CurrentCRCArbiters         map[common.Uint168]ArbiterMember
+	NextCRCArbiters            map[common.Uint168]ArbiterMember
 	crcChangedHeight           uint32
 	accumulativeReward         common.Fixed64
 	finalRoundChange           common.Fixed64
@@ -185,7 +186,11 @@ func (c *CheckPoint) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = c.serializeCRCArbitersMap(w, c.crcArbiters); err != nil {
+	if err = c.serializeCRCArbitersMap(w, c.CurrentCRCArbiters); err != nil {
+		return
+	}
+
+	if err = c.serializeCRCArbitersMap(w, c.NextCRCArbiters); err != nil {
 		return
 	}
 
@@ -303,7 +308,11 @@ func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if c.crcArbiters, err = c.deserializeCRCArbitersMap(r); err != nil {
+	if c.CurrentCRCArbiters, err = c.deserializeCRCArbitersMap(r); err != nil {
+		return
+	}
+
+	if c.NextCRCArbiters, err = c.deserializeCRCArbitersMap(r); err != nil {
 		return
 	}
 
@@ -334,7 +343,6 @@ func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
 
 	return c.StateKeyFrame.Deserialize(r)
 }
-
 
 func (c *CheckPoint) deserializeCRCArbitersMap(r io.Reader) (
 	rmap map[common.Uint168]ArbiterMember, err error) {
@@ -380,7 +388,6 @@ func (c *CheckPoint) deserializeCRCArbitersMap(r io.Reader) (
 	}
 	return
 }
-
 
 func (c *CheckPoint) deserializeIllegalPayloadHashes(
 	r io.Reader) (hmap map[common.Uint256]interface{}, err error) {

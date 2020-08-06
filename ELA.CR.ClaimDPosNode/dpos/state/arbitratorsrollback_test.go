@@ -64,7 +64,7 @@ func checkPointEqual(first, second *CheckPoint) bool {
 		first.accumulativeReward != second.accumulativeReward ||
 		first.finalRoundChange != second.finalRoundChange ||
 		first.clearingHeight != second.clearingHeight ||
-		len(first.crcArbiters) != len(second.crcArbiters) ||
+		len(first.NextCRCArbiters) != len(second.NextCRCArbiters) ||
 		len(first.arbitersRoundReward) != len(second.arbitersRoundReward) ||
 		len(first.illegalBlocksPayloadHashes) !=
 			len(second.illegalBlocksPayloadHashes) {
@@ -81,8 +81,8 @@ func checkPointEqual(first, second *CheckPoint) bool {
 		return false
 	}
 
-	for k, v := range first.crcArbiters {
-		a, ok := second.crcArbiters[k]
+	for k, v := range first.NextCRCArbiters {
+		a, ok := second.NextCRCArbiters[k]
 		if !ok {
 			return false
 		}
