@@ -77,7 +77,7 @@ namespace Elastos {
 				mainChainUpgradeCode = 0x0200,
 				sideChainUpgradeCode = 0x0300,
 				registerSideChain = 0x0301,
-				secretaryGeneral = 0x0400,
+				secretaryGeneralElection = 0x0400,
 				changeProposalOwner = 0x0401,
 				terminateProposal = 0x0402,
 				dappConsensus = 0x0500,
@@ -174,6 +174,23 @@ namespace Elastos {
 
 			bool DeserializeTerminateProposal(const ByteStream &stream, uint8_t version);
 
+			// secretary election
+			void SerializeSecretaryElectionUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeSecretaryElectionUnsigned(const ByteStream &stream, uint8_t verion);
+
+			void SerializeSecretaryElectionSecretaryUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeSecretaryElectionSecretaryUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeSecretaryElectionCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeSecretaryElectionCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeSecretaryElection(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeSecretaryElection(const ByteStream &stream, uint8_t version);
+
 			// top serialize or deserialize
 			void Serialize(ByteStream &stream, uint8_t version) const override;
 
@@ -215,11 +232,11 @@ namespace Elastos {
 			uint256 _targetProposalHash;
 			Address _newRecipient;
 			bytes_t _newOwnerPublicKey;
-			bytes_t _secretaryGeneralPublicKey;
-			Address _secretaryGeneralDID;
+			bytes_t _secretaryPublicKey;
+			Address _secretaryDID;
 			bytes_t _signature;
 			bytes_t _newOwnerSignature;
-			bytes_t _secretaryGeneraSignature;
+			bytes_t _secretarySignature;
 
 			// cr council member did
 			Address _crCouncilMemberDID;

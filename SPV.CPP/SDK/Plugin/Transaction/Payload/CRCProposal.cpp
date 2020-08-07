@@ -561,6 +561,115 @@ namespace Elastos {
 			return true;
 		}
 
+		// change secretary general
+		void CRCProposal::SerializeSecretaryElectionUnsigned(ByteStream &stream, uint8_t version) const {
+			uint16_t type = _type;
+			stream.WriteUint16(type);
+			stream.WriteVarString(_categoryData);
+			stream.WriteVarBytes(_ownerPublicKey);
+			stream.WriteBytes(_draftHash);
+			stream.WriteVarBytes(_secretaryPublicKey);
+			stream.WriteBytes(_secretaryDID.ProgramHash());
+		}
+
+		bool CRCProposal::DeserializeSecretaryElectionUnsigned(const ByteStream &stream, uint8_t verion) {
+			if (!stream.ReadVarString(_categoryData)) {
+				SPVLOG_ERROR("deserialize category data");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_ownerPublicKey)) {
+				SPVLOG_ERROR("deserialize owner pubkey");
+				return false;
+			}
+
+			if (!stream.ReadBytes(_draftHash)) {
+				SPVLOG_ERROR("deserialize draft hash");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_secretaryPublicKey)) {
+				SPVLOG_ERROR("deserialize secretary pubkey");
+				return false;
+			}
+
+			uint168 programHash;
+			if (!stream.ReadBytes(programHash)) {
+				SPVLOG_ERROR("deserialize sponsor did");
+				return false;
+			}
+			_secretaryDID = Address(programHash);
+
+			return true;
+		}
+
+		void CRCProposal::SerializeSecretaryElectionSecretaryUnsigned(ByteStream &stream, uint8_t version) const {
+			SerializeSecretaryElectionUnsigned(stream, version);
+
+			stream.WriteVarBytes(_signature);
+		}
+
+		bool CRCProposal::DeserializeSecretaryElectionSecretaryUnsigned(const ByteStream &stream, uint8_t version) {
+			if (!DeserializeSecretaryElectionUnsigned(stream, version)) {
+				SPVLOG_ERROR("deserialize change secretary unsigned");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_signature)) {
+				SPVLOG_ERROR("deserialize signature");
+				return false;
+			}
+
+			return true;
+		}
+
+		void CRCProposal::SerializeSecretaryElectionCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const {
+			SerializeSecretaryElectionSecretaryUnsigned(stream, version);
+
+			stream.WriteVarBytes(_secretarySignature);
+			stream.WriteBytes(_crCouncilMemberDID.ProgramHash());
+		}
+
+		bool CRCProposal::DeserializeSecretaryElectionCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version) {
+			if (!DeserializeSecretaryElectionSecretaryUnsigned(stream, version)) {
+				SPVLOG_ERROR("deserialize change secretary secretary unsigned");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_secretarySignature)) {
+				SPVLOG_ERROR("deserialize secretary signature");
+				return false;
+			}
+
+			uint168 programHash;
+			if (!stream.ReadBytes(programHash)) {
+				SPVLOG_ERROR("deserialize cr council mem did");
+				return false;
+			}
+			_crCouncilMemberDID = Address(programHash);
+
+			return true;
+		}
+
+		void CRCProposal::SerializeSecretaryElection(ByteStream &stream, uint8_t version) const {
+			SerializeSecretaryElectionCRCouncilMemberUnsigned(stream, version);
+
+			stream.WriteVarBytes(_crCouncilMemberSignature);
+		}
+
+		bool CRCProposal::DeserializeSecretaryElection(const ByteStream &stream, uint8_t version) {
+			if (!DeserializeSecretaryElectionCRCouncilMemberUnsigned(stream, version)) {
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_crCouncilMemberSignature)) {
+				SPVLOG_ERROR("deserialize change secretary cr council member signature");
+				return false;
+			}
+
+			return true;
+		}
+
 		// top serialize or deserialize
 		void CRCProposal::Serialize(ByteStream &stream, uint8_t version) const {
 			switch (_type) {
@@ -572,7 +681,8 @@ namespace Elastos {
 					SerializeTerminateProposal(stream, version);
 					break;
 
-				case secretaryGeneral:
+				case secretaryGeneralElection:
+					SerializeSecretaryElection(stream, version);
 					break;
 
 				case elip:
@@ -604,7 +714,8 @@ namespace Elastos {
 					r = DeserializeTerminateProposal(stream, version);
 					break;
 
-				case secretaryGeneral:
+				case secretaryGeneralElection:
+					r = DeserializeSecretaryElection(stream, version);
 					break;
 
 				case elip:
@@ -738,7 +849,14 @@ namespace Elastos {
 			_draftHash = payload._draftHash;
 			_budgets = payload._budgets;
 			_recipient = payload._recipient;
+			_targetProposalHash = payload._targetProposalHash;
+			_newRecipient = payload._newRecipient;
+			_newOwnerPublicKey = payload._newOwnerPublicKey;
+			_secretaryPublicKey = payload._secretaryPublicKey;
+			_secretaryDID = payload._secretaryDID;
 			_signature = payload._signature;
+			_newOwnerSignature = payload._newOwnerSignature;
+			_secretarySignature = payload._secretarySignature;
 
 			_crCouncilMemberDID = payload._crCouncilMemberDID;
 			_crCouncilMemberSignature = payload._crCouncilMemberSignature;
