@@ -179,6 +179,21 @@ namespace Elastos {
 															 const std::string &memo) override;
 
 			//////////////////////////////////////////////////
+			/*      Proposal Secretary General Election     */
+			//////////////////////////////////////////////////
+			std::string ProposalSecretaryGeneralElectionOwnerDigest(
+				const nlohmann::json &payload) const override;
+
+			std::string ProposalSecretaryGeneralElectionSecretaryGeneralDigest(
+				const nlohmann::json &payload) const override;
+
+			std::string ProposalSecretaryGeneralElectionCRCouncilMemberDigest(
+				const nlohmann::json &payload) const override;
+
+			nlohmann::json CreateSecretaryGeneralElectionTransaction(
+				const nlohmann::json &payload, const std::string &memo = "") override;
+
+			//////////////////////////////////////////////////
 			/*               Proposal Withdraw              */
 			//////////////////////////////////////////////////
 			std::string ProposalWithdrawDigest(const nlohmann::json &payload) const override;

@@ -124,10 +124,6 @@ namespace Elastos {
 
 			const bytes_t &GetCRCouncilMemberSignature() const;
 
-			const uint256 &DigestOwnerUnsigned(uint8_t version) const;
-
-			const uint256 &DigestCRCouncilMemberUnsigned(uint8_t version) const;
-
 		public:
 			size_t EstimateSize(uint8_t version) const override;
 
@@ -143,6 +139,22 @@ namespace Elastos {
 			void SerializeNormalOrELIP(ByteStream &stream, uint8_t version) const;
 
 			bool DeserializeNormalOrELIP(const ByteStream &stream, uint8_t version);
+
+			nlohmann::json ToJsonNormalOwnerUnsigned(uint8_t version) const;
+
+			void FromJsonNormalOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonNormalCRCouncilMemberUnsigned(uint8_t version) const;
+
+			void FromJsonNormalCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+			bool IsValidNormalOwnerUnsigned(uint8_t version) const;
+
+			bool IsValidNormalCRCouncilMemberUnsigned(uint8_t version) const;
+
+			const uint256 &DigestNormalOwnerUnsigned(uint8_t version) const;
+
+			const uint256 &DigestNormalCRCouncilMemberUnsigned(uint8_t version) const;
 
 			// change owner
 			void SerializeChangeOwnerUnsigned(ByteStream &stream, uint8_t version) const;
@@ -175,9 +187,9 @@ namespace Elastos {
 			bool DeserializeTerminateProposal(const ByteStream &stream, uint8_t version);
 
 			// secretary election
-			void SerializeSecretaryElectionUnsigned(ByteStream &stream, uint8_t version) const;
+			void SerializeSecretaryElectionOwnerUnsigned(ByteStream &stream, uint8_t version) const;
 
-			bool DeserializeSecretaryElectionUnsigned(const ByteStream &stream, uint8_t verion);
+			bool DeserializeSecretaryElectionOwnerUnsigned(const ByteStream &stream, uint8_t verion);
 
 			void SerializeSecretaryElectionSecretaryUnsigned(ByteStream &stream, uint8_t version) const;
 
@@ -191,26 +203,38 @@ namespace Elastos {
 
 			bool DeserializeSecretaryElection(const ByteStream &stream, uint8_t version);
 
+			nlohmann::json ToJsonSecretaryElectionOwnerUnsigned(uint8_t version) const;
+
+			void FromJsonSecretaryElectionOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonSecretaryElectionSecretaryUnsigned(uint8_t version) const;
+
+			void FromJsonSecretaryElectionSecretaryUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
+
+			void FromJsonSecretaryElectionCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+			bool IsValidSecretaryElectionOwnerUnsiged(uint8_t version) const;
+
+			bool IsValidSecretaryElectionSecretaryUnsigned(uint8_t version) const;
+
+			bool IsValidSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
+
+			const uint256 &DigestSecretaryElectionOwnerUnsigned(uint8_t version) const;
+
+			const uint256 &DigestSecretaryElectionSecretaryUnsigned(uint8_t version) const;
+
+			const uint256 &DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
+
 			// top serialize or deserialize
 			void Serialize(ByteStream &stream, uint8_t version) const override;
 
 			bool Deserialize(const ByteStream &stream, uint8_t version) override;
 
-			nlohmann::json ToJsonOwnerUnsigned(uint8_t version) const;
-
-			void FromJsonOwnerUnsigned(const nlohmann::json &j, uint8_t version);
-
-			nlohmann::json ToJsonCRCouncilMemberUnsigned(uint8_t version) const;
-
-			void FromJsonCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
-
 			nlohmann::json ToJson(uint8_t version) const override;
 
 			void FromJson(const nlohmann::json &j, uint8_t version) override;
-
-			bool IsValidOwnerUnsigned(uint8_t version) const;
-
-			bool IsValidCRCouncilMemberUnsigned(uint8_t version) const;
 
 			bool IsValid(uint8_t version) const override;
 
@@ -221,6 +245,10 @@ namespace Elastos {
 		private:
 			mutable uint256 _digestOwnerUnsigned;
 			mutable uint256 _digestCRCouncilMemberUnsigned;
+
+			mutable uint256 _digestSecretaryElectionOwnerUnsigned;
+			mutable uint256 _digestSecretaryElectionSecretaryUnsigned;
+			mutable uint256 _digestSecretaryElectionCRCouncilMemberUnsigned;
 
 		private:
 			CRCProposal::Type _type;

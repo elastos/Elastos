@@ -1033,15 +1033,15 @@ namespace Elastos {
 
 			CRCProposal proposal;
 			try {
-				proposal.FromJsonOwnerUnsigned(payload, CRCProposalDefaultVersion);
+				proposal.FromJsonNormalOwnerUnsigned(payload, CRCProposalDefaultVersion);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
-			ErrorChecker::CheckParam(!proposal.IsValidOwnerUnsigned(CRCProposalDefaultVersion),
+			ErrorChecker::CheckParam(!proposal.IsValidNormalOwnerUnsigned(CRCProposalDefaultVersion),
 									 Error::InvalidArgument, "invalid payload");
 
-			std::string digest = proposal.DigestOwnerUnsigned(CRCProposalDefaultVersion).GetHex();
+			std::string digest = proposal.DigestNormalOwnerUnsigned(CRCProposalDefaultVersion).GetHex();
 
 			ArgInfo("r => {}", digest);
 			return digest;
@@ -1053,15 +1053,15 @@ namespace Elastos {
 
 			CRCProposal proposal;
 			try {
-				proposal.FromJsonCRCouncilMemberUnsigned(payload, CRCProposalDefaultVersion);
+				proposal.FromJsonNormalCRCouncilMemberUnsigned(payload, CRCProposalDefaultVersion);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
-			ErrorChecker::CheckParam(!proposal.IsValidCRCouncilMemberUnsigned(CRCProposalDefaultVersion),
+			ErrorChecker::CheckParam(!proposal.IsValidNormalCRCouncilMemberUnsigned(CRCProposalDefaultVersion),
 									 Error::InvalidArgument, "invalid payload");
 
-			std::string digest = proposal.DigestCRCouncilMemberUnsigned(CRCProposalDefaultVersion).GetHex();
+			std::string digest = proposal.DigestNormalCRCouncilMemberUnsigned(CRCProposalDefaultVersion).GetHex();
 
 			ArgInfo("r => {}", digest);
 			return digest;
@@ -1368,6 +1368,120 @@ namespace Elastos {
 			AddressPtr fromAddr(new Address(""));
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposalTracking, p, fromAddr, outputs, memo);
+
+			if (tx->GetOutputs().size() < 2)
+				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "balance not enough");
+
+			tx->RemoveOutput(tx->GetOutputs().front());
+			tx->FixIndex();
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
+			ArgInfo("r => {}", result.dump());
+
+			return result;
+		}
+
+		std::string MainchainSubWallet::ProposalSecretaryGeneralElectionOwnerDigest(
+			const nlohmann::json &payload) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("payload: {}", payload.dump());
+
+			CRCProposal proposal;
+			try {
+				nlohmann::json payloadFixed = payload;
+				payloadFixed["Type"] = CRCProposal::secretaryGeneralElection;
+				proposal.FromJsonSecretaryElectionOwnerUnsigned(payloadFixed, CRCProposalDefaultVersion);
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
+			}
+
+			if (!proposal.IsValidSecretaryElectionOwnerUnsiged(CRCProposalDefaultVersion)) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
+			}
+
+			std::string digest = proposal.DigestSecretaryElectionOwnerUnsigned(CRCProposalDefaultVersion).GetHex();
+
+			ArgInfo("r => {}", digest);
+			return digest;
+		}
+
+		std::string MainchainSubWallet::ProposalSecretaryGeneralElectionSecretaryGeneralDigest(
+			const nlohmann::json &payload) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("payload: {}", payload.dump());
+
+			uint8_t version = CRCProposalDefaultVersion;
+			CRCProposal proposal;
+			try {
+				nlohmann::json payloadFixed = payload;
+				payloadFixed["Type"] = CRCProposal::secretaryGeneralElection;
+				proposal.FromJsonSecretaryElectionSecretaryUnsigned(payloadFixed, version);
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
+			}
+
+			if (!proposal.IsValidSecretaryElectionSecretaryUnsigned(version)) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
+			}
+
+			std::string digest = proposal.DigestSecretaryElectionSecretaryUnsigned(version).GetHex();
+
+			ArgInfo("r => {}", digest);
+			return digest;
+		}
+
+		std::string MainchainSubWallet::ProposalSecretaryGeneralElectionCRCouncilMemberDigest(
+			const nlohmann::json &payload) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("payload: {}", payload.dump());
+
+			uint8_t version = CRCProposalDefaultVersion;
+			CRCProposal proposal;
+			try {
+				nlohmann::json payloadFixed = payload;
+				payloadFixed["Type"] = CRCProposal::secretaryGeneralElection;
+				proposal.FromJsonSecretaryElectionCRCouncilMemberUnsigned(payloadFixed, version);
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
+			}
+
+			if (!proposal.IsValidSecretaryElectionCRCouncilMemberUnsigned(version)) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
+			}
+
+			std::string digest = proposal.DigestSecretaryElectionCRCouncilMemberUnsigned(version).GetHex();
+
+			ArgInfo("r => {}", digest);
+			return digest;
+		}
+
+		nlohmann::json MainchainSubWallet::CreateSecretaryGeneralElectionTransaction(
+			const nlohmann::json &payload, const std::string &memo) {
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
+			ArgInfo("payload: {}", payload.dump());
+			ArgInfo("memo: {}", memo);
+
+			uint8_t version = CRCProposalDefaultVersion;
+			PayloadPtr p(new CRCProposal());
+			try {
+				nlohmann::json payloadFixed = payload;
+				payloadFixed["Type"] = CRCProposal::secretaryGeneralElection;
+				p->FromJson(payloadFixed, version);
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
+			}
+
+			if (!p->IsValid(version)) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
+			}
+			OutputArray outputs;
+			AddressPtr receiveAddr = wallet->GetReceiveAddress();
+			outputs.push_back(OutputPtr(new TransactionOutput(0, *receiveAddr)));
+			AddressPtr fromAddr(new Address(""));
+
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposal, p, fromAddr, outputs, memo);
 
 			if (tx->GetOutputs().size() < 2)
 				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "balance not enough");

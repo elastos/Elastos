@@ -37,9 +37,12 @@ namespace Elastos {
 #define JsonKeyCategoryData "CategoryData"
 #define JsonKeyOwnerPublicKey "OwnerPublicKey"
 #define JsonKeyDraftHash "DraftHash"
+#define JsonKeySecretaryPublicKey "SecretaryGeneralPublicKey"
+#define JsonKeySecretaryDID "SecretaryGeneralDID"
 #define JsonKeyBudgets "Budgets"
 #define JsonKeyRecipient "Recipient"
 #define JsonKeySignature "Signature"
+#define JsonKeySecretarySignature "SecretaryGeneralSignature"
 #define JsonKeyCRCouncilMemberDID "CRCouncilMemberDID"
 #define JsonKeyCRCouncilMemberSignature "CRCouncilMemberSignature"
 
@@ -205,7 +208,7 @@ namespace Elastos {
 			return _crCouncilMemberSignature;
 		}
 
-		const uint256 &CRCProposal::DigestOwnerUnsigned(uint8_t version) const {
+		const uint256 &CRCProposal::DigestNormalOwnerUnsigned(uint8_t version) const {
 			if (_digestOwnerUnsigned == 0) {
 				ByteStream stream;
 				SerializeOwnerUnsigned(stream, version);
@@ -215,7 +218,7 @@ namespace Elastos {
 			return _digestOwnerUnsigned;
 		}
 
-		const uint256 &CRCProposal::DigestCRCouncilMemberUnsigned(uint8_t version) const {
+		const uint256 &CRCProposal::DigestNormalCRCouncilMemberUnsigned(uint8_t version) const {
 			if (_digestCRCouncilMemberUnsigned == 0) {
 				ByteStream stream;
 				SerializeCRCouncilMemberUnsigned(stream, version);
@@ -562,7 +565,7 @@ namespace Elastos {
 		}
 
 		// change secretary general
-		void CRCProposal::SerializeSecretaryElectionUnsigned(ByteStream &stream, uint8_t version) const {
+		void CRCProposal::SerializeSecretaryElectionOwnerUnsigned(ByteStream &stream, uint8_t version) const {
 			uint16_t type = _type;
 			stream.WriteUint16(type);
 			stream.WriteVarString(_categoryData);
@@ -572,7 +575,7 @@ namespace Elastos {
 			stream.WriteBytes(_secretaryDID.ProgramHash());
 		}
 
-		bool CRCProposal::DeserializeSecretaryElectionUnsigned(const ByteStream &stream, uint8_t verion) {
+		bool CRCProposal::DeserializeSecretaryElectionOwnerUnsigned(const ByteStream &stream, uint8_t verion) {
 			if (!stream.ReadVarString(_categoryData)) {
 				SPVLOG_ERROR("deserialize category data");
 				return false;
@@ -604,13 +607,13 @@ namespace Elastos {
 		}
 
 		void CRCProposal::SerializeSecretaryElectionSecretaryUnsigned(ByteStream &stream, uint8_t version) const {
-			SerializeSecretaryElectionUnsigned(stream, version);
+			SerializeSecretaryElectionOwnerUnsigned(stream, version);
 
 			stream.WriteVarBytes(_signature);
 		}
 
 		bool CRCProposal::DeserializeSecretaryElectionSecretaryUnsigned(const ByteStream &stream, uint8_t version) {
-			if (!DeserializeSecretaryElectionUnsigned(stream, version)) {
+			if (!DeserializeSecretaryElectionOwnerUnsigned(stream, version)) {
 				SPVLOG_ERROR("deserialize change secretary unsigned");
 				return false;
 			}
@@ -668,6 +671,158 @@ namespace Elastos {
 			}
 
 			return true;
+		}
+
+		nlohmann::json CRCProposal::ToJsonSecretaryElectionOwnerUnsigned(uint8_t version) const {
+			nlohmann::json j;
+
+			j[JsonKeyType] = _type;
+			j[JsonKeyCategoryData] = _categoryData;
+			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
+			j[JsonKeyDraftHash] = _draftHash.GetHex();
+			j[JsonKeySecretaryPublicKey] = _secretaryPublicKey.getHex();
+			j[JsonKeySecretaryDID] = _secretaryDID.String();
+
+			return j;
+		}
+
+		void CRCProposal::FromJsonSecretaryElectionOwnerUnsigned(const nlohmann::json &j, uint8_t version) {
+			_type = CRCProposal::Type(j[JsonKeyType].get<uint16_t>());
+			_categoryData = j[JsonKeyCategoryData].get<std::string>();
+			_ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
+			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
+			_secretaryPublicKey.setHex(j[JsonKeySecretaryPublicKey].get<std::string>());
+			_secretaryDID = Address(j[JsonKeySecretaryDID].get<std::string>());
+		}
+
+		nlohmann::json CRCProposal::ToJsonSecretaryElectionSecretaryUnsigned(uint8_t version) const {
+			nlohmann::json j;
+
+			j = ToJsonSecretaryElectionOwnerUnsigned(version);
+			j[JsonKeySignature] = _signature.getHex();
+
+			return j;
+		}
+
+		void CRCProposal::FromJsonSecretaryElectionSecretaryUnsigned(const nlohmann::json &j, uint8_t version) {
+			FromJsonSecretaryElectionOwnerUnsigned(j, version);
+			_signature.setHex(j[JsonKeySignature].get<std::string>());
+		}
+
+		nlohmann::json CRCProposal::ToJsonSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const {
+			nlohmann::json j;
+
+			j = ToJsonSecretaryElectionSecretaryUnsigned(version);
+			j[JsonKeySecretarySignature] = _secretarySignature.getHex();
+			j[JsonKeyCRCouncilMemberDID] = _crCouncilMemberDID.String();
+
+			return j;
+		}
+
+		void CRCProposal::FromJsonSecretaryElectionCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version) {
+			FromJsonSecretaryElectionSecretaryUnsigned(j, version);
+			_secretarySignature.setHex(j[JsonKeySecretarySignature].get<std::string>());
+			_crCouncilMemberDID = Address(j[JsonKeyCRCouncilMemberDID].get<std::string>());
+		}
+
+		bool CRCProposal::IsValidSecretaryElectionOwnerUnsiged(uint8_t version) const {
+			if (_type != secretaryGeneralElection) {
+				SPVLOG_ERROR("invalid type: {}", _type);
+				return false;
+			}
+
+			if (_categoryData.size() > 4096) {
+				SPVLOG_ERROR("category data exceed 4096 bytes");
+				return false;
+			}
+
+			try {
+				Key key(_ownerPublicKey);
+				Key key1(_secretaryPublicKey);
+			} catch (const std::exception &e) {
+				SPVLOG_ERROR("invalid ...");
+				return false;
+			}
+
+			if (!_secretaryDID.Valid()) {
+				SPVLOG_ERROR("invalid secretary did");
+				return false;
+			}
+
+			return true;
+		}
+
+		bool CRCProposal::IsValidSecretaryElectionSecretaryUnsigned(uint8_t version) const {
+			if (!IsValidSecretaryElectionOwnerUnsiged(version)) {
+				SPVLOG_ERROR("secretary election owner unsigned not valid");
+				return false;
+			}
+
+			try {
+				if (!Key(_ownerPublicKey).Verify(DigestSecretaryElectionOwnerUnsigned(version), _signature)) {
+					SPVLOG_ERROR("verify owner signature fail");
+					return false;
+				}
+			} catch (const std::exception &e) {
+				SPVLOG_ERROR("verify signature exception: {}", e.what());
+				return false;
+			}
+
+			return true;
+		}
+
+		bool CRCProposal::IsValidSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const {
+			if (!IsValidSecretaryElectionSecretaryUnsigned(version)) {
+				SPVLOG_ERROR("secretary election secretary unsigned not valid");
+				return false;
+			}
+
+			try {
+				if (!Key(_secretaryPublicKey).Verify(DigestSecretaryElectionSecretaryUnsigned(version), _secretarySignature)) {
+					SPVLOG_ERROR("verify secretary signature fail");
+					return false;
+				}
+			} catch (const std::exception &e) {
+				SPVLOG_ERROR("verify signature exception: {}", e.what());
+				return false;
+			}
+
+			if (!_crCouncilMemberDID.Valid()) {
+				SPVLOG_ERROR("invalid cr committee did");
+				return false;
+			}
+
+			return true;
+		}
+
+		const uint256 &CRCProposal::DigestSecretaryElectionOwnerUnsigned(uint8_t version) const {
+			if (_digestSecretaryElectionOwnerUnsigned == 0) {
+				ByteStream stream;
+				SerializeSecretaryElectionOwnerUnsigned(stream, version);
+				_digestSecretaryElectionOwnerUnsigned = sha256(stream.GetBytes());
+			}
+
+			return _digestOwnerUnsigned;
+		}
+
+		const uint256 &CRCProposal::DigestSecretaryElectionSecretaryUnsigned(uint8_t version) const {
+			if (_digestSecretaryElectionSecretaryUnsigned == 0) {
+				ByteStream stream;
+				SerializeSecretaryElectionSecretaryUnsigned(stream, version);
+				_digestSecretaryElectionSecretaryUnsigned = sha256(stream.GetBytes());
+			}
+
+			return _digestSecretaryElectionSecretaryUnsigned;
+		}
+
+		const uint256 &CRCProposal::DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const {
+			if (_digestSecretaryElectionCRCouncilMemberUnsigned == 0) {
+				ByteStream stream;
+				SerializeSecretaryElectionCRCouncilMemberUnsigned(stream, version);
+				_digestSecretaryElectionCRCouncilMemberUnsigned = sha256(stream.GetBytes());
+			}
+
+			return _digestSecretaryElectionCRCouncilMemberUnsigned;
 		}
 
 		// top serialize or deserialize
@@ -731,7 +886,7 @@ namespace Elastos {
 			return r;
 		}
 
-		nlohmann::json CRCProposal::ToJsonOwnerUnsigned(uint8_t version) const {
+		nlohmann::json CRCProposal::ToJsonNormalOwnerUnsigned(uint8_t version) const {
 			nlohmann::json j;
 			j[JsonKeyType] = _type;
 			j[JsonKeyCategoryData] = _categoryData;
@@ -742,7 +897,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void CRCProposal::FromJsonOwnerUnsigned(const nlohmann::json &j, uint8_t version) {
+		void CRCProposal::FromJsonNormalOwnerUnsigned(const nlohmann::json &j, uint8_t version) {
 			_type = CRCProposal::Type(j[JsonKeyType].get<uint8_t>());
 			_categoryData = j[JsonKeyCategoryData].get<std::string>();
 			_ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
@@ -751,31 +906,73 @@ namespace Elastos {
 			_recipient = Address(j[JsonKeyRecipient].get<std::string>());
 		}
 
-		nlohmann::json CRCProposal::ToJsonCRCouncilMemberUnsigned(uint8_t version) const {
-			nlohmann::json j = ToJsonOwnerUnsigned(version);
+		nlohmann::json CRCProposal::ToJsonNormalCRCouncilMemberUnsigned(uint8_t version) const {
+			nlohmann::json j = ToJsonNormalOwnerUnsigned(version);
 			j[JsonKeySignature] = _signature.getHex();
 			j[JsonKeyCRCouncilMemberDID] = _crCouncilMemberDID.String();
 			return j;
 		}
 
-		void CRCProposal::FromJsonCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version) {
-			FromJsonOwnerUnsigned(j, version);
+		void CRCProposal::FromJsonNormalCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version) {
+			FromJsonNormalOwnerUnsigned(j, version);
 			_signature.setHex(j[JsonKeySignature].get<std::string>());
 			_crCouncilMemberDID = Address(j[JsonKeyCRCouncilMemberDID].get<std::string>());
 		}
 
 		nlohmann::json CRCProposal::ToJson(uint8_t version) const {
-			nlohmann::json j = ToJsonCRCouncilMemberUnsigned(version);
-			j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
+			nlohmann::json j;
+
+			switch (_type) {
+				case normal:
+				case elip:
+					j = ToJsonNormalCRCouncilMemberUnsigned(version);
+					j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
+					break;
+
+				case secretaryGeneralElection:
+					j = ToJsonSecretaryElectionCRCouncilMemberUnsigned(version);
+					j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
+					break;
+
+				case changeProposalOwner:
+					break;
+
+				case terminateProposal:
+					break;
+
+				default:
+					break;
+			}
 			return j;
 		}
 
 		void CRCProposal::FromJson(const nlohmann::json &j, uint8_t version) {
-			FromJsonCRCouncilMemberUnsigned(j, version);
-			_crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
+			_type = CRCProposal::Type(j[JsonKeyType].get<uint8_t>());
+
+			switch (_type) {
+				case normal:
+				case elip:
+					FromJsonNormalCRCouncilMemberUnsigned(j, version);
+					_crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
+					break;
+
+				case secretaryGeneralElection:
+					FromJsonSecretaryElectionCRCouncilMemberUnsigned(j, version);
+					_crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
+					break;
+
+				case changeProposalOwner:
+					break;
+
+				case terminateProposal:
+					break;
+
+				default:
+					break;
+			}
 		}
 
-		bool CRCProposal::IsValidOwnerUnsigned(uint8_t version) const {
+		bool CRCProposal::IsValidNormalOwnerUnsigned(uint8_t version) const {
 			if (_type >= CRCProposal::maxType) {
 				SPVLOG_ERROR("invalid proposal type: {}", _type);
 				return false;
@@ -808,12 +1005,12 @@ namespace Elastos {
 			return true;
 		}
 
-		bool CRCProposal::IsValidCRCouncilMemberUnsigned(uint8_t version) const {
-			if (!IsValidOwnerUnsigned(version))
+		bool CRCProposal::IsValidNormalCRCouncilMemberUnsigned(uint8_t version) const {
+			if (!IsValidNormalOwnerUnsigned(version))
 				return false;
 
 			try {
-				if (!Key(_ownerPublicKey).Verify(DigestOwnerUnsigned(version), _signature)) {
+				if (!Key(_ownerPublicKey).Verify(DigestNormalOwnerUnsigned(version), _signature)) {
 					SPVLOG_ERROR("verify owner signature fail");
 					return false;
 				}
@@ -831,15 +1028,33 @@ namespace Elastos {
 		}
 
 		bool CRCProposal::IsValid(uint8_t version) const {
-			if (!IsValidCRCouncilMemberUnsigned(version))
-				return false;
+			bool isValid = false;
+			switch (_type) {
+				case normal:
+				case elip:
+					isValid = IsValidNormalCRCouncilMemberUnsigned(version);
+					break;
+
+				case secretaryGeneralElection:
+					isValid = IsValidSecretaryElectionCRCouncilMemberUnsigned(version);
+					break;
+
+				case changeProposalOwner:
+					break;
+
+				case terminateProposal:
+					break;
+
+				default:
+					break;
+			}
 
 			if (_crCouncilMemberSignature.empty()) {
 				SPVLOG_ERROR("cr committee not signed");
-				return false;
+				isValid = false;
 			}
 
-			return true;
+			return isValid;
 		}
 
 		CRCProposal &CRCProposal::operator=(const CRCProposal &payload) {
