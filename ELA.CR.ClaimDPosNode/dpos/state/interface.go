@@ -20,7 +20,7 @@ type Arbitrators interface {
 
 	IsArbitrator(pk []byte) bool
 	IsNextCRCArbier(pk []byte) bool
-	GetArbitrators() [][]byte
+	GetArbitrators() []*ArbiterInfo
 	GetCandidates() [][]byte
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
@@ -36,7 +36,7 @@ type Arbitrators interface {
 	IsUnderstaffedMode() bool
 
 	GetConnectedProducer(publicKey []byte) ArbiterMember
-	GetCRCArbiters() [][]byte
+	GetCRCArbiters() []*ArbiterInfo
 	GetNextCRCArbiters() [][]byte
 	CRCProducerCount() int
 	IsCRCArbitrator(pk []byte) bool
@@ -48,7 +48,7 @@ type Arbitrators interface {
 	GetNextOnDutyArbitrator(offset uint32) []byte
 
 	GetOnDutyCrossChainArbitrator() []byte
-	GetCrossChainArbiters() [][]byte
+	GetCrossChainArbiters() []*ArbiterInfo
 	GetCrossChainArbitersCount() int
 	GetCrossChainArbitersMajorityCount() int
 

@@ -358,7 +358,7 @@ func GetCRCPeersInfo(params Params) map[string]interface{} {
 	result.NodePublicKeys = make([]string, 0)
 	peersMap := make(map[string]struct{})
 	for _, p := range peers {
-		pk := common.BytesToHexString(p)
+		pk := common.BytesToHexString(p.NodePublicKey)
 		peersMap[pk] = struct{}{}
 		result.NodePublicKeys = append(result.NodePublicKeys, pk)
 	}
@@ -435,7 +435,7 @@ func GetArbitersInfo(params Params) map[string]interface{} {
 			Arbiters.GetArbitersCount() - dutyIndex,
 	}
 	for _, v := range Arbiters.GetArbitrators() {
-		result.Arbiters = append(result.Arbiters, common.BytesToHexString(v))
+		result.Arbiters = append(result.Arbiters, common.BytesToHexString(v.NodePublicKey))
 	}
 	for _, v := range Arbiters.GetCandidates() {
 		result.Candidates = append(result.Candidates, common.BytesToHexString(v))
@@ -857,12 +857,16 @@ func GetArbitratorGroupByHeight(param Params) map[string]interface{} {
 	}
 	crcArbiters := Arbiters.GetCRCArbiters()
 	sort.Slice(crcArbiters, func(i, j int) bool {
-		return bytes.Compare(crcArbiters[i], crcArbiters[j]) < 0
+		return bytes.Compare(crcArbiters[i].NodePublicKey, crcArbiters[j].NodePublicKey) < 0
 	})
 
 	var arbitrators []string
-	for _, data := range crcArbiters {
-		arbitrators = append(arbitrators, common.BytesToHexString(data))
+	for _, a := range crcArbiters {
+		if !a.IsNormal {
+			arbitrators = append(arbitrators, "")
+		} else {
+			arbitrators = append(arbitrators, common.BytesToHexString(a.NodePublicKey))
+		}
 	}
 
 	result := ArbitratorGroupInfo{

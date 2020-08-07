@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package manager
 
@@ -45,19 +45,19 @@ func (e *eventAnalyzer) ParseInactiveArbitrators() (result []string) {
 	var sortItems []sortItem
 	currentArbitrators := e.cfg.Arbitrators.GetArbitrators()
 	for _, v := range currentArbitrators {
-		if e.cfg.Arbitrators.IsCRCArbitrator(v) {
+		if e.cfg.Arbitrators.IsCRCArbitrator(v.NodePublicKey) {
 			continue
 		}
-		hexPk := common.BytesToHexString(v)
+		hexPK := common.BytesToHexString(v.NodePublicKey)
 
 		ratio := float64(0)
-		if count, exists := arbitratorsVoteCount[hexPk]; exists {
+		if count, exists := arbitratorsVoteCount[hexPK]; exists {
 			ratio = float64(count) / float64(viewCount)
 		}
 
 		sortItems = append(sortItems, sortItem{
 			Ratio: ratio,
-			PK:    hexPk,
+			PK:    hexPK,
 		})
 	}
 

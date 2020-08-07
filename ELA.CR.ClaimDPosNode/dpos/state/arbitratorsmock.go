@@ -8,6 +8,7 @@ package state
 import (
 	"bytes"
 
+	"github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
@@ -197,12 +198,8 @@ func (a *ArbitratorsMock) GetCrossChainArbitersCount() int {
 	return len(a.CurrentArbitrators)
 }
 
-func (a *ArbitratorsMock) GetCrossChainArbiters() [][]byte {
-	result := make([][]byte, 0, len(a.CurrentArbitrators))
-	for _, v := range a.CurrentArbitrators {
-		result = append(result, v.GetNodePublicKey())
-	}
-	return result
+func (a *ArbitratorsMock) GetCrossChainArbiters() []*ArbiterInfo {
+	return a.GetArbitrators()
 }
 
 func (a *ArbitratorsMock) GetDutyChangeCount() int {
@@ -217,10 +214,19 @@ func (a *ArbitratorsMock) SetDutyChangeCount(count int) {
 	a.DutyChangedCount = count
 }
 
-func (a *ArbitratorsMock) GetArbitrators() [][]byte {
-	result := make([][]byte, 0, len(a.CurrentArbitrators))
+func (a *ArbitratorsMock) GetArbitrators() []*ArbiterInfo {
+	result := make([]*ArbiterInfo, 0, len(a.CurrentArbitrators))
 	for _, v := range a.CurrentArbitrators {
-		result = append(result, v.GetNodePublicKey())
+		isNormal := true
+		abt, ok := v.(*crcArbiter)
+		if ok && abt.crMember.MemberState != state.MemberElected {
+			isNormal = false
+			continue
+		}
+		result = append(result, &ArbiterInfo{
+			NodePublicKey: v.GetNodePublicKey(),
+			IsNormal:      isNormal,
+		})
 	}
 	return result
 }
@@ -257,11 +263,20 @@ func (a *ArbitratorsMock) GetNextCandidates() [][]byte {
 	return result
 }
 
-func (a *ArbitratorsMock) GetCRCArbiters() [][]byte {
-	result := make([][]byte, 0, len(a.CRCArbitrators))
+func (a *ArbitratorsMock) GetCRCArbiters() []*ArbiterInfo {
+	result := make([]*ArbiterInfo, 0, len(a.CRCArbitrators))
 	for _, v := range a.CRCArbitrators {
-		result = append(result, v.GetNodePublicKey())
+		isNormal := true
+		abt, ok := v.(*crcArbiter)
+		if ok && abt.crMember.MemberState != state.MemberElected {
+			isNormal = false
+		}
+		result = append(result, &ArbiterInfo{
+			NodePublicKey: v.GetNodePublicKey(),
+			IsNormal:      isNormal,
+		})
 	}
+
 	return result
 }
 

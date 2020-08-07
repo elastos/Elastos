@@ -1148,7 +1148,11 @@ func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) 
 func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 	payloadSideChainPow, ok := txn.Payload.(*payload.SideChainPow)
 	if !ok {
-		return errors.New("Side mining transaction has invalid payload")
+		return errors.New("side mining transaction has invalid payload")
+	}
+
+	if arbitrator == nil {
+		return errors.New("there is no arbiter on duty")
 	}
 
 	publicKey, err := DecodePoint(arbitrator)
@@ -1194,7 +1198,14 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 		}
 
 		if height > b.chainParams.CRClaimDPOSNodeStartHeight {
-			arbitersCount := len(b.chainParams.CRCArbiters)
+			crcs := DefaultLedger.Arbitrators.GetCRCArbiters()
+			var arbitersCount int
+			for _, c := range crcs {
+				if !c.IsNormal {
+					continue
+				}
+				arbitersCount++
+			}
 			minCount := b.chainParams.CRAgreementCount
 			if n != arbitersCount {
 				return errors.New("invalid arbiters total count in code")
@@ -1218,14 +1229,18 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 
 func (b *BlockChain) checkCrossChainArbitrators(publicKeys [][]byte) error {
 	arbiters := DefaultLedger.Arbitrators.GetCrossChainArbiters()
-	if len(arbiters) != len(publicKeys) {
-		return errors.New("invalid arbitrator count")
-	}
+
 	arbitratorsMap := make(map[string]interface{})
+	var count int
 	for _, arbitrator := range arbiters {
+		if !arbitrator.IsNormal {
+			continue
+		}
+		count++
+
 		found := false
 		for _, pk := range publicKeys {
-			if bytes.Equal(arbitrator, pk[1:]) {
+			if bytes.Equal(arbitrator.NodePublicKey, pk[1:]) {
 				found = true
 				break
 			}
@@ -1235,18 +1250,11 @@ func (b *BlockChain) checkCrossChainArbitrators(publicKeys [][]byte) error {
 			return errors.New("invalid cross chain arbitrators")
 		}
 
-		arbitratorsMap[common.BytesToHexString(arbitrator)] = nil
+		arbitratorsMap[common.BytesToHexString(arbitrator.NodePublicKey)] = nil
 	}
 
-	if DefaultLedger.Blockchain.GetHeight()+1 >=
-		b.chainParams.CRCOnlyDPOSHeight {
-		for _, crc := range arbiters {
-			if _, exist :=
-				arbitratorsMap[common.BytesToHexString(crc)]; !exist {
-				return errors.New("not all crc arbitrators participated in" +
-					" crosschain multi-sign")
-			}
-		}
+	if count != len(publicKeys) || count != len(arbitratorsMap) {
+		return errors.New("invalid arbitrator count")
 	}
 
 	return nil
@@ -2565,7 +2573,7 @@ func (b *BlockChain) checkProposalCRCouncilMemberSign(crcProposal *payload.CRCPr
 func (b *BlockChain) checkChangeSecretaryGeneralProposalTx(crcProposal *payload.CRCProposal) error {
 	// The number of the proposals of the committee can not more than 128
 	if !b.isPublicKeyDIDMatch(crcProposal.SecretaryGeneralPublicKey, &crcProposal.SecretaryGeneralDID) {
-		return errors.New("SecretaryGeneral PublicKey and DID is not matching")
+		return errors.New("SecretaryGeneral NodePublicKey and DID is not matching")
 	}
 	// Check owner public key
 	if _, err := crypto.DecodePoint(crcProposal.OwnerPublicKey); err != nil {
@@ -3370,7 +3378,7 @@ func checkDPOSElaIllegalBlockSigners(
 
 	arbitratorsSet := make(map[string]interface{})
 	for _, v := range DefaultLedger.Arbitrators.GetArbitrators() {
-		arbitratorsSet[common.BytesToHexString(v)] = nil
+		arbitratorsSet[common.BytesToHexString(v.NodePublicKey)] = nil
 	}
 
 	for _, v := range signers {

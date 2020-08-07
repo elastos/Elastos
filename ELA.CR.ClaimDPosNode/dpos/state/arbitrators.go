@@ -54,6 +54,11 @@ var (
 	ErrInsufficientProducer = errors.New("producers count less than min arbitrators count")
 )
 
+type ArbiterInfo struct {
+	NodePublicKey []byte
+	IsNormal      bool
+}
+
 type arbitrators struct {
 	*State
 	*degradation
@@ -682,12 +687,20 @@ func (a *arbitrators) getNeedConnectArbiters() []peer.PID {
 
 	pids := make(map[string]peer.PID)
 	for _, p := range a.currentCRCArbitersMap {
+		abt, ok := p.(*crcArbiter)
+		if !ok || abt.crMember.MemberState != state.MemberElected {
+			continue
+		}
 		var pid peer.PID
 		copy(pid[:], p.GetNodePublicKey())
 		pids[common.BytesToHexString(p.GetNodePublicKey())] = pid
 	}
 
 	for _, p := range a.nextCRCArbitersMap {
+		abt, ok := p.(*crcArbiter)
+		if !ok || abt.crMember.MemberState != state.MemberElected {
+			continue
+		}
 		var pid peer.PID
 		copy(pid[:], p.GetNodePublicKey())
 		pids[common.BytesToHexString(p.GetNodePublicKey())] = pid
@@ -722,18 +735,29 @@ func (a *arbitrators) IsArbitrator(pk []byte) bool {
 	arbitrators := a.GetArbitrators()
 
 	for _, v := range arbitrators {
-		if bytes.Equal(pk, v) {
+		if !v.IsNormal {
+			continue
+		}
+		if bytes.Equal(pk, v.NodePublicKey) {
 			return true
 		}
 	}
 	return false
 }
 
-func (a *arbitrators) GetArbitrators() [][]byte {
+func (a *arbitrators) GetArbitrators() []*ArbiterInfo {
 	a.mtx.Lock()
-	result := make([][]byte, 0, len(a.currentArbitrators))
+	result := make([]*ArbiterInfo, 0, len(a.currentArbitrators))
 	for _, v := range a.currentArbitrators {
-		result = append(result, v.GetNodePublicKey())
+		isNormal := true
+		abt, ok := v.(*crcArbiter)
+		if ok && abt.crMember.MemberState != state.MemberElected {
+			isNormal = false
+		}
+		result = append(result, &ArbiterInfo{
+			NodePublicKey: v.GetNodePublicKey(),
+			IsNormal:      isNormal,
+		})
 	}
 	a.mtx.Unlock()
 
@@ -773,7 +797,7 @@ func (a *arbitrators) GetNextCandidates() [][]byte {
 	return result
 }
 
-func (a *arbitrators) GetCRCArbiters() [][]byte {
+func (a *arbitrators) GetCRCArbiters() []*ArbiterInfo {
 	a.mtx.Lock()
 	result := a.getCRCArbiters()
 	a.mtx.Unlock()
@@ -781,10 +805,18 @@ func (a *arbitrators) GetCRCArbiters() [][]byte {
 	return result
 }
 
-func (a *arbitrators) getCRCArbiters() [][]byte {
-	result := make([][]byte, 0, len(a.currentCRCArbitersMap))
+func (a *arbitrators) getCRCArbiters() []*ArbiterInfo {
+	result := make([]*ArbiterInfo, 0, len(a.currentCRCArbitersMap))
 	for _, v := range a.currentCRCArbitersMap {
-		result = append(result, v.GetNodePublicKey())
+		isNormal := true
+		abt, ok := v.(*crcArbiter)
+		if ok && abt.crMember.MemberState != state.MemberElected {
+			isNormal = false
+		}
+		result = append(result, &ArbiterInfo{
+			NodePublicKey: v.GetNodePublicKey(),
+			IsNormal:      isNormal,
+		})
 	}
 
 	return result
@@ -924,26 +956,30 @@ func (a *arbitrators) GetOnDutyCrossChainArbitrator() []byte {
 		a.mtx.Lock()
 		crcArbiters := a.getCRCArbiters()
 		sort.Slice(crcArbiters, func(i, j int) bool {
-			return bytes.Compare(crcArbiters[i], crcArbiters[j]) < 0
+			return bytes.Compare(crcArbiters[i].NodePublicKey, crcArbiters[j].NodePublicKey) < 0
 		})
 		ondutyIndex := int(height-a.chainParams.CRCOnlyDPOSHeight+1) % len(crcArbiters)
-		arbiter = crcArbiters[ondutyIndex]
+		arbiter = crcArbiters[ondutyIndex].NodePublicKey
 		a.mtx.Unlock()
 	} else {
 		a.mtx.Lock()
 		crcArbiters := a.getCRCArbiters()
 		sort.Slice(crcArbiters, func(i, j int) bool {
-			return bytes.Compare(crcArbiters[i], crcArbiters[j]) < 0
+			return bytes.Compare(crcArbiters[i].NodePublicKey, crcArbiters[j].NodePublicKey) < 0
 		})
 		index := a.dutyIndex % len(a.currentCRCArbitersMap)
-		arbiter = crcArbiters[index]
+		if crcArbiters[index].IsNormal {
+			arbiter = crcArbiters[index].NodePublicKey
+		} else {
+			arbiter = nil
+		}
 		a.mtx.Unlock()
 	}
 
 	return arbiter
 }
 
-func (a *arbitrators) GetCrossChainArbiters() [][]byte {
+func (a *arbitrators) GetCrossChainArbiters() []*ArbiterInfo {
 	if a.bestHeight() < a.chainParams.CRCOnlyDPOSHeight-1 {
 		return a.GetArbitrators()
 	}
@@ -1093,7 +1129,11 @@ func (a *arbitrators) createNextTurnDPOSInfoTransaction(crcArbiters, normalDPOSA
 	var nextTurnDPOSInfo payload.NextTurnDPOSInfo
 	nextTurnDPOSInfo.WorkingHeight = WorkingHeight
 	for _, v := range crcArbiters {
-		nextTurnDPOSInfo.CRPublickeys = append(nextTurnDPOSInfo.CRPublickeys, v.GetNodePublicKey())
+		if abt, ok := v.(*crcArbiter); ok && abt.crMember.MemberState != state.MemberElected {
+			nextTurnDPOSInfo.CRPublickeys = append(nextTurnDPOSInfo.CRPublickeys, []byte{})
+		} else {
+			nextTurnDPOSInfo.CRPublickeys = append(nextTurnDPOSInfo.CRPublickeys, v.GetNodePublicKey())
+		}
 	}
 	for _, v := range normalDPOSArbiters {
 		nextTurnDPOSInfo.DPOSPublicKeys = append(nextTurnDPOSInfo.DPOSPublicKeys, v.GetNodePublicKey())
@@ -1294,9 +1334,6 @@ func (a *arbitrators) getCRCArbitersV1() (map[common.Uint168]ArbiterMember, erro
 	})
 	crcArbiters := map[common.Uint168]ArbiterMember{}
 	for _, cr := range crMembers {
-		if cr.MemberState != state.MemberElected {
-			continue
-		}
 		var pk []byte
 		if cr.DPOSPublicKey == nil {
 			var err error

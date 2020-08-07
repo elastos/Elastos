@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -47,6 +47,9 @@ func ConfirmSanityCheck(confirm *payload.Confirm) error {
 func ConfirmContextCheck(confirm *payload.Confirm) error {
 	signers := make(map[string]struct{})
 	for _, vote := range confirm.Votes {
+		if !vote.Accept {
+			continue
+		}
 		signers[common.BytesToHexString(vote.Signer)] = struct{}{}
 	}
 
@@ -180,7 +183,10 @@ func ProposalContextCheck(proposal *payload.DPOSProposal) error {
 	var isArbiter bool
 	arbiters := DefaultLedger.Arbitrators.GetArbitrators()
 	for _, a := range arbiters {
-		if bytes.Equal(a, proposal.Sponsor) {
+		if !a.IsNormal {
+			continue
+		}
+		if bytes.Equal(a.NodePublicKey, proposal.Sponsor) {
 			isArbiter = true
 		}
 	}
@@ -254,7 +260,10 @@ func VoteContextCheck(vote *payload.DPOSProposalVote) error {
 	var isArbiter bool
 	arbiters := DefaultLedger.Arbitrators.GetArbitrators()
 	for _, a := range arbiters {
-		if bytes.Equal(a, vote.Signer) {
+		if !a.IsNormal {
+			continue
+		}
+		if bytes.Equal(a.NodePublicKey, vote.Signer) {
 			isArbiter = true
 		}
 	}

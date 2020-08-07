@@ -244,7 +244,7 @@ type State struct {
 	*StateKeyFrame
 
 	// getArbiters defines methods about get current arbiters
-	getArbiters              func() [][]byte
+	getArbiters              func() []*ArbiterInfo
 	getCRMembers             func() []*state.CRMember
 	isInElectionPeriod       func() bool
 	getProducerDepositAmount func(programHash common.Uint168) (
@@ -1531,7 +1531,7 @@ func (s *State) countArbitratorsInactivity(height uint32,
 	}
 	s.PreBlockArbiters = make(map[string]struct{})
 	for _, a := range s.getArbiters() {
-		key := s.getProducerKey(a)
+		key := s.getProducerKey(a.NodePublicKey)
 		s.PreBlockArbiters[key] = struct{}{}
 		if _, exist := changingArbiters[key]; exist {
 			changingArbiters[key] = false
@@ -1669,7 +1669,7 @@ func (s *State) handleEvents(event *events.Event) {
 }
 
 // NewState returns a new State instance.
-func NewState(chainParams *config.Params, getArbiters func() [][]byte,
+func NewState(chainParams *config.Params, getArbiters func() []*ArbiterInfo,
 	getCRMembers func() []*state.CRMember,
 	isInElectionPeriod func() bool,
 	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error)) *State {

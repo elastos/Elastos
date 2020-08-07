@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package manager
 
@@ -817,7 +817,10 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 	var pks []*crypto.PublicKey
 	for _, v := range p.cfg.Arbitrators.GetCRCArbiters() {
-		pk, err := crypto.DecodePoint(v)
+		if !v.IsNormal {
+			continue
+		}
+		pk, err := crypto.DecodePoint(v.NodePublicKey)
 		if err != nil {
 			return nil, err
 		}

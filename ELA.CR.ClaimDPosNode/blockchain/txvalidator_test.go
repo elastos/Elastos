@@ -2979,7 +2979,7 @@ func (s *txValidatorTestSuite) TestCheckSecretaryGeneralProposalTransaction() {
 	secretaryGeneralPublicKey := txn.Payload.(*payload.CRCProposal).SecretaryGeneralPublicKey
 	txn.Payload.(*payload.CRCProposal).SecretaryGeneralPublicKey, _ = common.HexStringToBytes(ownerPublicKeyStr1)
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
-	s.EqualError(err, "SecretaryGeneral PublicKey and DID is not matching")
+	s.EqualError(err, "SecretaryGeneral NodePublicKey and DID is not matching")
 	txn.Payload.(*payload.CRCProposal).SecretaryGeneralPublicKey = secretaryGeneralPublicKey
 
 	// ok
