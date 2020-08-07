@@ -262,7 +262,7 @@ func (c *Committee) processCancelImpeachment(height uint32, member []byte,
 	var crMember *CRMember
 	for _, v := range c.Members {
 		if bytes.Equal(v.Info.CID.Bytes(), member) &&
-			v.MemberState == MemberElected {
+			(v.MemberState == MemberElected || v.MemberState == MemberInactive) {
 			crMember = v
 			break
 		}

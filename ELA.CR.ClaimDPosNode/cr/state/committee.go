@@ -411,7 +411,7 @@ func (c *Committee) updateCRMembers(height uint32, inElectionPeriod bool) uint32
 	circulation := c.CirculationAmount
 	var count uint32
 	for _, v := range c.Members {
-		if v.MemberState != MemberElected {
+		if v.MemberState != MemberElected && v.MemberState != MemberInactive {
 			continue
 		}
 
@@ -728,7 +728,7 @@ func (c *Committee) tryStartVotingPeriod(height uint32) (inElection bool) {
 		inElection = false
 
 		for _, v := range c.Members {
-			if v.MemberState == MemberElected &&
+			if (v.MemberState == MemberElected || v.MemberState == MemberInactive) &&
 				v.ImpeachmentVotes < common.Fixed64(float64(c.CirculationAmount)*
 					c.params.VoterRejectPercentage/100.0) {
 				c.terminateCRMember(v, height)
@@ -763,7 +763,7 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 	var crMember *CRMember
 	for _, v := range c.Members {
 		if bytes.Equal(v.Info.CID.Bytes(), member) &&
-			v.MemberState == MemberElected {
+			(v.MemberState == MemberElected || v.MemberState == MemberInactive) {
 			crMember = v
 			break
 		}

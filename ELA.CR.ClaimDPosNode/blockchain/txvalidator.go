@@ -2202,8 +2202,8 @@ func (b *BlockChain) checkCRDPOSManagementTransaction(txn *Transaction) error {
 		return errors.New("the originator must be members")
 	}
 
-	if crMember.MemberState != crstate.MemberElected {
-		return errors.New("CR Council Member should be an elected CR members")
+	if crMember.MemberState != crstate.MemberElected && crMember.MemberState != crstate.MemberInactive {
+		return errors.New("CR Council Member should be an elected or inactive CR members")
 	}
 
 	if crMember.DPOSPublicKey != nil {
