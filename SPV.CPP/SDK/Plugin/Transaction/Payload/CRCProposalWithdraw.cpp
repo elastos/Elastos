@@ -31,6 +31,8 @@ namespace Elastos {
 
 #define JsonKeyProposalHash "ProposalHash"
 #define JsonKeyOwnerPubkey "OwnerPublicKey"
+#define JsonKeyRecipient "Recipient"
+#define JsonKeyAmount "Amount"
 #define JsonKeySignature "Signature"
 
 		CRCProposalWithdraw::CRCProposalWithdraw() {
@@ -83,6 +85,10 @@ namespace Elastos {
 			size += stream.WriteVarUint(_ownerPubkey.size());
 			size += _ownerPubkey.size();
 			size += stream.WriteVarUint(_signature.size());
+			if (version == CRCProposalWithdrawVersion_01) {
+				size += _recipient.ProgramHash().size();
+				size += sizeof(uint64_t);
+			}
 			size += _signature.size();
 
 			return size;
@@ -91,6 +97,11 @@ namespace Elastos {
 		void CRCProposalWithdraw::SerializeUnsigned(ByteStream &stream, uint8_t version) const {
 			stream.WriteBytes(_proposalHash);
 			stream.WriteVarBytes(_ownerPubkey);
+
+			if (version == CRCProposalWithdrawVersion_01) {
+				stream.WriteBytes(_recipient.ProgramHash());
+				stream.WriteUint64(_amount.getUint64());
+			}
 		}
 
 		void CRCProposalWithdraw::Serialize(ByteStream &stream, uint8_t version) const {
@@ -107,6 +118,22 @@ namespace Elastos {
 			if (!stream.ReadVarBytes(_ownerPubkey)) {
 				SPVLOG_ERROR("deserialize owner pubkey");
 				return false;
+			}
+
+			if (version == CRCProposalWithdrawVersion_01) {
+				uint168 programHash;
+				if (!stream.ReadBytes(programHash)) {
+					SPVLOG_ERROR("deserialize recipient");
+					return false;
+				}
+				_recipient = Address(programHash);
+
+				uint64_t amount;
+				if (!stream.ReadUint64(amount)) {
+					SPVLOG_ERROR("deserialize amount");
+					return false;
+				}
+				_amount.setUint64(amount);
 			}
 
 			return true;
@@ -128,6 +155,10 @@ namespace Elastos {
 			nlohmann::json j;
 			j[JsonKeyProposalHash] = _proposalHash.GetHex();
 			j[JsonKeyOwnerPubkey] = _ownerPubkey.getHex();
+			if (version == CRCProposalWithdrawVersion_01) {
+				j[JsonKeyRecipient] = _recipient.String();
+				j[JsonKeyAmount] = _amount.getDec();
+			}
 			return j;
 		}
 
@@ -141,6 +172,10 @@ namespace Elastos {
 		void CRCProposalWithdraw::FromJsonUnsigned(const nlohmann::json &j, uint8_t version) {
 			_proposalHash.SetHex(j[JsonKeyProposalHash].get<std::string>());
 			_ownerPubkey.setHex(j[JsonKeyOwnerPubkey].get<std::string>());
+			if (version == CRCProposalWithdrawVersion_01) {
+				_recipient = Address(j[JsonKeyRecipient].get<std::string>());
+				_amount.setDec(j[JsonKeyAmount].get<std::string>());
+			}
 		}
 
 		void CRCProposalWithdraw::FromJson(const nlohmann::json &j, uint8_t version) {
@@ -148,12 +183,24 @@ namespace Elastos {
 			_signature.setHex(j[JsonKeySignature].get<std::string>());
 		}
 
-		bool CRCProposalWithdraw::IsValidUnsigned(uint8_t versin) const {
+		bool CRCProposalWithdraw::IsValidUnsigned(uint8_t version) const {
 			try {
 				Key key(_ownerPubkey);
 			} catch (const std::exception &e) {
 				SPVLOG_ERROR("invalid owner pubkey");
 				return false;
+			}
+
+			if (version == CRCProposalWithdrawVersion_01) {
+				if (!_recipient.Valid()) {
+					SPVLOG_ERROR("invalid recipient");
+					return false;
+				}
+
+				if (_amount <= 0) {
+					SPVLOG_ERROR("invalid amount");
+					return false;
+				}
 			}
 
 			return true;
@@ -189,6 +236,8 @@ namespace Elastos {
 		CRCProposalWithdraw &CRCProposalWithdraw::operator=(const CRCProposalWithdraw &payload) {
 			_proposalHash = payload._proposalHash;
 			_ownerPubkey = payload._ownerPubkey;
+			_recipient = payload._recipient;
+			_amount = payload._amount;
 			_signature = payload._signature;
 			return *this;
 		}

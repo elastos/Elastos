@@ -125,8 +125,6 @@ namespace Elastos {
 			const bytes_t &GetCRCouncilMemberSignature() const;
 
 		public:
-			size_t EstimateSize(uint8_t version) const override;
-
 			// normal or elip
 			void SerializeOwnerUnsigned(ByteStream &ostream, uint8_t version) const;
 
@@ -254,6 +252,9 @@ namespace Elastos {
 			const uint256 &DigestSecretaryElectionSecretaryUnsigned(uint8_t version) const;
 
 			const uint256 &DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
+
+			// override interface
+			size_t EstimateSize(uint8_t version) const override;
 
 			// top serialize or deserialize
 			void Serialize(ByteStream &stream, uint8_t version) const override;

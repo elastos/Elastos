@@ -914,6 +914,8 @@ namespace Elastos {
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   "Recipient": "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", // address
+			 *   "Amount": "100000000", // 1 ela = 100000000 sela
 			 * }
 			 *
 			 * @return Digest of payload.
@@ -922,24 +924,12 @@ namespace Elastos {
 
 			/**
 			 * Create proposal withdraw transaction.
-			 * Note: This tx does not need to be signed.
-			 *
-			 * @param recipient Recipient of proposal.
-			 * @param amount Withdraw amount.
-			 * @param utxo UTXO json array of address CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b.
-			 * [{
-			 *   "Hash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 *   "Index": 0,
-			 *   "Amount": "100000000",   // 1 ela = 100000000 sela
-			 * },{
-			 *   "Hash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 *   "Index": 2,
-			 *   "Amount": "200000000",   // 2 ela = 200000000 sela
-			 * }]
 			 * @param payload Proposal payload.
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   "Recipient": "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", // address
+			 *   "Amount": "100000000", // 1 ela = 100000000 sela
 			 *   "Signature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109"
 			 * }
 			 *
@@ -947,10 +937,7 @@ namespace Elastos {
 			 *
 			 * @return Transaction in JSON format.
 			 */
-			 virtual nlohmann::json CreateProposalWithdrawTransaction(const std::string &recipient,
-																	  const std::string &amount,
-																	  const nlohmann::json &utxo,
-																	  const nlohmann::json &payload,
+			 virtual nlohmann::json CreateProposalWithdrawTransaction(const nlohmann::json &payload,
 																	  const std::string &memo = "") = 0;
 
 		};

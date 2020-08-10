@@ -1686,83 +1686,56 @@ namespace Elastos {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("payload: {}", payload.dump());
 
+			uint8_t version = CRCProposalWithdrawVersion_01;
 			CRCProposalWithdraw proposalWithdraw;
 			try {
-				proposalWithdraw.FromJsonUnsigned(payload, CRCProposalWithdrawVersion);
+				proposalWithdraw.FromJsonUnsigned(payload, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
-			if (!proposalWithdraw.IsValidUnsigned(CRCProposalWithdrawVersion))
+			if (!proposalWithdraw.IsValidUnsigned(version))
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
 
-			std::string digest = proposalWithdraw.DigestUnsigned(CRCProposalWithdrawVersion).GetHex();
+			std::string digest = proposalWithdraw.DigestUnsigned(version).GetHex();
 
 			ArgInfo("r => {}", digest);
 			return digest;
 		}
 
-		nlohmann::json MainchainSubWallet::CreateProposalWithdrawTransaction(const std::string &recipient,
-																			 const std::string &amount,
-																			 const nlohmann::json &utxo,
-																			 const nlohmann::json &payload,
+		nlohmann::json MainchainSubWallet::CreateProposalWithdrawTransaction(const nlohmann::json &payload,
 																			 const std::string &memo) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("recipient: {}", recipient);
-			ArgInfo("amount: {}", amount);
-			ArgInfo("utxo: {}", utxo.dump());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("payload: {}", payload.dump());
 			ArgInfo("memo: {}", memo);
 
-#define CRCProposalWithdrawFee 10000
-
-			TransactionPtr txn;
-			Address recvAddress(recipient);
-			ErrorChecker::CheckParam(!recvAddress.Valid(), Error::InvalidArgument, "invalid recipient");
-
-			BigInt outputAmount, inputAmount;
-			outputAmount.setDec(amount);
-			outputAmount -= CRCProposalWithdrawFee;
-			ErrorChecker::CheckParam(outputAmount <= 0, Error::InvalidArgument, "invalid amount");
-
+			uint8_t version = CRCProposalWithdrawVersion_01;
+			PayloadPtr p(new CRCProposalWithdraw());
 			try {
-				PayloadPtr p(new CRCProposalWithdraw());
-				p->FromJson(payload, CRCProposalWithdrawVersion);
-				ErrorChecker::CheckParam(!p->IsValid(CRCProposalWithdrawVersion), Error::InvalidArgument, "invalid payload");
-
-				txn = TransactionPtr(new Transaction(Transaction::crcProposalWithdraw, p));
-				std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
-				txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
-
-				for (nlohmann::json::const_iterator it = utxo.cbegin(); it != utxo.cend(); ++it) {
-					uint256 txHash;
-					txHash.SetHex((*it)["Hash"].get<std::string>());
-					uint16_t index = (*it)["Index"].get<uint16_t>();
-					BigInt curAmount;
-					curAmount.setDec((*it)["Amount"].get<std::string>());
-
-					txn->AddInput(InputPtr(new TransactionInput(txHash, index)));
-					inputAmount += curAmount;
-				}
-
-				if (inputAmount < outputAmount + CRCProposalWithdrawFee)
-					ErrorChecker::ThrowParamException(Error::InvalidArgument, "input amount not enough");
-
-				txn->AddOutput(OutputPtr(new TransactionOutput(outputAmount, recvAddress)));
-
-				if (inputAmount > outputAmount + CRCProposalWithdrawFee)
-					txn->AddOutput(OutputPtr(new TransactionOutput(inputAmount - outputAmount - CRCProposalWithdrawFee, Address("CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b"))));
-
-				txn->SetFee(CRCProposalWithdrawFee);
-
-				txn->SetVersion(Transaction::TxVersion::V09);
+				p->FromJson(payload, version);
 			} catch (const std::exception &e) {
-				ErrorChecker::ThrowParamException(Error::InvalidArgument, "create tx fail");
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
 			}
 
-			nlohmann::json result;
-			EncodeTx(result, txn);
+			if (!p->IsValid(version)) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
+			}
+			OutputArray outputs;
+			AddressPtr receiveAddr = wallet->GetReceiveAddress();
+			outputs.push_back(OutputPtr(new TransactionOutput(0, *receiveAddr)));
+			AddressPtr fromAddr(new Address(""));
 
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposalWithdraw, p, fromAddr, outputs, memo);
+
+			if (tx->GetOutputs().size() < 2)
+				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "balance not enough");
+
+			tx->RemoveOutput(tx->GetOutputs().front());
+			tx->FixIndex();
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
 			ArgInfo("r => {}", result.dump());
 
 			return result;
