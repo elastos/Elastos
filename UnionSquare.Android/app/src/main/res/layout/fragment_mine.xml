@@ -17,6 +17,31 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <RelativeLayout
+                style="@style/settingItem"
+                android:layout_marginTop="@dimen/px30"
+                android:background="@drawable/ass_border">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="15dp"
+                    android:text="@string/securitycertificate"
+                    android:textSize="14sp" />
+
+                <CheckBox
+                    android:id="@+id/cb_certificate"
+                    android:layout_width="30dp"
+                    android:layout_height="15dp"
+                    android:background="@drawable/selector_rb"
+                    android:button="@null"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/px40"
+                    android:checked="false" />
+
+            </RelativeLayout>
 
             <RelativeLayout
                 android:id="@+id/rl_contact"

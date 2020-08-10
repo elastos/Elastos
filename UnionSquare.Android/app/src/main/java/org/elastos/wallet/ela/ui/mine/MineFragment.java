@@ -23,12 +23,20 @@
 package org.elastos.wallet.ela.ui.mine;
 
 import android.content.Intent;
+import android.hardware.fingerprint.FingerprintManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyProperties;
+import android.support.annotation.RequiresApi;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -39,10 +47,18 @@ import org.elastos.wallet.ela.ui.mine.fragment.AboutFragment;
 import org.elastos.wallet.ela.ui.mine.fragment.ContactFragment;
 import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
 import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.security.KeyStore;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -67,12 +83,15 @@ public class MineFragment extends BaseFragment {
     TextView tvChinese;
     @BindView(R.id.tv_english)
     TextView tvEnglish;
+    @BindView(R.id.cb_certificate)
+    CheckBox cbCertificate;
     @BindView(R.id.ll_languge)
     LinearLayout llLanguge;
     @BindView(R.id.tv_language)
     TextView tvLanguage;
     private SPUtil sp;
-
+    private KeyStore keyStore;
+    private static final String DEFAULT_KEY_NAME = "default_key";
 
     @Override
     protected int getLayoutId() {
@@ -98,6 +117,115 @@ public class MineFragment extends BaseFragment {
         if (sp.isOpenRedPoint() && ((AssetskFragment.messageList != null && AssetskFragment.messageList.size() > 0) || CacheUtil.getUnReadMessage().size() > 0)) {
             //有新消息
             ivTitleRight.setImageResource(R.mipmap.mine_message_center_red);
+        }
+        if (sp.isOpenCertificate()) {
+            cbCertificate.setChecked(true);
+        }
+        cbCertificate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                {
+                    if (!isChecked) {
+                        new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.weatherstopsavecertificate), null, null, false, new WarmPromptListener() {
+                            @Override
+                            public void affireBtnClick(View view) {
+                                //停用安全验证
+
+                                stopCertificate();
+
+
+                            }
+                        });
+                    } else
+                        // 开启安全验证
+                        openCertificate();
+                }
+            }
+        });
+    }
+
+
+    private void openCertificate() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            FingerprintManager.AuthenticationCallback callback = new FingerprintManager.AuthenticationCallback() {
+                @Override
+                public void onAuthenticationSucceeded(FingerprintManager.AuthenticationResult result) {
+                    //指纹验证成功98
+                    Toast.makeText(getActivity(), "onAuthenticationSucceeded()", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onAuthenticationError(int errorCode, CharSequence errString) {
+                    //指纹验证失败，不可再验
+                    Toast.makeText(getActivity(), "onAuthenticationError()" + errString, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onAuthenticationHelp(int helpCode, CharSequence helpString) {
+                    //指纹验证失败，可再验，可能手指过脏，或者移动过快等原因。
+                    if (helpCode == 1021 || helpCode == 1022 || helpCode == 1023||helpCode==1001) {
+
+                    }
+                    Toast.makeText(getActivity(), "onAuthenticationHelp()" + helpCode+"//"+helpString, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onAuthenticationFailed() {
+                    //指纹验证失败，指纹识别失败，可再验，该指纹不是系统录入的指纹。
+                    Toast.makeText(getActivity(), "onAuthenticationFailed():不能识别", Toast.LENGTH_SHORT).show();
+                }
+            };
+
+
+            FingerprintManager fingerprintManager = getActivity().getSystemService(FingerprintManager.class);
+            if (fingerprintManager.isHardwareDetected() && fingerprintManager.hasEnrolledFingerprints()) {
+                fingerprintManager.authenticate(new FingerprintManager.CryptoObject(initCipher()), null, 0, callback, null);
+            } else {
+                Toast.makeText(getActivity(), "onAuthenticationFailed():不支持", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(getActivity(), "onAuthenticationFailed():不支持", Toast.LENGTH_SHORT).show();
+
+        }
+    }
+
+    private void stopCertificate() {
+    }
+
+    // 初始化密钥库
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void initKey() {
+        try {
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null);
+            KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+            KeyGenParameterSpec.Builder builder = new KeyGenParameterSpec.Builder(DEFAULT_KEY_NAME,
+                    KeyProperties.PURPOSE_ENCRYPT |
+                            KeyProperties.PURPOSE_DECRYPT)
+                    .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                    .setUserAuthenticationRequired(true)
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7);
+            keyGenerator.init(builder.build());
+            keyGenerator.generateKey();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 初始化密钥
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private Cipher initCipher() {
+
+        try {
+            initKey();
+            SecretKey key = (SecretKey) keyStore.getKey(DEFAULT_KEY_NAME, null);
+            Cipher cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
+                    + KeyProperties.BLOCK_MODE_CBC + "/"
+                    + KeyProperties.ENCRYPTION_PADDING_PKCS7);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            return cipher;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

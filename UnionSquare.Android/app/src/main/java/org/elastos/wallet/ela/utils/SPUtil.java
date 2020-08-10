@@ -180,6 +180,7 @@ public class SPUtil {
         edit.putBoolean("isfrist1", false);
         edit.commit();
     }//是不是第一次登陆
+
     public boolean isRefreshCache() {
         return getSharedPreferences(detrust_fileName).getBoolean("refreshCache", true);
     }
@@ -213,7 +214,9 @@ public class SPUtil {
         SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
         edit.putBoolean("openReadPoint", tag);
         edit.commit();
-    } //是不是打开消息通知
+    }
+
+    //是不是打开消息通知
     public boolean isOpenSendMsg() {
         return getSharedPreferences(detrust_fileName).getBoolean("openSendMsg", true);
     }
@@ -222,6 +225,17 @@ public class SPUtil {
     public void setOpenSendMsg(boolean tag) {
         SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
         edit.putBoolean("openSendMsg", tag);
+        edit.commit();
+    }
+    //是不是打开消息通知
+    public boolean isOpenCertificate() {
+        return getSharedPreferences(detrust_fileName).getBoolean("openCertificate", false);
+    }
+
+    //设置是不是打开消息通知
+    public void setOpenCertificate(boolean tag) {
+        SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
+        edit.putBoolean("openCertificate", tag);
         edit.commit();
     }
 }
