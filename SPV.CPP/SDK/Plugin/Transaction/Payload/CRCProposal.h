@@ -161,10 +161,6 @@ namespace Elastos {
 
 			bool DeserializeChangeOwnerUnsigned(const ByteStream &stream, uint8_t version);
 
-			void SerializeChangeOwnerNewOwnerUnsigned(ByteStream &stream, uint8_t version) const;
-
-			bool DeserializeChangeOwnerNewOwnerUnsigned(const ByteStream &stream, uint8_t version);
-
 			void SerializeChangeOwnerCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
 
 			bool DeserializeChangeOwnerCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
@@ -172,6 +168,22 @@ namespace Elastos {
 			void SerializeChangeOwner(ByteStream &stream, uint8_t version) const;
 
 			bool DeserializeChangeOwner(const ByteStream &stream, uint8_t version);
+
+			nlohmann::json ToJsonChangeOwnerUnsigned(uint8_t version) const;
+
+			void FromJsonChangeOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonChangeOwnerCRCouncilMemberUnsigned(uint8_t version) const;
+
+			void FromJsonChangeOwnerCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+			bool IsValidChangeOwnerUnsigned(uint8_t version) const;
+
+			bool IsValidChangeOwnerCRCouncilMemberUnsigned(uint8_t version) const;
+
+			const uint256 &DigestChangeOwnerUnsigned(uint8_t version) const;
+
+			const uint256 &DigestChangeOwnerCRCouncilMemberUnsigned(uint8_t version) const;
 
 			// terminate proposal
 			void SerializeTerminateProposalUnsigned(ByteStream &stream, uint8_t version) const;
@@ -185,6 +197,22 @@ namespace Elastos {
 			void SerializeTerminateProposal(ByteStream &stream, uint8_t version) const;
 
 			bool DeserializeTerminateProposal(const ByteStream &stream, uint8_t version);
+
+			nlohmann::json ToJsonTerminateProposalOwnerUnsigned(uint8_t version) const;
+
+			void FromJsonTerminateProposalOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const;
+
+			void FromJsonTerminateProposalCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+			bool IsValidTerminateProposalOwnerUnsigned(uint8_t version) const;
+
+			bool IsValidTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const;
+
+			const uint256 &DigestTerminateProposalOwnerUnsigned(uint8_t version) const;
+
+			const uint256 &DigestTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const;
 
 			// secretary election
 			void SerializeSecretaryElectionOwnerUnsigned(ByteStream &stream, uint8_t version) const;
@@ -243,12 +271,22 @@ namespace Elastos {
 			CRCProposal &operator=(const CRCProposal &payload);
 
 		private:
+			// normal & elip
 			mutable uint256 _digestOwnerUnsigned;
 			mutable uint256 _digestCRCouncilMemberUnsigned;
 
+			// secretary election
 			mutable uint256 _digestSecretaryElectionOwnerUnsigned;
 			mutable uint256 _digestSecretaryElectionSecretaryUnsigned;
 			mutable uint256 _digestSecretaryElectionCRCouncilMemberUnsigned;
+
+			// change owner
+			mutable uint256 _digestChangeOwnerUnsigned;
+			mutable uint256 _digestChangeOwnerCRCouncilMemberUnsigned;
+
+			// terminate proposal
+			mutable uint256 _digestTerminateProposalOwnerUnsigned;
+			mutable uint256 _digestTerminateProposalCRCouncilMemberUnsigned;
 
 		private:
 			CRCProposal::Type _type;

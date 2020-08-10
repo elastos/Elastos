@@ -804,6 +804,107 @@ namespace Elastos {
 				const nlohmann::json &payload, const std::string &memo = "") = 0;
 
 			//////////////////////////////////////////////////
+			/*             Proposal Change Owner            */
+			//////////////////////////////////////////////////
+			/**
+			 * Use for owner & new owner sign
+			 * @param payload Proposal change owner payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "TargetProposalHash": "...",
+			 *    "NewRecipient": "...",
+			 *    "NewOwnerPublicKey": "...",
+			 * }
+			 * @return
+			 */
+			virtual std::string ProposalChangeOwnerDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload Proposal change owner payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "TargetProposalHash": "...",
+			 *    "NewRecipient": "...",
+			 *    "NewOwnerPublicKey": "...",
+			 *    "Signature": "...",
+			 *    "NewOwnerSignature": "...",
+			 *    "CRCouncilMemberDID": "..."
+			 * }
+			 * @return
+			 */
+			virtual std::string ProposalChangeOwnerCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload Proposal change owner payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "TargetProposalHash": "...",
+			 *    "NewRecipient": "...",
+			 *    "NewOwnerPublicKey": "...",
+			 *    "Signature": "...",
+			 *    "NewOwnerSignature": "...",
+			 *    "CRCouncilMemberDID": "...",
+			 *    "CRCouncilMemberSignature": "...",
+			 * }
+			 * @param memo Remark string.
+			 * @return
+			 */
+			virtual nlohmann::json CreateProposalChangeOwnerTransaction(
+				const nlohmann::json &payload, const std::string &memo = "") = 0;
+
+			//////////////////////////////////////////////////
+			/*           Proposal Terminate Proposal        */
+			//////////////////////////////////////////////////
+			/**
+			 * @param payload Terminate proposal payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "TargetProposalHash": "...",
+			 * }
+			 * @return
+			 */
+			virtual std::string TerminateProposalOwnerDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload Terminate proposal payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "TargetProposalHash": "...",
+			 *    "Signature": "...",
+			 *    "CRCouncilMemberDID": "...",
+			 * }
+			 * @return
+			 */
+			virtual std::string TerminateProposalCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload Terminate proposal payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "TargetProposalHash": "...",
+			 *    "Signature": "...",
+			 *    "CRCouncilMemberDID": "...",
+			 *    "CRCouncilMemberSignature": "...",
+			 * }
+			 * @param memo Remark string.
+			 * @return
+			 */
+			virtual nlohmann::json CreateTerminateProposalTransaction(
+				const nlohmann::json &payload, const std::string &memo = "") = 0;
+
+			//////////////////////////////////////////////////
 			/*               Proposal Withdraw              */
 			//////////////////////////////////////////////////
 			/**

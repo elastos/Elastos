@@ -194,6 +194,26 @@ namespace Elastos {
 				const nlohmann::json &payload, const std::string &memo = "") override;
 
 			//////////////////////////////////////////////////
+			/*             Proposal Change Owner            */
+			//////////////////////////////////////////////////
+			std::string ProposalChangeOwnerDigest(const nlohmann::json &payload) const override;
+
+			std::string ProposalChangeOwnerCRCouncilMemberDigest(const nlohmann::json &payload) const override ;
+
+			nlohmann::json CreateProposalChangeOwnerTransaction(
+				const nlohmann::json &payload, const std::string &memo = "") override ;
+
+			//////////////////////////////////////////////////
+			/*           Proposal Terminate Proposal        */
+			//////////////////////////////////////////////////
+			std::string TerminateProposalOwnerDigest(const nlohmann::json &payload) const override ;
+
+			std::string TerminateProposalCRCouncilMemberDigest(const nlohmann::json &payload) const override;
+
+			nlohmann::json CreateTerminateProposalTransaction(
+				const nlohmann::json &payload, const std::string &memo = "") override;
+
+			//////////////////////////////////////////////////
 			/*               Proposal Withdraw              */
 			//////////////////////////////////////////////////
 			std::string ProposalWithdrawDigest(const nlohmann::json &payload) const override;
