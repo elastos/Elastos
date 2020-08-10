@@ -2113,6 +2113,7 @@ public class MyWallet {
         }
     }
 
+    // TODO: String recipient, String amount, String utxo not use anymore
     public BaseEntity createProposalWithdrawTransaction(String masterWalletID, String recipient, String amount, String utxo, String payload) {
         try {
             MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
@@ -2120,7 +2121,7 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
 
             }
-            String info = subWallet.CreateProposalWithdrawTransaction(recipient, amount, utxo, payload, "");
+            String info = subWallet.CreateProposalWithdrawTransaction(payload, "");
             return new CommmonStringEntity(SUCCESSCODE, info);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID) + "CreateProposalWithdrawTransaction");

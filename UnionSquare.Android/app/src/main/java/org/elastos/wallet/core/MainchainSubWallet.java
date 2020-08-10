@@ -152,87 +152,92 @@ public class MainchainSubWallet extends SubWallet {
         return CreateProposalTrackingTransaction(mMainchainProxy, payload, memo);
     }
 
+    public String ProposalSecretaryGeneralElectionOwnerDigest(String payload) {
+        return ProposalSecretaryGeneralElectionOwnerDigest(mMainchainProxy, payload);
+    }
+    public String ProposalSecretaryGeneralElectionSecretaryGeneralDigest(String payload) {
+        return ProposalSecretaryGeneralElectionSecretaryGeneralDigest(mMainchainProxy, payload);
+    }
+    public String ProposalSecretaryGeneralElectionCRCouncilMemberDigest(String payload) {
+        return ProposalSecretaryGeneralElectionCRCouncilMemberDigest(mMainchainProxy, payload);
+    }
+    public String CreateSecretaryGeneralElectionTransaction(String payload, String memo) {
+        return CreateSecretaryGeneralElectionTransaction(mMainchainProxy, payload, memo);
+    }
+    public String ProposalChangeOwnerDigest(String payload) {
+        return ProposalChangeOwnerDigest(mMainchainProxy, payload);
+    }
+    public String ProposalChangeOwnerCRCouncilMemberDigest(String payload) {
+        return ProposalChangeOwnerCRCouncilMemberDigest(mMainchainProxy, payload);
+    }
+    public String CreateProposalChangeOwnerTransaction(String payload, String memo) {
+        return CreateProposalChangeOwnerTransaction(mMainchainProxy, payload, memo);
+    }
+    public String TerminateProposalOwnerDigest(String payload) {
+        return TerminateProposalOwnerDigest(mMainchainProxy, payload);
+    }
+    public String TerminateProposalCRCouncilMemberDigest(String payload) {
+        return TerminateProposalCRCouncilMemberDigest(mMainchainProxy, payload);
+    }
+    public String CreateTerminateProposalTransaction(String payload, String memo) {
+        return CreateTerminateProposalTransaction(mMainchainProxy, payload, memo);
+    }
     public String ProposalWithdrawDigest(String payload) {
         return ProposalWithdrawDigest(mMainchainProxy, payload);
     }
 
-    public String CreateProposalWithdrawTransaction(String recipient, String amount, String utxo, String payload, String memo) {
-        return CreateProposalWithdrawTransaction(mMainchainProxy, recipient, amount, utxo, payload, memo);
+    public String CreateProposalWithdrawTransaction(String payload, String memo) {
+        return CreateProposalWithdrawTransaction(mMainchainProxy, payload, memo);
     }
 
     private native String CreateDepositTransaction(long proxy, String fromAddress, String sideChainID, String amount,
                                                    String sideChainAddress, String memo);
-
     private native String GenerateProducerPayload(long proxy, String publicKey, String nodePublicKey, String nickName,
                                                   String url, String IPAddress, long location, String payPasswd);
-
     private native String GenerateCancelProducerPayload(long proxy, String publicKey, String payPasswd);
-
     private native String CreateRegisterProducerTransaction(long proxy, String fromAddress, String payloadJson, String amount,
                                                             String memo);
-
     private native String CreateUpdateProducerTransaction(long proxy, String fromAddress, String payloadJson, String memo);
-
     private native String CreateCancelProducerTransaction(long proxy, String fromAddress, String payloadJson, String memo);
-
     private native String CreateRetrieveDepositTransaction(long proxy, String amount, String memo);
-
     private native String GetOwnerPublicKey(long proxy);
-
     private native String CreateVoteProducerTransaction(long proxy, String fromAddress, String stake, String publicKeys, String memo, String invalidCandidates);
-
     private native String GetVotedProducerList(long proxy);
-
     private native String GetRegisteredProducerInfo(long proxy);
-
     private native String GetOwnerAddress(long proxy);
-
     private native String GenerateCRInfoPayload(long proxy, String crPublickey, String did, String nickName, String url, long location);
-
     private native String GenerateUnregisterCRPayload(long proxy, String cID);
-
     private native String CreateRegisterCRTransaction(long proxy, String fromAddress, String payload, String amount, String memo);
-
     private native String CreateUpdateCRTransaction(long proxy, String fromAddress, String payload, String memo);
-
     private native String CreateUnregisterCRTransaction(long proxy, String fromAddress, String payload, String memo);
-
     private native String CreateRetrieveCRDepositTransaction(long Proxy, String crPublickey, String amount, String memo);
-
     private native String CreateVoteCRTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
-
     private native String GetVotedCRList(long Proxy);
-
     private native String GetRegisteredCRInfo(long Proxy);
-
     private native String ProposalOwnerDigest(long Proxy, String payload);
-
     private native String ProposalCRCouncilMemberDigest(long Proxy, String payload);
-
     private native String CalculateProposalHash(long Proxy, String payload);
-
     private native String CreateProposalTransaction(long Proxy, String payload, String memo);
-
     private native String CreateVoteCRCProposalTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
-
     private native String CreateImpeachmentCRCTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
-
     private native String GetVoteInfo(long Proxy, String type);
-
     private native String ProposalReviewDigest(long Proxy, String payload);
-
     private native String CreateProposalReviewTransaction(long Proxy, String payload, String memo);
-
     private native String ProposalTrackingOwnerDigest(long Proxy, String payload);
-
     private native String ProposalTrackingNewOwnerDigest(long Proxy, String payload);
-
     private native String ProposalTrackingSecretaryDigest(long Proxy, String payload);
-
     private native String CreateProposalTrackingTransaction(long Proxy, String payload, String memo);
-
+    private native String ProposalSecretaryGeneralElectionOwnerDigest(long Proxy, String payload);
+    private native String ProposalSecretaryGeneralElectionSecretaryGeneralDigest(long Proxy, String payload);
+    private native String ProposalSecretaryGeneralElectionCRCouncilMemberDigest(long Proxy, String payload);
+    private native String CreateSecretaryGeneralElectionTransaction(long Proxy, String payload, String memo);
+    private native String ProposalChangeOwnerDigest(long Proxy, String payload);
+    private native String ProposalChangeOwnerCRCouncilMemberDigest(long Proxy, String payload);
+    private native String CreateProposalChangeOwnerTransaction(long Proxy, String payload, String memo);
+    private native String TerminateProposalOwnerDigest(long Proxy, String payload);
+    private native String TerminateProposalCRCouncilMemberDigest(long Proxy, String payload);
+    private native String CreateTerminateProposalTransaction(long Proxy, String payload, String memo);
     private native String ProposalWithdrawDigest(long Proxy, String payload);
-
-    private native String CreateProposalWithdrawTransaction(long Proxy, String recipient, String amount, String utxo, String payload, String memo);
+    private native String CreateProposalWithdrawTransaction(long Proxy, String payload, String memo);
 
 }
