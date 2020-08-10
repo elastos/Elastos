@@ -1197,7 +1197,7 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 			return err
 		}
 
-		if height > b.chainParams.CRClaimDPOSNodeStartHeight {
+		if height >= b.chainParams.CRClaimDPOSNodeStartHeight {
 			crcs := DefaultLedger.Arbitrators.GetCRCArbiters()
 			var arbitersCount int
 			for _, c := range crcs {

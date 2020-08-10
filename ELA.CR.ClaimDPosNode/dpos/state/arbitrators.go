@@ -1599,6 +1599,11 @@ func (a *arbitrators) GetSnapshot(height uint32) []*CheckPoint {
 	}
 }
 
+//GetChainParam() *config.Params
+func (a *arbitrators) GetChainParams() *config.Params {
+	return a.chainParams
+}
+
 func (a *arbitrators) getSnapshot(height uint32) []*CheckPoint {
 	result := make([]*CheckPoint, 0)
 	if height >= a.snapshotKeysDesc[len(a.snapshotKeysDesc)-1] {

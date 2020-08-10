@@ -7,6 +7,7 @@ package state
 
 import (
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 )
@@ -60,6 +61,7 @@ type Arbitrators interface {
 
 	GetSnapshot(height uint32) []*CheckPoint
 	DumpInfo(height uint32)
+	GetChainParams() *config.Params
 }
 
 type IArbitratorsRecord interface {
