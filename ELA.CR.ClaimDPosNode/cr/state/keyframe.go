@@ -252,7 +252,30 @@ func (c *CRMember) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	return c.DepositHash.Serialize(w)
+	if err = c.DepositHash.Serialize(w); err != nil {
+		return
+	}
+
+	if err = common.WriteUint8(w, uint8(c.MemberState)); err != nil {
+		return
+	}
+
+	if err = common.WriteVarBytes(w, c.DPOSPublicKey); err != nil {
+		return
+	}
+
+	if err = common.WriteUint32(w, c.InactiveSince); err != nil {
+		return
+	}
+
+	if err = common.WriteUint32(w, c.InactiveCountingHeight); err != nil {
+		return
+	}
+
+	if err = common.WriteUint32(w, c.ActivateRequestHeight); err != nil {
+		return
+	}
+	return common.WriteUint32(w, c.InactiveCount)
 }
 
 func (c *CRMember) Deserialize(r io.Reader) (err error) {
@@ -264,7 +287,35 @@ func (c *CRMember) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	return c.DepositHash.Deserialize(r)
+	if err = c.DepositHash.Deserialize(r); err != nil {
+		return
+	}
+	var state uint8
+	if state, err = common.ReadUint8(r); err == nil {
+		c.MemberState = MemberState(state)
+	}
+
+	c.DPOSPublicKey, err = common.ReadVarBytes(r, crypto.COMPRESSEDLEN, "public key")
+	if err != nil {
+		return
+	}
+
+	if c.InactiveSince, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	if c.InactiveCountingHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	if c.ActivateRequestHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	if c.InactiveCount, err = common.ReadUint32(r); err != nil {
+		return
+	}
+	return
 }
 
 func (kf *KeyFrame) Serialize(w io.Writer) (err error) {
