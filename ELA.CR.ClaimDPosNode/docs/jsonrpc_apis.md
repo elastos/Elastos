@@ -1246,6 +1246,8 @@ Get deposit coin by owner public key or cid or did.
 | --------- | ------ | ------------------------------------------ |
 | available | string | the available deposit coin of CR candidate |
 | deducted  | string | the deducted deposit coin of CR candidate  |
+| deposit   | string | the deposit amount coin of CR candidate    |
+| assets    | string | the total assets coin of CR candidate      |
 
 #### Example
 
@@ -1269,7 +1271,9 @@ Response:
   "jsonrpc": "2.0",
   "result": {
     "available": "3",
-    "deducted": "0"
+    "deducted": "0",
+    "deposit": "3",
+    "assets": "4"
   }
 }
 ```

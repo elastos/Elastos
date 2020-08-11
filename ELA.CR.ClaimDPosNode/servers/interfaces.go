@@ -2269,8 +2269,7 @@ func GetDepositCoin(param Params) map[string]interface{} {
 
 func GetCRDepositCoin(param Params) map[string]interface{} {
 	crCommittee := Chain.GetCRCommittee()
-	var availableDepositAmount common.Fixed64
-	var penaltyAmount common.Fixed64
+	var availableDepositAmount, penaltyAmount, depositAmount, totalAmount common.Fixed64
 	pubkey, hasPubkey := param.String("publickey")
 	if hasPubkey {
 		available, penalty, err := crCommittee.GetDepositAmountByPublicKey(pubkey)
@@ -2286,12 +2285,14 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 		if err != nil {
 			return ResponsePack(InvalidParams, "invalid id to programHash")
 		}
-		available, penalty, err := crCommittee.GetDepositAmountByID(*programHash)
+		available, penalty, deposit, total, err := crCommittee.GetDepositAmountByID(*programHash)
 		if err != nil {
 			return ResponsePack(InvalidParams, err.Error())
 		}
 		availableDepositAmount = available
 		penaltyAmount = penalty
+		depositAmount = deposit
+		totalAmount = total
 	}
 
 	if !hasPubkey && !hasID {
@@ -2302,10 +2303,14 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 	type depositCoin struct {
 		Available string `json:"available"`
 		Deducted  string `json:"deducted"`
+		Deposit   string `json:"deposit"`
+		Assets    string `json:"assets"`
 	}
 	return ResponsePack(Success, &depositCoin{
 		Available: availableDepositAmount.String(),
 		Deducted:  penaltyAmount.String(),
+		Deposit:   depositAmount.String(),
+		Assets:    totalAmount.String(),
 	})
 }
 

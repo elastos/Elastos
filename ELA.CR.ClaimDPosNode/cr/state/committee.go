@@ -845,13 +845,13 @@ func (c *Committee) GetDepositAmountByPublicKey(
 }
 
 func (c *Committee) GetDepositAmountByID(
-	id common.Uint168) (common.Fixed64, common.Fixed64, error) {
+	id common.Uint168) (common.Fixed64, common.Fixed64, common.Fixed64, common.Fixed64, error) {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
 	cid, exist := c.state.getExistCIDByID(id)
 	if !exist {
-		return 0, 0, errors.New("ID does not exist")
+		return 0, 0, 0, 0, errors.New("ID does not exist")
 	}
 	return c.state.getDepositAmountByCID(*cid)
 }

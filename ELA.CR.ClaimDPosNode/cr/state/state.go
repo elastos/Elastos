@@ -99,13 +99,13 @@ func (s *State) getAvailableDepositAmount(cid common.Uint168) common.Fixed64 {
 // getDepositAmountByCID returns available deposit amount and penalty with
 // specified cid.
 func (s *State) getDepositAmountByCID(
-	cid common.Uint168) (common.Fixed64, common.Fixed64, error) {
+	cid common.Uint168) (common.Fixed64, common.Fixed64, common.Fixed64, common.Fixed64, error) {
 	depositInfo, ok := s.depositInfo[cid]
 	if !ok {
-		return 0, 0, errors.New("deposit information does not exist")
+		return 0, 0, 0, 0, errors.New("deposit information does not exist")
 	}
-	return depositInfo.TotalAmount - depositInfo.DepositAmount -
-		depositInfo.Penalty, depositInfo.Penalty, nil
+	return depositInfo.TotalAmount - depositInfo.DepositAmount - depositInfo.Penalty,
+		depositInfo.Penalty, depositInfo.DepositAmount, depositInfo.TotalAmount, nil
 }
 
 // getDepositAmountByPublicKey return available deposit amount and
