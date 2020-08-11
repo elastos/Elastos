@@ -176,7 +176,18 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
         return null;
     }
 
-    public JSONArray conversUnactiveVote(String remove, String voteInfo, List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList,
+    /**
+     *
+     * @param currentStartTime 当前届的开始时间
+     * @param remove  不需要筛选的投票类型
+     * @param voteInfo
+     * @param depositList
+     * @param crcList
+     * @param voteList
+     * @param councilList
+     * @return
+     */
+    public JSONArray conversUnactiveVote(long currentStartTime, String remove, String voteInfo, List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList,
                                          List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crcList, List<ProposalSearchEntity.DataBean.ListBean> voteList, List<CtListBean.Council> councilList) {
         JSONArray otherUnActiveVote = new JSONArray();
 
@@ -191,6 +202,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                     if (type.equals(remove)) {
                         continue;
                     }
+                    long timestamp = jsonObject.getLong("Timestamp");
                     JSONObject votes = jsonObject.getJSONObject("Votes");
                     Iterator it = votes.keys();
                     JSONArray candidates = new JSONArray();
@@ -219,7 +231,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                                     continue;
                                 }
                                 for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : crcList) {
-                                    if (bean.getDid().equals(key) && !bean.getState().equals("Active")) {
+                                    if (timestamp < currentStartTime || (bean.getDid().equals(key) && !bean.getState().equals("Active"))) {
                                         candidates.put(key);
                                         break;
                                     }
@@ -235,7 +247,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                                     continue;
                                 }
                                 for (CtListBean.Council bean : councilList) {
-                                    if (bean.getDid().equals(key) && !bean.getStatus().equals("Elected")) {
+                                    if (timestamp < currentStartTime || (bean.getDid().equals(key) && !bean.getStatus().equals("Elected"))) {
                                         candidates.put(key);
                                         break;
                                     }

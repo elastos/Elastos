@@ -41,8 +41,8 @@ public class PastCtBean extends BaseEntity {
     public static class DataBean {
         private String id;
         private int index;
-        private String startDate;
-        private String endDate;
+        private long startDate;
+        private long endDate;
         private String status; // 历史：'HISTORY', 当届: 'CURRENT', 选举中: 'VOTING'
 
 
@@ -62,19 +62,19 @@ public class PastCtBean extends BaseEntity {
             this.index = index;
         }
 
-        public String getStartDate() {
+        public long getStartDate() {
             return startDate;
         }
 
-        public void setStartDate(String startDate) {
+        public void setStartDate(long startDate) {
             this.startDate = startDate;
         }
 
-        public String getEndDate() {
+        public long getEndDate() {
             return endDate;
         }
 
-        public void setEndDate(String endDate) {
+        public void setEndDate(long endDate) {
             this.endDate = endDate;
         }
 

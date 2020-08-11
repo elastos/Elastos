@@ -111,7 +111,7 @@ public class DateUtil {
                 format = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
             }
             if (isSecond) {
-                return format.parse(sd).getTime()/1000 + "";
+                return format.parse(sd).getTime() / 1000 + "";
             } else
                 return format.parse(sd).getTime() + "";
         } catch (Exception e) {
@@ -234,14 +234,29 @@ public class DateUtil {
 
     /**
      * get format date
+     *
      * @param timestamp
      * @param format
      * @return
      */
     public static String formatTimestamp(String timestamp, String format) {
-        if(AppUtlis.isNullOrEmpty(timestamp) || timestamp.trim().equalsIgnoreCase("0")) return "";
+        if (AppUtlis.isNullOrEmpty(timestamp) || timestamp.trim().equalsIgnoreCase("0")) return "";
         try {
             Date date = new Date(Long.valueOf(timestamp) * 1000);
+            SimpleDateFormat formatter = new SimpleDateFormat(format);
+            String dateStr = formatter.format(date);
+            return dateStr;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "";
+    }
+
+    public static String formatTimestamp(long timestamp, String format) {
+        if (timestamp == 0) return "";
+        try {
+            Date date = new Date(timestamp * 1000);
             SimpleDateFormat formatter = new SimpleDateFormat(format);
             String dateStr = formatter.format(date);
             return dateStr;

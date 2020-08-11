@@ -53,7 +53,9 @@ import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
+import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.committee.presenter.CtListPresenter;
+import org.elastos.wallet.ela.ui.committee.presenter.PastCtPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRNodeCartAdapter;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
@@ -127,6 +129,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     private List<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
     private List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
     private List<CtListBean.Council> councilList;
+    private long currentStartTime;
 
     @Override
     protected int getLayoutId() {
@@ -159,6 +162,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         new ProposalPresenter().proposalSearch(-1, -1, "ALL", null, this);
         new VoteListPresenter().getDepositVoteList("1", "all", this, true);
         new CtListPresenter().getCouncilList(this, String.valueOf(1));
+        new PastCtPresenter().getCouncilTerm(this);
     }
 
 
@@ -399,6 +403,18 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "getCouncilTerm":
+                List<PastCtBean.DataBean> pastCtBeanList = ((PastCtBean) baseEntity).getData();
+                if (pastCtBeanList != null && pastCtBeanList.size() > 0) {
+                    for (PastCtBean.DataBean dataBean : pastCtBeanList) {
+                        if ("CURRENT".equals(dataBean.getStatus())) {
+                            currentStartTime = dataBean.getStartDate();
+                            break;
+
+                        }
+                    }
+                }
+                break;
             case "getCouncilList":
                 councilList = ((CtListBean) baseEntity).getData().getCouncil();
                 break;
@@ -424,7 +440,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             case "getVoteInfo":
                 //剔除非公示期的
                 String voteInfo = ((CommmonStringEntity) baseEntity).getData();
-                otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("CRC", voteInfo, depositList, netList, searchBeanList, councilList);
+                otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote(currentStartTime,"CRC", voteInfo, depositList, netList, searchBeanList, councilList);
                 doVote();
                 break;
 

@@ -46,7 +46,9 @@ import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.committee.adaper.CtExpRecAdapter;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
+import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
+import org.elastos.wallet.ela.ui.committee.presenter.PastCtPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
@@ -120,6 +122,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     private List<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
     private List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
     private List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
+    private long currentStartTime;
 
     @Override
     protected void setExtraData(Bundle data) {
@@ -204,6 +207,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
                 new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
                 new ProposalPresenter().proposalSearch(-1, -1, "ALL", null, this);
                 new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
+                new PastCtPresenter().getCouncilTerm(this);
                 break;
         }
 
@@ -214,6 +218,18 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "getCouncilTerm":
+                List<PastCtBean.DataBean> pastCtBeanList = ((PastCtBean) baseEntity).getData();
+                if (pastCtBeanList != null && pastCtBeanList.size() > 0) {
+                    for (PastCtBean.DataBean dataBean : pastCtBeanList) {
+                        if ("CURRENT".equals(dataBean.getStatus())) {
+                            currentStartTime = dataBean.getStartDate();
+                            break;
+
+                        }
+                    }
+                }
+                break;
             case "getCouncilInfo":
                 setBaseInfo((CtDetailBean) baseEntity);
                 setCtInfo((CtDetailBean) baseEntity);
@@ -221,7 +237,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
                 break;
             case "getVoteInfo":
                 String voteInfo = ((CommmonStringEntity) baseEntity).getData();
-                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("CRCImpeachment", voteInfo, depositList, crList, searchBeanList, null);
+                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote(currentStartTime,"CRCImpeachment", voteInfo, depositList, crList, searchBeanList, null);
                 try {
                     //点击下一步 获得上次的投票后筛选数据
                     String amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();

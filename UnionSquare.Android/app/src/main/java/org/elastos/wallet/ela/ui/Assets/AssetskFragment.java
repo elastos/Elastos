@@ -89,7 +89,9 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
 import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
+import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.committee.presenter.CtListPresenter;
+import org.elastos.wallet.ela.ui.committee.presenter.PastCtPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
@@ -179,6 +181,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
     private List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
     private List<CtListBean.Council> councilList;
+    private long currentStartTime;
 
     @Override
     protected int getLayoutId() {
@@ -1076,10 +1079,22 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "getCouncilTerm":
+                List<PastCtBean.DataBean> pastCtBeanList = ((PastCtBean) baseEntity).getData();
+                if (pastCtBeanList != null && pastCtBeanList.size() > 0) {
+                    for (PastCtBean.DataBean dataBean : pastCtBeanList) {
+                        if ("CURRENT".equals(dataBean.getStatus())) {
+                            currentStartTime = dataBean.getStartDate();
+                            break;
+
+                        }
+                    }
+                }
+                break;
             case "getVoteInfo":
                 //剔除非公示期的
                 String voteInfo = ((CommmonStringEntity) baseEntity).getData();
-                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote("CRCProposal", voteInfo, depositList, crList, searchBeanList, councilList);
+                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote(currentStartTime,"CRCProposal", voteInfo, depositList, crList, searchBeanList, councilList);
                 try {
                     JSONObject voteJson = proposalDetailPresenter.conversVote(voteInfo, "CRCProposal");//key value
                     //点击下一步 获得上次的投票后筛选数据
@@ -1326,6 +1341,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     new VoteListPresenter().getDepositVoteList("1", "all", this, false);
                     new CRlistPresenter().getCRlist(-1, -1, "all", this, false);
                     new CtListPresenter().getCouncilList(this, String.valueOf(1));
+                    new PastCtPresenter().getCouncilTerm(this);
                     commonGetBalancePresenter.getBalance(wallet.getWalletId(), MyWallet.ELA, this);
 
 

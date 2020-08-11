@@ -25,6 +25,7 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -32,6 +33,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
@@ -51,9 +53,11 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.adapter.TransferRecordRecAdapetr;
+import org.elastos.wallet.ela.ui.Assets.adapter.VoteStatusRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.bean.AddressListEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.TransferRecordEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.VoteStatus;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.AddressListPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetDetailPresenter;
@@ -62,14 +66,24 @@ import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetTransactionPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonGetTransactionViewData;
+import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
+import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
+import org.elastos.wallet.ela.ui.committee.presenter.CtListPresenter;
+import org.elastos.wallet.ela.ui.committee.presenter.PastCtPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
 import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
 import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalDetailPresenter;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
+import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
+import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
@@ -80,12 +94,17 @@ import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 
 /**
  * 资产详情
@@ -101,6 +120,8 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     RecyclerView rv;
     @BindView(R.id.rv1)
     RecyclerView rv1;
+    @BindView(R.id.rv_vote)
+    RecyclerView rv_Vote;
     @BindView(R.id.tv_chain)
     TextView tvChain;
     @BindView(R.id.tv_balance)
@@ -111,6 +132,8 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     TextView tvRecordBg;
     @BindView(R.id.tv_earn_bg)
     TextView tvEarnBg;
+    @BindView(R.id.tv_vote_bg)
+    TextView tvVoteBg;
     @BindView(R.id.tv_balanceuse)
     TextView tvBalanceuse;
     @BindView(R.id.rg_record)
@@ -123,14 +146,31 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     TextView tvCopyaddress;
     @BindView(R.id.ll_earn)
     LinearLayout llEarn;
+    @BindView(R.id.ll_vote)
+    LinearLayout llVote;
+    @BindView(R.id.rl_vote)
+    RelativeLayout rlVote;
+    @BindView(R.id.rl_record)
+    RelativeLayout rlRecord;
     @BindView(R.id.rb_earn_recorder)
     RadioButton rbEarnRecorder;
+    @BindView(R.id.rb_trans_recorder)
+    RadioButton rbTransTecorder;
+    @BindView(R.id.rb_vote_status)
+    RadioButton rbVoteStatus;
     @BindView(R.id.view_line)
     View viewLine;
+    @BindView(R.id.tv_vote_count)
+    TextView tvVoteCount;
+    @BindView(R.id.tv_vote_time)
+    TextView tvVoteTime;
+    Unbinder unbinder;
     private TransferRecordRecAdapetr adapter;
     private TransferRecordRecAdapetr adapter1;
+    private VoteStatusRecAdapetr adapterVote;
     private List<TransferRecordEntity.TransactionsBean> list;
     private List<TransferRecordEntity.TransactionsBean> list1;
+    private List<VoteStatus> listVoteStatus;
     private String chainId;
     private Wallet wallet;
     private int startCount = 0;
@@ -139,7 +179,12 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     private CommonGetTransactionPresenter presenter;
     private SubWallet subWallet;
     private AssetDetailPresenter assetDetailPresenter;
-
+    private ProposalDetailPresenter proposalDetailPresenter;
+    private List<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
+    private List<CtListBean.Council> councilList;
+    private List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
+    private List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
+    private long currentStartTime;
 
     @Override
     protected int getLayoutId() {
@@ -186,10 +231,13 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     }
 
     //OnBalanceChanged
-    @OnClick({R.id.ll_transfer, R.id.tv_chain, R.id.ll_recipe, R.id.tv_towhole, R.id.tv_copyaddress})
+    @OnClick({R.id.ll_transfer, R.id.tv_chain, R.id.ll_recipe, R.id.tv_towhole, R.id.tv_copyaddress, R.id.tv_vote_detail})
     public void onViewClicked(View view) {
         Bundle bundle = null;
         switch (view.getId()) {
+            case R.id.tv_vote_detail:
+                //投票状态详情
+                break;
             case R.id.ll_transfer:
                 //转账
                 bundle = new Bundle();
@@ -295,6 +343,175 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         startCount1 += data.size();
     }
 
+    private void setVoteRecycleView(String voteInfo) {
+
+        if (TextUtils.isEmpty(voteInfo) || voteInfo.equals("null") || voteInfo.equals("[]")) {
+            tvVoteBg.setVisibility(View.VISIBLE);
+            llVote.setVisibility(View.GONE);
+            return;
+        }
+        tvVoteBg.setVisibility(View.GONE);
+        llVote.setVisibility(View.VISIBLE);
+        if (listVoteStatus == null) {
+            listVoteStatus = new ArrayList<>();
+        }
+        initListVoteStatus(listVoteStatus);
+
+
+        conversUnactiveVote(currentStartTime, voteInfo, depositList, crList, searchBeanList, councilList);
+        tvVoteCount.setText(getString(R.string.allcount) + "");//todo
+        tvVoteTime.setText(getString(R.string.lastvotetime) + "");
+        if (adapterVote == null) {
+            adapterVote = new VoteStatusRecAdapetr(getContext(), listVoteStatus);
+            rv_Vote.setLayoutManager(new GridLayoutManager(getContext(), 2));
+            rv_Vote.setAdapter(adapterVote);
+
+        } else {
+            adapterVote.notifyDataSetChanged();
+        }
+
+
+    }
+
+    private void initListVoteStatus(List<VoteStatus> listVoteStatus) {
+        VoteStatus voteStatusDepos = new VoteStatus();
+        voteStatusDepos.setIndex(0);
+        voteStatusDepos.setIconID(R.mipmap.asset_vote_node);
+        voteStatusDepos.setName(getString(R.string.dposnotevote));
+        listVoteStatus.add(voteStatusDepos);
+        VoteStatus voteStatusCR = new VoteStatus();
+        voteStatusCR.setIndex(1);
+        voteStatusCR.setIconID(R.mipmap.asset_vote_cr);
+        voteStatusCR.setName(getString(R.string.crcvote));
+        listVoteStatus.add(voteStatusCR);
+        VoteStatus voteStatusImpeach = new VoteStatus();
+        voteStatusImpeach.setIndex(2);
+        voteStatusImpeach.setIconID(R.mipmap.asset_vote_judgement);
+        voteStatusImpeach.setName(getString(R.string.crimpeach));
+        listVoteStatus.add(voteStatusImpeach);
+        VoteStatus voteStatusAgainst = new VoteStatus();
+        voteStatusAgainst.setIndex(3);
+        voteStatusAgainst.setIconID(R.mipmap.cr_vote_nay);
+        voteStatusAgainst.setName(getString(R.string.communityproposalagaginstvote));
+        listVoteStatus.add(voteStatusAgainst);
+    }
+
+    public JSONArray conversUnactiveVote(long currentStartTime, String voteInfo, List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList,
+                                         List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crcList, List<ProposalSearchEntity.DataBean.ListBean> voteList, List<CtListBean.Council> councilList) {
+        JSONArray otherUnActiveVote = new JSONArray();
+
+        try {
+            JSONArray lastVoteInfo = new JSONArray(voteInfo);
+            for (int i = 0; i < lastVoteInfo.length(); i++) {
+                org.json.JSONObject jsonObject = lastVoteInfo.getJSONObject(i);
+                String type = jsonObject.getString("Type");
+
+                long timestamp = jsonObject.getLong("Timestamp");
+                org.json.JSONObject votes = jsonObject.getJSONObject("Votes");
+                Iterator it = votes.keys();
+                JSONArray candidates = new JSONArray();
+                VoteStatus voteStatus = null;
+                BigDecimal count = new BigDecimal(0);
+                switch (type) {
+                    case "Delegate":
+                        voteStatus = listVoteStatus.get(0);
+                        while (it.hasNext()) {
+                            String key = (String) it.next();
+                            String value = votes.getString(key);
+                            count = new BigDecimal(value);
+                            if (depositList == null || depositList.size() == 0) {
+                                candidates.put(key);
+                                continue;
+                            }
+                            for (VoteListBean.DataBean.ResultBean.ProducersBean bean : depositList) {
+                                if (bean.getOwnerpublickey().equals(key) && !bean.getState().equals("Active")) {
+                                    candidates.put(key);
+                                    break;
+                                }
+                            }
+
+                        }
+                        break;
+                    case "CRC":
+                        voteStatus = listVoteStatus.get(1);
+                        while (it.hasNext()) {
+                            String key = (String) it.next();
+                            String value = votes.getString(key);
+                            count = count.add(new BigDecimal(value));
+                            if (crcList == null || crcList.size() == 0) {
+                                candidates.put(key);
+                                continue;
+                            }
+                            for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : crcList) {
+                                if (timestamp < currentStartTime || (bean.getDid().equals(key) && !bean.getState().equals("Active"))) {
+                                    candidates.put(key);
+                                    break;
+                                }
+                            }
+                        }
+
+                        break;
+                    case "CRCImpeachment"://弹劾
+                        voteStatus = listVoteStatus.get(2);
+                        while (it.hasNext()) {
+                            String key = (String) it.next();
+                            String value = votes.getString(key);
+                            count = count.add(new BigDecimal(value));
+                            if (councilList == null || councilList.size() == 0) {
+                                candidates.put(key);
+                                continue;
+                            }
+                            for (CtListBean.Council bean : councilList) {
+                                if (timestamp < currentStartTime || (bean.getDid().equals(key) && !bean.getStatus().equals("Elected"))) {
+                                    candidates.put(key);
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    case "CRCProposal":
+                        voteStatus = listVoteStatus.get(3);
+                        while (it.hasNext()) {
+                            String key = (String) it.next();
+                            String value = votes.getString(key);
+                            count = count.add(new BigDecimal(value));
+                            if (voteList == null || voteList.size() == 0) {
+                                candidates.put(key);
+                                continue;
+                            }
+                            for (ProposalSearchEntity.DataBean.ListBean bean : voteList) {
+                                if (bean.getProposalHash().equals(key) && !bean.getStatus().equals("NOTIFICATION")) {
+                                    candidates.put(key);
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+
+
+                }
+                if (voteStatus != null) {
+                    //默认0没有投票   1 有投票部分失效 2 有投票完全失效 3有投票无失效
+                    if (candidates.length() == 0) {
+                        voteStatus.setStatus(3);
+                    } else if (candidates.length() == votes.length()) {
+                        voteStatus.setStatus(2);
+                    } else {
+                        voteStatus.setStatus(1);
+                    }
+                    voteStatus.setCount(count);
+                }
+                otherUnActiveVote.put(proposalDetailPresenter.getActiveJson(type, candidates));
+
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        return otherUnActiveVote;
+    }
+
     @Override
     public void onRvItemClick(int position, Object o) {
         Bundle bundle = new Bundle();
@@ -327,9 +544,16 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         if (rbEarnRecorder.isChecked()) {
             startCount1 = 0;
             assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, startCount1, pageCount, "", this);
-        } else {
+        } else if (rbTransTecorder.isChecked()) {
             startCount = 0;
             presenter.getAllTransaction(wallet.getWalletId(), chainId, startCount, pageCount, "", this);
+        } else if (rbVoteStatus.isChecked()) {
+            voteTag = 0;
+            new ProposalPresenter().proposalSearch(-1, -1, "NOTIFICATION", null, this);
+            new VoteListPresenter().getDepositVoteList("1", "all", this, true);
+            new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
+            new CtListPresenter().getCouncilList(this, String.valueOf(1));
+            new PastCtPresenter().getCouncilTerm(this);
         }
     }
 
@@ -411,22 +635,39 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         }
     }
 
-    boolean firstCheck = true;
 
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
         switch (checkedId) {
-            case R.id.rb_earn_recorder:
-                if (firstCheck) {
-                    assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, startCount1, pageCount, "", this);
-                    firstCheck = false;
-                }
-                llEarn.setVisibility(View.VISIBLE);
-                rv.setVisibility(View.GONE);
-                break;
             case R.id.rb_trans_recorder:
+
+                rlRecord.setVisibility(View.VISIBLE);
                 llEarn.setVisibility(View.GONE);
-                rv.setVisibility(View.VISIBLE);
+                rlVote.setVisibility(View.GONE);
+                srl.setEnableLoadMore(true);
+                break;
+            case R.id.rb_earn_recorder:
+                if (list1 == null) {
+                    assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, startCount1, pageCount, "", this);
+                }
+                rlRecord.setVisibility(View.GONE);
+                llEarn.setVisibility(View.VISIBLE);
+                rlVote.setVisibility(View.GONE);
+                srl.setEnableLoadMore(true);
+                break;
+            case R.id.rb_vote_status:
+                if (voteTag == 0) {
+                    new ProposalPresenter().proposalSearch(-1, -1, "NOTIFICATION", null, this);
+                    new VoteListPresenter().getDepositVoteList("1", "all", this, true);
+                    new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
+                    new CtListPresenter().getCouncilList(this, String.valueOf(1));
+                    new PastCtPresenter().getCouncilTerm(this);
+
+                }
+                rlRecord.setVisibility(View.GONE);
+                llEarn.setVisibility(View.GONE);
+                rlVote.setVisibility(View.VISIBLE);
+                srl.setEnableLoadMore(false);
                 break;
         }
     }
@@ -481,9 +722,54 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         });
     }
 
+    int voteTag;//tag==4调用getvote 避免无用的调用
+
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "getCouncilTerm":
+
+                List<PastCtBean.DataBean> pastCtBeanList = ((PastCtBean) baseEntity).getData();
+                if (pastCtBeanList != null && pastCtBeanList.size() > 0) {
+                    for (PastCtBean.DataBean dataBean : pastCtBeanList) {
+                        if ("CURRENT".equals(dataBean.getStatus())) {
+                            currentStartTime = dataBean.getStartDate();
+                            break;
+
+                        }
+                    }
+                }
+                getvoteInfo(voteTag++);
+
+                break;
+            case "getVoteInfo":
+                //剔除非公示期的
+                String voteInfo = ((CommmonStringEntity) baseEntity).getData();
+                setVoteRecycleView(voteInfo);
+
+
+                //   JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote(currentStartTime, null, voteInfo, depositList, crList, searchBeanList, councilList);
+
+                break;
+            case "proposalSearch":
+                searchBeanList = ((ProposalSearchEntity) baseEntity).getData().getList();
+
+                getvoteInfo(voteTag++);
+
+                break;
+            case "getCouncilList":
+                councilList = ((CtListBean) baseEntity).getData().getCouncil();
+                getvoteInfo(voteTag++);
+                break;
+            case "getCRlist":
+                crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+                getvoteInfo(voteTag++);
+                break;
+            case "getDepositVoteList":
+
+                depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
+                getvoteInfo(voteTag++);
+                break;
             case "getRegisteredCRInfo":
                 CrStatusBean crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
                 String status = crStatusBean.getStatus();
@@ -497,6 +783,15 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         }
     }
 
+    private void getvoteInfo(int voteTag) {
+        if (voteTag == 4) {
+            if (proposalDetailPresenter == null) {
+                proposalDetailPresenter = new ProposalDetailPresenter();
+            }
+            proposalDetailPresenter.getVoteInfo(wallet.getWalletId(), "", this);
+        }
+    }
+
     @Override
     public void onGetCommonData(String data) {
         //获得钱包地址列表
@@ -505,4 +800,5 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         tvAddress.setText(addressList.get(0));
         new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), chainId, this);
     }
+
 }

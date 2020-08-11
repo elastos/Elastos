@@ -784,4 +784,12 @@
     <string name="plzselectcontact">请选择联系人</string>
     <string name="whetheroverridecontact">是否覆盖联系人信息？</string>
     <string name="weatherstopsavecertificate">是否停用安全验证？</string>
+    <string name="votestatuis">投票状态</string>
+    <string name="watchdetail">查看详情</string>
+    <string name="allcount">金额总计：</string>
+    <string name="lastvotetime">最新投票时间：</string>
+    <string name="dposnotevote">DPoS节点选举</string>
+    <string name="crimpeach">CR委员弹劾</string>
+    <string name="communityproposalagaginstvote">社区提案反对票</string>
+    <string name="partineffect">部分失效</string>
 </resources>
