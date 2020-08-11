@@ -43,7 +43,7 @@ func (msg *Version) Serialize(w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	if msg.Version > pact.DPOSStartVersion {
+	if msg.Version >= pact.CRProposalVersion {
 		return common.WriteVarString(w, msg.NodeVersion)
 	}
 	return nil
@@ -57,7 +57,7 @@ func (msg *Version) Deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	if msg.Version > pact.DPOSStartVersion {
+	if msg.Version >= pact.CRProposalVersion {
 		msg.NodeVersion, err = common.ReadVarString(r)
 		if err != nil {
 			return err

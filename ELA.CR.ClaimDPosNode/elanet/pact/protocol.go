@@ -15,11 +15,11 @@ const (
 	// ProtocolVersion is the latest protocol version this package supports.
 	ProtocolVersion = DPOSStartVersion
 
+	// CRProposalVersion is the protocol version which switch to CR proposal protocol.
+	CRProposalVersion uint32 = 80000
+
 	// DPOSStartVersion is the protocol version which switch to DPOS protocol.
 	DPOSStartVersion uint32 = 20000
-
-	// CRProposalVersion is the protocol version which switch to CR proposal protocol.
-	CRProposalVersion uint32 = 30000
 
 	// EBIP001Version is the protocol version starts to support SPV protocol.
 	EBIP001Version uint32 = 10001
