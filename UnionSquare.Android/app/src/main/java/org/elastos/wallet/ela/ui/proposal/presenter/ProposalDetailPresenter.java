@@ -177,9 +177,8 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
     }
 
     /**
-     *
      * @param currentStartTime 当前届的开始时间
-     * @param remove  不需要筛选的投票类型
+     * @param remove           不需要筛选的投票类型
      * @param voteInfo
      * @param depositList
      * @param crcList
@@ -226,12 +225,12 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                         case "CRC":
                             while (it.hasNext()) {
                                 String key = (String) it.next();
-                                if (crcList == null || crcList.size() == 0) {
+                                if (timestamp < currentStartTime || crcList == null || crcList.size() == 0) {
                                     candidates.put(key);
                                     continue;
                                 }
                                 for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : crcList) {
-                                    if (timestamp < currentStartTime || (bean.getDid().equals(key) && !bean.getState().equals("Active"))) {
+                                    if (bean.getDid().equals(key) && !bean.getState().equals("Active")) {
                                         candidates.put(key);
                                         break;
                                     }
@@ -242,12 +241,12 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                         case "CRCImpeachment"://弹劾
                             while (it.hasNext()) {
                                 String key = (String) it.next();
-                                if (councilList == null || councilList.size() == 0) {
+                                if (timestamp < currentStartTime || councilList == null || councilList.size() == 0) {
                                     candidates.put(key);
                                     continue;
                                 }
                                 for (CtListBean.Council bean : councilList) {
-                                    if (timestamp < currentStartTime || (bean.getDid().equals(key) && !bean.getStatus().equals("Elected"))) {
+                                    if (bean.getDid().equals(key) && !bean.getStatus().equals("Elected")) {
                                         candidates.put(key);
                                         break;
                                     }

@@ -170,7 +170,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     private VoteStatusRecAdapetr adapterVote;
     private List<TransferRecordEntity.TransactionsBean> list;
     private List<TransferRecordEntity.TransactionsBean> list1;
-    private List<VoteStatus> listVoteStatus;
+    private ArrayList<VoteStatus> listVoteStatus;
     private String chainId;
     private Wallet wallet;
     private int startCount = 0;
@@ -180,11 +180,12 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     private SubWallet subWallet;
     private AssetDetailPresenter assetDetailPresenter;
     private ProposalDetailPresenter proposalDetailPresenter;
-    private List<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
-    private List<CtListBean.Council> councilList;
-    private List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
-    private List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
+    private ArrayList<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
+    private ArrayList<CtListBean.Council> councilList;
+    private ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
+    private ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
     private long currentStartTime;
+    private String voteInfo;
 
     @Override
     protected int getLayoutId() {
@@ -237,6 +238,17 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         switch (view.getId()) {
             case R.id.tv_vote_detail:
                 //投票状态详情
+                //  conversUnactiveVote(currentStartTime, voteInfo, depositList, crList, searchBeanList, councilList);
+                bundle = new Bundle();
+                bundle.putLong("currentStartTime", currentStartTime);
+                bundle.putString("voteInfo", voteInfo);
+                bundle.putParcelableArrayList("depositList", depositList);
+                bundle.putParcelableArrayList("crList", crList);
+                bundle.putParcelableArrayList("searchBeanList", searchBeanList);
+                bundle.putParcelableArrayList("councilList", councilList);
+                bundle.putParcelableArrayList("listVoteStatus", listVoteStatus);
+
+                start(VoteStatusDetailFragment.class, bundle);
                 break;
             case R.id.ll_transfer:
                 //转账
@@ -359,8 +371,6 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
 
         conversUnactiveVote(currentStartTime, voteInfo, depositList, crList, searchBeanList, councilList);
-        tvVoteCount.setText(getString(R.string.allcount) + "");//todo
-        tvVoteTime.setText(getString(R.string.lastvotetime) + "");
         if (adapterVote == null) {
             adapterVote = new VoteStatusRecAdapetr(getContext(), listVoteStatus);
             rv_Vote.setLayoutManager(new GridLayoutManager(getContext(), 2));
@@ -396,17 +406,22 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         listVoteStatus.add(voteStatusAgainst);
     }
 
-    public JSONArray conversUnactiveVote(long currentStartTime, String voteInfo, List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList,
-                                         List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crcList, List<ProposalSearchEntity.DataBean.ListBean> voteList, List<CtListBean.Council> councilList) {
-        JSONArray otherUnActiveVote = new JSONArray();
+    public void conversUnactiveVote(long currentStartTime, String voteInfo, List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList,
+                                    List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crcList, List<ProposalSearchEntity.DataBean.ListBean> voteList, List<CtListBean.Council> councilList) {
+
 
         try {
             JSONArray lastVoteInfo = new JSONArray(voteInfo);
+            long lastTime = 0;
+            BigDecimal maxCount = new BigDecimal(0);
             for (int i = 0; i < lastVoteInfo.length(); i++) {
                 org.json.JSONObject jsonObject = lastVoteInfo.getJSONObject(i);
                 String type = jsonObject.getString("Type");
 
                 long timestamp = jsonObject.getLong("Timestamp");
+                if (lastTime < timestamp) {
+                    lastTime = timestamp;
+                }
                 org.json.JSONObject votes = jsonObject.getJSONObject("Votes");
                 Iterator it = votes.keys();
                 JSONArray candidates = new JSONArray();
@@ -438,12 +453,12 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                             String key = (String) it.next();
                             String value = votes.getString(key);
                             count = count.add(new BigDecimal(value));
-                            if (crcList == null || crcList.size() == 0) {
+                            if (timestamp < currentStartTime || crcList == null || crcList.size() == 0) {
                                 candidates.put(key);
                                 continue;
                             }
                             for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : crcList) {
-                                if (timestamp < currentStartTime || (bean.getDid().equals(key) && !bean.getState().equals("Active"))) {
+                                if (bean.getDid().equals(key) && !bean.getState().equals("Active")) {
                                     candidates.put(key);
                                     break;
                                 }
@@ -457,12 +472,12 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                             String key = (String) it.next();
                             String value = votes.getString(key);
                             count = count.add(new BigDecimal(value));
-                            if (councilList == null || councilList.size() == 0) {
+                            if (timestamp < currentStartTime || councilList == null || councilList.size() == 0) {
                                 candidates.put(key);
                                 continue;
                             }
                             for (CtListBean.Council bean : councilList) {
-                                if (timestamp < currentStartTime || (bean.getDid().equals(key) && !bean.getStatus().equals("Elected"))) {
+                                if ((bean.getDid().equals(key) && !bean.getStatus().equals("Elected"))) {
                                     candidates.put(key);
                                     break;
                                 }
@@ -500,16 +515,20 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                         voteStatus.setStatus(1);
                     }
                     voteStatus.setCount(count);
+                    if (maxCount.compareTo(count) < 0) {
+                        maxCount = count;
+                    }
                 }
-                otherUnActiveVote.put(proposalDetailPresenter.getActiveJson(type, candidates));
+
 
             }
+            tvVoteTime.setText(getString(R.string.lastvotetime) + DateUtil.time(lastTime, getContext()));
+            tvVoteCount.setText(getString(R.string.allcount) + Arith.div(maxCount, MyWallet.RATE_S, 8).longValue() + " ELA");
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
 
-        return otherUnActiveVote;
     }
 
     @Override
@@ -744,7 +763,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 break;
             case "getVoteInfo":
                 //剔除非公示期的
-                String voteInfo = ((CommmonStringEntity) baseEntity).getData();
+                voteInfo = ((CommmonStringEntity) baseEntity).getData();
                 setVoteRecycleView(voteInfo);
 
 
@@ -752,22 +771,22 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
                 break;
             case "proposalSearch":
-                searchBeanList = ((ProposalSearchEntity) baseEntity).getData().getList();
+                searchBeanList = (ArrayList<ProposalSearchEntity.DataBean.ListBean>) ((ProposalSearchEntity) baseEntity).getData().getList();
 
                 getvoteInfo(voteTag++);
 
                 break;
             case "getCouncilList":
-                councilList = ((CtListBean) baseEntity).getData().getCouncil();
+                councilList = (ArrayList<CtListBean.Council>) ((CtListBean) baseEntity).getData().getCouncil();
                 getvoteInfo(voteTag++);
                 break;
             case "getCRlist":
-                crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+                crList = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
                 getvoteInfo(voteTag++);
                 break;
             case "getDepositVoteList":
 
-                depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
+                depositList = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) ((VoteListBean) baseEntity).getData().getResult().getProducers();
                 getvoteInfo(voteTag++);
                 break;
             case "getRegisteredCRInfo":

@@ -67,21 +67,27 @@ public class VoteStatusRecAdapetr extends RecyclerView.Adapter<VoteStatusRecAdap
     public void onBindViewHolder(ViewHolder holder, int position) {
         VoteStatus voteStatus = list.get(position);
         holder.ivIcon.setImageResource(voteStatus.getIconID());
-        holder.tvCount.setText(Arith.div(voteStatus.getCount(), MyWallet.RATE_S, 8).longValue() + " ELA");
         holder.tvName.setText(voteStatus.getName());
         switch (voteStatus.getStatus()) {
             //0没有投票   1 有投票部分失效 2 有投票完全失效 3有投票无失效
             case 0:
+                holder.tvStutus.setVisibility(View.GONE);
                 holder.itemView.setAlpha(0.5f);
                 holder.tvCount.setText("--");
                 break;
             case 1:
                 holder.tvStutus.setVisibility(View.VISIBLE);
                 holder.tvStutus.setText(R.string.partineffect);
+                holder.tvCount.setText(Arith.div(voteStatus.getCount(), MyWallet.RATE_S, 8).longValue() + " ELA");
                 break;
             case 2:
                 holder.tvStutus.setVisibility(View.VISIBLE);
                 holder.tvStutus.setText(R.string.expired);
+                holder.tvCount.setText(Arith.div(voteStatus.getCount(), MyWallet.RATE_S, 8).longValue() + " ELA");
+                break;
+            case 3:
+                holder.tvStutus.setVisibility(View.GONE);
+                holder.tvCount.setText(Arith.div(voteStatus.getCount(), MyWallet.RATE_S, 8).longValue() + " ELA");
                 break;
 
         }

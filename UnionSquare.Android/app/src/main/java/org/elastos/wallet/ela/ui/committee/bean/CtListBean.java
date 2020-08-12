@@ -22,6 +22,9 @@
 
 package org.elastos.wallet.ela.ui.committee.bean;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 
 import java.util.List;
@@ -125,7 +128,7 @@ public class CtListBean extends BaseEntity {
         }
     }
 
-    public static class Council {
+    public static class Council implements Parcelable {
         private String did;
         private String didName;
         private String avatar;
@@ -171,6 +174,43 @@ public class CtListBean extends BaseEntity {
         public void setStatus(String status) {
             this.status = status;
         }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(this.did);
+            dest.writeString(this.didName);
+            dest.writeString(this.avatar);
+            dest.writeInt(this.location);
+            dest.writeString(this.status);
+        }
+
+        public Council() {
+        }
+
+        protected Council(Parcel in) {
+            this.did = in.readString();
+            this.didName = in.readString();
+            this.avatar = in.readString();
+            this.location = in.readInt();
+            this.status = in.readString();
+        }
+
+        public static final Parcelable.Creator<Council> CREATOR = new Parcelable.Creator<Council>() {
+            @Override
+            public Council createFromParcel(Parcel source) {
+                return new Council(source);
+            }
+
+            @Override
+            public Council[] newArray(int size) {
+                return new Council[size];
+            }
+        };
     }
 
 }

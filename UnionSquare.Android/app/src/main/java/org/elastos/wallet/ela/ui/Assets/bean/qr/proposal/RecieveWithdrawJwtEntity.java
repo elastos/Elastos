@@ -30,9 +30,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 兼顾提建议和提案
- */
+
 public class RecieveWithdrawJwtEntity extends RecieveProposalFatherJwtEntity {
 
 

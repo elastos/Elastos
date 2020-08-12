@@ -792,4 +792,9 @@
     <string name="crimpeach">CR委员弹劾</string>
     <string name="communityproposalagaginstvote">社区提案反对票</string>
     <string name="partineffect">部分失效</string>
+    <string name="votedetail">投票详情</string>
+    <string name="votetype">投票类型</string>
+    <string name="votetime">投票时间</string>
+    <string name="resteffecttime">剩余有效期</string>
+    <string name="ticketnum1">票数</string>
 </resources>
