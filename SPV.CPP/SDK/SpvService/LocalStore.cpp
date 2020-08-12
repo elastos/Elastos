@@ -14,7 +14,6 @@
 #include <WalletCore/HDKeychain.h>
 
 #include <fstream>
-#include <Common/Log.h>
 
 namespace fs = boost::filesystem;
 

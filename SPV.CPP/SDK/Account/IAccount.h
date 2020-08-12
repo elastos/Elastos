@@ -71,6 +71,8 @@ namespace Elastos {
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
 
+			virtual void ResetPassword(const std::string &mnemonic, const std::string &passphrase, const std::string &newPassword) = 0;
+
 			virtual nlohmann::json GetBasicInfo() const = 0;
 
 			virtual SignType GetSignType() const = 0;

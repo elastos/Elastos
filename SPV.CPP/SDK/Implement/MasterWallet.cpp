@@ -535,6 +535,18 @@ namespace Elastos {
 			_account->ChangePassword(oldPassword, newPassword);
 		}
 
+		void MasterWallet::ResetPassword(const std::string &mnemonic, const std::string &passphrase,
+										 const std::string &newPassword) {
+			ArgInfo("{} {}", _id, GetFunName());
+			ArgInfo("m: *");
+			ArgInfo("passphrase: *");
+			ArgInfo("passwd: *");
+
+			_account->ResetPassword(mnemonic, passphrase, newPassword);
+
+			ArgInfo("r => ");
+		}
+
 		nlohmann::json MasterWallet::GetBasicInfo() const {
 			ArgInfo("{} {}", _id, GetFunName());
 

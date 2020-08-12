@@ -115,4 +115,40 @@ TEST_CASE("Account test", "[Account]") {
 		}
 	}
 
+	SECTION("Reset password") {
+		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+		std::string passphrase = "1234Abcd";
+		std::string payPasswd = "12345678";
+
+		AccountPtr account(new Account("Data/resetpasswd", mnemonic, passphrase, payPasswd, false));
+		account->Save();
+
+		REQUIRE_NOTHROW(account->VerifyPayPassword(payPasswd));
+		REQUIRE_NOTHROW(account->GetSeed(payPasswd));
+		REQUIRE_NOTHROW(account->ExportMnemonic(payPasswd));
+		REQUIRE_NOTHROW(account->GetxPrvKeyString(payPasswd));
+		REQUIRE_NOTHROW(account->ExportKeystore(payPasswd));
+		REQUIRE_NOTHROW(account->VerifyPassPhrase(passphrase, payPasswd));
+
+		payPasswd = "Abcd1234";
+		REQUIRE_NOTHROW(account->ResetPassword(mnemonic, passphrase, payPasswd));
+
+		REQUIRE_NOTHROW(account->VerifyPayPassword(payPasswd));
+		REQUIRE_NOTHROW(account->GetSeed(payPasswd));
+		REQUIRE_NOTHROW(account->ExportMnemonic(payPasswd));
+		REQUIRE_NOTHROW(account->GetxPrvKeyString(payPasswd));
+		REQUIRE_NOTHROW(account->ExportKeystore(payPasswd));
+		REQUIRE_NOTHROW(account->VerifyPassPhrase(passphrase, payPasswd));
+
+		payPasswd = "qqqqqqq1";
+		REQUIRE_NOTHROW(account->ResetPassword(mnemonic, passphrase, payPasswd));
+
+		REQUIRE_NOTHROW(account->VerifyPayPassword(payPasswd));
+		REQUIRE_NOTHROW(account->GetSeed(payPasswd));
+		REQUIRE_NOTHROW(account->ExportMnemonic(payPasswd));
+		REQUIRE_NOTHROW(account->GetxPrvKeyString(payPasswd));
+		REQUIRE_NOTHROW(account->ExportKeystore(payPasswd));
+		REQUIRE_NOTHROW(account->VerifyPassPhrase(passphrase, payPasswd));
+	}
+
 }

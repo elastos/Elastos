@@ -1561,28 +1561,56 @@ static int _export(int argc, char *argv[]) {
 	return 0;
 }
 
-// passwd
+// passwd [reset]
 static int passwd(int argc, char *argv[]) {
+	if (argc > 2) {
+		invalidCmdError();
+		return ERRNO_CMD;
+	}
+
 	checkCurrentWallet();
 	try {
-		std::string oldPassword = getpass("Old Password: ");
-		if (!currentWallet->VerifyPayPassword(oldPassword)) {
-			std::cerr << "Wrong password" << std::endl;
-			return ERRNO_APP;
-		}
+		if (argc == 1) {
+			std::string oldPassword = getpass("Old Password: ");
+			if (!currentWallet->VerifyPayPassword(oldPassword)) {
+				std::cerr << "Wrong password" << std::endl;
+				return ERRNO_APP;
+			}
 
-		std::string newPassword = getpass("New Password: ");
-		std::string newPasswordVerify = getpass("Retype New Password: ");
-		if (newPassword != newPasswordVerify) {
-			std::cerr << "Password not match" << std::endl;
-			return ERRNO_APP;
-		}
+			std::string newPassword = getpass("New Password: ");
+			std::string newPasswordVerify = getpass("Retype New Password: ");
+			if (newPassword != newPasswordVerify) {
+				std::cerr << "Password not match" << std::endl;
+				return ERRNO_APP;
+			}
 
-		currentWallet->ChangePassword(oldPassword, newPassword);
+			currentWallet->ChangePassword(oldPassword, newPassword);
+		} else if (argc == 2) {
+			std::cout << "Enter mnemonic:";
+			char line[1024] = {0};
+			fgets(line, sizeof(line), stdin);
+			std::string mnemonic = line;
+			mnemonic.erase(mnemonic.find_first_of('\n'));
+			std::cout << "mnemonic: " << mnemonic << std::endl;
+
+			std::string paypasswd, passphrase;
+			if (0 > createPassphrase(passphrase)) {
+				std::cerr << "Create failed!" << std::endl;
+				return ERRNO_APP;
+			}
+
+			if (0 > createPaymentPassword(paypasswd)) {
+				std::cerr << "Create failed!" << std::endl;
+				return ERRNO_APP;
+			}
+
+			currentWallet->ResetPassword(mnemonic, passphrase, paypasswd);
+		}
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
 	}
+
 	return 0;
 }
 

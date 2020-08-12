@@ -57,6 +57,8 @@ namespace Elastos {
 
 			void ChangePassword(const std::string &, const std::string &) {}
 
+			void ResetPassword(const std::string &mnemonic, const std::string &passphrase, const std::string &newPassword) {}
+
 			nlohmann::json GetBasicInfo() const {
 				nlohmann::json j;
 				j["Type"] = "MultiSign";

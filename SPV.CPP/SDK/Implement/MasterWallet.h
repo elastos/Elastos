@@ -110,6 +110,9 @@ namespace Elastos {
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
+			virtual void ResetPassword(const std::string &mnemonic, const std::string &passphrase,
+									   const std::string &newPassword);
+
 			void InitSubWallets();
 
 			std::string GetWalletID() const;

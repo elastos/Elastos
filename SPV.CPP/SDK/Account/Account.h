@@ -88,6 +88,8 @@ namespace Elastos {
 
 			void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
+			void ResetPassword(const std::string &mnemonic, const std::string &passphrase, const std::string &newPassword);
+
 			nlohmann::json GetBasicInfo() const;
 
 			SignType GetSignType() const;
