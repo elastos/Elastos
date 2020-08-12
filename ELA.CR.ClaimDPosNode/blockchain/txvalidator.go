@@ -1329,8 +1329,9 @@ func (b *BlockChain) IsNextArbtratorsSame(nextTurnDPOSInfo *payload.NextTurnDPOS
 	crindex := 0
 	dposIndex := 0
 	for _, v := range curNodeNextArbitrators {
-		if DefaultLedger.Arbitrators.IsNextCRCArbier(v) {
-			if bytes.Equal(v, nextTurnDPOSInfo.CRPublickeys[crindex]) {
+		if DefaultLedger.Arbitrators.IsNextCRCArbitrator(v) {
+			if bytes.Equal(v, nextTurnDPOSInfo.CRPublickeys[crindex]) ||
+				(bytes.Equal([]byte{}, nextTurnDPOSInfo.CRPublickeys[crindex]) && !DefaultLedger.Arbitrators.IsMemberElectedNextCRCArbitrator(v)) {
 				crindex++
 				continue
 			} else {

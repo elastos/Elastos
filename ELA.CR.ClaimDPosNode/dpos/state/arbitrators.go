@@ -870,9 +870,18 @@ func (a *arbitrators) isNextCRCArbitrator(pk []byte) bool {
 	return false
 }
 
-func (a *arbitrators) IsNextCRCArbier(pk []byte) bool {
+func (a *arbitrators) IsNextCRCArbitrator(pk []byte) bool {
 	for _, v := range a.nextCRCArbiters {
 		if bytes.Equal(v.GetNodePublicKey(), pk) {
+			return true
+		}
+	}
+	return false
+}
+
+func (a *arbitrators) IsMemberElectedNextCRCArbitrator(pk []byte) bool {
+	for _, v := range a.nextCRCArbiters {
+		if bytes.Equal(v.GetNodePublicKey(), pk) && v.(*crcArbiter).crMember.MemberState == state.MemberElected {
 			return true
 		}
 	}

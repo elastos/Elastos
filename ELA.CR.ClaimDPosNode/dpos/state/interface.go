@@ -20,7 +20,8 @@ type Arbitrators interface {
 	CheckNextTurnDPOSInfoTx(block *types.Block) error
 
 	IsArbitrator(pk []byte) bool
-	IsNextCRCArbier(pk []byte) bool
+	IsNextCRCArbitrator(pk []byte) bool
+	IsMemberElectedNextCRCArbitrator(pk []byte) bool
 	GetArbitrators() []*ArbiterInfo
 	GetCandidates() [][]byte
 	GetNextArbitrators() [][]byte

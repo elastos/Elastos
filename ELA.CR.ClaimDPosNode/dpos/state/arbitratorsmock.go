@@ -211,7 +211,11 @@ func (a *ArbitratorsMock) GetDutyChangeCount() int {
 	return a.DutyChangedCount
 }
 
-func (a *ArbitratorsMock) IsNextCRCArbier(pk []byte) bool {
+func (a *ArbitratorsMock) IsNextCRCArbitrator(pk []byte) bool {
+	return false
+}
+
+func (a *ArbitratorsMock) IsMemberElectedNextCRCArbitrator(pk []byte) bool {
 	return false
 }
 
