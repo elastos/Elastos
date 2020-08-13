@@ -2,9 +2,7 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -16,6 +14,7 @@ import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
+import org.elastos.wallet.ela.utils.ScreenUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 public class VoteStatusDetailFragment extends BaseFragment {
@@ -66,6 +64,7 @@ public class VoteStatusDetailFragment extends BaseFragment {
         fragmentList.add(new VoteStatusDetailItemFragment());
         fragmentList.add(new VoteStatusDetailItemFragment());
         viewpage.setAdapter(new CtListPagerAdapter(getFragmentManager(), fragmentList));
+        viewpage.setPageMargin(ScreenUtil.dp2px(getContext(), 15));
     }
 
     @Override
@@ -79,30 +78,26 @@ public class VoteStatusDetailFragment extends BaseFragment {
 
         try {
             JSONArray lastVoteInfo = new JSONArray(voteInfo);
-            long lastTime = 0;
-            BigDecimal maxCount = new BigDecimal(0);
             for (int i = 0; i < lastVoteInfo.length(); i++) {
                 JSONObject jsonObject = lastVoteInfo.getJSONObject(i);
                 String type = jsonObject.getString("Type");
 
                 long timestamp = jsonObject.getLong("Timestamp");
-                if (lastTime < timestamp) {
-                    lastTime = timestamp;
-                }
+
                 JSONObject votes = jsonObject.getJSONObject("Votes");
                 Iterator it = votes.keys();
                 JSONArray candidates = new JSONArray();
-                VoteStatus voteStatus = null;
+
                 BigDecimal count = new BigDecimal(0);
                 switch (type) {
                     case "Delegate":
-                        voteStatus = listVoteStatus.get(0);
+                        ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> resultList =new ArrayList<>();
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
-                            count = new BigDecimal(value);
                             if (depositList == null || depositList.size() == 0) {
-                                candidates.put(key);
+                                VoteListBean.DataBean.ResultBean.ProducersBean producersBean=new VoteListBean.DataBean.ResultBean.ProducersBean();
+                                producersBean.setNickname("");
                                 continue;
                             }
                             for (VoteListBean.DataBean.ResultBean.ProducersBean bean : depositList) {
@@ -115,7 +110,6 @@ public class VoteStatusDetailFragment extends BaseFragment {
                         }
                         break;
                     case "CRC":
-                        voteStatus = listVoteStatus.get(1);
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
@@ -134,7 +128,6 @@ public class VoteStatusDetailFragment extends BaseFragment {
 
                         break;
                     case "CRCImpeachment"://弹劾
-                        voteStatus = listVoteStatus.get(2);
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
@@ -152,7 +145,6 @@ public class VoteStatusDetailFragment extends BaseFragment {
                         }
                         break;
                     case "CRCProposal":
-                        voteStatus = listVoteStatus.get(3);
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
@@ -172,20 +164,6 @@ public class VoteStatusDetailFragment extends BaseFragment {
 
 
                 }
-                if (voteStatus != null) {
-                    //默认0没有投票   1 有投票部分失效 2 有投票完全失效 3有投票无失效
-                    if (candidates.length() == 0) {
-                        voteStatus.setStatus(3);
-                    } else if (candidates.length() == votes.length()) {
-                        voteStatus.setStatus(2);
-                    } else {
-                        voteStatus.setStatus(1);
-                    }
-                    voteStatus.setCount(count);
-                    if (maxCount.compareTo(count) < 0) {
-                        maxCount = count;
-                    }
-                }
 
 
             }
@@ -198,17 +176,28 @@ public class VoteStatusDetailFragment extends BaseFragment {
 
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: inflate a fragment view
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
+    private class Recorder implements Comparable<Recorder> {
+        int no;
+        String name;
+
+        @Override
+        public int compareTo(Recorder o) {
+            return this.no - o.no;
+        }
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+    //获取名字
+    private Recorder getRecord(String publickey) {
+        Recorder recorder = new Recorder();
+        for (int i = 0; i < depositList.size(); i++) {
+            if (depositList.get(i).getOwnerpublickey().equals(publickey)) {
+                recorder.no = (depositList.get(i).getIndex() + 1);
+                recorder.name = depositList.get(i).getNickname();
+                return recorder;
+            }
+        }
+        recorder.no = Integer.MAX_VALUE;
+        recorder.name = getString(R.string.invalidcr);
+        return recorder;
     }
 }

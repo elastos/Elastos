@@ -6,18 +6,20 @@ import android.os.Parcelable;
 import java.math.BigDecimal;
 
 public class VoteStatus implements Parcelable {
-    private int index;//唯一表示
+    private String type;//唯一表示
     private int iconID;
     private String name;
     private int status;//0没有投票   1 有投票部分失效 2 有投票完全失效 3有投票无失效
     private BigDecimal count;
+    private long  time;//投票时间
+    private long  expire;//有效期
 
-    public int getIndex() {
-        return index;
+    public String getType() {
+        return type;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public int getIconID() {
@@ -52,6 +54,22 @@ public class VoteStatus implements Parcelable {
         this.count = count;
     }
 
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
+
+    public long getExpire() {
+        return expire;
+    }
+
+    public void setExpire(long expire) {
+        this.expire = expire;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -59,25 +77,29 @@ public class VoteStatus implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(this.index);
+        dest.writeString(this.type);
         dest.writeInt(this.iconID);
         dest.writeString(this.name);
         dest.writeInt(this.status);
         dest.writeSerializable(this.count);
+        dest.writeLong(this.time);
+        dest.writeLong(this.expire);
     }
 
     public VoteStatus() {
     }
 
     protected VoteStatus(Parcel in) {
-        this.index = in.readInt();
+        this.type = in.readString();
         this.iconID = in.readInt();
         this.name = in.readString();
         this.status = in.readInt();
         this.count = (BigDecimal) in.readSerializable();
+        this.time = in.readLong();
+        this.expire = in.readLong();
     }
 
-    public static final Parcelable.Creator<VoteStatus> CREATOR = new Parcelable.Creator<VoteStatus>() {
+    public static final Creator<VoteStatus> CREATOR = new Creator<VoteStatus>() {
         @Override
         public VoteStatus createFromParcel(Parcel source) {
             return new VoteStatus(source);

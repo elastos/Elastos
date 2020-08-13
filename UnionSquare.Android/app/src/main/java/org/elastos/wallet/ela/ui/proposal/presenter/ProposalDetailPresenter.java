@@ -214,8 +214,9 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                                     continue;
                                 }
                                 for (VoteListBean.DataBean.ResultBean.ProducersBean bean : depositList) {
-                                    if (bean.getOwnerpublickey().equals(key) && !bean.getState().equals("Active")) {
-                                        candidates.put(key);
+                                    if (bean.getOwnerpublickey().equals(key)) {
+                                        if (!bean.getState().equals("Active"))
+                                            candidates.put(key);
                                         break;
                                     }
                                 }
@@ -230,8 +231,9 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                                     continue;
                                 }
                                 for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : crcList) {
-                                    if (bean.getDid().equals(key) && !bean.getState().equals("Active")) {
-                                        candidates.put(key);
+                                    if (bean.getDid().equals(key)) {
+                                        if (!bean.getState().equals("Active"))
+                                            candidates.put(key);
                                         break;
                                     }
                                 }
@@ -246,8 +248,9 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                                     continue;
                                 }
                                 for (CtListBean.Council bean : councilList) {
-                                    if (bean.getDid().equals(key) && !bean.getStatus().equals("Elected")) {
-                                        candidates.put(key);
+                                    if (bean.getDid().equals(key)) {
+                                        if (!bean.getStatus().equals("Elected"))
+                                            candidates.put(key);
                                         break;
                                     }
                                 }
@@ -261,8 +264,9 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
                                     continue;
                                 }
                                 for (ProposalSearchEntity.DataBean.ListBean bean : voteList) {
-                                    if (bean.getProposalHash().equals(key) && !bean.getStatus().equals("NOTIFICATION")) {
-                                        candidates.put(key);
+                                    if (bean.getProposalHash().equals(key)) {
+                                        if (!bean.getStatus().equals("NOTIFICATION"))
+                                            candidates.put(key);
                                         break;
                                     }
                                 }

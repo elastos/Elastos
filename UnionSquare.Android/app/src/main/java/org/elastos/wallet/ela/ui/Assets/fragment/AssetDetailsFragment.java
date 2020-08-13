@@ -99,8 +99,10 @@ import org.json.JSONException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -185,6 +187,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     private ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
     private ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
     private long currentStartTime;
+    private long currentEndTime;
     private String voteInfo;
 
     @Override
@@ -385,30 +388,32 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
     private void initListVoteStatus(List<VoteStatus> listVoteStatus) {
         VoteStatus voteStatusDepos = new VoteStatus();
-        voteStatusDepos.setIndex(0);
+
         voteStatusDepos.setIconID(R.mipmap.asset_vote_node);
         voteStatusDepos.setName(getString(R.string.dposnotevote));
         listVoteStatus.add(voteStatusDepos);
         VoteStatus voteStatusCR = new VoteStatus();
-        voteStatusCR.setIndex(1);
+
         voteStatusCR.setIconID(R.mipmap.asset_vote_cr);
         voteStatusCR.setName(getString(R.string.crcvote));
         listVoteStatus.add(voteStatusCR);
         VoteStatus voteStatusImpeach = new VoteStatus();
-        voteStatusImpeach.setIndex(2);
+
         voteStatusImpeach.setIconID(R.mipmap.asset_vote_judgement);
         voteStatusImpeach.setName(getString(R.string.crimpeach));
         listVoteStatus.add(voteStatusImpeach);
         VoteStatus voteStatusAgainst = new VoteStatus();
-        voteStatusAgainst.setIndex(3);
+
         voteStatusAgainst.setIconID(R.mipmap.cr_vote_nay);
         voteStatusAgainst.setName(getString(R.string.communityproposalagaginstvote));
         listVoteStatus.add(voteStatusAgainst);
     }
 
+    Map<String, List> resultMap;
+
     public void conversUnactiveVote(long currentStartTime, String voteInfo, List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList,
                                     List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crcList, List<ProposalSearchEntity.DataBean.ListBean> voteList, List<CtListBean.Council> councilList) {
-
+        Map<String, List> resultMap = new HashMap();
 
         try {
             JSONArray lastVoteInfo = new JSONArray(voteInfo);
@@ -424,23 +429,31 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 }
                 org.json.JSONObject votes = jsonObject.getJSONObject("Votes");
                 Iterator it = votes.keys();
-                JSONArray candidates = new JSONArray();
-                VoteStatus voteStatus = null;
+                int candidatesCount = 0;
+                VoteStatus currentVoteStatus = null;
                 BigDecimal count = new BigDecimal(0);
+                ArrayList resultList = new ArrayList<>();
                 switch (type) {
                     case "Delegate":
-                        voteStatus = listVoteStatus.get(0);
+                        currentVoteStatus = listVoteStatus.get(0);
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
                             count = new BigDecimal(value);
                             if (depositList == null || depositList.size() == 0) {
-                                candidates.put(key);
+                                candidatesCount++;
+                                VoteListBean.DataBean.ResultBean.ProducersBean producersBean = new VoteListBean.DataBean.ResultBean.ProducersBean();
+                                /*producersBean.setNickname(getString(R.string.invalidcr));*/
+                                producersBean.setIndex(Integer.MAX_VALUE);
+                                producersBean.setState("UnActive");
+                                resultList.add(producersBean);
                                 continue;
                             }
                             for (VoteListBean.DataBean.ResultBean.ProducersBean bean : depositList) {
-                                if (bean.getOwnerpublickey().equals(key) && !bean.getState().equals("Active")) {
-                                    candidates.put(key);
+                                if (bean.getOwnerpublickey().equals(key)) {
+                                    resultList.add(bean);
+                                    if (!bean.getState().equals("Active"))
+                                        candidatesCount++;
                                     break;
                                 }
                             }
@@ -448,55 +461,77 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                         }
                         break;
                     case "CRC":
-                        voteStatus = listVoteStatus.get(1);
+                        currentVoteStatus = listVoteStatus.get(1);
+                        currentVoteStatus.setExpire(currentEndTime-timestamp);
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
                             count = count.add(new BigDecimal(value));
                             if (timestamp < currentStartTime || crcList == null || crcList.size() == 0) {
-                                candidates.put(key);
+                                candidatesCount++;
+                                CRListBean.DataBean.ResultBean.CrcandidatesinfoBean crcandidatesinfoBean = new CRListBean.DataBean.ResultBean.CrcandidatesinfoBean();
+                                crcandidatesinfoBean.setIndex(Integer.MAX_VALUE);
+                                crcandidatesinfoBean.setState("UnActive");
+                                crcandidatesinfoBean.setVotes(value);
+                                resultList.add(crcandidatesinfoBean);
                                 continue;
                             }
                             for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : crcList) {
-                                if (bean.getDid().equals(key) && !bean.getState().equals("Active")) {
-                                    candidates.put(key);
+                                if (bean.getDid().equals(key)) {
+                                    bean.setVotes(value);
+                                    resultList.add(bean);
+                                    if (!bean.getState().equals("Active"))
+                                        candidatesCount++;
                                     break;
+
                                 }
                             }
                         }
 
                         break;
                     case "CRCImpeachment"://弹劾
-                        voteStatus = listVoteStatus.get(2);
+                        currentVoteStatus = listVoteStatus.get(2);
+                        currentVoteStatus.setExpire(currentEndTime-timestamp);
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
                             count = count.add(new BigDecimal(value));
                             if (timestamp < currentStartTime || councilList == null || councilList.size() == 0) {
-                                candidates.put(key);
+                                candidatesCount++;
+                                CtListBean.Council council = new CtListBean.Council();
+                                council.setStatus("UnElected");
+                                council.setVotes(value);
+                                resultList.add(council);
                                 continue;
                             }
                             for (CtListBean.Council bean : councilList) {
-                                if ((bean.getDid().equals(key) && !bean.getStatus().equals("Elected"))) {
-                                    candidates.put(key);
+                                if ((bean.getDid().equals(key))) {
+                                    resultList.add(bean);
+                                    if (!bean.getStatus().equals("Elected"))
+                                        candidatesCount++;
                                     break;
                                 }
                             }
                         }
                         break;
                     case "CRCProposal":
-                        voteStatus = listVoteStatus.get(3);
+                        currentVoteStatus = listVoteStatus.get(3);
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
                             count = count.add(new BigDecimal(value));
                             if (voteList == null || voteList.size() == 0) {
-                                candidates.put(key);
+                                candidatesCount++;
+                                ProposalSearchEntity.DataBean.ListBean listBean = new ProposalSearchEntity.DataBean.ListBean();
+                                listBean.setStatus("UnNOTIFICATION");
+                                listBean.setVotes(value);
                                 continue;
                             }
                             for (ProposalSearchEntity.DataBean.ListBean bean : voteList) {
-                                if (bean.getProposalHash().equals(key) && !bean.getStatus().equals("NOTIFICATION")) {
-                                    candidates.put(key);
+                                if (bean.getProposalHash().equals(key)) {
+                                    resultList.add(bean);
+                                    if (!bean.getStatus().equals("NOTIFICATION"))
+                                        candidatesCount++;
                                     break;
                                 }
                             }
@@ -505,16 +540,20 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
 
                 }
-                if (voteStatus != null) {
+                resultMap.put(type, resultList);
+                currentVoteStatus.setType(type);
+                currentVoteStatus.setTime(timestamp);
+
+                if (currentVoteStatus != null) {
                     //默认0没有投票   1 有投票部分失效 2 有投票完全失效 3有投票无失效
-                    if (candidates.length() == 0) {
-                        voteStatus.setStatus(3);
-                    } else if (candidates.length() == votes.length()) {
-                        voteStatus.setStatus(2);
+                    if (candidatesCount == 0) {
+                        currentVoteStatus.setStatus(3);
+                    } else if (candidatesCount == votes.length()) {
+                        currentVoteStatus.setStatus(2);
                     } else {
-                        voteStatus.setStatus(1);
+                        currentVoteStatus.setStatus(1);
                     }
-                    voteStatus.setCount(count);
+                    currentVoteStatus.setCount(count);
                     if (maxCount.compareTo(count) < 0) {
                         maxCount = count;
                     }
@@ -568,7 +607,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             presenter.getAllTransaction(wallet.getWalletId(), chainId, startCount, pageCount, "", this);
         } else if (rbVoteStatus.isChecked()) {
             voteTag = 0;
-            new ProposalPresenter().proposalSearch(-1, -1, "NOTIFICATION", null, this);
+            new ProposalPresenter().proposalSearch(-1, -1, "ALL", null, this);
             new VoteListPresenter().getDepositVoteList("1", "all", this, true);
             new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
             new CtListPresenter().getCouncilList(this, String.valueOf(1));
@@ -676,7 +715,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 break;
             case R.id.rb_vote_status:
                 if (voteTag == 0) {
-                    new ProposalPresenter().proposalSearch(-1, -1, "NOTIFICATION", null, this);
+                    new ProposalPresenter().proposalSearch(-1, -1, "ALL", null, this);
                     new VoteListPresenter().getDepositVoteList("1", "all", this, true);
                     new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
                     new CtListPresenter().getCouncilList(this, String.valueOf(1));
@@ -753,6 +792,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                     for (PastCtBean.DataBean dataBean : pastCtBeanList) {
                         if ("CURRENT".equals(dataBean.getStatus())) {
                             currentStartTime = dataBean.getStartDate();
+                            currentEndTime = dataBean.getEndDate();
                             break;
 
                         }

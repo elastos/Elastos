@@ -87,6 +87,15 @@ public class ProposalSearchEntity extends BaseEntity {
             private int createdAt;
             private String proposedBy;
             private String proposalHash;
+            private String votes;
+
+            public String getVotes() {
+                return votes;
+            }
+
+            public void setVotes(String votes) {
+                this.votes = votes;
+            }
 
             public int getId() {
                 return id;
@@ -136,6 +145,9 @@ public class ProposalSearchEntity extends BaseEntity {
                 this.proposalHash = proposalHash;
             }
 
+            public ListBean() {
+            }
+
             @Override
             public int describeContents() {
                 return 0;
@@ -149,9 +161,7 @@ public class ProposalSearchEntity extends BaseEntity {
                 dest.writeInt(this.createdAt);
                 dest.writeString(this.proposedBy);
                 dest.writeString(this.proposalHash);
-            }
-
-            public ListBean() {
+                dest.writeString(this.votes);
             }
 
             protected ListBean(Parcel in) {
@@ -161,9 +171,10 @@ public class ProposalSearchEntity extends BaseEntity {
                 this.createdAt = in.readInt();
                 this.proposedBy = in.readString();
                 this.proposalHash = in.readString();
+                this.votes = in.readString();
             }
 
-            public static final Parcelable.Creator<ListBean> CREATOR = new Parcelable.Creator<ListBean>() {
+            public static final Creator<ListBean> CREATOR = new Creator<ListBean>() {
                 @Override
                 public ListBean createFromParcel(Parcel source) {
                     return new ListBean(source);

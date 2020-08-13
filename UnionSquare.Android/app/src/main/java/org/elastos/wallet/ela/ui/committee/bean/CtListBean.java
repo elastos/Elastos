@@ -134,6 +134,15 @@ public class CtListBean extends BaseEntity {
         private String avatar;
         private int location;
         private String status; //'Elected', 'Impeached', 'Returned'
+        private String votes; //'Elected', 'Impeached', 'Returned'
+
+        public String getVotes() {
+            return votes;
+        }
+
+        public void setVotes(String votes) {
+            this.votes = votes;
+        }
 
         public String getDid() {
             return did;
@@ -175,6 +184,9 @@ public class CtListBean extends BaseEntity {
             this.status = status;
         }
 
+        public Council() {
+        }
+
         @Override
         public int describeContents() {
             return 0;
@@ -187,9 +199,7 @@ public class CtListBean extends BaseEntity {
             dest.writeString(this.avatar);
             dest.writeInt(this.location);
             dest.writeString(this.status);
-        }
-
-        public Council() {
+            dest.writeString(this.votes);
         }
 
         protected Council(Parcel in) {
@@ -198,9 +208,10 @@ public class CtListBean extends BaseEntity {
             this.avatar = in.readString();
             this.location = in.readInt();
             this.status = in.readString();
+            this.votes = in.readString();
         }
 
-        public static final Parcelable.Creator<Council> CREATOR = new Parcelable.Creator<Council>() {
+        public static final Creator<Council> CREATOR = new Creator<Council>() {
             @Override
             public Council createFromParcel(Parcel source) {
                 return new Council(source);
