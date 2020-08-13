@@ -751,7 +751,7 @@ func (a *arbitrators) GetArbitrators() []*ArbiterInfo {
 	for _, v := range a.currentArbitrators {
 		isNormal := true
 		abt, ok := v.(*crcArbiter)
-		if ok && abt.crMember.MemberState != state.MemberElected {
+		if ok && !abt.isNormal {
 			isNormal = false
 		}
 		result = append(result, &ArbiterInfo{
@@ -810,7 +810,7 @@ func (a *arbitrators) getCRCArbiters() []*ArbiterInfo {
 	for _, v := range a.currentCRCArbitersMap {
 		isNormal := true
 		abt, ok := v.(*crcArbiter)
-		if ok && abt.crMember.MemberState != state.MemberElected {
+		if ok && !abt.isNormal {
 			isNormal = false
 		}
 		result = append(result, &ArbiterInfo{
@@ -1249,7 +1249,7 @@ func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32)
 		var crcArbiters map[common.Uint168]ArbiterMember
 		if versionHeight >= a.chainParams.CRClaimDPOSNodeStartHeight {
 			var err error
-			if crcArbiters, err = a.getCRCArbitersV1(); err != nil {
+			if crcArbiters, err = a.getCRCArbitersV1(height); err != nil {
 				return err
 			}
 		} else {
@@ -1313,7 +1313,7 @@ func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32)
 	return nil
 }
 
-func (a *arbitrators) getCRCArbitersV1() (map[common.Uint168]ArbiterMember, error) {
+func (a *arbitrators) getCRCArbitersV1(height uint32) (map[common.Uint168]ArbiterMember, error) {
 	crMembers := a.crCommittee.GetAllMembers()
 	if len(crMembers) != len(a.chainParams.CRCArbiters) {
 		return nil, errors.New("CRC members count mismatch with CRC arbiters")
@@ -1342,6 +1342,8 @@ func (a *arbitrators) getCRCArbitersV1() (map[common.Uint168]ArbiterMember, erro
 		return strings.Compare(unclaimedArbiterKeys[i], unclaimedArbiterKeys[j]) < 0
 	})
 	crcArbiters := map[common.Uint168]ArbiterMember{}
+	claimHeight := a.chainParams.CRClaimDPOSNodeStartHeight
+	arbitersCount := len(a.chainParams.CRCArbiters) + a.chainParams.GeneralArbiters
 	for _, cr := range crMembers {
 		var pk []byte
 		if cr.DPOSPublicKey == nil {
@@ -1355,7 +1357,12 @@ func (a *arbitrators) getCRCArbitersV1() (map[common.Uint168]ArbiterMember, erro
 			pk = cr.DPOSPublicKey
 		}
 		crPublicKey := cr.Info.Code[1 : len(cr.Info.Code)-1]
-		ar, err := NewCRCArbiter(pk, crPublicKey, cr)
+		isNormal := true
+		if height >= claimHeight+uint32(arbitersCount) &&
+			cr.MemberState != state.MemberElected {
+			isNormal = false
+		}
+		ar, err := NewCRCArbiter(pk, crPublicKey, cr, isNormal)
 		if err != nil {
 			return nil, err
 		}
@@ -1377,7 +1384,7 @@ func (a *arbitrators) getCRCArbitersV0() (map[common.Uint168]ArbiterMember, erro
 		if err != nil {
 			return nil, err
 		}
-		ar, err := NewCRCArbiter(pk, pk, crMembers[i])
+		ar, err := NewCRCArbiter(pk, pk, crMembers[i], true)
 		if err != nil {
 			return nil, err
 		}
@@ -1606,11 +1613,6 @@ func (a *arbitrators) GetSnapshot(height uint32) []*CheckPoint {
 	} else {
 		return a.getSnapshot(height)
 	}
-}
-
-//GetChainParam() *config.Params
-func (a *arbitrators) GetChainParams() *config.Params {
-	return a.chainParams
 }
 
 func (a *arbitrators) getSnapshot(height uint32) []*CheckPoint {

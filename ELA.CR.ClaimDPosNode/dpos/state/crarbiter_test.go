@@ -19,7 +19,7 @@ import (
 
 func TestCRCArbiter_Deserialize(t *testing.T) {
 	pk := randomPublicKey()
-	a, _ := NewCRCArbiter(pk, pk, randomCRMember())
+	a, _ := NewCRCArbiter(pk, pk, randomCRMember(), true)
 	ar1 := a.(*crcArbiter)
 
 	buf := new(bytes.Buffer)
@@ -35,7 +35,7 @@ func TestCRCArbiter_Deserialize(t *testing.T) {
 
 func TestCRCArbiter_Clone(t *testing.T) {
 	pk := randomPublicKey()
-	a, _ := NewCRCArbiter(pk, pk, randomCRMember())
+	a, _ := NewCRCArbiter(pk, pk, randomCRMember(), true)
 	ar1 := a.(*crcArbiter)
 
 	a = a.Clone()

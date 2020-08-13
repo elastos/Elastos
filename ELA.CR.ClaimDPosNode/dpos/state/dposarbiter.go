@@ -60,6 +60,10 @@ func (d *dposArbiter) GetNodePublicKey() []byte {
 	return d.producer.NodePublicKey()
 }
 
+func (d *dposArbiter)  IsNormal() bool {
+	return true
+}
+
 func NewDPoSArbiter(t ArbiterType, producer *Producer) (ArbiterMember, error) {
 	ar := &dposArbiter{
 		arType:   t,

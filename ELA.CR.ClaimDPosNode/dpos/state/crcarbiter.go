@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -19,6 +19,7 @@ type crcArbiter struct {
 	crMember  *state.CRMember
 	nodePk    []byte
 	ownerHash common.Uint168
+	isNormal  bool
 }
 
 func (c *crcArbiter) Serialize(w io.Writer) (err error) {
@@ -30,7 +31,10 @@ func (c *crcArbiter) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	return c.ownerHash.Serialize(w)
+	if err = c.ownerHash.Serialize(w); err != nil {
+		return
+	}
+	return common.WriteElement(w, c.isNormal)
 }
 
 func (c *crcArbiter) Deserialize(r io.Reader) (err error) {
@@ -44,7 +48,11 @@ func (c *crcArbiter) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	return c.ownerHash.Deserialize(r)
+	if err = c.ownerHash.Deserialize(r); err != nil {
+		return
+	}
+
+	return common.ReadElement(r, c.isNormal)
 }
 
 func (c *crcArbiter) GetType() ArbiterType {
@@ -63,6 +71,10 @@ func (c *crcArbiter) GetNodePublicKey() []byte {
 	return c.nodePk
 }
 
+func (c *crcArbiter) IsNormal() bool {
+	return c.isNormal
+}
+
 func (c *crcArbiter) Clone() ArbiterMember {
 	buf := new(bytes.Buffer)
 	c.Serialize(buf)
@@ -77,7 +89,8 @@ func (c *crcArbiter) getPublicKey() []byte {
 	return c.crMember.Info.Code[1 : len(c.crMember.Info.Code)-1]
 }
 
-func NewCRCArbiter(nodePK []byte, ownerPK []byte, cr *state.CRMember) (ArbiterMember, error) {
+func NewCRCArbiter(nodePK []byte, ownerPK []byte, cr *state.CRMember,
+	isNormal bool) (ArbiterMember, error) {
 	ar := &crcArbiter{
 		crMember: cr,
 		nodePk:   nodePK,
@@ -87,5 +100,6 @@ func NewCRCArbiter(nodePK []byte, ownerPK []byte, cr *state.CRMember) (ArbiterMe
 		return nil, err
 	}
 	ar.ownerHash = *hash
+	ar.isNormal = isNormal
 	return ar, nil
 }

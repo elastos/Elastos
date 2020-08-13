@@ -9,9 +9,7 @@ import (
 	"bytes"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 )
 
@@ -90,10 +88,6 @@ func (a *ArbitratorsMock) GetNextRewardData() RewardData {
 
 func (a *ArbitratorsMock) GetSnapshot(height uint32) []*CheckPoint {
 	return a.Snapshot
-}
-
-func (a *ArbitratorsMock) GetChainParams() *config.Params {
-	return nil
 }
 
 func (a *ArbitratorsMock) IsActiveProducer(pk []byte) bool {
@@ -228,7 +222,7 @@ func (a *ArbitratorsMock) GetArbitrators() []*ArbiterInfo {
 	for _, v := range a.CurrentArbitrators {
 		isNormal := true
 		abt, ok := v.(*crcArbiter)
-		if ok && abt.crMember.MemberState != state.MemberElected {
+		if ok && !abt.isNormal {
 			isNormal = false
 			continue
 		}
@@ -277,7 +271,7 @@ func (a *ArbitratorsMock) GetCRCArbiters() []*ArbiterInfo {
 	for _, v := range a.CRCArbitrators {
 		isNormal := true
 		abt, ok := v.(*crcArbiter)
-		if ok && abt.crMember.MemberState != state.MemberElected {
+		if ok && !abt.isNormal {
 			isNormal = false
 		}
 		result = append(result, &ArbiterInfo{

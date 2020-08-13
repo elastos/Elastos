@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -49,6 +49,10 @@ func (o *originArbiter) GetOwnerProgramHash() common.Uint168 {
 
 func (o *originArbiter) GetNodePublicKey() []byte {
 	return o.key
+}
+
+func (o *originArbiter) IsNormal() bool {
+	return true
 }
 
 func (o *originArbiter) Clone() ArbiterMember {

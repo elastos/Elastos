@@ -180,10 +180,10 @@ func ProposalSanityCheck(proposal *payload.DPOSProposal) error {
 }
 
 func ProposalContextCheck(proposal *payload.DPOSProposal) error {
-	var isArbiter bool
 	arbiters := DefaultLedger.Arbitrators.GetArbitrators()
+	var isArbiter bool
 	for _, a := range arbiters {
-		if !a.IsNormal && DefaultLedger.Blockchain.GetHeight() >= DefaultLedger.Arbitrators.GetChainParams().CRClaimDPOSNodeStartHeight {
+		if !a.IsNormal {
 			continue
 		}
 		if bytes.Equal(a.NodePublicKey, proposal.Sponsor) {
@@ -257,10 +257,10 @@ func VoteSanityCheck(vote *payload.DPOSProposalVote) error {
 }
 
 func VoteContextCheck(vote *payload.DPOSProposalVote) error {
-	var isArbiter bool
 	arbiters := DefaultLedger.Arbitrators.GetArbitrators()
+	var isArbiter bool
 	for _, a := range arbiters {
-		if !a.IsNormal && DefaultLedger.Blockchain.GetHeight() >= DefaultLedger.Arbitrators.GetChainParams().CRClaimDPOSNodeStartHeight {
+		if !a.IsNormal {
 			continue
 		}
 		if bytes.Equal(a.NodePublicKey, vote.Signer) {
