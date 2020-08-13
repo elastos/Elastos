@@ -181,10 +181,7 @@ namespace Elastos {
 			//////////////////////////////////////////////////
 			/*      Proposal Secretary General Election     */
 			//////////////////////////////////////////////////
-			std::string ProposalSecretaryGeneralElectionOwnerDigest(
-				const nlohmann::json &payload) const override;
-
-			std::string ProposalSecretaryGeneralElectionSecretaryGeneralDigest(
+			std::string ProposalSecretaryGeneralElectionDigest(
 				const nlohmann::json &payload) const override;
 
 			std::string ProposalSecretaryGeneralElectionCRCouncilMemberDigest(

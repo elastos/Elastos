@@ -61,6 +61,8 @@ namespace Elastos {
 
 			void FromJson(const nlohmann::json &j) override;
 
+			bool operator==(const Budget &budget) const;
+
 		private:
 			Budget::Type _type;
 			uint8_t _stage;
@@ -100,10 +102,6 @@ namespace Elastos {
 
 			const bytes_t &GetOwnerPublicKey() const;
 
-			void SetCRCouncilMemberDID(const Address &crSponsorDID);
-
-			const Address &GetCRCouncilMemberDID() const;
-
 			void SetDraftHash(const uint256 &draftHash);
 
 			const uint256 &GetDraftHash() const;
@@ -116,9 +114,41 @@ namespace Elastos {
 
 			const Address &GetRecipient() const;
 
+			void SetTargetProposalHash(const uint256 &hash);
+
+			const uint256 &GetTargetProposalHash() const;
+
+			void SetNewRecipient(const Address &recipient);
+
+			const Address &GetNewRecipient() const;
+
+			void SetNewOwnerPublicKey(const bytes_t &pubkey);
+
+			const bytes_t &GetNewOwnerPublicKey() const;
+
+			void SetSecretaryPublicKey(const bytes_t &pubkey);
+
+			const bytes_t GetSecretaryPublicKey() const;
+
+			void SetSecretaryDID(const Address &did);
+
+			const Address &GetSecretaryDID() const;
+
 			void SetSignature(const bytes_t &signature);
 
 			const bytes_t &GetSignature() const;
+
+			void SetNewOwnerSignature(const bytes_t &sign);
+
+			const bytes_t &GetNewOwnerSignature() const;
+
+			void SetSecretarySignature(const bytes_t &sign);
+
+			const bytes_t &GetSecretarySignature() const;
+
+			void SetCRCouncilMemberDID(const Address &crSponsorDID);
+
+			const Address &GetCRCouncilMemberDID() const;
 
 			void SetCRCouncilMemberSignature(const bytes_t &signature);
 
@@ -213,13 +243,9 @@ namespace Elastos {
 			const uint256 &DigestTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const;
 
 			// secretary election
-			void SerializeSecretaryElectionOwnerUnsigned(ByteStream &stream, uint8_t version) const;
+			void SerializeSecretaryElectionUnsigned(ByteStream &stream, uint8_t version) const;
 
-			bool DeserializeSecretaryElectionOwnerUnsigned(const ByteStream &stream, uint8_t verion);
-
-			void SerializeSecretaryElectionSecretaryUnsigned(ByteStream &stream, uint8_t version) const;
-
-			bool DeserializeSecretaryElectionSecretaryUnsigned(const ByteStream &stream, uint8_t version);
+			bool DeserializeSecretaryElectionUnsigned(const ByteStream &stream, uint8_t verion);
 
 			void SerializeSecretaryElectionCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
 
@@ -229,27 +255,19 @@ namespace Elastos {
 
 			bool DeserializeSecretaryElection(const ByteStream &stream, uint8_t version);
 
-			nlohmann::json ToJsonSecretaryElectionOwnerUnsigned(uint8_t version) const;
+			nlohmann::json ToJsonSecretaryElectionUnsigned(uint8_t version) const;
 
-			void FromJsonSecretaryElectionOwnerUnsigned(const nlohmann::json &j, uint8_t version);
-
-			nlohmann::json ToJsonSecretaryElectionSecretaryUnsigned(uint8_t version) const;
-
-			void FromJsonSecretaryElectionSecretaryUnsigned(const nlohmann::json &j, uint8_t version);
+			void FromJsonSecretaryElectionUnsigned(const nlohmann::json &j, uint8_t version);
 
 			nlohmann::json ToJsonSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
 
 			void FromJsonSecretaryElectionCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
 
-			bool IsValidSecretaryElectionOwnerUnsiged(uint8_t version) const;
-
-			bool IsValidSecretaryElectionSecretaryUnsigned(uint8_t version) const;
+			bool IsValidSecretaryElectionUnsigned(uint8_t version) const;
 
 			bool IsValidSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
 
-			const uint256 &DigestSecretaryElectionOwnerUnsigned(uint8_t version) const;
-
-			const uint256 &DigestSecretaryElectionSecretaryUnsigned(uint8_t version) const;
+			const uint256 &DigestSecretaryElectionUnsigned(uint8_t version) const;
 
 			const uint256 &DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
 
@@ -271,14 +289,15 @@ namespace Elastos {
 
 			CRCProposal &operator=(const CRCProposal &payload);
 
+			bool operator==(const CRCProposal &payload) const;
+
 		private:
 			// normal & elip
 			mutable uint256 _digestOwnerUnsigned;
 			mutable uint256 _digestCRCouncilMemberUnsigned;
 
 			// secretary election
-			mutable uint256 _digestSecretaryElectionOwnerUnsigned;
-			mutable uint256 _digestSecretaryElectionSecretaryUnsigned;
+			mutable uint256 _digestSecretaryElectionUnsigned;
 			mutable uint256 _digestSecretaryElectionCRCouncilMemberUnsigned;
 
 			// change owner

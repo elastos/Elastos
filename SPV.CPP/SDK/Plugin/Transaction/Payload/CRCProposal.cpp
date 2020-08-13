@@ -132,6 +132,10 @@ namespace Elastos {
 			_amount.setDec(j[JsonKeyAmount].get<std::string>());
 		}
 
+		bool Budget::operator==(const Budget &budget) const {
+			return _type == budget._type && _stage == budget._stage && _amount == budget._amount;
+		}
+
 		CRCProposal::CRCProposal() {
 
 		}
@@ -196,12 +200,68 @@ namespace Elastos {
 			return _recipient;
 		}
 
+		void CRCProposal::SetTargetProposalHash(const uint256 &hash) {
+			_targetProposalHash = hash;
+		}
+
+		const uint256 &CRCProposal::GetTargetProposalHash() const {
+			return _targetProposalHash;
+		}
+
+		void CRCProposal::SetNewRecipient(const Address &recipient) {
+			_newRecipient = recipient;
+		}
+
+		const Address &CRCProposal::GetNewRecipient() const {
+			return _newRecipient;
+		}
+
+		void CRCProposal::SetNewOwnerPublicKey(const bytes_t &pubkey) {
+			_newOwnerPublicKey = pubkey;
+		}
+
+		const bytes_t &CRCProposal::GetNewOwnerPublicKey() const {
+			return _newOwnerPublicKey;
+		}
+
+		void CRCProposal::SetSecretaryPublicKey(const bytes_t &pubkey) {
+			_secretaryPublicKey = pubkey;
+		}
+
+		const bytes_t CRCProposal::GetSecretaryPublicKey() const {
+			return _secretaryPublicKey;
+		}
+
+		void CRCProposal::SetSecretaryDID(const Address &did) {
+			_secretaryDID = did;
+		}
+
+		const Address &CRCProposal::GetSecretaryDID() const {
+			return _secretaryDID;
+		}
+
 		void CRCProposal::SetSignature(const bytes_t &signature) {
 			_signature = signature;
 		}
 
 		const bytes_t &CRCProposal::GetSignature() const {
 			return _signature;
+		}
+
+		void CRCProposal::SetNewOwnerSignature(const bytes_t &sign) {
+			_newOwnerSignature = sign;
+		}
+
+		const bytes_t &CRCProposal::GetNewOwnerSignature() const {
+			return _newOwnerSignature;
+		}
+
+		void CRCProposal::SetSecretarySignature(const bytes_t &sign) {
+			_secretarySignature = sign;
+		}
+
+		const bytes_t &CRCProposal::GetSecretarySignature() const {
+			return _secretarySignature;
 		}
 
 		void CRCProposal::SetCRCouncilMemberSignature(const bytes_t &signature) {
@@ -233,34 +293,62 @@ namespace Elastos {
 		}
 
 		size_t CRCProposal::EstimateSize(uint8_t version) const {
-			ByteStream stream;
+			ByteStream stream, byteStream;
 			size_t size = 0;
 
 			size += sizeof(uint16_t);
-
 			size += stream.WriteVarUint(_categoryData.size());
 			size += _categoryData.size();
-
 			size += stream.WriteVarUint(_ownerPublicKey.size());
 			size += _ownerPublicKey.size();
-
 			size += _draftHash.size();
 
-			size += stream.WriteVarUint(_budgets.size());
+			switch (_type) {
+				case elip:
+				case normal:
+					size += stream.WriteVarUint(_budgets.size());
 
-			ByteStream byteStream;
-			for (size_t i = 0; i < _budgets.size(); ++i) {
-				_budgets[i].Serialize(byteStream);
+					for (size_t i = 0; i < _budgets.size(); ++i) {
+						_budgets[i].Serialize(byteStream);
+					}
+					size += byteStream.GetBytes().size();
+					size += _recipient.ProgramHash().size();
+					size += stream.WriteVarUint(_signature.size());
+					size += _signature.size();
+					break;
+
+				case secretaryGeneralElection:
+					size += stream.WriteVarUint(_secretaryPublicKey.size());
+					size += _secretaryPublicKey.size();
+					size += _secretaryDID.ProgramHash().size();
+					size += stream.WriteVarUint(_secretarySignature.size());
+					size += _secretarySignature.size();
+					size += stream.WriteVarUint(_signature.size());
+					size += _signature.size();
+					break;
+
+				case changeProposalOwner:
+					size += _targetProposalHash.size();
+					size += _newRecipient.ProgramHash().size();
+					size += stream.WriteVarUint(_newOwnerPublicKey.size());
+					size += _newOwnerPublicKey.size();
+					size += stream.WriteVarUint(_signature.size());
+					size += _signature.size();
+					size += stream.WriteVarUint(_newOwnerSignature.size());
+					size += _newOwnerSignature.size();
+					break;
+
+				case terminateProposal:
+					size += stream.WriteVarUint(_signature.size());
+					size += _signature.size();
+					size += _targetProposalHash.size();
+					break;
+
+				default:
+					break;
 			}
-			size += byteStream.GetBytes().size();
-
-			size += _recipient.ProgramHash().size();
-
-			size += stream.WriteVarUint(_signature.size());
-			size += _signature.size();
 
 			size += _crCouncilMemberDID.ProgramHash().size();
-
 			size += stream.WriteVarUint(_crCouncilMemberSignature.size());
 			size += _crCouncilMemberSignature.size();
 
@@ -373,7 +461,7 @@ namespace Elastos {
 			uint16_t type = _type;
 			stream.WriteUint16(type);
 
-			stream.WriteVarBytes(_categoryData);
+			stream.WriteVarString(_categoryData);
 			stream.WriteVarBytes(_ownerPublicKey);
 			stream.WriteBytes(_draftHash);
 			stream.WriteBytes(_targetProposalHash);
@@ -782,7 +870,7 @@ namespace Elastos {
 		}
 
 		// change secretary general
-		void CRCProposal::SerializeSecretaryElectionOwnerUnsigned(ByteStream &stream, uint8_t version) const {
+		void CRCProposal::SerializeSecretaryElectionUnsigned(ByteStream &stream, uint8_t version) const {
 			uint16_t type = _type;
 			stream.WriteUint16(type);
 			stream.WriteVarString(_categoryData);
@@ -792,7 +880,7 @@ namespace Elastos {
 			stream.WriteBytes(_secretaryDID.ProgramHash());
 		}
 
-		bool CRCProposal::DeserializeSecretaryElectionOwnerUnsigned(const ByteStream &stream, uint8_t verion) {
+		bool CRCProposal::DeserializeSecretaryElectionUnsigned(const ByteStream &stream, uint8_t verion) {
 			if (!stream.ReadVarString(_categoryData)) {
 				SPVLOG_ERROR("deserialize category data");
 				return false;
@@ -823,36 +911,22 @@ namespace Elastos {
 			return true;
 		}
 
-		void CRCProposal::SerializeSecretaryElectionSecretaryUnsigned(ByteStream &stream, uint8_t version) const {
-			SerializeSecretaryElectionOwnerUnsigned(stream, version);
+		void CRCProposal::SerializeSecretaryElectionCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const {
+			SerializeSecretaryElectionUnsigned(stream, version);
 
 			stream.WriteVarBytes(_signature);
-		}
-
-		bool CRCProposal::DeserializeSecretaryElectionSecretaryUnsigned(const ByteStream &stream, uint8_t version) {
-			if (!DeserializeSecretaryElectionOwnerUnsigned(stream, version)) {
-				SPVLOG_ERROR("deserialize change secretary unsigned");
-				return false;
-			}
-
-			if (!stream.ReadVarBytes(_signature)) {
-				SPVLOG_ERROR("deserialize signature");
-				return false;
-			}
-
-			return true;
-		}
-
-		void CRCProposal::SerializeSecretaryElectionCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const {
-			SerializeSecretaryElectionSecretaryUnsigned(stream, version);
-
 			stream.WriteVarBytes(_secretarySignature);
 			stream.WriteBytes(_crCouncilMemberDID.ProgramHash());
 		}
 
 		bool CRCProposal::DeserializeSecretaryElectionCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version) {
-			if (!DeserializeSecretaryElectionSecretaryUnsigned(stream, version)) {
+			if (!DeserializeSecretaryElectionUnsigned(stream, version)) {
 				SPVLOG_ERROR("deserialize change secretary secretary unsigned");
+				return false;
+			}
+
+			if (!stream.ReadVarBytes(_signature)) {
+				SPVLOG_ERROR("deserialize signature");
 				return false;
 			}
 
@@ -890,7 +964,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json CRCProposal::ToJsonSecretaryElectionOwnerUnsigned(uint8_t version) const {
+		nlohmann::json CRCProposal::ToJsonSecretaryElectionUnsigned(uint8_t version) const {
 			nlohmann::json j;
 
 			j[JsonKeyType] = _type;
@@ -903,7 +977,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void CRCProposal::FromJsonSecretaryElectionOwnerUnsigned(const nlohmann::json &j, uint8_t version) {
+		void CRCProposal::FromJsonSecretaryElectionUnsigned(const nlohmann::json &j, uint8_t version) {
 			_type = CRCProposal::Type(j[JsonKeyType].get<uint16_t>());
 			_categoryData = j[JsonKeyCategoryData].get<std::string>();
 			_ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
@@ -912,24 +986,11 @@ namespace Elastos {
 			_secretaryDID = Address(j[JsonKeySecretaryDID].get<std::string>());
 		}
 
-		nlohmann::json CRCProposal::ToJsonSecretaryElectionSecretaryUnsigned(uint8_t version) const {
-			nlohmann::json j;
-
-			j = ToJsonSecretaryElectionOwnerUnsigned(version);
-			j[JsonKeySignature] = _signature.getHex();
-
-			return j;
-		}
-
-		void CRCProposal::FromJsonSecretaryElectionSecretaryUnsigned(const nlohmann::json &j, uint8_t version) {
-			FromJsonSecretaryElectionOwnerUnsigned(j, version);
-			_signature.setHex(j[JsonKeySignature].get<std::string>());
-		}
-
 		nlohmann::json CRCProposal::ToJsonSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const {
 			nlohmann::json j;
 
-			j = ToJsonSecretaryElectionSecretaryUnsigned(version);
+			j = ToJsonSecretaryElectionUnsigned(version);
+			j[JsonKeySignature] = _signature.getHex();
 			j[JsonKeySecretarySignature] = _secretarySignature.getHex();
 			j[JsonKeyCRCouncilMemberDID] = _crCouncilMemberDID.String();
 
@@ -937,12 +998,13 @@ namespace Elastos {
 		}
 
 		void CRCProposal::FromJsonSecretaryElectionCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version) {
-			FromJsonSecretaryElectionSecretaryUnsigned(j, version);
+			FromJsonSecretaryElectionUnsigned(j, version);
+			_signature.setHex(j[JsonKeySignature].get<std::string>());
 			_secretarySignature.setHex(j[JsonKeySecretarySignature].get<std::string>());
 			_crCouncilMemberDID = Address(j[JsonKeyCRCouncilMemberDID].get<std::string>());
 		}
 
-		bool CRCProposal::IsValidSecretaryElectionOwnerUnsiged(uint8_t version) const {
+		bool CRCProposal::IsValidSecretaryElectionUnsigned(uint8_t version) const {
 			if (_type != secretaryGeneralElection) {
 				SPVLOG_ERROR("invalid type: {}", _type);
 				return false;
@@ -969,33 +1031,18 @@ namespace Elastos {
 			return true;
 		}
 
-		bool CRCProposal::IsValidSecretaryElectionSecretaryUnsigned(uint8_t version) const {
-			if (!IsValidSecretaryElectionOwnerUnsiged(version)) {
-				SPVLOG_ERROR("secretary election owner unsigned not valid");
-				return false;
-			}
-
-			try {
-				if (!Key(_ownerPublicKey).Verify(DigestSecretaryElectionOwnerUnsigned(version), _signature)) {
-					SPVLOG_ERROR("verify owner signature fail");
-					return false;
-				}
-			} catch (const std::exception &e) {
-				SPVLOG_ERROR("verify signature exception: {}", e.what());
-				return false;
-			}
-
-			return true;
-		}
-
 		bool CRCProposal::IsValidSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const {
-			if (!IsValidSecretaryElectionSecretaryUnsigned(version)) {
+			if (!IsValidSecretaryElectionUnsigned(version)) {
 				SPVLOG_ERROR("secretary election secretary unsigned not valid");
 				return false;
 			}
 
 			try {
-				if (!Key(_secretaryPublicKey).Verify(DigestSecretaryElectionSecretaryUnsigned(version), _secretarySignature)) {
+				if (!Key(_ownerPublicKey).Verify(DigestSecretaryElectionUnsigned(version), _signature)) {
+					SPVLOG_ERROR("verify owner signature fail");
+					return false;
+				}
+				if (!Key(_secretaryPublicKey).Verify(DigestSecretaryElectionUnsigned(version), _secretarySignature)) {
 					SPVLOG_ERROR("verify secretary signature fail");
 					return false;
 				}
@@ -1012,24 +1059,14 @@ namespace Elastos {
 			return true;
 		}
 
-		const uint256 &CRCProposal::DigestSecretaryElectionOwnerUnsigned(uint8_t version) const {
-			if (_digestSecretaryElectionOwnerUnsigned == 0) {
+		const uint256 &CRCProposal::DigestSecretaryElectionUnsigned(uint8_t version) const {
+			if (_digestSecretaryElectionUnsigned == 0) {
 				ByteStream stream;
-				SerializeSecretaryElectionOwnerUnsigned(stream, version);
-				_digestSecretaryElectionOwnerUnsigned = sha256(stream.GetBytes());
+				SerializeSecretaryElectionUnsigned(stream, version);
+				_digestSecretaryElectionUnsigned = sha256(stream.GetBytes());
 			}
 
 			return _digestOwnerUnsigned;
-		}
-
-		const uint256 &CRCProposal::DigestSecretaryElectionSecretaryUnsigned(uint8_t version) const {
-			if (_digestSecretaryElectionSecretaryUnsigned == 0) {
-				ByteStream stream;
-				SerializeSecretaryElectionSecretaryUnsigned(stream, version);
-				_digestSecretaryElectionSecretaryUnsigned = sha256(stream.GetBytes());
-			}
-
-			return _digestSecretaryElectionSecretaryUnsigned;
 		}
 
 		const uint256 &CRCProposal::DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const {
@@ -1116,7 +1153,7 @@ namespace Elastos {
 		}
 
 		void CRCProposal::FromJsonNormalOwnerUnsigned(const nlohmann::json &j, uint8_t version) {
-			_type = CRCProposal::Type(j[JsonKeyType].get<uint8_t>());
+			_type = CRCProposal::Type(j[JsonKeyType].get<uint16_t>());
 			_categoryData = j[JsonKeyCategoryData].get<std::string>();
 			_ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
@@ -1170,7 +1207,7 @@ namespace Elastos {
 		}
 
 		void CRCProposal::FromJson(const nlohmann::json &j, uint8_t version) {
-			_type = CRCProposal::Type(j[JsonKeyType].get<uint8_t>());
+			_type = CRCProposal::Type(j[JsonKeyType].get<uint16_t>());
 
 			switch (_type) {
 				case normal:
@@ -1306,6 +1343,68 @@ namespace Elastos {
 			_crCouncilMemberDID = payload._crCouncilMemberDID;
 			_crCouncilMemberSignature = payload._crCouncilMemberSignature;
 			return *this;
+		}
+
+		bool CRCProposal::operator==(const CRCProposal &payload) const {
+			bool equal = false;
+			switch (_type) {
+				case normal:
+				case elip:
+					equal = _type == payload._type &&
+							_categoryData == payload._categoryData &&
+							_ownerPublicKey == payload._ownerPublicKey &&
+							_draftHash == payload._draftHash &&
+							_budgets == payload._budgets &&
+							_recipient == payload._recipient &&
+							_signature == payload._signature &&
+							_crCouncilMemberDID == payload._crCouncilMemberDID &&
+							_crCouncilMemberSignature == payload._crCouncilMemberSignature;
+					break;
+
+				case secretaryGeneralElection:
+					equal = _type == payload._type &&
+							_categoryData == payload._categoryData &&
+							_ownerPublicKey == payload._ownerPublicKey &&
+							_draftHash == payload._draftHash &&
+							_secretaryPublicKey == payload._secretaryPublicKey &&
+							_secretaryDID == payload._secretaryDID &&
+							_signature == payload._signature &&
+							_secretarySignature == payload._secretarySignature &&
+							_crCouncilMemberDID == payload._crCouncilMemberDID &&
+							_crCouncilMemberSignature == payload._crCouncilMemberSignature;
+					break;
+
+				case changeProposalOwner:
+					equal = _type == payload._type &&
+							_categoryData == payload._categoryData &&
+							_ownerPublicKey == payload._ownerPublicKey &&
+							_draftHash == payload._draftHash &&
+							_targetProposalHash == payload._targetProposalHash &&
+							_newRecipient == payload._newRecipient &&
+							_newOwnerPublicKey == payload._newOwnerPublicKey &&
+							_signature == payload._signature &&
+							_newOwnerSignature == payload._newOwnerSignature &&
+							_crCouncilMemberDID == payload._crCouncilMemberDID &&
+							_crCouncilMemberSignature == payload._crCouncilMemberSignature;
+					break;
+
+				case terminateProposal:
+					equal = _type == payload._type &&
+						_categoryData == payload._categoryData &&
+						_ownerPublicKey == payload._ownerPublicKey &&
+						_draftHash == payload._draftHash &&
+						_targetProposalHash == payload._targetProposalHash &&
+						_signature == payload._signature &&
+						_crCouncilMemberDID == payload._crCouncilMemberDID &&
+						_crCouncilMemberSignature == payload._crCouncilMemberSignature;
+					break;
+
+				default:
+					equal = false;
+					break;
+			}
+
+			return equal;
 		}
 
 		IPayload &CRCProposal::operator=(const IPayload &payload) {

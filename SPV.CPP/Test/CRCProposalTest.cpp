@@ -7,21 +7,32 @@
 #include <catch.hpp>
 #include "TestHelper.h"
 
+#include <Common/Log.h>
+#include <WalletCore/Mnemonic.h>
 #include <Plugin/Transaction/Payload/CRCProposal.h>
+#include <boost/filesystem.hpp>
+#include <WalletCore/BIP39.h>
+#include <WalletCore/HDKeychain.h>
+#include <WalletCore/Key.h>
 
 using namespace Elastos::ElaWallet;
 
-static void initCRCProposal(CRCProposal &crcProposal) {
-	CRCProposal::Type type = CRCProposal::Type(getRandUInt8() % 6);
+static void initCRCProposal(CRCProposal &crcProposal, CRCProposal::Type type) {
+	std::string mnemonic = Mnemonic(boost::filesystem::path("Data")).Create("English", Mnemonic::WORDS_12);
+	uint512 seed = BIP39::DeriveSeed(mnemonic, "");
+	HDSeed hdseed(seed.bytes());
+	HDKeychain rootkey(hdseed.getExtendedKey(true));
+	HDKeychain masterKey = rootkey.getChild("44'/0'/0'");
+	HDKeychain ownerKey = masterKey.getChild("0/0");
+	HDKeychain newOwnerKey = masterKey.getChild("0/1");
+	HDKeychain secretaryKey = masterKey.getChild("0/2");
+	HDKeychain councilMemberKey = masterKey.getChild("0/3");
+	uint8_t version = CRCProposalDefaultVersion;
+
 	crcProposal.SetTpye(type);
-
 	crcProposal.SetCategoryData(getRandString(100));
-
-	std::string pubKey = "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4";
-	crcProposal.SetOwnerPublicKey(pubKey);
-
+	crcProposal.SetOwnerPublicKey(ownerKey.pubkey().getHex());
 	crcProposal.SetDraftHash(getRanduint256());
-
 	std::vector<Budget> budgets;
 	for (int i = 0; i < 4; ++i) {
 		Budget::Type budgetType = Budget::Type(getRandUInt8() % Budget::maxType);
@@ -29,60 +40,118 @@ static void initCRCProposal(CRCProposal &crcProposal) {
 		budgets.push_back(budget);
 	}
 	crcProposal.SetBudgets(budgets);
+	crcProposal.SetRecipient(Address(Prefix::PrefixStandard, ownerKey.pubkey()));
+	crcProposal.SetTargetProposalHash(getRanduint256());
+	crcProposal.SetNewRecipient(Address(Prefix::PrefixStandard, newOwnerKey.pubkey()));
+	crcProposal.SetNewOwnerPublicKey(newOwnerKey.pubkey());
+	crcProposal.SetSecretaryPublicKey(secretaryKey.pubkey());
+	crcProposal.SetSecretaryDID(Address(Prefix::PrefixIDChain, secretaryKey.pubkey(), true));
+	crcProposal.SetCRCouncilMemberDID(Address(Prefix::PrefixIDChain, councilMemberKey.pubkey(), true));
 
-	crcProposal.SetRecipient(Address("EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv"));
-	crcProposal.SetSignature(getRandBytes(50));
-	crcProposal.SetCRCouncilMemberDID(Address("icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY"));
-	crcProposal.SetCRCouncilMemberSignature(getRandBytes(60));
-}
+	Key key;
+	uint256 digest;
+	bytes_t signature;
+	switch (type) {
+		case CRCProposal::Type::elip:
+		case CRCProposal::Type::normal:
+			digest = crcProposal.DigestNormalOwnerUnsigned(version);
+			key = ownerKey;
+			signature = key.Sign(digest);
+			crcProposal.SetSignature(signature);
 
-static void verifyProposal(CRCProposal &p1, CRCProposal &p2) {
-	REQUIRE(p1.GetType() == p2.GetType());
-	REQUIRE(p1.GetCategoryData() == p2.GetCategoryData());
-	REQUIRE(p1.GetOwnerPublicKey() == p2.GetOwnerPublicKey());
-	REQUIRE(p1.GetDraftHash() == p2.GetDraftHash());
+			digest = crcProposal.DigestNormalCRCouncilMemberUnsigned(version);
+			key = councilMemberKey;
+			signature = key.Sign(digest);
+			crcProposal.SetCRCouncilMemberSignature(signature);
+			break;
 
-	const std::vector<Budget> &budgets1 = p1.GetBudgets();
-	const std::vector<Budget> &budgets2 = p2.GetBudgets();
-	REQUIRE(budgets1.size() == budgets2.size());
-	for (size_t i = 0; i < budgets1.size(); ++i) {
-		REQUIRE(budgets1[i].GetType() == budgets2[i].GetType());
-		REQUIRE(budgets1[i].GetStage() == budgets2[i].GetStage());
-		REQUIRE(budgets1[i].GetAmount() == budgets2[i].GetAmount());
+		case CRCProposal::Type::secretaryGeneralElection:
+			digest = crcProposal.DigestSecretaryElectionUnsigned(version);
+			key = ownerKey;
+			signature = key.Sign(digest);
+			crcProposal.SetSignature(signature);
+
+			key = secretaryKey;
+			signature = key.Sign(digest);
+			crcProposal.SetSecretarySignature(signature);
+
+			digest = crcProposal.DigestSecretaryElectionCRCouncilMemberUnsigned(version);
+			key = councilMemberKey;
+			signature = key.Sign(digest);
+			crcProposal.SetCRCouncilMemberSignature(signature);
+			break;
+
+		case CRCProposal::Type::changeProposalOwner:
+			digest = crcProposal.DigestChangeOwnerUnsigned(version);
+			key = ownerKey;
+			signature = key.Sign(digest);
+			crcProposal.SetSignature(signature);
+
+			key = newOwnerKey;
+			signature = key.Sign(digest);
+			crcProposal.SetNewOwnerSignature(signature);
+
+			digest = crcProposal.DigestChangeOwnerCRCouncilMemberUnsigned(version);
+			key = councilMemberKey;
+			signature = key.Sign(digest);
+			crcProposal.SetCRCouncilMemberSignature(signature);
+			break;
+
+		case CRCProposal::Type::terminateProposal:
+			digest = crcProposal.DigestTerminateProposalOwnerUnsigned(version);
+			key = ownerKey;
+			signature = key.Sign(digest);
+			crcProposal.SetSignature(signature);
+
+			digest = crcProposal.DigestTerminateProposalCRCouncilMemberUnsigned(version);
+			key = councilMemberKey;
+			signature = key.Sign(digest);
+			crcProposal.SetCRCouncilMemberSignature(signature);
+			break;
+
+		default:
+			break;
 	}
-
-	REQUIRE(p1.GetRecipient() == p2.GetRecipient());
-	REQUIRE(p1.GetSignature() == p2.GetSignature());
-	REQUIRE(p1.GetCRCouncilMemberDID() == p2.GetCRCouncilMemberDID());
-	REQUIRE(p1.GetCRCouncilMemberSignature() == p2.GetCRCouncilMemberSignature());
 }
 
 TEST_CASE("CRCProposal test", "[CRCProposal]") {
+	Log::registerMultiLogger();
+	uint8_t version = CRCProposalDefaultVersion;
 	SECTION("Serialize and Deserialize test") {
-		CRCProposal p1;
-		initCRCProposal(p1);
+		CRCProposal p1, p2;
+		std::vector<CRCProposal::Type> types = {
+			CRCProposal::normal,
+			CRCProposal::secretaryGeneralElection,
+			CRCProposal::changeProposalOwner,
+			CRCProposal::terminateProposal
+		};
 
-		ByteStream byteStream;
-		p1.Serialize(byteStream, 0);
-
-		REQUIRE(byteStream.GetBytes().size() == p1.EstimateSize(0));
-
-		CRCProposal p2;
-		REQUIRE(p2.Deserialize(byteStream, 0));
-
-		verifyProposal(p1, p2);
+		for (size_t i = 0; i < types.size(); ++i) {
+			ByteStream byteStream;
+			initCRCProposal(p1, types[i]);
+			p1.Serialize(byteStream, version);
+			REQUIRE(byteStream.GetBytes().size() == p1.EstimateSize(version));
+			REQUIRE(p2.Deserialize(byteStream, version));
+			REQUIRE(p1 == p2);
+		}
 	}
 
 	SECTION("ToJson FromJson test") {
-		CRCProposal p1;
-		initCRCProposal(p1);
+		CRCProposal p1, p2;
+		std::vector<CRCProposal::Type> types = {
+			CRCProposal::normal,
+			CRCProposal::secretaryGeneralElection,
+			CRCProposal::changeProposalOwner,
+			CRCProposal::terminateProposal
+		};
 
-		nlohmann::json j = p1.ToJson(0);
-
-		CRCProposal p2;
-		p2.FromJson(j, 0);
-
-		verifyProposal(p1, p2);
+		for (size_t i = 0; i < types.size(); ++i) {
+			initCRCProposal(p1, types[i]);
+			nlohmann::json j = p1.ToJson(version);
+			Log::info("j = {}", j.dump(4));
+			p2.FromJson(j, version);
+			REQUIRE(p1 == p2);
+		}
 	}
 
 }

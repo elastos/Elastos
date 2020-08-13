@@ -1385,7 +1385,7 @@ namespace Elastos {
 			return result;
 		}
 
-		std::string MainchainSubWallet::ProposalSecretaryGeneralElectionOwnerDigest(
+		std::string MainchainSubWallet::ProposalSecretaryGeneralElectionDigest(
 			const nlohmann::json &payload) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("payload: {}", payload.dump());
@@ -1395,41 +1395,16 @@ namespace Elastos {
 			try {
 				nlohmann::json payloadFixed = payload;
 				payloadFixed["Type"] = CRCProposal::secretaryGeneralElection;
-				proposal.FromJsonSecretaryElectionOwnerUnsigned(payloadFixed, version);
+				proposal.FromJsonSecretaryElectionUnsigned(payloadFixed, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
 			}
 
-			if (!proposal.IsValidSecretaryElectionOwnerUnsiged(version)) {
+			if (!proposal.IsValidSecretaryElectionUnsigned(version)) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
 			}
 
-			std::string digest = proposal.DigestSecretaryElectionOwnerUnsigned(version).GetHex();
-
-			ArgInfo("r => {}", digest);
-			return digest;
-		}
-
-		std::string MainchainSubWallet::ProposalSecretaryGeneralElectionSecretaryGeneralDigest(
-			const nlohmann::json &payload) const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("payload: {}", payload.dump());
-
-			uint8_t version = CRCProposalDefaultVersion;
-			CRCProposal proposal;
-			try {
-				nlohmann::json payloadFixed = payload;
-				payloadFixed["Type"] = CRCProposal::secretaryGeneralElection;
-				proposal.FromJsonSecretaryElectionSecretaryUnsigned(payloadFixed, version);
-			} catch (const std::exception &e) {
-				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
-			}
-
-			if (!proposal.IsValidSecretaryElectionSecretaryUnsigned(version)) {
-				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
-			}
-
-			std::string digest = proposal.DigestSecretaryElectionSecretaryUnsigned(version).GetHex();
+			std::string digest = proposal.DigestSecretaryElectionUnsigned(version).GetHex();
 
 			ArgInfo("r => {}", digest);
 			return digest;

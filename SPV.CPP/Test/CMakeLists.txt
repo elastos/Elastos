@@ -24,6 +24,15 @@ include_directories(
 	${PROJECT_INT_DIST_DIR}/include/catch2
 )
 
+if(MSVC)
+	add_definitions(/FI"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common/BRNameFix.h")
+	add_definitions(/FI"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common/secp256k1_name_fix.h")
+else()
+	# GCC or Clang
+	add_definitions(-include ${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common/BRNameFix.h)
+	add_definitions(-include ${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common/secp256k1_name_fix.h)
+endif()
+
 link_directories(
 	${PROJECT_INT_DIST_DIR}/lib
 	${CMAKE_CURRENT_BINARY_DIR}/../SDK
