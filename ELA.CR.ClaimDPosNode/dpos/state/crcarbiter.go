@@ -52,7 +52,7 @@ func (c *crcArbiter) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	return common.ReadElement(r, c.isNormal)
+	return common.ReadElement(r, &c.isNormal)
 }
 
 func (c *crcArbiter) GetType() ArbiterType {
