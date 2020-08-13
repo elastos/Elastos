@@ -152,11 +152,8 @@ public class MainchainSubWallet extends SubWallet {
         return CreateProposalTrackingTransaction(mMainchainProxy, payload, memo);
     }
 
-    public String ProposalSecretaryGeneralElectionOwnerDigest(String payload) {
-        return ProposalSecretaryGeneralElectionOwnerDigest(mMainchainProxy, payload);
-    }
-    public String ProposalSecretaryGeneralElectionSecretaryGeneralDigest(String payload) {
-        return ProposalSecretaryGeneralElectionSecretaryGeneralDigest(mMainchainProxy, payload);
+    public String ProposalSecretaryGeneralElectionDigest(String payload) {
+        return ProposalSecretaryGeneralElectionDigest(mMainchainProxy, payload);
     }
     public String ProposalSecretaryGeneralElectionCRCouncilMemberDigest(String payload) {
         return ProposalSecretaryGeneralElectionCRCouncilMemberDigest(mMainchainProxy, payload);
@@ -227,8 +224,7 @@ public class MainchainSubWallet extends SubWallet {
     private native String ProposalTrackingNewOwnerDigest(long Proxy, String payload);
     private native String ProposalTrackingSecretaryDigest(long Proxy, String payload);
     private native String CreateProposalTrackingTransaction(long Proxy, String payload, String memo);
-    private native String ProposalSecretaryGeneralElectionOwnerDigest(long Proxy, String payload);
-    private native String ProposalSecretaryGeneralElectionSecretaryGeneralDigest(long Proxy, String payload);
+    private native String ProposalSecretaryGeneralElectionDigest(long Proxy, String payload);
     private native String ProposalSecretaryGeneralElectionCRCouncilMemberDigest(long Proxy, String payload);
     private native String CreateSecretaryGeneralElectionTransaction(long Proxy, String payload, String memo);
     private native String ProposalChangeOwnerDigest(long Proxy, String payload);

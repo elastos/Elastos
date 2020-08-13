@@ -1142,11 +1142,11 @@ CreateProposalTrackingTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletPr
 //////////////////////////////////////////////////
 /*      Proposal Secretary General Election     */
 //////////////////////////////////////////////////
-#define JNI_ProposalSecretaryGeneralElectionOwnerDigest "(JLjava/lang/String;)Ljava/lang/String;"
+#define JNI_ProposalSecretaryGeneralElectionDigest "(JLjava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL
-ProposalSecretaryGeneralElectionOwnerDigest(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
-                       jstring jpayload) {
+ProposalSecretaryGeneralElectionDigest(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                                       jstring jpayload) {
     bool exception = false;
     std::string msgException;
     jstring result = NULL;
@@ -1156,37 +1156,7 @@ ProposalSecretaryGeneralElectionOwnerDigest(JNIEnv *env, jobject clazz, jlong jS
     IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
 
     try {
-        std::string digest = subWallet->ProposalSecretaryGeneralElectionOwnerDigest(nlohmann::json::parse(payload));
-        result = env->NewStringUTF(digest.c_str());
-    } catch (const std::exception &e) {
-        exception = true;
-        msgException = e.what();
-    }
-
-    env->ReleaseStringUTFChars(jpayload, payload);
-
-    if (exception) {
-        ThrowWalletException(env, msgException.c_str());
-    }
-
-    return result;
-}
-
-#define JNI_ProposalSecretaryGeneralElectionSecretaryGeneralDigest "(JLjava/lang/String;)Ljava/lang/String;"
-
-static jstring JNICALL
-ProposalSecretaryGeneralElectionSecretaryGeneralDigest(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
-                                            jstring jpayload) {
-    bool exception = false;
-    std::string msgException;
-    jstring result = NULL;
-
-    const char *payload = env->GetStringUTFChars(jpayload, NULL);
-
-    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
-
-    try {
-        std::string digest = subWallet->ProposalSecretaryGeneralElectionSecretaryGeneralDigest(nlohmann::json::parse(payload));
+        std::string digest = subWallet->ProposalSecretaryGeneralElectionDigest(nlohmann::json::parse(payload));
         result = env->NewStringUTF(digest.c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -1552,8 +1522,7 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(ProposalTrackingNewOwnerDigest),
         REGISTER_METHOD(ProposalTrackingSecretaryDigest),
         REGISTER_METHOD(CreateProposalTrackingTransaction),
-        REGISTER_METHOD(ProposalSecretaryGeneralElectionOwnerDigest),
-        REGISTER_METHOD(ProposalSecretaryGeneralElectionSecretaryGeneralDigest),
+        REGISTER_METHOD(ProposalSecretaryGeneralElectionDigest),
         REGISTER_METHOD(ProposalSecretaryGeneralElectionCRCouncilMemberDigest),
         REGISTER_METHOD(CreateSecretaryGeneralElectionTransaction),
         REGISTER_METHOD(ProposalChangeOwnerDigest),

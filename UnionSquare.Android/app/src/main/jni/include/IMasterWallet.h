@@ -159,6 +159,15 @@ namespace Elastos {
 			 */
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
 
+			/**
+			 * Reset payment password of current wallet
+			 * @param mnemonic mnemonic
+			 * @param passphrase passphrase
+			 * @param newPassword New password will be set.
+			 */
+			virtual void ResetPassword(const std::string &mnemonic, const std::string &passphrase,
+				const std::string &newPassword) = 0;
+
 		};
 
 	}
