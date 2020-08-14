@@ -104,6 +104,14 @@ public class MainchainSubWallet extends SubWallet {
         return GetRegisteredCRInfo(mMainchainProxy);
     }
 
+    public String CRCouncilMemberClaimNodeDigest(String payload) throws WalletException {
+        return CRCouncilMemberClaimNodeDigest(mMainchainProxy, payload);
+    }
+
+    public String CreateCRCouncilMemberClaimNodeTransaction(String payload, String memo) throws WalletException {
+        return CreateCRCouncilMemberClaimNodeTransaction(mMainchainProxy, payload, memo);
+    }
+
     public String ProposalOwnerDigest(String payload) throws WalletException {
         return ProposalOwnerDigest(mMainchainProxy, payload);
     }
@@ -211,6 +219,8 @@ public class MainchainSubWallet extends SubWallet {
     private native String CreateVoteCRTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
     private native String GetVotedCRList(long Proxy);
     private native String GetRegisteredCRInfo(long Proxy);
+    private native String CRCouncilMemberClaimNodeDigest(long Proxy, String payload);
+    private native String CreateCRCouncilMemberClaimNodeTransaction(long Proxy, String payload, String memo);
     private native String ProposalOwnerDigest(long Proxy, String payload);
     private native String ProposalCRCouncilMemberDigest(long Proxy, String payload);
     private native String CalculateProposalHash(long Proxy, String payload);

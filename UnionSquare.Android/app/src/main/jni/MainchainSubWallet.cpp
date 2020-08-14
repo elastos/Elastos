@@ -744,6 +744,67 @@ GetRegisteredCRInfo(JNIEnv *env, jobject clazz, jlong jSubWalletProxy) {
     return info;
 }
 
+#define JNI_CRCouncilMemberClaimNodeDigest "(JLjava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL CRCouncilMemberClaimNodeDigest(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                                           jstring jpayload) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *payload = env->GetStringUTFChars(jpayload, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        std::string digest = subWallet->CRCouncilMemberClaimNodeDigest(nlohmann::json::parse(payload));
+        result = env->NewStringUTF(digest.c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jpayload, payload);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_CreateCRCouncilMemberClaimNodeTransaction "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL
+CreateCRCouncilMemberClaimNodeTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                          jstring jpayload,
+                          jstring jmemo) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *payload = env->GetStringUTFChars(jpayload, NULL);
+    const char *memo = env->GetStringUTFChars(jmemo, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->CreateCRCouncilMemberClaimNodeTransaction(nlohmann::json::parse(payload), memo);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jpayload, payload);
+    env->ReleaseStringUTFChars(jmemo, memo);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
 #define JNI_ProposalOwnerDigest "(JLjava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL ProposalOwnerDigest(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
@@ -1510,6 +1571,8 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetVotedCRList),
         REGISTER_METHOD(GetVoteInfo),
         REGISTER_METHOD(GetRegisteredCRInfo),
+        REGISTER_METHOD(CRCouncilMemberClaimNodeDigest),
+        REGISTER_METHOD(CreateCRCouncilMemberClaimNodeTransaction),
         REGISTER_METHOD(ProposalOwnerDigest),
         REGISTER_METHOD(ProposalCRCouncilMemberDigest),
         REGISTER_METHOD(CalculateProposalHash),
