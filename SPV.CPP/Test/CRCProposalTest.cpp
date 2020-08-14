@@ -148,7 +148,6 @@ TEST_CASE("CRCProposal test", "[CRCProposal]") {
 		for (size_t i = 0; i < types.size(); ++i) {
 			initCRCProposal(p1, types[i]);
 			nlohmann::json j = p1.ToJson(version);
-			Log::info("j = {}", j.dump(4));
 			p2.FromJson(j, version);
 			REQUIRE(p1 == p2);
 		}

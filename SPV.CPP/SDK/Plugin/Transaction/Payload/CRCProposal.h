@@ -289,7 +289,7 @@ namespace Elastos {
 
 			CRCProposal &operator=(const CRCProposal &payload);
 
-			bool operator==(const CRCProposal &payload) const;
+			bool operator==(const IPayload &payload) const;
 
 		private:
 			// normal & elip

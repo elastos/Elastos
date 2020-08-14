@@ -1345,65 +1345,71 @@ namespace Elastos {
 			return *this;
 		}
 
-		bool CRCProposal::operator==(const CRCProposal &payload) const {
+		bool CRCProposal::operator==(const IPayload &payload) const {
 			bool equal = false;
-			switch (_type) {
-				case normal:
-				case elip:
-					equal = _type == payload._type &&
-							_categoryData == payload._categoryData &&
-							_ownerPublicKey == payload._ownerPublicKey &&
-							_draftHash == payload._draftHash &&
-							_budgets == payload._budgets &&
-							_recipient == payload._recipient &&
-							_signature == payload._signature &&
-							_crCouncilMemberDID == payload._crCouncilMemberDID &&
-							_crCouncilMemberSignature == payload._crCouncilMemberSignature;
-					break;
+			try {
+				const CRCProposal &realPayload = dynamic_cast<const CRCProposal &>(payload);
 
-				case secretaryGeneralElection:
-					equal = _type == payload._type &&
-							_categoryData == payload._categoryData &&
-							_ownerPublicKey == payload._ownerPublicKey &&
-							_draftHash == payload._draftHash &&
-							_secretaryPublicKey == payload._secretaryPublicKey &&
-							_secretaryDID == payload._secretaryDID &&
-							_signature == payload._signature &&
-							_secretarySignature == payload._secretarySignature &&
-							_crCouncilMemberDID == payload._crCouncilMemberDID &&
-							_crCouncilMemberSignature == payload._crCouncilMemberSignature;
-					break;
+				switch (_type) {
+					case normal:
+					case elip:
+						equal = _type == realPayload._type &&
+								_categoryData == realPayload._categoryData &&
+								_ownerPublicKey == realPayload._ownerPublicKey &&
+								_draftHash == realPayload._draftHash &&
+								_budgets == realPayload._budgets &&
+								_recipient == realPayload._recipient &&
+								_signature == realPayload._signature &&
+								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
+								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
+						break;
 
-				case changeProposalOwner:
-					equal = _type == payload._type &&
-							_categoryData == payload._categoryData &&
-							_ownerPublicKey == payload._ownerPublicKey &&
-							_draftHash == payload._draftHash &&
-							_targetProposalHash == payload._targetProposalHash &&
-							_newRecipient == payload._newRecipient &&
-							_newOwnerPublicKey == payload._newOwnerPublicKey &&
-							_signature == payload._signature &&
-							_newOwnerSignature == payload._newOwnerSignature &&
-							_crCouncilMemberDID == payload._crCouncilMemberDID &&
-							_crCouncilMemberSignature == payload._crCouncilMemberSignature;
-					break;
+					case secretaryGeneralElection:
+						equal = _type == realPayload._type &&
+								_categoryData == realPayload._categoryData &&
+								_ownerPublicKey == realPayload._ownerPublicKey &&
+								_draftHash == realPayload._draftHash &&
+								_secretaryPublicKey == realPayload._secretaryPublicKey &&
+								_secretaryDID == realPayload._secretaryDID &&
+								_signature == realPayload._signature &&
+								_secretarySignature == realPayload._secretarySignature &&
+								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
+								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
+						break;
 
-				case terminateProposal:
-					equal = _type == payload._type &&
-						_categoryData == payload._categoryData &&
-						_ownerPublicKey == payload._ownerPublicKey &&
-						_draftHash == payload._draftHash &&
-						_targetProposalHash == payload._targetProposalHash &&
-						_signature == payload._signature &&
-						_crCouncilMemberDID == payload._crCouncilMemberDID &&
-						_crCouncilMemberSignature == payload._crCouncilMemberSignature;
-					break;
+					case changeProposalOwner:
+						equal = _type == realPayload._type &&
+								_categoryData == realPayload._categoryData &&
+								_ownerPublicKey == realPayload._ownerPublicKey &&
+								_draftHash == realPayload._draftHash &&
+								_targetProposalHash == realPayload._targetProposalHash &&
+								_newRecipient == realPayload._newRecipient &&
+								_newOwnerPublicKey == realPayload._newOwnerPublicKey &&
+								_signature == realPayload._signature &&
+								_newOwnerSignature == realPayload._newOwnerSignature &&
+								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
+								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
+						break;
 
-				default:
-					equal = false;
-					break;
+					case terminateProposal:
+						equal = _type == realPayload._type &&
+								_categoryData == realPayload._categoryData &&
+								_ownerPublicKey == realPayload._ownerPublicKey &&
+								_draftHash == realPayload._draftHash &&
+								_targetProposalHash == realPayload._targetProposalHash &&
+								_signature == realPayload._signature &&
+								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
+								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
+						break;
+
+					default:
+						equal = false;
+						break;
+				}
+			} catch (const std::bad_cast &e) {
+				SPVLOG_ERROR("payload is not instance of CRCProposal");
+				equal = false;
 			}
-
 			return equal;
 		}
 

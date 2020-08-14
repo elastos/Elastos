@@ -517,6 +517,28 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json GetRegisteredCRInfo() const = 0;
 
+			/**
+			 * Generate digest for signature of CR council members
+			 * @param payload
+			 * {
+			 *   "NodePublicKey": "...",
+			 *   "CRCouncilMemberDID": "...",
+			 * }
+			 * @return
+			 */
+			virtual std::string CRCouncilMemberClaimNodeDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload
+			 * {
+			 *   "NodePublicKey": "...",
+			 *   "CRCouncilMemberDID": "...",
+			 *   "CRCouncilMemberSignature": "..."
+			 * }
+			 * @return
+			 */
+			virtual nlohmann::json CreateCRCouncilMemberClaimNodeTransaction(const nlohmann::json &payload, const std::string &memo = "") = 0;
+
 
 		public:
 			//////////////////////////////////////////////////

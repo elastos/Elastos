@@ -65,7 +65,9 @@ namespace Elastos {
 				crcProposalTracking      = 0x27,
 				crcAppropriation         = 0x28,
 				crcProposalWithdraw      = 0x29,
-				CRCProposalRealWithdraw  = 0x2a,
+				crcProposalRealWithdraw  = 0x2a,
+
+				crCouncilMemberClaimNode = 0x31,
 
 				TypeMaxCount
 			};

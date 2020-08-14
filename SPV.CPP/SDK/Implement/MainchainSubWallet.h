@@ -145,6 +145,10 @@ namespace Elastos {
 
 			nlohmann::json GetRegisteredCRInfo() const override;
 
+			std::string CRCouncilMemberClaimNodeDigest(const nlohmann::json &payload) const override;
+
+			nlohmann::json CreateCRCouncilMemberClaimNodeTransaction(const nlohmann::json &payload, const std::string &memo = "") override;
+
 		public:
 			//////////////////////////////////////////////////
 			/*                     Proposal                 */

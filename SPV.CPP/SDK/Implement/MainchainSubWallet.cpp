@@ -42,6 +42,7 @@
 #include <Plugin/Transaction/Attribute.h>
 #include <SpvService/Config.h>
 #include <Plugin/Transaction/Payload/ReturnDepositCoin.h>
+#include <Plugin/Transaction/Payload/CRCouncilMemberClaimNode.h>
 #include <CMakeConfig.h>
 
 #include <vector>
@@ -965,11 +966,72 @@ namespace Elastos {
 			return j;
 		}
 
+		std::string MainchainSubWallet::CRCouncilMemberClaimNodeDigest(const nlohmann::json &payload) const {
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
+			ArgInfo("payload: {}", payload.dump());
+
+
+			uint8_t version = CRCouncilMemberClaimNodeVersion;
+			CRCouncilMemberClaimNode p;
+			try {
+				p.FromJsonUnsigned(payload, version);
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
+			}
+
+			if (!p.IsValidUnsigned(version)) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
+			}
+
+			std::string digest = p.DigestUnsigned(version).GetHex();
+
+			ArgInfo("r => {}", digest);
+			return digest;
+		}
+
+		nlohmann::json MainchainSubWallet::CreateCRCouncilMemberClaimNodeTransaction(const nlohmann::json &payload, const std::string &memo) {
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
+			ArgInfo("payload: {}", payload.dump());
+			ArgInfo("memo: {}", memo);
+
+			uint8_t version = CRCProposalDefaultVersion;
+			PayloadPtr p(new CRCouncilMemberClaimNode());
+			try {
+				p->FromJson(payload, version);
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
+			}
+
+			if (!p->IsValid(version)) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
+			}
+			OutputArray outputs;
+			AddressPtr receiveAddr = wallet->GetReceiveAddress();
+			outputs.push_back(OutputPtr(new TransactionOutput(0, *receiveAddr)));
+			AddressPtr fromAddr(new Address(""));
+
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::crCouncilMemberClaimNode, p, fromAddr, outputs, memo);
+
+			if (tx->GetOutputs().size() < 2)
+				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "balance not enough");
+
+			tx->RemoveOutput(tx->GetOutputs().front());
+			tx->FixIndex();
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
+			ArgInfo("r => {}", result.dump());
+
+			return result;
+		}
+
 		nlohmann::json MainchainSubWallet::GetVoteInfo(const std::string &type) const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("type: {}", type);
 
-			WalletPtr wallet = _walletManager->GetWallet();
 			UTXOArray utxos = wallet->GetVoteUTXO();
 			nlohmann::json jinfo = nlohmann::json::array();
 			time_t timestamp;
