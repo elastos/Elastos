@@ -1993,8 +1993,8 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 		if withdrawPayload.Amount != withdrawAmount {
 			return errors.New("withdrawPayload.Amount != withdrawAmount ")
 		}
-		if withdrawPayload.Amount < b.chainParams.RealWithdrawSingleFee {
-			return errors.New("withdraw amount is less than RealWithdrawSingleFee")
+		if withdrawPayload.Amount <= b.chainParams.RealWithdrawSingleFee {
+			return errors.New("withdraw amount should be bigger than RealWithdrawSingleFee")
 		}
 	}
 

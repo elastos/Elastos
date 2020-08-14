@@ -358,6 +358,9 @@ func GetCRCPeersInfo(params Params) map[string]interface{} {
 	result.NodePublicKeys = make([]string, 0)
 	peersMap := make(map[string]struct{})
 	for _, p := range peers {
+		if !p.IsNormal {
+			continue
+		}
 		pk := common.BytesToHexString(p.NodePublicKey)
 		peersMap[pk] = struct{}{}
 		result.NodePublicKeys = append(result.NodePublicKeys, pk)

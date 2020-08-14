@@ -826,6 +826,9 @@ func (a *arbitrators) GetNextCRCArbiters() [][]byte {
 	a.mtx.Lock()
 	result := make([][]byte, 0, len(a.nextCRCArbiters))
 	for _, v := range a.nextCRCArbiters {
+		if !v.IsNormal() {
+			continue
+		}
 		result = append(result, v.GetNodePublicKey())
 	}
 	a.mtx.Unlock()
