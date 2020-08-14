@@ -1343,7 +1343,6 @@ func (a *arbitrators) getCRCArbitersV1(height uint32) (map[common.Uint168]Arbite
 	})
 	crcArbiters := map[common.Uint168]ArbiterMember{}
 	claimHeight := a.chainParams.CRClaimDPOSNodeStartHeight
-	arbitersCount := len(a.chainParams.CRCArbiters) + a.chainParams.GeneralArbiters
 	for _, cr := range crMembers {
 		var pk []byte
 		if cr.DPOSPublicKey == nil {
@@ -1358,8 +1357,7 @@ func (a *arbitrators) getCRCArbitersV1(height uint32) (map[common.Uint168]Arbite
 		}
 		crPublicKey := cr.Info.Code[1 : len(cr.Info.Code)-1]
 		isNormal := true
-		if height >= claimHeight+uint32(arbitersCount) &&
-			cr.MemberState != state.MemberElected {
+		if height >= claimHeight && cr.MemberState != state.MemberElected {
 			isNormal = false
 		}
 		ar, err := NewCRCArbiter(pk, crPublicKey, cr, isNormal)
