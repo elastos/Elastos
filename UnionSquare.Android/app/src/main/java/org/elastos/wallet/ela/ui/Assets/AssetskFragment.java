@@ -1094,7 +1094,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             case "getVoteInfo":
                 //剔除非公示期的
                 String voteInfo = ((CommmonStringEntity) baseEntity).getData();
-                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote(currentStartTime,"CRCProposal", voteInfo, depositList, crList, searchBeanList, councilList);
+                JSONArray otherUnActiveVote = proposalDetailPresenter.conversUnactiveVote(currentStartTime, "CRCProposal", voteInfo, depositList, crList, searchBeanList, councilList);
                 try {
                     JSONObject voteJson = proposalDetailPresenter.conversVote(voteInfo, "CRCProposal");//key value
                     //点击下一步 获得上次的投票后筛选数据
@@ -1201,9 +1201,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
                 break;
             case "signTransaction":
-            case "createProposalWithdrawTransaction":
                 new PwdPresenter().newPublishTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringEntity) baseEntity).getData(), this);
                 break;
+            case "createProposalWithdrawTransaction":
             case "createProposalTrackingTransaction":
             case "createProposalReviewTransaction":
                 new PwdPresenter().signTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringEntity) baseEntity).getData(), payPasswd, this);
@@ -1231,9 +1231,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 String signDigest3 = proposalPresenter.getSignDigist(payPasswd, ((CommmonStringEntity) baseEntity).getData(), this);
                 ProposalWithdrawPayLoad withdrawPayLoad = (ProposalWithdrawPayLoad) o;
                 withdrawPayLoad.setSignature(signDigest3);
-                RecieveWithdrawJwtEntity.DataBean dataBean = ((RecieveWithdrawJwtEntity) curentJwtEntity).getData();
-                JSONArray utxos = converWithDrawPayLoadUtxo(dataBean.getUtxos());
-                proposalPresenter.createProposalWithdrawTransaction(wallet.getWalletId(), dataBean.getRecipient(), dataBean.getAmount(), utxos.toString(), new Gson().toJson(withdrawPayLoad), this);
+                proposalPresenter.createProposalWithdrawTransaction(wallet.getWalletId(), new Gson().toJson(withdrawPayLoad), this);
                 break;
             case "forceDIDResolve1":
                 //目前只有扫码didcard用到
@@ -1440,6 +1438,8 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         ProposalWithdrawPayLoad payload = new ProposalWithdrawPayLoad();
         payload.setProposalHash(origin.getProposalhash());
         payload.setOwnerPublicKey(origin.getOwnerpublickey());
+        payload.setRecipient(origin.getRecipient());
+        payload.setAmount(origin.getAmount());
         return payload;
     }
 

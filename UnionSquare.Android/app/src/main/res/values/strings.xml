@@ -208,6 +208,7 @@
     <string name="transfertype38">提案评议交易</string>
     <string name="transfertype39">提案反馈交易</string>
     <string name="transfertype41">提案资金提取交易</string>
+    <string name="transfertype42">提案资金提取交易1</string>
     <string name="sidetransfertype0">创币交易</string>
     <string name="sidetransfertype1">注册资产交易</string>
     <string name="sidetransfertype2">普通转账交易</string>

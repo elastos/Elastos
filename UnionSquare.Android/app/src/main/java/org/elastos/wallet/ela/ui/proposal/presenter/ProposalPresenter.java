@@ -260,12 +260,12 @@ public class ProposalPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void createProposalWithdrawTransaction(String walletId, String recipient, String amount, String utxo, String payload, BaseFragment baseFragment) {
+    public void createProposalWithdrawTransaction(String walletId,  String payload, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "createProposalWithdrawTransaction");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createProposalWithdrawTransaction(walletId, recipient, amount, utxo, payload);
+                return baseFragment.getMyWallet().createProposalWithdrawTransaction(walletId,  payload);
             }
         });
         subscriberObservable(observer, observable, baseFragment);

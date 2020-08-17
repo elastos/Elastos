@@ -2114,7 +2114,7 @@ public class MyWallet {
     }
 
     // TODO: String recipient, String amount, String utxo not use anymore
-    public BaseEntity createProposalWithdrawTransaction(String masterWalletID, String recipient, String amount, String utxo, String payload) {
+    public BaseEntity createProposalWithdrawTransaction(String masterWalletID,  String payload) {
         try {
             MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
             if (subWallet == null) {

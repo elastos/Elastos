@@ -31,11 +31,15 @@ public class ProposalWithdrawPayLoad {
     /**
      * ProposalHash : 7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513
      * OwnerPublicKey : 02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331
+     * Recipient : EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv
+     * Amount : 100000000
      * Signature : 9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109
      */
 
     private String ProposalHash;
     private String OwnerPublicKey;
+    private String Recipient;
+    private String Amount;
     private String Signature;
 
     public String getProposalHash() {
@@ -52,6 +56,22 @@ public class ProposalWithdrawPayLoad {
 
     public void setOwnerPublicKey(String OwnerPublicKey) {
         this.OwnerPublicKey = OwnerPublicKey;
+    }
+
+    public String getRecipient() {
+        return Recipient;
+    }
+
+    public void setRecipient(String Recipient) {
+        this.Recipient = Recipient;
+    }
+
+    public String getAmount() {
+        return Amount;
+    }
+
+    public void setAmount(String Amount) {
+        this.Amount = Amount;
     }
 
     public String getSignature() {
