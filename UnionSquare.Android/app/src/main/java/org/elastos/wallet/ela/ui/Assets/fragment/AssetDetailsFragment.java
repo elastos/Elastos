@@ -99,10 +99,9 @@ import org.json.JSONException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -243,12 +242,12 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 //投票状态详情
                 //  conversUnactiveVote(currentStartTime, voteInfo, depositList, crList, searchBeanList, councilList);
                 bundle = new Bundle();
-                bundle.putLong("currentStartTime", currentStartTime);
+              /*  bundle.putLong("currentStartTime", currentStartTime);
                 bundle.putString("voteInfo", voteInfo);
                 bundle.putParcelableArrayList("depositList", depositList);
                 bundle.putParcelableArrayList("crList", crList);
                 bundle.putParcelableArrayList("searchBeanList", searchBeanList);
-                bundle.putParcelableArrayList("councilList", councilList);
+                bundle.putParcelableArrayList("councilList", councilList);*/
                 bundle.putParcelableArrayList("listVoteStatus", listVoteStatus);
 
                 start(VoteStatusDetailFragment.class, bundle);
@@ -409,12 +408,9 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         listVoteStatus.add(voteStatusAgainst);
     }
 
-    Map<String, List> resultMap;
 
     public void conversUnactiveVote(long currentStartTime, String voteInfo, List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList,
                                     List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crcList, List<ProposalSearchEntity.DataBean.ListBean> voteList, List<CtListBean.Council> councilList) {
-        Map<String, List> resultMap = new HashMap();
-
         try {
             JSONArray lastVoteInfo = new JSONArray(voteInfo);
             long lastTime = 0;
@@ -459,10 +455,11 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                             }
 
                         }
+                        Collections.sort(resultList);
                         break;
                     case "CRC":
                         currentVoteStatus = listVoteStatus.get(1);
-                        currentVoteStatus.setExpire(currentEndTime-timestamp);
+                        currentVoteStatus.setExpire(currentEndTime - timestamp);
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
@@ -491,7 +488,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                         break;
                     case "CRCImpeachment"://弹劾
                         currentVoteStatus = listVoteStatus.get(2);
-                        currentVoteStatus.setExpire(currentEndTime-timestamp);
+                        currentVoteStatus.setExpire(currentEndTime - timestamp);
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
@@ -540,7 +537,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
 
                 }
-                resultMap.put(type, resultList);
+                currentVoteStatus.setData(resultList);
                 currentVoteStatus.setType(type);
                 currentVoteStatus.setTime(timestamp);
 

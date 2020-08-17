@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/sc_10ffffff_cr5"
+    android:orientation="horizontal"
+    android:padding="10dp">
+    <!-- android:background="@drawable/sc_10ffffff_cr5"-->
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:text="--"
+        android:textColor="#ffffffff" />
+
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_name"
+        android:text="--"
+        android:textColor="@color/whiter50"
+        android:textSize="10sp" />
+
+    <TextView
+        android:id="@+id/tv_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_status"
+        android:layout_marginTop="18dp"
+        android:text="--" />
+
+    <TextView
+        android:id="@+id/tv_percent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_status"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="18dp"
+        android:text="--" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_percent"
+        android:layout_marginTop="7dp"
+        android:text="@string/rejectticketela"
+        android:textColor="@color/whiter50"
+        android:textSize="10sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_percent"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="7dp"
+        android:text="@string/disagressprogress"
+        android:textColor="@color/whiter50"
+        android:textSize="10sp" />
+</RelativeLayout>

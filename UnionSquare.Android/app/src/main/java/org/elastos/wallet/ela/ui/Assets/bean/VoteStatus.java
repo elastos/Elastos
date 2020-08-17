@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 public class VoteStatus implements Parcelable {
     private String type;//唯一表示
@@ -13,6 +14,7 @@ public class VoteStatus implements Parcelable {
     private BigDecimal count;
     private long  time;//投票时间
     private long  expire;//有效期
+    private ArrayList<Object> data;//有效期
 
     public String getType() {
         return type;
@@ -70,6 +72,14 @@ public class VoteStatus implements Parcelable {
         this.expire = expire;
     }
 
+    public ArrayList<Object> getData() {
+        return data;
+    }
+
+    public void setData(ArrayList<Object> data) {
+        this.data = data;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -84,6 +94,7 @@ public class VoteStatus implements Parcelable {
         dest.writeSerializable(this.count);
         dest.writeLong(this.time);
         dest.writeLong(this.expire);
+        dest.writeList(this.data);
     }
 
     public VoteStatus() {
@@ -97,9 +108,11 @@ public class VoteStatus implements Parcelable {
         this.count = (BigDecimal) in.readSerializable();
         this.time = in.readLong();
         this.expire = in.readLong();
+        this.data = new ArrayList<Object>();
+        in.readList(this.data, Object.class.getClassLoader());
     }
 
-    public static final Creator<VoteStatus> CREATOR = new Creator<VoteStatus>() {
+    public static final Parcelable.Creator<VoteStatus> CREATOR = new Parcelable.Creator<VoteStatus>() {
         @Override
         public VoteStatus createFromParcel(Parcel source) {
             return new VoteStatus(source);

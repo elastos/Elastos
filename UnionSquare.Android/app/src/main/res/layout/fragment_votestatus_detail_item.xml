@@ -58,6 +58,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/ll_restTime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="26dp"
@@ -82,12 +83,14 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/ll_ticketnum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="26dp"
         android:orientation="horizontal">
 
         <TextView
+            android:id="@+id/tv_ticketnum_dec"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/ticketnum1"
@@ -116,7 +119,11 @@
     <android.support.v7.widget.RecyclerView
         android:layout_marginTop="12dp"
         android:id="@+id/rv"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/sc_10ffffff_cr5" />
+        />
 </LinearLayout>

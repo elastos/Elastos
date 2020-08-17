@@ -1,27 +1,23 @@
 package org.elastos.wallet.ela.ui.Assets.fragment;
 
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.ui.Assets.adapter.votestatus.DeposRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.bean.VoteStatus;
-import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
-import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
-import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
-import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.elastos.wallet.ela.utils.Arith;
+import org.elastos.wallet.ela.utils.DateUtil;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -30,7 +26,6 @@ import butterknife.Unbinder;
 public class VoteStatusDetailItemFragment extends BaseFragment {
 
 
-    Unbinder unbinder;
     @BindView(R.id.tv_type)
     TextView tvType;
     @BindView(R.id.tv_votetime)
@@ -39,17 +34,20 @@ public class VoteStatusDetailItemFragment extends BaseFragment {
     TextView tvResttime;
     @BindView(R.id.tv_ticketnum)
     TextView tvTicketnum;
+    @BindView(R.id.tv_ticketnum_dec)
+    TextView tv_ticketnumDec;
     @BindView(R.id.tv_rvtitle)
     TextView tvRvtitle;
     @BindView(R.id.rv)
     RecyclerView rv;
-    private ArrayList<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
-    private ArrayList<CtListBean.Council> councilList;
-    private ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList;
-    private ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
-    private ArrayList<VoteStatus> listVoteStatus;
-    private long currentStartTime;
-    private String voteInfo;
+    @BindView(R.id.ll_restTime)
+    LinearLayout llRestTime;
+    @BindView(R.id.ll_ticketnum)
+    LinearLayout llTicketnum;
+    Unbinder unbinder;
+
+    private VoteStatus voteStatus;
+
 
     @Override
     protected int getLayoutId() {
@@ -58,24 +56,67 @@ public class VoteStatusDetailItemFragment extends BaseFragment {
 
     @Override
     protected void setExtraData(Bundle data) {
-        currentStartTime = data.getLong("currentStartTime");
-        voteInfo = data.getString("voteInfo");
-        depositList = data.getParcelableArrayList("depositList");
-        crList = data.getParcelableArrayList("crList");
-        searchBeanList = data.getParcelableArrayList("searchBeanList");
-        councilList = data.getParcelableArrayList("councilList");
-        listVoteStatus = data.getParcelableArrayList("listVoteStatus");
-        // conversUnactiveVote(currentStartTime, voteInfo, depositList, crList, searchBeanList, councilList);
+
+        voteStatus = data.getParcelable("voteStatus");
+
+        if (voteStatus == null) return;
+        tvType.setText(voteStatus.getName());
+        tvVotetime.setText(DateUtil.time(voteStatus.getTime(), getContext()));
+        String type = voteStatus.getType();
+        int status = voteStatus.getStatus();
+        //0没有投票   1 有投票部分失效 2 有投票完全失效 3有投票无失效
+        switch (type) {
+            case "Delegate":
+                rv.setBackgroundResource(R.drawable.sc_10ffffff_cr5);
+                tvResttime.setText("--");
+                tvTicketnum.setText(Arith.div(voteStatus.getCount(), MyWallet.RATE_S, 8).longValue() + " ELA");
+                break;
+
+            case "CRC":
+                rv.setBackgroundResource(R.drawable.sc_10ffffff_cr5);
+                if (status == 2) {
+                    tvResttime.setText(R.string.expired);
+                    tvResttime.setBackgroundResource(R.drawable.sc_white20_cr2_stc_ffffff);
+                } else
+                    tvResttime.setText(DateUtil.time(voteStatus.getExpire(), getContext()));
+                tv_ticketnumDec.setText(R.string.ticketcount);
+                tvTicketnum.setText(Arith.div(voteStatus.getCount(), MyWallet.RATE_S, 8).longValue() + " ELA");
+
+                break;
+            case "CRCImpeachment":
+
+                if (status == 2) {
+                    tvResttime.setText(R.string.expired);
+                    tvResttime.setBackgroundResource(R.drawable.sc_white20_cr2_stc_ffffff);
+                } else
+                    tvResttime.setText(DateUtil.time(voteStatus.getExpire(), getContext()));
+                llTicketnum.setVisibility(View.GONE);
+
+                break;
+            case "CRCProposal":
+                llRestTime.setVisibility(View.GONE);
+                llTicketnum.setVisibility(View.GONE);
+                break;
+        }
+        setDeposRecyclerView(type, voteStatus.getData());
 
     }
 
-    public static VoteStatusDetailItemFragment getInstance(String type, ArrayList arrayList, String vote) {
+    private void setDeposRecyclerView(String type, ArrayList<Object> data) {
+        if (data == null || data.size() == 0) {
+            return;
+        }
+        DeposRecAdapetr deposRecAdapetr = new DeposRecAdapetr(getContext(), type, data);
+        rv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        rv.setAdapter(deposRecAdapetr);
+
+    }
+
+    public static VoteStatusDetailItemFragment getInstance(VoteStatus voteStatus) {
         VoteStatusDetailItemFragment detailItemFragment = new VoteStatusDetailItemFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("vote", vote);
-        bundle.putString("type", type);
-        bundle.putParcelableArrayList("arrayList", arrayList);
-        detailItemFragment.setExtraData(bundle);
+        bundle.putParcelable("voteStatus", voteStatus);
+        detailItemFragment.setArguments(bundle);
         return detailItemFragment;
     }
 
@@ -84,130 +125,6 @@ public class VoteStatusDetailItemFragment extends BaseFragment {
         mRootView.setBackgroundResource(R.drawable.sc_80000000_stc_ffffff);
     }
 
-    public void conversUnactiveVote(long currentStartTime, String voteInfo, List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList,
-                                    List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crcList, List<ProposalSearchEntity.DataBean.ListBean> voteList, List<CtListBean.Council> councilList) {
-
-
-        try {
-            JSONArray lastVoteInfo = new JSONArray(voteInfo);
-            long lastTime = 0;
-            BigDecimal maxCount = new BigDecimal(0);
-            for (int i = 0; i < lastVoteInfo.length(); i++) {
-                JSONObject jsonObject = lastVoteInfo.getJSONObject(i);
-                String type = jsonObject.getString("Type");
-
-                long timestamp = jsonObject.getLong("Timestamp");
-                if (lastTime < timestamp) {
-                    lastTime = timestamp;
-                }
-                JSONObject votes = jsonObject.getJSONObject("Votes");
-                Iterator it = votes.keys();
-                JSONArray candidates = new JSONArray();
-                VoteStatus voteStatus = null;
-                BigDecimal count = new BigDecimal(0);
-                switch (type) {
-                    case "Delegate":
-                        voteStatus = listVoteStatus.get(0);
-                        while (it.hasNext()) {
-                            String key = (String) it.next();
-                            String value = votes.getString(key);
-                            count = new BigDecimal(value);
-                            if (depositList == null || depositList.size() == 0) {
-                                candidates.put(key);
-                                continue;
-                            }
-                            for (VoteListBean.DataBean.ResultBean.ProducersBean bean : depositList) {
-                                if (bean.getOwnerpublickey().equals(key) && !bean.getState().equals("Active")) {
-                                    candidates.put(key);
-                                    break;
-                                }
-                            }
-
-                        }
-                        break;
-                    case "CRC":
-                        voteStatus = listVoteStatus.get(1);
-                        while (it.hasNext()) {
-                            String key = (String) it.next();
-                            String value = votes.getString(key);
-                            count = count.add(new BigDecimal(value));
-                            if (timestamp < currentStartTime || crcList == null || crcList.size() == 0) {
-                                candidates.put(key);
-                                continue;
-                            }
-                            for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : crcList) {
-                                if (bean.getDid().equals(key) && !bean.getState().equals("Active")) {
-                                    candidates.put(key);
-                                    break;
-                                }
-                            }
-                        }
-
-                        break;
-                    case "CRCImpeachment"://弹劾
-                        voteStatus = listVoteStatus.get(2);
-                        while (it.hasNext()) {
-                            String key = (String) it.next();
-                            String value = votes.getString(key);
-                            count = count.add(new BigDecimal(value));
-                            if (timestamp < currentStartTime || councilList == null || councilList.size() == 0) {
-                                candidates.put(key);
-                                continue;
-                            }
-                            for (CtListBean.Council bean : councilList) {
-                                if ((bean.getDid().equals(key) && !bean.getStatus().equals("Elected"))) {
-                                    candidates.put(key);
-                                    break;
-                                }
-                            }
-                        }
-                        break;
-                    case "CRCProposal":
-                        voteStatus = listVoteStatus.get(3);
-                        while (it.hasNext()) {
-                            String key = (String) it.next();
-                            String value = votes.getString(key);
-                            count = count.add(new BigDecimal(value));
-                            if (voteList == null || voteList.size() == 0) {
-                                candidates.put(key);
-                                continue;
-                            }
-                            for (ProposalSearchEntity.DataBean.ListBean bean : voteList) {
-                                if (bean.getProposalHash().equals(key) && !bean.getStatus().equals("NOTIFICATION")) {
-                                    candidates.put(key);
-                                    break;
-                                }
-                            }
-                        }
-                        break;
-
-
-                }
-                if (voteStatus != null) {
-                    //默认0没有投票   1 有投票部分失效 2 有投票完全失效 3有投票无失效
-                    if (candidates.length() == 0) {
-                        voteStatus.setStatus(3);
-                    } else if (candidates.length() == votes.length()) {
-                        voteStatus.setStatus(2);
-                    } else {
-                        voteStatus.setStatus(1);
-                    }
-                    voteStatus.setCount(count);
-                    if (maxCount.compareTo(count) < 0) {
-                        maxCount = count;
-                    }
-                }
-
-
-            }
-            //   tvVoteTime.setText(getString(R.string.lastvotetime) + DateUtil.time(lastTime, getContext()));
-            //tvVoteCount.setText(getString(R.string.allcount) + Arith.div(maxCount, MyWallet.RATE_S, 8).longValue() + " ELA");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

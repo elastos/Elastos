@@ -702,6 +702,7 @@
     <string name="noperformancerecord">Performance Record not available</string>
     <string name="impeachmemeber">Impeach Council Member</string>
     <string name="impeachvotes">Impeachment Votes</string>
+    <string name="impeachvotesela">Impeachment Votes(ELA)</string>
     <string name="impeachment">Impeach</string>
     <string name="inputpwd">Enter Password</string>
     <string name="impeachrequestsuccess">Impeachment request sent successfully. You will receive a transaction confirmation shortly.</string>
@@ -735,6 +736,7 @@
     <string name="proposalfinish">Termination</string>
     <string name="proposalabandon">Cancellation</string>
     <string name="rejectticket">Negative Vote Count</string>
+    <string name="rejectticketela">Negative Vote Count(ELA)</string>
     <string name="suremessage">Confirm Information</string>
     <string name="feedbackhash">Feedback Hash</string>
     <string name="optionhash">Review Hash</string>
@@ -797,4 +799,6 @@
     <string name="votetime">投票时间</string>
     <string name="resteffecttime">剩余有效期</string>
     <string name="ticketnum1">票数</string>
+    <string name="ticketcount">总票数</string>
+    <string name="impeachinefect">委员弹劾已失效</string>
 </resources>
