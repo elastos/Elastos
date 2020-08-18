@@ -25,6 +25,8 @@
 #include <Plugin/Transaction/Payload/CRCProposalReview.h>
 #include <Plugin/Transaction/Payload/CRCProposalTracking.h>
 #include <Plugin/Transaction/Payload/CRCProposalWithdraw.h>
+#include <Plugin/Transaction/Payload/CRCProposalRealWithdraw.h>
+#include <Plugin/Transaction/Payload/CRCouncilMemberClaimNode.h>
 #include <Wallet/Wallet.h>
 
 #include <Common/Log.h>
@@ -165,7 +167,8 @@ namespace Elastos {
 			return _type == registerCR ||
 				   _type == unregisterCR ||
 				   _type == updateCR ||
-				   _type == returnCRDepositCoin;
+				   _type == returnCRDepositCoin ||
+				   _type == crCouncilMemberClaimNode;
 		}
 
 		bool Transaction::IsProposalTransaction() const {
@@ -866,6 +869,10 @@ namespace Elastos {
 				payload = PayloadPtr(new CRCProposalTracking());
 			} else if (type == crcProposalWithdraw) {
 				payload = PayloadPtr(new CRCProposalWithdraw());
+			} else if (type == crcProposalRealWithdraw) {
+				payload = PayloadPtr(new CRCProposalRealWithdraw());
+			} else if (type == crCouncilMemberClaimNode) {
+				payload = PayloadPtr(new CRCouncilMemberClaimNode());
 			}
 
 			return payload;
