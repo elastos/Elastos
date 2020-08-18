@@ -102,7 +102,7 @@ public class DidDetailFragment extends BaseFragment {
         //ivTitleRight.setImageResource(R.mipmap.del_icon);
         diduiPresenter = new DIDUIPresenter();
         netCredentialSubjectBean = getMyDID().getCredentialProObj(MyDID.CREDENCIALID_NET, getMyDID().getDidString());
-        if (netCredentialSubjectBean.whetherEmpty()) {
+        if (netCredentialSubjectBean==null||netCredentialSubjectBean.whetherEmpty()) {
             tvNetline.setVisibility(View.GONE);
         }else {
             initItemDate();

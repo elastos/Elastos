@@ -53,6 +53,7 @@ public class Constant {
     public static final int TRANSFER = 0x4;//打开转账页面
     public static final int DIDCARD = 0x5;//打开did详情
     public static final String PROPOSALINPUT = "proposalInput";//建议变提案
+    public static final String CRCDEPOSIT = "crcDeposit";//委员领取/管理cr节点
     public static final String PROPOSALREVIEW = "proposalReview";//提案评议期
     public static final String PROPOSALPROCESS = "proposalPROCESS";//提案公执行期 提案人反馈
     public static final String PROPOSALSECRET = "proposalSecret";//提案公执行期 秘书长签名

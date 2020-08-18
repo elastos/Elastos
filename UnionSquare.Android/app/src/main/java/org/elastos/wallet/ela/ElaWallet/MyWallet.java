@@ -2113,8 +2113,8 @@ public class MyWallet {
         }
     }
 
-    // TODO: String recipient, String amount, String utxo not use anymore
-    public BaseEntity createProposalWithdrawTransaction(String masterWalletID,  String payload) {
+
+    public BaseEntity createProposalWithdrawTransaction(String masterWalletID, String payload) {
         try {
             MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
             if (subWallet == null) {
@@ -2125,6 +2125,34 @@ public class MyWallet {
             return new CommmonStringEntity(SUCCESSCODE, info);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID) + "CreateProposalWithdrawTransaction");
+        }
+    }
+
+    public BaseEntity CRCouncilMemberClaimNodeDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.CRCouncilMemberClaimNodeDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "CRCouncilMemberClaimNodeDigest");
+        }
+    }
+
+    public BaseEntity createCRCouncilMemberClaimNodeTransaction(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.CreateCRCouncilMemberClaimNodeTransaction(payload, "");
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "createCRCouncilMemberClaimNodeTransaction");
         }
     }
 

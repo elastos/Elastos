@@ -69,6 +69,8 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     TextView description;
     @BindView(R.id.refresh_ct_info)
     TextView refreshInfo;
+    @BindView(R.id.tv_getdepos)
+    TextView tvGetdepos;
     @BindView(R.id.refresh_ct_did)
     TextView refreshDid;
     @BindView(R.id.deposit)
@@ -91,7 +93,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("VOTING"))?getContext().getString(R.string.votemanager):getContext().getString(R.string.ctmanager));
+        setToobar(toolbar, toolbarTitle, (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("VOTING")) ? getContext().getString(R.string.votemanager) : getContext().getString(R.string.ctmanager));
         registReceiver();
         presenter = new CtManagePresenter();
         presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
@@ -113,20 +115,20 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
         depositAmount = data.getString("depositAmount");
 
         //当届
-        if(!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("CURRENT")) {
+        if (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("CURRENT")) {
             //任职不正常
-            if(!AppUtlis.isNullOrEmpty(status)
+            if (!AppUtlis.isNullOrEmpty(status)
                     && !AppUtlis.isNullOrEmpty(depositAmount)
                     && !depositAmount.trim().equalsIgnoreCase("0")
-                   && (status.equalsIgnoreCase("Terminated")
-                            || status.equalsIgnoreCase("Impeached")
-                            || status.equalsIgnoreCase("Returned"))) {
+                    && (status.equalsIgnoreCase("Terminated")
+                    || status.equalsIgnoreCase("Impeached")
+                    || status.equalsIgnoreCase("Returned"))) {
                 showFirstLayout();
             } else {
                 showSecondLayout();
                 showRefreshView();
             }
-        } else if(!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("VOTING")) {
+        } else if (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("VOTING")) {
             showSecondLayout();
             showDepositView();
         } else { // from FindFragment
@@ -136,22 +138,33 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
 
     private void showRefreshView() {
         refreshInfo.setVisibility(View.VISIBLE);
+        tvGetdepos.setVisibility(View.VISIBLE);
         refreshDid.setVisibility(View.VISIBLE);
         deposit.setVisibility(View.GONE);
     }
 
     private void showDepositView() {
         refreshInfo.setVisibility(View.GONE);
+        tvGetdepos.setVisibility(View.GONE);
         refreshDid.setVisibility(View.GONE);
         deposit.setVisibility(View.VISIBLE);
     }
 
 
-    @OnClick({R.id.refresh_ct_info, R.id.refresh_ct_did, R.id.deposit, R.id.tv_close, R.id.tv_deposit})
+    @OnClick({R.id.refresh_ct_info, R.id.refresh_ct_did, R.id.deposit, R.id.tv_close, R.id.tv_deposit, R.id.tv_getdepos})
     public void onClick(View view) {
         Bundle bundle = new Bundle();
         switch (view.getId()) {
+            case R.id.tv_getdepos:
+                //领取或管理节点
+                bundle.putString("name", name);
+                bundle.putString("did", did);
+                bundle.putString("pk", "");
+                bundle.putParcelable("wallet", wallet);
+                start(GetDepositFragment.class, bundle);
+                break;
             case R.id.refresh_ct_info:
+                //更新委员信息
                 bundle.putParcelable("crStatusBean", crStatusBean);
                 start(UpdateCtInformationFragment.class, bundle);
 //                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid().replace("did:elastos:", ""), this, "2");
@@ -162,8 +175,9 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
                 start(AuthorizationFragment.class, bundle);
                 break;
             case R.id.deposit:
+                //提取质押金
 //                presenter.getCRDepositcoin(did, this);
-                if(!AppUtlis.isNullOrEmpty(depositAmount)) {
+                if (!AppUtlis.isNullOrEmpty(depositAmount)) {
                     String ownerPublicKey = crStatusBean.getInfo().getCROwnerPublicKey();
                     presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey,
                             Arith.mulRemoveZero(depositAmount, MyWallet.RATE_S).toPlainString(), "", this);
@@ -182,7 +196,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     private void showFirstLayout() {
         firstLayout.setVisibility(View.VISIBLE);
         secondLayout.setVisibility(View.GONE);
-        if(AppUtlis.isNullOrEmpty(status)) return;
+        if (AppUtlis.isNullOrEmpty(status)) return;
         switch (status) {
             case "Terminated":
                 promptTv.setText(getString(R.string.completedialoghint));
@@ -200,9 +214,8 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     private void showSecondLayout() {
         firstLayout.setVisibility(View.GONE);
         secondLayout.setVisibility(View.VISIBLE);
-
-        if(!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("VOTING")) {
-            nameTv.setText(name);
+        nameTv.setText(name);
+        if (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("VOTING")) {
             description.setText(R.string.votingfinishhint);
             showDepositView();
             return;
@@ -255,6 +268,9 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
 
             case "getRegisteredCRInfo":
                 crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
+              /*  if (!"Unregistered".equals(crStatusBean.getStatus())) {
+                    tvGetdepos.setText(R.string.managecrnode);
+                }*/
                 break;
         }
     }

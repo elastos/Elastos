@@ -146,6 +146,7 @@ public class VoteTransferActivity extends BaseActivity {
             case Constant.DIDSIGNUP:
             case Constant.DIDUPDEATE:
             case Constant.PROPOSALINPUT:
+            case Constant.CRCDEPOSIT:
                 llAmount.setVisibility(View.GONE);
 
                 break;
@@ -228,7 +229,7 @@ public class VoteTransferActivity extends BaseActivity {
             case R.id.tv_next:
                 if (Constant.PROPOSALINPUT.equals(type) || Constant.PROPOSALREVIEW.equals(type)
                         || Constant.PROPOSALPROCESS.equals(type) || Constant.PROPOSALSECRET.equals(type)
-                        || Constant.PROPOSALWITHDRAW.equals(type)) {
+                        || Constant.PROPOSALWITHDRAW.equals(type)|| Constant.CRCDEPOSIT.equals(type)) {
                     //为了在展示手续费后把密码返回给fragment
                   /*  intent = new Intent(this, VertifyPwdActivity.class);
                     intent.putExtra("walletId", chainId);

@@ -85,7 +85,7 @@ public class DIDCardDetailFragment extends BaseFragment {
         ivTitleLeft.setImageResource(R.mipmap.window_750_close);
         tvTitle.setText(R.string.cardinfo);
         diduiPresenter = new DIDUIPresenter();
-        if (!credentialSubjectBean.whetherEmpty()) {
+        if (credentialSubjectBean != null && !credentialSubjectBean.whetherEmpty()) {
             initItemDate();
         }
     }

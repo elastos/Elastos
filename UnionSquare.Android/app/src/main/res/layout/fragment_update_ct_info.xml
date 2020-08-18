@@ -13,7 +13,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#51797b"
         android:layout_margin="30dp"
         android:paddingLeft="15dp"
         android:paddingRight="15dp"

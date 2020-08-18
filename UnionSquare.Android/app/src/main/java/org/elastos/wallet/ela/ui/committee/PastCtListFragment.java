@@ -293,7 +293,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         } else if (!AppUtlis.isNullOrEmpty(type)
                 && type.equalsIgnoreCase("CouncilMember")
                 && !AppUtlis.isNullOrEmpty(depositAmount)
-                && !depositAmount.trim().equalsIgnoreCase("0")) {
+              /*  && !depositAmount.trim().equalsIgnoreCase("0")*/) {
             isCrc = true;
         } else {
             ivTitleRight.setVisibility(View.GONE);
