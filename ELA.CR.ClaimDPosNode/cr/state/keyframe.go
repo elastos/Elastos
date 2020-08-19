@@ -1382,8 +1382,7 @@ func copyFixed64Map(src map[string]common.Fixed64) (dst map[string]common.Fixed6
 func getCRMembers(src map[common.Uint168]*CRMember) []*CRMember {
 	dst := make([]*CRMember, 0, len(src))
 	for _, v := range src {
-		m := *v
-		dst = append(dst, &m)
+		dst = append(dst, v)
 	}
 	return dst
 }

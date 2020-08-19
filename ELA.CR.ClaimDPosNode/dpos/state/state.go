@@ -1303,14 +1303,16 @@ func (s *State) updateVersion(tx *types.Transaction, height uint32) {
 	})
 }
 
-func (s *State) getCRMembersMap() map[string]*state.CRMember {
+func (s *State) getClaimedCRMembersMap() map[string]*state.CRMember {
 	crMembersMap := make(map[string]*state.CRMember)
 	if s.getCRMembers == nil {
 		return crMembersMap
 	}
 	crMembers := s.getCRMembers()
 	for _, m := range crMembers {
-		crMembersMap[hex.EncodeToString(m.DPOSPublicKey)] = m
+		if m.DPOSPublicKey != nil {
+			crMembersMap[hex.EncodeToString(m.Info.Code[1:len(m.Info.Code)-1])] = m
+		}
 	}
 	return crMembersMap
 }
@@ -1397,7 +1399,7 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 		return
 	}
 
-	crMembersMap := s.getCRMembersMap()
+	crMembersMap := s.getClaimedCRMembersMap()
 	// Set illegal producers to FoundBad state
 	for _, pk := range illegalProducers {
 		key, ok := s.NodeOwnerKeys[hex.EncodeToString(pk)]
@@ -1539,7 +1541,7 @@ func (s *State) countArbitratorsInactivity(height uint32,
 	}
 	changingArbiters[s.getProducerKey(confirm.Proposal.Sponsor)] = true
 
-	crMembersMap := s.getCRMembersMap()
+	crMembersMap := s.getClaimedCRMembersMap()
 	// CRC producers are not in the ActivityProducers,
 	// so they will not be inactive
 	for k, v := range changingArbiters {
