@@ -109,17 +109,25 @@ func (v *Validator) checkHeader(params ...interface{}) (err error) {
 	timeSource := AssertMedianTimeSource(params[2])
 	header := block.Header
 	height := block.GetHeight()
-	if height >= v.chain.chainParams.CheckPowHeaderHeight {
+	if height > v.chain.chainParams.CheckPowHeaderHeight {
 		validateHeight := header.GetAuxPow().MainBlockHeader.Height
-		if err := v.spvService.CheckCRCArbiterSignature(validateHeight, &header.GetAuxPow().SideAuxBlockTx); err != nil {
-			return err
+		if height >= v.chain.chainParams.CRClaimDPOSNodeStartHeight {
+			if err := v.spvService.CheckCRCArbiterSignatureV1(validateHeight, &header.GetAuxPow().SideAuxBlockTx); err != nil {
+				return err
+			}
+			spvHeader, err := v.spvService.HeaderStore().GetByHeight(validateHeight)
+			if err != nil {
+				return err
+			}
+			if spvHeader.Bits() != header.GetAuxPow().MainBlockHeader.Bits {
+				return errors.New("[powCheckHeader] bits not matched")
+			}
+		} else {
+
 		}
-		spvHeader, err := v.spvService.HeaderStore().GetByHeight(validateHeight)
-		if err != nil {
+	} else {
+		if err := v.spvService.CheckCRCArbiterSignatureV0(&header.GetAuxPow().SideAuxBlockTx); err != nil {
 			return err
-		}
-		if spvHeader.Bits() != header.GetAuxPow().MainBlockHeader.Bits {
-			return errors.New("[powCheckHeader] bits not matched")
 		}
 	}
 
