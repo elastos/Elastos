@@ -110,7 +110,32 @@ func (s *Service) VerifyTransaction(tx *types.Transaction) error {
 	return nil
 }
 
-func (s *Service) CheckCRCArbiterSignature(height uint32, sideChainPowTx *ela.Transaction) error {
+func (s *Service) CheckCRCArbiterSignatureV0(sideChainPowTx *ela.Transaction) error {
+	payload, ok := sideChainPowTx.Payload.(*elapayload.SideChainPow)
+	if !ok {
+		return errors.New("[checkCRCArbiterSignature], invalid sideChainPow tx")
+	}
+	for _, v := range s.chainParams.CRCArbiters {
+		CRC, err := common.HexStringToBytes(v)
+		if err != nil {
+			return err
+		}
+		pubKey, err := crypto.DecodePoint(CRC)
+		if err != nil {
+			return err
+		}
+		buf := new(bytes.Buffer)
+		if err := payload.SerializeUnsigned(buf, elapayload.SideChainPowVersion); err != nil {
+			return err
+		}
+		if err := crypto.Verify(*pubKey, buf.Bytes(), payload.Signature); err == nil {
+			return nil
+		}
+	}
+	return errors.New("CRC arbiter expected")
+}
+
+func (s *Service) CheckCRCArbiterSignatureV1(height uint32, sideChainPowTx *ela.Transaction) error {
 	payload, ok := sideChainPowTx.Payload.(*elapayload.SideChainPow)
 	if !ok {
 		return errors.New("[checkCRCArbiterSignature], invalid sideChainPow tx")

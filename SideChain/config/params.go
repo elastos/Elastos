@@ -81,4 +81,7 @@ type Params struct {
 	// CheckPowHeaderHeight defines the height where stating check if pow is coming
 	// from main chain.
 	CheckPowHeaderHeight uint32
+
+	// CRClaimDPOSNodeStartHeight defines the height where starting claim DPOS node
+	CRClaimDPOSNodeStartHeight uint32
 }
