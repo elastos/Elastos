@@ -631,7 +631,6 @@ func (a *arbitrators) distributeWithNormalArbitratorsV1(height uint32, reward co
 		return roundReward, reward, nil
 	}
 	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
-
 	realDPOSReward := common.Fixed64(0)
 	for _, arbiter := range a.currentArbitrators {
 		ownerHash := arbiter.GetOwnerProgramHash()
@@ -1317,7 +1316,7 @@ func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32)
 }
 
 func (a *arbitrators) getCRCArbitersV1(height uint32) (map[common.Uint168]ArbiterMember, error) {
-	crMembers := a.crCommittee.GetAllMembers()
+	crMembers := a.crCommittee.GetAllMembersCopy()
 	if len(crMembers) != len(a.chainParams.CRCArbiters) {
 		return nil, errors.New("CRC members count mismatch with CRC arbiters")
 	}
@@ -1374,7 +1373,7 @@ func (a *arbitrators) getCRCArbitersV1(height uint32) (map[common.Uint168]Arbite
 }
 
 func (a *arbitrators) getCRCArbitersV0() (map[common.Uint168]ArbiterMember, error) {
-	crMembers := a.crCommittee.GetAllMembers()
+	crMembers := a.crCommittee.GetAllMembersCopy()
 	if len(crMembers) != len(a.chainParams.CRCArbiters) {
 		return nil, errors.New("CRC members count mismatch with CRC arbiters")
 	}

@@ -181,6 +181,18 @@ func (c *Committee) GetAllMembers() []*CRMember {
 	return result
 }
 
+// copy all CRMembers ordered by CID
+func (c *Committee) GetAllMembersCopy() []*CRMember {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	result := getCRMembersCopy(c.Members)
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Info.DID.Compare(result[j].Info.DID) <= 0
+	})
+	return result
+}
+
 // get all elected CRMembers
 func (c *Committee) GetElectedMembers() []*CRMember {
 	c.mtx.RLock()

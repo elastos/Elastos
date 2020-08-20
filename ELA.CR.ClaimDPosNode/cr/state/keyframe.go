@@ -1387,6 +1387,15 @@ func getCRMembers(src map[common.Uint168]*CRMember) []*CRMember {
 	return dst
 }
 
+func getCRMembersCopy(src map[common.Uint168]*CRMember) []*CRMember {
+	dst := make([]*CRMember, 0, len(src))
+	for _, v := range src {
+		m := *v
+		dst = append(dst, &m)
+	}
+	return dst
+}
+
 func getHistoryMembers(src map[uint64]map[common.Uint168]*CRMember) []*CRMember {
 	dst := make([]*CRMember, 0, len(src))
 	for _, v := range src {
