@@ -1116,10 +1116,11 @@ func (c *Committee) processCurrentCandidates(height uint32,
 
 func (c *Committee) generateMember(candidate *Candidate) *CRMember {
 	return &CRMember{
-		Info:             candidate.info,
-		ImpeachmentVotes: 0,
-		DepositHash:      candidate.depositHash,
-		MemberState:      MemberElected,
+		Info:                  candidate.info,
+		ImpeachmentVotes:      0,
+		DepositHash:           candidate.depositHash,
+		MemberState:           MemberElected,
+		ActivateRequestHeight: math.MaxUint32,
 	}
 }
 
