@@ -431,10 +431,11 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 	}
 	a.history.Commit(block.Height)
 
-	if block.Height > a.bestHeight()-MaxSnapshotLength {
+	bestHeight := a.bestHeight()
+	if block.Height > bestHeight-MaxSnapshotLength {
 		a.snapshot(block.Height)
 	}
-	if a.NeedNextTurnDposInfo {
+	if block.Height >= bestHeight && a.NeedNextTurnDposInfo {
 		a.notifyNextTurnDPOSInfoTx(block.Height, versionHeight)
 	}
 	a.mtx.Unlock()

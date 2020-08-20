@@ -1589,6 +1589,7 @@ func (s *State) tryUpdateCRMemberInactivity(crMember *state.CRMember,
 	if height-crMember.InactiveCountingHeight >= s.chainParams.MaxInactiveRounds {
 		crMember.MemberState = state.MemberInactive
 		crMember.InactiveCountingHeight = 0
+		log.Info("at height", height, crMember.Info.NickName, "changed to inactive")
 	}
 }
 
