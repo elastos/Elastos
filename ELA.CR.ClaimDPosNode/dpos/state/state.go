@@ -700,7 +700,11 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	s.ProcessVoteStatisticsBlock(block)
 
 	if confirm != nil {
-		s.countArbitratorsInactivity(block.Height, confirm)
+		if block.Height >= s.chainParams.CRClaimDPOSNodeStartHeight {
+			s.countArbitratorsInactivityV1(block.Height, confirm)
+		} else {
+			s.countArbitratorsInactivityV0(block.Height, confirm)
+		}
 	}
 
 	// Commit changes here if no errors found.
@@ -1516,7 +1520,61 @@ func (s *State) revertSettingInactiveProducer(producer *Producer, key string,
 
 // countArbitratorsInactivity count arbitrators inactive rounds, and change to
 // inactive if more than "MaxInactiveRounds"
-func (s *State) countArbitratorsInactivity(height uint32,
+func (s *State) countArbitratorsInactivityV1(height uint32,
+	confirm *payload.Confirm) {
+	// check inactive arbitrators after producers has participated in
+	if height < s.chainParams.PublicDPOSHeight {
+		return
+	}
+
+	// changingArbiters indicates the arbiters that should reset inactive
+	// counting state. With the value of true means the producer is on duty or
+	// is not current arbiter any more, or just becoming current arbiter; and
+	// false means producer is arbiter in both heights and not on duty.
+	changingArbiters := make(map[string]bool)
+	for _, a := range s.getArbiters() {
+		key := s.getProducerKey(a.NodePublicKey)
+		changingArbiters[key] = false
+	}
+	changingArbiters[s.getProducerKey(confirm.Proposal.Sponsor)] = true
+
+	crMembersMap := s.getClaimedCRMembersMap()
+	// CRC producers are not in the ActivityProducers,
+	// so they will not be inactive
+	for k, v := range changingArbiters {
+		needReset := v // avoiding pass iterator to closure
+
+		if s.isInElectionPeriod != nil && s.isInElectionPeriod() {
+			if cr, ok := crMembersMap[k]; ok {
+				oriState := cr.MemberState
+				oriCountingHeight := cr.InactiveCountingHeight
+				s.history.Append(height, func() {
+					s.tryUpdateCRMemberInactivity(cr, needReset, height)
+				}, func() {
+					s.tryRevertCRMemberInactivity(cr, oriState, oriCountingHeight)
+				})
+				continue
+			}
+		}
+
+		key := k // avoiding pass iterator to closure
+		producer, ok := s.ActivityProducers[key]
+		if !ok {
+			continue
+		}
+		countingHeight := producer.inactiveCountingHeight
+
+		s.history.Append(height, func() {
+			s.tryUpdateInactivity(key, producer, needReset, height)
+		}, func() {
+			s.tryRevertInactivity(key, producer, needReset, height, countingHeight)
+		})
+	}
+}
+
+// countArbitratorsInactivity count arbitrators inactive rounds, and change to
+// inactive if more than "MaxInactiveRounds"
+func (s *State) countArbitratorsInactivityV0(height uint32,
 	confirm *payload.Confirm) {
 	// check inactive arbitrators after producers has participated in
 	if height < s.chainParams.PublicDPOSHeight {
@@ -1541,24 +1599,10 @@ func (s *State) countArbitratorsInactivity(height uint32,
 	}
 	changingArbiters[s.getProducerKey(confirm.Proposal.Sponsor)] = true
 
-	crMembersMap := s.getClaimedCRMembersMap()
 	// CRC producers are not in the ActivityProducers,
 	// so they will not be inactive
 	for k, v := range changingArbiters {
 		needReset := v // avoiding pass iterator to closure
-
-		if s.isInElectionPeriod != nil && s.isInElectionPeriod() {
-			if cr, ok := crMembersMap[k]; ok {
-				oriState := cr.MemberState
-				oriCountingHeight := cr.InactiveCountingHeight
-				s.history.Append(height, func() {
-					s.tryUpdateCRMemberInactivity(cr, needReset, height)
-				}, func() {
-					s.tryRevertCRMemberInactivity(cr, oriState, oriCountingHeight)
-				})
-				continue
-			}
-		}
 
 		key := k // avoiding pass iterator to closure
 		producer, ok := s.ActivityProducers[key]
