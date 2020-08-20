@@ -416,12 +416,12 @@ func (c *Committee) updateProposals(height uint32, inElectionPeriod bool) {
 	c.manager.history.Commit(height)
 }
 
-func (c *Committee) updateCRMembers(height uint32, inElectionPeriod bool) uint32 {
+func (c *Committee) updateCRMembers(
+	height uint32, inElectionPeriod bool) (newImpeachedCount uint32) {
 	if !inElectionPeriod {
-		return 0
+		return
 	}
 	circulation := c.CirculationAmount
-	var count uint32
 	for _, v := range c.Members {
 		if v.MemberState != MemberElected && v.MemberState != MemberInactive {
 			continue
@@ -430,10 +430,10 @@ func (c *Committee) updateCRMembers(height uint32, inElectionPeriod bool) uint32
 		if v.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
 			c.params.VoterRejectPercentage/100.0) {
 			c.transferCRMemberState(v, height)
-			count++
+			newImpeachedCount++
 		}
 	}
-	return count
+	return
 }
 
 func (c *Committee) transferCRMemberState(crMember *CRMember, height uint32) {
@@ -717,13 +717,14 @@ func (c *Committee) tryStartVotingPeriod(height uint32) (inElection bool) {
 
 	newImpeachedCount := c.updateCRMembers(height, inElection)
 
-	var normalCount uint32
+	var impeachedCount uint32
 	for _, m := range c.Members {
-		if m.MemberState == MemberElected {
-			normalCount++
+		if m.MemberState == MemberImpeached {
+			impeachedCount++
 		}
 	}
-	if normalCount-newImpeachedCount < c.params.CRAgreementCount {
+	if impeachedCount+newImpeachedCount >
+		uint32(len(c.params.CRCArbiters))-c.params.CRAgreementCount {
 		lastVotingStartHeight := c.LastVotingStartHeight
 		inElectionPeriod := c.InElectionPeriod
 		c.lastHistory.Append(height, func() {

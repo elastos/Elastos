@@ -2012,7 +2012,7 @@ func TestCommittee_RollbackCRCImpeachmentAndReelectionTx(t *testing.T) {
 	// process
 
 	//here change committee
-	committee.params.CRAgreementCount = 3
+	committee.params.CRAgreementCount = 2
 	currentHeight++
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{Height: currentHeight}}, nil)
