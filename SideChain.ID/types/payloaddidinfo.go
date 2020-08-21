@@ -77,7 +77,7 @@ func (d *DIDHeaderInfo) Deserialize(r io.Reader, version byte) error {
 
 // proof of DID transaction payload
 type DIDProofInfo struct {
-	Type               string `json:"type"`
+	Type               string `json:"type,omitempty"`
 	VerificationMethod string `json:"verificationMethod"`
 	Signature          string `json:"signature"`
 }
