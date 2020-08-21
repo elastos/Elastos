@@ -1533,6 +1533,9 @@ func (s *State) countArbitratorsInactivityV1(height uint32,
 	// false means producer is arbiter in both heights and not on duty.
 	changingArbiters := make(map[string]bool)
 	for _, a := range s.getArbiters() {
+		if a.IsCRMember && !a.ClaimedDPOSNode {
+			continue
+		}
 		key := s.getProducerKey(a.NodePublicKey)
 		changingArbiters[key] = false
 	}
@@ -1632,8 +1635,10 @@ func (s *State) tryUpdateCRMemberInactivity(crMember *state.CRMember,
 
 	if height-crMember.InactiveCountingHeight >= s.chainParams.MaxInactiveRounds {
 		crMember.MemberState = state.MemberInactive
+		log.Info("at height", height, crMember.Info.NickName,
+			"changed to inactive", "InactiveCountingHeight:", crMember.InactiveCountingHeight,
+			"MaxInactiveRounds:", s.chainParams.MaxInactiveRounds)
 		crMember.InactiveCountingHeight = 0
-		log.Info("at height", height, crMember.Info.NickName, "changed to inactive")
 	}
 }
 

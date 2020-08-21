@@ -55,8 +55,10 @@ var (
 )
 
 type ArbiterInfo struct {
-	NodePublicKey []byte
-	IsNormal      bool
+	NodePublicKey   []byte
+	IsNormal        bool
+	IsCRMember      bool
+	ClaimedDPOSNode bool
 }
 
 type arbitrators struct {
@@ -750,13 +752,23 @@ func (a *arbitrators) GetArbitrators() []*ArbiterInfo {
 	result := make([]*ArbiterInfo, 0, len(a.currentArbitrators))
 	for _, v := range a.currentArbitrators {
 		isNormal := true
+		isCRMember := false
+		claimedDPOSNode := false
 		abt, ok := v.(*crcArbiter)
-		if ok && !abt.isNormal {
-			isNormal = false
+		if ok {
+			isCRMember = true
+			if !abt.isNormal {
+				isNormal = false
+			}
+			if abt.crMember.DPOSPublicKey != nil {
+				claimedDPOSNode = true
+			}
 		}
 		result = append(result, &ArbiterInfo{
-			NodePublicKey: v.GetNodePublicKey(),
-			IsNormal:      isNormal,
+			NodePublicKey:   v.GetNodePublicKey(),
+			IsNormal:        isNormal,
+			IsCRMember:      isCRMember,
+			ClaimedDPOSNode: claimedDPOSNode,
 		})
 	}
 	a.mtx.Unlock()
@@ -809,13 +821,23 @@ func (a *arbitrators) getCRCArbiters() []*ArbiterInfo {
 	result := make([]*ArbiterInfo, 0, len(a.currentCRCArbitersMap))
 	for _, v := range a.currentCRCArbitersMap {
 		isNormal := true
+		isCRMember := false
+		claimedDPOSNode := false
 		abt, ok := v.(*crcArbiter)
-		if ok && !abt.isNormal {
-			isNormal = false
+		if ok {
+			isCRMember = true
+			if !abt.isNormal {
+				isNormal = false
+			}
+			if abt.crMember.DPOSPublicKey != nil {
+				claimedDPOSNode = true
+			}
 		}
 		result = append(result, &ArbiterInfo{
-			NodePublicKey: v.GetNodePublicKey(),
-			IsNormal:      isNormal,
+			NodePublicKey:   v.GetNodePublicKey(),
+			IsNormal:        isNormal,
+			IsCRMember:      isCRMember,
+			ClaimedDPOSNode: claimedDPOSNode,
 		})
 	}
 
