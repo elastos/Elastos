@@ -53,6 +53,8 @@ type Config struct {
 	// NewTxFilter indicates the function to create a TxFilter according to the
 	// TxFilterType.
 	NewTxFilter func(filter.TxFilterType) filter.TxFilter
+	//node version
+	NodeVersion string
 }
 
 // naFilter defines a network address filter for the side chain server, for now
@@ -898,7 +900,7 @@ func New(cfg *Config) (*server, error) {
 		params.DefaultPort, params.DNSSeeds, params.ListenAddrs,
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(cfg.Chain.GetBestHeight()) },
-		 0, "0",
+		uint64(cfg.ChainParams.CRClaimDPOSNodeStartHeight), cfg.NodeVersion,
 	)
 	svrcfg.DataDir = cfg.DataDir
 	svrcfg.NAFilter = &naFilter{}
