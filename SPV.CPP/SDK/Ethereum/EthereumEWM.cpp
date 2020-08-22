@@ -660,6 +660,7 @@ namespace Elastos {
 			_ewm(ewm),
 			_client(client),
 			_network(network),
+			_executor(1),
 			_account(EthereumAccountPtr(new EthereumAccount(this, ewmGetAccount(ewm)))) {
 		}
 
@@ -770,6 +771,7 @@ namespace Elastos {
 		}
 
 		bool EthereumEWM::connect() {
+			ewmStart(_ewm);
 			return ETHEREUM_BOOLEAN_IS_TRUE(ewmConnect(_ewm));
 		}
 

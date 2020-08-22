@@ -29,7 +29,23 @@ namespace Elastos {
 	}
 }
 
-extern "C" void ElastosElaWalletLog(const char *s) {
+extern "C" void ElastosElaWalletLogDebug(const char *s) {
+	Elastos::ElaWallet::Log::debug(s);
+}
+
+extern "C" void ElastosElaWalletLogInfo(const char *s) {
 	Elastos::ElaWallet::Log::info(s);
+}
+
+extern "C" void ElastosElaWalletLogWarn(const char *s) {
+	Elastos::ElaWallet::Log::warn(s);
+}
+
+extern "C" void ElastosElaWalletLogError(const char *s) {
+	Elastos::ElaWallet::Log::error(s);
+}
+
+extern "C" void ElastosElaWalletLogCritical(const char *s) {
+	Elastos::ElaWallet::Log::critical(s);
 }
 

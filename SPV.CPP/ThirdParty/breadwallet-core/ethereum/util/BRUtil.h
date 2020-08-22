@@ -19,15 +19,58 @@
 #else
 
 #ifdef __cplusplus
-extern "C" void ElastosElaWalletLog(const char *s);
+extern "C" void ElastosElaWalletLogDebug(const char *s);
+extern "C" void ElastosElaWalletLogInfo(const char *s);
+extern "C" void ElastosElaWalletLogWarn(const char *s);
+extern "C" void ElastosElaWalletLogError(const char *s);
+extern "C" void ElastosElaWalletLogCritical(const char *s);
 #else
-void ElastosElaWalletLog(const char *s);
+void ElastosElaWalletLogDebug(const char *s);
+void ElastosElaWalletLogInfo(const char *s);
+void ElastosElaWalletLogWarn(const char *s);
+void ElastosElaWalletLogError(const char *s);
+void ElastosElaWalletLogCritical(const char *s);
 #endif
 
 #define eth_log(topic, formatter, ...)   do { \
 	char buf[2048]; \
 	snprintf(buf, sizeof(buf), "ETH: %s: " formatter, (topic), __VA_ARGS__); \
 	ElastosElaWalletLog(buf); \
+} while (0)
+
+#define eth_log(topic, formatter, ...)   do { \
+	char buf[2048]; \
+	snprintf(buf, sizeof(buf), "ETH: %s: " formatter, (topic), __VA_ARGS__); \
+	buf[sizeof(buf) - 1] = '\0'; \
+	ElastosElaWalletLogInfo(buf); \
+} while (0)
+
+#define eth_log_dbg(topic, formatter, ...)   do { \
+	char buf[2048]; \
+	snprintf(buf, sizeof(buf), "ETH: %s: " formatter, (topic), __VA_ARGS__); \
+	buf[sizeof(buf) - 1] = '\0'; \
+	ElastosElaWalletLogDebug(buf); \
+} while (0)
+
+#define eth_log_info(topic, formatter, ...)   do { \
+	char buf[2048]; \
+	snprintf(buf, sizeof(buf), "ETH: %s: " formatter, (topic), __VA_ARGS__); \
+	buf[sizeof(buf) - 1] = '\0'; \
+	ElastosElaWalletLogInfo(buf); \
+} while (0)
+
+#define eth_log_warn(topic, formatter, ...)   do { \
+	char buf[2048]; \
+	snprintf(buf, sizeof(buf), "ETH: %s: " formatter, (topic), __VA_ARGS__); \
+	buf[sizeof(buf) - 1] = '\0'; \
+	ElastosElaWalletLogWarn(buf); \
+} while (0)
+
+#define eth_log_err(topic, formatter, ...)   do { \
+	char buf[2048]; \
+	snprintf(buf, sizeof(buf), "ETH: %s: " formatter, (topic), __VA_ARGS__); \
+	buf[sizeof(buf) - 1] = '\0'; \
+	ElastosElaWalletLogError(buf); \
 } while (0)
 
 #endif
