@@ -203,7 +203,7 @@ func (cm *ConnManager) handleFailedConn(pending map[uint64]*ConnReq, c *ConnReq)
 	// Update connection state to failing.
 	c.updateState(ConnFailing)
 	delete(pending, c.id)
-
+	newAddress := cm.cfg.GetNewAddress
 	if c.Permanent {
 		// The connection request is re added to the pending map, so that
 		// subsequent processing of connections and failures do not ignore
@@ -219,17 +219,17 @@ func (cm *ConnManager) handleFailedConn(pending map[uint64]*ConnReq, c *ConnReq)
 		time.AfterFunc(d, func() {
 			cm.Connect(c)
 		})
-	} else if cm.cfg.GetNewAddress != nil {
+	} else if newAddress != nil {
 		cm.failedAttempts++
 		if cm.failedAttempts >= maxFailedAttempts {
 			log.Debugf("Max failed connection attempts reached: [%d] "+
 				"-- retrying connection in: %v", maxFailedAttempts,
 				cm.cfg.RetryDuration)
 			time.AfterFunc(cm.cfg.RetryDuration, func() {
-				cm.NewConnReq()
+				cm.NewConnReq(newAddress)
 			})
 		} else {
-			go cm.NewConnReq()
+			go cm.NewConnReq(newAddress)
 		}
 	}
 }
@@ -367,11 +367,8 @@ out:
 
 // NewConnReq creates a new connection request and connects to the
 // corresponding address.
-func (cm *ConnManager) NewConnReq() {
-	if atomic.LoadInt32(&cm.stop) != 0 {
-		return
-	}
-	if cm.cfg.GetNewAddress == nil {
+func (cm *ConnManager) NewConnReq(newAddress func() (net.Addr, error)) {
+	if atomic.LoadInt32(&cm.stop) != 0 || newAddress == nil {
 		return
 	}
 
@@ -540,7 +537,7 @@ func (cm *ConnManager) Start() {
 
 	cm.wg.Add(1)
 	go cm.connHandler()
-
+	newAddress := cm.cfg.GetNewAddress
 	// Start all the listeners so long as the caller requested them and
 	// provided a callback to be invoked when connections are accepted.
 	if cm.cfg.OnAccept != nil {
@@ -551,7 +548,7 @@ func (cm *ConnManager) Start() {
 	}
 
 	for i := atomic.LoadUint64(&cm.connReqCount); i < uint64(cm.cfg.TargetOutbound); i++ {
-		go cm.NewConnReq()
+		go cm.NewConnReq(newAddress)
 	}
 }
 

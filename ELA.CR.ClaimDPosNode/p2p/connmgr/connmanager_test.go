@@ -187,21 +187,24 @@ func TestConnectMode(t *testing.T) {
 // only connections made.
 func TestTargetOutbound(t *testing.T) {
 	targetOutbound := uint32(10)
-	addresses := make([]net.Addr, 10)
-	for i := range addresses {
-		addresses[i] = &net.TCPAddr{
-			IP:   net.ParseIP("127.0.0.1"),
-			Port: 18555 + i,
-		}
+	addresses := []*net.TCPAddr{
+		{IP: net.ParseIP("127.0.0.1"), Port: 18555},
+		{IP: net.ParseIP("127.0.0.1"), Port: 18556},
+		{IP: net.ParseIP("127.0.0.1"), Port: 18557},
+		{IP: net.ParseIP("127.0.0.1"), Port: 18558},
+		{IP: net.ParseIP("127.0.0.1"), Port: 18559},
+		{IP: net.ParseIP("127.0.0.1"), Port: 18560},
+		{IP: net.ParseIP("127.0.0.1"), Port: 18561},
+		{IP: net.ParseIP("127.0.0.1"), Port: 18562},
+		{IP: net.ParseIP("127.0.0.1"), Port: 18563},
+		{IP: net.ParseIP("127.0.0.1"), Port: 18564},
 	}
 	connected := make(chan *ConnReq)
 	cmgr, err := New(&Config{
 		TargetOutbound: targetOutbound,
 		Dial:           mockDialer,
 		GetNewAddress: func() (net.Addr, error) {
-			addr := addresses[0]
-			addresses = addresses[1:]
-			return addr, nil
+			return addresses[rand.Intn(len(addresses))], nil
 		},
 		OnConnection: func(c *ConnReq, conn net.Conn) {
 			connected <- c

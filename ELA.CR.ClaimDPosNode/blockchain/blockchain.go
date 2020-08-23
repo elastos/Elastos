@@ -1369,6 +1369,13 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 	return nil
 }
 
+func (b *BlockChain) GetBestChain() *BlockNode {
+	b.mutex.RLock()
+	defer b.mutex.RUnlock()
+	chain := b.BestChain
+	return chain
+}
+
 func (b *BlockChain) HaveBlock(hash *Uint256) (bool, error) {
 	return b.BlockExists(hash) || b.IsKnownOrphan(hash), nil
 }

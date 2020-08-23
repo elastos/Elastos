@@ -537,7 +537,8 @@ func copyDIDSet(src map[common.Uint168]struct{}) (
 
 func copyByteList(src []ArbiterMember) (dst []ArbiterMember) {
 	for _, v := range src {
-		dst = append(dst, v.Clone())
+		member := v.Clone()
+		dst = append(dst, member)
 	}
 	return
 }

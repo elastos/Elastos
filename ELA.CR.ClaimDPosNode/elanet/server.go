@@ -611,7 +611,7 @@ func (s *server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 	// to trigger it to issue another getblocks message for the next
 	// batch of inventory.
 	if sendInv {
-		best := sp.server.chain.BestChain
+		best := sp.server.chain.GetBestChain()
 		invMsg := msg.NewInvSize(1)
 		iv := msg.NewInvVect(msg.InvTypeBlock, best.Hash)
 		invMsg.AddInvVect(iv)
@@ -660,7 +660,7 @@ func (s *server) pushConfirmedBlockMsg(sp *serverPeer, hash *common.Uint256, don
 	// to trigger it to issue another getblocks message for the next
 	// batch of inventory.
 	if sendInv {
-		best := sp.server.chain.BestChain
+		best := sp.server.chain.GetBestChain()
 		invMsg := msg.NewInvSize(1)
 		iv := msg.NewInvVect(msg.InvTypeConfirmedBlock, best.Hash)
 		invMsg.AddInvVect(iv)
