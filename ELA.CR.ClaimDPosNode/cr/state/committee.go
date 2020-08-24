@@ -1139,19 +1139,17 @@ func (c *Committee) generateMember(candidate *Candidate) *CRMember {
 
 func (c *Committee) getMemberPenalty(height uint32, member *CRMember, impeached bool) common.Fixed64 {
 	// Calculate penalty by election block count.
-	var electionRate float64
 	var electionCount uint32
 	if impeached {
 		electionCount = height - c.LastCommitteeHeight - member.InactiveCount
-		if member.MemberState == MemberInactive {
-			electionCount -= 1
-		}
-		electionRate = float64(electionCount) / float64(c.params.CRDutyPeriod)
 	} else {
 		electionCount = c.params.CRDutyPeriod - member.InactiveCount
-		electionRate = float64(electionCount) / float64(c.params.CRDutyPeriod)
 	}
-
+	if member.MemberState == MemberInactive {
+		electionCount -= 1
+	}
+	var electionRate float64
+	electionRate = float64(electionCount) / float64(c.params.CRDutyPeriod)
 	// Calculate penalty by vote proposal count.
 	var voteCount int
 	for _, v := range c.manager.ProposalSession[c.state.CurrentSession] {
