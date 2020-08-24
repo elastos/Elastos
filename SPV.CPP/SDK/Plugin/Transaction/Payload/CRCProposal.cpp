@@ -832,7 +832,7 @@ namespace Elastos {
 			}
 
 			try {
-				if (!Key(_ownerPublicKey).Verify(DigestChangeOwnerUnsigned(version), _signature)) {
+				if (!Key(_ownerPublicKey).Verify(DigestTerminateProposalOwnerUnsigned(version), _signature)) {
 					SPVLOG_ERROR("verify signature fail");
 					return false;
 				}
@@ -1066,7 +1066,7 @@ namespace Elastos {
 				_digestSecretaryElectionUnsigned = sha256(stream.GetBytes());
 			}
 
-			return _digestOwnerUnsigned;
+			return _digestSecretaryElectionUnsigned;
 		}
 
 		const uint256 &CRCProposal::DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const {
