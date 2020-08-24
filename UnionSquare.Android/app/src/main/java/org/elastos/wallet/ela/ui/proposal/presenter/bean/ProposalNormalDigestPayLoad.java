@@ -27,22 +27,20 @@ import java.util.List;
 /**
  * 专为接口参数准备的entity
  */
-public class ProposalOwnerDigestPayLoad {
-    /**
-     * Type : 0
-     * CategoryData : testdata
-     * OwnerPublicKey : 031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4
-     * DraftHash : a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0
-     * Budgets : [{"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}]
-     * Recipient : EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv
-     */
+public class ProposalNormalDigestPayLoad {
 
+    /**
+     * Signature : ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76
+     * CRCouncilMemberDID : icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY
+     */
     private int Type;
     private String CategoryData;
     private String OwnerPublicKey;
     private String DraftHash;
     private String Recipient;
     private List<BudgetsBean> Budgets;
+    private String Signature;
+    private String CRCouncilMemberDID;
 
     public int getType() {
         return Type;
@@ -126,5 +124,32 @@ public class ProposalOwnerDigestPayLoad {
         public void setAmount(String Amount) {
             this.Amount = Amount;
         }
+    }
+
+
+    public String getCRCouncilMemberSignature() {
+        return CRCouncilMemberSignature;
+    }
+
+    public void setCRCouncilMemberSignature(String CRCouncilMemberSignature) {
+        this.CRCouncilMemberSignature = CRCouncilMemberSignature;
+    }
+
+    private String CRCouncilMemberSignature;
+
+    public String getSignature() {
+        return Signature;
+    }
+
+    public void setSignature(String Signature) {
+        this.Signature = Signature;
+    }
+
+    public String getCRCouncilMemberDID() {
+        return CRCouncilMemberDID;
+    }
+
+    public void setCRCouncilMemberDID(String CRCouncilMemberDID) {
+        this.CRCouncilMemberDID = CRCouncilMemberDID;
     }
 }

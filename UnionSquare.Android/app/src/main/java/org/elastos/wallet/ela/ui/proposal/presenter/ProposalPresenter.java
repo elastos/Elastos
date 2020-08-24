@@ -67,7 +67,7 @@ public class ProposalPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void proposalCRCouncilMemberDigest(String walletId, String payload, BaseFragment baseFragment,Object o) {
+    public void proposalCRCouncilMemberDigest(String walletId, String payload, BaseFragment baseFragment, Object o) {
 
 
         Observer observer = createObserver(baseFragment, "proposalCRCouncilMemberDigest", o);
@@ -260,12 +260,12 @@ public class ProposalPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void createProposalWithdrawTransaction(String walletId,  String payload, BaseFragment baseFragment) {
+    public void createProposalWithdrawTransaction(String walletId, String payload, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "createProposalWithdrawTransaction");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createProposalWithdrawTransaction(walletId,  payload);
+                return baseFragment.getMyWallet().createProposalWithdrawTransaction(walletId, payload);
             }
         });
         subscriberObservable(observer, observable, baseFragment);
@@ -276,4 +276,128 @@ public class ProposalPresenter extends NewPresenterAbstract {
         Observer observer = createObserver(baseFragment, "getCurrentCouncilInfo");
         subscriberObservable(observer, observable, baseFragment);
     }
+
+    /*      Proposal Secretary General Election     */
+    public void proposalSecretaryGeneralElectionDigest(String walletId, String payload, BaseFragment baseFragment) {
+
+
+        Observer observer = createObserver(baseFragment, "proposalSecretaryGeneralElectionDigest");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().proposalSecretaryGeneralElectionDigest(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void proposalSecretaryGeneralElectionCRCouncilMemberDigest(String walletId, String payload, BaseFragment baseFragment, Object o) {
+
+
+        Observer observer = createObserver(baseFragment, "proposalSecretaryGeneralElectionCRCouncilMemberDigest", o);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().proposalSecretaryGeneralElectionCRCouncilMemberDigest(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void createSecretaryGeneralElectionTransaction(String walletId, String payload, BaseFragment baseFragment, Object o) {
+
+
+        Observer observer = createObserver(baseFragment, "createSecretaryGeneralElectionTransaction", o);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().createSecretaryGeneralElectionTransaction(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    /*      Proposal Change Owner     */
+
+    public void proposalChangeOwnerDigest(String walletId, String payload, BaseFragment baseFragment) {
+
+
+        Observer observer = createObserver(baseFragment, "proposalChangeOwnerDigest");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().proposalChangeOwnerDigest(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void proposalChangeOwnerCRCouncilMemberDigest(String walletId, String payload, BaseFragment baseFragment, Object o) {
+
+
+        Observer observer = createObserver(baseFragment, "proposalChangeOwnerCRCouncilMemberDigest", o);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().proposalChangeOwnerCRCouncilMemberDigest(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void createProposalChangeOwnerTransaction(String walletId, String payload, BaseFragment baseFragment, Object o) {
+
+
+        Observer observer = createObserver(baseFragment, "createProposalChangeOwnerTransaction", o);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().createProposalChangeOwnerTransaction(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    /*      Proposal Terminate Proposal     */
+
+    public void terminateProposalOwnerDigest(String walletId, String payload, BaseFragment baseFragment) {
+
+
+        Observer observer = createObserver(baseFragment, "terminateProposalOwnerDigest");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().terminateProposalOwnerDigest(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void terminateProposalCRCouncilMemberDigest(String walletId, String payload, BaseFragment baseFragment, Object o) {
+
+
+        Observer observer = createObserver(baseFragment, "terminateProposalCRCouncilMemberDigest", o);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().terminateProposalCRCouncilMemberDigest(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void createTerminateProposalTransaction(String walletId, String payload, BaseFragment baseFragment, Object o) {
+
+
+        Observer observer = createObserver(baseFragment, "createTerminateProposalTransaction", o);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().createTerminateProposalTransaction(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+
 }

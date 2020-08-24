@@ -1384,7 +1384,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     curentJwtEntity = JSON.parseObject(payload, RecieveProposalAllJwtEntity.class);
                     RecieveProposalAllJwtEntity.DataBean suggestData = ((RecieveProposalAllJwtEntity) curentJwtEntity).getData();
                     if (suggestData.getUserdid().equals(getMyDID().getDidString()))
-                        toSuggest(command,suggestData.getProposaltype());
+                        toSuggest(command, suggestData.getProposaltype());
                     else {
                         restoreScanData();
                         showToast(getString(R.string.didnotsame));
@@ -1396,7 +1396,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     RecieveProposalAllJwtEntity.DataBean suggestData1 = ((RecieveProposalAllJwtEntity) curentJwtEntity).getData();
                     if (suggestData1.getUserdid().equals(getMyDID().getDidString())) {
                         //  proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
-                        toSuggest(command,suggestData1.getProposaltype());
+                        toSuggest(command, suggestData1.getProposaltype());
                     } else {
                         restoreScanData();
                         showToast(getString(R.string.didnotsame));
@@ -1479,11 +1479,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         return payload;
     }
 
-    private void toSuggest(String command,String proposaltype) {
+    private void toSuggest(String command, String proposaltype) {
         restoreScanData();
         Bundle bundle = new Bundle();
         bundle.putParcelable("wallet", wallet);
-       // bundle.putString("command", command);
+        // bundle.putString("command", command);
         bundle.putString("proposaltype", proposaltype);
         bundle.putString("scanResult", scanResult);
         ((BaseFragment) getParentFragment()).start(SuggestionsInfoFragment.class, bundle);

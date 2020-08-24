@@ -2200,5 +2200,90 @@ public class MyWallet {
         }
     }
 
+    /*             Proposal Change Owner            */
+    public BaseEntity proposalChangeOwnerDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.ProposalChangeOwnerDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "ProposalChangeOwnerDigest");
+        }
+    }
+
+    public BaseEntity proposalChangeOwnerCRCouncilMemberDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.ProposalChangeOwnerCRCouncilMemberDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "ProposalChangeOwnerCRCouncilMemberDigest");
+        }
+    }
+
+    public BaseEntity createProposalChangeOwnerTransaction(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.CreateProposalChangeOwnerTransaction(payload, "");
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "CreateProposalChangeOwnerTransaction");
+        }
+    }
+    /*           Proposal Terminate Proposal        */
+
+    public BaseEntity terminateProposalOwnerDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.TerminateProposalOwnerDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "TerminateProposalOwnerDigest");
+        }
+    }
+
+    public BaseEntity terminateProposalCRCouncilMemberDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.TerminateProposalCRCouncilMemberDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "TerminateProposalCRCouncilMemberDigest");
+        }
+    }
+
+    public BaseEntity createTerminateProposalTransaction(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.CreateTerminateProposalTransaction(payload, "");
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "CreateTerminateProposalTransaction");
+        }
+    }
 }
 

@@ -22,28 +22,59 @@
 
 package org.elastos.wallet.ela.ui.proposal.presenter.bean;
 
-/**
- * 专为接口参数准备的entity
- */
-public class ProposalCRCouncialMenberDigestPayLoad extends ProposalOwnerDigestPayLoad{
+
+public class ProposalTerminateDigestPayLoad {
+
 
     /**
-     * Signature : ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76
-     * CRCouncilMemberDID : icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY
+     * CategoryData : testdata
+     * OwnerPublicKey : ...
+     * DraftHash : ...
+     * TargetProposalHash : ...
+     * Signature : ...
+     * CRCouncilMemberDID : ...
+     * CRCouncilMemberSignature : ...
      */
 
+    private String CategoryData;
+    private String OwnerPublicKey;
+    private String DraftHash;
+    private String TargetProposalHash;
     private String Signature;
     private String CRCouncilMemberDID;
-
-    public String getCRCouncilMemberSignature() {
-        return CRCouncilMemberSignature;
-    }
-
-    public void setCRCouncilMemberSignature(String CRCouncilMemberSignature) {
-        this.CRCouncilMemberSignature = CRCouncilMemberSignature;
-    }
-
     private String CRCouncilMemberSignature;
+
+    public String getCategoryData() {
+        return CategoryData;
+    }
+
+    public void setCategoryData(String CategoryData) {
+        this.CategoryData = CategoryData;
+    }
+
+    public String getOwnerPublicKey() {
+        return OwnerPublicKey;
+    }
+
+    public void setOwnerPublicKey(String OwnerPublicKey) {
+        this.OwnerPublicKey = OwnerPublicKey;
+    }
+
+    public String getDraftHash() {
+        return DraftHash;
+    }
+
+    public void setDraftHash(String DraftHash) {
+        this.DraftHash = DraftHash;
+    }
+
+    public String getTargetProposalHash() {
+        return TargetProposalHash;
+    }
+
+    public void setTargetProposalHash(String TargetProposalHash) {
+        this.TargetProposalHash = TargetProposalHash;
+    }
 
     public String getSignature() {
         return Signature;
@@ -59,5 +90,13 @@ public class ProposalCRCouncialMenberDigestPayLoad extends ProposalOwnerDigestPa
 
     public void setCRCouncilMemberDID(String CRCouncilMemberDID) {
         this.CRCouncilMemberDID = CRCouncilMemberDID;
+    }
+
+    public String getCRCouncilMemberSignature() {
+        return CRCouncilMemberSignature;
+    }
+
+    public void setCRCouncilMemberSignature(String CRCouncilMemberSignature) {
+        this.CRCouncilMemberSignature = CRCouncilMemberSignature;
     }
 }

@@ -167,9 +167,15 @@ public class MyDID {
 
     // 获得did的字符串的含"did:elastos:"
     public String getDidString() {
-        if (did == null) {
+
+        try {
+            if (did == null)
+                did = didStore.getDid(0);
+        } catch (DIDStoreException e) {
+            e.printStackTrace();
             return null;
         }
+
         return did.toString();
     }
 
@@ -319,7 +325,8 @@ public class MyDID {
 
         return null;
     }
-    public String getCredentialPro(String credencialId,DIDDocument doc) {
+
+    public String getCredentialPro(String credencialId, DIDDocument doc) {
 
         try {
             VerifiableCredential vc1 = doc.getCredential(credencialId);
