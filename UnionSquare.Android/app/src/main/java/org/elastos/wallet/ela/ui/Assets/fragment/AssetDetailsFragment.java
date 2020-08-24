@@ -607,7 +607,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             new ProposalPresenter().proposalSearch(-1, -1, "ALL", null, this);
             new VoteListPresenter().getDepositVoteList("1", "all", this, true);
             new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
-            new CtListPresenter().getCouncilList(this, String.valueOf(1));
+            new CtListPresenter().getCurrentCouncilList(this);
             new PastCtPresenter().getCouncilTerm(this);
         }
     }
@@ -715,7 +715,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                     new ProposalPresenter().proposalSearch(-1, -1, "ALL", null, this);
                     new VoteListPresenter().getDepositVoteList("1", "all", this, true);
                     new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
-                    new CtListPresenter().getCouncilList(this, String.valueOf(1));
+                    new CtListPresenter().getCurrentCouncilList(this);
                     new PastCtPresenter().getCouncilTerm(this);
 
                 }
@@ -813,7 +813,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 getvoteInfo(voteTag++);
 
                 break;
-            case "getCouncilList":
+            case "getCurrentCouncilList":
                 councilList = (ArrayList<CtListBean.Council>) ((CtListBean) baseEntity).getData().getCouncil();
                 getvoteInfo(voteTag++);
                 break;

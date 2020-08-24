@@ -2156,5 +2156,49 @@ public class MyWallet {
         }
     }
 
+    /*      Proposal Secretary General Election     */
+
+    public BaseEntity proposalSecretaryGeneralElectionDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.ProposalSecretaryGeneralElectionDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "proposalSecretaryGeneralElectionDigest");
+        }
+    }
+
+    public BaseEntity proposalSecretaryGeneralElectionCRCouncilMemberDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.ProposalSecretaryGeneralElectionCRCouncilMemberDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "ProposalSecretaryGeneralElectionCRCouncilMemberDigest");
+        }
+    }
+
+    public BaseEntity createSecretaryGeneralElectionTransaction(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.CreateSecretaryGeneralElectionTransaction(payload, "");
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "CreateSecretaryGeneralElectionTransaction");
+        }
+    }
+
 }
 

@@ -25,8 +25,6 @@ package org.elastos.wallet.ela.ui.Assets.bean.qr.proposal;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +50,7 @@ public class RecieveWithdrawJwtEntity extends RecieveProposalFatherJwtEntity {
         this.data = data;
     }
 
-    public static class DataBean implements Parcelable {
+    public static class DataBean extends RecieveProposalFatherJwtEntity.DataBean implements Parcelable {
         /**
          * proposalhash : 9b6c85d10b1208d896eb7efc391d1a562ba91452a78f37acfbb1ac1ed63f1a83
          * amount : 10010000000

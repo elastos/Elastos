@@ -67,10 +67,10 @@ public class ProposalPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void proposalCRCouncilMemberDigest(String walletId, String payload, BaseFragment baseFragment) {
+    public void proposalCRCouncilMemberDigest(String walletId, String payload, BaseFragment baseFragment,Object o) {
 
 
-        Observer observer = createObserver(baseFragment, "proposalCRCouncilMemberDigest", walletId);
+        Observer observer = createObserver(baseFragment, "proposalCRCouncilMemberDigest", o);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {

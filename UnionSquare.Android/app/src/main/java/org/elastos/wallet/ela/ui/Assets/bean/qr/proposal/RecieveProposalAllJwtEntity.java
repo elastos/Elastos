@@ -22,18 +22,29 @@
 
 package org.elastos.wallet.ela.ui.Assets.bean.qr.proposal;
 
-
-public class RecievePublishedVoteJwtEntity extends RecieveProposalFatherJwtEntity {
+/**
+ * 兼顾所有的提建议和发提案
+ */
+public class RecieveProposalAllJwtEntity extends RecieveProposalFatherJwtEntity {
 
 
     /**
      * iat : 1566352213
      * exp : 1580607089
-     * data : {"proposalhash":"9b6c85d10b1208d896eb7efc391d1a562ba91452a78f37acfbb1ac1ed63f1a83"}
+     * sid : 5ec0fc6959835e0078762685
+     * data : {"userdid":"did:elastos:iWWPzYbCny9Pbjdb7nCdvSdr1M1mcgvYUv","proposaltype":"closeproposal","categorydata":"","ownerpublickey":"023559273eec17bbfcedd041d2044163123a9bba34530540d864a6f3f484f7054a","drafthash":"6739263b511de00b49e08855254d46dbade53ca10c3e10babfb79b8196032464","targetproposalhash":"fdab8dae9e4f1a3dfe7127b80544bec8a4de66557fad5f8fb5f4b8bdbe555e81","signature":"0d77e801761f45628270d6f7a86b02def1f35b1c8964a4094b7947730c86b63d0ee1e8e448192d6a0ac74e1c592ee27c3b6d9b7010a5830dbff9cb506d03d148","did":"did:elastos:inDUQR73UQLFfgZocbC3PH4SFiRggffcNw"}
      */
 
-
+    private String sid;
     private DataBean data;
+
+    public String getSid() {
+        return sid;
+    }
+
+    public void setSid(String sid) {
+        this.sid = sid;
+    }
 
     public DataBean getData() {
         return data;
@@ -43,19 +54,27 @@ public class RecievePublishedVoteJwtEntity extends RecieveProposalFatherJwtEntit
         this.data = data;
     }
 
-    public static class DataBean extends RecieveProposalFatherJwtEntity.DataBean{
-        /**
-         * proposalhash : 9b6c85d10b1208d896eb7efc391d1a562ba91452a78f37acfbb1ac1ed63f1a83
-         */
+    public static class DataBean extends RecieveProposalFatherJwtEntity.DataBean {
 
-        private String proposalhash;
+        private String drafthash;
+        private String proposaltype;
 
-        public String getProposalhash() {
-            return proposalhash;
+        public String getDrafthash() {
+            return drafthash;
         }
 
-        public void setProposalhash(String proposalhash) {
-            this.proposalhash = proposalhash;
+        public void setDrafthash(String drafthash) {
+            this.drafthash = drafthash;
         }
+
+        public String getProposaltype() {
+            return proposaltype;
+        }
+
+        public void setProposaltype(String proposaltype) {
+            this.proposaltype = proposaltype;
+        }
+
+
     }
 }

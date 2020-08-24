@@ -30,7 +30,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalNormalJwtEntity;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
 
@@ -43,12 +43,12 @@ import butterknife.ButterKnife;
 public class SuggetMoneyRecAdapetr extends RecyclerView.Adapter<SuggetMoneyRecAdapetr.ViewHolder> {
 
 
-    private List<RecieveProposalJwtEntity.DataBean.BudgetsBean> list;
+    private List<RecieveProposalNormalJwtEntity.DataBean.BudgetsBean> list;
 
     private Context context;
 
 
-    public SuggetMoneyRecAdapetr(Context context, List<RecieveProposalJwtEntity.DataBean.BudgetsBean> list) {
+    public SuggetMoneyRecAdapetr(Context context, List<RecieveProposalNormalJwtEntity.DataBean.BudgetsBean> list) {
         this.list = list;
         this.context = context;
 
@@ -64,7 +64,7 @@ public class SuggetMoneyRecAdapetr extends RecyclerView.Adapter<SuggetMoneyRecAd
 
     @Override
     public void onBindViewHolder(SuggetMoneyRecAdapetr.ViewHolder holder, final int position) {
-        RecieveProposalJwtEntity.DataBean.BudgetsBean budgetsBean = list.get(position);
+        RecieveProposalNormalJwtEntity.DataBean.BudgetsBean budgetsBean = list.get(position);
         holder.tvMoney.setText(NumberiUtil.salaToEla(budgetsBean.getAmount()) + " ELA");
         String tag = budgetsBean.getType().toLowerCase();
 

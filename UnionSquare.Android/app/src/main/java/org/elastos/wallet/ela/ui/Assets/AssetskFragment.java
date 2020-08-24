@@ -65,8 +65,8 @@ import org.elastos.wallet.ela.ui.Assets.adapter.AssetskAdapter;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.RecieveJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProcessJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalAllJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalFatherJwtEntity;
-import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecievePublishedVoteJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveReviewJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveWithdrawJwtEntity;
@@ -87,7 +87,6 @@ import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
-import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
 import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
 import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.committee.presenter.CtListPresenter;
@@ -1113,7 +1112,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             case "proposalSearch":
                 searchBeanList = ((ProposalSearchEntity) baseEntity).getData().getList();
                 break;
-            case "getCouncilList":
+            case "getCurrentCouncilList":
                 councilList = ((CtListBean) baseEntity).getData().getCouncil();
                 break;
             case "getCRlist":
@@ -1138,7 +1137,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 }
                 toVoteActivity(balanceEntity);
                 break;
-            case "getCurrentCouncilInfo":
+           /* case "getCurrentCouncilInfo":
                 CtDetailBean ctDetailBean = (CtDetailBean) baseEntity;
                 switch (curentJwtEntity.getCommand().toLowerCase()) {
                     case "reviewmilestone":
@@ -1161,7 +1160,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 }
 
 
-                break;
+                break;*/
             case "postData":
                 String command = curentJwtEntity.getCommand();
                 String des = "";
@@ -1338,7 +1337,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     proposalPresenter.proposalSearch(-1, -1, "ALL", null, this);
                     new VoteListPresenter().getDepositVoteList("1", "all", this, false);
                     new CRlistPresenter().getCRlist(-1, -1, "all", this, false);
-                    new CtListPresenter().getCouncilList(this, String.valueOf(1));
+                    new CtListPresenter().getCurrentCouncilList(this);
                     new PastCtPresenter().getCouncilTerm(this);
                     commonGetBalancePresenter.getBalance(wallet.getWalletId(), MyWallet.ELA, this);
 
@@ -1358,9 +1357,16 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     break;
                 case "reviewmilestone":
                     //执行期  秘书长签名 发送交易
-                    //判断身份  网站判断是秘书长  这里判断是本
+                    //判断身份  网站判断是秘书长  这里判断是本人
                     curentJwtEntity = JSON.parseObject(payload, RecieveProcessJwtEntity.class);
-                    proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
+                    RecieveProcessJwtEntity.DataBean recieveData = ((RecieveProcessJwtEntity) curentJwtEntity).getData();
+                    if (recieveData.getUserdid().equals(getMyDID().getDidString())) {
+                        proposalPresenter.showFeePage(wallet, Constant.PROPOSALSECRET, 39, this, ((RecieveProcessJwtEntity) curentJwtEntity).getData());
+                    } else {
+                        restoreScanData();
+                        showToast(getString(R.string.didnotsame));
+                    }
+                    //proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
                     break;
                 case "updatemilestone":
                     //执行期  委员自己执行反馈 网站确认是委员  这里确认本人 只签名
@@ -1375,10 +1381,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     break;
                 case "createsuggestion":
                     //发建议 任何人 本人 只签名
-                    curentJwtEntity = JSON.parseObject(payload, RecieveProposalJwtEntity.class);
-                    RecieveProposalJwtEntity.DataBean suggestData = ((RecieveProposalJwtEntity) curentJwtEntity).getData();
-                    if (suggestData.getOwnerpublickey().equals(getMyDID().getDidPublicKey(didDocument)))
-                        toSuggest(command);
+                    curentJwtEntity = JSON.parseObject(payload, RecieveProposalAllJwtEntity.class);
+                    RecieveProposalAllJwtEntity.DataBean suggestData = ((RecieveProposalAllJwtEntity) curentJwtEntity).getData();
+                    if (suggestData.getUserdid().equals(getMyDID().getDidString()))
+                        toSuggest(command,suggestData.getProposaltype());
                     else {
                         restoreScanData();
                         showToast(getString(R.string.didnotsame));
@@ -1386,11 +1392,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     break;
                 case "createproposal":
                     //把建议->提案 判断身份  任意委员但是要当前网站登陆者对用用户 发交易
-                    curentJwtEntity = JSON.parseObject(payload, RecieveProposalJwtEntity.class);
-                    RecieveProposalJwtEntity.DataBean suggestData1 = ((RecieveProposalJwtEntity) curentJwtEntity).getData();
-                    if (suggestData1.getDid().equals(wallet.getDid()))
-                        proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
-                    else {
+                    curentJwtEntity = JSON.parseObject(payload, RecieveProposalAllJwtEntity.class);
+                    RecieveProposalAllJwtEntity.DataBean suggestData1 = ((RecieveProposalAllJwtEntity) curentJwtEntity).getData();
+                    if (suggestData1.getUserdid().equals(getMyDID().getDidString())) {
+                        //  proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
+                        toSuggest(command,suggestData1.getProposaltype());
+                    } else {
                         restoreScanData();
                         showToast(getString(R.string.didnotsame));
                     }
@@ -1400,7 +1407,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     //评议期  身份必须是本委员(委员身份网站已经确认   本人) 发交易
                     curentJwtEntity = JSON.parseObject(payload, RecieveReviewJwtEntity.class);
                     RecieveReviewJwtEntity.DataBean reviewData = ((RecieveReviewJwtEntity) curentJwtEntity).getData();
-                    if (reviewData.getDID().equals(wallet.getDid())) {
+                    if (reviewData.getUserdid().equals(wallet.getDid())) {
                         proposalPresenter.showFeePage(wallet, Constant.PROPOSALREVIEW, 38, this, reviewData);
                     } else {
                         restoreScanData();
@@ -1472,11 +1479,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         return payload;
     }
 
-    private void toSuggest(String command) {
+    private void toSuggest(String command,String proposaltype) {
         restoreScanData();
         Bundle bundle = new Bundle();
         bundle.putParcelable("wallet", wallet);
-        bundle.putString("command", command);
+       // bundle.putString("command", command);
+        bundle.putString("proposaltype", proposaltype);
         bundle.putString("scanResult", scanResult);
         ((BaseFragment) getParentFragment()).start(SuggestionsInfoFragment.class, bundle);
     }

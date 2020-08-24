@@ -129,12 +129,25 @@ public class CtListBean extends BaseEntity {
     }
 
     public static class Council implements Parcelable {
+        /**
+         * cid : iZrJ54tu9EdznPFHgXfd8w1eMmRX3rrES8
+         * did : iftZraCKy5kZ9Mmu1eMnEFT9NvgrKg3Jk7
+         * location : 376
+         * impeachmentVotes : 0
+         * status : Elected
+         * didName : kongx
+         * rejectRatio : 0
+         */
+
+        private String cid;
         private String did;
         private String didName;
         private String avatar;
         private int location;
         private String status; //'Elected', 'Impeached', 'Returned'
-        private String votes; //'Elected', 'Impeached', 'Returned'
+        private String votes;
+        private int impeachmentVotes;
+        private int rejectRatio;
 
         public String getVotes() {
             return votes;
@@ -186,6 +199,30 @@ public class CtListBean extends BaseEntity {
 
         public Council() {
         }
+        public String getCid() {
+            return cid;
+        }
+
+        public void setCid(String cid) {
+            this.cid = cid;
+        }
+
+        public int getRejectRatio() {
+            return rejectRatio;
+        }
+
+        public void setRejectRatio(int rejectRatio) {
+            this.rejectRatio = rejectRatio;
+        }
+
+        public int getImpeachmentVotes() {
+            return impeachmentVotes;
+        }
+
+        public void setImpeachmentVotes(int impeachmentVotes) {
+            this.impeachmentVotes = impeachmentVotes;
+        }
+
 
         @Override
         public int describeContents() {
@@ -194,21 +231,27 @@ public class CtListBean extends BaseEntity {
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(this.cid);
             dest.writeString(this.did);
             dest.writeString(this.didName);
             dest.writeString(this.avatar);
             dest.writeInt(this.location);
             dest.writeString(this.status);
             dest.writeString(this.votes);
+            dest.writeInt(this.impeachmentVotes);
+            dest.writeInt(this.rejectRatio);
         }
 
         protected Council(Parcel in) {
+            this.cid = in.readString();
             this.did = in.readString();
             this.didName = in.readString();
             this.avatar = in.readString();
             this.location = in.readInt();
             this.status = in.readString();
             this.votes = in.readString();
+            this.impeachmentVotes = in.readInt();
+            this.rejectRatio = in.readInt();
         }
 
         public static final Creator<Council> CREATOR = new Creator<Council>() {

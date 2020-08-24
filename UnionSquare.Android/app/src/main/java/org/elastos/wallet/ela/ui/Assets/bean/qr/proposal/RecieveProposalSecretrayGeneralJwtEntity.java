@@ -22,21 +22,23 @@
 
 package org.elastos.wallet.ela.ui.Assets.bean.qr.proposal;
 
-import java.util.List;
-
 /**
- * 兼顾提建议和提案
+ * 兼顾SecretrayGeneral提建议和发提案
  */
-public class RecieveProposalJwtEntity extends RecieveProposalFatherJwtEntity {
+public class RecieveProposalSecretrayGeneralJwtEntity extends RecieveProposalAllJwtEntity {
+
 
     /**
      * iat : 1566352213
      * exp : 1580607089
-     * command : createproposal
-     * data : {"proposaltype":"normal","categorydata":"","ownerpublickey":"023559273eec17bbfcedd041d2044163123a9bba34530540d864a6f3f484f7054a","drafthash":"6739263b511de00b49e08855254d46dbade53ca10c3e10babfb79b8196032464","budgets":[{"type":"imprest","stage":0,"amount":"100.1"},{"type":"normalpayment","stage":1,"amount":"200.2"},{"type":"finalpayment","stage":2,"amount":"300.2"}],"recipient":"EdB7W1rRh5KgUha9Wa676ZRmr18voCDS6k","signature":"0d77e801761f45628270d6f7a86b02def1f35b1c8964a4094b7947730c86b63d0ee1e8e448192d6a0ac74e1c592ee27c3b6d9b7010a5830dbff9cb506d03d148","did":"did:elastos:inDUQR73UQLFfgZocbC3PH4SFiRggffcNw"}
+     * sid : 5ec0fc6959835e0078762685
+     * data : {"userdid":"did:elastos:iWWPzYbCny9Pbjdb7nCdvSdr1M1mcgvYUv","proposaltype":"secretarygeneral","categorydata":"","ownerpublickey":"023559273eec17bbfcedd041d2044163123a9bba34530540d864a6f3f484f7054a","drafthash":"6739263b511de00b49e08855254d46dbade53ca10c3e10babfb79b8196032464","secretarygeneralpublickey":"023559273eec17bbfcedd041d2044163123a9bba34530540d864a6f3f484f7054a","secretarygeneraldid":"did:elastos:iWsK3X8aBpLqFVXAd2KUpMpFGJYEYyfjUi","signature":"0d77e801761f45628270d6f7a86b02def1f35b1c8964a4094b7947730c86b63d0ee1e8e448192d6a0ac74e1c592ee27c3b6d9b7010a5830dbff9cb506d03d148","secretarygenerasignature":"0d77e801761f45628270d6f7a86b02def1f35b1c8964a4094b7947730c86b63d0ee1e8e448192d6a0ac74e1c592ee27c3b6d9b7010a5830dbff9cb506d03d148","did":"did:elastos:inDUQR73UQLFfgZocbC3PH4SFiRggffcNw"}
      */
 
+
     private String sid;
+    private DataBean data;
+
 
     public String getSid() {
         return sid;
@@ -45,8 +47,6 @@ public class RecieveProposalJwtEntity extends RecieveProposalFatherJwtEntity {
     public void setSid(String sid) {
         this.sid = sid;
     }
-    private DataBean data;
-
 
     public DataBean getData() {
         return data;
@@ -56,26 +56,38 @@ public class RecieveProposalJwtEntity extends RecieveProposalFatherJwtEntity {
         this.data = data;
     }
 
-    public static class DataBean {
+    public static class DataBean extends RecieveProposalAllJwtEntity.DataBean{
         /**
-         * proposaltype : normal
+         * userdid : did:elastos:iWWPzYbCny9Pbjdb7nCdvSdr1M1mcgvYUv
+         * proposaltype : secretarygeneral
          * categorydata :
          * ownerpublickey : 023559273eec17bbfcedd041d2044163123a9bba34530540d864a6f3f484f7054a
          * drafthash : 6739263b511de00b49e08855254d46dbade53ca10c3e10babfb79b8196032464
-         * budgets : [{"type":"imprest","stage":0,"amount":"100.1"},{"type":"normalpayment","stage":1,"amount":"200.2"},{"type":"finalpayment","stage":2,"amount":"300.2"}]
-         * recipient : EdB7W1rRh5KgUha9Wa676ZRmr18voCDS6k
+         * secretarygeneralpublickey : 023559273eec17bbfcedd041d2044163123a9bba34530540d864a6f3f484f7054a
+         * secretarygeneraldid : did:elastos:iWsK3X8aBpLqFVXAd2KUpMpFGJYEYyfjUi
          * signature : 0d77e801761f45628270d6f7a86b02def1f35b1c8964a4094b7947730c86b63d0ee1e8e448192d6a0ac74e1c592ee27c3b6d9b7010a5830dbff9cb506d03d148
+         * secretarygenerasignature : 0d77e801761f45628270d6f7a86b02def1f35b1c8964a4094b7947730c86b63d0ee1e8e448192d6a0ac74e1c592ee27c3b6d9b7010a5830dbff9cb506d03d148
          * did : did:elastos:inDUQR73UQLFfgZocbC3PH4SFiRggffcNw
          */
 
+        private String userdid;
         private String proposaltype;
         private String categorydata;
         private String ownerpublickey;
         private String drafthash;
-        private String recipient;
+        private String secretarygeneralpublickey;
+        private String secretarygeneraldid;
         private String signature;
+        private String secretarygenerasignature;
         private String did;
-        private List<BudgetsBean> budgets;
+
+        public String getUserdid() {
+            return userdid;
+        }
+
+        public void setUserdid(String userdid) {
+            this.userdid = userdid;
+        }
 
         public String getProposaltype() {
             return proposaltype;
@@ -109,12 +121,20 @@ public class RecieveProposalJwtEntity extends RecieveProposalFatherJwtEntity {
             this.drafthash = drafthash;
         }
 
-        public String getRecipient() {
-            return recipient;
+        public String getSecretarygeneralpublickey() {
+            return secretarygeneralpublickey;
         }
 
-        public void setRecipient(String recipient) {
-            this.recipient = recipient;
+        public void setSecretarygeneralpublickey(String secretarygeneralpublickey) {
+            this.secretarygeneralpublickey = secretarygeneralpublickey;
+        }
+
+        public String getSecretarygeneraldid() {
+            return secretarygeneraldid;
+        }
+
+        public void setSecretarygeneraldid(String secretarygeneraldid) {
+            this.secretarygeneraldid = secretarygeneraldid;
         }
 
         public String getSignature() {
@@ -125,6 +145,14 @@ public class RecieveProposalJwtEntity extends RecieveProposalFatherJwtEntity {
             this.signature = signature;
         }
 
+        public String getSecretarygenerasignature() {
+            return secretarygenerasignature;
+        }
+
+        public void setSecretarygenerasignature(String secretarygenerasignature) {
+            this.secretarygenerasignature = secretarygenerasignature;
+        }
+
         public String getDid() {
             return did;
         }
@@ -132,52 +160,5 @@ public class RecieveProposalJwtEntity extends RecieveProposalFatherJwtEntity {
         public void setDid(String did) {
             this.did = did;
         }
-
-        public List<BudgetsBean> getBudgets() {
-            return budgets;
-        }
-
-        public void setBudgets(List<BudgetsBean> budgets) {
-            this.budgets = budgets;
-        }
-
-        public static class BudgetsBean {
-            /**
-             * type : imprest
-             * stage : 0
-             * amount : 100.1
-             */
-
-            private String type;
-            private int stage;
-            private String amount;
-
-            public String getType() {
-                return type;
-            }
-
-            public void setType(String type) {
-                this.type = type;
-            }
-
-            public int getStage() {
-                return stage;
-            }
-
-            public void setStage(int stage) {
-                this.stage = stage;
-            }
-
-            public String getAmount() {
-                return amount;
-            }
-
-            public void setAmount(String amount) {
-                this.amount = amount;
-            }
-        }
-
-
     }
-
 }

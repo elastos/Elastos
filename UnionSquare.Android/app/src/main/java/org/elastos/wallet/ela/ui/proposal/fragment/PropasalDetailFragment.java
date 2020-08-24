@@ -370,7 +370,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                     proposalPresenter.proposalSearch(-1, -1, "NOTIFICATION", null, this);
                     new VoteListPresenter().getDepositVoteList("1", "all", this, true);
                     new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
-                    new CtListPresenter().getCouncilList(this, String.valueOf(1));
+                    new CtListPresenter().getCurrentCouncilList(this);
                     new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
                     new PastCtPresenter().getCouncilTerm(this);
                 }
@@ -528,7 +528,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                     }
                 }
                 break;
-            case "getCouncilList":
+            case "getCurrentCouncilList":
                 councilList = ((CtListBean) baseEntity).getData().getCouncil();
                 break;
             case "getCurrentCouncilInfo":

@@ -59,7 +59,8 @@ public class WalletNet {
     public static final String PRICONFIG = "{\"ELA\":{\"ChainParameters\":{\"MagicNumber\":20200501,\"StandardPort\":40008,\"DNSSeeds\":[\"longrunweather.com\"],\"CheckPoints\":[[0,\"d8d33c8a0a632ecc418bd7f09cd315dfc46a7e3e98e48c50c70a253e6062c257\",1513936800,486801407]]}},\"IDChain\":{\"ChainParameters\":{\"MagicNumber\":20200503,\"StandardPort\":41008,\"DNSSeeds\":[\"longrunweather.com\"],\"CheckPoints\":[[0,\"56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3\",1530360000,486801407]]}}}";
 
     //网站服务器地址
-    public static final String WEBURlTEST = "http://crapi.longrunweather.com:18080";
+    //public static final String WEBURlTEST = "http://crapi.longrunweather.com:18080";
+    public static final String WEBURlTEST = "https://staging-api.cyberrepublic.org";
     public static final String WEBURlPUBLIC = "https://api.cyberrepublic.org/";
 
 }

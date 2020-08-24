@@ -111,6 +111,9 @@ public interface ApiServer {
     @GET("/api/council/list/{id}")
     Observable<CtListBean> getCouncilList(@Path("id") String id);
 
+    @GET("/api/council/list")
+    Observable<CtListBean> getCurrentCouncilList();
+
     @GET("/api/council/information/{did}/{id}")
     Observable<CtDetailBean> getCouncilInfo(@Path("id") String id, @Path("did") String did);
 

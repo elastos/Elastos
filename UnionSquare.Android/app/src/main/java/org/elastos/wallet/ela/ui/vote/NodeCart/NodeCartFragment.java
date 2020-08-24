@@ -175,7 +175,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         netList = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
         new ProposalPresenter().proposalSearch(-1, -1, "ALL", null, this);
         new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
-        new CtListPresenter().getCouncilList(this, String.valueOf(1));
+        new CtListPresenter().getCurrentCouncilList(this);
         new PastCtPresenter().getCouncilTerm(this);
 
     }
@@ -587,7 +587,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                     }
                 }
                 break;
-            case "getCouncilList":
+            case "getCurrentCouncilList":
                 councilList = ((CtListBean) baseEntity).getData().getCouncil();
                 break;
             case "proposalSearch":

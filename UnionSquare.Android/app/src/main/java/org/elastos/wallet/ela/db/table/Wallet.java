@@ -39,7 +39,7 @@ public class Wallet extends RealmObject implements Parcelable {
     private String walletId;//钱包id
     private String walletName;//钱包名称
     private String mainWalletAddr;//主钱包地址
-    private String did;//钱包生成的didstring
+    private String did;//钱包didsdk生成的didstring
 
     private boolean isDefault;//默認錢包 是否是默認的
     private boolean singleAddress;//是否单地址

@@ -47,5 +47,39 @@ public class RecieveProposalFatherJwtEntity extends RecieveJwtEntity {
         this.command = command;
     }
 
+    private DataBean data;
 
+
+    public DataBean getData() {
+        return data;
+    }
+
+    public void setData(DataBean data) {
+        this.data = data;
+    }
+
+    public static class DataBean {
+        /**
+         * userdid : did:elastos:iWWPzYbCny9Pbjdb7nCdvSdr1M1mcgvYUv
+         * proposaltype : closeproposal
+         * categorydata :
+         * ownerpublickey : 023559273eec17bbfcedd041d2044163123a9bba34530540d864a6f3f484f7054a
+         * drafthash : 6739263b511de00b49e08855254d46dbade53ca10c3e10babfb79b8196032464
+         * targetproposalhash : fdab8dae9e4f1a3dfe7127b80544bec8a4de66557fad5f8fb5f4b8bdbe555e81
+         * signature : 0d77e801761f45628270d6f7a86b02def1f35b1c8964a4094b7947730c86b63d0ee1e8e448192d6a0ac74e1c592ee27c3b6d9b7010a5830dbff9cb506d03d148
+         * did : did:elastos:inDUQR73UQLFfgZocbC3PH4SFiRggffcNw
+         */
+
+        private String userdid;
+
+
+        public String getUserdid() {
+            return userdid;
+        }
+
+        public void setUserdid(String userdid) {
+            this.userdid = userdid;
+        }
+
+    }
 }

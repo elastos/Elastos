@@ -207,7 +207,7 @@
     <string name="transfertype39">Proposal Tracking Transaction</string>
     <string name="transfertype41">Proposal Fund Withdrawal Transaction</string>
     <string name="transfertype42">拨款交易</string>
-    <string name="transfertype49">领取/管理cr节点</string>
+    <string name="transfertype49">CR委员节点交易</string>
     <string name="sidetransfertype0">Coinbase Transaction</string>
     <string name="sidetransfertype1">Register Asset Transaction </string>
     <string name="sidetransfertype2">Transfer Transaction</string>

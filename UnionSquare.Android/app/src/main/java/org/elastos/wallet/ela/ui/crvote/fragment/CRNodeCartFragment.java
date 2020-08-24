@@ -161,7 +161,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         tvAvaliable.setText(getString(R.string.available) + "：" + "0 ELA");
         new ProposalPresenter().proposalSearch(-1, -1, "ALL", null, this);
         new VoteListPresenter().getDepositVoteList("1", "all", this, true);
-        new CtListPresenter().getCouncilList(this, String.valueOf(1));
+        new CtListPresenter().getCurrentCouncilList(this);
         new PastCtPresenter().getCouncilTerm(this);
     }
 
@@ -415,7 +415,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
                     }
                 }
                 break;
-            case "getCouncilList":
+            case "getCurrentCouncilList":
                 councilList = ((CtListBean) baseEntity).getData().getCouncil();
                 break;
             case "proposalSearch":

@@ -25,9 +25,6 @@ package org.elastos.wallet.ela.ui.Assets.bean.qr.proposal;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-/**
- * 兼顾提建议和提案
- */
 public class RecieveProcessJwtEntity extends RecieveProposalFatherJwtEntity {
 
 
@@ -48,7 +45,7 @@ public class RecieveProcessJwtEntity extends RecieveProposalFatherJwtEntity {
         this.data = data;
     }
 
-    public static class DataBean implements Parcelable {
+    public static class DataBean extends  RecieveProposalFatherJwtEntity.DataBean implements Parcelable {
         /**
          * proposalhash : 9b6c85d10b1208d896eb7efc391d1a562ba91452a78f37acfbb1ac1ed63f1a83
          * messagehash : 6739263b511de00b49e08855254d46dbade53ca10c3e10babfb79b8196032464
