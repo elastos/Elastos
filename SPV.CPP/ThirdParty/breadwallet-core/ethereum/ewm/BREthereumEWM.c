@@ -1116,11 +1116,13 @@ ewmUpdateBlockHeight(BREthereumEWM ewm,
     pthread_mutex_lock(&ewm->lock);
     if (blockHeight != ewm->blockHeight) {
         ewm->blockHeight = blockHeight;
+#if 0
         ewmSignalEWMEvent (ewm, ((BREthereumEWMEvent) {
             EWM_EVENT_BLOCK_HEIGHT_UPDATED,
             SUCCESS,
             { .blockHeight = { blockHeight }}
         }));
+#endif
     }
     pthread_mutex_unlock(&ewm->lock);
 }
