@@ -1533,7 +1533,7 @@ func (s *State) countArbitratorsInactivityV1(height uint32,
 	// false means producer is arbiter in both heights and not on duty.
 	changingArbiters := make(map[string]bool)
 	for _, a := range s.getArbiters() {
-		if a.IsCRMember && !a.ClaimedDPOSNode {
+		if !a.IsNormal || (a.IsCRMember && !a.ClaimedDPOSNode) {
 			continue
 		}
 		key := s.getProducerKey(a.NodePublicKey)
