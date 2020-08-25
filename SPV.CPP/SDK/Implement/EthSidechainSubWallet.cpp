@@ -37,6 +37,77 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 		EthSidechainSubWallet::~EthSidechainSubWallet() {
 		}
 
+		nlohmann::json EthSidechainSubWallet::CreateTransfer(const std::string &targetAddress,
+															 const std::string &amount,
+															 EthereumAmountUnit amountUnit) const {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("target: {}", targetAddress);
+			ArgInfo("amount: {}", amount);
+			ArgInfo("amountUnit: {}", amountUnit);
+
+			if (amountUnit != TOKEN_DECIMAL &&
+				amountUnit != TOKEN_INTEGER &&
+				amountUnit != ETHER_WEI &&
+				amountUnit != ETHER_GWEI &&
+				amountUnit != ETHER_ETHER) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid amount unit");
+			}
+
+			EthereumAmount::Unit unit = EthereumAmount::Unit(amountUnit);
+			nlohmann::json j;
+			EthereumTransferPtr tx = _client->_ewm->getWallet()->createTransfer(targetAddress, amount, unit);
+
+			j["ID"] = GetTransferID(tx);
+			j["Fee"] = tx->getFee(unit);
+
+			ArgInfo("r => {}", j.dump());
+
+			return j;
+		}
+
+		nlohmann::json EthSidechainSubWallet::CreateTransferGeneric(const std::string &targetAddress,
+																	const std::string &amount,
+																	EthereumAmountUnit amountUnit,
+																	const std::string &gasPrice,
+																	EthereumAmountUnit gasPriceUnit,
+																	const std::string &gasLimit,
+																	const std::string &data) const {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("target: {}", targetAddress);
+			ArgInfo("amount: {}", amount);
+			ArgInfo("amountUnit: {}", amountUnit);
+			ArgInfo("gasPrice: {}", gasPrice);
+			ArgInfo("gasPriceUnit: {}", gasPriceUnit);
+			ArgInfo("gasLimit: {}", gasLimit);
+			ArgInfo("data: {}", data);
+
+			if (amountUnit != TOKEN_DECIMAL &&
+				amountUnit != TOKEN_INTEGER &&
+				amountUnit != ETHER_WEI &&
+				amountUnit != ETHER_GWEI &&
+				amountUnit != ETHER_ETHER) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid amount unit");
+			}
+
+			EthereumAmount::Unit unit = EthereumAmount::Unit(amountUnit);
+			EthereumAmount::Unit gasUnit = EthereumAmount::Unit(gasPriceUnit);
+			nlohmann::json j;
+			EthereumTransferPtr tx = _client->_ewm->getWallet()->createTransferGeneric(targetAddress,
+																					   amount,
+																					   unit,
+																					   gasPrice,
+																					   gasUnit,
+																					   gasLimit,
+																					   data);
+
+			j["ID"] = GetTransferID(tx);
+			j["Fee"] = tx->getFee(unit);
+
+			ArgInfo("r => {}", j.dump());
+
+			return j;
+		}
+
 		EthSidechainSubWallet::EthSidechainSubWallet(const CoinInfoPtr &info,
 													 const ChainConfigPtr &config,
 													 MasterWallet *parent,
@@ -377,6 +448,8 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			ArgInfo("target: {}", targetAddress);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
+
+			ErrorChecker::ThrowParamException(Error::UnsupportOperation, "use IEthSidechainSubWallet::CreateTransfer() instead");
 
 			nlohmann::json j;
 			EthereumTransferPtr tx = _client->_ewm->getWallet()->createTransfer(targetAddress, amount, EthereumAmount::Unit::ETHER_ETHER);

@@ -50,6 +50,17 @@ namespace Elastos {
 		public: // implement IEthSidechainSubWallet
 			virtual ~EthSidechainSubWallet();
 
+			virtual nlohmann::json CreateTransfer(const std::string &targetAddress,
+												  const std::string &amount,
+												  EthereumAmountUnit amountUnit) const;
+
+			virtual nlohmann::json CreateTransferGeneric(const std::string &targetAddress,
+														 const std::string &amount,
+														 EthereumAmountUnit amountUnit,
+														 const std::string &gasPrice,
+														 EthereumAmountUnit gasPriceUnit,
+														 const std::string &gasLimit,
+														 const std::string &data) const;
 		public:
 			// implement callback of Client
 			virtual void getGasPrice(BREthereumWallet wid, int rid);

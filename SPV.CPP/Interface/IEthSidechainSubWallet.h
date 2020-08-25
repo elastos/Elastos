@@ -26,9 +26,48 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		enum EthereumAmountUnit {
+			TOKEN_DECIMAL = 0,
+			TOKEN_INTEGER = 1,
+
+			ETHER_WEI = 0,
+			ETHER_GWEI = 3,
+			ETHER_ETHER = 6,
+		};
+
 		class IEthSidechainSubWallet : public virtual ISubWallet {
 		public:
 			virtual ~IEthSidechainSubWallet() noexcept {}
+
+			/**
+			 *
+			 * @param targetAddress
+			 * @param amount
+			 * @param amountUnit
+			 * @return
+			 */
+			virtual nlohmann::json CreateTransfer(const std::string &targetAddress,
+												  const std::string &amount,
+												  EthereumAmountUnit amountUnit) const = 0;
+
+			/**
+			 *
+			 * @param targetAddress
+			 * @param amount
+			 * @param amountUnit
+			 * @param gasPrice
+			 * @param gasPriceUnit
+			 * @param gasLimit
+			 * @param data
+			 * @return
+			 */
+			virtual nlohmann::json CreateTransferGeneric(const std::string &targetAddress,
+														 const std::string &amount,
+														 EthereumAmountUnit amountUnit,
+														 const std::string &gasPrice,
+														 EthereumAmountUnit gasPriceUnit,
+														 const std::string &gasLimit,
+														 const std::string &data) const = 0;
 
 		};
 
