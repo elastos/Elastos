@@ -35,12 +35,6 @@ void ElastosElaWalletLogCritical(const char *s);
 #define eth_log(topic, formatter, ...)   do { \
 	char buf[2048]; \
 	snprintf(buf, sizeof(buf), "ETH: %s: " formatter, (topic), __VA_ARGS__); \
-	ElastosElaWalletLog(buf); \
-} while (0)
-
-#define eth_log(topic, formatter, ...)   do { \
-	char buf[2048]; \
-	snprintf(buf, sizeof(buf), "ETH: %s: " formatter, (topic), __VA_ARGS__); \
 	buf[sizeof(buf) - 1] = '\0'; \
 	ElastosElaWalletLogInfo(buf); \
 } while (0)
