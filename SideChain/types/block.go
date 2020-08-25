@@ -13,10 +13,10 @@ import (
 
 const (
 	// BlockVersion is the version of block.
-	BlockVersion     uint32 = 0
+	BlockVersion uint32 = 0
 
 	// GenesisNonce is the nonce of genesis block.
-	GenesisNonce     uint32 = 3194347904
+	GenesisNonce uint32 = 3194347904
 
 	// MaxBlockSize is the maximum size of a block.
 	MaxBlockSize = 8000000
@@ -68,8 +68,8 @@ func (b *Block) Deserialize(r io.Reader) error {
 
 	// Deserialize each transaction while keeping track of its location
 	// within the byte stream.
-	transactions := make([]Transaction, txCount)
-	b.Transactions = make([]*Transaction, 0, txCount)
+	transactions := make([]Transaction, 0)
+	b.Transactions = make([]*Transaction, 0)
 	for i := uint32(0); i < txCount; i++ {
 		tx := &transactions[i]
 		if err := tx.Deserialize(r); err != nil {
