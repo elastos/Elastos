@@ -66,7 +66,7 @@ func (sap *SideAuxPow) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	sap.SideAuxMerkleBranch = make([]common.Uint256, 0, count)
+	sap.SideAuxMerkleBranch = make([]common.Uint256, 0)
 	for i := uint32(0); i < count; i++ {
 		var branch common.Uint256
 		err = branch.Deserialize(r)
