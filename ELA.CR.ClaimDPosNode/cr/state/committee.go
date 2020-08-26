@@ -724,7 +724,7 @@ func (c *Committee) tryStartVotingPeriod(height uint32) (inElection bool) {
 		}
 	}
 	if impeachedCount+newImpeachedCount >
-		uint32(len(c.params.CRCArbiters))-c.params.CRAgreementCount {
+		c.params.CRMemberCount-c.params.CRAgreementCount {
 		lastVotingStartHeight := c.LastVotingStartHeight
 		inElectionPeriod := c.InElectionPeriod
 		c.lastHistory.Append(height, func() {
