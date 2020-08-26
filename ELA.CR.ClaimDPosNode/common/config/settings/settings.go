@@ -571,6 +571,12 @@ func NewSettings() *Settings {
 		ParamName:    "EnableUtxoDB"})
 
 	result.Add(&settingItem{
+		Flag:         nil,
+		DefaultValue: false,
+		ConfigPath:   "EnableCORS",
+		ParamName:    "EnableCORS"})
+
+	result.Add(&settingItem{
 		Flag:         cmdcom.AutoMiningFlag,
 		DefaultValue: false,
 		ConfigSetter: func(string, *config.Params,

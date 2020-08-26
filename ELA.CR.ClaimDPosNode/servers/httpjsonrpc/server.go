@@ -10,6 +10,7 @@ import (
 	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
+	"github.com/rs/cors"
 	"io/ioutil"
 	"mime"
 	"net"
@@ -103,9 +104,16 @@ func StartRPCServer() {
 	mainMux["getcrdepositcoin"] = GetCRDepositCoin
 	mainMux["getarbitersinfo"] = GetArbitersInfo
 
+	var handler http.Handler
 	rpcServeMux := http.NewServeMux()
+	if config.Parameters.EnableCORS {
+		c := cors.New(cors.Options{})
+		handler = c.Handler(rpcServeMux)
+	} else {
+		handler = rpcServeMux
+	}
 	server := http.Server{
-		Handler:      rpcServeMux,
+		Handler:      handler,
 		ReadTimeout:  IOTimeout,
 		WriteTimeout: IOTimeout,
 	}

@@ -72,6 +72,7 @@ type Configuration struct {
 	EnableHistory               bool              `json:"EnableHistory"`
 	HistoryStartHeight          uint32            `json:"HistoryStartHeight"`
 	EnableUtxoDB                bool              `json:"EnableUtxoDB"`
+	EnableCORS                  bool              `json:"EnableCORS"`
 	WalletPath                  string            `json:"WalletPath"`
 	RPCServiceLevel             string            `json:"RPCServiceLevel"`
 	NodeProfileStrategy         string            `json:"NodeProfileStrategy"`

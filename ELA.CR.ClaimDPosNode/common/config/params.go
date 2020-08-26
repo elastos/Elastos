@@ -206,6 +206,7 @@ var DefaultParams = Params{
 	CRCAppropriatePercentage:    10,
 	MaxCommitteeProposalCount:   128,
 	EnableUtxoDB:                true,
+	EnableCORS:                  false,
 	WalletPath:                  "keystore.dat",
 	RPCServiceLevel:             ConfigurationPermitted.String(),
 	NodeProfileStrategy:         Balanced.String(),
@@ -282,6 +283,7 @@ func (p *Params) TestNet() *Params {
 	copy.VoteStatisticsHeight = 0
 	copy.RegisterCRByDIDHeight = 483500
 	copy.EnableUtxoDB = true
+	copy.EnableCORS = false
 	copy.VoterRejectPercentage = 10
 	copy.CRCAppropriatePercentage = 10
 	copy.MaxCommitteeProposalCount = 128
@@ -347,6 +349,7 @@ func (p *Params) RegNet() *Params {
 	copy.VoteStatisticsHeight = 0
 	copy.RegisterCRByDIDHeight = 393000
 	copy.EnableUtxoDB = true
+	copy.EnableCORS = false
 	copy.VoterRejectPercentage = 10
 	copy.CRCAppropriatePercentage = 10
 	copy.MaxCommitteeProposalCount = 128
@@ -574,6 +577,9 @@ type Params struct {
 
 	// EnableUtxoDB indicate whether to enable utxo database.
 	EnableUtxoDB bool
+
+	// Enable cors for http server.
+	EnableCORS bool
 
 	// WalletPath defines the wallet path used by DPoS arbiters and CR members.
 	WalletPath string
