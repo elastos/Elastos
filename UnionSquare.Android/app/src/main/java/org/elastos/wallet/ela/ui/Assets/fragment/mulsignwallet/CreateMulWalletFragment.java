@@ -176,7 +176,7 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
         name = etWalletname.getText().toString().trim();
 
         if (TextUtils.isEmpty(name)) {
-            showToast(getString(R.string.inputWalletName));
+            showToast(getString(R.string.walletnamenotnull));
             return;
         }
         int needItem = Integer.parseInt(tvSignnum.getText().toString().trim());

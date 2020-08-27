@@ -286,7 +286,7 @@
     <string name='error_20006'>(ERR_20006)SPV create sub wallet error</string>
     <string name='error_20007'>(ERR_20007)Parse json array error</string>
     <string name='error_20008'>(ERR_20008)Invalid mnemonic</string>
-    <string name='error_20009'>(ERR_20009)Public key format error</string>
+    <string name='error_20009'>(ERR_20009)Public Key Repeats</string>
     <string name='error_20010'>(ERR_20010)Public key length error</string>
     <string name='error_20011'>(ERR_20011)Side chain deposit parameters error</string>
     <string name='error_20012'>(ERR_20012)Side chain withdraw parameters error</string>

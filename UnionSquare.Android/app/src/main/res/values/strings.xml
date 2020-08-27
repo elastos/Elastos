@@ -289,7 +289,7 @@
     <string name='error_20006'>(ERR_20006)SPV创建子钱包错误</string>
     <string name='error_20007'>(ERR_20007)解析JSON数组错误</string>
     <string name='error_20008'>(ERR_20008)无效助记词</string>
-    <string name='error_20009'>(ERR_20009)公钥格式错误</string>
+    <string name='error_20009'>(ERR_20009)公钥重复</string>
     <string name='error_20010'>(ERR_20010)公钥长度错误</string>
     <string name='error_20011'>(ERR_20011)侧链充值参数错误</string>
     <string name='error_20012'>(ERR_20012)侧链提现参数错误</string>

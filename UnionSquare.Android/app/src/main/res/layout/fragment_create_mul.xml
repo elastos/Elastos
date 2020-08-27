@@ -30,6 +30,7 @@
                     android:background="@null"
                     android:gravity="center_vertical"
                     android:hint="@string/inputWalletName"
+                    android:maxLength="16"
                     android:textColor="@color/white"
                     android:textColorHint="@color/whiter50" />
 

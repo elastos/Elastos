@@ -39,6 +39,7 @@ import com.google.zxing.Result;
 
 import java.io.IOException;
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 import io.github.xudaojie.qrcodelib.common.ActionUtils;
 import io.github.xudaojie.qrcodelib.common.QrUtils;
@@ -222,17 +223,25 @@ public class CaptureActivity extends Activity implements Callback {
     protected void handleResult(String resultString) {
         if (resultString.equals("")) {
             Toast.makeText(CaptureActivity.this, R.string.qr_scan_failed, Toast.LENGTH_SHORT).show();
+            mActivity.finish();
         } else {
-            Intent resultIntent = new Intent();
-            Bundle bundle = new Bundle();
-            bundle.putString("result", resultString);
-            resultIntent.putExtras(bundle);
-            this.setResult(RESULT_OK, resultIntent);
-            //Log.d("???",resultString);
-            //12229703  纯数字重启   restartPreview();
-          //  restartPreview();
+            // Log.d("???", resultString);
+            if (resultString.length() == 8 && Pattern.matches("^\\d+(\\.\\d+)?", resultString)) {
+                //12229703  纯数字重启   restartPreview();
+                //Log.d("???", "restartPreview");
+                Toast.makeText(CaptureActivity.this, R.string.qr_sanauto, Toast.LENGTH_SHORT).show();
+                restartPreview();
+            } else {
+                Intent resultIntent = new Intent();
+                Bundle bundle = new Bundle();
+                bundle.putString("result", resultString);
+                resultIntent.putExtras(bundle);
+                this.setResult(RESULT_OK, resultIntent);
+                mActivity.finish();
+            }
+
         }
-        mActivity.finish();
+
     }
 
     protected void initView() {
@@ -287,6 +296,7 @@ public class CaptureActivity extends Activity implements Callback {
 
     /**
      * 设置闪光灯是否打开
+     *
      * @param open
      */
     public void setFlashLightOpen(boolean open) {
@@ -298,6 +308,7 @@ public class CaptureActivity extends Activity implements Callback {
 
     /**
      * 当前散光灯是否打开
+     *
      * @return
      */
     public boolean isFlashLightOpen() {
