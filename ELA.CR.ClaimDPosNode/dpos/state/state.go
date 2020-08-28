@@ -814,7 +814,6 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.TransferAsset:
 		s.processVotes(tx, height)
-		s.processDeposit(tx, height)
 
 	case types.IllegalProposalEvidence, types.IllegalVoteEvidence,
 		types.IllegalBlockEvidence, types.IllegalSidechainEvidence:
@@ -839,7 +838,6 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.ReturnDepositCoin:
 		s.returnDeposit(tx, height)
-		s.processDeposit(tx, height)
 
 	case types.UpdateVersion:
 		s.updateVersion(tx, height)
@@ -851,6 +849,7 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	}
 
+	s.processDeposit(tx, height)
 	s.processCancelVotes(tx, height)
 }
 
@@ -1206,23 +1205,44 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 		inputValue += s.DepositOutputs[input.ReferKey()]
 	}
 
-	returnAction := func(producer *Producer) {
-		s.history.Append(height, func() {
-			if height >= s.chainParams.CRVotingStartHeight {
-				producer.depositAmount -= inputValue
-			}
-			producer.state = Returned
-		}, func() {
-			if height >= s.chainParams.CRVotingStartHeight {
-				producer.depositAmount += inputValue
-			}
-			producer.state = Canceled
-		})
-	}
-
 	for _, program := range tx.Programs {
 		pk := program.Code[1 : len(program.Code)-1]
 		if producer := s.getProducer(pk); producer != nil && producer.state == Canceled {
+
+			// check deposit coin
+			hash, err := contract.PublicKeyToDepositProgramHash(producer.info.OwnerPublicKey)
+			if err != nil {
+				log.Error("owner public key to deposit program hash: failed")
+				return
+			}
+
+			var changeValue common.Fixed64
+			var outputValue common.Fixed64
+			for _, output := range tx.Outputs {
+				if output.ProgramHash.IsEqual(*hash) {
+					changeValue += output.Value
+				} else {
+					outputValue += output.Value
+				}
+			}
+
+			returnAction := func(producer *Producer) {
+				s.history.Append(height, func() {
+					if height >= s.chainParams.CRVotingStartHeight {
+						producer.depositAmount -= inputValue
+					}
+					if producer.depositAmount+changeValue-producer.penalty <=
+						s.chainParams.MinTransactionFee {
+						producer.state = Returned
+					}
+				}, func() {
+					if height >= s.chainParams.CRVotingStartHeight {
+						producer.depositAmount += inputValue
+					}
+					producer.state = Canceled
+				})
+			}
+
 			returnAction(producer)
 		}
 	}

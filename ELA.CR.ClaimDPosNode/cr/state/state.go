@@ -328,10 +328,8 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 	updateAmountAction := func(cid common.Uint168) {
 		s.history.Append(height, func() {
 			s.depositInfo[cid].TotalAmount -= inputValue
-			s.depositInfo[cid].Refundable = false
 		}, func() {
 			s.depositInfo[cid].TotalAmount += inputValue
-			s.depositInfo[cid].Refundable = true
 		})
 	}
 
@@ -339,10 +337,20 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 		cid, _ := getCIDByCode(program.Code)
 
 		if candidate := s.getCandidate(*cid); candidate != nil {
-			if candidate.state == Canceled {
-				if height-candidate.cancelHeight > s.params.CRDepositLockupBlocks {
-					returnCandidateAction(candidate, candidate.state)
+			var changeValue common.Fixed64
+			for _, o := range tx.Outputs {
+				if candidate.depositHash.IsEqual(o.ProgramHash) {
+					changeValue += o.Value
 				}
+			}
+			balance := s.depositInfo[*cid].TotalAmount - inputValue + changeValue -
+				s.depositInfo[*cid].Penalty -
+				s.depositInfo[*cid].DepositAmount
+
+			if candidate.state == Canceled &&
+				height-candidate.cancelHeight > s.params.CRDepositLockupBlocks &&
+				balance <= s.params.MinTransactionFee {
+				returnCandidateAction(candidate, candidate.state)
 			}
 		}
 		if candidates := s.getHistoryCandidate(*cid); len(candidates) != 0 {

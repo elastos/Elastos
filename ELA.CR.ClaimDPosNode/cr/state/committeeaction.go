@@ -85,11 +85,9 @@ func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.TransferAsset:
 		c.processVotes(tx, height)
-		c.state.processDeposit(tx, height)
 
 	case types.ReturnCRDepositCoin:
 		c.state.returnDeposit(tx, height)
-		c.state.processDeposit(tx, height)
 
 	case types.CRCProposal:
 		c.manager.registerProposal(tx, height, c.state.CurrentSession, c.state.history)
@@ -116,6 +114,7 @@ func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
 		c.activateProducer(tx, height, c.state.history)
 	}
 
+	c.state.processDeposit(tx, height)
 	c.processCRCAddressRelatedTx(tx, height)
 }
 

@@ -213,14 +213,6 @@ func (c *Committee) GetImpeachableMembers() []*CRMember {
 	return getImpeachableCRMembers(c.Members)
 }
 
-// get all history CRMembers
-func (c *Committee) GetAllHistoryMembers() []*CRMember {
-	c.mtx.RLock()
-	defer c.mtx.RUnlock()
-
-	return getHistoryMembers(c.HistoryMembers)
-}
-
 func (c *Committee) GetMembersCodes() [][]byte {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -293,14 +285,11 @@ func (c *Committee) updateVotingCandidatesState(height uint32) {
 // update Candidates deposit coin
 func (c *Committee) updateCandidatesDepositCoin(height uint32) {
 	updateDepositCoin := func(key common.Uint168, candidate *Candidate) {
-		oriRefundable := c.state.depositInfo[key].Refundable
 		oriDepositAmount := c.state.depositInfo[key].DepositAmount
 		c.state.history.Append(height, func() {
 			c.state.depositInfo[key].DepositAmount -= MinDepositAmount
-			c.state.depositInfo[key].Refundable = true
 		}, func() {
 			c.state.depositInfo[key].DepositAmount = oriDepositAmount
-			c.state.depositInfo[key].Refundable = oriRefundable
 		})
 	}
 
@@ -438,7 +427,6 @@ func (c *Committee) updateCRMembers(
 
 func (c *Committee) transferCRMemberState(crMember *CRMember, height uint32) {
 	oriPenalty := c.state.depositInfo[crMember.Info.CID].Penalty
-	oriRefundable := c.state.depositInfo[crMember.Info.CID].Refundable
 	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
 	oriMemberState := crMember.MemberState
 	penalty := c.getMemberPenalty(height, crMember, true)
@@ -446,11 +434,9 @@ func (c *Committee) transferCRMemberState(crMember *CRMember, height uint32) {
 		crMember.MemberState = MemberImpeached
 		c.state.depositInfo[crMember.Info.CID].Penalty = penalty
 		c.state.depositInfo[crMember.Info.CID].DepositAmount -= MinDepositAmount
-		c.state.depositInfo[crMember.Info.CID].Refundable = true
 	}, func() {
 		crMember.MemberState = oriMemberState
 		c.state.depositInfo[crMember.Info.CID].Penalty = oriPenalty
-		c.state.depositInfo[crMember.Info.CID].Refundable = oriRefundable
 		c.state.depositInfo[crMember.Info.CID].DepositAmount = oriDepositAmount
 	})
 	return
@@ -754,7 +740,6 @@ func (c *Committee) tryStartVotingPeriod(height uint32) (inElection bool) {
 
 func (c *Committee) terminateCRMember(crMember *CRMember, height uint32) {
 	oriPenalty := c.state.depositInfo[crMember.Info.CID].Penalty
-	oriRefundable := c.state.depositInfo[crMember.Info.CID].Refundable
 	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
 	oriMemberState := crMember.MemberState
 	penalty := c.getMemberPenalty(height, crMember, false)
@@ -762,11 +747,9 @@ func (c *Committee) terminateCRMember(crMember *CRMember, height uint32) {
 		crMember.MemberState = MemberTerminated
 		c.state.depositInfo[crMember.Info.CID].Penalty = penalty
 		c.state.depositInfo[crMember.Info.CID].DepositAmount -= MinDepositAmount
-		c.state.depositInfo[crMember.Info.CID].Refundable = true
 	}, func() {
 		crMember.MemberState = oriMemberState
 		c.state.depositInfo[crMember.Info.CID].Penalty = oriPenalty
-		c.state.depositInfo[crMember.Info.CID].Refundable = oriRefundable
 		c.state.depositInfo[crMember.Info.CID].DepositAmount = oriDepositAmount
 	})
 }
@@ -1058,18 +1041,15 @@ func (c *Committee) processCurrentMembersDepositInfo(height uint32) {
 				continue
 			}
 			oriPenalty := c.state.depositInfo[m.Info.CID].Penalty
-			oriRefundable := c.state.depositInfo[m.Info.CID].Refundable
 			oriDepositAmount := c.state.depositInfo[m.Info.CID].DepositAmount
 			var dpositAmount common.Fixed64
 			dpositAmount = MinDepositAmount
 			penalty := c.getMemberPenalty(height, &member, false)
 			c.lastHistory.Append(height, func() {
 				c.state.depositInfo[member.Info.CID].Penalty = penalty
-				c.state.depositInfo[member.Info.CID].Refundable = true
 				c.state.depositInfo[member.Info.CID].DepositAmount -= dpositAmount
 			}, func() {
 				c.state.depositInfo[member.Info.CID].Penalty = oriPenalty
-				c.state.depositInfo[member.Info.CID].Refundable = oriRefundable
 				c.state.depositInfo[member.Info.CID].DepositAmount = oriDepositAmount
 			})
 		}
@@ -1109,12 +1089,9 @@ func (c *Committee) processCurrentCandidates(height uint32,
 		if ca.state == Returned {
 			continue
 		}
-		oriRefundable := c.state.depositInfo[ca.info.CID].Refundable
 		c.lastHistory.Append(height, func() {
-			c.state.depositInfo[ca.info.CID].Refundable = true
 			c.state.depositInfo[ca.info.CID].DepositAmount -= MinDepositAmount
 		}, func() {
-			c.state.depositInfo[ca.info.CID].Refundable = oriRefundable
 			c.state.depositInfo[ca.info.CID].DepositAmount += MinDepositAmount
 		})
 	}

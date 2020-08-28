@@ -272,7 +272,6 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 			frame.Candidates[cid] = candidate
 			frame.Nicknames[nickname] = struct{}{}
 			frame.depositInfo[cid] = &DepositInfo{
-				Refundable:    false,
 				DepositAmount: 5000 * 1e8,
 				TotalAmount:   5000 * 1e8,
 			}
@@ -288,7 +287,6 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 		frame.Candidates[cid] = candidate
 		frame.Nicknames[nickname] = struct{}{}
 		frame.depositInfo[cid] = &DepositInfo{
-			Refundable:    false,
 			DepositAmount: 5000 * 1e8,
 			TotalAmount:   5000 * 1e8,
 		}
@@ -299,19 +297,15 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 
 		nickname := candidate.info.NickName
 		code := candidate.info.Code
-		var refundable bool
 		if i%2 == 0 {
 			candidate.state = Canceled
-			refundable = true
 		} else {
 			candidate.state = Returned
-			refundable = false
 		}
 		frame.CodeCIDMap[common.BytesToHexString(code)] = cid
 		frame.Candidates[cid] = candidate
 		frame.Nicknames[nickname] = struct{}{}
 		frame.depositInfo[cid] = &DepositInfo{
-			Refundable:    refundable,
 			DepositAmount: 5000 * 1e8,
 			TotalAmount:   5000 * 1e8,
 		}

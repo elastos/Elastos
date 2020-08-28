@@ -1885,7 +1885,6 @@ func TestCommittee_RollbackCRCImpeachmentTx(t *testing.T) {
 	assert.Equal(t, 0, len(committee.GetAllCandidates()))
 	committee.state.depositInfo = make(map[common.Uint168]*DepositInfo)
 	committee.state.depositInfo[*did1] = &DepositInfo{
-		Refundable:    false,
 		DepositAmount: 5000 * 1e8,
 		TotalAmount:   5000 * 1e8,
 		Penalty:       12,
@@ -2020,13 +2019,11 @@ func TestCommittee_RollbackCRCImpeachmentAndReelectionTx(t *testing.T) {
 	assert.Equal(t, 0, len(committee.GetAllCandidates()))
 	committee.state.depositInfo = make(map[common.Uint168]*DepositInfo)
 	committee.state.depositInfo[*did1] = &DepositInfo{
-		Refundable:    false,
 		DepositAmount: 5000 * 1e8,
 		TotalAmount:   5000 * 1e8,
 		Penalty:       12,
 	}
 	committee.state.depositInfo[*did2] = &DepositInfo{
-		Refundable:    false,
 		DepositAmount: 5000 * 1e8,
 		TotalAmount:   5000 * 1e8,
 		Penalty:       12,
