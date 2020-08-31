@@ -114,7 +114,9 @@ func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
 		c.activateProducer(tx, height, c.state.history)
 	}
 
-	c.state.processDeposit(tx, height)
+	if tx.TxType != types.RegisterCR {
+		c.state.processDeposit(tx, height)
+	}
 	c.processCRCAddressRelatedTx(tx, height)
 }
 

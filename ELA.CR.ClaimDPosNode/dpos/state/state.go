@@ -849,7 +849,9 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	}
 
-	s.processDeposit(tx, height)
+	if tx.TxType != types.RegisterProducer {
+		s.processDeposit(tx, height)
+	}
 	s.processCancelVotes(tx, height)
 }
 
@@ -1728,7 +1730,7 @@ func (s *State) GetHistory(height uint32) (*StateKeyFrame, error) {
 func (s *State) handleEvents(event *events.Event) {
 	switch event.Type {
 	case events.ETCRCChangeCommittee:
-		s.mtx.RLock()
+		s.mtx.Lock()
 		nodePublicKeyMap := s.getAllNodePublicKey()
 		for nodePubKey := range s.NodeOwnerKeys {
 			_, ok := nodePublicKeyMap[nodePubKey]
@@ -1736,7 +1738,7 @@ func (s *State) handleEvents(event *events.Event) {
 				delete(s.NodeOwnerKeys, nodePubKey)
 			}
 		}
-		s.mtx.RUnlock()
+		s.mtx.Unlock()
 	}
 }
 
