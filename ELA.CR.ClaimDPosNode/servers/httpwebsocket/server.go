@@ -54,6 +54,11 @@ type Server struct {
 }
 
 func Start() {
+	instance = &Server{
+		Upgrader: websocket.Upgrader{},
+		sessions: &sessions{},
+	}
+
 	events.Subscribe(func(e *events.Event) {
 		switch e.Type {
 		case events.ETBlockConnected:
@@ -64,10 +69,6 @@ func Start() {
 		}
 	})
 
-	instance = &Server{
-		Upgrader: websocket.Upgrader{},
-		sessions: &sessions{},
-	}
 	instance.Start()
 }
 

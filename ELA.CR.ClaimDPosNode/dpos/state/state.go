@@ -1571,6 +1571,9 @@ func (s *State) countArbitratorsInactivityV1(height uint32,
 
 		if s.isInElectionPeriod != nil && s.isInElectionPeriod() {
 			if cr, ok := crMembersMap[k]; ok {
+				if cr.MemberState != state.MemberElected {
+					continue
+				}
 				oriState := cr.MemberState
 				oriCountingHeight := cr.InactiveCountingHeight
 				s.history.Append(height, func() {
