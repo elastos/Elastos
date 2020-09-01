@@ -7,6 +7,7 @@ package state
 
 import (
 	"bytes"
+	"math"
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -36,10 +37,13 @@ func (c *Committee) processTransactions(txs []*types.Transaction, height uint32)
 	// to elected.
 	activateCRMemberFromInactive := func(cr *CRMember) {
 		oriState := cr.MemberState
+		oriActivateRequestHeight := cr.ActivateRequestHeight
 		c.state.history.Append(height, func() {
 			cr.MemberState = MemberElected
+			cr.ActivateRequestHeight = math.MaxUint32
 		}, func() {
 			cr.MemberState = oriState
+			cr.ActivateRequestHeight = oriActivateRequestHeight
 		})
 	}
 
