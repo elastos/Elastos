@@ -23,6 +23,8 @@
 #ifndef __ELASTOS_SDK_IETHSIDECHAINSUBWALLET_H__
 #define __ELASTOS_SDK_IETHSIDECHAINSUBWALLET_H__
 
+#include "IEthereumClientCallback.h"
+
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -68,6 +70,10 @@ namespace Elastos {
 														 EthereumAmountUnit gasPriceUnit,
 														 const std::string &gasLimit,
 														 const std::string &data) const = 0;
+
+			virtual void AddClientCallback(IEthereumClientCallback *callback) = 0;
+
+			virtual void RemoveClientCallback() = 0;
 
 		};
 

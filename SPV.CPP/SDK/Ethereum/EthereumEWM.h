@@ -127,10 +127,16 @@ namespace Elastos {
 
 			void announceGasPrice(BREthereumWallet wid, const std::string &gasPrice, int rid);
 
-			void announceGasEstimate(BREthereumWallet wid,
-									 BREthereumTransfer tid,
-									 const std::string &gasEstimate,
-									 int rid);
+			void announceGasEstimateSuccess(BREthereumWallet wid,
+											BREthereumCookie cookie,
+											const std::string &gasEstimate,
+											const std::string &gasPrice,
+											int rid);
+
+			void announceGasEstimateFailure(BREthereumWallet wallet,
+											BREthereumCookie cookie,
+											BREthereumStatus status,
+											int rid);
 
 			void announceSubmitTransaction(BREthereumWallet wid,
 										   BREthereumTransfer tid,
@@ -179,6 +185,8 @@ namespace Elastos {
 			void announceBlockNumber(const std::string &blockNumber, int rid);
 
 			void announceNonce(const std::string &address, const std::string &nonce, int rid);
+
+			void announceBlocks(int id, std::vector<uint64_t> blockNumbers);
 
 			void announceToken(const std::string &address,
 							   int rid,

@@ -422,17 +422,26 @@ namespace Elastos {
 			ewmAnnounceGasPrice(_ewm, wid, gasPrice.c_str(), rid);
 		}
 
-		void
-		EthereumEWM::announceGasEstimate(BREthereumWallet wid, BREthereumTransfer tid, const std::string &gasEstimate,
-										 int rid) {
-//			ewmAnnounceGasEstimate(_ewm, wid, tid, gasEstimate.c_str(), rid);
+		void EthereumEWM::announceGasEstimateSuccess(BREthereumWallet wid, BREthereumCookie cookie,
+													 const std::string &gasEstimate,
+													 const std::string &gasPrice,
+													 int rid) {
+			ewmAnnounceGasEstimateSuccess(_ewm, wid, cookie, gasEstimate.data(), gasPrice.data(), rid);
+		}
+
+		void EthereumEWM::announceGasEstimateFailure(BREthereumWallet wallet,
+													 BREthereumCookie cookie,
+													 BREthereumStatus status,
+													 int rid) {
+			ewmAnnounceGasEstimateFailure(_ewm, wallet, cookie, status, rid);
 		}
 
 		void
 		EthereumEWM::announceSubmitTransaction(BREthereumWallet wid, BREthereumTransfer tid, const std::string &hash,
 											   int errorCode,
 											   const std::string &errorMessage, int rid) {
-			ewmAnnounceSubmitTransfer(_ewm, wid, tid, hash.c_str(), errorCode, errorMessage.c_str(), rid);
+			ewmAnnounceSubmitTransfer(_ewm, wid, tid, hash.empty() ? nullptr : hash.c_str(), errorCode,
+									  errorMessage.empty() ? nullptr : errorMessage.c_str(), rid);
 		}
 
 		void EthereumEWM::announceTransaction(int id,
@@ -496,6 +505,10 @@ namespace Elastos {
 
 		void EthereumEWM::announceNonce(const std::string &address, const std::string &nonce, int rid) {
 			ewmAnnounceNonce(_ewm, address.data(), nonce.data(), rid);
+		}
+
+		void EthereumEWM::announceBlocks(int id, std::vector<uint64_t> blockNumbers) {
+			ewmAnnounceBlocks(_ewm, id, blockNumbers.size(), blockNumbers.data());
 		}
 
 		void EthereumEWM::announceToken(const std::string &address,

@@ -35,6 +35,8 @@
 #include <ISubWallet.h>
 #include <IMainchainSubWallet.h>
 #include <IIDChainSubWallet.h>
+#include <IEthereumClientCallback.h>
+#include <IEthSidechainSubWallet.h>
 
 #include <string>
 #include <iostream>
@@ -67,6 +69,14 @@ public:
 		_speed(0),
 		_lastBlockTime(0)
 		{}
+
+	void SetEthClientCallback(IEthereumClientCallback *callback) {
+		_ethClientCallback = callback;
+	}
+
+	IEthereumClientCallback *GetEthClientCallback() const {
+		return _ethClientCallback;
+	}
 
 	void SetCallback(ISubWalletCallback *callback) {
 		_callback = callback;
@@ -125,6 +135,7 @@ public:
 	}
 
 private:
+	IEthereumClientCallback *_ethClientCallback;
 	ISubWalletCallback *_callback;
 	int _syncProgress;
 	std::string _downloadPeer;
@@ -199,9 +210,216 @@ public:
 					  << status << std::endl;
 	}
 
+private:
+	std::string _walletID;
+	std::string _chainID;
+};
+
+class EthereumClientCallback : public IEthereumClientCallback {
+public:
+	EthereumClientCallback(const std::string &masterWalletID, const std::string &walletID) :
+		_walletID(masterWalletID),
+		_chainID(walletID) {}
+
+	virtual ~EthereumClientCallback() {}
+
 	virtual void OnETHSCEventHandled(const nlohmann::json &event) {
-		if (verboseMode)
-			std::cout << "*** Wallet " << _chainID << " event: " << event.dump(4) << std::endl;
+
+	}
+
+	/**
+	 * @param id request id
+	 * @return If successful, return below. Otherwise {} or null will be returned to indicate the error.
+	 * {
+	 *   "id": 0,
+	 *   "result": "0x1dfd14000" // 8049999872 Wei
+	 * }
+	 */
+	virtual nlohmann::json GasPrice(int id) {
+		nlohmann::json j;
+		// rpc request
+		// ...
+		j["id"] = id;
+		j["result"] = "0x1dfd14000";
+		return j;
+	}
+
+	/**
+	 * @param from
+	 * @param to
+	 * @param amount
+	 * @param gasPrice
+	 * @param data
+	 * @param id request id
+	 * @return If successful, return below. Otherwise {} or null will be returned to indicate the error.
+	 * {
+	 *   "id": 0,
+	 *   "result": "0x5208" // 21000
+	 * }
+	 */
+	virtual nlohmann::json EstimateGas(const std::string &from,
+									   const std::string &to,
+									   const std::string &amount,
+									   const std::string &gasPrice,
+									   const std::string &data,
+									   int id) {
+		nlohmann::json j;
+		// rpc request
+		// ...
+		j["id"] = id;
+		j["result"] = "0x5208";
+		return j;
+	}
+
+	/**
+	 * @param address
+	 * @param id
+	 * @return
+	 * {
+	 *   "id": 0,
+	 *   "result": "0x0234c8a3397aab58" // 158972490234375000
+	 * }
+	 */
+	virtual nlohmann::json GetBalance(const std::string &address, int id) {
+		nlohmann::json j;
+		// rpc request
+		j["id"] = id;
+		j["result"] = "0x0234c8a3397aab58";
+		return j;
+	}
+
+	virtual nlohmann::json SubmitTransaction(const std::string &tx, int id) {
+		nlohmann::json j;
+		// rpc request
+		j["id"] = id;
+		j["result"] = "0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331";
+		return j;
+	}
+
+	virtual nlohmann::json GetTransactions(const std::string &address,
+										   uint64_t begBlockNumber,
+										   uint64_t endBlockNumber,
+										   int id) {
+		nlohmann::json j, txns, tx;
+
+		// rpc request
+		// ...
+		tx["hash"] = "0xe7b3134cb1eb3bc69978fa4f2793f3f49f931a3d863831fc2f56437eb4f6f322";
+		tx["from"] = "0x53781e106a2e3378083bdcede1874e5c2a7225f8";
+		tx["to"] = "0xd2fbb995bd917d0f6655f41c4006cc58da7603df";
+		tx["contract"] = ""; // or "", if none was created
+		tx["amount"] = "999999999999999999"; // 4290000000000000
+		tx["gasLimit"] = "5012644";
+		tx["gasPrice"] = "1000000000"; // 20000000000
+		tx["data"] = ""; // input
+		tx["nonce"] = "0"; // 21
+		tx["gasUsed"] = "21000"; // 50000
+		tx["blockNumber"] = "66"; // 6139707
+		tx["blockHash"] = "0xcff4a5a940982f991ee5c82d28643582d77a23d28edee794e4392f105cad203d";
+		tx["blockConfirmations"] = "76611"; // 256
+		tx["blockTransactionIndex"] = "0"; // 65
+		tx["blockTimestamp"] = "1598498146";
+
+		txns.push_back(tx);
+
+		tx["hash"] = "0x67a77b8bd2a24481f2aaa916ed7587aeedf39ee7e41b9d321bea021cb1edea14";
+		tx["from"] = "0x53781e106a2e3378083bdcede1874e5c2a7225f8";
+		tx["to"] = "0xd2fbb995bd917d0f6655f41c4006cc58da7603df";
+		tx["contract"] = ""; // or "", if none was created
+		tx["amount"] = "1000000000000000000"; // 4290000000000000
+		tx["gasLimit"] = "8000000";
+		tx["gasPrice"] = "1000000000"; // 20000000000
+		tx["data"] = ""; // input
+		tx["nonce"] = "1"; // 21
+		tx["gasUsed"] = "21000"; // 50000
+		tx["blockNumber"] = "572"; // 6139707
+		tx["blockHash"] = "0x991753835922fad42de10f64f840eeca3d42dcbd4c95294dcabd6b2403fb2b46";
+		tx["blockConfirmations"] = "76105"; // 256
+		tx["blockTransactionIndex"] = "0"; // 65
+		tx["blockTimestamp"] = "1598498652";
+
+		txns.push_back(tx);
+
+		tx["hash"] = "0x157bb5ce2940078e497b8ffb2dc1af0db6ad46f9e9b133bbd521a73cde27c941";
+		tx["from"] = "0x53781e106a2e3378083bdcede1874e5c2a7225f8";
+		tx["to"] = "0xd2fbb995bd917d0f6655f41c4006cc58da7603df";
+		tx["contract"] = ""; // or "", if none was created
+		tx["amount"] = "1000000000000000000"; // 4290000000000000
+		tx["gasLimit"] = "8000000";
+		tx["gasPrice"] = "1000000000"; // 20000000000
+		tx["data"] = ""; // input
+		tx["nonce"] = "2"; // 21
+		tx["gasUsed"] = "21000"; // 50000
+		tx["blockNumber"] = "1195"; // 6139707
+		tx["blockHash"] = "0xafa2792ae11ec429d705bc1b8f99c0ddf5f6c17cdab69105fcd19aa453ad3041";
+		tx["blockConfirmations"] = "75482"; // 256
+		tx["blockTransactionIndex"] = "0"; // 65
+		tx["blockTimestamp"] = "1598499275";
+
+		txns.push_back(tx);
+		j["id"] = id;
+		j["result"] = txns;
+		return j;
+	}
+
+	virtual nlohmann::json GetLogs(const std::string &contract,
+								   const std::string &address,
+								   const std::string &event,
+								   uint64_t begBlockNumber,
+								   uint64_t endBlockNumber,
+								   int id) {
+		nlohmann::json j, log, logs = nlohmann::json::array();
+		// rpc request
+//		log["hash"] = "0xdf829c5a142f1fccd7d8216c5785ac562ff41e2dcfdf5785ac562ff41e2dcf";
+//		log["contract"] = "0xb60e8dd61c5d32be8058bb8eb970870f07233155"; // or "", if none was created
+//		log["topics"] = nlohmann::json::array({"0x59ebeb90bc63057b6515673c3ecf9438e5058bca0f92585014eced636878c9a5"});
+//		log["data"] = "0x0000000000000000000000000000000000000000000000000000000000000000";
+//		log["gasPrice"] = "0x4a817c800"; // 20000000000
+//		log["gasUsed"] = "0x4dc"; // 1244
+//		log["logIndex"] = "0x1"; // 1
+//		log["blockNumber"] = "0x1b4"; // 436
+//		log["blockTransactionIndex"] = "0x0"; // 0
+//		log["blockTimestamp"] = "0x55ba467c";
+//		logs.push_back(log);
+		j["id"] = id;
+		j["result"] = logs;
+		return j;
+	}
+
+	virtual nlohmann::json GetTokens(int id) {
+		nlohmann::json j, tokens, token;
+		// rpc request
+		// ...
+		token["id"] = 0;
+		token["address"] = "0x407d73d8a49eeb85d32cf465507dd71d507100c1";
+		token["symbol"] = "ELA";
+		token["name"] = "elastos";
+		token["description"] = "desc";
+		token["decimals"] = 18;
+		token["defaultGasLimit"] = "0x1388";
+		token["defaultGasPrice"] = "0x1dfd14000"; // 8049999872 Wei
+		tokens.push_back(token);
+		j["id"] = id;
+		j["result"] = tokens;
+		return j;
+	}
+
+	virtual nlohmann::json GetBlockNumber(int id) {
+		nlohmann::json j;
+		// rpc request
+		// ...
+		j["id"] = id;
+		j["result"] = "0x4b7";
+		return j;
+	}
+
+	virtual nlohmann::json GetNonce(const std::string &address, int id) {
+		nlohmann::json j;
+		// rpc request
+		// ...
+		j["id"] = id;
+		j["result"] = "0x1";
+		return j;
 	}
 
 private:
@@ -307,9 +525,16 @@ static std::string convertAmount(const std::string &amount) {
 
 static void subWalletOpen(IMasterWallet *masterWallet, ISubWallet *subWallet) {
 	WalletData walletData;
-	ISubWalletCallback *callback = new SubWalletCallback(masterWallet->GetID(), subWallet->GetChainID());
 
-	walletData.SetCallback(callback);
+	if (subWallet->GetChainID() == CHAINID_ETHSC) {
+		IEthereumClientCallback *callback = new EthereumClientCallback(masterWallet->GetID(), subWallet->GetChainID());
+		walletData.SetEthClientCallback(callback);
+		dynamic_cast<IEthSidechainSubWallet *>(subWallet)->AddClientCallback(callback);
+	} else {
+		ISubWalletCallback *callback = new SubWalletCallback(masterWallet->GetID(), subWallet->GetChainID());
+		walletData.SetCallback(callback);
+		subWallet->AddCallback(callback);
+	}
 
 	if (masterWalletData.find(masterWallet->GetID()) != masterWalletData.end()) {
 		masterWalletData[masterWallet->GetID()][subWallet->GetChainID()] = walletData;
@@ -319,7 +544,6 @@ static void subWalletOpen(IMasterWallet *masterWallet, ISubWallet *subWallet) {
 		masterWalletData[masterWallet->GetID()] = subWalletData;
 	}
 
-	subWallet->AddCallback(callback);
 	subWallet->SyncStart();
 }
 
@@ -328,11 +552,17 @@ static void subWalletClose(IMasterWallet *masterWallet, ISubWallet *subWallet) {
 	std::string chainID = subWallet->GetChainID();
 
 	subWallet->SyncStop();
-	subWallet->RemoveCallback();
-
-	auto callback = static_cast<SubWalletCallback *>(masterWalletData[walletName][chainID].GetCallback());
-	delete callback;
-	callback = nullptr;
+	if (subWallet->GetChainID() == CHAINID_ETHSC) {
+		dynamic_cast<IEthSidechainSubWallet *>(subWallet)->RemoveClientCallback();
+		auto callback = static_cast<EthereumClientCallback*>(masterWalletData[walletName][chainID].GetEthClientCallback());
+		delete callback;
+		callback = nullptr;
+	} else {
+		subWallet->RemoveCallback();
+		auto callback = static_cast<SubWalletCallback *>(masterWalletData[walletName][chainID].GetCallback());
+		delete callback;
+		callback = nullptr;
+	}
 
 	masterWalletData[walletName].erase(chainID);
 	if (masterWalletData[walletName].empty())

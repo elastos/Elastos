@@ -108,6 +108,21 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			return j;
 		}
 
+		void EthSidechainSubWallet::AddClientCallback(IEthereumClientCallback *callback) {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("callback: *");
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			_callback = callback;
+		}
+
+		void EthSidechainSubWallet::RemoveClientCallback() {
+			ArgInfo("{} {}", _walletID, GetFunName());
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			_callback = nullptr;
+		}
+
 		EthSidechainSubWallet::EthSidechainSubWallet(const CoinInfoPtr &info,
 													 const ChainConfigPtr &config,
 													 MasterWallet *parent,
@@ -157,8 +172,27 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 
 		void EthSidechainSubWallet::getGasPrice(BREthereumWallet wid, int rid) {
 			nlohmann::json j;
-			j["Rid"] = rid;
+			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback) {
+				nlohmann::json r = _callback->GasPrice(rid);
+				ArgInfo("r => {}", r.dump(4));
+
+				if (!r.empty()) {
+					int id;
+					std::string gasPrice;
+
+					try {
+						id = r["id"].get<int>();
+						gasPrice = r["result"].get<std::string>();
+						_client->_ewm->announceGasPrice(wid, gasPrice, id);
+					} catch (const std::exception &e) {
+						Log::error("invalid json format: {}", e.what());
+					}
+				}
+			}
 		}
 
 		void EthSidechainSubWallet::getGasEstimate(BREthereumWallet wid,
@@ -170,37 +204,94 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 												   const std::string &data,
 												   int rid) {
 			nlohmann::json j;
-			BREthereumTransfer transfer = (BREthereumTransfer) cookie;
-			BREthereumHash hash = transferGetIdentifier(transfer);
-			char *phash =  hashAsString(hash);
-			std::string h = phash;
-			free(phash);
 
-			j["Hash"] = h;
-			j["From"] = from;
-			j["To"] = to;
-			j["Amount"] = amount;
-			j["Data"] = data;
-			j["GasPrice"] = gasPrice;
-			j["Rid"] = rid;
+			j["from"] = from;
+			j["to"] = to;
+			j["amount"] = amount;
+			j["data"] = data;
+			j["gasPrice"] = gasPrice;
+			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback) {
+				nlohmann::json r = _callback->EstimateGas(from, to, amount, gasPrice, data, rid);
+				ArgInfo("r => {}", r.dump(4));
+
+				if (!r.empty()) {
+					int id;
+					std::string gasEstimate;
+
+					try {
+						id = r["id"].get<int>();
+						gasEstimate = r["result"].get<std::string>();
+						_client->_ewm->announceGasEstimateSuccess(wid, cookie, gasEstimate, gasPrice, id);
+					} catch (const std::exception &e) {
+						Log::error("invalid json format: {}", e.what());
+						_client->_ewm->announceGasEstimateFailure(wid, cookie, ERROR_NODE_NOT_CONNECTED, id);
+					}
+				} else {
+					_client->_ewm->announceGasEstimateFailure(wid, cookie, ERROR_NODE_NOT_CONNECTED, rid);
+				}
+			}
 		}
 
 		void EthSidechainSubWallet::getBalance(BREthereumWallet wid, const std::string &address, int rid) {
 			nlohmann::json j;
-			j["Address"] = address;
-			j["Rid"] = rid;
+			j["address"] = address;
+			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback) {
+				nlohmann::json r = _callback->GetBalance(address, rid);
+				ArgInfo("r => {}", r.dump(4));
+
+				if (!r.empty()) {
+					int id;
+					std::string balance;
+
+					try {
+						id = r["id"].get<int>();
+						balance = r["result"].get<std::string>();
+						_client->_ewm->announceBalance(wid, balance, id);
+					} catch (const std::exception &e) {
+						Log::error("invalid json format: {}", e.what());
+					}
+				}
+			}
 		}
 
 		void EthSidechainSubWallet::submitTransaction(BREthereumWallet wid,
 													  BREthereumTransfer tid,
-													  const std::string &rawTransaction,
+													  const std::string &tx,
 													  int rid) {
 			nlohmann::json j;
-			j["RawTx"] = rawTransaction;
-			j["Rid"] = rid;
+			j["tx"] = tx;
+			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback) {
+				nlohmann::json r = _callback->SubmitTransaction(tx, rid);
+				ArgInfo("r => {}", r.dump(4));
+
+				if (!r.empty()) {
+					int id = rid;
+					std::string hash;
+
+					try {
+						id = r["id"].get<int>();
+						hash = r["result"].get<std::string>();
+						_client->_ewm->announceSubmitTransaction(wid, tid, hash, -1, "", id);
+					} catch (const std::exception &e) {
+						Log::error("invalid json format: {}", e.what());
+						_client->_ewm->announceSubmitTransaction(wid, tid, "", 0, "parse result failure", id);
+					}
+				} else {
+					_client->_ewm->announceSubmitTransaction(wid, tid, "", 0, "unknown failure", rid);
+				}
+			}
 		}
 
 		void EthSidechainSubWallet::getTransactions(const std::string &address,
@@ -208,11 +299,54 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 													uint64_t endBlockNumber,
 													int rid) {
 			nlohmann::json j;
-			j["Address"] = address;
-			j["BegBlockNumber"] = begBlockNumber;
-			j["EndBlockNumber"] = endBlockNumber;
-			j["Rid"] = rid;
+			j["address"] = address;
+			j["begBlockNumber"] = begBlockNumber;
+			j["endBlockNumber"] = endBlockNumber;
+			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback) {
+				nlohmann::json r = _callback->GetTransactions(address, begBlockNumber, endBlockNumber, rid);
+				ArgInfo("r => {}", r.dump(4));
+
+				if (!r.empty()) {
+					int id = rid;
+					std::string hash, from, to, contract, amount, gasLimit, gasPrice, data, nonce, gasUsed;
+					std::string blockNumber, blockHash, blockConfirmations, blockTransactionIndex, blockTimestamp;
+
+					try {
+						id = r["id"].get<int>();
+						nlohmann::json txns = r["result"];
+						for (nlohmann::json::iterator it = txns.begin(); it != txns.end(); ++it) {
+							nlohmann::json tx = *it;
+							hash = tx["hash"].get<std::string>();
+							from = tx["from"].get<std::string>();
+							to = tx["to"].get<std::string>();
+							contract = tx["contract"].get<std::string>();
+							amount = tx["amount"].get<std::string>();
+							gasLimit = tx["gasLimit"].get<std::string>();
+							gasPrice = tx["gasPrice"].get<std::string>();
+							data = tx["data"].get<std::string>();
+							nonce = tx["nonce"].get<std::string>();
+							gasUsed = tx["gasUsed"].get<std::string>();
+							blockNumber = tx["blockNumber"].get<std::string>();
+							blockHash = tx["blockHash"].get<std::string>();
+							blockConfirmations = tx["blockConfirmations"].get<std::string>();
+							blockTransactionIndex = tx["blockTransactionIndex"].get<std::string>();
+							blockTimestamp = tx["blockTimestamp"].get<std::string>();
+
+							_client->_ewm->announceTransaction(id, hash, from, to, contract, amount, gasLimit, gasPrice, data, nonce, gasUsed, blockNumber, blockHash, blockConfirmations, blockTransactionIndex, blockTimestamp, "0");
+						}
+						_client->_ewm->announceTransactionComplete(id, true);
+					} catch (const std::exception &e) {
+						Log::error("invalid json format: {}", e.what());
+						_client->_ewm->announceTransactionComplete(id, false);
+					}
+				} else {
+					_client->_ewm->announceTransactionComplete(rid, false);
+				}
+			}
 		}
 
 		void EthSidechainSubWallet::getLogs(const std::string &contract,
@@ -222,13 +356,51 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 											uint64_t endBlockNumber,
 											int rid) {
 			nlohmann::json j;
-			j["Contract"] = contract;
-			j["Address"] = address;
-			j["Event"] = event;
-			j["BegBlockNumber"] = begBlockNumber;
-			j["EndBlockNumber"] = endBlockNumber;
-			j["Rid"] = rid;
+			j["contract"] = contract;
+			j["address"] = address;
+			j["event"] = event;
+			j["begBlockNumber"] = begBlockNumber;
+			j["endBlockNumber"] = endBlockNumber;
+			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback) {
+				nlohmann::json r = _callback->GetLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
+				ArgInfo("r => {}", r.dump(4));
+
+				if (!r.empty()) {
+					int id = rid;
+					std::string hash, c, data, gasPrice, gasUsed, logIndex, blockNumber, blockTransactionIndex, blockTimestamp;
+					std::vector<std::string> topics;
+
+					try {
+						id = r["id"].get<int>();
+						nlohmann::json logs = r["result"];
+						for (nlohmann::json::iterator it = logs.begin(); it != logs.end(); ++it) {
+							nlohmann::json log = *it;
+							hash = log["hash"].get<std::string>();
+							c = log["contract"].get<std::string>();
+							topics = log["topics"].get<std::vector<std::string>>();
+							data = log["data"].get<std::string>();
+							gasPrice = log["gasPrice"].get<std::string>();
+							gasUsed = log["gasUsed"].get<std::string>();
+							logIndex = log["logIndex"].get<std::string>();
+							blockNumber = log["blockNumber"].get<std::string>();
+							blockTransactionIndex = log["blockTransactionIndex"].get<std::string>();
+							blockTimestamp = log["blockTimestamp"].get<std::string>();
+
+							_client->_ewm->announceLog(id, hash, c, topics, data, gasPrice, gasUsed, logIndex, blockNumber, blockTransactionIndex, blockTimestamp);
+						}
+						_client->_ewm->announceLogComplete(id, true);
+					} catch (const std::exception &e) {
+						Log::error("invalid json format: {}", e.what());
+						_client->_ewm->announceLogComplete(id, false);
+					}
+				} else {
+					_client->_ewm->announceLogComplete(rid, false);
+				}
+			}
 		}
 
 		void EthSidechainSubWallet::getBlocks(const std::string &address,
@@ -237,31 +409,201 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 											  uint64_t blockNumberStop,
 											  int rid) {
 			nlohmann::json j;
-			j["Address"] = address;
-			j["Interests"] = interests;
-			j["BlockNumberStart"] = blockNumberStart;
-			j["BlockNumberStop"] = blockNumberStop;
-			j["Rid"] = rid;
+			j["address"] = address;
+			j["interests"] = interests;
+			j["blockNumberStart"] = blockNumberStart;
+			j["blockNumberStop"] = blockNumberStop;
+			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback) {
+				int id = rid;
+				std::vector<uint64_t> numbers;
+				nlohmann::json r = _callback->GetTransactions(address, blockNumberStart, blockNumberStop, rid);
+				ArgInfo("getTransactions => {}", r.dump(4));
+
+				if (!r.empty()) {
+					std::string from, to, blockNumber;
+
+					try {
+						id = r["id"].get<int>();
+						nlohmann::json txns = r["result"];
+						for (nlohmann::json::iterator it = txns.begin(); it != txns.end(); ++it) {
+							nlohmann::json tx = *it;
+							from = tx["from"].get<std::string>();
+							to = tx["to"].get<std::string>();
+							blockNumber = tx["blockNumber"].get<std::string>();
+
+							std::string addressLower = address, fromLower = from, toLower = to;
+							std::transform(addressLower.begin(), addressLower.end(), addressLower.begin(), tolower);
+							std::transform(fromLower.begin(), fromLower.end(), fromLower.begin(), tolower);
+							std::transform(toLower.begin(), toLower.end(), toLower.begin(), tolower);
+
+							bool include = (0 != (interests & (1)) && addressLower == fromLower) ||
+										   (0 != (interests & (1 << 1)) && addressLower == toLower);
+							if (include) {
+								std::stringstream ss;
+								uint64_t blockNum;
+								ss << blockNumber;
+								ss >> blockNum;
+								numbers.push_back(blockNum);
+							}
+						}
+					} catch (const std::exception &e) {
+						Log::error("invalid json format: {}", e.what());
+						return;
+					}
+				} else {
+					Log::error("empty json");
+					return;
+				}
+
+				std::string ETH_EVENT_ERC20_TRANSFER = "0xa9059cbb";
+				r = _callback->GetLogs("", address, ETH_EVENT_ERC20_TRANSFER, blockNumberStart, blockNumberStop, rid);
+				ArgInfo("getLogs => {}", r.dump(4));
+
+				if (!r.empty()) {
+					std::string blockNumber;
+					std::vector<std::string> topics;
+
+					try {
+						id = r["id"].get<int>();
+						nlohmann::json logs = r["result"];
+						for (nlohmann::json::iterator it = logs.begin(); it != logs.end(); ++it) {
+							nlohmann::json log = *it;
+							topics = log["topics"].get<std::vector<std::string>>();
+							blockNumber = log["blockNumber"].get<std::string>();
+
+							if (topics.size() == 3) {
+								std::string addressLower = address, topicsLower1 = topics[1], topicsLower2 = topics[2];
+								std::transform(addressLower.begin(), addressLower.end(), addressLower.begin(), tolower);
+								std::transform(topicsLower1.begin(), topicsLower1.end(), topicsLower1.begin(), tolower);
+								std::transform(topicsLower2.begin(), topicsLower2.end(), topicsLower2.begin(), tolower);
+								bool include = ((0 != (interests & (1 << 2)) && addressLower == topicsLower1) ||
+												(0 != (interests & (1 << 3)) && addressLower == topicsLower2));
+
+								if (include) {
+									std::stringstream ss;
+									uint64_t blockNum;
+									ss << blockNumber;
+									ss >> blockNum;
+									numbers.push_back(blockNum);
+								}
+							}
+						}
+					} catch (const std::exception &e) {
+						Log::error("invalid json format: {}", e.what());
+						return;
+					}
+				} else {
+					Log::error("empty json");
+					return;
+				}
+
+				Log::info("numbers.size() = {}", numbers.size());
+				_client->_ewm->announceBlocks(id, numbers);
+			}
 		}
 
 		void EthSidechainSubWallet::getTokens(int rid) {
 			nlohmann::json j;
-			j["Rid"] = rid;
+			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback) {
+				nlohmann::json r = _callback->GetTokens(rid);
+				ArgInfo("r => {}", r.dump(4));
+
+				if (!r.empty()) {
+					int id = rid;
+					/*
+						*   "address": "0x407d73d8a49eeb85d32cf465507dd71d507100c1",
+						*   "symbol": "ELA",
+						*   "name": "elastos",
+						*   "description": "desc",
+						*   "decimals": 18,
+						*   "defaultGasLimit": "0x1388",
+						*   "defaultGasPrice": "0x1dfd14000" // 8049999872 Wei*/
+					std::string address, symbol, name, description, defaultGasLimit, defaultGasPrice;
+					int decimals;
+
+					try {
+						id = r["id"].get<int>();
+						nlohmann::json tokens = r["result"];
+						for (nlohmann::json::iterator it = tokens.begin(); it != tokens.end(); ++it) {
+							nlohmann::json token = *it;
+							address = token["address"].get<std::string>();
+							symbol = token["symbol"].get<std::string>();
+							name = token["name"].get<std::string>();
+							description = token["description"].get<std::string>();
+							decimals = token["decimals"].get<int>();
+							defaultGasLimit = token["defaultGasLimit"].get<std::string>();
+							defaultGasPrice = token["defaultGasPrice"].get<std::string>();
+
+							_client->_ewm->announceToken(address, id, symbol, name, description, decimals, defaultGasLimit, defaultGasPrice);
+						}
+						_client->_ewm->announceTokenComplete(id, true);
+					} catch (const std::exception &e) {
+						Log::error("invalid json format: {}", e.what());
+						_client->_ewm->announceTokenComplete(id, false);
+					}
+				} else {
+					_client->_ewm->announceTokenComplete(rid, false);
+				}
+			}
 		}
 
 		void EthSidechainSubWallet::getBlockNumber(int rid) {
 			nlohmann::json j;
-			j["Rid"] = rid;
+			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback) {
+				nlohmann::json r = _callback->GetBlockNumber(rid);
+				ArgInfo("r => {}", r.dump(4));
+				int id = rid;
+
+				if (!r.empty()) {
+					std::string blockNumber;
+
+					try {
+						id = r["id"].get<int>();
+						blockNumber = r["result"].get<std::string>();
+						_client->_ewm->announceBlockNumber(blockNumber, id);
+					} catch (const std::exception &e) {
+						Log::error("invalid json format: {}", e.what());
+					}
+				}
+			}
 		}
 
 		void EthSidechainSubWallet::getNonce(const std::string &address, int rid) {
 			nlohmann::json j;
-			j["Address"] = address;
-			j["Rid"] = rid;
+			j["address"] = address;
+			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_callback) {
+				nlohmann::json r = _callback->GetNonce(address, rid);
+				ArgInfo("r => {}", r.dump(4));
+				int id = rid;
+
+				if (!r.empty()) {
+					std::string nonce;
+
+					try {
+						id = r["id"].get<int>();
+						nonce = r["result"].get<std::string>();
+						_client->_ewm->announceNonce(address, nonce, id);
+					} catch (const std::exception &e) {
+						Log::error("invalid json format: {}", e.what());
+					}
+				}
+			}
 		}
 
 		void EthSidechainSubWallet::handleEWMEvent(const BREthereumEWMEvent &event) {
@@ -430,9 +772,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 		void EthSidechainSubWallet::AddCallback(ISubWalletCallback *subCallback) {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("callback: *");
-
-			boost::mutex::scoped_lock scoped_lock(lock);
-			_callback = subCallback;
 		}
 
 		void EthSidechainSubWallet::RemoveCallback() {

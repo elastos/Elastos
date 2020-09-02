@@ -61,6 +61,11 @@ namespace Elastos {
 														 EthereumAmountUnit gasPriceUnit,
 														 const std::string &gasLimit,
 														 const std::string &data) const;
+
+			virtual void AddClientCallback(IEthereumClientCallback *callback);
+
+			virtual void RemoveClientCallback();
+
 		public:
 			// implement callback of Client
 			virtual void getGasPrice(BREthereumWallet wid, int rid);
@@ -80,10 +85,12 @@ namespace Elastos {
 			submitTransaction(BREthereumWallet wid, BREthereumTransfer tid, const std::string &rawTransaction,
 							  int rid);
 
+			// announce one-by-one
 			virtual void
 			getTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber,
 							int rid);
 
+			// announce one-by-one
 			virtual void getLogs(const std::string &contract,
 								 const std::string &address,
 								 const std::string &event,
@@ -97,6 +104,7 @@ namespace Elastos {
 								   uint64_t blockNumberStop,
 								   int rid);
 
+			// announce one-by-one
 			virtual void getTokens(int rid);
 
 			virtual void getBlockNumber(int rid);
@@ -214,7 +222,7 @@ namespace Elastos {
 			MasterWallet *_parent;
 			CoinInfoPtr _info;
 			ChainConfigPtr _config;
-			ISubWalletCallback *_callback;
+			IEthereumClientCallback *_callback;
 		};
 
 	}
