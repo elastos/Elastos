@@ -79,6 +79,7 @@ type Producer struct {
 	penalty                common.Fixed64
 	votes                  common.Fixed64
 	depositAmount          common.Fixed64
+	totalAmount            common.Fixed64
 	depositHash            common.Uint168
 }
 
@@ -133,6 +134,14 @@ func (p *Producer) ActivateRequestHeight() uint32 {
 
 func (p *Producer) DepositAmount() common.Fixed64 {
 	return p.depositAmount
+}
+
+func (p *Producer) TotalAmount() common.Fixed64 {
+	return p.totalAmount
+}
+
+func (p *Producer) AvailableAmount() common.Fixed64 {
+	return p.totalAmount - p.depositAmount - p.penalty
 }
 
 func (p *Producer) Serialize(w io.Writer) error {
@@ -449,11 +458,16 @@ func (s *State) GetVotedProducers() []*Producer {
 // GetCanceledProducers returns all producers that in cancel state.
 func (s *State) GetCanceledProducers() []*Producer {
 	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	return s.getCanceledProducers()
+}
+
+// getCanceledProducers returns all producers that in cancel state.
+func (s *State) getCanceledProducers() []*Producer {
 	producers := make([]*Producer, 0, len(s.CanceledProducers))
 	for _, producer := range s.CanceledProducers {
 		producers = append(producers, producer)
 	}
-	s.mtx.RUnlock()
 	return producers
 }
 
@@ -698,6 +712,7 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	s.tryInitProducerAssetAmounts(block.Height)
 	s.processTransactions(block.Transactions, block.Height)
 	s.ProcessVoteStatisticsBlock(block)
+	s.updateProducersDepositCoin(block.Height)
 
 	if confirm != nil {
 		if block.Height >= s.chainParams.CRClaimDPOSNodeStartHeight {
@@ -709,6 +724,25 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 
 	// Commit changes here if no errors found.
 	s.history.Commit(block.Height)
+}
+
+// update producers deposit coin
+func (s *State) updateProducersDepositCoin(height uint32) {
+	updateDepositCoin := func(producer *Producer) {
+		oriDepositAmount := producer.depositAmount
+		s.history.Append(height, func() {
+			producer.depositAmount -= state.MinDepositAmount
+		}, func() {
+			producer.depositAmount = oriDepositAmount
+		})
+	}
+
+	canceledProducers := s.getCanceledProducers()
+	for _, producer := range canceledProducers {
+		if height-producer.CancelHeight() == s.chainParams.CRDepositLockupBlocks {
+			updateDepositCoin(producer)
+		}
+	}
 }
 
 // ProcessVoteStatisticsBlock deal with block with vote statistics error.
@@ -844,9 +878,9 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.NextTurnDPOSInfo:
 		s.processNextTurnDPOSInfo(tx, height)
+
 	case types.CRDPOSManagement:
 		s.processCRDPOSManagement(tx, height)
-
 	}
 
 	if tx.TxType != types.RegisterProducer {
@@ -884,7 +918,8 @@ func (s *State) registerProducer(tx *types.Transaction, height uint32) {
 		inactiveCountingHeight: 0,
 		penalty:                common.Fixed64(0),
 		activateRequestHeight:  math.MaxUint32,
-		depositAmount:          amount,
+		depositAmount:          state.MinDepositAmount,
+		totalAmount:            amount,
 		depositHash:            *programHash,
 	}
 
@@ -1011,9 +1046,9 @@ func (s *State) tryInitProducerAssetAmounts(blockHeight uint32) {
 
 	setAmount := func(producer *Producer, amount common.Fixed64) {
 		s.history.Append(blockHeight, func() {
-			producer.depositAmount = amount
+			producer.totalAmount = amount
 		}, func() {
-			producer.depositAmount = common.Fixed64(0)
+			producer.totalAmount = common.Fixed64(0)
 		})
 	}
 
@@ -1086,9 +1121,9 @@ func (s *State) getProducerByDepositHash(hash common.Uint168) *Producer {
 func (s *State) addProducerAssert(output *types.Output, height uint32) bool {
 	if producer := s.getProducerByDepositHash(output.ProgramHash); producer != nil {
 		s.history.Append(height, func() {
-			producer.depositAmount += output.Value
+			producer.totalAmount += output.Value
 		}, func() {
-			producer.depositAmount -= output.Value
+			producer.totalAmount -= output.Value
 		})
 		return true
 	}
@@ -1231,15 +1266,15 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 			returnAction := func(producer *Producer) {
 				s.history.Append(height, func() {
 					if height >= s.chainParams.CRVotingStartHeight {
-						producer.depositAmount -= inputValue
+						producer.totalAmount -= inputValue
 					}
-					if producer.depositAmount+changeValue-producer.penalty <=
+					if producer.totalAmount+changeValue-producer.penalty <=
 						s.chainParams.MinTransactionFee {
 						producer.state = Returned
 					}
 				}, func() {
 					if height >= s.chainParams.CRVotingStartHeight {
-						producer.depositAmount += inputValue
+						producer.totalAmount += inputValue
 					}
 					producer.state = Canceled
 				})

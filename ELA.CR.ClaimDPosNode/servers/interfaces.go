@@ -2240,30 +2240,23 @@ func GetDepositCoin(param Params) map[string]interface{} {
 	}
 	pkBytes, err := hex.DecodeString(pk)
 	if err != nil {
+		return ResponsePack(InvalidParams, "invalid public key")
+	}
+	producer := Chain.GetState().GetProducer(pkBytes)
+	if producer == nil {
 		return ResponsePack(InvalidParams, "invalid publickey")
 	}
-	programHash, err := contract.PublicKeyToDepositProgramHash(pkBytes)
-	if err != nil {
-		return ResponsePack(InvalidParams, "invalid publickey to programHash")
-	}
-	utxos, err := Store.GetFFLDB().GetUTXO(programHash)
-	if err != nil {
-		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
-	}
-	var balance common.Fixed64 = 0
-	for _, utxo := range utxos {
-		balance = balance + utxo.Value
-	}
-	var deducted common.Fixed64 = 0
-	//todo get deducted coin
-
 	type depositCoin struct {
 		Available string `json:"available"`
 		Deducted  string `json:"deducted"`
+		Deposit   string `json:"deposit"`
+		Assets    string `json:"assets"`
 	}
 	return ResponsePack(Success, &depositCoin{
-		Available: balance.String(),
-		Deducted:  deducted.String(),
+		Available: producer.AvailableAmount().String(),
+		Deducted:  producer.Penalty().String(),
+		Deposit:   producer.DepositAmount().String(),
+		Assets:    producer.TotalAmount().String(),
 	})
 }
 

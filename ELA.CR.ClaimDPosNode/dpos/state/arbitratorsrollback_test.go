@@ -526,6 +526,15 @@ func TestArbitrators_RollbackReturnProducerDeposit(t *testing.T) {
 		return common.Fixed64(0), errors.New("not found producer")
 	}
 
+	assert.Equal(t, common.Fixed64(5000*1e8), abt.GetProducer(abtList[0]).depositAmount)
+
+	currentHeight += abt.chainParams.CRDepositLockupBlocks
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{cancelProducerTx}}, nil)
+
+	assert.Equal(t, common.Fixed64(0), abt.GetProducer(abtList[0]).depositAmount)
+
 	// return deposit
 	returnDepositTx := getReturnProducerDeposit(abtList[0], 4999*1e8)
 	returnDepositTx.Inputs = []*types.Input{&types.Input{
@@ -534,7 +543,6 @@ func TestArbitrators_RollbackReturnProducerDeposit(t *testing.T) {
 			Index: 0,
 		},
 	}}
-	assert.Equal(t, common.Fixed64(5000*1e8), abt.GetProducer(abtList[0]).depositAmount)
 	arbiterStateA := abt.Snapshot()
 
 	// process
@@ -954,7 +962,7 @@ func TestArbitrators_RollbackMultipleTransactions(t *testing.T) {
 		}}, nil)
 	assert.Equal(t, 2, len(abt.GetActiveProducers()))
 	assert.Equal(t, 1, len(abt.GetReturnedDepositProducers()))
-	assert.Equal(t, common.Fixed64(0), abt.GetProducer(abtList[0]).depositAmount)
+	assert.Equal(t, common.Fixed64(0), abt.GetProducer(abtList[0]).totalAmount)
 	arbiterStateB := abt.Snapshot()
 
 	// rollback

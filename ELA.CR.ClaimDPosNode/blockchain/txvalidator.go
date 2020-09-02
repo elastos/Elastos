@@ -1598,7 +1598,7 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 			depositAmount += u.Value
 		}
 	} else {
-		depositAmount = producer.DepositAmount()
+		depositAmount = producer.TotalAmount()
 	}
 
 	if depositAmount-producer.Penalty() < crstate.MinDepositAmount {
@@ -2990,19 +2990,17 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 		}
 	}
 
-	var depositAmount common.Fixed64
-	var penalty common.Fixed64
+	var availableAmount common.Fixed64
 	for _, program := range txn.Programs {
 		p := b.state.GetProducer(program.Code[1 : len(program.Code)-1])
 		if p == nil {
 			return errors.New("signer must be producer")
 		}
-		penalty += p.Penalty()
-		depositAmount += p.DepositAmount()
+		availableAmount += p.AvailableAmount()
 	}
 
-	if inputValue-changeValue > depositAmount-penalty ||
-		outputValue >= depositAmount {
+	if inputValue-changeValue > availableAmount ||
+		outputValue >= availableAmount {
 		return fmt.Errorf("overspend deposit")
 	}
 

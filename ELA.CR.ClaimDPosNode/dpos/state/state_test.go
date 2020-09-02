@@ -1286,7 +1286,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	}, nil)
 	height++
 	candidate := state.getProducer(pkBuf)
-	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
+	assert.Equal(t, common.Fixed64(100), candidate.totalAmount)
 
 	state.getProducerDepositAmount = func(p common.Uint168) (
 		fixed64 common.Fixed64, e error) {
@@ -1299,7 +1299,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		Transactions: []*types.Transaction{},
 	}, nil)
 	height++
-	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
+	assert.Equal(t, common.Fixed64(100), candidate.totalAmount)
 	assert.Equal(t, Pending, candidate.state)
 
 	// deposit though normal tx
@@ -1320,7 +1320,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		Transactions: []*types.Transaction{tranferTx},
 	}, nil)
 	height++
-	assert.Equal(t, common.Fixed64(300), candidate.depositAmount)
+	assert.Equal(t, common.Fixed64(300), candidate.totalAmount)
 
 	// cancel candidate
 	for i := 0; i < 4; i++ {
@@ -1375,5 +1375,5 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		},
 	}, height)
 	state.history.Commit(height)
-	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
+	assert.Equal(t, common.Fixed64(100), candidate.totalAmount)
 }

@@ -3308,7 +3308,7 @@ func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 	canceledHeight := uint32(8)
 	err := s.Chain.checkReturnDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight)
-	s.NoError(err)
+	s.EqualError(err, "overspend deposit")
 
 	// cancel CR
 	s.Chain.state.ProcessBlock(&types.Block{
@@ -3324,7 +3324,6 @@ func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 			},
 		},
 	}, nil)
-	s.CurrentHeight++
 	s.True(producer.State() == state.Canceled, "cancel producer failed")
 
 	// check a return deposit coin transaction with wrong code.
@@ -3342,7 +3341,15 @@ func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 	rdTx.Programs[0].Code = code1
 	err = s.Chain.checkReturnDepositCoinTransaction(
 		rdTx, references, 2159+canceledHeight)
-	s.NoError(err)
+	s.EqualError(err, "overspend deposit")
+
+	s.CurrentHeight += s.Chain.chainParams.CRDepositLockupBlocks
+	s.Chain.state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: s.CurrentHeight,
+		},
+		Transactions: []*types.Transaction{},
+	}, nil)
 
 	// check a return deposit coin transaction with wrong output amount.
 	rdTx.Outputs[0].Value = 5000 * 100000000
