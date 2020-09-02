@@ -37,38 +37,40 @@ var (
 
 // configParams defines the configuration parameters of the 'config.json' file.
 type configParams struct {
-	ActiveNet                  string
-	Magic                      uint32
-	NodePort                   uint16
-	DNSSeeds                   []string
-	DisableDNS                 bool
-	PermanentPeers             []string
-	SPVMagic                   uint32
-	SPVDNSSeeds                []string
-	SPVDisableDNS              bool
-	SPVPermanentPeers          []string
-	CRCArbiters                []string
-	EnableREST                 bool
-	RESTPort                   uint16
-	EnableWS                   bool
-	WSPort                     uint16
-	EnableRPC                  bool
-	RPCPort                    uint16
-	RPCUser                    string
-	RPCPass                    string
-	RPCWhiteList               []string
-	LogLevel                   elalog.Level
-	LogsFolderSize             int64
-	PerLogFileSize             int64
-	FoundationAddress          string
-	DisableTxFilters           bool
-	ExchangeRate               float64
-	MinCrossChainTxFee         int64
-	EnableMining               bool
-	InstantBlock               bool
-	PayToAddr                  string
-	MinerInfo                  string
-	CRClaimDPOSNodeStartHeight uint32
+	ActiveNet                   string
+	Magic                       uint32
+	NodePort                    uint16
+	DNSSeeds                    []string
+	DisableDNS                  bool
+	PermanentPeers              []string
+	SPVMagic                    uint32
+	SPVDNSSeeds                 []string
+	SPVDisableDNS               bool
+	SPVPermanentPeers           []string
+	CRCArbiters                 []string
+	EnableREST                  bool
+	RESTPort                    uint16
+	EnableWS                    bool
+	WSPort                      uint16
+	EnableRPC                   bool
+	RPCPort                     uint16
+	RPCUser                     string
+	RPCPass                     string
+	RPCWhiteList                []string
+	LogLevel                    elalog.Level
+	LogsFolderSize              int64
+	PerLogFileSize              int64
+	FoundationAddress           string
+	DisableTxFilters            bool
+	ExchangeRate                float64
+	MinCrossChainTxFee          int64
+	EnableMining                bool
+	InstantBlock                bool
+	PayToAddr                   string
+	MinerInfo                   string
+	NodeVersion                 string
+	NewP2PProtocolVersionHeight uint64
+	CRClaimDPOSNodeStartHeight  uint32
 }
 
 // loadConfigFile read configuration parameters through the config.json file.
@@ -154,6 +156,10 @@ func loadConfig() *configParams {
 	}
 	if cfg.CRClaimDPOSNodeStartHeight > 0 {
 		activeNetParams.CRClaimDPOSNodeStartHeight = cfg.CRClaimDPOSNodeStartHeight
+		spvNetParams.CRClaimDPOSNodeStartHeight = cfg.CRClaimDPOSNodeStartHeight
+	}
+	if cfg.NewP2PProtocolVersionHeight > 0 {
+		spvNetParams.NewP2PProtocolVersionHeight = cfg.NewP2PProtocolVersionHeight
 	}
 	return cfg
 }
