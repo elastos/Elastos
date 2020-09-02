@@ -30,6 +30,8 @@ type Config struct {
 
 	//FilterType is the filter type .(FTBloom, FTDPOS  and so on )
 	FilterType uint8
+
+	NodeVersion string
 }
 
 type Service struct {
@@ -44,6 +46,7 @@ func NewService(cfg *Config) (*Service, error) {
 		PermanentPeers: cfg.PermanentPeers,
 		OnRollback:     nil, // Not implemented yet
 		FilterType:     cfg.FilterType,
+		NodeVersion:  cfg.NodeVersion,
 	}
 
 	service, err := spv.NewSPVService(&spvCfg)
