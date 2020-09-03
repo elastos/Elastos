@@ -108,21 +108,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			return j;
 		}
 
-		void EthSidechainSubWallet::AddClientCallback(IEthereumClientCallback *callback) {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("callback: *");
-
-			boost::mutex::scoped_lock scoped_lock(lock);
-			_callback = callback;
-		}
-
-		void EthSidechainSubWallet::RemoveClientCallback() {
-			ArgInfo("{} {}", _walletID, GetFunName());
-
-			boost::mutex::scoped_lock scoped_lock(lock);
-			_callback = nullptr;
-		}
-
 		EthSidechainSubWallet::EthSidechainSubWallet(const CoinInfoPtr &info,
 													 const ChainConfigPtr &config,
 													 MasterWallet *parent,
@@ -312,7 +297,7 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 
 				if (!r.empty()) {
 					int id = rid;
-					std::string hash, from, to, contract, amount, gasLimit, gasPrice, data, nonce, gasUsed;
+					std::string hash, from, to, contract, amount, gasLimit, gasPrice, data, nonce, gasUsed, isError;
 					std::string blockNumber, blockHash, blockConfirmations, blockTransactionIndex, blockTimestamp;
 
 					try {
@@ -335,8 +320,9 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 							blockConfirmations = tx["blockConfirmations"].get<std::string>();
 							blockTransactionIndex = tx["blockTransactionIndex"].get<std::string>();
 							blockTimestamp = tx["blockTimestamp"].get<std::string>();
+							isError = tx["isError"].get<std::string>();
 
-							_client->_ewm->announceTransaction(id, hash, from, to, contract, amount, gasLimit, gasPrice, data, nonce, gasUsed, blockNumber, blockHash, blockConfirmations, blockTransactionIndex, blockTimestamp, "0");
+							_client->_ewm->announceTransaction(id, hash, from, to, contract, amount, gasLimit, gasPrice, data, nonce, gasUsed, blockNumber, blockHash, blockConfirmations, blockTransactionIndex, blockTimestamp, isError);
 						}
 						_client->_ewm->announceTransactionComplete(id, true);
 					} catch (const std::exception &e) {
@@ -501,7 +487,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 					return;
 				}
 
-				Log::info("numbers.size() = {}", numbers.size());
 				_client->_ewm->announceBlocks(id, numbers);
 			}
 		}
@@ -772,10 +757,16 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 		void EthSidechainSubWallet::AddCallback(ISubWalletCallback *subCallback) {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("callback: *");
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			_callback = subCallback;
 		}
 
 		void EthSidechainSubWallet::RemoveCallback() {
 			ArgInfo("{} {}", _walletID, GetFunName());
+
+			boost::mutex::scoped_lock scoped_lock(lock);
+			_callback = nullptr;
 		}
 
 		nlohmann::json EthSidechainSubWallet::CreateTransaction(const std::string &fromAddress,

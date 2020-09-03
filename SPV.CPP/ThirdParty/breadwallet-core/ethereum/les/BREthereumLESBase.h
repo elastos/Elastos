@@ -60,7 +60,7 @@
 #undef LES_DISABLE_DISCOVERY
 #endif
 
-#define LES_DISABLE_DISCOVERY
+//#define LES_DISABLE_DISCOVERY
 
 /**
  * If we attempt to open a socket to a node endpoint and the socket reports EINPROGRESS, we'll

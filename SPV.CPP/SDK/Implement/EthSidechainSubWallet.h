@@ -62,10 +62,6 @@ namespace Elastos {
 														 const std::string &gasLimit,
 														 const std::string &data) const;
 
-			virtual void AddClientCallback(IEthereumClientCallback *callback);
-
-			virtual void RemoveClientCallback();
-
 		public:
 			// implement callback of Client
 			virtual void getGasPrice(BREthereumWallet wid, int rid);
@@ -222,7 +218,7 @@ namespace Elastos {
 			MasterWallet *_parent;
 			CoinInfoPtr _info;
 			ChainConfigPtr _config;
-			IEthereumClientCallback *_callback;
+			ISubWalletCallback *_callback;
 		};
 
 	}

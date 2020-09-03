@@ -35,7 +35,6 @@
 #include <ISubWallet.h>
 #include <IMainchainSubWallet.h>
 #include <IIDChainSubWallet.h>
-#include <IEthereumClientCallback.h>
 #include <IEthSidechainSubWallet.h>
 
 #include <string>
@@ -69,14 +68,6 @@ public:
 		_speed(0),
 		_lastBlockTime(0)
 		{}
-
-	void SetEthClientCallback(IEthereumClientCallback *callback) {
-		_ethClientCallback = callback;
-	}
-
-	IEthereumClientCallback *GetEthClientCallback() const {
-		return _ethClientCallback;
-	}
 
 	void SetCallback(ISubWalletCallback *callback) {
 		_callback = callback;
@@ -135,7 +126,6 @@ public:
 	}
 
 private:
-	IEthereumClientCallback *_ethClientCallback;
 	ISubWalletCallback *_callback;
 	int _syncProgress;
 	std::string _downloadPeer;
@@ -209,19 +199,6 @@ public:
 			std::cout << "*** Wallet " << _chainID << " connection status: "
 					  << status << std::endl;
 	}
-
-private:
-	std::string _walletID;
-	std::string _chainID;
-};
-
-class EthereumClientCallback : public IEthereumClientCallback {
-public:
-	EthereumClientCallback(const std::string &masterWalletID, const std::string &walletID) :
-		_walletID(masterWalletID),
-		_chainID(walletID) {}
-
-	virtual ~EthereumClientCallback() {}
 
 	virtual void OnETHSCEventHandled(const nlohmann::json &event) {
 
@@ -319,6 +296,7 @@ public:
 		tx["blockConfirmations"] = "76611"; // 256
 		tx["blockTransactionIndex"] = "0"; // 65
 		tx["blockTimestamp"] = "1598498146";
+		tx["isError"] = "0";
 
 		txns.push_back(tx);
 
@@ -337,6 +315,7 @@ public:
 		tx["blockConfirmations"] = "76105"; // 256
 		tx["blockTransactionIndex"] = "0"; // 65
 		tx["blockTimestamp"] = "1598498652";
+		tx["isError"] = "0";
 
 		txns.push_back(tx);
 
@@ -355,6 +334,7 @@ public:
 		tx["blockConfirmations"] = "75482"; // 256
 		tx["blockTransactionIndex"] = "0"; // 65
 		tx["blockTimestamp"] = "1598499275";
+		tx["isError"] = "0";
 
 		txns.push_back(tx);
 		j["id"] = id;
@@ -526,15 +506,9 @@ static std::string convertAmount(const std::string &amount) {
 static void subWalletOpen(IMasterWallet *masterWallet, ISubWallet *subWallet) {
 	WalletData walletData;
 
-	if (subWallet->GetChainID() == CHAINID_ETHSC) {
-		IEthereumClientCallback *callback = new EthereumClientCallback(masterWallet->GetID(), subWallet->GetChainID());
-		walletData.SetEthClientCallback(callback);
-		dynamic_cast<IEthSidechainSubWallet *>(subWallet)->AddClientCallback(callback);
-	} else {
-		ISubWalletCallback *callback = new SubWalletCallback(masterWallet->GetID(), subWallet->GetChainID());
-		walletData.SetCallback(callback);
-		subWallet->AddCallback(callback);
-	}
+	ISubWalletCallback *callback = new SubWalletCallback(masterWallet->GetID(), subWallet->GetChainID());
+	walletData.SetCallback(callback);
+	subWallet->AddCallback(callback);
 
 	if (masterWalletData.find(masterWallet->GetID()) != masterWalletData.end()) {
 		masterWalletData[masterWallet->GetID()][subWallet->GetChainID()] = walletData;
@@ -552,17 +526,10 @@ static void subWalletClose(IMasterWallet *masterWallet, ISubWallet *subWallet) {
 	std::string chainID = subWallet->GetChainID();
 
 	subWallet->SyncStop();
-	if (subWallet->GetChainID() == CHAINID_ETHSC) {
-		dynamic_cast<IEthSidechainSubWallet *>(subWallet)->RemoveClientCallback();
-		auto callback = static_cast<EthereumClientCallback*>(masterWalletData[walletName][chainID].GetEthClientCallback());
-		delete callback;
-		callback = nullptr;
-	} else {
-		subWallet->RemoveCallback();
-		auto callback = static_cast<SubWalletCallback *>(masterWalletData[walletName][chainID].GetCallback());
-		delete callback;
-		callback = nullptr;
-	}
+	subWallet->RemoveCallback();
+	auto callback = static_cast<SubWalletCallback *>(masterWalletData[walletName][chainID].GetCallback());
+	delete callback;
+	callback = nullptr;
 
 	masterWalletData[walletName].erase(chainID);
 	if (masterWalletData[walletName].empty())
