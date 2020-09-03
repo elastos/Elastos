@@ -35,11 +35,11 @@ extern "C" {
 #define JSON_GENERATOR_MAX_DEEPS        32
 
 typedef struct JsonGenerator {
-	size_t capacity;
-	size_t pos;
-	short deep;
-	uint8_t state[JSON_GENERATOR_MAX_DEEPS];
-	char *buffer;
+    size_t capacity;
+    size_t pos;
+    short deep;
+    uint8_t state[JSON_GENERATOR_MAX_DEEPS];
+    char *buffer;
 } JsonGenerator;
 
 JsonGenerator *JsonGenerator_Initialize(JsonGenerator *generator);
@@ -63,13 +63,11 @@ int JsonGenerator_WriteDouble(JsonGenerator *generator, double value);
 int JsonGenerator_WriteBoolean(JsonGenerator *generator, bool value);
 
 int JsonGenerator_WriteStringField(JsonGenerator *generator,
-								   const char *name, const char *value);
+        const char *name, const char *value);
 
 const char *JsonGenerator_Finish(JsonGenerator *generator);
 
 void JsonGenerator_Destroy(JsonGenerator *generator);
-
-/* void JsonGenerator_Destroy(JsonGenerator *generator); */
 
 #ifdef __cplusplus
 }
