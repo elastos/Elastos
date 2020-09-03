@@ -1244,7 +1244,7 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 
 	for _, program := range tx.Programs {
 		pk := program.Code[1 : len(program.Code)-1]
-		if producer := s.getProducer(pk); producer != nil && producer.state == Canceled {
+		if producer := s.getProducer(pk); producer != nil {
 
 			// check deposit coin
 			hash, err := contract.PublicKeyToDepositProgramHash(producer.info.OwnerPublicKey)
@@ -1268,8 +1268,9 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 					if height >= s.chainParams.CRVotingStartHeight {
 						producer.totalAmount -= inputValue
 					}
-					if producer.totalAmount+changeValue-producer.penalty <=
-						s.chainParams.MinTransactionFee {
+					if producer.state == Canceled &&
+						producer.totalAmount+changeValue-producer.penalty <=
+							s.chainParams.MinTransactionFee {
 						producer.state = Returned
 					}
 				}, func() {
