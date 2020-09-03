@@ -709,7 +709,7 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
-	s.tryInitProducerAssetAmounts(block.Height)
+	//s.tryInitProducerAssetAmounts(block.Height)
 	s.processTransactions(block.Transactions, block.Height)
 	s.ProcessVoteStatisticsBlock(block)
 	s.updateProducersDepositCoin(block.Height)
