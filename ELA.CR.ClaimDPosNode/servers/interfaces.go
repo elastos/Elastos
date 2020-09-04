@@ -2649,7 +2649,7 @@ func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
 func VerifyAndSendTx(tx *Transaction) error {
 	// if transaction is verified unsuccessfully then will not put it into transaction pool
 	if err := TxMemPool.AppendToTxPool(tx); err != nil {
-		log.Info("[httpjsonrpc] VerifyTransaction failed when AppendToTxnPool. Errcode:", err)
+		log.Warn("[httpjsonrpc] VerifyTransaction failed when AppendToTxnPool. Errcode:", err.Code())
 		return err
 	}
 
