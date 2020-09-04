@@ -2265,12 +2265,14 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 	var availableDepositAmount, penaltyAmount, depositAmount, totalAmount common.Fixed64
 	pubkey, hasPubkey := param.String("publickey")
 	if hasPubkey {
-		available, penalty, err := crCommittee.GetDepositAmountByPublicKey(pubkey)
+		available, penalty, deposit, total, err := crCommittee.GetDepositAmountByPublicKey(pubkey)
 		if err != nil {
 			return ResponsePack(InvalidParams, err.Error())
 		}
 		availableDepositAmount = available
 		penaltyAmount = penalty
+		depositAmount = deposit
+		totalAmount = total
 	}
 	id, hasID := param.String("id")
 	if hasID {

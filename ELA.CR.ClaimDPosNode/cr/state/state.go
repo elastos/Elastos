@@ -96,9 +96,9 @@ func (s *State) getAvailableDepositAmount(cid common.Uint168) common.Fixed64 {
 		depositInfo.Penalty
 }
 
-// getDepositAmountByCID returns available deposit amount and penalty with
+// getDepositInfoByCID returns available Penalty DepositAmount and TotalAmount with
 // specified cid.
-func (s *State) getDepositAmountByCID(
+func (s *State) getDepositInfoByCID(
 	cid common.Uint168) (common.Fixed64, common.Fixed64, common.Fixed64, common.Fixed64, error) {
 	depositInfo, ok := s.depositInfo[cid]
 	if !ok {
@@ -108,20 +108,20 @@ func (s *State) getDepositAmountByCID(
 		depositInfo.Penalty, depositInfo.DepositAmount, depositInfo.TotalAmount, nil
 }
 
-// getDepositAmountByPublicKey return available deposit amount and
-// penalty by the given public key.
-func (s *State) getDepositAmountByPublicKey(
-	publicKey []byte) (common.Fixed64, common.Fixed64, error) {
+// getDepositInfoByPublicKey return available Penalty DepositAmount and TotalAmount
+// by the given public key.
+func (s *State) getDepositInfoByPublicKey(
+	publicKey []byte) (common.Fixed64, common.Fixed64, common.Fixed64, common.Fixed64, error) {
 	cid, err := getCIDByPublicKey(publicKey)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, 0, 0, err
 	}
 	depositInfo, ok := s.depositInfo[*cid]
 	if !ok {
-		return 0, 0, errors.New("CID does not exist")
+		return 0, 0, 0, 0, errors.New("CID does not exist")
 	}
 	return depositInfo.TotalAmount - depositInfo.DepositAmount -
-		depositInfo.Penalty, depositInfo.Penalty, nil
+		depositInfo.Penalty, depositInfo.Penalty, depositInfo.DepositAmount, depositInfo.TotalAmount, nil
 }
 
 // existCandidate judges if there is a candidate with specified program code.

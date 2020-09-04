@@ -834,14 +834,14 @@ func (c *Committee) processCRDPOSManagement(tx *types.Transaction,
 }
 
 func (c *Committee) GetDepositAmountByPublicKey(
-	publicKey string) (common.Fixed64, common.Fixed64, error) {
+	publicKey string) (common.Fixed64, common.Fixed64, common.Fixed64, common.Fixed64, error) {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 	pubkey, err := common.HexStringToBytes(publicKey)
 	if err != nil {
-		return 0, 0, errors.New("invalid public key")
+		return 0, 0, 0, 0, errors.New("invalid public key")
 	}
-	return c.state.getDepositAmountByPublicKey(pubkey)
+	return c.state.getDepositInfoByPublicKey(pubkey)
 }
 
 func (c *Committee) GetDepositAmountByID(
@@ -853,7 +853,7 @@ func (c *Committee) GetDepositAmountByID(
 	if !exist {
 		return 0, 0, 0, 0, errors.New("ID does not exist")
 	}
-	return c.state.getDepositAmountByCID(*cid)
+	return c.state.getDepositInfoByCID(*cid)
 }
 
 func (c *Committee) GetAvailableDepositAmount(cid common.Uint168) common.Fixed64 {
