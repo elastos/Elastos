@@ -424,6 +424,11 @@ namespace Elastos {
 			std::vector<nlohmann::json> jsonList;
 			const WalletPtr &wallet = _walletManager->GetWallet();
 			TransactionPtr txFound;
+			std::map<std::string, std::string> genesisAddresses;
+
+			genesisAddresses[CHAINID_IDCHAIN] = _parent->GetChainConfig(CHAINID_IDCHAIN)->GenesisAddress();
+			genesisAddresses[CHAINID_ESC] = _parent->GetChainConfig(CHAINID_ESC)->GenesisAddress();
+			genesisAddresses[CHAINID_TOKENCHAIN] = _parent->GetChainConfig(CHAINID_TOKENCHAIN)->GenesisAddress();
 
 			std::vector<TransactionPtr> txnPending = wallet->LoadTxn(TXN_PENDING);
 			for (std::vector<TransactionPtr>::iterator it = txnPending.begin(); it != txnPending.end();) {
@@ -448,14 +453,14 @@ namespace Elastos {
 				}
 				if (txFound) {
 					confirms = txFound->GetConfirms(wallet->LastBlockHeight());
-					jsonList.push_back(txFound->GetSummary(wallet, confirms, true));
+					jsonList.push_back(txFound->GetSummary(wallet, genesisAddresses, confirms, true));
 					j["Transactions"] = jsonList;
 				}
 			} else {
 				size_t realCnt, cur;
 				for (realCnt = 0, cur = start; cur < txnPending.size() && realCnt < count; ++realCnt, ++cur) {
 					confirms = txnPending[realCnt]->GetConfirms(wallet->LastBlockHeight());
-					jsonList.push_back(txnPending[realCnt]->GetSummary(wallet, confirms, false));
+					jsonList.push_back(txnPending[realCnt]->GetSummary(wallet, genesisAddresses, confirms, false));
 				}
 				if (realCnt < count) {
 					size_t offset = cur - txnPending.size();
@@ -463,7 +468,7 @@ namespace Elastos {
 																				   offset, count - realCnt);
 					for (size_t i = 0; i < txns.size(); ++i) {
 						confirms = txns[i]->GetConfirms(wallet->LastBlockHeight());
-						jsonList.push_back(txns[i]->GetSummary(wallet, confirms, false));
+						jsonList.push_back(txns[i]->GetSummary(wallet, genesisAddresses, confirms, false));
 					}
 				}
 				j["Transactions"] = jsonList;

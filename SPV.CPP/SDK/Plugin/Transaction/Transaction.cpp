@@ -679,13 +679,14 @@ namespace Elastos {
 			return fee;
 		}
 
-		nlohmann::json Transaction::GetSummary(const WalletPtr &wallet, uint32_t confirms, bool detail) {
+		nlohmann::json Transaction::GetSummary(const WalletPtr &wallet, const std::map<std::string, std::string> &genesisAddresses, uint32_t confirms, bool detail) {
 			std::string addr;
 			nlohmann::json summary, outputPayload;
 			std::vector<nlohmann::json> outputPayloads;
 			std::string direction = "Received";
 			BigInt inputAmount(0), outputAmount(0), changeAmount(0);
 			uint64_t fee = 0;
+			std::string topUpSidechain;
 			std::map<std::string, BigInt>::iterator it;
 			std::map<uint256, TransactionPtr> txInput = wallet->TransactionsForInputs(_inputs);
 
@@ -725,6 +726,12 @@ namespace Elastos {
 			for (OutputArray::iterator o = _outputs.begin(); o != _outputs.end(); ++o) {
 				const BigInt &oAmount = (*o)->Amount();
 				addr = (*o)->Addr()->String();
+				for (std::map<std::string, std::string>::const_iterator it = genesisAddresses.cbegin(); it != genesisAddresses.cend(); ++it) {
+					if (addr == it->second) {
+						topUpSidechain = it->first;
+						break;
+					}
+				}
 
 				if ((*o)->GetType() == TransactionOutput::VoteOutput) {
 					outputPayload = (*o)->GetPayload()->ToJson();
@@ -779,6 +786,7 @@ namespace Elastos {
 			summary["Direction"] = direction;
 			summary["Amount"] = amount.getDec();
 			summary["Type"] = GetTransactionType();
+			summary["TopUpSidechain"] = topUpSidechain;
 			summary["Height"] = GetBlockHeight();
 			if (detail) {
 				std::string memo;

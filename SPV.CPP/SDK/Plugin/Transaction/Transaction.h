@@ -192,7 +192,7 @@ namespace Elastos {
 
 			const std::vector<ProgramPtr> &GetPrograms() const;
 
-			nlohmann::json GetSummary(const WalletPtr &wallet, uint32_t confirms, bool detail);
+			nlohmann::json GetSummary(const WalletPtr &wallet, const std::map<std::string, std::string> &genesisAddresses, uint32_t confirms, bool detail);
 
 			uint8_t	GetPayloadVersion() const;
 
