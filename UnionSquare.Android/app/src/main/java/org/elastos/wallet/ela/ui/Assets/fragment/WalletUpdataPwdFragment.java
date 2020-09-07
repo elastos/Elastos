@@ -106,5 +106,10 @@ public class WalletUpdataPwdFragment extends BaseFragment implements UpdataWalle
     public void onUpdataPwd(String data) {
         showToastMessage(getString(R.string.modifysucess));
         popBackFragment();
+        try {
+            getMyDID().getDidStore().changePassword(etPwdOrigin.getText().toString().trim(), etPwdNew.getText().toString().trim());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

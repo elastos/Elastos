@@ -3,9 +3,7 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -14,14 +12,13 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.Assets.adapter.votestatus.DeposRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.bean.VoteStatus;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalDetailPresenter;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.DateUtil;
 
 import java.util.ArrayList;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
 
 public class VoteStatusDetailItemFragment extends BaseFragment {
 
@@ -44,7 +41,6 @@ public class VoteStatusDetailItemFragment extends BaseFragment {
     LinearLayout llRestTime;
     @BindView(R.id.ll_ticketnum)
     LinearLayout llTicketnum;
-    Unbinder unbinder;
 
     private VoteStatus voteStatus;
 
@@ -67,33 +63,36 @@ public class VoteStatusDetailItemFragment extends BaseFragment {
         //0没有投票   1 有投票部分失效 2 有投票完全失效 3有投票无失效
         switch (type) {
             case "Delegate":
+                tvRvtitle.setText(getString(R.string.nodelist) + " (" + voteStatus.getData().size() + ")");
                 rv.setBackgroundResource(R.drawable.sc_10ffffff_cr5);
                 tvResttime.setText("--");
                 tvTicketnum.setText(Arith.div(voteStatus.getCount(), MyWallet.RATE_S, 8).longValue() + " ELA");
                 break;
 
             case "CRC":
+                tvRvtitle.setText(getString(R.string.votelist) + " (" + voteStatus.getData().size() + ")");
                 rv.setBackgroundResource(R.drawable.sc_10ffffff_cr5);
                 if (status == 2) {
                     tvResttime.setText(R.string.expired);
                     tvResttime.setBackgroundResource(R.drawable.sc_white20_cr2_stc_ffffff);
                 } else
-                    tvResttime.setText(DateUtil.time(voteStatus.getExpire(), getContext()));
+                    tvResttime.setText(ProposalDetailPresenter.setRestDay(voteStatus.getExpire(), getContext()));
                 tv_ticketnumDec.setText(R.string.ticketcount);
                 tvTicketnum.setText(Arith.div(voteStatus.getCount(), MyWallet.RATE_S, 8).longValue() + " ELA");
 
                 break;
             case "CRCImpeachment":
-
+                tvRvtitle.setText(getString(R.string.impeachmentlist));
                 if (status == 2) {
                     tvResttime.setText(R.string.expired);
                     tvResttime.setBackgroundResource(R.drawable.sc_white20_cr2_stc_ffffff);
                 } else
-                    tvResttime.setText(DateUtil.time(voteStatus.getExpire(), getContext()));
+                    tvResttime.setText(ProposalDetailPresenter.setRestDay(voteStatus.getExpire(), getContext()));
                 llTicketnum.setVisibility(View.GONE);
 
                 break;
             case "CRCProposal":
+                tvRvtitle.setText(R.string.againstlist);
                 llRestTime.setVisibility(View.GONE);
                 llTicketnum.setVisibility(View.GONE);
                 break;
@@ -126,17 +125,4 @@ public class VoteStatusDetailItemFragment extends BaseFragment {
     }
 
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: inflate a fragment view
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
 }

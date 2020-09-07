@@ -163,7 +163,9 @@ public class ProposalPresenter extends NewPresenterAbstract {
 
         try {
             String sign = baseFragment.getMyDID().getDIDDocument().signDigest(payPasswd, JwtUtils.hex2byteBe(digist));
+            boolean sign1 = baseFragment.getMyDID().getDIDDocument().verifyDigest(sign, JwtUtils.hex2byteBe(digist));
             Log.i("signDigest", sign);
+            Log.i("sign1", sign1);
             return JwtUtils.bytesToHexString(Base64.decode(sign, Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
 
         } catch (DIDStoreException e) {
@@ -199,6 +201,8 @@ public class ProposalPresenter extends NewPresenterAbstract {
         payload = payload.replaceAll("=", "");
         try {
             String signature = baseFragment.getMyDID().getDIDDocument().sign(payPasswd, (header + "." + payload).getBytes());
+            boolean signature1 = baseFragment.getMyDID().getDIDDocument().verify(signature, (header + "." + payload).getBytes());
+            Log.d("signature1",signature1+"??");
             new AuthorizationPresenter().postData(entity.getCallbackurl(), header + "." + payload + "." + signature, baseFragment);
         } catch (DIDStoreException e) {
             e.printStackTrace();

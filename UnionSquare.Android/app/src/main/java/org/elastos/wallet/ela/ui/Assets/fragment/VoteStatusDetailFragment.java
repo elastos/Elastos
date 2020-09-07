@@ -10,6 +10,7 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.Assets.bean.VoteStatus;
 import org.elastos.wallet.ela.ui.committee.adaper.CtListPagerAdapter;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.ScreenUtil;
 
 import java.util.ArrayList;
@@ -38,11 +39,12 @@ public class VoteStatusDetailFragment extends BaseFragment {
         if (listVoteStatus != null && listVoteStatus.size() > 0) {
             List<BaseFragment> fragmentList = new ArrayList();
             for (VoteStatus voteStatus : listVoteStatus) {
+                Log.d("???",voteStatus.toString());
                 if (voteStatus.getStatus() != 0)
                     //0没有投票   1 有投票部分失效 2 有投票完全失效 3有投票无失效
                     fragmentList.add(VoteStatusDetailItemFragment.getInstance(voteStatus));
             }
-            viewpage.setAdapter(new CtListPagerAdapter(getFragmentManager(), fragmentList));
+            viewpage.setAdapter(new CtListPagerAdapter(getChildFragmentManager(), fragmentList));
             viewpage.setPageMargin(ScreenUtil.dp2px(getContext(), 15));
         }
 

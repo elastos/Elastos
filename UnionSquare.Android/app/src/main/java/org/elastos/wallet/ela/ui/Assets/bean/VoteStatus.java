@@ -123,4 +123,18 @@ public class VoteStatus implements Parcelable {
             return new VoteStatus[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "VoteStatus{" +
+                "type='" + type + '\'' +
+                ", iconID=" + iconID +
+                ", name='" + name + '\'' +
+                ", status=" + status +
+                ", count=" + count +
+                ", time=" + time +
+                ", expire=" + expire +
+                ", data=" + data +
+                '}';
+    }
 }

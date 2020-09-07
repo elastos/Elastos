@@ -147,7 +147,7 @@ public class CtListBean extends BaseEntity {
         private String status; //'Elected', 'Impeached', 'Returned'
         private String votes;
         private int impeachmentVotes;
-        private int rejectRatio;
+        private float rejectRatio;
 
         public String getVotes() {
             return votes;
@@ -207,11 +207,11 @@ public class CtListBean extends BaseEntity {
             this.cid = cid;
         }
 
-        public int getRejectRatio() {
+        public float getRejectRatio() {
             return rejectRatio;
         }
 
-        public void setRejectRatio(int rejectRatio) {
+        public void setRejectRatio(float rejectRatio) {
             this.rejectRatio = rejectRatio;
         }
 
@@ -239,7 +239,7 @@ public class CtListBean extends BaseEntity {
             dest.writeString(this.status);
             dest.writeString(this.votes);
             dest.writeInt(this.impeachmentVotes);
-            dest.writeInt(this.rejectRatio);
+            dest.writeFloat(this.rejectRatio);
         }
 
         protected Council(Parcel in) {
@@ -251,7 +251,7 @@ public class CtListBean extends BaseEntity {
             this.status = in.readString();
             this.votes = in.readString();
             this.impeachmentVotes = in.readInt();
-            this.rejectRatio = in.readInt();
+            this.rejectRatio = in.readFloat();
         }
 
         public static final Creator<Council> CREATOR = new Creator<Council>() {

@@ -256,7 +256,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         tvTime.setText(DateUtil.timeNYR(searchBean.getCreatedAt(), getContext(), true));
         tvPeople.setText(searchBean.getProposedBy());
         tvHash.setText(searchBean.getProposalHash());
-        tvResttime.setText(setRestDay(data.getDuration()));
+        tvResttime.setText(presenter.setRestDay(data.getDuration(),getContext()));
         tvWeb.setText(data.getAddress());
         tvAbstract1.setText(data.getAbs());
         initVote(data.getVoteResult());
@@ -268,19 +268,6 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
 
     }
 
-    private String setRestDay(long time) {
-        int minutes = (int) (time / 60);
-        if (minutes / 60 >= 24 * 2) {
-            return String.format(getString(R.string.aboutday), String.valueOf(minutes / 60 / 24));
-        } else if (minutes / 60 >= 24) {
-            return String.format(getString(R.string.about1dayhour), String.valueOf(minutes / 60 - 24));
-        } else if (minutes / 60 >= 1) {
-            return String.format(getString(R.string.abouthour), String.valueOf(minutes / 60), String.valueOf(minutes % 60));
-        } else {
-            return String.format(getString(R.string.aboutminute), String.valueOf(minutes));
-        }
-
-    }
 
     private void setDisagreeProgress(float progress) {
 

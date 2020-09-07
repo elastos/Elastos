@@ -88,7 +88,6 @@ public class ProposalSearchEntity extends BaseEntity {
              * rejectThroughAmount : 3201281.68375288
              * rejectRatio : 0
              */
-
             private int id;
             private String title;
             private String status;
@@ -97,8 +96,10 @@ public class ProposalSearchEntity extends BaseEntity {
             private String proposalHash;
             private String rejectAmount;
             private String rejectThroughAmount;
-            private int rejectRatio;
+            private float rejectRatio;
             private String votes;
+            private long voteEndsIn;
+            private String type;
 
             public String getVotes() {
                 return votes;
@@ -172,12 +173,28 @@ public class ProposalSearchEntity extends BaseEntity {
                 this.rejectThroughAmount = rejectThroughAmount;
             }
 
-            public int getRejectRatio() {
+            public float getRejectRatio() {
                 return rejectRatio;
             }
 
-            public void setRejectRatio(int rejectRatio) {
+            public void setRejectRatio(float rejectRatio) {
                 this.rejectRatio = rejectRatio;
+            }
+
+            public long getVoteEndsIn() {
+                return voteEndsIn;
+            }
+
+            public void setVoteEndsIn(long voteEndsIn) {
+                this.voteEndsIn = voteEndsIn;
+            }
+
+            public String getType() {
+                return type;
+            }
+
+            public void setType(String type) {
+                this.type = type;
             }
 
             public ListBean() {
@@ -198,8 +215,10 @@ public class ProposalSearchEntity extends BaseEntity {
                 dest.writeString(this.proposalHash);
                 dest.writeString(this.rejectAmount);
                 dest.writeString(this.rejectThroughAmount);
-                dest.writeInt(this.rejectRatio);
+                dest.writeFloat(this.rejectRatio);
                 dest.writeString(this.votes);
+                dest.writeLong(this.voteEndsIn);
+                dest.writeString(this.type);
             }
 
             protected ListBean(Parcel in) {
@@ -211,8 +230,10 @@ public class ProposalSearchEntity extends BaseEntity {
                 this.proposalHash = in.readString();
                 this.rejectAmount = in.readString();
                 this.rejectThroughAmount = in.readString();
-                this.rejectRatio = in.readInt();
+                this.rejectRatio = in.readFloat();
                 this.votes = in.readString();
+                this.voteEndsIn = in.readLong();
+                this.type = in.readString();
             }
 
             public static final Creator<ListBean> CREATOR = new Creator<ListBean>() {

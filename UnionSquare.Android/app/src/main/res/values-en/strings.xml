@@ -806,4 +806,7 @@
     <string name="getcrmode">领取CR节点</string>
     <string name="managecrnode">管理CR节点</string>
     <string name="plzinoutoperatepk">请输入运营公钥（必填）</string>
+    <string name="votelist">投票列表</string>
+    <string name="impeachmentlist">弹劾名单</string>
+    <string name="againstlist">反对提案</string>
 </resources>

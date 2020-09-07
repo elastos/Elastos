@@ -105,7 +105,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 /**
  * 资产详情
@@ -165,7 +164,6 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     TextView tvVoteCount;
     @BindView(R.id.tv_vote_time)
     TextView tvVoteTime;
-    Unbinder unbinder;
     private TransferRecordRecAdapetr adapter;
     private TransferRecordRecAdapetr adapter1;
     private VoteStatusRecAdapetr adapterVote;
@@ -368,6 +366,8 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         llVote.setVisibility(View.VISIBLE);
         if (listVoteStatus == null) {
             listVoteStatus = new ArrayList<>();
+        }else {
+            listVoteStatus.clear();
         }
         initListVoteStatus(listVoteStatus);
 
@@ -468,7 +468,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                                 candidatesCount++;
                                 CRListBean.DataBean.ResultBean.CrcandidatesinfoBean crcandidatesinfoBean = new CRListBean.DataBean.ResultBean.CrcandidatesinfoBean();
                                 crcandidatesinfoBean.setIndex(Integer.MAX_VALUE);
-                                crcandidatesinfoBean.setState("UnActive");
+                                // crcandidatesinfoBean.setState("UnActive");
                                 crcandidatesinfoBean.setVotes(value);
                                 resultList.add(crcandidatesinfoBean);
                                 continue;
@@ -496,13 +496,14 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                             if (timestamp < currentStartTime || councilList == null || councilList.size() == 0) {
                                 candidatesCount++;
                                 CtListBean.Council council = new CtListBean.Council();
-                                council.setStatus("UnElected");
+                                //council.setStatus("UnElected");
                                 council.setVotes(value);
                                 resultList.add(council);
                                 continue;
                             }
                             for (CtListBean.Council bean : councilList) {
                                 if ((bean.getDid().equals(key))) {
+                                    bean.setVotes(value);
                                     resultList.add(bean);
                                     if (!bean.getStatus().equals("Elected"))
                                         candidatesCount++;
@@ -520,12 +521,14 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                             if (voteList == null || voteList.size() == 0) {
                                 candidatesCount++;
                                 ProposalSearchEntity.DataBean.ListBean listBean = new ProposalSearchEntity.DataBean.ListBean();
-                                listBean.setStatus("UnNOTIFICATION");
+                                //listBean.setStatus("UnNOTIFICATION");
                                 listBean.setVotes(value);
+                                resultList.add(listBean);
                                 continue;
                             }
                             for (ProposalSearchEntity.DataBean.ListBean bean : voteList) {
                                 if (bean.getProposalHash().equals(key)) {
+                                    bean.setVotes(value);
                                     resultList.add(bean);
                                     if (!bean.getStatus().equals("NOTIFICATION"))
                                         candidatesCount++;
@@ -541,19 +544,17 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 currentVoteStatus.setType(type);
                 currentVoteStatus.setTime(timestamp);
 
-                if (currentVoteStatus != null) {
-                    //默认0没有投票   1 有投票部分失效 2 有投票完全失效 3有投票无失效
-                    if (candidatesCount == 0) {
-                        currentVoteStatus.setStatus(3);
-                    } else if (candidatesCount == votes.length()) {
-                        currentVoteStatus.setStatus(2);
-                    } else {
-                        currentVoteStatus.setStatus(1);
-                    }
-                    currentVoteStatus.setCount(count);
-                    if (maxCount.compareTo(count) < 0) {
-                        maxCount = count;
-                    }
+                //默认0没有投票   1 有投票部分失效 2 有投票完全失效 3有投票无失效
+                if (candidatesCount == 0) {
+                    currentVoteStatus.setStatus(3);
+                } else if (candidatesCount == votes.length()) {
+                    currentVoteStatus.setStatus(2);
+                } else {
+                    currentVoteStatus.setStatus(1);
+                }
+                currentVoteStatus.setCount(count);
+                if (maxCount.compareTo(count) < 0) {
+                    maxCount = count;
                 }
 
 

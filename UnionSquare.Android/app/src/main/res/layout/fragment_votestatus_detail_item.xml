@@ -119,10 +119,6 @@
     <android.support.v7.widget.RecyclerView
         android:layout_marginTop="12dp"
         android:id="@+id/rv"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="14dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />

@@ -23,8 +23,10 @@
 package org.elastos.wallet.ela.ui.proposal.presenter;
 
 
+import android.content.Context;
 import android.text.TextUtils;
 
+import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
@@ -307,5 +309,18 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
             e.printStackTrace();
         }
         return newVotes;
+    }
+    public static String setRestDay(long time, Context baseFragment) {
+        int minutes = (int) (time / 60);
+        if (minutes / 60 >= 24 * 2) {
+            return String.format(baseFragment.getString(R.string.aboutday), String.valueOf(minutes / 60 / 24));
+        } else if (minutes / 60 >= 24) {
+            return String.format(baseFragment.getString(R.string.about1dayhour), String.valueOf(minutes / 60 - 24));
+        } else if (minutes / 60 >= 1) {
+            return String.format(baseFragment.getString(R.string.abouthour), String.valueOf(minutes / 60), String.valueOf(minutes % 60));
+        } else {
+            return String.format(baseFragment.getString(R.string.aboutminute), String.valueOf(minutes));
+        }
+
     }
 }
