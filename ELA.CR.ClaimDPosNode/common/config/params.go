@@ -222,6 +222,7 @@ var DefaultParams = Params{
 	MinCRAssetsAddressUTXOCount:        720,     // todo correct me later
 	CRAssetsRectifyTransactionHeight:   1000000, // todo correct me later
 	CRCProposalWithdrawPayloadV1Height: 1000000, // todo correct me later
+	CRCProposalV1Height:                1000000, // todo correct me later
 	RectifyTxFee:                       10000,
 	RealWithdrawSingleFee:              10000,
 	NewP2PProtocolVersionHeight:        1000000,
@@ -278,6 +279,7 @@ func (p *Params) TestNet() *Params {
 	copy.CRCommitteeStartHeight = 546500
 	copy.CRClaimDPOSNodeStartHeight = 1000000 // todo complete me later
 	copy.CRClaimDPOSNodePeriod = 720 * 7      // todo complete me later
+	copy.CRCProposalV1Height = 1000000        // todo correct me later
 	copy.EnableActivateIllegalHeight = 546500
 	copy.CheckRewardHeight = 100
 	copy.VoteStatisticsHeight = 0
@@ -344,6 +346,7 @@ func (p *Params) RegNet() *Params {
 	copy.CRCommitteeStartHeight = 442000
 	copy.CRClaimDPOSNodeStartHeight = 1000000 // todo complete me later
 	copy.CRClaimDPOSNodePeriod = 720 * 7      // todo complete me later
+	copy.CRCProposalV1Height = 1000000        // todo correct me later
 	copy.EnableActivateIllegalHeight = 256000
 	copy.CheckRewardHeight = 280000
 	copy.VoteStatisticsHeight = 0
@@ -612,6 +615,10 @@ type Params struct {
 
 	// CRCProposalWithdrawPayloadV1Height defines the CRC proposal withdraw payload height
 	CRCProposalWithdrawPayloadV1Height uint32
+
+	// CRCProposalV1Height defines the height to support ChangeProposalOwner,
+	// CloseProposal and SecretaryGeneral proposal.
+	CRCProposalV1Height uint32
 
 	// RectifyTxFee defines the fee of cr rectify transaction
 	RectifyTxFee common.Fixed64

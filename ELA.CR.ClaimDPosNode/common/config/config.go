@@ -115,6 +115,7 @@ type CRConfiguration struct {
 	MinCRAssetsAddressUTXOCount        uint32         `json:"MinCRAssetsAddressUTXOCount"`
 	CRAssetsRectifyTransactionHeight   uint32         `json:"CRAssetsRectifyTransactionHeight"`
 	CRCProposalWithdrawPayloadV1Height uint32         `json:"CRCProposalWithdrawPayloadV1Height"`
+	CRCProposalV1Height                uint32         `json:"CRCProposalV1Height"`
 	CRCAddress                         string         `json:"CRCAddress"`
 	CRAssetsAddress                    string         `json:"CRAssetsAddress"`
 	CRExpensesAddress                  string         `json:"CRExpensesAddress"`

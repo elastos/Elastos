@@ -391,6 +391,11 @@ var (
 		Name:  "crcproposalwithdrawpayloadv1height",
 		Usage: "defines the crc withdraw proposal payload type v1 accept height",
 	}
+	CRCProposalV1Height = cli.StringFlag{
+		Name: "crcproposalv1height",
+		Usage: "defines the ChangeProposalOwner，CloseProposal and " +
+			"SecretaryGeneral crc proposal type accept height",
+	}
 	RectifyTxFee = cli.StringFlag{
 		Name:  "rectifytxfee",
 		Usage: "defines the fee of cr rectify transaction",
