@@ -68,13 +68,13 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
     }
 
     @Override
-    public void onBindViewHolder(ProposalRecAdapetr.ViewHolder holder, final int position) {
+    public void onBindViewHolder(ProposalRecAdapetr.ViewHolder holder, int position) {
         ProposalSearchEntity.DataBean.ListBean bean = list.get(position);
         holder.tvTitle.setText(bean.getTitle());
-        holder.tvNum.setText("#"+bean.getId() + "");
+        holder.tvNum.setText("#" + bean.getId() + "");
         holder.tvTime.setText(DateUtil.timeNYR(bean.getCreatedAt(), context, true));
         holder.tvPeople.setText(bean.getProposedBy());
-        String status = bean.getStatus();
+       /* String status = bean.getStatus();
         switch (status) {
             case "VOTING":
                 //委员评议
@@ -102,12 +102,35 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
                 break;
         }
 
-        holder.tvStatus.setText(status);
+        holder.tvStatus.setText(status);*/
+        String type = bean.getType();
+        /*  "normal":“新动议”, "changeproposalowner ":"变更提案动议","secretarygeneral":"变更秘书长动议","closeproposal ":"终止提动动议议案",*/
+        switch (type.toLowerCase()) {
+            case "normal":
+                //委员评议
+                type = context.getString(R.string.pnormal);
+                break;
+            case "changeproposalowner":
+
+                type = context.getString(R.string.pchangeproposalowner);
+                break;
+            case "secretarygeneral":
+
+                type = context.getString(R.string.psecretarygeneral);
+                break;
+            case "closeproposal":
+
+                type = context.getString(R.string.pcloseproposal);
+                break;
+
+        }
+
+        holder.tvStatus.setText(type);
         if (commonRvListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    commonRvListener.onRvItemClick(position, bean);
+                    commonRvListener.onRvItemClick(holder.getAdapterPosition(), bean);
                 }
             });
         }

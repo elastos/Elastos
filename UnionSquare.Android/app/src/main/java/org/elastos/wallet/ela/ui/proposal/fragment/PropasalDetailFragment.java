@@ -91,7 +91,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class PropasalDetailFragment extends BaseFragment implements NewBaseViewData, CommonBalanceViewData {
     @BindView(R.id.tv_title)
@@ -100,6 +99,8 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     TextView tvPropasalTile;
     @BindView(R.id.tv_num)
     TextView tvNum;
+    @BindView(R.id.tv_type)
+    TextView tvType;
     @BindView(R.id.tv_time)
     TextView tvTime;
     @BindView(R.id.tv_people)
@@ -138,7 +139,6 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     LinearLayout llRestTime;
     @BindView(R.id.rl_vote_button)
     RelativeLayout rlVoteButton;
-    Unbinder unbinder;
     @BindView(R.id.ll_disagreeprogress)
     LinearLayout llDisagreeprogress;
     @BindView(R.id.tv_novote)
@@ -164,6 +164,19 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     @BindView(R.id.ll_process)
     LinearLayout llProcess;
     ProposalSearchEntity.DataBean.ListBean searchBean;
+    @BindView(R.id.tv_oldproposal)
+    TextView tvOldproposal;
+    @BindView(R.id.ll_oldproposal)
+    LinearLayout llOldproposal;
+    @BindView(R.id.tv_newpoposerdid)
+    TextView tvNewpoposerdid;
+    @BindView(R.id.ll_newpoposerdid)
+    LinearLayout llNewpoposerdid;
+    @BindView(R.id.tv_newsectrtgendid)
+    TextView tvNewsectrtgendid;
+    @BindView(R.id.ll_newsectrtgendid)
+    LinearLayout llNewsectrtgendid;
+
     private String scanResult;
     private Wallet wallet;
     private ProposalPresenter proposalPresenter;
@@ -184,6 +197,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         super.setExtraData(data);
 
         searchBean = data.getParcelable("ProposalSearchDate");
+        String type = searchBean.getType();
     }
 
     @Override
@@ -255,8 +269,35 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         tvNum.setText("#" + searchBean.getId());
         tvTime.setText(DateUtil.timeNYR(searchBean.getCreatedAt(), getContext(), true));
         tvPeople.setText(searchBean.getProposedBy());
+        String type = data.getType();
+        /*  "normal":“新动议”, "changeproposalowner ":"变更提案动议","secretarygeneral":"变更秘书长动议","closeproposal ":"终止提动动议议案",*/
+        switch (type.toLowerCase()) {
+            case "normal":
+                tvType.setText(R.string.pnormal);
+                break;
+            case "changeproposalowner":
+                llOldproposal.setVisibility(View.VISIBLE);
+                tvOldproposal.setText("#" + data.getTargetProposalNum() + " " + data.getTargetProposalTitle());
+                if (!TextUtils.isEmpty(data.getNewOwnerDID())) {
+                    llNewpoposerdid.setVisibility(View.VISIBLE);
+                    tvNewpoposerdid.setText("did:ela:" + data.getNewOwnerDID());
+                }
+                tvType.setText(R.string.pchangeproposalowner);
+                break;
+            case "secretarygeneral":
+                llNewsectrtgendid.setVisibility(View.VISIBLE);
+                tvNewsectrtgendid.setText("did:ela:" + data.getNewSecretaryDID());
+                tvType.setText(R.string.psecretarygeneral);
+                break;
+            case "closeproposal":
+                llOldproposal.setVisibility(View.VISIBLE);
+                tvOldproposal.setText("#" + data.getCloseProposalNum() + " " + (data.getTargetProposalTitle() == null ? "" : data.getTargetProposalTitle()));
+                tvType.setText(R.string.pcloseproposal);
+                break;
+
+        }
         tvHash.setText(searchBean.getProposalHash());
-        tvResttime.setText(presenter.setRestDay(data.getDuration(),getContext()));
+        tvResttime.setText(presenter.setRestDay(data.getDuration(), getContext()));
         tvWeb.setText(data.getAddress());
         tvAbstract1.setText(data.getAbs());
         initVote(data.getVoteResult());

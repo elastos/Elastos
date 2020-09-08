@@ -109,20 +109,20 @@
 
                         <TextView
                             android:layout_width="match_parent"
-                            android:gravity="center"
                             android:layout_height="wrap_content"
-                            android:text="@string/the_current_number"
+                            android:gravity="center"
                             android:lines="2"
                             android:maxLines="2"
+                            android:text="@string/the_current_number"
                             android:textColor="@color/whiter50"
                             android:textSize="11sp" />
 
                         <TextView
                             android:id="@+id/tv_currentvote"
                             android:layout_width="match_parent"
-                            android:gravity="center"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
+                            android:gravity="center"
                             android:textSize="13sp" />
                     </LinearLayout>
 
@@ -134,19 +134,19 @@
                         android:textSize="25dp" />
 
                     <LinearLayout
-                        android:layout_marginLeft="10dp"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
                         android:layout_weight="1"
                         android:gravity="center"
                         android:orientation="vertical">
 
                         <TextView
-                            android:lines="2"
-                            android:maxLines="2"
-                            android:gravity="center"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:lines="2"
+                            android:maxLines="2"
                             android:text="@string/todisagreeneedvote"
                             android:textColor="@color/whiter50"
                             android:textSize="11sp" />
@@ -154,9 +154,9 @@
                         <TextView
                             android:id="@+id/tv_needvote"
                             android:layout_width="match_parent"
-                            android:gravity="center"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
+                            android:gravity="center"
                             android:textSize="13sp" />
                     </LinearLayout>
                 </LinearLayout>
@@ -179,8 +179,9 @@
 
                 <ImageView
                     android:id="@+id/iv_info"
-                    android:layout_width="33dp"
-                    android:layout_height="33dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:padding="3dp"
                     android:src="@mipmap/cr_arrow_right" />
             </LinearLayout>
 
@@ -192,6 +193,21 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/proposaltype"
+                    android:textColor="@color/whiter50"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tv_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="9dp"
+                    android:textSize="11sp" />
 
                 <LinearLayout
                     android:id="@+id/ll_restTime"
@@ -246,6 +262,77 @@
                     android:layout_marginTop="9dp"
                     android:textColor="#1CA4FC"
                     android:textSize="11sp" />
+
+
+                <LinearLayout
+                    android:id="@+id/ll_oldproposal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/oldproposal"
+                        android:textColor="@color/whiter50"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tv_oldproposal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="9dp"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:id="@+id/ll_newpoposerdid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/newpoposerdid"
+                        android:textColor="@color/whiter50"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tv_newpoposerdid"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="9dp"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_newsectrtgendid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/newsectrtgendid"
+                        android:textColor="@color/whiter50"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tv_newsectrtgendid"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="9dp"
+                        android:textSize="11sp" />
+                </LinearLayout>
             </LinearLayout>
 
             <TextView
@@ -288,8 +375,9 @@
 
                 <ImageView
                     android:id="@+id/iv_vote"
-                    android:layout_width="33dp"
-                    android:layout_height="33dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:padding="3dp"
                     android:src="@mipmap/cr_arrow_right" />
             </LinearLayout>
 

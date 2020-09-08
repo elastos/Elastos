@@ -31,8 +31,9 @@ public class ProposalDetailEntity extends BaseEntity {
 
     /**
      * code : 1
-     * data : {"id":1,"status":"VOTING","abs":"this is sample abstract","address":"http://localhost:3001/proposals/5ea53e2bb0461a06630c0227","duration":0,"rejectAmount":"33.333","rejectThroughAmount":"1000","rejectRatio":0.033333,"voteResult":[{"value":"support","reason":"this is opinion","avatar":"","votedBy":"Feng Zhang"}],"tracking":[{"stage":2,"didName":"cr11-did","avatar":"https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3695181958,4180835461&fm=26&gp=0.jpg","content":"test21","createdAt":1589380234,"comment":{"content":"test123","opinion":"REJECTED","avatar":"http://test.com/test.jpg","createdAt":1589380243}}],"message":"ok"}
+     * data : {"id":1,"status":"VOTING","type":"closeproposal","abs":"this is sample abstract","address":"http://localhost:3001/proposals/5ea53e2bb0461a06630c0227","targetProposalNum":"4","newOwnerDID":"imYEsSUYiikGTAuQXCQGPfH4YoTjuu6Gck","newAddress":"EHYXFf27EoMQ6HfZUuSKiLEsWJV9BMGFWM","newSecretaryDID":"imYEsSUYiikGTAuQXCQGPfH4YoTjuu6Gck","closeProposalNum":"4","duration":0,"rejectAmount":"33.333","rejectThroughAmount":"1000","rejectRatio":0.033333,"voteResult":[{"value":"support","reason":"this is opinion","avatar":"http://test.com/assets/image.jpg","votedBy":"Feng Zhang"}],"tracking":[{"stage":2,"didName":"cr11-did","avatar":"https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3695181958,4180835461&fm=26&gp=0.jpg","content":"test21","createdAt":1589380234,"comment":{"content":"test123","opinion":"REJECTED","avatar":"http://test.com/test.jpg","createdAt":1589380243}}],"message":"ok"}
      */
+
 
     private DataBean data;
 
@@ -49,21 +50,34 @@ public class ProposalDetailEntity extends BaseEntity {
         /**
          * id : 1
          * status : VOTING
+         * type : closeproposal
          * abs : this is sample abstract
          * address : http://localhost:3001/proposals/5ea53e2bb0461a06630c0227
+         * targetProposalNum : 4
+         * newOwnerDID : imYEsSUYiikGTAuQXCQGPfH4YoTjuu6Gck
+         * newAddress : EHYXFf27EoMQ6HfZUuSKiLEsWJV9BMGFWM
+         * newSecretaryDID : imYEsSUYiikGTAuQXCQGPfH4YoTjuu6Gck
+         * closeProposalNum : 4
          * duration : 0
          * rejectAmount : 33.333
          * rejectThroughAmount : 1000
          * rejectRatio : 0.033333
-         * voteResult : [{"value":"support","reason":"this is opinion","avatar":"","votedBy":"Feng Zhang"}]
+         * voteResult : [{"value":"support","reason":"this is opinion","avatar":"http://test.com/assets/image.jpg","votedBy":"Feng Zhang"}]
          * tracking : [{"stage":2,"didName":"cr11-did","avatar":"https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3695181958,4180835461&fm=26&gp=0.jpg","content":"test21","createdAt":1589380234,"comment":{"content":"test123","opinion":"REJECTED","avatar":"http://test.com/test.jpg","createdAt":1589380243}}]
          * message : ok
          */
 
         private int id;
         private String status;
+        private String type;
         private String abs;
         private String address;
+        private String targetProposalNum;
+        private String targetProposalTitle;
+        private String newOwnerDID;
+        private String newAddress;
+        private String newSecretaryDID;
+        private String closeProposalNum;
         private long duration;
         private String rejectAmount;
         private String rejectThroughAmount;
@@ -87,6 +101,14 @@ public class ProposalDetailEntity extends BaseEntity {
             this.status = status;
         }
 
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
         public String getAbs() {
             return abs;
         }
@@ -101,6 +123,54 @@ public class ProposalDetailEntity extends BaseEntity {
 
         public void setAddress(String address) {
             this.address = address;
+        }
+
+        public String getTargetProposalNum() {
+            return targetProposalNum;
+        }
+
+        public void setTargetProposalNum(String targetProposalNum) {
+            this.targetProposalNum = targetProposalNum;
+        }
+
+        public String getTargetProposalTitle() {
+            return targetProposalTitle;
+        }
+
+        public void setTargetProposalTitle(String targetProposalTitle) {
+            this.targetProposalTitle = targetProposalTitle;
+        }
+
+        public String getNewOwnerDID() {
+            return newOwnerDID;
+        }
+
+        public void setNewOwnerDID(String newOwnerDID) {
+            this.newOwnerDID = newOwnerDID;
+        }
+
+        public String getNewAddress() {
+            return newAddress;
+        }
+
+        public void setNewAddress(String newAddress) {
+            this.newAddress = newAddress;
+        }
+
+        public String getNewSecretaryDID() {
+            return newSecretaryDID;
+        }
+
+        public void setNewSecretaryDID(String newSecretaryDID) {
+            this.newSecretaryDID = newSecretaryDID;
+        }
+
+        public String getCloseProposalNum() {
+            return closeProposalNum;
+        }
+
+        public void setCloseProposalNum(String closeProposalNum) {
+            this.closeProposalNum = closeProposalNum;
         }
 
         public long getDuration() {
@@ -156,7 +226,7 @@ public class ProposalDetailEntity extends BaseEntity {
             /**
              * value : support
              * reason : this is opinion
-             * avatar :
+             * avatar : http://test.com/assets/image.jpg
              * votedBy : Feng Zhang
              */
 

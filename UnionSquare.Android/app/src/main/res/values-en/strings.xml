@@ -745,10 +745,10 @@
     <string name="pass">Pass</string>
     <string name="rejected">Reject</string>
     <string name="withdrawaddress">Withdrawal Address</string>
-    <string name="aboutday"> %1$s Days </string>
-    <string name="about1dayhour">1 Days %1$s Hours</string>
-    <string name="abouthour"> %1$s Hours %2$s Minutes</string>
-    <string name="aboutminute"> %1$s Minutes</string>
+    <string name="aboutday">about %1$s Days </string>
+    <string name="about1dayhour">about 1 Days %1$s Hours</string>
+    <string name="abouthour">about %1$s Hours %2$s Minutes</string>
+    <string name="aboutminute">about %1$s Minutes</string>
     <string name="hasfinished">Completed</string>
     <string name="proposalman">Proposer</string>
     <string name="votingfinishhint">This election is over. Unfortunately, you have not been elected this time. Thank you for your participation</string>
@@ -809,4 +809,12 @@
     <string name="votelist">投票列表</string>
     <string name="impeachmentlist">弹劾名单</string>
     <string name="againstlist">反对提案</string>
+    <string name="pnormal">新动议</string>
+    <string name="pchangeproposalowner">变更提案动议</string>
+    <string name="psecretarygeneral">变更秘书长动议</string>
+    <string name="pcloseproposal">终止提动动议议案</string>
+    <string name="proposaltype">提案种类</string>
+    <string name="oldproposal">原提案</string>
+    <string name="newpoposerdid">新提案负责人DID</string>
+    <string name="newsectrtgendid">新任秘书长DID</string>
 </resources>
