@@ -329,9 +329,6 @@ namespace Elastos {
 			if (_type == rechargeToSideChain || _type == coinBase)
 				return true;
 
-			if (_type == crcProposalWithdraw)
-				return _payload->IsValid(CRCProposalWithdrawVersion);
-
 			if (_programs.size() == 0)
 				return false;
 

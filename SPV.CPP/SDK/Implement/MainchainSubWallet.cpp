@@ -1764,6 +1764,7 @@ namespace Elastos {
 			AddressPtr fromAddr(new Address(""));
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposalWithdraw, p, fromAddr, outputs, memo);
+			tx->SetPayloadVersion(version);
 
 			if (tx->GetOutputs().size() < 2)
 				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "balance not enough");
