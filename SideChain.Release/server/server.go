@@ -900,7 +900,7 @@ func New(cfg *Config) (*server, error) {
 		params.DefaultPort, params.DNSSeeds, params.ListenAddrs,
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(cfg.Chain.GetBestHeight()) },
-		uint64(cfg.ChainParams.CRClaimDPOSNodeStartHeight), cfg.NodeVersion,
+		cfg.ChainParams.NewP2PProtocolVersionHeight, cfg.NodeVersion,
 	)
 	svrcfg.DataDir = cfg.DataDir
 	svrcfg.NAFilter = &naFilter{}
