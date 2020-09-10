@@ -69,8 +69,8 @@ type configParams struct {
 	PayToAddr                   string
 	MinerInfo                   string
 	NodeVersion                 string
-	NewP2PProtocolVersionHeight uint64
 	CRClaimDPOSNodeStartHeight  uint32
+	NewP2PProtocolVersionHeight uint64
 }
 
 // loadConfigFile read configuration parameters through the config.json file.
@@ -159,6 +159,7 @@ func loadConfig() *configParams {
 		spvNetParams.CRClaimDPOSNodeStartHeight = cfg.CRClaimDPOSNodeStartHeight
 	}
 	if cfg.NewP2PProtocolVersionHeight > 0 {
+		activeNetParams.NewP2PProtocolVersionHeight = cfg.NewP2PProtocolVersionHeight
 		spvNetParams.NewP2PProtocolVersionHeight = cfg.NewP2PProtocolVersionHeight
 	}
 	return cfg
