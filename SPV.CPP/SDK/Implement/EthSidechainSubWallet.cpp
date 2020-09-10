@@ -108,6 +108,27 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			return j;
 		}
 
+		void EthSidechainSubWallet::DeleteTransfer(const nlohmann::json &tx) {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("tx: {}", tx.dump());
+
+			std::string tid;
+			EthereumTransferPtr transfer;
+			if (tx.find("ID") == tx.end())
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "'ID' not found in json");
+
+			try {
+				tid = tx["ID"].get<std::string>();
+				transfer = LookupTransfer(tid);
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "get 'ID' of json failed");
+			}
+
+			ErrorChecker::CheckParam(transfer == nullptr, Error::InvalidArgument, "transfer " + tid + " not found");
+
+			_client->_ewm->transferDelete(transfer);
+		}
+
 		EthSidechainSubWallet::EthSidechainSubWallet(const CoinInfoPtr &info,
 													 const ChainConfigPtr &config,
 													 MasterWallet *parent,

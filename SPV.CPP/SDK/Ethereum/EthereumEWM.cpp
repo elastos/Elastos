@@ -598,6 +598,10 @@ namespace Elastos {
 			return transfer;
 		}
 
+		void EthereumEWM::transferDelete(const EthereumTransferPtr &transfer) {
+			ewmTransferDelete (_ewm, transfer->getRaw());
+		}
+
 		EthereumBlockPtr EthereumEWM::blockLookupOrCreate(BREthereumBlock bid) {
 			BlockMap::iterator it = _blocks.find(bid);
 			if (it != _blocks.end())

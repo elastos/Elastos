@@ -69,6 +69,12 @@ namespace Elastos {
 														 const std::string &gasLimit,
 														 const std::string &data) const = 0;
 
+			/**
+			 *
+			 * @param tx
+			 */
+			virtual void DeleteTransfer(const nlohmann::json &tx) = 0;
+
 		};
 
 	}

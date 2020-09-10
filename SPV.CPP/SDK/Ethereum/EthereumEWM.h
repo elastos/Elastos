@@ -223,6 +223,9 @@ namespace Elastos {
 		protected:
 			EthereumTransferPtr transactionLookupOrCreate(BREthereumTransfer tid);
 
+		public:
+			void transferDelete(const EthereumTransferPtr &transfer);
+
 			// Block
 		protected:
 			EthereumBlockPtr blockLookupOrCreate(BREthereumBlock bid);

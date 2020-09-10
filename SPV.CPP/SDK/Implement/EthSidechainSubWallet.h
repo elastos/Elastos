@@ -62,6 +62,8 @@ namespace Elastos {
 														 const std::string &gasLimit,
 														 const std::string &data) const;
 
+			virtual void DeleteTransfer(const nlohmann::json &tx);
+
 		public:
 			// implement callback of Client
 			virtual void getGasPrice(BREthereumWallet wid, int rid);
