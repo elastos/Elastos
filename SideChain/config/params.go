@@ -84,4 +84,7 @@ type Params struct {
 
 	// CRClaimDPOSNodeStartHeight defines the height where starting claim DPOS node
 	CRClaimDPOSNodeStartHeight uint32
+
+	// NewP2PProtocolVersionHeight defines the new p2p protocol version message height
+	NewP2PProtocolVersionHeight uint64
 }
