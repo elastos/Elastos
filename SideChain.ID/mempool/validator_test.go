@@ -15,6 +15,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ID/types"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/types/base64url"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	types2 "github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA/common"
@@ -34,7 +35,10 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	if err != nil {
 		return
 	}
-	s.validator.Validator = &mempool.Validator{}
+	cfg := &mempool.Config{
+		ChainParams: &config.Params{},
+	}
+	s.validator.Validator = NewValidator(cfg, nil)
 	s.validator.Store = idChainStore
 }
 
