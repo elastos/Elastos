@@ -36,6 +36,7 @@
 #include <IMainchainSubWallet.h>
 #include <IIDChainSubWallet.h>
 #include <IEthSidechainSubWallet.h>
+#include "RPCHelper.h"
 
 #include <string>
 #include <iostream>
@@ -59,6 +60,8 @@ static IMasterWallet *currentWallet = nullptr;
 
 static bool verboseMode = false;
 static const char *SplitLine = "------------------------------------------------------------------------------------------------------------------------";
+
+static std::string ETHSC_API_URL = "http://api.elastos.io:8080/api/1/eth";
 
 class WalletData {
 public:
@@ -277,66 +280,42 @@ public:
 										   uint64_t begBlockNumber,
 										   uint64_t endBlockNumber,
 										   int id) {
-		nlohmann::json j, txns, tx;
+		nlohmann::json j, txns = nlohmann::json::array(), tx;
+		RPCHelper rpcHelper;
 
-		// rpc request
-		// ...
-		tx["hash"] = "0xe7b3134cb1eb3bc69978fa4f2793f3f49f931a3d863831fc2f56437eb4f6f322";
-		tx["from"] = "0x53781e106a2e3378083bdcede1874e5c2a7225f8";
-		tx["to"] = "0xd2fbb995bd917d0f6655f41c4006cc58da7603df";
-		tx["contract"] = ""; // or "", if none was created
-		tx["amount"] = "999999999999999999"; // 4290000000000000
-		tx["gasLimit"] = "5012644";
-		tx["gasPrice"] = "1000000000"; // 20000000000
-		tx["data"] = ""; // input
-		tx["nonce"] = "0"; // 21
-		tx["gasUsed"] = "21000"; // 50000
-		tx["blockNumber"] = "66"; // 6139707
-		tx["blockHash"] = "0xcff4a5a940982f991ee5c82d28643582d77a23d28edee794e4392f105cad203d";
-		tx["blockConfirmations"] = "76611"; // 256
-		tx["blockTransactionIndex"] = "0"; // 65
-		tx["blockTimestamp"] = "1598498146";
-		tx["isError"] = "0";
+		std::string url = ETHSC_API_URL + "/history?address=" + address +
+			"&begBlockNumber=" + std::to_string(begBlockNumber) +
+			"&endBlockNumber=" + std::to_string(endBlockNumber) +
+			"&sort=desc";
+		std::cout << "url: " << url << std::endl;
+		nlohmann::json respond = rpcHelper.Get(url);
+		std::cout << "result: " << respond.dump(4) << std::endl;
 
-		txns.push_back(tx);
+		nlohmann::json result = respond["result"];
+		if (result.is_array()) {
+			for (nlohmann::json::iterator it = result.begin(); it != result.end(); ++it) {
+				nlohmann::json r = *it;
+				tx["hash"] = r["hash"];
+				tx["from"] = r["from"];
+				tx["to"] = r["to"];
+				tx["contract"] = r["contractAddress"]; // or "", if none was created
+				tx["amount"] = r["value"];
+				tx["gasLimit"] = "5012644";
+				tx["gasPrice"] = r["gasPrice"];
+				tx["data"] = r["input"]; // input
+				tx["nonce"] = r["nonce"];
+				tx["gasUsed"] = r["gasUsed"];
+				tx["blockNumber"] = r["blockNumber"];
+				tx["blockHash"] = r["blockHash"];
+				tx["blockConfirmations"] = r["confirmations"];
+				tx["blockTransactionIndex"] = r["transactionIndex"];
+				tx["blockTimestamp"] = r["timeStamp"];
+				tx["isError"] = r["isError"];
 
-		tx["hash"] = "0x67a77b8bd2a24481f2aaa916ed7587aeedf39ee7e41b9d321bea021cb1edea14";
-		tx["from"] = "0x53781e106a2e3378083bdcede1874e5c2a7225f8";
-		tx["to"] = "0xd2fbb995bd917d0f6655f41c4006cc58da7603df";
-		tx["contract"] = ""; // or "", if none was created
-		tx["amount"] = "1000000000000000000"; // 4290000000000000
-		tx["gasLimit"] = "8000000";
-		tx["gasPrice"] = "1000000000"; // 20000000000
-		tx["data"] = ""; // input
-		tx["nonce"] = "1"; // 21
-		tx["gasUsed"] = "21000"; // 50000
-		tx["blockNumber"] = "572"; // 6139707
-		tx["blockHash"] = "0x991753835922fad42de10f64f840eeca3d42dcbd4c95294dcabd6b2403fb2b46";
-		tx["blockConfirmations"] = "76105"; // 256
-		tx["blockTransactionIndex"] = "0"; // 65
-		tx["blockTimestamp"] = "1598498652";
-		tx["isError"] = "0";
+				txns.push_back(tx);
+			}
+		}
 
-		txns.push_back(tx);
-
-		tx["hash"] = "0x157bb5ce2940078e497b8ffb2dc1af0db6ad46f9e9b133bbd521a73cde27c941";
-		tx["from"] = "0x53781e106a2e3378083bdcede1874e5c2a7225f8";
-		tx["to"] = "0xd2fbb995bd917d0f6655f41c4006cc58da7603df";
-		tx["contract"] = ""; // or "", if none was created
-		tx["amount"] = "1000000000000000000"; // 4290000000000000
-		tx["gasLimit"] = "8000000";
-		tx["gasPrice"] = "1000000000"; // 20000000000
-		tx["data"] = ""; // input
-		tx["nonce"] = "2"; // 21
-		tx["gasUsed"] = "21000"; // 50000
-		tx["blockNumber"] = "1195"; // 6139707
-		tx["blockHash"] = "0xafa2792ae11ec429d705bc1b8f99c0ddf5f6c17cdab69105fcd19aa453ad3041";
-		tx["blockConfirmations"] = "75482"; // 256
-		tx["blockTransactionIndex"] = "0"; // 65
-		tx["blockTimestamp"] = "1598499275";
-		tx["isError"] = "0";
-
-		txns.push_back(tx);
 		j["id"] = id;
 		j["result"] = txns;
 		return j;
