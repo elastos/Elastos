@@ -538,6 +538,10 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) 
 	return ErrBreak
 }
 
+func (v *Validator) GetParams() *config.Params {
+	return v.chainParams
+}
+
 func (v *Validator) checkTransferCrossChainAssetTransaction(txn *types.Transaction) error {
 	if !txn.IsTransferCrossChainAssetTx() {
 		return nil
