@@ -303,9 +303,8 @@ func (c *Committee) updateCandidatesDepositCoin(height uint32) {
 
 func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	c.mtx.Lock()
-	defer c.mtx.Unlock()
-
 	if block.Height < c.params.CRVotingStartHeight {
+		c.mtx.Unlock()
 		return
 	}
 
@@ -340,8 +339,6 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		c.createAppropriationTransaction(block.Height)
 		c.recordCurrentStageAmount(block.Height)
 		c.appropriationHistory.Commit(block.Height)
-		go events.Notify(events.ETCRCChangeCommittee, block)
-
 	} else {
 		if c.CRAssetsAddressUTXOCount >=
 			c.params.MaxCRAssetsAddressUTXOCount+c.params.CoinbaseMaturity &&
@@ -349,7 +346,11 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 			c.createRectifyCRAssetsTransaction(block.Height)
 		}
 	}
+	c.mtx.Unlock()
 
+	if needChg {
+		events.Notify(events.ETCRCChangeCommittee, block)
+	}
 }
 
 func (c *Committee) updateCRInactivePeriod(history *utils.History, height uint32) {
