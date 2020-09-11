@@ -31,6 +31,9 @@ const (
 		"	-port   specify a port number for the DNS service.\n" +
 		"	-newversionheight   specify a new version message height for the DNS service.\n" +
 		"	-debug  enable debug mode."
+
+	// nodePrefix indicates the prefix of node version.
+	nodePrefix = "dns-"
 )
 
 var (
@@ -96,7 +99,7 @@ func main() {
 	}
 
 	// Create the DNS instance.
-	dnsService, err := dns.New(dataDir, params.Magic, params.DefaultPort, params.NewP2PProtocolVersionHeight, Version)
+	dnsService, err := dns.New(dataDir, params.Magic, params.DefaultPort, params.NewP2PProtocolVersionHeight, nodePrefix+Version)
 	if err != nil {
 		fmt.Fprint(os.Stderr, err.Error())
 		os.Exit(1)
