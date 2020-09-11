@@ -87,4 +87,8 @@ type Params struct {
 
 	// NewP2PProtocolVersionHeight defines the new p2p protocol version message height
 	NewP2PProtocolVersionHeight uint64
+
+	//CheckRegisterDIDHeight
+	CheckRegisterDIDHeight 	uint32
+
 }
