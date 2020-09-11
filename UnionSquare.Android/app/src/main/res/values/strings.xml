@@ -818,4 +818,7 @@
     <string name="oldproposal">原提案</string>
     <string name="newpoposerdid">新提案负责人DID</string>
     <string name="newsectrtgendid">新任秘书长DID</string>
+    <string name="newproposalaccount">新提案经费账户</string>
+    <string name="inactivedialoghint">由于您的委员节点处于未激活状态，您的委员职务将暂时停职。</string>
+    <string name="inactiveofficehint">由于您的委员节点处于未激活状态，您的委员职务将暂时停职。\n</string>
 </resources>

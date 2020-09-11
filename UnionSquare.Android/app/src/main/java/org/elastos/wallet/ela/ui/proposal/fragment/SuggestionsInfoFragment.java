@@ -25,8 +25,10 @@ package org.elastos.wallet.ela.ui.proposal.fragment;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
@@ -110,6 +112,26 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
     TextView tvTagMoney;
     @BindView(R.id.tv_count)
     TextView tvCount;
+    @BindView(R.id.tv_oldproposal)
+    TextView tvOldproposal;
+    @BindView(R.id.ll_oldproposal)
+    LinearLayout llOldproposal;
+    @BindView(R.id.tv_newpoposerdid)
+    TextView tvNewpoposerdid;
+    @BindView(R.id.ll_newpoposerdid)
+    LinearLayout llNewpoposerdid;
+    @BindView(R.id.tv_newaccount)
+    TextView tvNewaccount;
+    @BindView(R.id.ll_newaccount)
+    LinearLayout llNewaccount;
+    @BindView(R.id.tv_newsectrtgendid)
+    TextView tvNewsectrtgendid;
+    @BindView(R.id.ll_newsectrtgendid)
+    LinearLayout llNewsectrtgendid;
+    @BindView(R.id.ll_account)
+    LinearLayout llAccount;
+    @BindView(R.id.ll_count)
+    LinearLayout llCount;
     private Wallet wallet;
     private String scanResult;
     private RecieveProposalAllJwtEntity entity;
@@ -127,22 +149,35 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
         proposaltype = data.getString("proposaltype");
         switch (proposaltype.toLowerCase()) {
             case "normal":
-            case "elip":
+                tvType.setText(R.string.common);
                 entity = JSON.parseObject(payload, RecieveProposalNormalJwtEntity.class);
-                setQrData(((RecieveProposalNormalJwtEntity) entity).getData());
-
+                llAccount.setVisibility(View.VISIBLE);
+                tvAccount.setText(((RecieveProposalNormalJwtEntity) entity).getData().getRecipient());
+                setRecycleView((RecieveProposalNormalJwtEntity) entity);
+                break;
+            case "elip":
+                tvType.setText("ELIP");
+                entity = JSON.parseObject(payload, RecieveProposalNormalJwtEntity.class);
+                llAccount.setVisibility(View.VISIBLE);
+                tvAccount.setText(((RecieveProposalNormalJwtEntity) entity).getData().getRecipient());
+                setRecycleView((RecieveProposalNormalJwtEntity) entity);
                 break;
             case "secretarygeneral":
+                tvType.setText(R.string.psecretarygeneral);
                 entity = JSON.parseObject(payload, RecieveProposalSecretrayGeneralJwtEntity.class);
+
                 break;
             case "changeproposalowner":
+                tvType.setText(R.string.pchangeproposalowner);
                 entity = JSON.parseObject(payload, RecieveProposalChangeProposalOwnerJwtEntity.class);
                 break;
             case "closeproposal":
+                tvType.setText(R.string.pcloseproposal);
                 entity = JSON.parseObject(payload, RecieveProposalCloseProposalJwtEntity.class);
                 break;
 
         }
+        tvHash.setText(entity.getData().getDrafthash());
         command = entity.getCommand();
 
     }
@@ -166,20 +201,6 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
 
     }
 
-    /**
-     * 把二维码中的数据先放上去
-     */
-    private void setQrData(RecieveProposalNormalJwtEntity.DataBean data) {
-        String originType = data.getProposaltype().toLowerCase();
-        if ("Normal".toLowerCase().equals(originType)) {
-            tvType.setText(R.string.common);
-        } else if ("ELIP".toLowerCase().equals(originType)) {
-            tvType.setText("ELIP");
-        }
-        tvHash.setText(data.getDrafthash());
-        tvAccount.setText(data.getRecipient());
-        setRecycleView((RecieveProposalNormalJwtEntity) entity);
-    }
 
     @OnClick({R.id.tv_sign})
     public void onViewClicked(View view) {
@@ -275,6 +296,31 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
         tvDid.setText(data.getDid());
         tvPeople.setText(data.getDidName());
         tvAbs.setText(data.getAbs());
+        switch (proposaltype.toLowerCase()) {
+
+            case "secretarygeneral":
+                llNewsectrtgendid.setVisibility(View.VISIBLE);
+                tvNewsectrtgendid.setText("did:ela:" + data.getNewSecretaryDID());
+
+                break;
+            case "changeproposalowner":
+                llOldproposal.setVisibility(View.VISIBLE);
+                tvOldproposal.setText("#" + data.getTargetProposalNum() + " " + data.getTargetProposalTitle());
+                if (!TextUtils.isEmpty(data.getNewOwnerDID())) {
+                    llNewpoposerdid.setVisibility(View.VISIBLE);
+                    tvNewpoposerdid.setText("did:ela:" + data.getNewOwnerDID());
+                }
+                if (!TextUtils.isEmpty(data.getNewAddress())) {
+                    llNewaccount.setVisibility(View.VISIBLE);
+                    tvNewaccount.setText(data.getNewAddress());
+                }
+                break;
+            case "closeproposal":
+                llOldproposal.setVisibility(View.VISIBLE);
+                tvOldproposal.setText("#" + data.getCloseProposalNum() + " " + (data.getTargetProposalTitle() == null ? "" : data.getTargetProposalTitle()));
+                break;
+
+        }
 
     }
 
@@ -290,6 +336,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
         for (RecieveProposalNormalJwtEntity.DataBean.BudgetsBean bean : list) {
             sum = sum.add(new BigDecimal(bean.getAmount()));
         }
+        llCount.setVisibility(View.VISIBLE);
         tvCount.setText(NumberiUtil.salaToEla(sum) + " ELA");
         SuggetMoneyRecAdapetr adapter = new SuggetMoneyRecAdapetr(getContext(), list);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));

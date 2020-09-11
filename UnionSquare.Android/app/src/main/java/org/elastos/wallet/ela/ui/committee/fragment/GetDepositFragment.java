@@ -63,21 +63,21 @@ public class GetDepositFragment extends BaseFragment implements NewBaseViewData 
     @Override
     protected void setExtraData(Bundle data) {
         String name = data.getString("name", "");
-        String pk = data.getString("pk", "");
-        if (!TextUtils.isEmpty(pk)) {
+        String dpospublickey = data.getString("dpospublickey");
+        if (!TextUtils.isEmpty(dpospublickey)) {
             tvTitle.setText(R.string.managecrnode);
-            etCrcpk.setText(pk);
+            etCrcpk.setText(dpospublickey);
         } else {
             tvTitle.setText(R.string.getcrmode);
         }
         did = data.getString("did", "").replace("did:elastos:", "");
+
         tvName.setText("Node: " + name);
         wallet = data.getParcelable("wallet");
     }
 
     @Override
     protected void initView(View view) {
-
         getCRCDepositPresenter = new GetCRCDepositPresenter();
         proposalPresenter = new ProposalPresenter();
         registReceiver();
@@ -128,7 +128,7 @@ public class GetDepositFragment extends BaseFragment implements NewBaseViewData 
 
                 break;
             case "createCRCouncilMemberClaimNodeTransaction":
-                new PwdPresenter().signTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringEntity) baseEntity).getData(),payPasswd, this);
+                new PwdPresenter().signTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringEntity) baseEntity).getData(), payPasswd, this);
 
                 break;
             case "CRCouncilMemberClaimNodeDigest":

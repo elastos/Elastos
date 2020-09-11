@@ -25,6 +25,7 @@ package org.elastos.wallet.ela.ui.committee.fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -70,11 +71,13 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     @BindView(R.id.refresh_ct_info)
     TextView refreshInfo;
     @BindView(R.id.tv_getdepos)
-    TextView tvGetdepos;
+    TextView tvGetdepos;//领取节点
     @BindView(R.id.refresh_ct_did)
     TextView refreshDid;
     @BindView(R.id.deposit)
     TextView deposit;
+    @BindView(R.id.tv_deposit)
+    TextView tvDeposit;//fistlayout弹框里的按钮
     @BindView(R.id.first_layout)
     View firstLayout;
     @BindView(R.id.second_layout)
@@ -102,6 +105,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     String type;
     String depositAmount;
     String status;
+    String dpospublickey;
     String did;
     String name;
 
@@ -113,6 +117,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
         name = data.getString("name");
         type = data.getString("type");
         depositAmount = data.getString("depositAmount");
+        dpospublickey = data.getString("dpospublickey");
 
         //当届
         if (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("CURRENT")) {
@@ -122,7 +127,8 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
                     && !depositAmount.trim().equalsIgnoreCase("0")
                     && (status.equalsIgnoreCase("Terminated")
                     || status.equalsIgnoreCase("Impeached")
-                    || status.equalsIgnoreCase("Returned"))) {
+                    || status.equalsIgnoreCase("Returned")
+                    || status.equalsIgnoreCase("Inactive"))) {
                 showFirstLayout();
             } else {
                 showSecondLayout();
@@ -138,9 +144,12 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
 
     private void showRefreshView() {
         refreshInfo.setVisibility(View.VISIBLE);
-        tvGetdepos.setVisibility(View.VISIBLE);
         refreshDid.setVisibility(View.VISIBLE);
         deposit.setVisibility(View.GONE);
+        tvGetdepos.setVisibility(View.VISIBLE);
+        if (!TextUtils.isEmpty(dpospublickey) ) {
+            tvGetdepos.setText(R.string.managecrnode);
+        }
     }
 
     private void showDepositView() {
@@ -148,6 +157,16 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
         tvGetdepos.setVisibility(View.GONE);
         refreshDid.setVisibility(View.GONE);
         deposit.setVisibility(View.VISIBLE);
+    }
+
+    private void showGetNodeView() {
+        refreshInfo.setVisibility(View.GONE);
+        refreshDid.setVisibility(View.GONE);
+        deposit.setVisibility(View.GONE);
+        tvGetdepos.setVisibility(View.VISIBLE);
+        if (!TextUtils.isEmpty(dpospublickey)) {
+            tvGetdepos.setText(R.string.managecrnode);
+        }
     }
 
 
@@ -159,7 +178,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
                 //领取或管理节点
                 bundle.putString("name", name);
                 bundle.putString("did", did);
-                bundle.putString("pk", "");
+                bundle.putString("dpospublickey", dpospublickey);
                 bundle.putParcelable("wallet", wallet);
                 start(GetDepositFragment.class, bundle);
                 break;
@@ -187,6 +206,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
                 popBackFragment();
                 break;
             case R.id.tv_deposit:
+                //fistlayout弹框里的按钮
                 showSecondLayout();
                 break;
         }
@@ -207,6 +227,10 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
             case "Returned":
                 promptTv.setText(getString(R.string.dimissdialoghint));
                 break;
+            case "Inactive":
+                promptTv.setText(R.string.inactivedialoghint);
+                tvDeposit.setText(R.string.watchdetail);
+                break;
             default:
         }
     }
@@ -222,6 +246,10 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
         }
 
         switch (status) {
+            case "Inactive":
+                description.setText(getString(R.string.inactiveofficehint) + "请尽快处理节点问题，以免影响委员权限。");
+                showGetNodeView();
+                break;
             case "Terminated":
                 description.setText(String.format(getString(R.string.completeofficehint), depositAmount));
                 showDepositView();
@@ -268,9 +296,6 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
 
             case "getRegisteredCRInfo":
                 crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
-              /*  if (!"Unregistered".equals(crStatusBean.getStatus())) {
-                    tvGetdepos.setText(R.string.managecrnode);
-                }*/
                 break;
         }
     }

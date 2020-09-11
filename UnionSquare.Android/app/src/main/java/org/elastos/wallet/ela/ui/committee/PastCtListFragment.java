@@ -94,6 +94,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     private String status;
     private String cid;
     private String depositAmount;
+    private String dpospublickey;
 
     @Override
     protected int getLayoutId() {
@@ -175,6 +176,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
                         bundle.putString("depositAmount", depositAmount);
                         bundle.putString("type", type);
                         bundle.putString("did", did);
+                        bundle.putString("dpospublickey", dpospublickey);
                         start(CtManagerFragment.class, bundle);
                         return;
                     }
@@ -195,6 +197,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         String cid = dataBean.getCid();
         String status = dataBean.getStatus();
         String depositAmount = dataBean.getDepositAmount();
+        String dpospublickey = dataBean.getDpospublickey();
 
         // 需要提取质押金的情况
         if(dataBean != null) {
@@ -211,6 +214,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
                     bundle.putString("cid", cid);
                     bundle.putString("status", status);
                     bundle.putString("depositAmount", depositAmount);
+                    bundle.putString("dpospublickey", dpospublickey);
                     start(CtManagerFragment.class, bundle);
                 }
             }
@@ -284,6 +288,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         did = dataBean.getDid();
         cid = dataBean.getCid();
         status = dataBean.getStatus();
+        dpospublickey = dataBean.getDpospublickey();
         depositAmount = dataBean.getDepositAmount();
         if (!AppUtlis.isNullOrEmpty(type) && type.equalsIgnoreCase("SecretaryGeneral")) {
             ivTitleRight.setVisibility(View.VISIBLE);

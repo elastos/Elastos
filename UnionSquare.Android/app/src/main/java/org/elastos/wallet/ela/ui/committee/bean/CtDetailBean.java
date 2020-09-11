@@ -48,6 +48,7 @@ public class CtDetailBean extends BaseEntity {
         private String address;
         private String introduction;
         private int location;
+        private String dpospublickey;
         private long birthday;
         private String email;
         private String wechat;
@@ -196,6 +197,14 @@ public class CtDetailBean extends BaseEntity {
 
         public void setIntroduction(String introduction) {
             this.introduction = introduction;
+        }
+
+        public String getDpospublickey() {
+            return dpospublickey;
+        }
+
+        public void setDpospublickey(String dpospublickey) {
+            this.dpospublickey = dpospublickey;
         }
 
         public double getImpeachmentThroughVotes() {

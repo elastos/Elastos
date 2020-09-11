@@ -1289,6 +1289,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         startActivity(intent);
     }
 
+    /**
+     *
+     * 验证网站传来的did是否存在
+     * @param didDocument
+     * @param tag
+     */
     private void verifyDID(DIDDocument didDocument, String tag) {
         String result = scanResult.replace(tag, "");
         if (JwtUtils.verifyJwt(result, didDocument)) {
