@@ -36,6 +36,7 @@ const (
 	DataDir  = "data"
 	ChainDir = "chain"
 	SpvDir   = "spv"
+	nodePrefix = "did-"
 )
 
 var (
@@ -91,7 +92,7 @@ func main() {
 		PermanentPeers: cfg.SPVPermanentPeers,
 		GenesisAddress: genesisAddress,
 		FilterType:     filter.FTNexTTurnDPOSInfo,
-		NodeVersion:    Version,
+		NodeVersion:    nodePrefix+Version,
 	}
 	spvService, err := spv.NewService(&spvCfg)
 	if err != nil {
