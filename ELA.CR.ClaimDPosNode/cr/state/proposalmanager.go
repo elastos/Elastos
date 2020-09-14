@@ -564,7 +564,6 @@ func (p *ProposalManager) proposalWithdraw(tx *types.Transaction,
 		for k, v := range proposalState.BudgetsStatus {
 			if v == Withdrawable {
 				proposalState.BudgetsStatus[k] = Withdrawn
-
 			}
 		}
 		if tx.PayloadVersion == payload.CRCProposalWithdrawVersion01 {

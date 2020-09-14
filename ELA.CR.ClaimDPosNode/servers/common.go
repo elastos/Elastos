@@ -320,6 +320,8 @@ type CRCProposalTrackingInfo struct {
 type CRCProposalWithdrawInfo struct {
 	ProposalHash   string `json:"proposalhash"`
 	OwnerPublicKey string `json:"ownerpublickey"`
+	Recipient      string `json:"recipient,omitempty"`
+	Amount         string `json:"amount,omitempty"`
 	Signature      string `json:"signature"`
 }
 
