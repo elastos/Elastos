@@ -330,7 +330,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	}
 	c.lastHistory.Commit(block.Height)
 
-	if block.Height >= c.params.CRAssetsRectifyTransactionHeight &&
+	if block.Height >= c.params.CRCProposalWithdrawPayloadV1Height &&
 		len(c.manager.WithdrawableTxInfo) != 0 {
 		c.createRealWithdrawTransaction(block.Height)
 	}
