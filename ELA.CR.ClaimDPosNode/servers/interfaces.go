@@ -105,7 +105,7 @@ func GetTransactionInfo(tx *Transaction) *TransactionInfo {
 		Version:        tx.Version,
 		TxType:         tx.TxType,
 		PayloadVersion: tx.PayloadVersion,
-		Payload:        getPayloadInfo(tx.Payload),
+		Payload:        getPayloadInfo(tx.Payload, tx.PayloadVersion),
 		Attributes:     attributes,
 		Inputs:         inputs,
 		Outputs:        outputs,
@@ -2359,7 +2359,7 @@ func DecodeRawTransaction(param Params) map[string]interface{} {
 	return ResponsePack(Success, GetTransactionInfo(&txn))
 }
 
-func getPayloadInfo(p Payload) PayloadInfo {
+func getPayloadInfo(p Payload, payloadVersion byte) PayloadInfo {
 	switch object := p.(type) {
 	case *payload.CoinBase:
 		obj := new(CoinbaseInfo)
@@ -2554,6 +2554,13 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj := new(CRCProposalWithdrawInfo)
 		obj.ProposalHash = ToReversedString(object.ProposalHash)
 		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
+		if payloadVersion == payload.CRCProposalWithdrawVersion01 {
+			recipient, err := object.Recipient.ToAddress()
+			if err == nil {
+				obj.Recipient = recipient
+			}
+			obj.Amount = object.Amount.String()
+		}
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *payload.CRCouncilMemberClaimNode:
