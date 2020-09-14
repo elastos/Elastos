@@ -55,14 +55,14 @@ const (
 	UpdateCR            TxType = 0x23
 	ReturnCRDepositCoin TxType = 0x24
 
-	CRCProposal             TxType = 0x25
-	CRCProposalReview       TxType = 0x26
-	CRCProposalTracking     TxType = 0x27
-	CRCAppropriation        TxType = 0x28
-	CRCProposalWithdraw     TxType = 0x29
-	CRCProposalRealWithdraw TxType = 0x2a
-	CRAssetsRectify         TxType = 0x2b
-	CRDPOSManagement        TxType = 0x31
+	CRCProposal              TxType = 0x25
+	CRCProposalReview        TxType = 0x26
+	CRCProposalTracking      TxType = 0x27
+	CRCAppropriation         TxType = 0x28
+	CRCProposalWithdraw      TxType = 0x29
+	CRCProposalRealWithdraw  TxType = 0x2a
+	CRAssetsRectify          TxType = 0x2b
+	CRCouncilMemberClaimNode TxType = 0x31
 )
 
 func (self TxType) Name() string {
@@ -129,8 +129,8 @@ func (self TxType) Name() string {
 		return "CRCProposalRealWithdraw"
 	case CRAssetsRectify:
 		return "CRAssetsRectify"
-	case CRDPOSManagement:
-		return "CRDPOSManagement"
+	case CRCouncilMemberClaimNode:
+		return "CRCouncilMemberClaimNode"
 	case NextTurnDPOSInfo:
 		return "NextTurnDPOSInfo"
 	default:
@@ -372,8 +372,8 @@ func (tx *Transaction) Hash() common.Uint256 {
 	return *tx.txHash
 }
 
-func (tx *Transaction) ISCRDPOSManagement() bool {
-	return tx.TxType == CRDPOSManagement
+func (tx *Transaction) ISCRCouncilMemberClaimNode() bool {
+	return tx.TxType == CRCouncilMemberClaimNode
 }
 
 func (tx *Transaction) IsCRAssetsRectifyTx() bool {
@@ -603,8 +603,8 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.CRAssetsRectify)
 	case CRCProposalRealWithdraw:
 		p = new(payload.CRCProposalRealWithdraw)
-	case CRDPOSManagement:
-		p = new(payload.CRDPOSManagement)
+	case CRCouncilMemberClaimNode:
+		p = new(payload.CRCouncilMemberClaimNode)
 	case NextTurnDPOSInfo:
 		p = new(payload.NextTurnDPOSInfo)
 	default:

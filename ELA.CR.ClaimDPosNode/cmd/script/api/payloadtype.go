@@ -20,24 +20,24 @@ import (
 )
 
 const (
-	luaCoinBaseTypeName          = "coinbase"
-	luaTransferAssetTypeName     = "transferasset"
-	luaRegisterProducerName      = "registerproducer"
-	luaUpdateProducerName        = "updateproducer"
-	luaCancelProducerName        = "cancelproducer"
-	luaActivateProducerName      = "activateproducer"
-	luaReturnDepositCoinName     = "returndepositcoin"
-	luaSideChainPowName          = "sidechainpow"
-	luaRegisterCRName            = "registercr"
-	luaUpdateCRName              = "updatecr"
-	luaUnregisterCRName          = "unregistercr"
-	luaCRCProposalName           = "crcproposal"
-	luaCRChangeProposalOwnerName = "crchangeproposalowner"
-	luaCRCCloseProposalHashName  = "crccloseproposalhash"
-	luaCRCProposalReviewName     = "crcproposalreview"
-	luaCRCProposalTrackingName   = "crcproposaltracking"
-	luaCRCProposalWithdrawName   = "crcproposalwithdraw"
-	luaCRDPOSManagementName      = "crdposmanagement"
+	luaCoinBaseTypeName             = "coinbase"
+	luaTransferAssetTypeName        = "transferasset"
+	luaRegisterProducerName         = "registerproducer"
+	luaUpdateProducerName           = "updateproducer"
+	luaCancelProducerName           = "cancelproducer"
+	luaActivateProducerName         = "activateproducer"
+	luaReturnDepositCoinName        = "returndepositcoin"
+	luaSideChainPowName             = "sidechainpow"
+	luaRegisterCRName               = "registercr"
+	luaUpdateCRName                 = "updatecr"
+	luaUnregisterCRName             = "unregistercr"
+	luaCRCProposalName              = "crcproposal"
+	luaCRChangeProposalOwnerName    = "crchangeproposalowner"
+	luaCRCCloseProposalHashName     = "crccloseproposalhash"
+	luaCRCProposalReviewName        = "crcproposalreview"
+	luaCRCProposalTrackingName      = "crcproposaltracking"
+	luaCRCProposalWithdrawName      = "crcproposalwithdraw"
+	luaCRCouncilMemberClaimNodeName = "crcouncilmemebrclaimnode"
 )
 
 func RegisterCoinBaseType(L *lua.LState) {
@@ -1688,14 +1688,14 @@ func RegisterCRCProposalWithdrawType(L *lua.LState) {
 		crcProposalWithdrawMethods))
 }
 
-func RegisterCRDPOSManagementType(L *lua.LState) {
-	mt := L.NewTypeMetatable(luaCRDPOSManagementName)
-	L.SetGlobal("crdposmanagement", mt)
+func RegisterCRCouncilMemberClaimNodeType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaCRCouncilMemberClaimNodeName)
+	L.SetGlobal("crcouncilmemberclaimnode", mt)
 	// static attributes
-	L.SetField(mt, "new", L.NewFunction(newCRDPOSManagement))
+	L.SetField(mt, "new", L.NewFunction(newCRCouncilMemberClaimNode))
 	// methods
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(),
-		crDPOSManagementMethods))
+		crCounxilMemberClaimNodeMethods))
 }
 
 func getPublicKeyFromCode(code []byte) []byte {
@@ -1751,7 +1751,7 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 	return 1
 }
 
-func newCRDPOSManagement(L *lua.LState) int {
+func newCRCouncilMemberClaimNode(L *lua.LState) int {
 	crManagementPublicKeyStr := L.ToString(1)
 	crDPOSPrivateKeyStr := L.ToString(2)
 	crCommitteeDIDStr := L.ToString(3)
@@ -1775,16 +1775,16 @@ func newCRDPOSManagement(L *lua.LState) int {
 		os.Exit(1)
 	}
 
-	fmt.Println("-----newCrDPOSManagement------")
+	fmt.Println("-----newCRCouncilMemberClainNode------")
 	fmt.Println("crManagementPublicKeyStr", crManagementPublicKeyStr)
 	fmt.Println("crDPOSPrivateKeyStr", crDPOSPrivateKeyStr)
 	fmt.Println("crCommitteeDIDStr", crCommitteeDIDStr)
 	fmt.Printf("account: \n %+v\n", account)
-	fmt.Println("-----newCrDPOSManagement------")
+	fmt.Println("-----newCRCouncilMemberClainNode------")
 
-	crDPOSManagement := &payload.CRDPOSManagement{
-		CRManagementPublicKey: crManagementPublicKey,
-		CRCommitteeDID:        *crCommitteeDID,
+	crCouncilMemberClaimNode := &payload.CRCouncilMemberClaimNode{
+		NodePublicKey:         crManagementPublicKey,
+		CRCouncilCommitteeDID: *crCommitteeDID,
 	}
 
 	needSign := true
@@ -1794,20 +1794,20 @@ func newCRDPOSManagement(L *lua.LState) int {
 
 	if needSign {
 		signBuf := new(bytes.Buffer)
-		err = crDPOSManagement.SerializeUnsigned(signBuf, payload.CRManagementVersion)
+		err = crCouncilMemberClaimNode.SerializeUnsigned(signBuf, payload.CRManagementVersion)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		crDPOSManagement.Signature, err = crypto.Sign(crDPOSPrivateKey, signBuf.Bytes())
+		crCouncilMemberClaimNode.CRCouncilCommitteeSignature, err = crypto.Sign(crDPOSPrivateKey, signBuf.Bytes())
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 	}
 	ud := L.NewUserData()
-	ud.Value = crDPOSManagement
-	L.SetMetatable(ud, L.GetTypeMetatable(luaCRDPOSManagementName))
+	ud.Value = crCouncilMemberClaimNode
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCRCouncilMemberClaimNodeName))
 	L.Push(ud)
 	return 1
 }
@@ -1816,8 +1816,8 @@ var crcProposalWithdrawMethods = map[string]lua.LGFunction{
 	"get": crcProposalWithdrawGet,
 }
 
-var crDPOSManagementMethods = map[string]lua.LGFunction{
-	"get": crDPOSManagementGet,
+var crCounxilMemberClaimNodeMethods = map[string]lua.LGFunction{
+	"get": crCouncilMemberClaimNodeGet,
 }
 
 // Getter and setter for the Person#Name
@@ -1828,8 +1828,8 @@ func crcProposalWithdrawGet(L *lua.LState) int {
 	return 0
 }
 
-func crDPOSManagementGet(L *lua.LState) int {
-	p := checkCRDPOSManagement(L, 1)
+func crCouncilMemberClaimNodeGet(L *lua.LState) int {
+	p := checkCRCouncilMemberClaimNode(L, 1)
 	fmt.Println(p)
 
 	return 0
@@ -1844,11 +1844,11 @@ func checkCRCProposalWithdraw(L *lua.LState, idx int) *payload.CRCProposalWithdr
 	return nil
 }
 
-func checkCRDPOSManagement(L *lua.LState, idx int) *payload.CRDPOSManagement {
+func checkCRCouncilMemberClaimNode(L *lua.LState, idx int) *payload.CRCouncilMemberClaimNode {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.CRDPOSManagement); ok {
+	if v, ok := ud.Value.(*payload.CRCouncilMemberClaimNode); ok {
 		return v
 	}
-	L.ArgError(1, "CRDPOSManagement expected")
+	L.ArgError(1, "CRCouncilMemberClaimNode expected")
 	return nil
 }

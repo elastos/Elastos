@@ -303,10 +303,10 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			return nil, elaerr.Simple(elaerr.ErrTxAssetsRectify, err)
 		}
 
-	case CRDPOSManagement:
-		if err := b.checkCRDPOSManagementTransaction(txn); err != nil {
-			log.Warn("[checkCRDPOSManagementTransaction],", err)
-			return nil, elaerr.Simple(elaerr.ErrTxCRDPOSManagement, err)
+	case CRCouncilMemberClaimNode:
+		if err := b.checkCRCouncilMemberClaimNodeTransaction(txn); err != nil {
+			log.Warn("[checkCRCouncilMemberClaimNodeTransaction],", err)
+			return nil, elaerr.Simple(elaerr.ErrTxCRCRClaimNode, err)
 		}
 	}
 
@@ -1064,7 +1064,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.CRAssetsRectify:
 	case *payload.CRCProposalRealWithdraw:
 	case *payload.NextTurnDPOSInfo:
-	case *payload.CRDPOSManagement:
+	case *payload.CRCouncilMemberClaimNode:
 
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
@@ -1137,7 +1137,7 @@ func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) 
 		if blockHeight < b.chainParams.CRAssetsRectifyTransactionHeight {
 			return errors.New("not support before CRAssetsRectifyTransactionHeight")
 		}
-	case CRDPOSManagement:
+	case CRCouncilMemberClaimNode:
 		if blockHeight < b.chainParams.CRClaimDPOSNodeStartHeight {
 			return errors.New("not support before CRClaimDPOSNodeStartHeight")
 		}
@@ -2212,17 +2212,17 @@ func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 	return nil
 }
 
-func (b *BlockChain) checkCRDPOSManagementTransaction(txn *Transaction) error {
-	manager, ok := txn.Payload.(*payload.CRDPOSManagement)
+func (b *BlockChain) checkCRCouncilMemberClaimNodeTransaction(txn *Transaction) error {
+	manager, ok := txn.Payload.(*payload.CRCouncilMemberClaimNode)
 	if !ok {
 		return errors.New("invalid payload")
 	}
 
 	if !b.crCommittee.IsInElectionPeriod() {
-		return errors.New("CRDPOSManagement must during election period")
+		return errors.New("CRCouncilMemberClaimNode must during election period")
 
 	}
-	did := manager.CRCommitteeDID
+	did := manager.CRCouncilCommitteeDID
 	crMember := b.crCommittee.GetMember(did)
 	if crMember == nil {
 		return errors.New("the originator must be members")
@@ -2233,22 +2233,22 @@ func (b *BlockChain) checkCRDPOSManagementTransaction(txn *Transaction) error {
 	}
 
 	if crMember.DPOSPublicKey != nil {
-		if bytes.Equal(crMember.DPOSPublicKey, manager.CRManagementPublicKey) {
-			return errors.New("CRManagementPublicKey is the same as crMember.DPOSPublicKey")
+		if bytes.Equal(crMember.DPOSPublicKey, manager.NodePublicKey) {
+			return errors.New("NodePublicKey is the same as crMember.DPOSPublicKey")
 		}
 	}
 
-	_, err := crypto.DecodePoint(manager.CRManagementPublicKey)
+	_, err := crypto.DecodePoint(manager.NodePublicKey)
 	if err != nil {
 		return errors.New("invalid operating public key")
 	}
 
 	// check duplication of node.
-	if b.state.ProducerNodePublicKeyExists(manager.CRManagementPublicKey) {
+	if b.state.ProducerNodePublicKeyExists(manager.NodePublicKey) {
 		return fmt.Errorf("producer already registered")
 	}
 
-	err = b.checkCRDPOSManagementSignature(manager, crMember.Info.Code)
+	err = b.checkCRCouncilMemberClaimNodeSignature(manager, crMember.Info.Code)
 	if err != nil {
 		return errors.New("CR claim DPOS signature check failed")
 	}
@@ -2256,11 +2256,11 @@ func (b *BlockChain) checkCRDPOSManagementTransaction(txn *Transaction) error {
 	return nil
 }
 
-func (b *BlockChain) checkCRDPOSManagementSignature(
-	managementPayload *payload.CRDPOSManagement, code []byte) error {
+func (b *BlockChain) checkCRCouncilMemberClaimNodeSignature(
+	managementPayload *payload.CRCouncilMemberClaimNode, code []byte) error {
 	signBuf := new(bytes.Buffer)
 	managementPayload.SerializeUnsigned(signBuf, payload.CRManagementVersion)
-	if err := checkCRTransactionSignature(managementPayload.Signature, code,
+	if err := checkCRTransactionSignature(managementPayload.CRCouncilCommitteeSignature, code,
 		signBuf.Bytes()); err != nil {
 		return errors.New("CR signature check failed")
 	}

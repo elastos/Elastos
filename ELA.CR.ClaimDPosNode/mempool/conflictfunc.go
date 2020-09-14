@@ -140,21 +140,21 @@ func strProducerInfoNodePublicKey(tx *types.Transaction) (interface{}, error) {
 }
 
 func strCRManagementPublicKey(tx *types.Transaction) (interface{}, error) {
-	p, ok := tx.Payload.(*payload.CRDPOSManagement)
+	p, ok := tx.Payload.(*payload.CRCouncilMemberClaimNode)
 	if !ok {
 		return nil, fmt.Errorf(
 			"cr dpos management payload cast failed, tx:%s", tx.Hash())
 	}
-	return common.BytesToHexString(p.CRManagementPublicKey), nil
+	return common.BytesToHexString(p.NodePublicKey), nil
 }
 
 func strCRManagementDID(tx *types.Transaction) (interface{}, error) {
-	p, ok := tx.Payload.(*payload.CRDPOSManagement)
+	p, ok := tx.Payload.(*payload.CRCouncilMemberClaimNode)
 	if !ok {
 		return nil, fmt.Errorf(
 			"cr dpos management payload cast failed, tx:%s", tx.Hash())
 	}
-	return p.CRCommitteeDID, nil
+	return p.CRCouncilCommitteeDID, nil
 }
 
 func strProducerInfoNickname(tx *types.Transaction) (interface{}, error) {

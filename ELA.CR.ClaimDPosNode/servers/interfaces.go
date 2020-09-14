@@ -2556,11 +2556,11 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
-	case *payload.CRDPOSManagement:
-		obj := new(CRDPOSManagementInfo)
-		obj.CRCommitteeDID, _ = object.CRCommitteeDID.ToAddress()
-		obj.CRManagementPublicKey = common.BytesToHexString(object.CRManagementPublicKey)
-		obj.Signature = common.BytesToHexString(object.Signature)
+	case *payload.CRCouncilMemberClaimNode:
+		obj := new(CRCouncilMemberClaimNodeInfo)
+		obj.NodePublicKey = common.BytesToHexString(object.NodePublicKey)
+		obj.CRCouncilMemberDID, _ = object.CRCouncilCommitteeDID.ToAddress()
+		obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilCommitteeSignature)
 		return obj
 	case *payload.NextTurnDPOSInfo:
 		obj := new(NextTurnDPOSPayloadInfo)

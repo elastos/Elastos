@@ -879,8 +879,8 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 	case types.NextTurnDPOSInfo:
 		s.processNextTurnDPOSInfo(tx, height)
 
-	case types.CRDPOSManagement:
-		s.processCRDPOSManagement(tx, height)
+	case types.CRCouncilMemberClaimNode:
+		s.processCRCouncilMemberClaimNode(tx, height)
 	}
 
 	if tx.TxType != types.RegisterProducer {
@@ -1321,11 +1321,11 @@ func (s *State) getNodePublicKeyStr(strOwnerPublicKey string) string {
 	return ""
 }
 
-func (s *State) processCRDPOSManagement(tx *types.Transaction, height uint32) {
-	dposManagementPayload := tx.Payload.(*payload.CRDPOSManagement)
-	strNewNodePublicKey := common.BytesToHexString(dposManagementPayload.CRManagementPublicKey)
+func (s *State) processCRCouncilMemberClaimNode(tx *types.Transaction, height uint32) {
+	claimNodePayload := tx.Payload.(*payload.CRCouncilMemberClaimNode)
+	strNewNodePublicKey := common.BytesToHexString(claimNodePayload.NodePublicKey)
 
-	ownerPublicKey := s.getCRMembersOwnerPublicKey(dposManagementPayload.CRCommitteeDID)
+	ownerPublicKey := s.getCRMembersOwnerPublicKey(claimNodePayload.CRCouncilCommitteeDID)
 	if ownerPublicKey == nil {
 		return
 	}

@@ -323,10 +323,10 @@ type CRCProposalWithdrawInfo struct {
 	Signature      string `json:"signature"`
 }
 
-type CRDPOSManagementInfo struct {
-	CRManagementPublicKey string `json:"crmanagementpublickey"`
-	CRCommitteeDID        string `json:"crcommitteedid"`
-	Signature             string `json:"signature"`
+type CRCouncilMemberClaimNodeInfo struct {
+	NodePublicKey            string `json:"nodepublickey"`
+	CRCouncilMemberDID       string `json:"crcouncilmemberdid"`
+	CRCouncilMemberSignature string `json:"crcouncilmembersignature"`
 }
 
 type NextTurnDPOSPayloadInfo struct {

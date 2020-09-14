@@ -814,17 +814,17 @@ func (c *Committee) activateProducer(tx *types.Transaction,
 	}
 }
 
-func (c *Committee) processCRDPOSManagement(tx *types.Transaction,
+func (c *Committee) processCRCouncilMemberClaimNode(tx *types.Transaction,
 	height uint32, history *utils.History) {
-	dposManagementPayload := tx.Payload.(*payload.CRDPOSManagement)
-	cr := c.getMember(dposManagementPayload.CRCommitteeDID)
+	claimNodePayload := tx.Payload.(*payload.CRCouncilMemberClaimNode)
+	cr := c.getMember(claimNodePayload.CRCouncilCommitteeDID)
 	if cr == nil {
 		return
 	}
 	oriPublicKey := cr.DPOSPublicKey
 	oriMemberState := cr.MemberState
 	history.Append(height, func() {
-		cr.DPOSPublicKey = dposManagementPayload.CRManagementPublicKey
+		cr.DPOSPublicKey = claimNodePayload.NodePublicKey
 		if cr.MemberState == MemberInactive {
 			cr.MemberState = MemberElected
 		}

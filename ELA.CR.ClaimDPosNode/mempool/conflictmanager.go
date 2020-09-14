@@ -31,8 +31,8 @@ const (
 	slotSpecialTxHash                         = "SpecialTxHash"
 	slotSidechainTxHashes                     = "SidechainTxHashes"
 	slotTxInputsReferKeys                     = "TxInputsReferKeys"
-	slotCRManagementPublicKey                 = "CRManagementPublicKey"
-	slotCRManagementDID                       = "CRCommitteeDID"
+	slotCRCouncilMemberNodePublicKey          = "CRCouncilMemberNodePublicKey"
+	slotCRCouncilMemberDID                    = "CRCouncilMemberDID"
 	slotCRCSecretaryGeneral                   = "CRCSecretaryGeneral"
 )
 
@@ -161,27 +161,27 @@ func newConflictManager() conflictManager {
 						Func: strRegisterCRPublicKey,
 					},
 					keyTypeFuncPair{
-						Type: types.CRDPOSManagement,
+						Type: types.CRCouncilMemberClaimNode,
 						Func: strCRManagementPublicKey,
 					},
 				),
 			},
 			// CR claim DPOS node public key
 			{
-				name: slotCRManagementPublicKey,
+				name: slotCRCouncilMemberNodePublicKey,
 				slot: newConflictSlot(str,
 					keyTypeFuncPair{
-						Type: types.CRDPOSManagement,
+						Type: types.CRCouncilMemberClaimNode,
 						Func: strCRManagementPublicKey,
 					},
 				),
 			},
 			// CR claim DPOS node did
 			{
-				name: slotCRManagementDID,
+				name: slotCRCouncilMemberDID,
 				slot: newConflictSlot(programHash,
 					keyTypeFuncPair{
-						Type: types.CRDPOSManagement,
+						Type: types.CRCouncilMemberClaimNode,
 						Func: strCRManagementDID,
 					},
 				),

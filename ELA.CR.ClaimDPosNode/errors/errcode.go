@@ -44,7 +44,7 @@ const (
 	ErrTxAppropriation     ErrCode = -22015
 	ErrTxAssetsRectify     ErrCode = -22016
 	ErrTxRealWithdraw      ErrCode = -22017
-	ErrTxCRDPOSManagement  ErrCode = -22018
+	ErrTxCRCRClaimNode     ErrCode = -22018
 	// 23 sidechain
 	ErrTxSidechainValidation   ErrCode = -23000
 	ErrTxSidechainDuplicate    ErrCode = -23001

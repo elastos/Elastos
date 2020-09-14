@@ -11,13 +11,13 @@ import (
 
 const CRManagementVersion byte = 0x00
 
-type CRDPOSManagement struct {
-	CRManagementPublicKey []byte
-	CRCommitteeDID        common.Uint168
-	Signature             []byte
+type CRCouncilMemberClaimNode struct {
+	NodePublicKey               []byte
+	CRCouncilCommitteeDID       common.Uint168
+	CRCouncilCommitteeSignature []byte
 }
 
-func (p *CRDPOSManagement) Data(version byte) []byte {
+func (p *CRCouncilMemberClaimNode) Data(version byte) []byte {
 	buf := new(bytes.Buffer)
 	if err := p.Serialize(buf, version); err != nil {
 		return []byte{0}
@@ -25,48 +25,48 @@ func (p *CRDPOSManagement) Data(version byte) []byte {
 	return buf.Bytes()
 }
 
-func (p *CRDPOSManagement) Serialize(w io.Writer, version byte) error {
+func (p *CRCouncilMemberClaimNode) Serialize(w io.Writer, version byte) error {
 	err := p.SerializeUnsigned(w, version)
 	if err != nil {
 		return err
 	}
 
-	if err := common.WriteVarBytes(w, p.Signature); err != nil {
+	if err := common.WriteVarBytes(w, p.CRCouncilCommitteeSignature); err != nil {
 		return errors.New("Serialize error")
 	}
 	return nil
 }
 
-func (p *CRDPOSManagement) SerializeUnsigned(w io.Writer, version byte) error {
-	if err := common.WriteVarBytes(w, p.CRManagementPublicKey); err != nil {
-		return errors.New("failed to serialize CRManagementPublicKey")
+func (p *CRCouncilMemberClaimNode) SerializeUnsigned(w io.Writer, version byte) error {
+	if err := common.WriteVarBytes(w, p.NodePublicKey); err != nil {
+		return errors.New("failed to serialize NodePublicKey")
 	}
-	if err := p.CRCommitteeDID.Serialize(w); err != nil {
-		return errors.New("failed to serialize CRCommitteeDID")
+	if err := p.CRCouncilCommitteeDID.Serialize(w); err != nil {
+		return errors.New("failed to serialize CRCouncilCommitteeDID")
 	}
 	return nil
 }
 
-func (p *CRDPOSManagement) Deserialize(r io.Reader, version byte) error {
+func (p *CRCouncilMemberClaimNode) Deserialize(r io.Reader, version byte) error {
 	err := p.DeserializeUnsigned(r, version)
 	if err != nil {
 		return err
 	}
-	p.Signature, err = common.ReadVarBytes(r, crypto.MaxSignatureScriptLength, "signature")
+	p.CRCouncilCommitteeSignature, err = common.ReadVarBytes(r, crypto.MaxSignatureScriptLength, "signature")
 	if err != nil {
 		return errors.New("Deserialize error")
 	}
 	return nil
 }
 
-func (p *CRDPOSManagement) DeserializeUnsigned(r io.Reader, version byte) error {
+func (p *CRCouncilMemberClaimNode) DeserializeUnsigned(r io.Reader, version byte) error {
 	var err error
-	p.CRManagementPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "CRManagementPublicKey")
+	p.NodePublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "NodePublicKey")
 	if err != nil {
-		return errors.New("failed to deserialize CRManagementPublicKey")
+		return errors.New("failed to deserialize NodePublicKey")
 	}
-	if err = p.CRCommitteeDID.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize CRCommitteeDID")
+	if err = p.CRCouncilCommitteeDID.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize CRCouncilCommitteeDID")
 	}
 	return nil
 }

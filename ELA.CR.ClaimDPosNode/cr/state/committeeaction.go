@@ -111,8 +111,8 @@ func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
 	case types.CRCProposalRealWithdraw:
 		c.processCRCRealWithdraw(tx, height, c.state.history)
 
-	case types.CRDPOSManagement:
-		c.processCRDPOSManagement(tx, height, c.state.history)
+	case types.CRCouncilMemberClaimNode:
+		c.processCRCouncilMemberClaimNode(tx, height, c.state.history)
 
 	case types.ActivateProducer:
 		c.activateProducer(tx, height, c.state.history)

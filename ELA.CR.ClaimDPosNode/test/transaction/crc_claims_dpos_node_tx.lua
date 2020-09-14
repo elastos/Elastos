@@ -55,7 +55,7 @@ print("cr dpos private key:", cr_dpos_private_key)
 print("cr committee did:", cr_committee_did)
 
 -- crc dpos management payload: cr_management_public_key, cr_dpos_private_key, cr_committee_did, wallet
-local cr_claims_dpos_payload =crdposmanagement.new(cr_management_public_key, cr_dpos_private_key, cr_committee_did, wallet)
+local cr_claims_dpos_payload =crcouncilmemberclaimnode.new(cr_management_public_key, cr_dpos_private_key, cr_committee_did, wallet)
 print(cr_claims_dpos_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime

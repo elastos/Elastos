@@ -284,6 +284,6 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterCRCProposalReviewType(L)
 	RegisterCRCProposalWithdrawType(L)
 	RegisterCRCProposalTrackingType(L)
-	RegisterCRDPOSManagementType(L)
+	RegisterCRCouncilMemberClaimNodeType(L)
 	return 0
 }
