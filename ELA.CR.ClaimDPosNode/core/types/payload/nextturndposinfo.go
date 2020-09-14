@@ -12,7 +12,7 @@ const NextTurnDPOSInfoVersion byte = 0x00
 
 type NextTurnDPOSInfo struct {
 	WorkingHeight  uint32
-	CRPublickeys   [][]byte
+	CRPublicKeys   [][]byte
 	DPOSPublicKeys [][]byte
 
 	hash *common.Uint256
@@ -40,11 +40,11 @@ func (n *NextTurnDPOSInfo) SerializeUnsigned(w io.Writer, version byte) error {
 	if err := common.WriteUint32(w, n.WorkingHeight); err != nil {
 		return err
 	}
-	if err := common.WriteVarUint(w, uint64(len(n.CRPublickeys))); err != nil {
+	if err := common.WriteVarUint(w, uint64(len(n.CRPublicKeys))); err != nil {
 		return err
 	}
 
-	for _, v := range n.CRPublickeys {
+	for _, v := range n.CRPublicKeys {
 		if err := common.WriteVarBytes(w, v); err != nil {
 			return err
 		}
@@ -84,14 +84,14 @@ func (n *NextTurnDPOSInfo) DeserializeUnsigned(r io.Reader, version byte) error 
 		return err
 	}
 
-	n.CRPublickeys = make([][]byte, 0, len)
+	n.CRPublicKeys = make([][]byte, 0, len)
 	for i := uint64(0); i < len; i++ {
 		var CRPublickey []byte
 		if CRPublickey, err = common.ReadVarBytes(r, crypto.COMPRESSEDLEN,
 			"cr public key"); err != nil {
 			return err
 		}
-		n.CRPublickeys = append(n.CRPublickeys, CRPublickey)
+		n.CRPublicKeys = append(n.CRPublicKeys, CRPublickey)
 	}
 
 	if len, err = common.ReadVarUint(r, 0); err != nil {

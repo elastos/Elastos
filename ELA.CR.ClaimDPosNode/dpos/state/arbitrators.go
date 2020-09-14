@@ -1164,16 +1164,16 @@ func (a *arbitrators) createNextTurnDPOSInfoTransaction(crcArbiters, normalDPOSA
 	nextTurnDPOSInfo.WorkingHeight = WorkingHeight
 	for _, v := range crcArbiters {
 		if abt, ok := v.(*crcArbiter); ok && abt.crMember.MemberState != state.MemberElected {
-			nextTurnDPOSInfo.CRPublickeys = append(nextTurnDPOSInfo.CRPublickeys, []byte{})
+			nextTurnDPOSInfo.CRPublicKeys = append(nextTurnDPOSInfo.CRPublicKeys, []byte{})
 		} else {
-			nextTurnDPOSInfo.CRPublickeys = append(nextTurnDPOSInfo.CRPublickeys, v.GetNodePublicKey())
+			nextTurnDPOSInfo.CRPublicKeys = append(nextTurnDPOSInfo.CRPublicKeys, v.GetNodePublicKey())
 		}
 	}
 	for _, v := range normalDPOSArbiters {
 		nextTurnDPOSInfo.DPOSPublicKeys = append(nextTurnDPOSInfo.DPOSPublicKeys, v.GetNodePublicKey())
 	}
-	log.Debugf("[createNextTurnDPOSInfoTransaction] CRPublickeys %v, DPOSPublicKeys%v\n",
-		a.ConvertToArbitersStr(nextTurnDPOSInfo.CRPublickeys), a.ConvertToArbitersStr(nextTurnDPOSInfo.DPOSPublicKeys))
+	log.Debugf("[createNextTurnDPOSInfoTransaction] CRPublicKeys %v, DPOSPublicKeys%v\n",
+		a.ConvertToArbitersStr(nextTurnDPOSInfo.CRPublicKeys), a.ConvertToArbitersStr(nextTurnDPOSInfo.DPOSPublicKeys))
 
 	return &types.Transaction{
 		Version:    types.TxVersion09,

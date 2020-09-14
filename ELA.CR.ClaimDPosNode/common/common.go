@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package common
 
@@ -55,6 +55,15 @@ func BytesToHexString(data []byte) string {
 
 func HexStringToBytes(value string) ([]byte, error) {
 	return hex.DecodeString(value)
+}
+
+func ToReversedString(hash Uint256) string {
+	return BytesToHexString(BytesReverse(hash[:]))
+}
+
+func FromReversedString(reversed string) ([]byte, error) {
+	bytes, err := HexStringToBytes(reversed)
+	return BytesReverse(bytes), err
 }
 
 func IntToBytes(n int) []byte {

@@ -645,7 +645,7 @@ func (s *State) ProducerNodePublicKeyExists(publicKey []byte) bool {
 func (s *State) SpecialTxExists(tx *types.Transaction) bool {
 	illegalData, ok := tx.Payload.(payload.DPOSIllegalData)
 	if !ok {
-		log.Error("special tx payload cast failed, tx:", tx.Hash())
+		log.Error("special tx payload cast failed, tx:", common.ToReversedString(tx.Hash()))
 		return false
 	}
 
@@ -1150,7 +1150,7 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 
 	references, err := s.getTxReference(tx)
 	if err != nil {
-		log.Errorf("get tx reference failed, tx hash:%s", tx.Hash())
+		log.Errorf("get tx reference failed, tx hash:%s", common.ToReversedString(tx.Hash()))
 		return
 	}
 	for _, input := range tx.Inputs {
@@ -1297,7 +1297,7 @@ func (s *State) processNextTurnDPOSInfo(tx *types.Transaction, height uint32) {
 	if !ok {
 		return
 	}
-	log.Warnf("processNextTurnDPOSInfo tx: %s, %d", tx.Hash().String(), height)
+	log.Warnf("processNextTurnDPOSInfo tx: %s, %d", common.ToReversedString(tx.Hash()), height)
 	oriNeedNextTurnDposInfo := s.NeedNextTurnDposInfo
 	s.history.Append(height, func() {
 		s.NeedNextTurnDposInfo = false
@@ -1355,7 +1355,7 @@ func (s *State) processCRCouncilMemberClaimNode(tx *types.Transaction, height ui
 func (s *State) updateVersion(tx *types.Transaction, height uint32) {
 	p, ok := tx.Payload.(*payload.UpdateVersion)
 	if !ok {
-		log.Error("tx payload cast failed, tx:", tx.Hash())
+		log.Error("tx payload cast failed, tx:", common.ToReversedString(tx.Hash()))
 		return
 	}
 

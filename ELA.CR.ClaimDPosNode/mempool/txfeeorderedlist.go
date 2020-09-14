@@ -42,7 +42,7 @@ func (l *txFeeOrderedList) AddTx(tx *types.Transaction) errors.ELAError {
 	size := uint32(tx.GetSize())
 	if size <= 0 {
 		return errors.SimpleWithMessage(errors.ErrTxPoolFailure, nil,
-			fmt.Sprintf("tx %s got illegal size", tx.Hash().String()))
+			fmt.Sprintf("tx %s got illegal size", common.ToReversedString(tx.Hash())))
 	}
 
 	feeRate := float64(tx.Fee) / float64(size)

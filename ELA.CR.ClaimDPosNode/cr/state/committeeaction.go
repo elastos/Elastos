@@ -204,7 +204,7 @@ func (c *Committee) processCancelVotes(tx *types.Transaction, height uint32) {
 
 	references, err := c.state.getTxReference(tx)
 	if err != nil {
-		log.Errorf("get tx reference failed, tx hash:%s", tx.Hash())
+		log.Errorf("get tx reference failed, tx hash:%s", common.ToReversedString(tx.Hash()))
 		return
 	}
 	for _, input := range tx.Inputs {

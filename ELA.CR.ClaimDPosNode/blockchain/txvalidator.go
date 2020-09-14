@@ -529,7 +529,7 @@ func (b *BlockChain) checkVoteCRCProposalContent(
 		proposal := b.crCommittee.GetProposal(*proposalHash)
 		if proposal == nil || proposal.Status != crstate.CRAgreed {
 			return fmt.Errorf("invalid CRCProposal: %s",
-				common.BytesToHexString(cv.Candidate))
+				common.ToReversedString(*proposalHash))
 		}
 	}
 
@@ -1116,7 +1116,6 @@ func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) 
 			}
 		}
 
-
 	case CRCProposalReview, CRCProposalTracking, CRCAppropriation,
 	CRCProposalWithdraw:
 		if blockHeight < b.chainParams.CRCommitteeStartHeight {
@@ -1339,7 +1338,7 @@ func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, r
 }
 
 func (b *BlockChain) IsNextArbtratorsSame(nextTurnDPOSInfo *payload.NextTurnDPOSInfo, curNodeNextArbitrators [][]byte) bool {
-	if len(nextTurnDPOSInfo.CRPublickeys)+len(nextTurnDPOSInfo.DPOSPublicKeys) != len(curNodeNextArbitrators) {
+	if len(nextTurnDPOSInfo.CRPublicKeys)+len(nextTurnDPOSInfo.DPOSPublicKeys) != len(curNodeNextArbitrators) {
 		log.Warn("IsNextArbtratorsSame curNodeArbitrators len ", len(curNodeNextArbitrators))
 		return false
 	}
@@ -1347,8 +1346,8 @@ func (b *BlockChain) IsNextArbtratorsSame(nextTurnDPOSInfo *payload.NextTurnDPOS
 	dposIndex := 0
 	for _, v := range curNodeNextArbitrators {
 		if DefaultLedger.Arbitrators.IsNextCRCArbitrator(v) {
-			if bytes.Equal(v, nextTurnDPOSInfo.CRPublickeys[crindex]) ||
-				(bytes.Equal([]byte{}, nextTurnDPOSInfo.CRPublickeys[crindex]) && !DefaultLedger.Arbitrators.IsMemberElectedNextCRCArbitrator(v)) {
+			if bytes.Equal(v, nextTurnDPOSInfo.CRPublicKeys[crindex]) ||
+				(bytes.Equal([]byte{}, nextTurnDPOSInfo.CRPublicKeys[crindex]) && !DefaultLedger.Arbitrators.IsMemberElectedNextCRCArbitrator(v)) {
 				crindex++
 				continue
 			} else {
@@ -1379,8 +1378,8 @@ func (b *BlockChain) checkNextTurnDPOSInfoTransaction(txn *Transaction) error {
 	if !ok {
 		return errors.New("invalid NextTurnDPOSInfo payload")
 	}
-	log.Warnf("[checkNextTurnDPOSInfoTransaction] CRPublickeys %v, DPOSPublicKeys%v\n",
-		b.ConvertToArbitersStr(nextTurnDPOSInfo.CRPublickeys), b.ConvertToArbitersStr(nextTurnDPOSInfo.DPOSPublicKeys))
+	log.Warnf("[checkNextTurnDPOSInfoTransaction] CRPublicKeys %v, DPOSPublicKeys%v\n",
+		b.ConvertToArbitersStr(nextTurnDPOSInfo.CRPublicKeys), b.ConvertToArbitersStr(nextTurnDPOSInfo.DPOSPublicKeys))
 
 	if !DefaultLedger.Arbitrators.IsNeedNextTurnDPOSInfo() {
 		log.Warn("[checkNextTurnDPOSInfoTransaction] !IsNeedNextTurnDPOSInfo")
@@ -2832,7 +2831,7 @@ func (b *BlockChain) checkNormalOrELIPProposal(proposal *payload.CRCProposal, pr
 		b.crCommittee.CRCCommitteeUsedAmount-proposalsUsedAmount {
 		return errors.New(fmt.Sprintf("budgets exceeds the balance of CRC"+
 			" committee, proposal hash:%s, budgets:%s, need <= %s",
-			proposal.Hash(), amount, b.crCommittee.CRCCurrentStageAmount-
+			common.ToReversedString(proposal.Hash()), amount, b.crCommittee.CRCCurrentStageAmount-
 				b.crCommittee.CRCCommitteeUsedAmount-proposalsUsedAmount))
 	} else if amount < 0 {
 		return errors.New("budgets is invalid")
