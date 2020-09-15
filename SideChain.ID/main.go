@@ -137,7 +137,7 @@ func main() {
 		TxMemPool:      txPool,
 		ChainParams:    activeNetParams,
 		PermanentPeers: cfg.PermanentPeers,
-		NodeVersion:    Version,
+		NodeVersion:    nodePrefix+Version,
 	})
 	if err != nil {
 		eladlog.Fatalf("initialize P2P networks failed, %s", err)
