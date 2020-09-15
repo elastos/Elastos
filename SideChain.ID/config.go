@@ -68,7 +68,6 @@ type configParams struct {
 	InstantBlock                bool
 	PayToAddr                   string
 	MinerInfo                   string
-	NodeVersion                 string
 	CRClaimDPOSNodeStartHeight  uint32
 	NewP2PProtocolVersionHeight uint64
 }

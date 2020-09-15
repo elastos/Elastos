@@ -56,7 +56,6 @@ func main() {
 	// bursts.  This value was arrived at with the help of profiling live
 	// usage.
 	debug.SetGCPercent(10)
-	Version = cfg.NodeVersion
 	eladlog.Infof("Node version: %s", Version)
 	eladlog.Info(GoVersion)
 
