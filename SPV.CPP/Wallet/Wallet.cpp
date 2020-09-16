@@ -61,7 +61,7 @@ static IMasterWallet *currentWallet = nullptr;
 static bool verboseMode = false;
 static const char *SplitLine = "------------------------------------------------------------------------------------------------------------------------";
 
-static std::string ETHSC_API_URL = "http://api.elastos.io:8080/api/1/eth";
+static std::string ETHSC_API_URL = "http://api.elastos.io:21634/api/1/eth/history";
 
 class WalletData {
 public:
@@ -283,13 +283,11 @@ public:
 		nlohmann::json j, txns = nlohmann::json::array(), tx;
 		RPCHelper rpcHelper;
 
-		std::string url = ETHSC_API_URL + "/history?address=" + address +
+		std::string url = ETHSC_API_URL + "?address=" + address +
 			"&begBlockNumber=" + std::to_string(begBlockNumber) +
 			"&endBlockNumber=" + std::to_string(endBlockNumber) +
 			"&sort=desc";
-		std::cout << "url: " << url << std::endl;
 		nlohmann::json respond = rpcHelper.Get(url);
-		std::cout << "result: " << respond.dump(4) << std::endl;
 
 		nlohmann::json result = respond["result"];
 		if (result.is_array()) {
@@ -311,6 +309,7 @@ public:
 				tx["blockTransactionIndex"] = r["transactionIndex"];
 				tx["blockTimestamp"] = r["timeStamp"];
 				tx["isError"] = r["isError"];
+				tx["transferType"] = r["transferType"];
 
 				txns.push_back(tx);
 			}

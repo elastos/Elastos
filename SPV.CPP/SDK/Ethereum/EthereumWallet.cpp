@@ -26,6 +26,7 @@
 
 #include "EthereumWallet.h"
 #include "EthereumEWM.h"
+#include <Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -217,6 +218,7 @@ namespace Elastos {
 								 ? amountCreateEtherString(amount.data(), (BREthereumEtherUnit) unit, &status)
 								 : amountCreateTokenQuantityString(token, amount.data(),
 																   (BREthereumTokenQuantityUnit) unit, &status);
+			ErrorChecker::CheckParam(status != CORE_PARSE_OK, Error::InvalidArgument, "invalid amount");
 			return ewmWalletCreateTransfer(node, wallet, targetAddress.data(), a);
 		}
 
@@ -232,9 +234,12 @@ namespace Elastos {
 
 			// Get an actual Amount
 			BREthereumEther brAmount = etherCreateString(amount.data(), (BREthereumEtherUnit) amountUnit, &status);
+			ErrorChecker::CheckParam(status != CORE_PARSE_OK, Error::InvalidArgument, "invalid amount");
 
-			BREthereumGasPrice brGasPrice = gasPriceCreate(
-				etherCreateString(gasPrice.data(), (BREthereumEtherUnit) gasPriceUnit, &status));
+			BREthereumEther gasPriceEther = etherCreateString(gasPrice.data(), (BREthereumEtherUnit) gasPriceUnit, &status);
+			ErrorChecker::CheckParam(status != CORE_PARSE_OK, Error::InvalidArgument, "invalid gasPrice");
+
+			BREthereumGasPrice brGasPrice = gasPriceCreate(gasPriceEther);
 
 			BREthereumGas brGasLimit = gasCreate(strtoull(gasLimit.data(), NULL, 0));
 
