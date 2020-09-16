@@ -94,29 +94,6 @@ func checkAmountPrecise(amount common.Fixed64, precision byte, assetPrecision by
 }
 
 func (v *validator) checkTransactionOutput(txn *types.Transaction) error {
-	if txn.IsCoinBaseTx() {
-		if len(txn.Outputs) < 2 {
-			return errors.New("[checkTransactionOutput] coinbase output is not enough, at least 2")
-		}
-
-		var totalReward = common.Fixed64(0)
-		var foundationReward = common.Fixed64(0)
-		for _, output := range txn.Outputs {
-			if !output.AssetID.IsEqual(v.systemAssetID) {
-				return errors.New("[checkTransactionOutput] asset ID in coinbase is invalid")
-			}
-			totalReward += output.Value
-			if output.ProgramHash.IsEqual(v.foundation) {
-				foundationReward += output.Value
-			}
-		}
-		if common.Fixed64(foundationReward) < common.Fixed64(float64(totalReward)*0.3) {
-			return errors.New("[checkTransactionOutput] Reward to foundation in coinbase < 30%")
-		}
-
-		return nil
-	}
-
 	if len(txn.Outputs) < 1 {
 		return errors.New("[checkTransactionOutput] transaction has no outputs")
 	}
