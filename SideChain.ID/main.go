@@ -189,6 +189,7 @@ func main() {
 			GetPayloadInfo:              sv.GetPayloadInfo,
 			GetPayload:                  service.GetPayload,
 		},
+		Params:   activeNetParams,
 		Compile:  Version,
 		NodePort: cfg.NodePort,
 		RPCPort:  cfg.RPCPort,

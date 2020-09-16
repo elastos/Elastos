@@ -8,6 +8,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
+	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
@@ -19,6 +20,7 @@ import (
 
 type Config struct {
 	service.Config
+	Params   *config.Params
 	Compile  string
 	NodePort uint16
 	RPCPort  uint16
@@ -87,10 +89,17 @@ func (s *HttpService) GetNodeState(param http.Params) (interface{}, error) {
 			LastPingMicros: snap.LastPingMicros,
 		})
 	}
+
+	height := s.cfg.Chain.GetBestHeight()
+	ver := pact.DPOSStartVersion
+	if height > uint32(s.cfg.Params.NewP2PProtocolVersionHeight) {
+		ver = pact.CRProposalVersion
+	}
+
 	return ServerInfo{
 		Compile:   s.cfg.Compile,
 		Height:    s.cfg.Chain.GetBestHeight(),
-		Version:   pact.DPOSStartVersion,
+		Version:   ver,
 		Services:  s.cfg.Server.Services().String(),
 		Port:      s.cfg.NodePort,
 		RPCPort:   s.cfg.RPCPort,
