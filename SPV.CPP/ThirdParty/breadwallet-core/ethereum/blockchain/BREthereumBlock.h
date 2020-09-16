@@ -180,8 +180,8 @@ extern uint64_t
 chtRootNumberGetFromNumber (uint64_t number);
 
 
-#define BLOCK_HEADER_CHT_ROOT_INTERVAL          (2048)
-#define BLOCK_HEADER_CHT_ROOT_INTERVAL_SHIFT    (11)          // 2048 == (1 << 11)
+#define BLOCK_HEADER_CHT_ROOT_INTERVAL          (32768)
+#define BLOCK_HEADER_CHT_ROOT_INTERVAL_SHIFT    (15)          // 2048 == (1 << 11) change to 32768 == (1 << 15)
 
 /// MARK: - Block
 

@@ -1387,17 +1387,17 @@ bcsHandleBlockHeaders (BREthereumBCS bcs,
 
     array_free(headers);
 
+	if (NULL != receiptsHashes && array_count(receiptsHashes) > 0)
+		lesProvideReceipts (bcs->les, node,
+							(BREthereumLESProvisionContext) bcs,
+							(BREthereumLESProvisionCallback) bcsSignalProvision,
+							receiptsHashes);
+
     if (NULL != bodiesHashes && array_count(bodiesHashes) > 0)
         lesProvideBlockBodies (bcs->les, node,
                                (BREthereumLESProvisionContext) bcs,
                                (BREthereumLESProvisionCallback) bcsSignalProvision,
                                bodiesHashes);
-
-    if (NULL != receiptsHashes && array_count(receiptsHashes) > 0)
-        lesProvideReceipts (bcs->les, node,
-                            (BREthereumLESProvisionContext) bcs,
-                            (BREthereumLESProvisionCallback) bcsSignalProvision,
-                            receiptsHashes);
 
     if (NULL != accountsHashes && array_count(accountsHashes) > 0)
         lesProvideAccountStates (bcs->les, node,
@@ -1534,9 +1534,26 @@ bcsHandleBlockBody (BREthereumBCS bcs,
     for (int i = 0; i < array_count(transactions); i++) {
         BREthereumTransaction tx = transactions[i];
         assert (NULL != tx);
-        
+
+        // get transaction logs
+        BREthereumLog log = NULL;
+        BREthereumBlockStatus blockStatus = blockGetStatus(block);
+        if (blockStatus.logs) {
+			for (size_t li = 0; li < array_count(blockStatus.logs); li++) {
+				BREthereumTransactionStatus status = logGetStatus(blockStatus.logs[li]);
+				uint64_t transactionIndex = -1;
+				if (transactionStatusExtractIncluded(&status, NULL, NULL, &transactionIndex, NULL, NULL) &&
+					transactionIndex == i) {
+					log = blockStatus.logs[i];
+					break;
+				}
+			}
+		}
+
         // If it is our transaction (as source or target), handle it.
-        if (ETHEREUM_BOOLEAN_IS_TRUE(transactionHasAddress(tx, bcs->address))) {
+        if (ETHEREUM_BOOLEAN_IS_TRUE(transactionHasAddress(tx, bcs->address)) ||
+			(log != NULL &&
+			ETHEREUM_BOOLEAN_TRUE == logMatchesAddress(log, bcs->address, ETHEREUM_BOOLEAN_TRUE))) {
             eth_log("BCS", "Bodies %" PRIu64 " Found Transaction at %d",
                     blockGetNumber(block), i);
 

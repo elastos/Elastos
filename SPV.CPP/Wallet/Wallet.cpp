@@ -61,7 +61,8 @@ static IMasterWallet *currentWallet = nullptr;
 static bool verboseMode = false;
 static const char *SplitLine = "------------------------------------------------------------------------------------------------------------------------";
 
-static std::string ETHSC_API_URL = "http://api.elastos.io:21634/api/1/eth/history";
+static std::string ETHSC_TESTNET_API_URL = "http://api.elastos.io:21634/api/1/eth/history";
+static std::string ETHSC_MAINNET_API_URL = "http://api.elastos.io:20634/api/1/eth/history";
 
 class WalletData {
 public:
@@ -283,10 +284,23 @@ public:
 		nlohmann::json j, txns = nlohmann::json::array(), tx;
 		RPCHelper rpcHelper;
 
-		std::string url = ETHSC_API_URL + "?address=" + address +
-			"&begBlockNumber=" + std::to_string(begBlockNumber) +
-			"&endBlockNumber=" + std::to_string(endBlockNumber) +
-			"&sort=desc";
+		std::string url;
+		if (network == "MainNet") {
+			url = ETHSC_MAINNET_API_URL + "?address=" + address +
+				  "&begBlockNumber=" + std::to_string(begBlockNumber) +
+				  "&endBlockNumber=" + std::to_string(endBlockNumber) +
+				  "&sort=desc";
+		} else if (network == "TestNet") {
+			url = ETHSC_TESTNET_API_URL + "?address=" + address +
+				  "&begBlockNumber=" + std::to_string(begBlockNumber) +
+				  "&endBlockNumber=" + std::to_string(endBlockNumber) +
+				  "&sort=desc";
+		} else if (network == "RegTest") {
+			// TODO fix here later
+		} else if (network == "PrvNet") {
+			// TODO fix here later
+		}
+
 		nlohmann::json respond = rpcHelper.Get(url);
 
 		nlohmann::json result = respond["result"];
@@ -328,17 +342,8 @@ public:
 								   int id) {
 		nlohmann::json j, log, logs = nlohmann::json::array();
 		// rpc request
-//		log["hash"] = "0xdf829c5a142f1fccd7d8216c5785ac562ff41e2dcfdf5785ac562ff41e2dcf";
-//		log["contract"] = "0xb60e8dd61c5d32be8058bb8eb970870f07233155"; // or "", if none was created
-//		log["topics"] = nlohmann::json::array({"0x59ebeb90bc63057b6515673c3ecf9438e5058bca0f92585014eced636878c9a5"});
-//		log["data"] = "0x0000000000000000000000000000000000000000000000000000000000000000";
-//		log["gasPrice"] = "0x4a817c800"; // 20000000000
-//		log["gasUsed"] = "0x4dc"; // 1244
-//		log["logIndex"] = "0x1"; // 1
-//		log["blockNumber"] = "0x1b4"; // 436
-//		log["blockTransactionIndex"] = "0x0"; // 0
-//		log["blockTimestamp"] = "0x55ba467c";
-//		logs.push_back(log);
+		// TODO fix here later
+		// ...
 		j["id"] = id;
 		j["result"] = logs;
 		return j;

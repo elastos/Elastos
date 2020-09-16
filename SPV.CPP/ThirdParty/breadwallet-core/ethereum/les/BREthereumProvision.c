@@ -434,7 +434,7 @@ provisionHandleMessageLES (BREthereumProvision *provisionMulti,
             messageLESProofsConsume(&message.u.proofs, &messagePaths);
 
             if (0 == array_count(messagePaths))
-                status = PROVISION_ERROR;
+                status = PROVISION_SUCCESS;
             else {
                 // We need a coder to RLP decode the proof's RLP data into an AccountState.  We could,
                 // and probably should, pass the coder for LES all the way down here.  It is a long
