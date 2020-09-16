@@ -280,13 +280,13 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                 tvOldproposal.setText("#" + data.getTargetProposalNum() + " " + data.getTargetProposalTitle());
                 if (!TextUtils.isEmpty(data.getNewOwnerDID())) {
                     llNewpoposerdid.setVisibility(View.VISIBLE);
-                    tvNewpoposerdid.setText("did:ela:" + data.getNewOwnerDID());
+                    tvNewpoposerdid.setText("did:elastos:" + data.getNewOwnerDID());
                 }
                 tvType.setText(R.string.pchangeproposalowner);
                 break;
             case "secretarygeneral":
                 llNewsectrtgendid.setVisibility(View.VISIBLE);
-                tvNewsectrtgendid.setText("did:ela:" + data.getNewSecretaryDID());
+                tvNewsectrtgendid.setText("did:elastos:" + data.getNewSecretaryDID());
                 tvType.setText(R.string.psecretarygeneral);
                 break;
             case "closeproposal":
@@ -394,13 +394,14 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
                     //评议扫码投票
                     requstManifestPermission(getString(R.string.needpermission));
                 } else if ("NOTIFICATION".equals(searchBean.getStatus())) {
-                    //公示期 投票反对
+                    //公示期 投票反对  后期优化时交给首页处理 类似于上面的扫码评议SCANDATATOASSETPAGE
                     proposalPresenter.proposalSearch(-1, -1, "NOTIFICATION", null, this);
                     new VoteListPresenter().getDepositVoteList("1", "all", this, true);
                     new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
                     new CtListPresenter().getCurrentCouncilList(this);
-                    new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
                     new PastCtPresenter().getCouncilTerm(this);
+                    new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
+
                 }
                 break;
             case R.id.iv_info:

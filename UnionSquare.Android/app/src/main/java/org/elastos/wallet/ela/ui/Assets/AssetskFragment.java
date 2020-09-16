@@ -181,6 +181,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList;
     private List<CtListBean.Council> councilList;
     private long currentStartTime;
+    private int voteTag = 0;//保证获得所有的其他投票后再调用后续接口
 
     @Override
     protected int getLayoutId() {
@@ -1075,6 +1076,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         manager.notify((int) System.currentTimeMillis(), notification);
     }
 
+    private void getBalance(int voteTag) {
+        if (voteTag == 4) {
+            commonGetBalancePresenter.getBalance(wallet.getWalletId(), MyWallet.ELA, this);
+        }
+    }
+
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
@@ -1089,6 +1096,42 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                         }
                     }
                 }
+                getBalance(voteTag++);
+                break;
+
+            case "createVoteCRCProposalTransaction":
+                //签名发交易
+                goTransferActivity(((CommmonStringEntity) baseEntity).getData());
+                break;
+            case "proposalSearch":
+                searchBeanList = ((ProposalSearchEntity) baseEntity).getData().getList();
+                getBalance(voteTag++);
+                break;
+            case "getCurrentCouncilList":
+                councilList = ((CtListBean) baseEntity).getData().getCouncil();
+                getBalance(voteTag++);
+                break;
+            case "getCRlist":
+                crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+                getBalance(voteTag++);
+                break;
+            case "getDepositVoteList":
+                depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
+                getBalance(voteTag++);
+                break;
+            case "getBalance":
+                BalanceEntity balanceEntity = (BalanceEntity) ((CommmonObjEntity) baseEntity).getData();
+                List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(balanceEntity.getMasterWalletId());
+                for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
+                    if (assetsItemEntity.getChainId().equals(balanceEntity.getChainId())) {
+                        assetsItemEntity.setBalance(balanceEntity.getBalance());
+                        if (wallet.getWalletId().equals(balanceEntity.getMasterWalletId())) {
+                            post(RxEnum.BALANCECHANGE.ordinal(), null, assetsItemEntity);
+                        }
+                    }
+
+                }
+                toVoteActivity(balanceEntity);
                 break;
             case "getVoteInfo":
                 //剔除非公示期的
@@ -1104,38 +1147,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                break;
-            case "createVoteCRCProposalTransaction":
-                //签名发交易
-                goTransferActivity(((CommmonStringEntity) baseEntity).getData());
-                break;
-            case "proposalSearch":
-                searchBeanList = ((ProposalSearchEntity) baseEntity).getData().getList();
-                break;
-            case "getCurrentCouncilList":
-                councilList = ((CtListBean) baseEntity).getData().getCouncil();
-                break;
-            case "getCRlist":
-                crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
-
-                break;
-            case "getDepositVoteList":
-                depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
-                break;
-            case "getBalance":
-
-                BalanceEntity balanceEntity = (BalanceEntity) ((CommmonObjEntity) baseEntity).getData();
-                List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(balanceEntity.getMasterWalletId());
-                for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
-                    if (assetsItemEntity.getChainId().equals(balanceEntity.getChainId())) {
-                        assetsItemEntity.setBalance(balanceEntity.getBalance());
-                        if (wallet.getWalletId().equals(balanceEntity.getMasterWalletId())) {
-                            post(RxEnum.BALANCECHANGE.ordinal(), null, assetsItemEntity);
-                        }
-                    }
-
-                }
-                toVoteActivity(balanceEntity);
                 break;
            /* case "getCurrentCouncilInfo":
                 CtDetailBean ctDetailBean = (CtDetailBean) baseEntity;
@@ -1290,8 +1301,8 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
     /**
-     *
      * 验证网站传来的did是否存在
+     *
      * @param didDocument
      * @param tag
      */
@@ -1338,14 +1349,14 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             }
             switch (command) {
                 case "voteforproposal"://voteforproposal
-                    //公示期谁都可以投票
+                    //公示期谁都可以投票  先获得其他投票  然后获得banlance  在填取投票金额时候getvoteinfo然后投票
                     curentJwtEntity = JSON.parseObject(payload, RecievePublishedVoteJwtEntity.class);
+                    voteTag=0;
                     proposalPresenter.proposalSearch(-1, -1, "ALL", null, this);
-                    new VoteListPresenter().getDepositVoteList("1", "all", this, false);
-                    new CRlistPresenter().getCRlist(-1, -1, "all", this, false);
+                    new VoteListPresenter().getDepositVoteList("1", "all", this, true);
+                    new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
                     new CtListPresenter().getCurrentCouncilList(this);
                     new PastCtPresenter().getCouncilTerm(this);
-                    commonGetBalancePresenter.getBalance(wallet.getWalletId(), MyWallet.ELA, this);
 
 
                     break;

@@ -247,7 +247,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
 
         switch (status) {
             case "Inactive":
-                description.setText(getString(R.string.inactiveofficehint) + "请尽快处理节点问题，以免影响委员权限。");
+                description.setText(getString(R.string.inactivedialoghint) +"\n"+ getString(R.string.inactiveofficehint));
                 showGetNodeView();
                 break;
             case "Terminated":

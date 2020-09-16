@@ -149,7 +149,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
         proposaltype = data.getString("proposaltype");
         switch (proposaltype.toLowerCase()) {
             case "normal":
-                tvType.setText(R.string.common);
+                tvType.setText(R.string.pnormal);
                 entity = JSON.parseObject(payload, RecieveProposalNormalJwtEntity.class);
                 llAccount.setVisibility(View.VISIBLE);
                 tvAccount.setText(((RecieveProposalNormalJwtEntity) entity).getData().getRecipient());
@@ -300,7 +300,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
 
             case "secretarygeneral":
                 llNewsectrtgendid.setVisibility(View.VISIBLE);
-                tvNewsectrtgendid.setText("did:ela:" + data.getNewSecretaryDID());
+                tvNewsectrtgendid.setText("did:elastos:" + data.getNewSecretaryDID());
 
                 break;
             case "changeproposalowner":
@@ -308,7 +308,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
                 tvOldproposal.setText("#" + data.getTargetProposalNum() + " " + data.getTargetProposalTitle());
                 if (!TextUtils.isEmpty(data.getNewOwnerDID())) {
                     llNewpoposerdid.setVisibility(View.VISIBLE);
-                    tvNewpoposerdid.setText("did:ela:" + data.getNewOwnerDID());
+                    tvNewpoposerdid.setText("did:elastos:" + data.getNewOwnerDID());
                 }
                 if (!TextUtils.isEmpty(data.getNewAddress())) {
                     llNewaccount.setVisibility(View.VISIBLE);

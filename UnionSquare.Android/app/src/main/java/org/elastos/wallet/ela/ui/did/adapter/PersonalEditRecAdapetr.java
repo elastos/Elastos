@@ -101,7 +101,7 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
                     @Override
                     public void onClick(View v) {
                         personalInfoItemEntity.setText1(((ViewHolder3) holder).et1.getText().toString());
-                        commonRvListener.onRvItemClick(v, position, personalInfoItemEntity);
+                        commonRvListener.onRvItemClick(v, holder.getAdapterPosition(), personalInfoItemEntity);
                     }
                 });
             }
@@ -125,7 +125,7 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
                 @Override
                 public void onClick(View v) {
                     if (commonRvListener != null)
-                        commonRvListener.onRvItemClick(((ViewHolder1) holder).tv2, position, personalInfoItemEntity);
+                        commonRvListener.onRvItemClick(((ViewHolder1) holder).tv2, holder.getAdapterPosition(), personalInfoItemEntity);
                 }
             });
 
@@ -145,7 +145,7 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
             holder.iv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    commonRvListener.onRvItemClick(v, position, personalInfoItemEntity);
+                    commonRvListener.onRvItemClick(v, holder.getAdapterPosition(), personalInfoItemEntity);
                 }
             });
         }
@@ -163,7 +163,6 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
             return 2;
         }
         if (index > 13) {
-            //手机号
             return 3;
         }
         return 0;

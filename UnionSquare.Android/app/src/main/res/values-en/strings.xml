@@ -812,12 +812,12 @@
     <string name="pnormal">新动议</string>
     <string name="pchangeproposalowner">变更提案动议</string>
     <string name="psecretarygeneral">变更秘书长动议</string>
-    <string name="pcloseproposal">终止提动动议议案</string>
+    <string name="pcloseproposal">终止提案动议</string>
     <string name="proposaltype">提案种类</string>
     <string name="oldproposal">原提案</string>
     <string name="newpoposerdid">新提案负责人DID</string>
     <string name="newsectrtgendid">新任秘书长DID</string>
     <string name="newproposalaccount">新提案经费账户</string>
     <string name="inactivedialoghint">由于您的委员节点处于未激活状态，您的委员职务将暂时停职。</string>
-    <string name="inactiveofficehint">由于您的委员节点处于未激活状态，您的委员职务将暂时停职。\n</string>
+    <string name="inactiveofficehint">请尽快处理节点问题，以免影响委员权限</string>
 </resources>

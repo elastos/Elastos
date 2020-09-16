@@ -198,6 +198,10 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     protected void setExtraData(Bundle data) {
 
         wallet = data.getParcelable("wallet");
+        ////0 普通单签 1单签只读 2普通多签 3多签只读
+        if (wallet.getType() < 2) {
+            rbVoteStatus.setVisibility(View.VISIBLE);
+        }
         subWallet = data.getParcelable("subWallet");
         chainId = subWallet.getChainId();
         tvTitle.setText(chainId);
@@ -366,7 +370,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         llVote.setVisibility(View.VISIBLE);
         if (listVoteStatus == null) {
             listVoteStatus = new ArrayList<>();
-        }else {
+        } else {
             listVoteStatus.clear();
         }
         initListVoteStatus(listVoteStatus);
