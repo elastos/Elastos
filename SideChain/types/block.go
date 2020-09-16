@@ -68,14 +68,13 @@ func (b *Block) Deserialize(r io.Reader) error {
 
 	// Deserialize each transaction while keeping track of its location
 	// within the byte stream.
-	transactions := make([]Transaction, 0)
 	b.Transactions = make([]*Transaction, 0)
 	for i := uint32(0); i < txCount; i++ {
-		tx := &transactions[i]
+		tx := Transaction{}
 		if err := tx.Deserialize(r); err != nil {
 			return err
 		}
-		b.Transactions = append(b.Transactions, tx)
+		b.Transactions = append(b.Transactions, &tx)
 	}
 
 	return nil
