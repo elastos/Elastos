@@ -492,7 +492,7 @@ func GenerateBlockTransactions(cfg *Config, msgBlock *types.Block, coinBaseTx *t
 	}
 
 	reward := totalFee
-	if msgBlock.GetHeight() > cfg.ChainParams.CRClaimDPOSNodeStartHeight {
+	if msgBlock.GetAuxPow().MainBlockHeader.Height > cfg.ChainParams.CRClaimDPOSNodeStartHeight {
 		msgBlock.Transactions[0].Outputs[1].Value = reward
 		msgBlock.Transactions[0].Outputs = msgBlock.Transactions[0].Outputs[1:]
 	} else {
