@@ -118,6 +118,7 @@ var MainNetParams = config.Params{
 	CRClaimDPOSNodeStartHeight:  1000000, // todo fix me
 	NewP2PProtocolVersionHeight: 1000000, // todo fix me
 	CheckRegisterDIDHeight:      1000000,
+	RewardMinerOnlyStartHeight:  1000000, // todo fix me
 }
 
 // TestNetParams defines the network parameters for the test network.
@@ -141,6 +142,7 @@ func testNetParams(cfg config.Params) config.Params {
 	cfg.CRClaimDPOSNodeStartHeight = 1000000  // todo fix me
 	cfg.NewP2PProtocolVersionHeight = 1000000 // todo fix me
 	cfg.CheckRegisterDIDHeight = 0
+	cfg.RewardMinerOnlyStartHeight = 1000000 // todo fix me
 	return cfg
 }
 
@@ -159,6 +161,7 @@ func regNetParams(cfg config.Params) config.Params {
 	cfg.CRClaimDPOSNodeStartHeight = 1000000  // todo fix me
 	cfg.NewP2PProtocolVersionHeight = 1000000 // todo fix me
 	cfg.CheckRegisterDIDHeight = 528000
+	cfg.RewardMinerOnlyStartHeight = 1000000 // todo fix me
 	return cfg
 }
 

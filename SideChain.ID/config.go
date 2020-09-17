@@ -70,6 +70,7 @@ type configParams struct {
 	MinerInfo                   string
 	CRClaimDPOSNodeStartHeight  uint32
 	NewP2PProtocolVersionHeight uint64
+	RewardMinerOnlyStartHeight  uint32
 }
 
 // loadConfigFile read configuration parameters through the config.json file.
@@ -160,6 +161,9 @@ func loadConfig() *configParams {
 	if cfg.NewP2PProtocolVersionHeight > 0 {
 		activeNetParams.NewP2PProtocolVersionHeight = cfg.NewP2PProtocolVersionHeight
 		spvNetParams.NewP2PProtocolVersionHeight = cfg.NewP2PProtocolVersionHeight
+	}
+	if cfg.RewardMinerOnlyStartHeight > 0 {
+		activeNetParams.RewardMinerOnlyStartHeight = cfg.RewardMinerOnlyStartHeight
 	}
 	return cfg
 }
