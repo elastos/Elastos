@@ -82,13 +82,16 @@ type Params struct {
 	// from main chain.
 	CheckPowHeaderHeight uint32
 
-	// CRClaimDPOSNodeStartHeight defines the height where starting claim DPOS node
+	// CRClaimDPOSNodeStartHeight defines the height where starting claim DPOS node.
 	CRClaimDPOSNodeStartHeight uint32
 
-	// NewP2PProtocolVersionHeight defines the new p2p protocol version message height
+	// NewP2PProtocolVersionHeight defines the new p2p protocol version message height.
 	NewP2PProtocolVersionHeight uint64
 
-	//CheckRegisterDIDHeight
-	CheckRegisterDIDHeight 	uint32
+	// CheckRegisterDIDHeight defines the height to check RegisterDID transactions.
+	CheckRegisterDIDHeight uint32
 
+	// RewardMinerOnlyStartHeight defines the height where starting reward miner only
+	// in coin base transaction.
+	RewardMinerOnlyStartHeight uint32
 }
