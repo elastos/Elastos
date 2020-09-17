@@ -385,10 +385,10 @@ func (a *arbitrators) notifyNextTurnDPOSInfoTx(blockHeight, versionHeight uint32
 		sort.Slice(producers, func(i, j int) bool {
 			return bytes.Compare(producers[i].GetNodePublicKey(), producers[j].GetNodePublicKey()) < 0
 		})
-		workingHeight := blockHeight + uint32(len(a.currentArbitrators))
-		nextTurnDPOSInfoTx := a.createNextTurnDPOSInfoTransaction(a.nextCRCArbiters, producers, workingHeight)
-		go events.Notify(events.ETAppendTxToTxPool, nextTurnDPOSInfoTx)
 	}
+	workingHeight := blockHeight + uint32(len(a.currentArbitrators))
+	nextTurnDPOSInfoTx := a.createNextTurnDPOSInfoTransaction(a.nextCRCArbiters, producers, workingHeight)
+	go events.Notify(events.ETAppendTxToTxPool, nextTurnDPOSInfoTx)
 }
 
 func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
@@ -1185,6 +1185,23 @@ func (a *arbitrators) createNextTurnDPOSInfoTransaction(crcArbiters, normalDPOSA
 	}
 }
 
+func (a *arbitrators) updateNextTurnInfo(height uint32, producers []ArbiterMember) {
+	nextCRCArbiters := a.nextArbitrators
+	a.nextArbitrators = append(a.nextArbitrators, producers...)
+	sort.Slice(a.nextArbitrators, func(i, j int) bool {
+		return bytes.Compare(a.nextArbitrators[i].GetNodePublicKey(), a.nextArbitrators[j].GetNodePublicKey()) < 0
+	})
+	if height >= a.chainParams.CRClaimDPOSNodeStartHeight {
+		a.NeedNextTurnDposInfo = true
+		//need sent a NextTurnDPOSInfo tx into mempool
+		sort.Slice(nextCRCArbiters, func(i, j int) bool {
+			return bytes.Compare(nextCRCArbiters[i].GetNodePublicKey(), nextCRCArbiters[j].GetNodePublicKey()) < 0
+		})
+		a.nextCRCArbiters = copyByteList(nextCRCArbiters)
+	}
+
+}
+
 func (a *arbitrators) updateNextArbitrators(versionHeight, height uint32) error {
 	_, recover := a.InactiveModeSwitch(versionHeight, a.IsAbleToRecoverFromInactiveMode)
 	if recover {
@@ -1218,6 +1235,7 @@ func (a *arbitrators) updateNextArbitrators(versionHeight, height uint32) error 
 			oriNextCandidates := a.nextCandidates
 			a.history.Append(height, func() {
 				a.nextCandidates = make([]ArbiterMember, 0)
+				a.updateNextTurnInfo(height, producers)
 			}, func() {
 				a.nextCandidates = oriNextCandidates
 			})
@@ -1225,19 +1243,7 @@ func (a *arbitrators) updateNextArbitrators(versionHeight, height uint32) error 
 			oriNeedNextTurnDposInfo := a.NeedNextTurnDposInfo
 			oriNextCRCArbiters := a.nextCRCArbiters
 			a.history.Append(height, func() {
-				nextCRCArbiters := a.nextArbitrators
-				a.nextArbitrators = append(a.nextArbitrators, producers...)
-				sort.Slice(a.nextArbitrators, func(i, j int) bool {
-					return bytes.Compare(a.nextArbitrators[i].GetNodePublicKey(), a.nextArbitrators[j].GetNodePublicKey()) < 0
-				})
-				if height >= a.chainParams.CRClaimDPOSNodeStartHeight {
-					a.NeedNextTurnDposInfo = true
-					//need sent a NextTurnDPOSInfo tx into mempool
-					sort.Slice(nextCRCArbiters, func(i, j int) bool {
-						return bytes.Compare(nextCRCArbiters[i].GetNodePublicKey(), nextCRCArbiters[j].GetNodePublicKey()) < 0
-					})
-					a.nextCRCArbiters = copyByteList(nextCRCArbiters)
-				}
+				a.updateNextTurnInfo(height, producers)
 			}, func() {
 				// next arbitrators will rollback in resetNextArbiterByCRC
 				a.NeedNextTurnDposInfo = oriNeedNextTurnDposInfo
@@ -1261,6 +1267,7 @@ func (a *arbitrators) updateNextArbitrators(versionHeight, height uint32) error 
 		oriNextCandidates := a.nextCandidates
 		a.history.Append(height, func() {
 			a.nextCandidates = make([]ArbiterMember, 0)
+			a.updateNextTurnInfo(height, nil)
 		}, func() {
 			a.nextCandidates = oriNextCandidates
 		})
