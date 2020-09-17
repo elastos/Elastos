@@ -335,7 +335,7 @@ func (v *Validator) checkTransactionDuplicate(txn *types.Transaction) error {
 func (v *Validator) checkTransactionCoinBase(txn *types.Transaction) error {
 	if txn.IsCoinBaseTx() {
 		currentHeight := v.db.GetHeight()
-		if currentHeight >= v.chainParams.CRClaimDPOSNodeStartHeight {
+		if currentHeight >= v.chainParams.RewardMinerOnlyStartHeight {
 			if len(txn.Outputs) != 1 {
 				str := fmt.Sprint("[checkTransactionOutput] coinbase outputs count should be 1")
 				return ruleError(ErrInvalidOutput, str)
