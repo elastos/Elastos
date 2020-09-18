@@ -1377,7 +1377,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     //判断身份  网站判断是秘书长  这里判断是本人
                     curentJwtEntity = JSON.parseObject(payload, RecieveProcessJwtEntity.class);
                     RecieveProcessJwtEntity.DataBean recieveData = ((RecieveProcessJwtEntity) curentJwtEntity).getData();
-                    if (recieveData.getUserdid().equals(getMyDID().getDidString())) {
+                    if (getMyDID().getDidString().equals(recieveData.getUserdid())) {
                         proposalPresenter.showFeePage(wallet, Constant.PROPOSALSECRET, 39, this, ((RecieveProcessJwtEntity) curentJwtEntity).getData());
                     } else {
                         restoreScanData();
@@ -1400,7 +1400,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     //发建议 任何人 本人 只签名
                     curentJwtEntity = JSON.parseObject(payload, RecieveProposalAllJwtEntity.class);
                     RecieveProposalAllJwtEntity.DataBean suggestData = ((RecieveProposalAllJwtEntity) curentJwtEntity).getData();
-                    if (suggestData.getUserdid().equals(getMyDID().getDidString()))
+                    if (getMyDID().getDidString().equals(suggestData.getUserdid()))
                         toSuggest(command, suggestData.getProposaltype());
                     else {
                         restoreScanData();
@@ -1411,7 +1411,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     //把建议->提案 判断身份  任意委员但是要当前网站登陆者对用用户 发交易
                     curentJwtEntity = JSON.parseObject(payload, RecieveProposalAllJwtEntity.class);
                     RecieveProposalAllJwtEntity.DataBean suggestData1 = ((RecieveProposalAllJwtEntity) curentJwtEntity).getData();
-                    if (suggestData1.getUserdid().equals(getMyDID().getDidString())) {
+                    if (getMyDID().getDidString().equals(suggestData1.getUserdid())) {
                         //  proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
                         toSuggest(command, suggestData1.getProposaltype());
                     } else {

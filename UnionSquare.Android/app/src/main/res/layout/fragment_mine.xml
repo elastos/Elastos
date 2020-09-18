@@ -18,6 +18,8 @@
             android:orientation="vertical">
 
             <RelativeLayout
+                android:visibility="gone"
+                android:id="@+id/rl_certificate"
                 style="@style/settingItem"
                 android:layout_marginTop="@dimen/px30"
                 android:background="@drawable/ass_border">
@@ -30,16 +32,14 @@
                     android:text="@string/securitycertificate"
                     android:textSize="14sp" />
 
-                <CheckBox
-                    android:id="@+id/cb_certificate"
+                <ImageView
+                    android:id="@+id/iv_certificate"
                     android:layout_width="30dp"
                     android:layout_height="15dp"
-                    android:background="@drawable/selector_rb"
-                    android:button="@null"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
                     android:layout_marginRight="@dimen/px40"
-                    android:checked="false" />
+                    android:src="@drawable/selector_rb" />
 
             </RelativeLayout>
 

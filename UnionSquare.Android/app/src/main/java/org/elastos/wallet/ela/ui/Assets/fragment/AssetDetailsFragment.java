@@ -99,6 +99,7 @@ import org.json.JSONException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -463,7 +464,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                         break;
                     case "CRC":
                         currentVoteStatus = listVoteStatus.get(1);
-                        currentVoteStatus.setExpire(currentEndTime - timestamp);
+                        currentVoteStatus.setExpire(currentEndTime - Calendar.getInstance().get(Calendar.SECOND));
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
@@ -492,7 +493,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                         break;
                     case "CRCImpeachment"://弹劾
                         currentVoteStatus = listVoteStatus.get(2);
-                        currentVoteStatus.setExpire(currentEndTime - timestamp);
+                        currentVoteStatus.setExpire(currentEndTime -  Calendar.getInstance().get(Calendar.SECOND));
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
