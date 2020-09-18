@@ -103,7 +103,7 @@ func (v *Validator) CheckBlockContext(block *types.Block, prevNode *BlockNode) (
 }
 
 //block *Block, powLimit *big.Int, timeSource MedianTimeSource
-func (v *Validator) checkHeader(params ...interface{}) (err error) {
+func (v *Validator) checkHeader(params ...interface{}) error {
 	block := AssertBlock(params[0])
 	powLimit := AssertBigInt(params[1])
 	timeSource := AssertMedianTimeSource(params[2])
@@ -129,10 +129,10 @@ func (v *Validator) checkHeader(params ...interface{}) (err error) {
 		}
 	}
 
-	if !header.GetAuxPow().SideAuxPowCheck(header.Hash()) {
-		return errors.New("[powCheckHeader] block check proof is failed")
+	if err := header.GetAuxPow().SideAuxPowCheck(header.Hash()); err != nil {
+		return errors.New("[powCheckHeader] block check side AuxPow is failed," + err.Error())
 	}
-	if err = v.checkProofOfWork(header, powLimit); err != nil {
+	if err := v.checkProofOfWork(header, powLimit); err != nil {
 		return errors.New("[powCheckHeader] block check proof is failed," + err.Error())
 	}
 
