@@ -1979,21 +1979,33 @@ static int _tx(int argc, char *argv[]) {
 				struct tm tm;
 				for (nlohmann::json::iterator it = tx.begin(); it != tx.end(); ++it) {
 					if (txHash.empty()) {
-						std::string txHash = (*it)["TxHash"];
-						unsigned int confirm = (*it)["ConfirmStatus"];
-						time_t t = (*it)["Timestamp"];
-						std::string dir = (*it)["Direction"];
-						std::string status = (*it)["Status"];
-						double amount = std::stod((*it)["Amount"].get<std::string>()) / SELA_PER_ELA;
+						if (chainID == CHAINID_ETHSC) {
+							std::string Hash = (*it)["Hash"];
+							time_t t = (*it)["Timestamp"];
+							uint64_t confirm = (*it)["Confirmations"];
+							std::string amount = (*it)["Amount"];
 
-						localtime_r(&t, &tm);
-						strftime(buf, sizeof(buf), "%F %T", &tm);
-						printf("%s %8u %9s %8s %s %.8lf\n", txHash.c_str(), confirm, status.c_str(), dir.c_str(), buf, amount);
+							localtime_r(&t, &tm);
+							strftime(buf, sizeof(buf), "%F %T", &tm);
+
+							printf("%s %8llu %s %s\n", Hash.c_str(), confirm, buf, amount.c_str());
+						} else {
+							std::string Hash = (*it)["TxHash"];
+							unsigned int confirm = (*it)["ConfirmStatus"];
+							time_t t = (*it)["Timestamp"];
+							std::string dir = (*it)["Direction"];
+							std::string status = (*it)["Status"];
+							double amount = std::stod((*it)["Amount"].get<std::string>()) / SELA_PER_ELA;
+
+							localtime_r(&t, &tm);
+							strftime(buf, sizeof(buf), "%F %T", &tm);
+							printf("%s %8u %9s %8s %s %.8lf\n", Hash.c_str(), confirm, status.c_str(), dir.c_str(),
+								   buf, amount);
+						}
 					} else {
 						std::cout << (*it).dump(4) << std::endl;
 					}
 				}
-				txHash.clear();
 			}
 
 			std::cout << "'txid' Detail, 'n' Next Page, 'b' Previous Page, 'q' Exit: ";
@@ -2017,7 +2029,7 @@ static int _tx(int argc, char *argv[]) {
 				}
 			} else if (cmd == "q") {
 				break;
-			} else if (cmd.size() == 64) {
+			} else if (cmd.size() == 64 || cmd.size() == 66) {
 				txHash = cmd;
 				show = true;
 			} else {

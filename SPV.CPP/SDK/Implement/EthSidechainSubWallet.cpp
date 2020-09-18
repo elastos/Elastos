@@ -899,7 +899,7 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			_client->_ewm->getWallet()->submit(transfer);
 
 			nlohmann::json j = tx;
-			j["Hash"] = transfer->getOriginationTransactionHash();
+			j["TxHash"] = transfer->getOriginationTransactionHash();
 
 			ArgInfo("r => {}", j.dump());
 			return j;
@@ -927,6 +927,8 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 				start = 0;
 				count = transfers.size();
 			}
+
+			std::reverse(transfers.begin(), transfers.end());
 
 			for (size_t i = start; i < transfers.size() && i - start < count; ++i) {
 				std::string transferID = GetTransferID(transfers[i]);
