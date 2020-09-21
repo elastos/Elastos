@@ -62,7 +62,8 @@ func (s *txValidatorTestSuite) SetupSuite() {
 		s.Error(err)
 	}
 	s.Chain, err = New(chainStore, params,
-		state.NewState(params, nil, nil, nil, nil),
+		state.NewState(params, nil, nil, nil,
+			nil, nil, nil),
 		crstate.NewCommittee(params))
 	if err != nil {
 		s.Error(err)
@@ -80,7 +81,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	s.OriginalLedger = DefaultLedger
 
 	arbiters, err := state.NewArbitrators(params,
-		nil, nil)
+		nil, nil, nil, nil)
 	if err != nil {
 		s.Fail("initialize arbitrator failed")
 	}
@@ -1093,7 +1094,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 			amount += utxo.Value
 		}
 		return amount, nil
-	})
+	}, nil, nil)
 	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
 		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
 		GetUTXO:                          s.Chain.db.GetFFLDB().GetUTXO,

@@ -189,7 +189,9 @@ func startNode(c *cli.Context, st *settings.Settings) {
 				amount += utxo.Value
 			}
 			return amount, nil
-		})
+		},
+		committee.TryUpdateCRMemberInactivity,
+		committee.TryRevertCRMemberInactivity)
 	if err != nil {
 		printErrorAndExit(err)
 	}

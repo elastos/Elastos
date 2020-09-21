@@ -260,7 +260,9 @@ type State struct {
 		common.Fixed64, error)
 	getTxReference func(tx *types.Transaction) (
 		map[*types.Input]types.Output, error)
-	chainParams *config.Params
+	tryUpdateCRMemberInactivity func(did common.Uint168, needReset bool, height uint32)
+	tryRevertCRMemberInactivity func(did common.Uint168, oriState state.MemberState, oriInactiveCountingHeight uint32)
+	chainParams                 *config.Params
 
 	mtx     sync.RWMutex
 	history *utils.History
@@ -1618,9 +1620,9 @@ func (s *State) countArbitratorsInactivityV1(height uint32,
 				oriState := cr.MemberState
 				oriCountingHeight := cr.InactiveCountingHeight
 				s.history.Append(height, func() {
-					s.tryUpdateCRMemberInactivity(cr, needReset, height)
+					s.tryUpdateCRMemberInactivity(cr.Info.DID, needReset, height)
 				}, func() {
-					s.tryRevertCRMemberInactivity(cr, oriState, oriCountingHeight)
+					s.tryRevertCRMemberInactivity(cr.Info.DID, oriState, oriCountingHeight)
 				})
 				continue
 			}
@@ -1686,32 +1688,6 @@ func (s *State) countArbitratorsInactivityV0(height uint32,
 			s.tryRevertInactivity(key, producer, needReset, height, countingHeight)
 		})
 	}
-}
-
-func (s *State) tryUpdateCRMemberInactivity(crMember *state.CRMember,
-	needReset bool, height uint32) {
-	if needReset {
-		crMember.InactiveCountingHeight = 0
-		return
-	}
-
-	if crMember.InactiveCountingHeight == 0 {
-		crMember.InactiveCountingHeight = height
-	}
-
-	if height-crMember.InactiveCountingHeight >= s.chainParams.MaxInactiveRounds {
-		crMember.MemberState = state.MemberInactive
-		log.Info("at height", height, crMember.Info.NickName,
-			"changed to inactive", "InactiveCountingHeight:", crMember.InactiveCountingHeight,
-			"MaxInactiveRounds:", s.chainParams.MaxInactiveRounds)
-		crMember.InactiveCountingHeight = 0
-	}
-}
-
-func (s *State) tryRevertCRMemberInactivity(crMember *state.CRMember,
-	oriState state.MemberState, oriInactiveCountingHeight uint32) {
-	crMember.MemberState = oriState
-	crMember.InactiveCountingHeight = oriInactiveCountingHeight
 }
 
 func (s *State) tryUpdateInactivity(key string, producer *Producer,
@@ -1790,16 +1766,20 @@ func (s *State) handleEvents(event *events.Event) {
 func NewState(chainParams *config.Params, getArbiters func() []*ArbiterInfo,
 	getCRMembers func() []*state.CRMember,
 	isInElectionPeriod func() bool,
-	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error)) *State {
+	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error),
+	tryUpdateCRMemberInactivity func(did common.Uint168, needReset bool, height uint32),
+	tryRevertCRMemberInactivityfunc func(did common.Uint168, oriState state.MemberState, oriInactiveCountingHeight uint32)) *State {
 
 	state := State{
-		chainParams:              chainParams,
-		getArbiters:              getArbiters,
-		getCRMembers:             getCRMembers,
-		isInElectionPeriod:       isInElectionPeriod,
-		getProducerDepositAmount: getProducerDepositAmount,
-		history:                  utils.NewHistory(maxHistoryCapacity),
-		StateKeyFrame:            NewStateKeyFrame(),
+		chainParams:                 chainParams,
+		getArbiters:                 getArbiters,
+		getCRMembers:                getCRMembers,
+		isInElectionPeriod:          isInElectionPeriod,
+		getProducerDepositAmount:    getProducerDepositAmount,
+		history:                     utils.NewHistory(maxHistoryCapacity),
+		StateKeyFrame:               NewStateKeyFrame(),
+		tryUpdateCRMemberInactivity: tryUpdateCRMemberInactivity,
+		tryRevertCRMemberInactivity: tryRevertCRMemberInactivityfunc,
 	}
 	events.Subscribe(state.handleEvents)
 	return &state

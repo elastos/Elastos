@@ -1346,6 +1346,46 @@ func (c *Committee) RegisterFuncitons(cfg *CommitteeFuncsConfig) {
 	c.getHeight = cfg.GetHeight
 }
 
+func (c *Committee) TryUpdateCRMemberInactivity(did common.Uint168,
+	needReset bool, height uint32) {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	crMember := c.getMember(did)
+	if crMember == nil {
+		log.Error("tryUpdateCRMemberInactivity did %+v not exist", did.String())
+		return
+	}
+	if needReset {
+		crMember.InactiveCountingHeight = 0
+		return
+	}
+
+	if crMember.InactiveCountingHeight == 0 {
+		crMember.InactiveCountingHeight = height
+	}
+
+	if height-crMember.InactiveCountingHeight >= c.params.MaxInactiveRounds {
+		crMember.MemberState = MemberInactive
+		log.Info("at height", height, crMember.Info.NickName,
+			"changed to inactive", "InactiveCountingHeight:", crMember.InactiveCountingHeight,
+			"MaxInactiveRounds:", c.params.MaxInactiveRounds)
+		crMember.InactiveCountingHeight = 0
+	}
+}
+
+func (c *Committee) TryRevertCRMemberInactivity(did common.Uint168,
+	oriState MemberState, oriInactiveCountingHeight uint32) {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	crMember := c.getMember(did)
+	if crMember == nil {
+		log.Error("tryRevertCRMemberInactivity did %+v not exist", did.String())
+		return
+	}
+	crMember.MemberState = oriState
+	crMember.InactiveCountingHeight = oriInactiveCountingHeight
+}
+
 func (c *Committee) Snapshot() *CommitteeKeyFrame {
 	keyFrame := &CommitteeKeyFrame{
 		KeyFrame:         c.KeyFrame.Snapshot(),

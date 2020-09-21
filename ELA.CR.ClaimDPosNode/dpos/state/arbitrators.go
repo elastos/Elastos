@@ -1746,7 +1746,9 @@ func (a *arbitrators) initArbitrators(chainParams *config.Params) error {
 }
 
 func NewArbitrators(chainParams *config.Params, committee *state.Committee,
-	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error)) (
+	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error),
+	tryUpdateCRMemberInactivity func(did common.Uint168, needReset bool, height uint32),
+	tryRevertCRMemberInactivityfunc func(did common.Uint168, oriState state.MemberState, oriInactiveCountingHeight uint32)) (
 	*arbitrators, error) {
 	a := &arbitrators{
 		chainParams:                chainParams,
@@ -1772,7 +1774,7 @@ func NewArbitrators(chainParams *config.Params, committee *state.Committee,
 	}
 	a.State = NewState(chainParams, a.GetArbitrators, a.crCommittee.GetAllMembers,
 		a.crCommittee.IsInElectionPeriod,
-		getProducerDepositAmount)
+		getProducerDepositAmount, tryUpdateCRMemberInactivity, tryRevertCRMemberInactivityfunc)
 
 	chainParams.CkpManager.Register(NewCheckpoint(a))
 	return a, nil

@@ -93,7 +93,8 @@ func TestTxPoolInit(t *testing.T) {
 	arbitrators := state.NewArbitratorsMock(arbiters, 0, 3)
 
 	chain, err := blockchain.New(chainStore, params, state.NewState(params, nil,
-		nil, nil, nil), nil)
+		nil, nil, nil, nil,
+		nil), nil)
 	if err != nil {
 		t.Fatal(err, "BlockChain generate failed")
 	}

@@ -63,7 +63,8 @@ func TestService_Init(t *testing.T) {
 	}
 
 	chain, err := blockchain.New(chainStore, params, state.NewState(params, nil,
-		nil, nil, nil), nil)
+		nil, nil, nil, nil,
+		nil), nil)
 	if err != nil {
 		t.Error(err)
 	}
