@@ -12,6 +12,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 )
 
 const (
@@ -109,6 +110,11 @@ func (v *Validator) checkHeader(params ...interface{}) error {
 	timeSource := AssertMedianTimeSource(params[2])
 	header := block.Header
 	height := block.GetHeight()
+
+	headerSize := block.Header.GetHeaderSize()
+	if headerSize > int(pact.MaxBlockHeaderSize) {
+		return errors.New("[checkHeader] checkHeader header is too big")
+	}
 	if height > v.chain.chainParams.CheckPowHeaderHeight {
 		validateHeight := header.GetAuxPow().MainBlockHeader.Height
 		if height >= v.chain.chainParams.CRClaimDPOSNodeStartHeight {
@@ -175,10 +181,9 @@ func (v *Validator) checkBlockSize(params ...interface{}) (err error) {
 
 	// A block must not exceed the maximum allowed block payload when serialized.
 	blockSize := block.GetSize()
-	if blockSize > types.MaxBlockSize {
+	if blockSize > int(types.MaxBlockSize+ types.MaxBlockHeaderSize) {
 		return errors.New("[powCheckBlockSize] serialized block is too big")
 	}
-
 	return nil
 }
 

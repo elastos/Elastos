@@ -21,6 +21,9 @@ const (
 	// MaxBlockSize is the maximum size of a block.
 	MaxBlockSize = 8000000
 
+	// MaxBlockHeaderSize is the maximum number of bytes allowed per block header.
+	MaxBlockHeaderSize uint32 = 2000000
+
 	// MaxTxPerBlock is the maximum transactions can be included in
 	// a block.
 	MaxTxPerBlock = 100000
@@ -128,6 +131,8 @@ func (b *Block) GetSize() int {
 
 	return buf.Len()
 }
+
+
 
 func (b *Block) Hash() common.Uint256 {
 	return b.Header.Hash()

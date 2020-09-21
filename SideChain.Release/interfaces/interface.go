@@ -27,4 +27,5 @@ type Header interface {
 	GetTimeStamp() uint32
 	SetNonce(uint32)
 	GetNonce() uint32
+	GetHeaderSize() int
 }
