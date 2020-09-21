@@ -22,6 +22,7 @@
 
 package org.elastos.wallet.ela.ui.main;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -33,6 +34,7 @@ import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.Assets.AssetskFragment;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonObjectWithMethNameViewData;
 import org.elastos.wallet.ela.ui.find.FindFragment;
@@ -40,9 +42,12 @@ import org.elastos.wallet.ela.ui.main.presenter.MainPresenter;
 import org.elastos.wallet.ela.ui.mine.MineFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.Log;
+import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
-
-import java.util.ArrayList;
+import org.elastos.wallet.ela.utils.certificate.CertificationUtil;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 
@@ -61,6 +66,7 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
     @BindView(R.id.bottombaritem2)
     BottomBarItem bottombaritem2;
     private SupportFragment[] mFragments = new SupportFragment[4];
+    private SPUtil sp;
 
 
     @Override
@@ -80,6 +86,8 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
 
     @Override
     protected void initView(View view) {
+        registReceiver();
+        sp = new SPUtil(getContext());
         SupportFragment homeFragment = findFragment(AssetskFragment.class);
         if (homeFragment == null) {
             AssetskFragment assetskFragment = new AssetskFragment();
@@ -139,8 +147,8 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
 
 
     private void initCache() {
-        if (new SPUtil(getContext()).isRefreshCache()) {
-            new SPUtil(getContext()).setRefreshCache();
+        if (sp.isRefreshCache()) {
+            sp.setRefreshCache();
             intAreaCache();
         }
 
@@ -162,6 +170,49 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
     }
 
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CertificationUtil.REQUEST_CODE_CREDENTIALS) {
+
+            if (resultCode == RESULT_OK) {
+                //系统密码识别失败 打开重新验证页面
+                CertificationUtil.pwdCertificateStatus = 2;
+
+            }else {
+                CertificationUtil.pwdCertificateStatus = 3;
+            }
+        }
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        //安全验证
+        Log.d("???", "onStart");
+        if (CertificationUtil.fingerCertificating || CertificationUtil.pwdCertificateStatus == 1) {
+            return;
+        }
+        if (CertificationUtil.pwdCertificateStatus == 2) {
+            CertificationUtil.pwdCertificateStatus = 0;
+            return;
+        }
+        if (sp.isOpenCertificate()) {
+            CertificationUtil.isOpenCertificate(this, CertificationUtil.REQUEST_CODE_CREDENTIALS);
+        }
+
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int integer = result.getCode();
+        if (integer == RxEnum.CERFICATION.ordinal() && (int) (result.getObj()) == CertificationUtil.REQUEST_CODE_CREDENTIALS) {
+            //指纹验证通过
+            CertificationUtil.fingerCertificating = false;
+        }
+    }
+
     public static MainFragment newInstance() {
 
         Bundle args = new Bundle();
@@ -178,7 +229,7 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
             case "ping":
                 String address = (String) data;
                 if (!address.equals(MyApplication.REQUEST_BASE_URL)) {
-                    new SPUtil(this.getContext()).setDefaultServer(address);
+                    sp.setDefaultServer(address);
                     //通过比较差异 sp和MyApplication.REQUEST_BASE_URL判断是否更新
                 }
                 break;

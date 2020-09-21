@@ -23,7 +23,6 @@
 package org.elastos.wallet.ela.ui.mine;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -37,13 +36,14 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.Assets.AssetskFragment;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.fragment.AboutFragment;
-import org.elastos.wallet.ela.ui.mine.fragment.CertificateFragemnt;
 import org.elastos.wallet.ela.ui.mine.fragment.ContactFragment;
 import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
+import org.elastos.wallet.ela.utils.certificate.CertificationUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -109,20 +109,31 @@ public class MineFragment extends BaseFragment {
             ivTitleRight.setImageResource(R.mipmap.mine_message_center_red);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-           // rlCertificate.setVisibility(View.VISIBLE);
-            if (sp.isOpenCertificate()) {
-                ivCertificate.setSelected(true);
-            }
+        if (sp.isOpenCertificate()) {
+            ivCertificate.setSelected(true);
         }
 
 
     }
 
-    private void isOpenCertificate() {
-        Bundle bundle = new Bundle();
-        bundle.putString("type", "isOpenCertificate");
-        ((BaseFragment) getParentFragment()).start(CertificateFragemnt.class, bundle);
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CertificationUtil.REQUEST_CODE_CREDENTIALS_MINE) {
+            // 密码安全验证返回
+
+            if (resultCode == RESULT_OK) {
+                //系统密码识别成功
+                sp.setOpenCertificate(!ivCertificate.isSelected());
+                ivCertificate.setSelected(!ivCertificate.isSelected());
+                CertificationUtil.pwdCertificateStatus = 2;
+            } else {
+                //系统密码识别失败 打开重新验证页面
+                Log.d("???", "密码识别成功失败");
+                //无论成功失败都不需要再次调用  所有设置2 不需要start再次调用
+                CertificationUtil.pwdCertificateStatus = 2;
+            }
+        }
     }
 
     @OnClick({R.id.rl_language, R.id.rl_contact, R.id.tv_chinese, R.id.tv_english,
@@ -130,18 +141,17 @@ public class MineFragment extends BaseFragment {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.iv_certificate:
-
                 if (ivCertificate.isSelected()) {
                     new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.weatherstopsavecertificate), null, null, false, new WarmPromptListener() {
                         @Override
                         public void affireBtnClick(View view) {
                             //停用安全验证
-                            isOpenCertificate();
+                            CertificationUtil.isOpenCertificate(MineFragment.this, CertificationUtil.REQUEST_CODE_CREDENTIALS_MINE);
                         }
                     });
                 } else
                     // 开启安全验证
-                    isOpenCertificate();
+                    CertificationUtil.isOpenCertificate(MineFragment.this, CertificationUtil.REQUEST_CODE_CREDENTIALS_MINE);
 
                 break;
             case R.id.tv_chinese:
@@ -220,10 +230,11 @@ public class MineFragment extends BaseFragment {
                 ivTitleRight.setImageResource(R.mipmap.mine_message_center);
             }
         }
-        if (integer == RxEnum.CERFICATION.ordinal()) {
+        if (integer == RxEnum.CERFICATION.ordinal() && (int) (result.getObj()) == CertificationUtil.REQUEST_CODE_CREDENTIALS_MINE) {
             //指纹验证通过
             sp.setOpenCertificate(!ivCertificate.isSelected());
             ivCertificate.setSelected(!ivCertificate.isSelected());
+            CertificationUtil.fingerCertificating = false;
         }
     }
 

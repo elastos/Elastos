@@ -821,4 +821,7 @@
     <string name="newproposalaccount">新提案经费账户</string>
     <string name="inactivedialoghint">由于您的委员节点处于未激活状态，您的委员职务将暂时停职。</string>
     <string name="inactiveofficehint">请尽快处理节点问题，以免影响委员权限</string>
+    <string name="lockpwd">锁屏密码</string>
+    <string name="pzlusefinger">请使用指纹验证</string>
+    <string name="certificateagain">重新验证</string>
 </resources>

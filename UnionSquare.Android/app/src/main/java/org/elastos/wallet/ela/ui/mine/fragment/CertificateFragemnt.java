@@ -1,29 +1,24 @@
 package org.elastos.wallet.ela.ui.mine.fragment;
 
-import android.hardware.fingerprint.FingerprintManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.security.keystore.KeyGenParameterSpec;
-import android.security.keystore.KeyProperties;
-import android.support.annotation.RequiresApi;
 import android.view.View;
-import android.widget.Toast;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.RxFingerPrinter;
+import org.elastos.wallet.ela.utils.certificate.CertificationUtil;
 
-import java.security.KeyStore;
+import io.reactivex.observers.DisposableObserver;
+import zwh.com.lib.FPerException;
+import zwh.com.lib.IdentificationInfo;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 
 public class CertificateFragemnt extends BaseFragment {
-    private KeyStore keyStore;
-    private static final String DEFAULT_KEY_NAME = "default_key";
-    private String type;
+
+   /* private String type;
+    private boolean certificating;*/
+    private int requstCode;
 
     @Override
     protected int getLayoutId() {
@@ -32,7 +27,8 @@ public class CertificateFragemnt extends BaseFragment {
 
     @Override
     protected void setExtraData(Bundle data) {
-        type = data.getString("type");
+       // type = data.getString("type");
+        requstCode = data.getInt("requstCode");
     }
 
     @Override
@@ -40,7 +36,63 @@ public class CertificateFragemnt extends BaseFragment {
         certificate();
     }
 
+    //public String getDisplayMessage() {
+//        switch (code) {
+//            case SYSTEM_API_ERROR:
+//                return "系统API小于23";
+//            case PERMISSION_DENIED_ERROE:
+//                return "没有指纹识别权限";
+//            case HARDWARE_MISSIING_ERROR:
+//                return "没有指纹识别模块";
+//            case KEYGUARDSECURE_MISSIING_ERROR:
+//                return "没有开启锁屏密码";
+//            case NO_FINGERPRINTERS_ENROOLED_ERROR:
+//                return "没有指纹录入";
+//            case FINGERPRINTERS_FAILED_ERROR:
+//                return "指纹认证失败，请稍后再试";
+//            case FINGERPRINTERS_RECOGNIZE_FAILED:
+//                return "指纹识别失败，请重试";
+//            default:
+//                return "";
+//        }
+//    }
     private void certificate() {
+        RxFingerPrinter rxFingerPrinter = new RxFingerPrinter(getBaseActivity());
+        // 可以在oncreat方法中执行
+        DisposableObserver<IdentificationInfo> observer =
+                new DisposableObserver<IdentificationInfo>() {
+                    @Override
+                    protected void onStart() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+
+                    @Override
+                    public void onNext(IdentificationInfo info) {
+                        if (info.isSuccessful()) {//识别成功
+                            post(RxEnum.CERFICATION.ordinal(), null, requstCode);
+                            pop();
+                        } else {//识别失败 获取错误信息
+                            FPerException exception = info.getException();
+                            if (exception != null) {
+                                //Toast.makeText(getContext(), exception.getDisplayMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                };
+        rxFingerPrinter.begin().subscribe(observer);//RxfingerPrinter会自动在onPause()时暂停指纹监听，onResume()时恢复指纹监听
+    }
+
+    /*private void certificate1() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             FingerprintManager.AuthenticationCallback callback = new FingerprintManager.AuthenticationCallback() {
                 @Override
@@ -122,14 +174,18 @@ public class CertificateFragemnt extends BaseFragment {
             throw new RuntimeException(e);
         }
     }
+*/
 
     /**
      * 处理回退事件
      *
      * @return
      */
-  /*  @Override
+    @Override
     public boolean onBackPressedSupport() {
+        if (requstCode== CertificationUtil.REQUEST_CODE_CREDENTIALS_MINE){
+            return super.onBackPressedSupport();
+        }
         return closeApp();
-    }*/
+    }
 }

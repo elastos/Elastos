@@ -222,6 +222,7 @@ dependencies {
     //implementation 'com.auth0:jwks-rsa:0.10.0'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.10.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.1'
+    implementation  'com.zwh:RxFingerPrinter:1.2.1'
 }
 repositories {
     mavenCentral()

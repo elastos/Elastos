@@ -18,7 +18,6 @@
             android:orientation="vertical">
 
             <RelativeLayout
-                android:visibility="gone"
                 android:id="@+id/rl_certificate"
                 style="@style/settingItem"
                 android:layout_marginTop="@dimen/px30"
@@ -33,9 +32,10 @@
                     android:textSize="14sp" />
 
                 <ImageView
+                    android:padding="2dp"
                     android:id="@+id/iv_certificate"
-                    android:layout_width="30dp"
-                    android:layout_height="15dp"
+                    android:layout_width="34dp"
+                    android:layout_height="19dp"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
                     android:layout_marginRight="@dimen/px40"
