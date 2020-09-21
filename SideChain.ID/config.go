@@ -68,6 +68,7 @@ type configParams struct {
 	InstantBlock                bool
 	PayToAddr                   string
 	MinerInfo                   string
+	CheckPowHeaderHeight        uint32
 	CRClaimDPOSNodeStartHeight  uint32
 	NewP2PProtocolVersionHeight uint64
 	RewardMinerOnlyStartHeight  uint32
@@ -164,6 +165,9 @@ func loadConfig() *configParams {
 	}
 	if cfg.RewardMinerOnlyStartHeight > 0 {
 		activeNetParams.RewardMinerOnlyStartHeight = cfg.RewardMinerOnlyStartHeight
+	}
+	if cfg.CheckPowHeaderHeight > 0 {
+		activeNetParams.CheckPowHeaderHeight = cfg.CheckPowHeaderHeight
 	}
 	return cfg
 }
