@@ -117,7 +117,7 @@ var MainNetParams = config.Params{
 	CheckPowHeaderHeight:        160340,
 	CRClaimDPOSNodeStartHeight:  1000000, // todo fix me
 	NewP2PProtocolVersionHeight: 1000000, // todo fix me
-	CheckRegisterDIDHeight:      1000000,
+	CheckRegisterDIDHeight:      0,
 	RewardMinerOnlyStartHeight:  1000000, // todo fix me
 }
 
@@ -138,11 +138,11 @@ func testNetParams(cfg config.Params) config.Params {
 		"node-testnet-004.elastos.org:21608",
 	}
 	cfg.Foundation = testNetFoundation
-	cfg.CheckPowHeaderHeight = 100000
-	cfg.CRClaimDPOSNodeStartHeight = 1000000  // todo fix me
-	cfg.NewP2PProtocolVersionHeight = 1000000 // todo fix me
-	cfg.CheckRegisterDIDHeight = 0
-	cfg.RewardMinerOnlyStartHeight = 1000000 // todo fix me
+	cfg.CheckPowHeaderHeight = 42800
+	cfg.CRClaimDPOSNodeStartHeight = 646900
+	cfg.NewP2PProtocolVersionHeight = 340000
+	cfg.CheckRegisterDIDHeight = 528000
+	cfg.RewardMinerOnlyStartHeight = 340000
 	return cfg
 }
 
@@ -158,10 +158,10 @@ func regNetParams(cfg config.Params) config.Params {
 	}
 	cfg.Foundation = testNetFoundation
 	cfg.CheckPowHeaderHeight = 42800
-	cfg.CRClaimDPOSNodeStartHeight = 1000000  // todo fix me
-	cfg.NewP2PProtocolVersionHeight = 1000000 // todo fix me
+	cfg.CRClaimDPOSNodeStartHeight = 532650
+	cfg.NewP2PProtocolVersionHeight = 203200
 	cfg.CheckRegisterDIDHeight = 528000
-	cfg.RewardMinerOnlyStartHeight = 1000000 // todo fix me
+	cfg.RewardMinerOnlyStartHeight = 205000
 	return cfg
 }
 
