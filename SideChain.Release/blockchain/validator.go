@@ -12,7 +12,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
-	"github.com/elastos/Elastos.ELA/elanet/pact"
 )
 
 const (
@@ -25,9 +24,10 @@ type BlockValidateAction struct {
 }
 
 type Validator struct {
-	chain                *BlockChain
-	spvService           *spv.Service
-	checkSanityFunctions []*BlockValidateAction
+	chain                 *BlockChain
+	spvService            *spv.Service
+	checkSanityFunctions  []*BlockValidateAction
+	checkContextFunctions []*BlockValidateAction
 }
 
 func NewValidator(chain *BlockChain, spv *spv.Service) *Validator {
@@ -40,6 +40,9 @@ func NewValidator(chain *BlockChain, spv *spv.Service) *Validator {
 	v.RegisterFunc(ValidateFuncNames.CheckBlockSize, v.checkBlockSize)
 	v.RegisterFunc(ValidateFuncNames.CheckCoinBaseTransaction, v.checkCoinBaseTransaction)
 	v.RegisterFunc(ValidateFuncNames.CheckTransactionsMerkle, v.checkTransactionsMerkle)
+
+	v.RegisterContextFunc(ValidateFuncNames.CheckHeader, v.checkHeaderContext)
+
 	return v
 }
 
@@ -53,10 +56,29 @@ func (v *Validator) RegisterFunc(name ValidateFuncName, function func(params ...
 	v.checkSanityFunctions = append(v.checkSanityFunctions, &BlockValidateAction{Name: name, Handler: function})
 }
 
+func (v *Validator) RegisterContextFunc(name ValidateFuncName, function func(params ...interface{}) error) {
+	for _, action := range v.checkContextFunctions {
+		if action.Name == name {
+			action.Handler = function
+			return
+		}
+	}
+	v.checkContextFunctions = append(v.checkContextFunctions, &BlockValidateAction{Name: name, Handler: function})
+}
+
 func (v *Validator) CheckBlockSanity(block *types.Block, powLimit *big.Int, timeSource MedianTimeSource) error {
 	for _, checkFunc := range v.checkSanityFunctions {
 		if err := checkFunc.Handler(block, powLimit, timeSource); err != nil {
 			return errors.New("[powCheckBlockSanity] error:" + err.Error())
+		}
+	}
+	return nil
+}
+
+func (v *Validator) CheckBlockContextFunctions(block *types.Block) error {
+	for _, checkFunc := range v.checkContextFunctions {
+		if err := checkFunc.Handler(block); err != nil {
+			return errors.New("[CheckBlockContext] error:" + err.Error())
 		}
 	}
 	return nil
@@ -89,6 +111,10 @@ func (v *Validator) CheckBlockContext(block *types.Block, prevNode *BlockNode) (
 		return errors.New("[powCheckBlockContext] block timestamp is not after expected")
 	}
 
+	if err := v.CheckBlockContextFunctions(block); err != nil {
+		return err
+	}
+
 	// The height of this block is one more than the referenced
 	// previous block.
 	blockHeight := prevNode.Height + 1
@@ -109,10 +135,40 @@ func (v *Validator) checkHeader(params ...interface{}) error {
 	powLimit := AssertBigInt(params[1])
 	timeSource := AssertMedianTimeSource(params[2])
 	header := block.Header
+
+	headerSize := block.Header.GetHeaderSize()
+	if headerSize > int(types.MaxBlockHeaderSize) {
+		return errors.New("[checkHeader] checkHeader header is too big")
+	}
+	if err := header.GetAuxPow().SideAuxPowCheck(header.Hash()); err != nil {
+		return errors.New("[powCheckHeader] block check side AuxPow is failed," + err.Error())
+	}
+	if err := v.checkProofOfWork(header, powLimit); err != nil {
+		return errors.New("[powCheckHeader] block check proof is failed," + err.Error())
+	}
+
+	// A block timestamp must not have a greater precision than one second.
+	tempTime := time.Unix(int64(header.GetTimeStamp()), 0)
+	if !tempTime.Equal(time.Unix(tempTime.Unix(), 0)) {
+		return errors.New("[powCheckHeader] block timestamp of has a higher precision than one second")
+	}
+
+	// Ensure the block time is not too far in the future.
+	maxTimestamp := timeSource.AdjustedTime().Add(time.Second * MaxTimeOffsetSeconds)
+	if tempTime.After(maxTimestamp) {
+		return errors.New("[powCheckHeader] block timestamp of is too far in the future")
+	}
+
+	return nil
+}
+
+func (v *Validator) checkHeaderContext(params ...interface{}) error {
+	block := AssertBlock(params[0])
+	header := block.Header
 	height := block.GetHeight()
 
 	headerSize := block.Header.GetHeaderSize()
-	if headerSize > int(pact.MaxBlockHeaderSize) {
+	if headerSize > int(types.MaxBlockHeaderSize) {
 		return errors.New("[checkHeader] checkHeader header is too big")
 	}
 	if height > v.chain.chainParams.CheckPowHeaderHeight {
@@ -134,26 +190,6 @@ func (v *Validator) checkHeader(params ...interface{}) error {
 			}
 		}
 	}
-
-	if err := header.GetAuxPow().SideAuxPowCheck(header.Hash()); err != nil {
-		return errors.New("[powCheckHeader] block check side AuxPow is failed," + err.Error())
-	}
-	if err := v.checkProofOfWork(header, powLimit); err != nil {
-		return errors.New("[powCheckHeader] block check proof is failed," + err.Error())
-	}
-
-	// A block timestamp must not have a greater precision than one second.
-	tempTime := time.Unix(int64(header.GetTimeStamp()), 0)
-	if !tempTime.Equal(time.Unix(tempTime.Unix(), 0)) {
-		return errors.New("[powCheckHeader] block timestamp of has a higher precision than one second")
-	}
-
-	// Ensure the block time is not too far in the future.
-	maxTimestamp := timeSource.AdjustedTime().Add(time.Second * MaxTimeOffsetSeconds)
-	if tempTime.After(maxTimestamp) {
-		return errors.New("[powCheckHeader] block timestamp of is too far in the future")
-	}
-
 	return nil
 }
 
@@ -181,7 +217,7 @@ func (v *Validator) checkBlockSize(params ...interface{}) (err error) {
 
 	// A block must not exceed the maximum allowed block payload when serialized.
 	blockSize := block.GetSize()
-	if blockSize > int(types.MaxBlockSize+ types.MaxBlockHeaderSize) {
+	if blockSize > int(types.MaxBlockSize+types.MaxBlockHeaderSize) {
 		return errors.New("[powCheckBlockSize] serialized block is too big")
 	}
 	return nil

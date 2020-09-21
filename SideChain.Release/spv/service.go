@@ -149,6 +149,9 @@ func (s *Service) CheckCRCArbiterSignatureV1(height uint32, sideChainPowTx *ela.
 		return err
 	}
 	for _, v := range crcArbiters {
+		if len(v) == 0 {
+			continue
+		}
 		pubKey, err := crypto.DecodePoint(v)
 		if err != nil {
 			return err
