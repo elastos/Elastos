@@ -117,7 +117,7 @@ func (v *Validator) checkHeader(params ...interface{}) error {
 	}
 	if height > v.chain.chainParams.CheckPowHeaderHeight {
 		validateHeight := header.GetAuxPow().MainBlockHeader.Height
-		if height >= v.chain.chainParams.CRClaimDPOSNodeStartHeight {
+		if validateHeight >= v.chain.chainParams.CRClaimDPOSNodeStartHeight {
 			if err := v.spvService.CheckCRCArbiterSignatureV1(validateHeight, &header.GetAuxPow().SideAuxBlockTx); err != nil {
 				return err
 			}
