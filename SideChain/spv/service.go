@@ -46,7 +46,7 @@ func NewService(cfg *Config) (*Service, error) {
 		PermanentPeers: cfg.PermanentPeers,
 		OnRollback:     nil, // Not implemented yet
 		FilterType:     cfg.FilterType,
-		NodeVersion:  cfg.NodeVersion,
+		NodeVersion:    cfg.NodeVersion,
 	}
 
 	service, err := spv.NewSPVService(&spvCfg)
@@ -135,7 +135,7 @@ func (s *Service) CheckCRCArbiterSignatureV0(sideChainPowTx *ela.Transaction) er
 			return nil
 		}
 	}
-	return errors.New("CRC arbiter expected")
+	return errors.New("CRC arbiter expected.")
 }
 
 func (s *Service) CheckCRCArbiterSignatureV1(height uint32, sideChainPowTx *ela.Transaction) error {
