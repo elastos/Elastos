@@ -86,7 +86,6 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
 
     @Override
     protected void initView(View view) {
-        registReceiver();
         sp = new SPUtil(getContext());
         SupportFragment homeFragment = findFragment(AssetskFragment.class);
         if (homeFragment == null) {
@@ -190,7 +189,7 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
     public void onStart() {
         super.onStart();
         //安全验证
-        Log.d("???", "onStart");
+       // Log.d("???", "onStart");
         if (CertificationUtil.fingerCertificating || CertificationUtil.pwdCertificateStatus == 1) {
             return;
         }
@@ -204,14 +203,7 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
 
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void Event(BusEvent result) {
-        int integer = result.getCode();
-        if (integer == RxEnum.CERFICATION.ordinal() && (int) (result.getObj()) == CertificationUtil.REQUEST_CODE_CREDENTIALS) {
-            //指纹验证通过
-            CertificationUtil.fingerCertificating = false;
-        }
-    }
+
 
     public static MainFragment newInstance() {
 

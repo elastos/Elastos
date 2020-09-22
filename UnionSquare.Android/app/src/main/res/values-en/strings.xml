@@ -206,8 +206,8 @@
     <string name="transfertype38">Review Proposal Transaction</string>
     <string name="transfertype39">Proposal Tracking Transaction</string>
     <string name="transfertype41">Proposal Fund Withdrawal Transaction</string>
-    <string name="transfertype42">拨款交易</string>
-    <string name="transfertype49">CR委员节点交易</string>
+    <string name="transfertype42">Funds-Transfer Transaction</string>
+    <string name="transfertype49">CR Council Member Transaction</string>
     <string name="sidetransfertype0">Coinbase Transaction</string>
     <string name="sidetransfertype1">Register Asset Transaction </string>
     <string name="sidetransfertype2">Transfer Transaction</string>
@@ -820,7 +820,7 @@
     <string name="newproposalaccount">New Proposal Funding Account</string>
     <string name="inactivedialoghint">Because your node is inactive, your CR Council position will be temporarily suspended.</string>
     <string name="inactiveofficehint">Solve the node problem right now so as not to affect your rights as a CR Council members</string>
-    <string name="lockpwd">锁屏密码</string>
-    <string name="pzlusefinger">请使用指纹验证</string>
-    <string name="certificateagain">重新验证</string>
+    <string name="lockpwd">Lock Screen Password</string>
+    <string name="pzlusefinger">Use Fingerprint Verification</string>
+    <string name="certificateagain">Re-verify</string>
 </resources>

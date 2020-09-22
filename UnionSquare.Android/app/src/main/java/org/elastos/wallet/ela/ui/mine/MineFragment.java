@@ -234,7 +234,6 @@ public class MineFragment extends BaseFragment {
             //指纹验证通过
             sp.setOpenCertificate(!ivCertificate.isSelected());
             ivCertificate.setSelected(!ivCertificate.isSelected());
-            CertificationUtil.fingerCertificating = false;
         }
     }
 

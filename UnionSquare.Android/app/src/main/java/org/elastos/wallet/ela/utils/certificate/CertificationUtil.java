@@ -16,7 +16,7 @@ import org.elastos.wallet.ela.utils.SPUtil;
 
 
 public class CertificationUtil {
-    public static boolean fingerCertificating;//验证页面的打开状态
+    public static boolean fingerCertificating;//true 验证页面的打开状态 false 验证完成无论成功或者没验证返回
     public static int pwdCertificateStatus = 0;//由于密码验证结束后会出发onstart 定义状态  0 未开始  1正在验证  2 刚验证完不需要在在下面的start再次调用(验证成功失败都有可能)  3刚验证完成需要start再次调用(验证成功失败都有可能)
 
     @RequiresApi(api = Build.VERSION_CODES.M)
