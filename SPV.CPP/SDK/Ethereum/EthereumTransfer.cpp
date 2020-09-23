@@ -100,7 +100,6 @@ namespace Elastos {
 		}
 
 		std::string EthereumTransfer::getFee(EthereumAmount::Unit unit) const {
-			assert(!EthereumAmount::isTokenUnit(unit));
 			int overflow = 0;
 			BREthereumEther fee = ewmTransferGetFee(_ewm->getRaw(), getRaw(), &overflow);
 			std::string feeString;

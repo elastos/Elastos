@@ -2657,9 +2657,10 @@ extern uint64_t
 ewmTransferGetBlockConfirmations(BREthereumEWM ewm,
                                  BREthereumTransfer transfer) {
     uint64_t blockNumber = 0;
-    return (transferExtractStatusIncluded(transfer, NULL, &blockNumber, NULL, NULL, NULL)
-            ? (ewmGetBlockHeight(ewm) - blockNumber)
-            : 0);
+    if (!transferExtractStatusIncluded(transfer, NULL, &blockNumber, NULL, NULL, NULL))
+		return 0;
+
+     return (ewmGetBlockHeight(ewm) >= blockNumber) ? (ewmGetBlockHeight(ewm) - blockNumber) : 0;
 }
 
 extern BREthereumTransferStatus

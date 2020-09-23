@@ -179,7 +179,6 @@ namespace Elastos {
 																  const std::string &gasLimit,
 																  const std::string &data) const {
 			_ewm->ensureValidAddress(targetAddress);
-			assert(!EthereumAmount::isTokenUnit(amountUnit) && !EthereumAmount::isTokenUnit(gasPriceUnit));
 
 			BREthereumTransfer transfer = createRawTransactionGeneric(targetAddress, amount,
 																	  amountUnit, gasPrice,

@@ -950,6 +950,7 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 					jtx["BlockNumber"] = transfers[i]->getBlockNumber();
 					jtx["SourceAddress"] = transfers[i]->getSourceAddress();
 					jtx["TargetAddress"] = transfers[i]->getTargetAddress();
+					jtx["Nonce"] = transfers[i]->getNonce();
 					txList.push_back(jtx);
 
 					if (!txid.empty())
