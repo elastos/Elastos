@@ -115,10 +115,10 @@ var MainNetParams = config.Params{
 	ExchangeRate:                1,
 	MinCrossChainTxFee:          10000,
 	CheckPowHeaderHeight:        160340,
-	CRClaimDPOSNodeStartHeight:  1000000, // todo fix me
-	NewP2PProtocolVersionHeight: 1000000, // todo fix me
+	CRClaimDPOSNodeStartHeight:  751400,
+	NewP2PProtocolVersionHeight: 751400,
 	CheckRegisterDIDHeight:      0,
-	RewardMinerOnlyStartHeight:  1000000, // todo fix me
+	RewardMinerOnlyStartHeight:  410500,
 }
 
 // TestNetParams defines the network parameters for the test network.
