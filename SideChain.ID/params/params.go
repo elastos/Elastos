@@ -138,7 +138,7 @@ func testNetParams(cfg config.Params) config.Params {
 		"node-testnet-004.elastos.org:21608",
 	}
 	cfg.Foundation = testNetFoundation
-	cfg.CheckPowHeaderHeight = 42800
+	cfg.CheckPowHeaderHeight = 100000
 	cfg.CRClaimDPOSNodeStartHeight = 646900
 	cfg.NewP2PProtocolVersionHeight = 340000
 	cfg.CheckRegisterDIDHeight = 528000
