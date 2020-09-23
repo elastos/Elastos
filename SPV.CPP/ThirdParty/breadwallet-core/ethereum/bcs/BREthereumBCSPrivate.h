@@ -354,6 +354,8 @@ bcsSyncRelease (BREthereumBCSSync sync);
 extern BREthereumBoolean
 bcsSyncIsActive (BREthereumBCSSync sync);
 
+extern uint64_t bcsSyncGetLastBlockNumber(BREthereumBCSSync sync);
+
 extern void
 bcsSyncStop (BREthereumBCSSync sync);
 

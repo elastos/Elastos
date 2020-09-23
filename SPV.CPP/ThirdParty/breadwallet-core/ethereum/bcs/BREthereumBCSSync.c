@@ -160,9 +160,9 @@ syncRangeReport (BREthereumBCSSyncRange range,
 
     assert (range->head > range->tail);
 
-    eth_log ("BCS", "Sync: %s: (T:C:R:D) = ( %d : %4" PRIu64 ": %8" PRIu64 " : {%7" PRIu64 ", %7" PRIu64 "} : %2d ) *** %s%p -> %p",
+    eth_log ("BCS", "Sync: %s: (T:C:R:D) = ( %d : %4" PRIu64 ": {%7" PRIu64 ", %7" PRIu64 "} : %2d ) *** %s%p -> %p",
              action,
-             range->type, range->count, range->step, range->tail, range->head, depth,
+             range->type, range->count, range->tail, range->head, depth,
              spaces, range, range->parent);
 }
 
@@ -561,6 +561,16 @@ bcsSyncRelease (BREthereumBCSSync sync) {
 extern BREthereumBoolean
 bcsSyncIsActive (BREthereumBCSSync sync) {
     return AS_ETHEREUM_BOOLEAN(NULL != sync->root);
+}
+
+extern uint64_t
+bcsSyncGetLastBlockNumber(BREthereumBCSSync sync) {
+	if (NULL == sync->root)
+		return UINT64_MAX;
+
+	BREthereumBCSSyncRange root = syncRangeGetRoot(sync->root);
+
+	return root->head;
 }
 
 /**

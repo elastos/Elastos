@@ -1266,6 +1266,9 @@ bcsBlockHasMatchingLogs (BREthereumBCS bcs,
 static BREthereumBoolean
 bcsBlockNeedsAccountState (BREthereumBCS bcs,
                            BREthereumBlock block) {
+	if (blockGetNumber(block) >= bcsSyncGetLastBlockNumber(bcs->sync))
+		return ETHEREUM_BOOLEAN_TRUE;
+
     return ETHEREUM_BOOLEAN_FALSE;
 }
 
