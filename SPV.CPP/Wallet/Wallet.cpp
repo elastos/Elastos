@@ -486,6 +486,10 @@ static std::string convertAmount(const std::string &amount) {
 	return std::to_string((uint64_t) (std::stod(amount) * SELA_PER_ELA));
 }
 
+static std::string convertETHAmount(const std::string &amount) {
+	return std::to_string((uint64_t) (std::stod(amount) * 1000000000000000000llU));
+}
+
 static void subWalletOpen(IMasterWallet *masterWallet, ISubWallet *subWallet) {
 	WalletData walletData;
 
@@ -1823,26 +1827,56 @@ static int verify(int argc, char *argv[]) {
 	return 0;
 }
 
-// transfer chainID address amount
+// transfer chainID
 static int transfer(int argc, char *argv[]) {
-	checkParam(4);
+	checkParam(2);
 	checkCurrentWallet();
 
 	std::string chainID = argv[1];
-	std::string addr = argv[2];
-	std::string amount = "0";
+	std::string addr;
+	std::string amount;
 
 	try {
+		nlohmann::json tx;
 		if (chainID == CHAINID_ETHSC) {
-			amount = argv[3];
-		} else {
-			amount = convertAmount(argv[3]);
-		}
-		ISubWallet *subWallet;
-		getSubWallet(subWallet, currentWallet, chainID);
+			IEthSidechainSubWallet *subWallet;
+			getSubWallet(subWallet, currentWallet, chainID);
 
-		nlohmann::json tx = subWallet->CreateTransaction("", addr, amount, "");
-		signAndPublishTx(subWallet, tx);
+			std::cout << "address: " << std::endl;
+			std::getline(std::cin, addr);
+
+			std::cout << "amount: " << std::endl;
+			std::getline(std::cin, amount);
+			amount = convertETHAmount(amount);
+
+			std::string gasPrice;
+			std::cout << "gasPrice: " << std::endl;
+			std::getline(std::cin, gasPrice);
+
+			std::string gasLimit;
+			std::cout << "gasLimit: " << std::endl;
+			std::getline(std::cin, gasLimit);
+
+			std::string data;
+			std::cout << "data: " << std::endl;
+			std::getline(std::cin, data);
+
+			tx = subWallet->CreateTransferGeneric(addr, amount, ETHER_WEI, gasPrice, ETHER_WEI, gasLimit, data);
+			signAndPublishTx(subWallet, tx);
+		} else {
+			std::cout << "address: " << std::endl;
+			std::getline(std::cin, addr);
+
+			std::cout << "amount: " << std::endl;
+			std::getline(std::cin, amount);
+			amount = convertAmount(argv[3]);
+
+			ISubWallet *subWallet;
+			getSubWallet(subWallet, currentWallet, chainID);
+
+			tx = subWallet->CreateTransaction("", addr, amount, "");
+			signAndPublishTx(subWallet, tx);
+		}
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -2334,7 +2368,7 @@ struct command {
 	{"utxo",       utxo,           "chainID                                          List all utxos"},
 	{"balance",    balance,        "chainID                                          List balance info"},
 	{"fixpeer",    fixpeer,        "chainID ip port                                  Set fixed peer to sync."},
-	{"transfer",   transfer,       "chainID address amount                           Transfer ELA from `chainID`."},
+	{"transfer",   transfer,       "chainID                                          Transfer asset from `chainID`."},
 	{"receive",    _receive,       "chainID                                          Get receive address of `chainID`."},
 	{"address",    address,        "chainID [internal]                               Get the revceive addresses or change addresses of chainID."},
 	{"proposal",   proposal,       "                                                 Create proposal tx."},
