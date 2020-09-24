@@ -299,7 +299,8 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
             while (it.hasNext()) {
                 String key = (String) it.next();
                 for (int i = 0; i < searchBeanList.size(); i++) {
-                    if (searchBeanList.get(i).getProposalHash().equals(key)) {
+                    ProposalSearchEntity.DataBean.ListBean bean = searchBeanList.get(i);
+                    if (bean.getProposalHash().equals(key) && "NOTIFICATION".equals(bean.getStatus())) {
                         newVotes.put(key, amount);
                         break;
                     }
@@ -310,6 +311,7 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
         }
         return newVotes;
     }
+
     public static String setRestDay(long time, Context baseFragment) {
         int minutes = (int) (time / 60);
         if (minutes / 60 >= 24 * 2) {

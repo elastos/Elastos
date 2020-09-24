@@ -811,7 +811,7 @@
     <string name="againstlist">Oppose a Proposal</string>
     <string name="pnormal">New Motion</string>
     <string name="pchangeproposalowner">Change Proposal Motion</string>
-    <string name="psecretarygeneral">Change Secretary General’s Motion</string>
+    <string name="psecretarygeneral">Motion to Replace Secratary General</string>
     <string name="pcloseproposal">Terminate Proposal Motion</string>
     <string name="proposaltype">Proposal Type</string>
     <string name="oldproposal">Original Proposal</string>
@@ -823,4 +823,5 @@
     <string name="lockpwd">Lock Screen Password</string>
     <string name="pzlusefinger">Use Fingerprint Verification</string>
     <string name="certificateagain">Re-verify</string>
+    <string name="qrcodeexp">QR code expired</string>
 </resources>

@@ -824,4 +824,5 @@
     <string name="lockpwd">锁屏密码</string>
     <string name="pzlusefinger">请使用指纹验证</string>
     <string name="certificateagain">重新验证</string>
+    <string name="qrcodeexp">二维码已过期</string>
 </resources>

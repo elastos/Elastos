@@ -134,6 +134,7 @@ import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -388,6 +389,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             result = result.replace(tag, "");
             String payload = JwtUtils.getJwtPayload(result);
             RecieveJwtEntity recieveJwtEntity = JSON.parseObject(payload, RecieveJwtEntity.class);
+            long exp = recieveJwtEntity.getExp();
+            if (exp < Calendar.getInstance().get(Calendar.SECOND)) {
+                showToast(getString(R.string.qrcodeexp));
+                return;
+            }
             String elaString = recieveJwtEntity.getIss();
             elaString = elaString.contains("did:elastos:") ? elaString : "did:elastos:" + elaString;
             // Log.e("Base64", "Base64---->" + header + "\n" + payload + "\n" + signature);.0
@@ -1351,7 +1357,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 case "voteforproposal"://voteforproposal
                     //公示期谁都可以投票  先获得其他投票  然后获得banlance  在填取投票金额时候getvoteinfo然后投票
                     curentJwtEntity = JSON.parseObject(payload, RecievePublishedVoteJwtEntity.class);
-                    voteTag=0;
+                    voteTag = 0;
                     proposalPresenter.proposalSearch(-1, -1, "ALL", null, this);
                     new VoteListPresenter().getDepositVoteList("1", "all", this, true);
                     new CRlistPresenter().getCRlist(-1, -1, "all", this, true);
