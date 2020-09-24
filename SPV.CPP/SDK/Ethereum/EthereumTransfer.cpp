@@ -96,7 +96,7 @@ namespace Elastos {
 		}
 
 		std::string EthereumTransfer::getFee() const {
-			return getFee(EthereumAmount::Unit::ETHER_GWEI);
+			return getFee(EthereumAmount::Unit::ETHER_WEI);
 		}
 
 		std::string EthereumTransfer::getFee(EthereumAmount::Unit unit) const {
@@ -111,7 +111,7 @@ namespace Elastos {
 		}
 
 		std::string EthereumTransfer::getGasPrice() const {
-			return getGasPrice(EthereumAmount::Unit::ETHER_GWEI);
+			return getGasPrice(EthereumAmount::Unit::ETHER_WEI);
 		}
 
 		std::string EthereumTransfer::getGasPrice(EthereumAmount::Unit unit) const {
