@@ -60,9 +60,10 @@ func NewValidator(cfg *mempool.Config, store *blockchain.IDChainStore) *mempool.
 	val.Store = store
 	val.RegisterSanityFunc(mempool.FuncNames.CheckTransactionOutput, val.checkTransactionOutput)
 	val.RegisterSanityFunc(mempool.FuncNames.CheckTransactionPayload, val.checkTransactionPayload)
-	val.RegisterSanityFunc(CheckRegisterDIDFuncName, val.checkRegisterDID)
 
 	val.RegisterContextFunc(mempool.FuncNames.CheckTransactionSignature, val.checkTransactionSignature)
+	val.RegisterContextFunc(CheckRegisterDIDFuncName, val.checkRegisterDID)
+
 	return val.Validator
 }
 
@@ -93,29 +94,6 @@ func checkAmountPrecise(amount common.Fixed64, precision byte, assetPrecision by
 }
 
 func (v *validator) checkTransactionOutput(txn *types.Transaction) error {
-	if txn.IsCoinBaseTx() {
-		if len(txn.Outputs) < 2 {
-			return errors.New("[checkTransactionOutput] coinbase output is not enough, at least 2")
-		}
-
-		var totalReward = common.Fixed64(0)
-		var foundationReward = common.Fixed64(0)
-		for _, output := range txn.Outputs {
-			if !output.AssetID.IsEqual(v.systemAssetID) {
-				return errors.New("[checkTransactionOutput] asset ID in coinbase is invalid")
-			}
-			totalReward += output.Value
-			if output.ProgramHash.IsEqual(v.foundation) {
-				foundationReward += output.Value
-			}
-		}
-		if common.Fixed64(foundationReward) < common.Fixed64(float64(totalReward)*0.3) {
-			return errors.New("[checkTransactionOutput] Reward to foundation in coinbase < 30%")
-		}
-
-		return nil
-	}
-
 	if len(txn.Outputs) < 1 {
 		return errors.New("[checkTransactionOutput] transaction has no outputs")
 	}
@@ -194,7 +172,7 @@ func getUriSegment(uri string) string {
 
 //DIDProofInfo VerificationMethod must be in DIDPayloadInfo Authentication or
 //is did publickKey
-func (v *validator) checkVerificationMethod(proof *id.DIDProofInfo,
+func (v *validator) checkVerificationMethodV0(proof *id.DIDProofInfo,
 	payloadInfo *id.DIDPayloadInfo) error {
 	proofUriSegment := getUriSegment(proof.VerificationMethod)
 	for _, auth := range payloadInfo.Authentication {
@@ -218,7 +196,7 @@ func (v *validator) checkVerificationMethod(proof *id.DIDProofInfo,
 				return nil
 			}
 		default:
-			return errors.New("[ID checkVerificationMethod] invalid  auth.(type)")
+			return errors.New("[ID checkVerificationMethodV0] invalid  auth.(type)")
 		}
 	}
 	//if not in Authentication
@@ -229,7 +207,7 @@ func (v *validator) checkVerificationMethod(proof *id.DIDProofInfo,
 		if proofUriSegment == getUriSegment(payloadInfo.PublicKey[i].ID) {
 			pubKeyByte := base58.Decode(payloadInfo.PublicKey[i].PublicKeyBase58)
 			//get did address
-			didAddress, err := getDIDAdress(pubKeyByte)
+			didAddress, err := getCIDAdress(pubKeyByte)
 			if err != nil {
 				return err
 			}
@@ -239,7 +217,61 @@ func (v *validator) checkVerificationMethod(proof *id.DIDProofInfo,
 			}
 		}
 	}
-	return errors.New("[ID checkVerificationMethod] wrong public key by VerificationMethod ")
+	return errors.New("[ID checkVerificationMethodV0] wrong public key by VerificationMethod ")
+}
+
+//DIDProofInfo VerificationMethod must be in DIDPayloadInfo Authentication or
+//is did publickKey
+func (v *validator) checkVerificationMethodV1(proof *id.DIDProofInfo,
+	payloadInfo *id.DIDPayloadInfo) error {
+	proofUriSegment := getUriSegment(proof.VerificationMethod)
+
+	masterPubKeyVerifyOk := false
+	for i := 0; i < len(payloadInfo.PublicKey); i++ {
+		if proofUriSegment == getUriSegment(payloadInfo.PublicKey[i].ID) {
+			pubKeyByte := base58.Decode(payloadInfo.PublicKey[i].PublicKeyBase58)
+			//get did address
+			didAddress, err := getDIDAddress(pubKeyByte)
+			if err != nil {
+				return err
+			}
+			//didAddress must equal address in DID
+			if didAddress != v.Store.GetDIDFromUri(payloadInfo.ID) {
+				return errors.New("[ID checkVerificationMethodV1] ID and PublicKeyBase58 not match ")
+			}
+			masterPubKeyVerifyOk = true
+			break
+		}
+	}
+
+	for _, auth := range payloadInfo.Authentication {
+		switch auth.(type) {
+		case string:
+			keyString := auth.(string)
+			if proofUriSegment == getUriSegment(keyString) {
+				return nil
+			}
+		case map[string]interface{}:
+			data, err := json.Marshal(auth)
+			if err != nil {
+				return err
+			}
+			didPublicKeyInfo := new(id.DIDPublicKeyInfo)
+			err = json.Unmarshal(data, didPublicKeyInfo)
+			if err != nil {
+				return err
+			}
+			if proofUriSegment == getUriSegment(didPublicKeyInfo.ID) {
+				return nil
+			}
+		default:
+			return errors.New("[ID checkVerificationMethodV1] invalid  auth.(type)")
+		}
+	}
+	if masterPubKeyVerifyOk {
+		return nil
+	}
+	return errors.New("[ID checkVerificationMethodV1] wrong public key by VerificationMethod ")
 }
 
 func getDIDByPublicKey(publicKey []byte) (*common.Uint168, error) {
@@ -259,7 +291,32 @@ func getDIDHashByCode(code []byte) (*common.Uint168, error) {
 	return ct1.ToProgramHash(), error
 }
 
-func getDIDAdress(publicKey []byte) (string, error) {
+func CreateCRIDContractByCode(code []byte) (*contract.Contract, error) {
+	if len(code) == 0 {
+		return nil, errors.New("code is nil")
+	}
+	return &contract.Contract{
+		Code:   code,
+		Prefix: PrefixCRDID,
+	}, nil
+}
+
+func getDIDAddress(publicKey []byte) (string, error) {
+	code, err := getCodeByPubKey(publicKey)
+	if err != nil {
+		return "", err
+	}
+	newCode := make([]byte, len(code))
+	copy(newCode, code)
+	didCode := append(newCode[:len(newCode)-1], 0xAD)
+	ct1, err2 := CreateCRIDContractByCode(didCode)
+	if err2 != nil {
+		return "", err
+	}
+	return ct1.ToProgramHash().ToAddress()
+}
+
+func getCIDAdress(publicKey []byte) (string, error) {
 	hash, err := getDIDByPublicKey(publicKey)
 	if err != nil {
 		return "", err
@@ -386,10 +443,16 @@ func (v *validator) checkRegisterDID(txn *types.Transaction) error {
 		payloadDidInfo.PayloadInfo.ID); err != nil {
 		return err
 	}
-
-	if err := v.checkVerificationMethod(&payloadDidInfo.Proof,
-		payloadDidInfo.PayloadInfo); err != nil {
-		return err
+	if v.Store.GetHeight() < v.GetParams().CheckRegisterDIDHeight {
+		if err := v.checkVerificationMethodV0(&payloadDidInfo.Proof,
+			payloadDidInfo.PayloadInfo); err != nil {
+			return err
+		}
+	} else {
+		if err := v.checkVerificationMethodV1(&payloadDidInfo.Proof,
+			payloadDidInfo.PayloadInfo); err != nil {
+			return err
+		}
 	}
 
 	//get  public key

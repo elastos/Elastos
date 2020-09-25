@@ -2,7 +2,7 @@ GOFMT=gofmt
 GC=go build
 VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 
-BUILD_NODE_PAR = -ldflags "-X main.Version=$(VERSION) -X 'main.GoVersion=`go version`'" #-race
+BUILD_NODE_PAR = -ldflags "-w -X main.Version=$(VERSION) -X 'main.GoVersion=`go version`'" #-race
 
 all:
 	$(GC) $(BUILD_NODE_PAR) -o did config.go log.go main.go

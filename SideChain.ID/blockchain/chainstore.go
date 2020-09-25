@@ -36,9 +36,10 @@ func NewChainStore(genesisBlock *types.Block, dataPath string) (*IDChainStore, e
 		ChainStore: chainStore,
 	}
 
-	store.RegisterFunctions(true, blockchain.StoreFuncNames.PersistTransactions, store.persistTransactions)
-	store.RegisterFunctions(false, blockchain.StoreFuncNames.RollbackTransactions, store.rollbackTransactions)
-
+	store.RegisterFunctions(blockchain.PersistFunction,
+		blockchain.StoreFuncNames.PersistTransactions, store.persistTransactions)
+	store.RegisterFunctions(blockchain.RollbackFunction,
+		blockchain.StoreFuncNames.RollbackTransactions, store.rollbackTransactions)
 	return store, nil
 }
 

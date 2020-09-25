@@ -102,19 +102,23 @@ var MainNetParams = config.Params{
 		"node-mainnet-025.elastos.org:20608",
 	},
 
-	Foundation:           mainNetFoundation,
-	ElaAssetId:           ElaAssetId,
-	GenesisBlock:         GenesisBlock,
-	PowLimit:             powLimit,
-	PowLimitBits:         0x1f0008ff,
-	TargetTimespan:       24 * time.Hour,  // 24 hours
-	TargetTimePerBlock:   2 * time.Minute, // 2 minute
-	AdjustmentFactor:     4,               // 25% less, 400% more
-	CoinbaseMaturity:     100,
-	MinTransactionFee:    100,
-	ExchangeRate:         1,
-	MinCrossChainTxFee:   10000,
-	CheckPowHeaderHeight: 160340,
+	Foundation:                  mainNetFoundation,
+	ElaAssetId:                  ElaAssetId,
+	GenesisBlock:                GenesisBlock,
+	PowLimit:                    powLimit,
+	PowLimitBits:                0x1f0008ff,
+	TargetTimespan:              24 * time.Hour,  // 24 hours
+	TargetTimePerBlock:          2 * time.Minute, // 2 minute
+	AdjustmentFactor:            4,               // 25% less, 400% more
+	CoinbaseMaturity:            100,
+	MinTransactionFee:           100,
+	ExchangeRate:                1,
+	MinCrossChainTxFee:          10000,
+	CheckPowHeaderHeight:        160340,
+	CRClaimDPOSNodeStartHeight:  751400,
+	NewP2PProtocolVersionHeight: 751400,
+	CheckRegisterDIDHeight:      0,
+	RewardMinerOnlyStartHeight:  410500,
 }
 
 // TestNetParams defines the network parameters for the test network.
@@ -135,6 +139,10 @@ func testNetParams(cfg config.Params) config.Params {
 	}
 	cfg.Foundation = testNetFoundation
 	cfg.CheckPowHeaderHeight = 100000
+	cfg.CRClaimDPOSNodeStartHeight = 646900
+	cfg.NewP2PProtocolVersionHeight = 340000
+	cfg.CheckRegisterDIDHeight = 528000
+	cfg.RewardMinerOnlyStartHeight = 340000
 	return cfg
 }
 
@@ -150,6 +158,10 @@ func regNetParams(cfg config.Params) config.Params {
 	}
 	cfg.Foundation = testNetFoundation
 	cfg.CheckPowHeaderHeight = 42800
+	cfg.CRClaimDPOSNodeStartHeight = 532650
+	cfg.NewP2PProtocolVersionHeight = 203200
+	cfg.CheckRegisterDIDHeight = 528000
+	cfg.RewardMinerOnlyStartHeight = 205000
 	return cfg
 }
 

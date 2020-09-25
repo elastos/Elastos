@@ -1,8 +1,8 @@
-Elastos.ELA.SideChain.ID version 0.1.4 is now available from:
+Elastos.ELA.SideChain.ID version 0.1.5 is now available from:
 
-  <https://download.elastos.org/elastos-did/elastos-did-v0.1.4/>
+  <https://download.elastos.org/elastos-did/elastos-did-v0.1.5/>
 
-This is a new minor version release, add check of Expires in DID operation transaction payload and optimize SPV synchronization speed. 
+This is a new minor version release, add conflict slot of register did.
 
 Please report bugs using the issue tracker at GitHub:
 
@@ -11,7 +11,7 @@ Please report bugs using the issue tracker at GitHub:
 How to Upgrade
 ==============
 
-If you are running version release_v0.1.3 and before, you should shut it down and wait until
+If you are running version release_v0.1.4 and before, you should shut it down and wait until
  it has completely closed, then just copy over `did` (on Linux).
 
 However, as usual, config, keystore and chaindata files are compatible.
@@ -31,13 +31,13 @@ distribution provides binaries for the x86_64 platform.
 
 Notable changes
 ===============
-Solved Expires in DID operation transaction payload issues.
-Reduce the merkle block size to optimize SPV synchronization speed.
 
-0.1.4 change log
+Solve the problem of repeatable register did
+
+0.1.5 change log
 =================
 
 Detailed release notes follow
-
-- #122 add check of Expires in DID operation transaction payload
-- #121 Support to send merkle block without sideAuxPow in block header
+ 
+- #127 Use real DID not old CID
+- #126 add conflict slot of register did
