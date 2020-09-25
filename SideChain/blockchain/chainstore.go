@@ -54,6 +54,15 @@ const (
 	TaskChanCap = 4
 )
 
+const (
+	PersistFunction FunctionType = iota
+	PersistCallbackFunction
+	RollbackFunction
+	RollbackCallbackFunction
+)
+
+type FunctionType byte
+
 type persistTask interface{}
 
 type rollbackBlockTask struct {
@@ -85,8 +94,10 @@ type ChainStore struct {
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
 
-	persistFunctions  []*action
-	rollbackFunctions []*action
+	persistFunctions          []*action
+	persistCallbackFunctions  []*action
+	rollbackFunctions         []*action
+	rollbackCallbackFunctions []*action
 }
 
 func NewChainStore(path string, genesisBlock *types.Block) (*ChainStore, error) {
@@ -107,27 +118,29 @@ func NewChainStore(path string, genesisBlock *types.Block) (*ChainStore, error) 
 		quit:               make(chan chan bool, 1),
 	}
 
-	s.RegisterFunctions(true, StoreFuncNames.PersistTrimmedBlock, s.persistTrimmedBlock)
-	s.RegisterFunctions(true, StoreFuncNames.PersistBlockHash, s.persistBlockHash)
-	s.RegisterFunctions(true, StoreFuncNames.PersistCurrentBlock, s.persistCurrentBlock)
-	s.RegisterFunctions(true, StoreFuncNames.PersistUnspendUTXOs, s.persistUnspendUTXOs)
-	s.RegisterFunctions(true, StoreFuncNames.PersistTransactions, s.persistTransactions)
-	s.RegisterFunctions(true, StoreFuncNames.PersistUnspend, s.persistUnspend)
+	s.RegisterFunctions(PersistFunction, StoreFuncNames.PersistTrimmedBlock, s.persistTrimmedBlock)
+	s.RegisterFunctions(PersistFunction, StoreFuncNames.PersistBlockHash, s.persistBlockHash)
+	s.RegisterFunctions(PersistFunction, StoreFuncNames.PersistCurrentBlock, s.persistCurrentBlock)
+	s.RegisterFunctions(PersistFunction, StoreFuncNames.PersistUnspendUTXOs, s.persistUnspendUTXOs)
+	s.RegisterFunctions(PersistFunction, StoreFuncNames.PersistTransactions, s.persistTransactions)
+	s.RegisterFunctions(PersistFunction, StoreFuncNames.PersistUnspend, s.persistUnspend)
 
-	s.RegisterFunctions(false, StoreFuncNames.RollbackTrimmedBlock, s.rollbackTrimmedBlock)
-	s.RegisterFunctions(false, StoreFuncNames.RollbackBlockHash, s.rollbackBlockHash)
-	s.RegisterFunctions(false, StoreFuncNames.RollbackCurrentBlock, s.rollbackCurrentBlock)
-	s.RegisterFunctions(false, StoreFuncNames.RollbackUnspendUTXOs, s.rollbackUnspendUTXOs)
-	s.RegisterFunctions(false, StoreFuncNames.RollbackTransactions, s.rollbackTransactions)
-	s.RegisterFunctions(false, StoreFuncNames.RollbackUnspend, s.rollbackUnspend)
+	s.RegisterFunctions(RollbackFunction, StoreFuncNames.RollbackTrimmedBlock, s.rollbackTrimmedBlock)
+	s.RegisterFunctions(RollbackFunction, StoreFuncNames.RollbackBlockHash, s.rollbackBlockHash)
+	s.RegisterFunctions(RollbackFunction, StoreFuncNames.RollbackCurrentBlock, s.rollbackCurrentBlock)
+	s.RegisterFunctions(RollbackFunction, StoreFuncNames.RollbackUnspendUTXOs, s.rollbackUnspendUTXOs)
+	s.RegisterFunctions(RollbackFunction, StoreFuncNames.RollbackTransactions, s.rollbackTransactions)
+	s.RegisterFunctions(RollbackFunction, StoreFuncNames.RollbackUnspend, s.rollbackUnspend)
 
 	go s.taskHandler()
 
 	return &s, s.initWithGenesisBlock(genesisBlock)
 }
 
-func (s *ChainStore) RegisterFunctions(isPersist bool, name StoreFuncName, handler func(batch database.Batch, b *types.Block) error) {
-	if isPersist {
+func (s *ChainStore) RegisterFunctions(ft FunctionType, name StoreFuncName,
+	handler func(batch database.Batch, b *types.Block) error) {
+	switch ft {
+	case PersistFunction:
 		for _, action := range s.persistFunctions {
 			if action.Name == name {
 				action.Handler = handler
@@ -135,7 +148,7 @@ func (s *ChainStore) RegisterFunctions(isPersist bool, name StoreFuncName, handl
 			}
 		}
 		s.persistFunctions = append(s.persistFunctions, &action{Name: name, Handler: handler})
-	} else {
+	case RollbackFunction:
 		for _, action := range s.rollbackFunctions {
 			if action.Name == name {
 				action.Handler = handler
@@ -143,6 +156,22 @@ func (s *ChainStore) RegisterFunctions(isPersist bool, name StoreFuncName, handl
 			}
 		}
 		s.rollbackFunctions = append(s.rollbackFunctions, &action{Name: name, Handler: handler})
+	case PersistCallbackFunction:
+		for _, action := range s.persistCallbackFunctions {
+			if action.Name == name {
+				action.Handler = handler
+				return
+			}
+		}
+		s.persistCallbackFunctions = append(s.persistCallbackFunctions, &action{Name: name, Handler: handler})
+	case RollbackCallbackFunction:
+		for _, action := range s.rollbackCallbackFunctions {
+			if action.Name == name {
+				action.Handler = handler
+				return
+			}
+		}
+		s.rollbackCallbackFunctions = append(s.rollbackCallbackFunctions, &action{Name: name, Handler: handler})
 	}
 }
 
@@ -543,7 +572,16 @@ func (s *ChainStore) persistBlock(b *types.Block) error {
 			return err
 		}
 	}
-	return batch.Commit()
+	if err := batch.Commit(); err != nil {
+		return err
+	}
+	for _, callbackFunc := range s.persistCallbackFunctions {
+		if err := callbackFunc.Handler(batch, b); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *ChainStore) handleRollbackBlockTask(blockHash common.Uint256) error {
@@ -568,7 +606,15 @@ func (s *ChainStore) rollbackBlock(b *types.Block) error {
 	for _, rollbackFunc := range s.rollbackFunctions {
 		rollbackFunc.Handler(batch, b)
 	}
-	return batch.Commit()
+	if err := batch.Commit(); err != nil {
+		return err
+	}
+	for _, callbackFunc := range s.rollbackCallbackFunctions {
+		if err := callbackFunc.Handler(batch, b); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *ChainStore) GetUnspent(txid common.Uint256, index uint16) (*types.Output, error) {

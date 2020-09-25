@@ -154,7 +154,7 @@ func (tx *Transaction) Deserialize(r io.Reader) error {
 		return errors.New("transaction write program count error: " + err.Error())
 	}
 
-	programHashes := make([]*Program, 0, count)
+	programHashes := make([]*Program, 0)
 	for i := uint64(0); i < count; i++ {
 		outputHashes := new(Program)
 		err = outputHashes.Deserialize(r)

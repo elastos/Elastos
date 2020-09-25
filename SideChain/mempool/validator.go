@@ -180,32 +180,6 @@ func (v *Validator) checkTransactionInput(txn *types.Transaction) error {
 }
 
 func (v *Validator) checkTransactionOutput(txn *types.Transaction) error {
-	if txn.IsCoinBaseTx() {
-		if len(txn.Outputs) < 2 {
-			str := fmt.Sprint("[checkTransactionOutput] coinbase output is not enough, at least 2")
-			return ruleError(ErrInvalidOutput, str)
-		}
-
-		var totalReward = common.Fixed64(0)
-		var foundationReward = common.Fixed64(0)
-		for _, output := range txn.Outputs {
-			if output.AssetID != v.chainParams.ElaAssetId {
-				str := fmt.Sprint("[checkTransactionOutput] asset ID in coinbase is invalid")
-				return ruleError(ErrInvalidOutput, str)
-			}
-			totalReward += output.Value
-			if output.ProgramHash.IsEqual(v.chainParams.Foundation) {
-				foundationReward += output.Value
-			}
-		}
-		if common.Fixed64(foundationReward) < common.Fixed64(float64(totalReward)*0.3) {
-			str := fmt.Sprint("[checkTransactionOutput] Reward to foundation in coinbase < 30%")
-			return ruleError(ErrInvalidOutput, str)
-		}
-
-		return nil
-	}
-
 	if len(txn.Outputs) < 1 {
 		str := fmt.Sprint("[checkTransactionOutput] transaction has no outputs")
 		return ruleError(ErrInvalidOutput, str)
@@ -360,8 +334,46 @@ func (v *Validator) checkTransactionDuplicate(txn *types.Transaction) error {
 
 func (v *Validator) checkTransactionCoinBase(txn *types.Transaction) error {
 	if txn.IsCoinBaseTx() {
+		currentHeight := v.db.GetHeight()
+		if currentHeight >= v.chainParams.RewardMinerOnlyStartHeight {
+			if len(txn.Outputs) != 1 {
+				str := fmt.Sprint("[checkTransactionOutput] coinbase outputs count should be 1")
+				return ruleError(ErrInvalidOutput, str)
+			}
+
+			for _, output := range txn.Outputs {
+				if output.AssetID != v.chainParams.ElaAssetId {
+					str := fmt.Sprint("[checkTransactionOutput] asset ID in coinbase is invalid")
+					return ruleError(ErrInvalidOutput, str)
+				}
+			}
+		} else {
+			if len(txn.Outputs) != 2 {
+				str := fmt.Sprint("[checkTransactionOutput] coinbase outputs count should be 2")
+				return ruleError(ErrInvalidOutput, str)
+			}
+
+			var totalReward = common.Fixed64(0)
+			var foundationReward = common.Fixed64(0)
+			for _, output := range txn.Outputs {
+				if output.AssetID != v.chainParams.ElaAssetId {
+					str := fmt.Sprint("[checkTransactionOutput] asset ID in coinbase is invalid")
+					return ruleError(ErrInvalidOutput, str)
+				}
+				totalReward += output.Value
+				if output.ProgramHash.IsEqual(v.chainParams.Foundation) {
+					foundationReward += output.Value
+				}
+			}
+			if common.Fixed64(foundationReward) < common.Fixed64(float64(totalReward)*0.3) {
+				str := fmt.Sprint("[checkTransactionOutput] Reward to foundation in coinbase < 30%")
+				return ruleError(ErrInvalidOutput, str)
+			}
+		}
+
 		return ErrBreak
 	}
+
 	return nil
 }
 
@@ -536,6 +548,10 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) 
 	}
 
 	return ErrBreak
+}
+
+func (v *Validator) GetParams() *config.Params {
+	return v.chainParams
 }
 
 func (v *Validator) checkTransferCrossChainAssetTransaction(txn *types.Transaction) error {

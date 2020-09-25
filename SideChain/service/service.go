@@ -755,7 +755,7 @@ func (s *HttpService) GetExistDepositTransactions(param http.Params) (interface{
 			return nil, newError(InvalidParams)
 		}
 		inStore := s.cfg.Chain.IsDuplicateMainchainTx(*hash)
-		inTxPool := s.cfg.TxMemPool.IsDuplicateMainchainTx(*hash)
+		inTxPool := s.cfg.TxMemPool.IsDuplicateMainChainTx(*hash)
 		if inTxPool || inStore {
 			resultTxHashes = append(resultTxHashes, txHash)
 		}
