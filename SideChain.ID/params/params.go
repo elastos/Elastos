@@ -38,13 +38,15 @@ var (
 
 	// genesisHeader represent the block header of the genesis block.
 	genesisHeader = types.Header{
-		Version:    types.BlockVersion,
-		Previous:   common.Uint256{},
-		MerkleRoot: ElaAssetId,
-		Timestamp:  uint32(genesisTime.Unix()),
-		Bits:       0x1d03ffff,
-		Nonce:      types.GenesisNonce,
-		Height:     uint32(0),
+		Base: types.BaseHeader{
+			Version:    types.BlockVersion,
+			Previous:   common.Uint256{},
+			MerkleRoot: ElaAssetId,
+			Timestamp:  uint32(genesisTime.Unix()),
+			Bits:       0x1d03ffff,
+			Nonce:      types.GenesisNonce,
+			Height:     uint32(0),
+		},
 		SideAuxPow: auxpow.SideAuxPow{
 			SideAuxBlockTx: ela.Transaction{
 				TxType:         ela.SideChainPow,
@@ -100,19 +102,23 @@ var MainNetParams = config.Params{
 		"node-mainnet-025.elastos.org:20608",
 	},
 
-	Foundation:           mainNetFoundation,
-	ElaAssetId:           ElaAssetId,
-	GenesisBlock:         GenesisBlock,
-	PowLimit:             powLimit,
-	PowLimitBits:         0x1f0008ff,
-	TargetTimespan:       24 * time.Hour,  // 24 hours
-	TargetTimePerBlock:   2 * time.Minute, // 2 minute
-	AdjustmentFactor:     4,               // 25% less, 400% more
-	CoinbaseMaturity:     100,
-	MinTransactionFee:    100,
-	ExchangeRate:         1,
-	MinCrossChainTxFee:   10000,
-	CheckPowHeaderHeight: 160340,
+	Foundation:                  mainNetFoundation,
+	ElaAssetId:                  ElaAssetId,
+	GenesisBlock:                GenesisBlock,
+	PowLimit:                    powLimit,
+	PowLimitBits:                0x1f0008ff,
+	TargetTimespan:              24 * time.Hour,  // 24 hours
+	TargetTimePerBlock:          2 * time.Minute, // 2 minute
+	AdjustmentFactor:            4,               // 25% less, 400% more
+	CoinbaseMaturity:            100,
+	MinTransactionFee:           100,
+	ExchangeRate:                1,
+	MinCrossChainTxFee:          10000,
+	CheckPowHeaderHeight:        160340,
+	CRClaimDPOSNodeStartHeight:  751400,
+	NewP2PProtocolVersionHeight: 751400,
+	CheckRegisterDIDHeight:      0,
+	RewardMinerOnlyStartHeight:  410500,
 }
 
 // TestNetParams defines the network parameters for the test network.
@@ -133,6 +139,10 @@ func testNetParams(cfg config.Params) config.Params {
 	}
 	cfg.Foundation = testNetFoundation
 	cfg.CheckPowHeaderHeight = 100000
+	cfg.CRClaimDPOSNodeStartHeight = 646900
+	cfg.NewP2PProtocolVersionHeight = 340000
+	cfg.CheckRegisterDIDHeight = 528000
+	cfg.RewardMinerOnlyStartHeight = 340000
 	return cfg
 }
 
@@ -148,6 +158,10 @@ func regNetParams(cfg config.Params) config.Params {
 	}
 	cfg.Foundation = testNetFoundation
 	cfg.CheckPowHeaderHeight = 42800
+	cfg.CRClaimDPOSNodeStartHeight = 532650
+	cfg.NewP2PProtocolVersionHeight = 203200
+	cfg.CheckRegisterDIDHeight = 528000
+	cfg.RewardMinerOnlyStartHeight = 205000
 	return cfg
 }
 

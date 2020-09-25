@@ -21,6 +21,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
+	"github.com/elastos/Elastos.ELA/elanet/filter"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
@@ -35,6 +36,7 @@ const (
 	DataDir  = "data"
 	ChainDir = "chain"
 	SpvDir   = "spv"
+	nodePrefix = "did-"
 )
 
 var (
@@ -54,7 +56,6 @@ func main() {
 	// bursts.  This value was arrived at with the help of profiling live
 	// usage.
 	debug.SetGCPercent(10)
-
 	eladlog.Infof("Node version: %s", Version)
 	eladlog.Info(GoVersion)
 
@@ -89,6 +90,8 @@ func main() {
 		ChainParams:    spvNetParams,
 		PermanentPeers: cfg.SPVPermanentPeers,
 		GenesisAddress: genesisAddress,
+		FilterType:     filter.FTNexTTurnDPOSInfo,
+		NodeVersion:    nodePrefix+Version,
 	}
 	spvService, err := spv.NewService(&spvCfg)
 	if err != nil {
@@ -98,6 +101,7 @@ func main() {
 
 	defer spvService.Stop()
 	spvService.Start()
+	spvBlockListener := spvService.GetBlockListener()
 
 	mempoolCfg := mempool.Config{
 		ChainParams: activeNetParams,
@@ -123,7 +127,8 @@ func main() {
 	}
 	chainCfg.Validator = blockchain.NewValidator(chain, spvService)
 
-	txPool := mempool.New(&mempoolCfg)
+	mempoolCfg.Chain = chain
+	txPool := mp.New(&mempoolCfg)
 
 	eladlog.Info("3. Start the P2P networks")
 	server, err := server.New(&server.Config{
@@ -132,6 +137,7 @@ func main() {
 		TxMemPool:      txPool,
 		ChainParams:    activeNetParams,
 		PermanentPeers: cfg.PermanentPeers,
+		NodeVersion:    nodePrefix+Version,
 	})
 	if err != nil {
 		eladlog.Fatalf("initialize P2P networks failed, %s", err)
@@ -153,6 +159,8 @@ func main() {
 		CreateCoinBaseTx:          pow.CreateCoinBaseTx,
 		GenerateBlock:             pow.GenerateBlock,
 		GenerateBlockTransactions: pow.GenerateBlockTransactions,
+		GetSpvHeight:              spvBlockListener.BlockHeight,
+		StoreAuxBlock:             spvBlockListener.StoreAuxBlock,
 	}
 
 	powService := pow.NewService(&powCfg)
@@ -160,6 +168,8 @@ func main() {
 		eladlog.Info("Start POW Services")
 		go powService.Start()
 	}
+
+	spvBlockListener.RegisterFunc(powService.SubmitAuxBlockWithBlock)
 
 	eladlog.Info("5. --Start the RPC service")
 	serviceCfg := sv.Config{
@@ -179,6 +189,7 @@ func main() {
 			GetPayloadInfo:              sv.GetPayloadInfo,
 			GetPayload:                  service.GetPayload,
 		},
+		Params:   activeNetParams,
 		Compile:  Version,
 		NodePort: cfg.NodePort,
 		RPCPort:  cfg.RPCPort,
