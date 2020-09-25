@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
@@ -33,7 +34,7 @@ type Config struct {
 	SetLogLevel    func(level elalog.Level)
 
 	GetBlockInfo                func(cfg *Config, block *types.Block, verbose bool) BlockInfo
-	GetTransactionInfo          func(cfg *Config, header *types.Header, tx *types.Transaction) *TransactionInfo
+	GetTransactionInfo          func(cfg *Config, header interfaces.Header, tx *types.Transaction) *TransactionInfo
 	GetTransactionInfoFromBytes func(txInfoBytes []byte) (*TransactionInfo, error)
 	GetTransaction              func(cfg *Config, txInfo *TransactionInfo) (*types.Transaction, error)
 	GetPayloadInfo              func(p types.Payload, pVersion byte) PayloadInfo
@@ -80,17 +81,23 @@ func (s *HttpService) GetRawTransaction(param http.Params) (interface{}, error) 
 	if err != nil {
 		return nil, newError(InvalidParams)
 	}
+	var header interfaces.Header
 	tx, height, err := s.cfg.Chain.GetTransaction(hash)
 	if err != nil {
-		return nil, newError(UnknownTransaction)
-	}
-	bHash, err := s.cfg.Chain.GetBlockHash(height)
-	if err != nil {
-		return nil, newError(UnknownTransaction)
-	}
-	header, err := s.cfg.Chain.GetHeader(bHash)
-	if err != nil {
-		return nil, newError(UnknownTransaction)
+		//try to find transaction in transaction pool.
+		tx = s.cfg.TxMemPool.GetTransaction(hash)
+		if tx == nil {
+			return nil, newError(UnknownTransaction)
+		}
+	} else {
+		bHash, err := s.cfg.Chain.GetBlockHash(height)
+		if err != nil {
+			return nil, newError(UnknownTransaction)
+		}
+		header, err = s.cfg.Chain.GetHeader(bHash)
+		if err != nil {
+			return nil, newError(UnknownTransaction)
+		}
 	}
 
 	verbose, ok := param.Bool("verbose")
@@ -171,7 +178,7 @@ func (s *HttpService) CreateAuxBlock(param http.Params) (interface{}, error) {
 	SendToAux := SideAuxBlock{
 		GenesisHash:       genesisHashStr,
 		Height:            s.cfg.Chain.GetBestHeight(),
-		Bits:              fmt.Sprintf("%x", msgBlock.Bits), //difficulty
+		Bits:              fmt.Sprintf("%x", msgBlock.GetBits()), //difficulty
 		Hash:              curHashStr,
 		PreviousBlockHash: preHashStr,
 	}
@@ -443,7 +450,7 @@ func (s *HttpService) getBlockTransactions(block *types.Block) interface{} {
 	}
 	b := BlockTransactions{
 		Hash:         ToReversedString(block.Hash()),
-		Height:       block.Header.Height,
+		Height:       block.Header.GetHeight(),
 		Transactions: trans,
 	}
 	return b
@@ -748,7 +755,7 @@ func (s *HttpService) GetExistDepositTransactions(param http.Params) (interface{
 			return nil, newError(InvalidParams)
 		}
 		inStore := s.cfg.Chain.IsDuplicateMainchainTx(*hash)
-		inTxPool := s.cfg.TxMemPool.IsDuplicateMainchainTx(*hash)
+		inTxPool := s.cfg.TxMemPool.IsDuplicateMainChainTx(*hash)
 		if inTxPool || inStore {
 			resultTxHashes = append(resultTxHashes, txHash)
 		}
@@ -757,7 +764,7 @@ func (s *HttpService) GetExistDepositTransactions(param http.Params) (interface{
 	return resultTxHashes, nil
 }
 
-func (s *HttpService) getBlockTransactionsDetail(block *types.Block, filter func(*types.Transaction) bool) []*types.Transaction {
+func (s *HttpService) GetBlockTransactionsDetail(block *types.Block, filter func(*types.Transaction) bool) []*types.Transaction {
 	var trans []*types.Transaction
 	for _, tx := range block.Transactions {
 		if !filter(tx) {
@@ -769,7 +776,7 @@ func (s *HttpService) getBlockTransactionsDetail(block *types.Block, filter func
 	return trans
 }
 
-func (s *HttpService) getWithdrawTxsInfo(txs []*types.Transaction) interface{} {
+func (s *HttpService) GetWithdrawTxsInfo(txs []*types.Transaction) interface{} {
 	var trans []*WithdrawTxInfo
 	for _, tx := range txs {
 		payload, ok := tx.Payload.(*types.PayloadTransferCrossChainAsset)
@@ -825,7 +832,7 @@ func (s *HttpService) GetWithdrawTransactionsByHeight(param http.Params) (interf
 	}
 
 	destroyHash := common.Uint168{}
-	txs := s.getBlockTransactionsDetail(block, func(tran *types.Transaction) bool {
+	txs := s.GetBlockTransactionsDetail(block, func(tran *types.Transaction) bool {
 		_, ok := tran.Payload.(*types.PayloadTransferCrossChainAsset)
 		if !ok {
 			return false
@@ -837,7 +844,7 @@ func (s *HttpService) GetWithdrawTransactionsByHeight(param http.Params) (interf
 		}
 		return false
 	})
-	return s.getWithdrawTxsInfo(txs), nil
+	return s.GetWithdrawTxsInfo(txs), nil
 }
 
 func (s *HttpService) GetWithdrawTransactionByHash(param http.Params) (interface{}, error) {
@@ -954,10 +961,11 @@ func (s *HttpService) verifyAndSendTx(tx *types.Transaction) error {
 }
 
 func GetBlockInfo(cfg *Config, block *types.Block, verbose bool) BlockInfo {
+	header := block.Header
 	var txs []interface{}
 	if verbose {
 		for _, tx := range block.Transactions {
-			txs = append(txs, cfg.GetTransactionInfo(cfg, &block.Header, tx))
+			txs = append(txs, cfg.GetTransactionInfo(cfg, header, tx))
 		}
 	} else {
 		for _, tx := range block.Transactions {
@@ -965,18 +973,18 @@ func GetBlockInfo(cfg *Config, block *types.Block, verbose bool) BlockInfo {
 		}
 	}
 	var versionBytes [4]byte
-	binary.BigEndian.PutUint32(versionBytes[:], block.Header.Version)
+	binary.BigEndian.PutUint32(versionBytes[:], header.GetVersion())
 
 	var chainWork [4]byte
-	binary.BigEndian.PutUint32(chainWork[:], cfg.Chain.GetBestHeight()-block.Header.Height)
+	binary.BigEndian.PutUint32(chainWork[:], cfg.Chain.GetBestHeight()-header.GetHeight())
 
-	nextBlockHash, _ := cfg.Chain.GetBlockHash(block.Header.Height + 1)
+	nextBlockHash, _ := cfg.Chain.GetBlockHash(header.GetHeight() + 1)
 
 	auxPow := new(bytes.Buffer)
-	block.Header.SideAuxPow.Serialize(auxPow)
+	header.GetAuxPow().Serialize(auxPow)
 
 	var minerInfo string
-	if block.Height == 0 {
+	if block.GetHeight() == 0 {
 		minerInfo = "ELA"
 	} else {
 		minerInfo = string(block.Transactions[0].Payload.(*types.PayloadCoinBase).CoinbaseData[:])
@@ -984,29 +992,29 @@ func GetBlockInfo(cfg *Config, block *types.Block, verbose bool) BlockInfo {
 
 	return BlockInfo{
 		Hash:              ToReversedString(block.Hash()),
-		Confirmations:     cfg.Chain.GetBestHeight() - block.Header.Height + 1,
+		Confirmations:     cfg.Chain.GetBestHeight() - header.GetHeight() + 1,
 		StrippedSize:      uint32(block.GetSize()),
 		Size:              uint32(block.GetSize()),
 		Weight:            uint32(block.GetSize() * 4),
-		Height:            block.Header.Height,
-		Version:           block.Header.Version,
+		Height:            header.GetHeight(),
+		Version:           header.GetVersion(),
 		VersionHex:        common.BytesToHexString(versionBytes[:]),
-		MerkleRoot:        ToReversedString(block.Header.MerkleRoot),
+		MerkleRoot:        ToReversedString(header.GetMerkleRoot()),
 		Tx:                txs,
-		Time:              block.Header.Timestamp,
-		MedianTime:        block.Header.Timestamp,
-		Nonce:             block.Header.Nonce,
-		Bits:              block.Header.Bits,
-		Difficulty:        cfg.Chain.CalcCurrentDifficulty(block.Header.Bits),
+		Time:              header.GetTimeStamp(),
+		MedianTime:        header.GetTimeStamp(),
+		Nonce:             header.GetNonce(),
+		Bits:              header.GetBits(),
+		Difficulty:        cfg.Chain.CalcCurrentDifficulty(header.GetBits()),
 		ChainWork:         common.BytesToHexString(chainWork[:]),
-		PreviousBlockHash: ToReversedString(block.Header.Previous),
+		PreviousBlockHash: ToReversedString(header.GetPrevious()),
 		NextBlockHash:     ToReversedString(nextBlockHash),
 		AuxPow:            common.BytesToHexString(auxPow.Bytes()),
 		MinerInfo:         minerInfo,
 	}
 }
 
-func GetTransactionInfo(cfg *Config, header *types.Header, tx *types.Transaction) *TransactionInfo {
+func GetTransactionInfo(cfg *Config, header interfaces.Header, tx *types.Transaction) *TransactionInfo {
 	inputs := make([]InputInfo, len(tx.Inputs))
 	for i, v := range tx.Inputs {
 		inputs[i].TxID = ToReversedString(v.Previous.TxID)
@@ -1044,10 +1052,10 @@ func GetTransactionInfo(cfg *Config, header *types.Header, tx *types.Transaction
 	var time uint32
 	var blockTime uint32
 	if header != nil {
-		confirmations = cfg.Chain.GetBestHeight() - header.Height + 1
+		confirmations = cfg.Chain.GetBestHeight() - header.GetHeight() + 1
 		blockHash = ToReversedString(header.Hash())
-		time = header.Timestamp
-		blockTime = header.Timestamp
+		time = header.GetTimeStamp()
+		blockTime = header.GetTimeStamp()
 	}
 
 	return &TransactionInfo{

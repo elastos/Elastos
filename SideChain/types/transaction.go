@@ -24,7 +24,7 @@ const (
 	RechargeToSideChain     TxType = 0x06
 	WithdrawFromSideChain   TxType = 0x07
 	TransferCrossChainAsset TxType = 0x08
-	Invoke                  TxType = 0x09
+	Invoke                  TxType = 0xF0
 
 	InvalidTransactionSize = -1
 )
@@ -154,7 +154,7 @@ func (tx *Transaction) Deserialize(r io.Reader) error {
 		return errors.New("transaction write program count error: " + err.Error())
 	}
 
-	programHashes := make([]*Program, 0, count)
+	programHashes := make([]*Program, 0)
 	for i := uint64(0); i < count; i++ {
 		outputHashes := new(Program)
 		err = outputHashes.Deserialize(r)

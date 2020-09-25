@@ -43,6 +43,8 @@ type Config struct {
 	CreateCoinBaseTx          func(cfg *Config, nextBlockHeight uint32, addr string) (*types.Transaction, error)
 	GenerateBlock             func(cfg *Config) (*types.Block, error)
 	GenerateBlockTransactions func(cfg *Config, msgBlock *types.Block, coinBaseTx *types.Transaction)
+	GetSpvHeight              func() uint32
+	StoreAuxBlock             func(block interface{})
 }
 
 type Service struct {
@@ -52,8 +54,9 @@ type Service struct {
 	manualMining bool
 
 	// This params are protected by blockMtx
-	blockMtx       sync.Mutex
-	msgBlocks      map[string]*types.Block
+	blockMtx  sync.Mutex
+	msgBlocks map[string]*types.Block
+
 	preChainHeight uint32
 	preTime        int64
 	preTxCount     int
@@ -125,9 +128,8 @@ func (s *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 			log.Error("generate block err", err)
 			continue
 		}
-
 		if s.SolveBlock(msgBlock, ticker) {
-			if msgBlock.Header.Height == s.cfg.Chain.GetBestHeight()+1 {
+			if msgBlock.Header.GetHeight() == s.cfg.Chain.GetBestHeight()+1 {
 				inMainChain, isOrphan, err := s.cfg.Chain.ProcessBlock(msgBlock)
 				if err != nil {
 					return nil, err
@@ -161,7 +163,7 @@ func (s *Service) GenerateAuxBlock(addr string) (*types.Block, string, bool) {
 	s.blockMtx.Lock()
 	defer s.blockMtx.Unlock()
 
-	msgBlock := &types.Block{}
+	msgBlock := types.NewBlock()
 	bestHeight := s.cfg.Chain.GetBestHeight()
 	if s.cfg.Chain.GetBestHeight() == 0 || s.preChainHeight != bestHeight ||
 		time.Now().Unix()-s.preTime > auxBlockGenerateInterval {
@@ -203,13 +205,36 @@ func (s *Service) SubmitAuxBlock(blockHash string, sideAuxData []byte) error {
 		return fmt.Errorf("receive invalid block hash %s", blockHash)
 	}
 
-	err := msgBlock.Header.SideAuxPow.Deserialize(bytes.NewReader(sideAuxData))
+	err := msgBlock.Header.GetAuxPow().Deserialize(bytes.NewReader(sideAuxData))
 	if err != nil {
 		log.Warn(err)
 		return fmt.Errorf("deserialize side aux pow failed")
 	}
 
+	spvHeight := s.cfg.GetSpvHeight()
+	if spvHeight < msgBlock.GetAuxPow().MainBlockHeader.Height {
+		s.cfg.StoreAuxBlock(msgBlock)
+		return errors.New("SideChain spv syncing not ready")
+	}
 	inMainChain, isOrphan, err := s.cfg.Chain.ProcessBlock(msgBlock)
+	if err != nil {
+		return err
+	}
+
+	if isOrphan || !inMainChain {
+		return fmt.Errorf("aux block can not be accepted")
+	}
+
+	s.msgBlocks = make(map[string]*types.Block)
+
+	return nil
+}
+
+func (s *Service) SubmitAuxBlockWithBlock(block interface{}) error {
+	s.blockMtx.Lock()
+	defer s.blockMtx.Unlock()
+
+	inMainChain, isOrphan, err := s.cfg.Chain.ProcessBlock(block.(*types.Block))
 	if err != nil {
 		return err
 	}
@@ -231,12 +256,12 @@ func (s *Service) SolveBlock(msgBlock *types.Block, ticker *time.Ticker) bool {
 	// fake a mainchain blockheader
 	sideAuxPow := auxpow.GenerateSideAuxPow(msgBlock.Hash(), genesisHash)
 	header := msgBlock.Header
-	targetDifficulty := blockchain.CompactToBig(header.Bits)
+	targetDifficulty := blockchain.CompactToBig(header.GetBits())
 
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
 		case <-ticker.C:
-			if !msgBlock.Header.Previous.IsEqual(*s.cfg.Chain.BestChain.Hash) {
+			if !msgBlock.Header.GetPrevious().IsEqual(*s.cfg.Chain.BestChain.Hash) {
 				return false
 			}
 			//UpdateBlockTime(messageBlock, m.server.blockManager)
@@ -248,7 +273,7 @@ func (s *Service) SolveBlock(msgBlock *types.Block, ticker *time.Ticker) bool {
 		sideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Nonce = i
 		hash := sideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Hash() // solve parBlockHeader hash
 		if blockchain.HashToBig(&hash).Cmp(targetDifficulty) <= 0 {
-			msgBlock.Header.SideAuxPow = *sideAuxPow
+			msgBlock.Header.SetAuxPow(sideAuxPow)
 			return true
 		}
 	}
@@ -308,7 +333,7 @@ out:
 		//begin to mine the block with POW
 		if s.SolveBlock(msgBlock, ticker) {
 			//send the valid block to p2p networkd
-			if msgBlock.Header.Height == s.cfg.Chain.GetBestHeight()+1 {
+			if msgBlock.Header.GetHeight() == s.cfg.Chain.GetBestHeight()+1 {
 				inMainChain, isOrphan, err := s.cfg.Chain.ProcessBlock(msgBlock)
 				if err != nil {
 					continue
@@ -393,17 +418,19 @@ func GenerateBlock(cfg *Config) (*types.Block, error) {
 	}
 
 	header := types.Header{
-		Version:    0,
-		Previous:   *cfg.Chain.BestChain.Hash,
-		MerkleRoot: common.EmptyHash,
-		Timestamp:  uint32(cfg.Chain.MedianAdjustedTime().Unix()),
-		Bits:       cfg.ChainParams.PowLimitBits,
-		Height:     nextBlockHeight,
-		Nonce:      0,
+		Base: types.BaseHeader{
+			Version:    0,
+			Previous:   *cfg.Chain.BestChain.Hash,
+			MerkleRoot: common.EmptyHash,
+			Timestamp:  uint32(cfg.Chain.MedianAdjustedTime().Unix()),
+			Bits:       cfg.ChainParams.PowLimitBits,
+			Height:     nextBlockHeight,
+			Nonce:      0,
+		},
 	}
 
 	msgBlock := &types.Block{
-		Header:       header,
+		Header:       &header,
 		Transactions: []*types.Transaction{},
 	}
 
@@ -416,12 +443,12 @@ func GenerateBlock(cfg *Config) (*types.Block, error) {
 		txHash = append(txHash, tx.Hash())
 	}
 	txRoot, _ := crypto.ComputeRoot(txHash)
-	msgBlock.Header.MerkleRoot = txRoot
+	msgBlock.Header.SetMerkleRoot(txRoot)
 
-	msgBlock.Header.Bits, err = cfg.Chain.CalcNextRequiredDifficulty(
+	bits, err := cfg.Chain.CalcNextRequiredDifficulty(
 		cfg.Chain.BestChain, time.Now())
-	log.Info("difficulty: ", msgBlock.Header.Bits)
-
+	log.Info("difficulty: ", msgBlock.Header.GetBits())
+	msgBlock.Header.SetBits(bits)
 	return msgBlock, err
 }
 
@@ -465,7 +492,12 @@ func GenerateBlockTransactions(cfg *Config, msgBlock *types.Block, coinBaseTx *t
 	}
 
 	reward := totalFee
-	rewardFoundation := common.Fixed64(float64(reward) * 0.3)
-	msgBlock.Transactions[0].Outputs[0].Value = rewardFoundation
-	msgBlock.Transactions[0].Outputs[1].Value = common.Fixed64(reward) - rewardFoundation
+	if msgBlock.GetHeight() > cfg.ChainParams.RewardMinerOnlyStartHeight {
+		msgBlock.Transactions[0].Outputs[1].Value = reward
+		msgBlock.Transactions[0].Outputs = msgBlock.Transactions[0].Outputs[1:]
+	} else {
+		rewardFoundation := common.Fixed64(float64(reward) * 0.3)
+		msgBlock.Transactions[0].Outputs[0].Value = rewardFoundation
+		msgBlock.Transactions[0].Outputs[1].Value = common.Fixed64(reward) - rewardFoundation
+	}
 }

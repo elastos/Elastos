@@ -7,17 +7,22 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
+
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 )
 
 const (
 	// BlockVersion is the version of block.
-	BlockVersion     uint32 = 0
+	BlockVersion uint32 = 0
 
 	// GenesisNonce is the nonce of genesis block.
-	GenesisNonce     uint32 = 3194347904
+	GenesisNonce uint32 = 3194347904
 
 	// MaxBlockSize is the maximum size of a block.
 	MaxBlockSize = 8000000
+
+	// MaxBlockHeaderSize is the maximum number of bytes allowed per block header.
+	MaxBlockHeaderSize uint32 = 2000000
 
 	// MaxTxPerBlock is the maximum transactions can be included in
 	// a block.
@@ -25,7 +30,8 @@ const (
 )
 
 type Block struct {
-	Header
+	interfaces.Header
+
 	Transactions []*Transaction
 }
 
@@ -65,14 +71,13 @@ func (b *Block) Deserialize(r io.Reader) error {
 
 	// Deserialize each transaction while keeping track of its location
 	// within the byte stream.
-	transactions := make([]Transaction, txCount)
-	b.Transactions = make([]*Transaction, 0, txCount)
+	b.Transactions = make([]*Transaction, 0)
 	for i := uint32(0); i < txCount; i++ {
-		tx := &transactions[i]
+		tx := Transaction{}
 		if err := tx.Deserialize(r); err != nil {
 			return err
 		}
-		b.Transactions = append(b.Transactions, tx)
+		b.Transactions = append(b.Transactions, &tx)
 	}
 
 	return nil
@@ -127,6 +132,15 @@ func (b *Block) GetSize() int {
 	return buf.Len()
 }
 
+
+
 func (b *Block) Hash() common.Uint256 {
 	return b.Header.Hash()
+}
+
+func NewBlock() *Block {
+	b := &Block{
+		Header: &Header{},
+	}
+	return b
 }

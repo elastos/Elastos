@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
@@ -23,9 +24,10 @@ type BlockValidateAction struct {
 }
 
 type Validator struct {
-	chain                *BlockChain
-	spvService           *spv.Service
-	checkSanityFunctions []*BlockValidateAction
+	chain                 *BlockChain
+	spvService            *spv.Service
+	checkSanityFunctions  []*BlockValidateAction
+	checkContextFunctions []*BlockValidateAction
 }
 
 func NewValidator(chain *BlockChain, spv *spv.Service) *Validator {
@@ -38,6 +40,9 @@ func NewValidator(chain *BlockChain, spv *spv.Service) *Validator {
 	v.RegisterFunc(ValidateFuncNames.CheckBlockSize, v.checkBlockSize)
 	v.RegisterFunc(ValidateFuncNames.CheckCoinBaseTransaction, v.checkCoinBaseTransaction)
 	v.RegisterFunc(ValidateFuncNames.CheckTransactionsMerkle, v.checkTransactionsMerkle)
+
+	v.RegisterContextFunc(ValidateFuncNames.CheckHeader, v.checkHeaderContext)
+
 	return v
 }
 
@@ -51,10 +56,29 @@ func (v *Validator) RegisterFunc(name ValidateFuncName, function func(params ...
 	v.checkSanityFunctions = append(v.checkSanityFunctions, &BlockValidateAction{Name: name, Handler: function})
 }
 
+func (v *Validator) RegisterContextFunc(name ValidateFuncName, function func(params ...interface{}) error) {
+	for _, action := range v.checkContextFunctions {
+		if action.Name == name {
+			action.Handler = function
+			return
+		}
+	}
+	v.checkContextFunctions = append(v.checkContextFunctions, &BlockValidateAction{Name: name, Handler: function})
+}
+
 func (v *Validator) CheckBlockSanity(block *types.Block, powLimit *big.Int, timeSource MedianTimeSource) error {
 	for _, checkFunc := range v.checkSanityFunctions {
 		if err := checkFunc.Handler(block, powLimit, timeSource); err != nil {
 			return errors.New("[powCheckBlockSanity] error:" + err.Error())
+		}
+	}
+	return nil
+}
+
+func (v *Validator) CheckBlockContextFunctions(block *types.Block) error {
+	for _, checkFunc := range v.checkContextFunctions {
+		if err := checkFunc.Handler(block); err != nil {
+			return errors.New("[CheckBlockContext] error:" + err.Error())
 		}
 	}
 	return nil
@@ -69,22 +93,26 @@ func (v *Validator) CheckBlockContext(block *types.Block, prevNode *BlockNode) (
 	}
 
 	expectedDifficulty, err := v.chain.CalcNextRequiredDifficulty(
-		prevNode, time.Unix(int64(header.Timestamp), 0))
+		prevNode, time.Unix(int64(header.GetTimeStamp()), 0))
 	if err != nil {
 		return err
 	}
 
-	if header.Bits != expectedDifficulty {
+	if header.GetBits() != expectedDifficulty {
 		return errors.New("[powCheckBlockContext] block difficulty is not the expected")
 	}
 
 	// Ensure the timestamp for the block header is after the
 	// median time of the last several blocks (medianTimeBlocks).
 	medianTime := CalcPastMedianTime(prevNode)
-	tempTime := time.Unix(int64(header.Timestamp), 0)
+	tempTime := time.Unix(int64(header.GetTimeStamp()), 0)
 
 	if !tempTime.After(medianTime) {
 		return errors.New("[powCheckBlockContext] block timestamp is not after expected")
+	}
+
+	if err := v.CheckBlockContextFunctions(block); err != nil {
+		return err
 	}
 
 	// The height of this block is one more than the referenced
@@ -102,27 +130,25 @@ func (v *Validator) CheckBlockContext(block *types.Block, prevNode *BlockNode) (
 }
 
 //block *Block, powLimit *big.Int, timeSource MedianTimeSource
-func (v *Validator) checkHeader(params ...interface{}) (err error) {
+func (v *Validator) checkHeader(params ...interface{}) error {
 	block := AssertBlock(params[0])
 	powLimit := AssertBigInt(params[1])
 	timeSource := AssertMedianTimeSource(params[2])
 	header := block.Header
 
-	if header.Height >= v.chain.chainParams.CheckPowHeaderHeight {
-		if err := v.spvService.CheckCRCArbiterSignature(&header.SideAuxPow.SideAuxBlockTx); err != nil {
-			return err
-		}
+	headerSize := block.Header.GetHeaderSize()
+	if headerSize > int(types.MaxBlockHeaderSize) {
+		return errors.New("[checkHeader] checkHeader header is too big")
 	}
-
-	if !header.SideAuxPow.SideAuxPowCheck(header.Hash()) {
-		return errors.New("[powCheckHeader] block check proof is failed")
+	if err := header.GetAuxPow().SideAuxPowCheck(header.Hash()); err != nil {
+		return errors.New("[powCheckHeader] block check side AuxPow is failed," + err.Error())
 	}
-	if v.checkProofOfWork(&header, powLimit) != nil {
-		return errors.New("[powCheckHeader] block check proof is failed.")
+	if err := v.checkProofOfWork(header, powLimit); err != nil {
+		return errors.New("[powCheckHeader] block check proof is failed," + err.Error())
 	}
 
 	// A block timestamp must not have a greater precision than one second.
-	tempTime := time.Unix(int64(header.Timestamp), 0)
+	tempTime := time.Unix(int64(header.GetTimeStamp()), 0)
 	if !tempTime.Equal(time.Unix(tempTime.Unix(), 0)) {
 		return errors.New("[powCheckHeader] block timestamp of has a higher precision than one second")
 	}
@@ -133,6 +159,37 @@ func (v *Validator) checkHeader(params ...interface{}) (err error) {
 		return errors.New("[powCheckHeader] block timestamp of is too far in the future")
 	}
 
+	return nil
+}
+
+func (v *Validator) checkHeaderContext(params ...interface{}) error {
+	block := AssertBlock(params[0])
+	header := block.Header
+	height := block.GetHeight()
+
+	headerSize := block.Header.GetHeaderSize()
+	if headerSize > int(types.MaxBlockHeaderSize) {
+		return errors.New("[checkHeader] checkHeader header is too big")
+	}
+	if height > v.chain.chainParams.CheckPowHeaderHeight {
+		validateHeight := header.GetAuxPow().MainBlockHeader.Height
+		if validateHeight >= v.chain.chainParams.CRClaimDPOSNodeStartHeight {
+			if err := v.spvService.CheckCRCArbiterSignatureV1(validateHeight, &header.GetAuxPow().SideAuxBlockTx); err != nil {
+				return err
+			}
+			spvHeader, err := v.spvService.HeaderStore().GetByHeight(validateHeight)
+			if err != nil {
+				return err
+			}
+			if spvHeader.Bits() != header.GetAuxPow().MainBlockHeader.Bits {
+				return errors.New("[powCheckHeader] bits not matched")
+			}
+		} else {
+			if err := v.spvService.CheckCRCArbiterSignatureV0(&header.GetAuxPow().SideAuxBlockTx); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
@@ -160,10 +217,9 @@ func (v *Validator) checkBlockSize(params ...interface{}) (err error) {
 
 	// A block must not exceed the maximum allowed block payload when serialized.
 	blockSize := block.GetSize()
-	if blockSize > types.MaxBlockSize {
+	if blockSize > int(types.MaxBlockSize+types.MaxBlockHeaderSize) {
 		return errors.New("[powCheckBlockSize] serialized block is too big")
 	}
-
 	return nil
 }
 
@@ -208,7 +264,7 @@ func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 
 		// Check for transaction sanity
 		if err := v.chain.cfg.CheckTxSanity(txn); err != nil {
-			return errors.New("[CheckTransactionsMerkle] failed when verifiy block")
+			return errors.New("[CheckTransactionsMerkle] failed when verifiy block, err:" + err.Error())
 		}
 
 		// Check for duplicate UTXO inputs in a block
@@ -240,16 +296,16 @@ func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 	if err != nil {
 		return errors.New("[CheckTransactionsMerkle] merkleTree compute failed")
 	}
-	if !block.Header.MerkleRoot.IsEqual(calcTransactionsRoot) {
+	if !block.Header.GetMerkleRoot().IsEqual(calcTransactionsRoot) {
 		return errors.New("[CheckTransactionsMerkle] block merkle root is invalid")
 	}
 
 	return nil
 }
 
-func (v *Validator) checkProofOfWork(header *types.Header, powLimit *big.Int) (err error) {
+func (v *Validator) checkProofOfWork(header interfaces.Header, powLimit *big.Int) (err error) {
 	// The target difficulty must be larger than zero.
-	target := CompactToBig(header.Bits)
+	target := CompactToBig(header.GetBits())
 	if target.Sign() <= 0 {
 		return errors.New("[checkProofOfWork], block target difficulty is too low.")
 	}
@@ -260,7 +316,7 @@ func (v *Validator) checkProofOfWork(header *types.Header, powLimit *big.Int) (e
 	}
 
 	// The block hash must be less than the claimed target.
-	hash := header.SideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Hash()
+	hash := header.GetAuxPow().MainBlockHeader.AuxPow.ParBlockHeader.Hash()
 
 	hashNum := HashToBig(&hash)
 	if hashNum.Cmp(target) > 0 {
