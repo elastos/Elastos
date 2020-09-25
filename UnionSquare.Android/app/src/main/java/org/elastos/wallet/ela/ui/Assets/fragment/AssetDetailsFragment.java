@@ -464,7 +464,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                         break;
                     case "CRC":
                         currentVoteStatus = listVoteStatus.get(1);
-                        currentVoteStatus.setExpire(currentEndTime - Calendar.getInstance().get(Calendar.SECOND));
+                        currentVoteStatus.setExpire(currentEndTime - Calendar.getInstance().getTimeInMillis()/1000L);
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);
@@ -493,7 +493,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                         break;
                     case "CRCImpeachment"://弹劾
                         currentVoteStatus = listVoteStatus.get(2);
-                        currentVoteStatus.setExpire(currentEndTime -  Calendar.getInstance().get(Calendar.SECOND));
+                        currentVoteStatus.setExpire(currentEndTime -  Calendar.getInstance().getTimeInMillis()/1000L);
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             String value = votes.getString(key);

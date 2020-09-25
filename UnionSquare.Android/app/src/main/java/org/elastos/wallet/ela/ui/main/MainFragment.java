@@ -34,7 +34,6 @@ import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.base.BaseFragment;
-import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.Assets.AssetskFragment;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonObjectWithMethNameViewData;
 import org.elastos.wallet.ela.ui.find.FindFragment;
@@ -42,12 +41,10 @@ import org.elastos.wallet.ela.ui.main.presenter.MainPresenter;
 import org.elastos.wallet.ela.ui.mine.MineFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.CacheUtil;
-import org.elastos.wallet.ela.utils.Log;
-import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.certificate.CertificationUtil;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.Calendar;
 
 import butterknife.BindView;
 
@@ -178,7 +175,7 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
                 //系统密码识别失败 打开重新验证页面
                 CertificationUtil.pwdCertificateStatus = 2;
 
-            }else {
+            } else {
                 CertificationUtil.pwdCertificateStatus = 3;
             }
         }
@@ -189,7 +186,15 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
     public void onStart() {
         super.onStart();
         //安全验证
-       // Log.d("???", "onStart");
+        // Log.d("???", "onStart");
+        certificate();
+
+    }
+
+    private void certificate() {
+        if (!sp.isOpenCertificate()) {
+            return;
+        }
         if (CertificationUtil.fingerCertificating || CertificationUtil.pwdCertificateStatus == 1) {
             return;
         }
@@ -197,13 +202,20 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
             CertificationUtil.pwdCertificateStatus = 0;
             return;
         }
-        if (sp.isOpenCertificate()) {
+        if (Calendar.getInstance().getTimeInMillis() - stop60 > 60000) {
             CertificationUtil.isOpenCertificate(this, CertificationUtil.REQUEST_CODE_CREDENTIALS);
         }
-
     }
 
+    long stop60 = 0;
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (sp.isOpenCertificate()) {
+            stop60 = Calendar.getInstance().getTimeInMillis();
+        }
+    }
 
     public static MainFragment newInstance() {
 

@@ -390,7 +390,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             String payload = JwtUtils.getJwtPayload(result);
             RecieveJwtEntity recieveJwtEntity = JSON.parseObject(payload, RecieveJwtEntity.class);
             long exp = recieveJwtEntity.getExp();
-            if (exp < Calendar.getInstance().get(Calendar.SECOND)) {
+            if (exp < Calendar.getInstance().getTimeInMillis()/1000L) {
                 showToast(getString(R.string.qrcodeexp));
                 return;
             }

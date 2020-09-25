@@ -95,7 +95,7 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
                 @Override
                 public void onClick(View v) {
                     if (commonRvListener != null)
-                        commonRvListener.onRvItemClick(v, position, personalInfoItemEntity);
+                        commonRvListener.onRvItemClick(v, holder.getAdapterPosition(), personalInfoItemEntity);
                 }
             });
 
@@ -103,6 +103,7 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
             //自定义项
             //手机号
             ((ViewHolder2) holder).et2.setOnClickListener(null);
+            ((ViewHolder2) holder).et2.setFocusable(true);
             ((ViewHolder2) holder).et1.setText(personalInfoItemEntity.getText1());
             ((ViewHolder2) holder).et2.setText(personalInfoItemEntity.getText2());
             ((ViewHolder2) holder).et1.setHint(personalInfoItemEntity.getHintShow1());
@@ -114,7 +115,7 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
                     @Override
                     public void onClick(View v) {
                         personalInfoItemEntity.setText1(((ViewHolder2) holder).et1.getText().toString());
-                        commonRvListener.onRvItemClick(v, position, personalInfoItemEntity);
+                        commonRvListener.onRvItemClick(v, holder.getAdapterPosition(), personalInfoItemEntity);
                     }
                 });
             }
@@ -127,7 +128,7 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
                 @Override
                 public void onClick(View v) {
                     if (commonRvListener != null)
-                        commonRvListener.onRvItemClick(((ViewHolder3) holder).tv2, position, personalInfoItemEntity);
+                        commonRvListener.onRvItemClick(((ViewHolder3) holder).tv2, holder.getAdapterPosition(), personalInfoItemEntity);
                 }
             });
         } else {
@@ -145,7 +146,7 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
             holder.iv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    commonRvListener.onRvItemClick(v, position, personalInfoItemEntity);
+                    commonRvListener.onRvItemClick(v, holder.getAdapterPosition(), personalInfoItemEntity);
                 }
             });
         }
