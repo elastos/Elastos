@@ -216,7 +216,6 @@ namespace Elastos {
 			 * @param id
 			 * @return If successful, return below. Otherwise {} or null will be returned to indicate the error.
 			 * [{
-			 *   "id":0,
 			 *   "address": "0x407d73d8a49eeb85d32cf465507dd71d507100c1",
 			 *   "symbol": "ELA",
 			 *   "name": "elastos",

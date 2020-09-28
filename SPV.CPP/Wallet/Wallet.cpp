@@ -350,18 +350,18 @@ public:
 	}
 
 	virtual nlohmann::json GetTokens(int id) {
-		nlohmann::json j, tokens, token;
+		nlohmann::json j, tokens = nlohmann::json::array(), token;
 		// rpc request
-		// ...
-		token["id"] = 0;
-		token["address"] = "0x407d73d8a49eeb85d32cf465507dd71d507100c1";
-		token["symbol"] = "ELA";
-		token["name"] = "elastos";
-		token["description"] = "desc";
-		token["decimals"] = 18;
-		token["defaultGasLimit"] = "0x1388";
-		token["defaultGasPrice"] = "0x1dfd14000"; // 8049999872 Wei
+#if 0
+		token["address"] = "0xfdce7fb4050cd43c654c6cecead950343990ce75";
+		token["symbol"] = "TTECH";
+		token["name"] = "TTECH";
+		token["description"] = "";
+		token["decimals"] = 0;
+		token["defaultGasLimit"] = "";
+		token["defaultGasPrice"] = "";
 		tokens.push_back(token);
+#endif
 		j["id"] = id;
 		j["result"] = tokens;
 		return j;

@@ -759,6 +759,9 @@ extern void
 ewmUpdateTokens (BREthereumEWM ewm) {
     unsigned int rid = ++ewm->requestId;
 
+	ewm->client.funcGetTokens (ewm->client.context, ewm, rid);
+
+#if 0
     if (ethereumMainnet == ewm->network)
         ewm->client.funcGetTokens
         (ewm->client.context,
@@ -790,6 +793,7 @@ ewmUpdateTokens (BREthereumEWM ewm) {
 
     else
         assert (0);
+#endif
 }
 
 extern void

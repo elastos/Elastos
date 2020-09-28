@@ -115,7 +115,6 @@ namespace Elastos {
 		}
 
 		std::string EthereumTransfer::getGasPrice(EthereumAmount::Unit unit) const {
-			assert(!EthereumAmount::isTokenUnit(unit));
 			BREthereumGasPrice price = ewmTransferGetGasPrice(_ewm->getRaw(), getRaw(),
 															  (BREthereumEtherUnit) unit);
 			return GetCString(ewmCoerceEtherAmountToString(_ewm->getRaw(),

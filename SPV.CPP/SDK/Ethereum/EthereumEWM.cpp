@@ -519,8 +519,13 @@ namespace Elastos {
 										int decimals,
 										const std::string &defaultGasLimit,
 										const std::string &defaultGasPrice) {
+			const char *defaultGasLimitPtr, *defaultGasPricePtr;
+
+			defaultGasLimitPtr = defaultGasLimit.empty() ? NULL : defaultGasLimit.c_str();
+			defaultGasPricePtr = defaultGasPrice.empty() ? NULL : defaultGasPrice.c_str();
+
 			ewmAnnounceToken(_ewm, rid, address.data(), symbol.data(), name.data(), description.data(), decimals,
-							 defaultGasLimit.data(), defaultGasPrice.data());
+							 defaultGasLimitPtr, defaultGasPricePtr);
 		}
 
 		void EthereumEWM::announceTokenComplete(int rid, bool success) {
@@ -567,6 +572,28 @@ namespace Elastos {
 			_wallets[wid] = wallet;
 
 			return wallet;
+		}
+
+		std::vector<EthereumWalletPtr> EthereumEWM::getWallets() {
+			std::vector<EthereumWalletPtr> wallets;
+
+			for (WalletMap::const_iterator  it = _wallets.cbegin(); it != _wallets.cend(); ++it) {
+				EthereumTokenPtr t;
+				BREthereumToken tokenRef = ewmWalletGetToken(_ewm, it->first);
+				if (NULL != tokenRef)
+					t = lookupTokenByReference(tokenRef);
+
+				EthereumWalletPtr wallet;
+				if (nullptr != t) {
+					wallet = EthereumWalletPtr(new EthereumWallet(this, it->first, _account, _network, t));
+				} else {
+					wallet = EthereumWalletPtr(new EthereumWallet(this, it->first, _account, _network));
+				}
+
+				wallets.push_back(wallet);
+			}
+
+			return wallets;
 		}
 
 		EthereumWalletPtr EthereumEWM::getWallet() {

@@ -213,6 +213,8 @@ namespace Elastos {
 			EthereumWalletPtr walletLookupOrCreate(BREthereumWallet wid, const EthereumTokenPtr &token);
 
 		public:
+			std::vector<EthereumWalletPtr> getWallets();
+
 			EthereumWalletPtr getWallet();
 
 			EthereumWalletPtr getWallet(const EthereumTokenPtr &token);

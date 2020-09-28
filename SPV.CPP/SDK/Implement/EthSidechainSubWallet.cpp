@@ -1002,6 +1002,7 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 
 		void EthSidechainSubWallet::SyncStart() {
 			ArgInfo("{} {}", _walletID, GetFunName());
+			_client->_ewm->updateTokens();
 			_client->_ewm->connect();
 		}
 
