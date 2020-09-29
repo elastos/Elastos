@@ -81,6 +81,13 @@ namespace Elastos {
 			 */
 			virtual void DeleteTransfer(const nlohmann::json &tx) = 0;
 
+			/**
+			 * @param tokenSymbol
+			 * @return
+			 */
+			virtual nlohmann::json GetTokenTransactions(uint32_t start, uint32_t count, const std::string &txid,
+														const std::string &tokenSymbol) const = 0;
+
 		};
 
 	}

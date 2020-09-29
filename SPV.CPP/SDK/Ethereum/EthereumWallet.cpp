@@ -273,6 +273,7 @@ namespace Elastos {
 				EthereumTransferPtr t(new EthereumTransfer(_ewm, transactionIds[i], _defaultUnit));
 				transactions.push_back(t);
 			}
+			free(transactionIds);
 
 			return transactions;
 		}

@@ -129,6 +129,65 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			_client->_ewm->transferDelete(transfer);
 		}
 
+		nlohmann::json EthSidechainSubWallet::GetTokenTransactions(uint32_t start, uint32_t count,
+																   const std::string &txid,
+																   const std::string &tokenSymbol) const {
+			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("start: {}", start);
+			ArgInfo("count: {}", count);
+			ArgInfo("txid: {}", txid);
+			ArgInfo("tokenSymbol: {}", tokenSymbol);
+
+			std::vector<EthereumWalletPtr> wallets = _client->_ewm->getWallets();
+			nlohmann::json j;
+			nlohmann::json txList = nlohmann::json::array();
+			size_t maxCount = 0;
+
+			for (const auto &w : wallets) {
+				EthereumTokenPtr token = w->getToken();
+				if (token && (token->getSymbol() == tokenSymbol)) {
+					std::vector<EthereumTransferPtr> transfers = w->getTransfers();
+					std::reverse(transfers.begin(), transfers.end());
+					maxCount = transfers.size();
+					for (size_t i = start; i < transfers.size() && i - start < count; ++i) {
+						const EthereumTransferPtr &transfer = transfers[i];
+						std::string transferID = GetTransferID(transfer);
+						if (txid.empty() || txid == transferID || txid == transfer->getIdentifier()) {
+							nlohmann::json jtx;
+							jtx["ID"] = transferID;
+							jtx["IsConfirmed"] = transfer->isConfirmed();
+							jtx["IsSubmitted"] = transfer->isSubmitted();
+							jtx["IsErrored"] = transfer->isErrored();
+							jtx["ErrorDesc"] = transfer->isErrored() ? transfer->getErrorDescription() : "";
+							jtx["Hash"] = transfer->getIdentifier();
+							jtx["OrigTxHash"] = transfer->getOriginationTransactionHash();
+							jtx["Amount"] = transfer->getAmount(EthereumAmount::ETHER_WEI);
+							jtx["Timestamp"] = transfer->getBlockTimestamp();
+							jtx["Fee"] = transfer->getFee(EthereumAmount::ETHER_WEI);
+							jtx["Confirmations"] = transfer->getBlockConfirmations();
+							jtx["GasPrice"] = transfer->getGasPrice();
+							jtx["GasLimit"] = transfer->getGasLimit();
+							jtx["GasUsed"] = transfer->getGasUsed();
+							jtx["BlockNumber"] = transfer->getBlockNumber();
+							jtx["SourceAddress"] = transfer->getSourceAddress();
+							jtx["TargetAddress"] = transfer->getTargetAddress();
+							jtx["Nonce"] = transfer->getNonce();
+							txList.push_back(jtx);
+
+							if (!txid.empty())
+								break;
+						}
+					}
+				}
+			}
+
+			j["MaxCount"] = maxCount;
+			j["Transactions"] = txList;
+
+			ArgInfo("r => {}", j.dump());
+			return j;
+		}
+
 		EthSidechainSubWallet::EthSidechainSubWallet(const CoinInfoPtr &info,
 													 const ChainConfigPtr &config,
 													 MasterWallet *parent,

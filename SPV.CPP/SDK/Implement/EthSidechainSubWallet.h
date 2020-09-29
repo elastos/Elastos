@@ -36,8 +36,11 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class MasterWallet;
+
 		class ChainConfig;
+
 		class CoinInfo;
+
 		class EthereumClient;
 
 		typedef boost::shared_ptr<ChainConfig> ChainConfigPtr;
@@ -63,6 +66,9 @@ namespace Elastos {
 														 const std::string &data) const;
 
 			virtual void DeleteTransfer(const nlohmann::json &tx);
+
+			virtual nlohmann::json GetTokenTransactions(uint32_t start, uint32_t count, const std::string &txid,
+														const std::string &tokenSymbol) const;
 
 		public:
 			// implement callback of Client
@@ -202,6 +208,7 @@ namespace Elastos {
 			virtual void StopP2P();
 
 			virtual void FlushData();
+
 		protected:
 			friend class MasterWallet;
 

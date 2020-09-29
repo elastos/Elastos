@@ -2078,6 +2078,92 @@ static int _tx(int argc, char *argv[]) {
 	return 0;
 }
 
+// tokentx tokenSymbol
+static int _tokentx(int argc, char *argv[]) {
+	if (argc != 2) {
+		invalidCmdError();
+		return ERRNO_CMD;
+	}
+	checkCurrentWallet();
+
+	std::string tokenSymbol = argv[1];
+
+	try {
+		IEthSidechainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ETHSC);
+
+		int cntPerPage = 20;
+		int curPage = 1;
+		int start, max;
+		std::string cmd;
+		bool show = true;
+		std::string txHash;
+
+		do {
+			if (show) {
+				start = cntPerPage * (curPage - 1);
+				nlohmann::json txJosn;
+				txJosn = subWallet->GetTokenTransactions(start, cntPerPage, txHash, tokenSymbol);
+
+				nlohmann::json tx = txJosn["Transactions"];
+				max = txJosn["MaxCount"];
+
+				printf("%d / %d\n", curPage, (max + cntPerPage) / cntPerPage);
+				char buf[100];
+				struct tm tm;
+				for (nlohmann::json::iterator it = tx.begin(); it != tx.end(); ++it) {
+					if (txHash.empty()) {
+						std::string Hash = (*it)["Hash"];
+						time_t t = (*it)["Timestamp"];
+						uint64_t confirm = (*it)["Confirmations"];
+						std::string amount = (*it)["Amount"];
+
+						localtime_r(&t, &tm);
+						strftime(buf, sizeof(buf), "%F %T", &tm);
+
+						printf("%s %8llu %s %s\n", Hash.c_str(), confirm, buf, amount.c_str());
+					} else {
+						std::cout << (*it).dump(4) << std::endl;
+					}
+				}
+			}
+
+			std::cout << "'txid' Detail, 'n' Next Page, 'b' Previous Page, 'q' Exit: ";
+			std::getline(std::cin, cmd);
+
+			if (cmd == "n") {
+				if (curPage < (max + cntPerPage) / cntPerPage) {
+					curPage++;
+					show = true;
+				} else {
+					std::cout << "already last page" << std::endl;
+					show = true;
+				}
+			} else if (cmd == "b") {
+				if (curPage > 1) {
+					curPage--;
+					show = true;
+				} else {
+					std::cout << "already first page" << std::endl;
+					show = true;
+				}
+			} else if (cmd == "q") {
+				break;
+			} else if (cmd.size() == 64 || cmd.size() == 66) {
+				txHash = cmd;
+				show = true;
+			} else {
+				std::cout << "invalid input" << std::endl;
+				show = false;
+			}
+		} while (cmd != "q");
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+	return 0;
+}
+
 // tx chainID
 static int _rawtx(int argc, char *argv[]) {
 	checkParam(2);
@@ -2361,6 +2447,7 @@ struct command {
 	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},
 	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},
 	{"tx",         _tx,            "chainID [coinbase]                               List all tx/coinbase tx records."},
+	{"tokentx",    _tokentx,       "tokenSymbol                                      List all token tx records."},
 	{"rawtx",      _rawtx,         "chainID                                          Convert spv tx to rawtx"},
 	{"consolidate",consolidate,    "chainID                                          Consolidate fragmentary utxo"},
 	{"signtx",     signtx,         "chainID                                          Sign tx"},
