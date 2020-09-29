@@ -988,7 +988,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			ArgInfo("{} {}", _walletID, GetFunName());
 			nlohmann::json j;
 
-			nlohmann::json j;
 			j["BlockNumber"] = _client->_ewm->getBlockHeight();
 
 			ArgInfo("r => {}", j.dump());
