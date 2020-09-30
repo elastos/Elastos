@@ -109,7 +109,7 @@ networkGetEnodesLocal (BREthereumNetwork network, int parity) {
 //
 static struct BREthereumNetworkRecord ethereumMainnetRecord = {
     "mainnet",
-    1,
+    20,
     1,
     EMPTY_HASH_INIT,
     EMPTY_HASH_INIT,
@@ -160,7 +160,7 @@ MainnetChainConfig = &ChainConfig{
 //
 static struct BREthereumNetworkRecord ethereumTestnetRecord = {
     "testnet", // aka "ropsten"
-    3,
+    21,
     3,
     EMPTY_HASH_INIT,
     EMPTY_HASH_INIT,
