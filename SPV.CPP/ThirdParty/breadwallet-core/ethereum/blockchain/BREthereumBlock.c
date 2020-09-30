@@ -145,7 +145,7 @@ struct BREthereumBlockHeaderRecord {
      * An arbitrary byte array containing data relevant to this block. This must be 32 bytes or
      * fewer; formally Hx.
      */
-    uint8_t extraData [1024];
+    uint8_t extraData [20480];
     uint32_t extraDataCount;
 
     /**
@@ -440,7 +440,7 @@ blockHeaderValidateGasUsed (BREthereumBlockHeader this,
 static int
 blockHeaderValidateExtraData (BREthereumBlockHeader this,
                               BREthereumBlockHeader parent) {
-    return this->extraDataCount <= 1024;
+    return this->extraDataCount <= sizeof(this->extraData);
 }
 
 #if defined (INCLUDE_UNUSED_FUNCTION)
@@ -1432,8 +1432,7 @@ static struct BREthereumBlockHeaderRecord genesisMainnetBlockHeaderRecord = {
     0,
 
     // uint8_t extraData [32];
-    { 0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,
-      0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0 },
+    { 0 },
 
     // uint8_t extraDataCount;
     0,
