@@ -7,7 +7,7 @@
   "text7":"UI Display Optimization;",
   "text8":"Personalized icon fix for participant nodes.",
   "text9":"Official release of ELA Wallet;",
-  "text10":"Download the latest version v 1.4.5",
+  "text10":"Download the latest version v 1.4.6",
   "text11":"July 22, 2019",
   "text12":"Fixed bugs.",
   "text13":"Optimized Supernode profit presentation.",
@@ -87,6 +87,18 @@
   "text79":"4. Optimize the main network DID synchronization function;",
   "text80":"5. Improve the operation log recording function;",
   "text81":"Notes:",
-  "text82":"-Please back up your wallet before you perform the upgrading."
+  "text82":"-Please back up your wallet before you perform the upgrading.",
+
+  "text83":"October 10 , 2020",
+  "text84":"This edition of ELA Wallet contain the following upgrades:",
+  "text85":"1. Added three new types of community proposals, including motion to change proposals, motion to replace Secretary General, and motion to terminate proposals;",
+  "text86":"2. Added a voting statistics function for main chain assets which displays the status of all vote types in the wallet;",
+  "text87":"3. Added a multi-signature wallet function that allows multiple private keys to jointly manage a multi-sig wallet;",
+  "text88":"4. Optimized DID function, adding custom on-chain information and DID card functions;",
+  "text89":"5. Added App login security verification function;",
+  "text90":"6. Optimized the proposal fund withdrawal process;",
+  "text91":"7. Fixed known Bugs.",
+  "text92":"Notes:",
+  "text93":"-Please back up your wallet before you perform the upgrading."
 
 }
