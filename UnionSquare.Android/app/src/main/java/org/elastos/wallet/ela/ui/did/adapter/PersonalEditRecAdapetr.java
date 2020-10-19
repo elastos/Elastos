@@ -90,12 +90,14 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
         PersonalInfoItemEntity personalInfoItemEntity = list.get(position);
         int index = personalInfoItemEntity.getIndex();
         if (holder instanceof ViewHolder3) {
-
+            ((ViewHolder3) holder).et2.setFocusable(true);
+            ((ViewHolder3) holder).et2.setOnClickListener(null);
             ((ViewHolder3) holder).et1.setHint(personalInfoItemEntity.getHintShow1());
             ((ViewHolder3) holder).et2.setHint(personalInfoItemEntity.getHintShow2());
             ((ViewHolder3) holder).et1.setText(personalInfoItemEntity.getText1());
             ((ViewHolder3) holder).et2.setText(personalInfoItemEntity.getText2());
-            if (personalInfoItemEntity.getType()==-2){
+            if (personalInfoItemEntity.getType() == -2) {
+                //自定义多行
                 ((ViewHolder3) holder).et2.setFocusable(false);
                 ((ViewHolder3) holder).et2.setOnClickListener(new View.OnClickListener() {
                     @Override

@@ -146,7 +146,6 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
                         storePersonalInfo();
                         String didName = getMyDID().getName(getMyDID().getDIDDocument());
                         CredentialSubjectBean netCredentialSubjectBean = new DIDUIPresenter().convertCredentialSubjectBean(EditPersonalInfoFragemnt.this, didName, listShow);
-                        Log.i("??", JSON.toJSONString(netCredentialSubjectBean));
                         DIDDocument doc = getMyDID().getDIDDocument();
                         Date didEndDate = getMyDID().getExpires(doc);
                         Wallet wallet = data.getParcelable("wallet");

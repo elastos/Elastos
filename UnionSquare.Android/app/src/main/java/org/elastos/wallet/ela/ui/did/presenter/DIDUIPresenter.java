@@ -3,12 +3,15 @@ package org.elastos.wallet.ela.ui.did.presenter;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
+import com.alibaba.fastjson.JSON;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.DateUtil;
+import org.elastos.wallet.ela.utils.Log;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -177,7 +180,7 @@ public class DIDUIPresenter {
                     break;
                 case 7:
 
-                    result.setIntroduction(text2);
+                    result.setIntroduction(text1);
 
                     break;
                 case 8:
@@ -209,6 +212,7 @@ public class DIDUIPresenter {
 
         }
         result.setEditTime(new Date().getTime() / 1000);
+        Log.i("convertCredentialSubjectBean", JSON.toJSONString(result));
         return result;
     }
 

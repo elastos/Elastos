@@ -141,7 +141,6 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
             public void onClick(View v) {
                 storePersonalInfo();
                 credentialSubjectBean = diduiPresenter.convertCredentialSubjectBean(AddPersonalInfoFragment.this, getMyDID().getName(getMyDID().getDIDDocument()), listShow);
-                Log.i("??", JSON.toJSONString(credentialSubjectBean));
                 DIDDocument doc = getMyDID().getDIDDocument();
                 Date didEndDate = getMyDID().getExpires(doc);
                 Intent intent = new Intent(getActivity(), OtherPwdActivity.class);
