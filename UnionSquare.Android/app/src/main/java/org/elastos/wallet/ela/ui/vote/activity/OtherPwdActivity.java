@@ -35,7 +35,6 @@ import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 
-import org.elastos.did.DIDAdapter;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.DID.listener.MyDIDTransactionCallback;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -257,7 +256,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     }
 
     @Override
-    public void createIdTransaction(String payload, String memo, int confirms, DIDAdapter.TransactionCallback callback) {
+    public void createIdTransaction(String payload, String memo) {
         Looper.prepare();
         //DIDURL didurl = new DIDURL( getMyDID().getDid(), "primary");
         // boolean b=getMyDID().getDIDDocument().ver(didurl,payload.getBytes());

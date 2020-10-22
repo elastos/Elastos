@@ -390,7 +390,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             String payload = JwtUtils.getJwtPayload(result);
             RecieveJwtEntity recieveJwtEntity = JSON.parseObject(payload, RecieveJwtEntity.class);
             long exp = recieveJwtEntity.getExp();
-            if (exp < Calendar.getInstance().getTimeInMillis()/1000L) {
+            if (exp < Calendar.getInstance().getTimeInMillis() / 1000L) {
                 showToast(getString(R.string.qrcodeexp));
                 return;
             }
@@ -550,10 +550,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             int confirms = jsonObject.getInt("confirms");
             String hash = jsonObject.getString("txId");
             if (confirms == 0) {
-                //did发布和更新
+               /* //did发布和更新
                 if (hash.equals(getMyDID().getMyDIDAdapter().getTxId())) {
                     getMyDID().getMyDIDAdapter().getCallback().accept(hash, 0, null);
-                }
+                }*/
 
                 return;
             }
@@ -687,9 +687,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             if (code == 0 || (code == 18 && reason.contains("uplicate"))) {
                 return;
             }
-            if (hash.equals(getMyDID().getMyDIDAdapter().getTxId())) {
+           /* if (hash.equals(getMyDID().getMyDIDAdapter().getTxId())) {
                 getMyDID().getMyDIDAdapter().getCallback().accept(hash, code, reason);
-            }
+            }*/
             //只需要捕捉一次失败
             transactionMap.remove(hash);
             String chainId = jsonObject.getString("ChainID");

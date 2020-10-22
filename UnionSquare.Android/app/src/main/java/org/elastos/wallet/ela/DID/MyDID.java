@@ -559,8 +559,8 @@ public class MyDID {
 
     public BaseEntity DIDPublish(String pwd) {
         try {
-            String lastTxid = didStore.publishDid(did, 0, pwd);
-            return new CommmonStringEntity(SUCCESSCODE, lastTxid);
+            didStore.publishDid(did, pwd);
+            return new CommmonStringEntity(SUCCESSCODE, "");
         } catch (DIDException e) {
             ToastUtils.showShort(e.getMessage());
             return exceptionProcess(e, "DIDPublish");
