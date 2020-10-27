@@ -161,7 +161,7 @@ MainnetChainConfig = &ChainConfig{
 static struct BREthereumNetworkRecord ethereumTestnetRecord = {
     "testnet", // aka "ropsten"
     21,
-    3,
+    21,
     EMPTY_HASH_INIT,
     EMPTY_HASH_INIT,
     // Seeds

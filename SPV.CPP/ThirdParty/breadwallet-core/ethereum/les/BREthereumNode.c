@@ -506,6 +506,9 @@ struct BREthereumNodeRecord {
     /** TRUE if we've discovered the neighbors of this node */
     BREthereumBoolean discovered;
 
+    /** Stop message will freeze client */
+    BREthereumBoolean frozen;
+
     /** When waiting to receive a message, timeout when time exceeds `timeout`. */
     time_t timeout;
 
@@ -696,6 +699,7 @@ nodeCreate (BREthereumNodePriority priority,
     node->coder.messageIdOffset = 0x00;  // Changed with 'hello' message exchange.
 
     node->discovered = ETHEREUM_BOOLEAN_FALSE;
+    node->frozen = ETHEREUM_BOOLEAN_FALSE;
 
     node->frameCoder = frameCoderCreate();
 
@@ -1061,18 +1065,18 @@ nodeProcessRecvLES (BREthereumNode node,
             break;
 
         case LES_MESSAGE_CONTRACT_CODES:
-        case LES_MESSAGE_HELPER_TRIE_PROOFS:;
+        case LES_MESSAGE_PROOFS:
+        case LES_MESSAGE_HEADER_PROOFS:
             eth_log (LES_LOG_TOPIC, "Recv: [ LES, %15s ] Unexpected Response",
                      messageLESGetIdentifierName (message.identifier));
             break;
 
+        case LES_MESSAGE_HELPER_TRIE_PROOFS:;
         case LES_MESSAGE_BLOCK_HEADERS:
         case LES_MESSAGE_BLOCK_BODIES:
         case LES_MESSAGE_RECEIPTS:
-        case LES_MESSAGE_PROOFS:
         case LES_MESSAGE_PROOFS_V2:
         case LES_MESSAGE_TX_STATUS:
-        case LES_MESSAGE_HEADER_PROOFS:
             // Find the provisioner applicable to `message`...
             for (size_t index = 0; index < array_count (node->provisioners); index++) {
                 BREthereumNodeProvisioner *provisioner = &node->provisioners[index];
@@ -1089,6 +1093,13 @@ nodeProcessRecvLES (BREthereumNode node,
                 }
             }
             break;
+    	case LES_MESSAGE_STOP:
+    		node->frozen = ETHEREUM_BOOLEAN_TRUE;
+    		break;
+
+    	case LES_MESSAGE_RESUME:
+    		node->frozen = ETHEREUM_BOOLEAN_FALSE;
+    		break;
     }
     if (mustReleaseMessage) messageLESRelease (&message);
 }
@@ -1358,7 +1369,7 @@ nodeProcess (BREthereumNode node,
                 // No release for `message` - it has be OwnershipGiven in the above
             }
 
-            if (FD_ISSET (socket, send)) {
+            if (FD_ISSET (socket, send) && ETHEREUM_BOOLEAN_IS_FALSE(node->frozen)) {
                 nodeUpdateTimeoutRecv(node, now);   // override prior timeout; expect a response.
 
                 // Send if we can.  Really only applies to provision messages, for PIP and LES, using

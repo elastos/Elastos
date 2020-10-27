@@ -47,9 +47,11 @@ typedef enum {
     LES_MESSAGE_SEND_TX2           = 0x13,
     LES_MESSAGE_GET_TX_STATUS      = 0x14,
     LES_MESSAGE_TX_STATUS          = 0x15,
+    LES_MESSAGE_STOP               = 0x16,
+    LES_MESSAGE_RESUME             = 0x17,
 } BREthereumLESMessageIdentifier;
 
-#define NUMBER_OF_LES_MESSAGE_IDENTIFIERS    (LES_MESSAGE_TX_STATUS + 1)
+#define NUMBER_OF_LES_MESSAGE_IDENTIFIERS    (LES_MESSAGE_RESUME + 1)
 
 extern const char *
 messageLESGetIdentifierName (BREthereumLESMessageIdentifier id);
@@ -287,7 +289,7 @@ typedef struct {
 typedef struct {
     uint64_t reqId;
     BRArrayOf(uint64_t) chtNumbers;
-    BRArrayOf(uint64_t) blkNumbers;;
+    BRArrayOf(uint64_t) blkNumbers;
 } BREthereumLESMessageGetHeaderProofs;
 
 /// MARK: LES HeaderProofs
@@ -322,19 +324,37 @@ typedef struct {
     BREthereumMPTNodePath path;
 } BREthereumLESMessageProofsV2;
 
+extern void
+messageLESProofsV2Consume (BREthereumLESMessageProofsV2 *message,
+						   BRArrayOf(BREthereumMPTNodePath) *paths);
 
 /// MARK: LES GetHelperTrieProofs
 
+    /**
+     * [reqID: P, [[subType: P, sectionIdx: P, key: B, fromLevel: P, auxReq: P], ...]]
+     */
 typedef struct {
     uint64_t reqId;
+    BRArrayOf(uint64_t) sectionIdx;
+    BRArrayOf(uint64_t) blkNumbers;
 } BREthereumLESMessageGetHelperTrieProofs;
 
 /// MARK: LES HelperTrieProofs
-    
+
+    /**
+     * [reqID: P, BV: P, [[node_1, node_2...], [auxData_0, auxData_1, ...]]]
+     */
 typedef struct {
     uint64_t reqId;
     uint64_t bv;
+    BRArrayOf(BREthereumBlockHeader) headers;
+    BRArrayOf(BREthereumMPTNodePath) paths;
 } BREthereumLESMessageHelperTrieProofs;
+
+extern void
+messageLESHelperTrieProofsConsume (BREthereumLESMessageHelperTrieProofs *message,
+                                   BRArrayOf(BREthereumBlockHeader) *headers,
+                                   BRArrayOf(BREthereumMPTNodePath) *paths);
 
 /// MARK: LES SendTx2
 
@@ -373,6 +393,19 @@ typedef struct {
 extern void
 messageLESTxStatusConsume (BREthereumLESMessageTxStatus *message,
                            BRArrayOf(BREthereumTransactionStatus) *stati);
+
+/// MARK: LES Stop
+
+/**
+ *
+ */
+typedef struct {
+} BREthereumLESMessageStop;
+
+/// MARK: LES Resume
+typedef struct {
+	uint64_t bv;
+} BREthereumLESMessageResume;
 
 //
 // ...
@@ -435,6 +468,8 @@ typedef struct {
         BREthereumLESMessageSendTx2 sendTx2;
         BREthereumLESMessageGetTxStatus getTxStatus;
         BREthereumLESMessageTxStatus txStatus;
+        BREthereumLESMessageStop stop;
+        BREthereumLESMessageResume resume;
     } u;
 } BREthereumLESMessage;
 
@@ -482,6 +517,8 @@ messageLESGetRequestId (const BREthereumLESMessage *message);
 
 extern uint64_t
 messageLESGetChtNumber (uint64_t blkNumber);
+
+extern uint64_t messageLESGetSectionIdxNumber (uint64_t blkNumber);
 
 extern const char *lesTransactionErrorPreface[];
     

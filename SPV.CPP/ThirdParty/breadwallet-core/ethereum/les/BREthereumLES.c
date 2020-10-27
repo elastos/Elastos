@@ -1325,7 +1325,7 @@ lesThread (BREthereumLES les) {
         // We've been asked to 'clean' - which means 'reclaim memory if possible'.  We'll ask
         // all nodes to clean up; but, only the active ones will have much to do.
         if (les->theTimeToCleanIsNow) {
-            eth_log (LES_LOG_TOPIC, "Cleaning%s", "");
+            eth_log (LES_LOG_TOPIC, "Cleaning");
             FOR_NODES(les, node)
                 nodeClean(node);
             rlpCoderReclaim(les->coder);

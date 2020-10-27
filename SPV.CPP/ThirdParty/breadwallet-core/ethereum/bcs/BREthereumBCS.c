@@ -1606,7 +1606,7 @@ bcsHandleBlockBody (BREthereumBCS bcs,
 
         // 3) We want the account state too - because we've found a transaction for bcs->address
         // and the account changed (instead of computing the account, we'll query definitively).
-        if (ETHEREUM_BOOLEAN_IS_TRUE (blockHasStatusAccountStateRequest (block, BLOCK_REQUEST_NOT_NEEDED))) {
+        if (0 && ETHEREUM_BOOLEAN_IS_TRUE (blockHasStatusAccountStateRequest (block, BLOCK_REQUEST_NOT_NEEDED))) {
             blockReportStatusAccountStateRequest(block, BLOCK_REQUEST_PENDING);
             lesProvideAccountStatesOne (bcs->les, node,
                                         (BREthereumLESProvisionContext) bcs,
@@ -2306,12 +2306,14 @@ bcsHandleProvision (BREthereumBCS bcs,
                     //
                     // This can cause problems... as in, we are queryng a node based on a recent
                     // block but upon resubmission the other node is behind.
+#if 0
                     lesRetryProvision (bcs->les,
                                        NODE_REFERENCE_ANY,
                                        (BREthereumLESProvisionContext) bcs,
                                        (BREthereumLESProvisionCallback) bcsSignalProvision,
                                        provision);
                     needProvisionRelease = 0;
+#endif
 
                     eth_log ("BCS", "Resubmitted Provision: %zu: %s",
                              provision->identifier,

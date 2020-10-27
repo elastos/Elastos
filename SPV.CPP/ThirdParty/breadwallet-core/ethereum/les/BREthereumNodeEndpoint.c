@@ -39,6 +39,7 @@
 #define MSG_NOSIGNAL 0 // set to 0 if undefined (BSD has the SO_NOSIGPIPE sockopt, and windows has no signals at all)
 #endif
 
+#define LES_LOG_SEND_RECV_ERROR
 /** Forward Declarations */
 static int
 openSocket (BREthereumNodeEndpoint endpoint, int *socket, int port, int domain, int type, double timeout);
@@ -418,14 +419,21 @@ nodeEndpointRecvData (BREthereumNodeEndpoint endpoint,
 
     if (socket < 0) error = ENOTCONN;
 
+    struct timeval tbegin, tnow;
+
+    gettimeofday(&tbegin, NULL);
+
     while (socket >= 0 && !error && totalCount < *bytesCount) {
         ssize_t n = recv (socket, &bytes[totalCount], *bytesCount - totalCount, 0);
+        gettimeofday(&tnow, NULL);
         if (n == 0) error = ECONNRESET;
         else if (n < 0 && errno != EWOULDBLOCK) error = errno;
+        else if (tnow.tv_sec - tbegin.tv_sec > 30) error = ETIMEDOUT;
         else if (n < 0 && errno == EWOULDBLOCK) continue;
         else {
             totalCount += n;
             if (!needBytesCount) break;
+            gettimeofday(&tbegin, NULL);
         }
 
         socket = endpoint->sockets[route];

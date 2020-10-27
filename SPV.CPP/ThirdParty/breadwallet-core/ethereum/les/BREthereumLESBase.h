@@ -34,7 +34,7 @@
 
 /** */
 #define LES_SUPPORT_GETH
-#define LES_SUPPORT_GETH_VERSION        (2)
+#define LES_SUPPORT_GETH_VERSION        (3)
 #define LES_SUPPORT_GETH_ANNOUNCE_TYPE  (1)
 
 /**

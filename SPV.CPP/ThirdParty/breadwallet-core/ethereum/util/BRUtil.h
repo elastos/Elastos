@@ -32,9 +32,12 @@ void ElastosElaWalletLogError(const char *s);
 void ElastosElaWalletLogCritical(const char *s);
 #endif
 
-#define eth_log(topic, formatter, ...)   do { \
+#define __va_first(first, ...) first
+#define __va_rest(first, ...) __VA_ARGS__
+
+#define eth_log(topic, ...)   do { \
 	char buf[2048]; \
-	snprintf(buf, sizeof(buf), "ETH: %s: " formatter, (topic), __VA_ARGS__); \
+	snprintf(buf, sizeof(buf), "ETH: %s: " __va_first(__VA_ARGS__, NULL), (topic), __va_rest(__VA_ARGS__, NULL)); \
 	buf[sizeof(buf) - 1] = '\0'; \
 	ElastosElaWalletLogInfo(buf); \
 } while (0)
