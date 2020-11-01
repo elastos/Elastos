@@ -1094,6 +1094,10 @@ nodeProcessRecvLES (BREthereumNode node,
             }
             break;
     	case LES_MESSAGE_STOP:
+    		for (size_t index = 0; index < array_count (node->provisioners); index++) {
+    			BREthereumNodeProvisioner *provisioner = &node->provisioners[index];
+    			provisioner->messagesRemainingCount = provisioner->messagesCount - provisioner->messagesReceivedCount;
+    		}
     		node->frozen = ETHEREUM_BOOLEAN_TRUE;
     		break;
 
