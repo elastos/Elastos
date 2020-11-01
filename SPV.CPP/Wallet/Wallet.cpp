@@ -61,7 +61,7 @@ static IMasterWallet *currentWallet = nullptr;
 static bool verboseMode = false;
 static const char *SplitLine = "------------------------------------------------------------------------------------------------------------------------";
 
-static std::string ETHSC_TESTNET_API_URL = "http://api.elastos.io:21634/api/1/eth/history";
+static std::string ETHSC_TESTNET_API_URL = "http://api-testnet.elastos.io:21634/api/1/eth/history";
 static std::string ETHSC_MAINNET_API_URL = "http://api.elastos.io:20634/api/1/eth/history";
 
 class WalletData {
