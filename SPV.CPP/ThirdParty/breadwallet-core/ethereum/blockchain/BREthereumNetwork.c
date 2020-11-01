@@ -110,7 +110,7 @@ networkGetEnodesLocal (BREthereumNetwork network, int parity) {
 static struct BREthereumNetworkRecord ethereumMainnetRecord = {
     "mainnet",
     20,
-    1,
+    20,
     EMPTY_HASH_INIT,
     EMPTY_HASH_INIT,
     // Seeds
