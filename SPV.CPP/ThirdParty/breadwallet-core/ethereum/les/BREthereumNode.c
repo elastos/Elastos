@@ -320,6 +320,10 @@ typedef struct {
 
 } BREthereumNodeProvisioner;
 
+static long provisionerMessageWaitingResposeCount(BREthereumNodeProvisioner *provisioner) {
+	return provisioner->messagesCount - provisioner->messagesRemainingCount - provisioner->messagesReceivedCount;
+}
+
 static int
 provisionerSendMessagesPending (BREthereumNodeProvisioner *provisioner) {
     return provisioner->messagesRemainingCount > 0;
@@ -1385,7 +1389,9 @@ nodeProcess (BREthereumNode node,
 
                     case NODE_ROUTE_TCP:
                         // Look for the pending message in some provisioner
-                        for (size_t index = 0; index < array_count (node->provisioners); index++)
+                        for (size_t index = 0; index < array_count (node->provisioners); index++) {
+                            if (provisionerMessageWaitingResposeCount(&node->provisioners[index]) > 0)
+                                break;
                             if (provisionerSendMessagesPending (&node->provisioners[index])) {
                                 BREthereumNodeStatus status = provisionerMessageSend(&node->provisioners[index]);
                                 switch (status) {
@@ -1397,6 +1403,7 @@ nodeProcess (BREthereumNode node,
                                 // Only send one at a time - socket might be blocked
                                 break; // from for node->provisioners
                             }
+                        }
                         break;
                 }
             }
