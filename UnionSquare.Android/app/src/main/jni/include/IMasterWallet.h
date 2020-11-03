@@ -147,6 +147,14 @@ namespace Elastos {
 			virtual bool IsAddressValid(const std::string &address) const = 0;
 
 			/**
+			 *
+			 * @param chainID chain id of subwallet
+			 * @param address address of subwallet
+			 * @return
+			 */
+			virtual bool IsSubWalletAddressValid(const std::string &chainID, const std::string &address) const = 0;
+
+			/**
 			 * Get all chain ids of supported chains.
 			 * @return a list of chain id.
 			 */
