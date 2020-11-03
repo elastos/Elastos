@@ -513,6 +513,22 @@ namespace Elastos {
 			return valid;
 		}
 
+		bool MasterWallet::IsSubWalletAddressValid(const std::string &chainID, const std::string &address) const {
+			ArgInfo("{} {}", _id, GetFunName());
+			ArgInfo("chainID: {}", chainID);
+			ArgInfo("address: {}", address);
+
+			bool valid = false;
+			if (chainID == CHAINID_MAINCHAIN || chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
+				valid = Address(address).Valid();
+			} else if (chainID == CHAINID_ESC) {
+				valid = addressValidateString(address.c_str()) == ETHEREUM_BOOLEAN_TRUE;
+			}
+
+			ArgInfo("r => {}", valid);
+			return valid;
+		}
+
 		std::vector<std::string> MasterWallet::GetSupportedChains() const {
 			ArgInfo("{} {}", _id, GetFunName());
 

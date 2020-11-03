@@ -47,6 +47,8 @@
 
 #include <vector>
 #include <map>
+#include <ethereum/base/BREthereumAddress.h>
+#include <ethereum/base/BREthereumLogic.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -81,6 +83,13 @@ namespace Elastos {
 
 			BigInt value;
 			value.setDec(amount);
+
+			if (sideChainID == CHAINID_IDCHAIN || sideChainID == CHAINID_TOKENCHAIN) {
+				Address addressValidate(sideChainAddress);
+				ErrorChecker::CheckParam(!addressValidate.Valid(), Error::Address, "invalid standard address");
+			} else if (sideChainID == CHAINID_ESC) {
+				ErrorChecker::CheckParam(addressValidateString(sideChainAddress.c_str()) != ETHEREUM_BOOLEAN_TRUE, Error::Address, "invalid ethsc address");
+			}
 
 			TransferInfo info(sideChainAddress, 0, value);
 			PayloadPtr payload = PayloadPtr(new TransferCrossChainAsset({info}));
