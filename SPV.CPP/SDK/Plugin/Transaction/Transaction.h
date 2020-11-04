@@ -54,6 +54,7 @@ namespace Elastos {
 				IllegalSidechainEvidence = 0x11,
 				InactiveArbitrators      = 0x12,
 				UpdateVersion            = 0x13,
+				nextTurnDPOSInfo         = 0x14,
 
 				registerCR               = 0x21,
 				unregisterCR             = 0x22,
@@ -66,7 +67,7 @@ namespace Elastos {
 				crcAppropriation         = 0x28,
 				crcProposalWithdraw      = 0x29,
 				crcProposalRealWithdraw  = 0x2a,
-
+				crcAssetsRectify         = 0x2b,
 				crCouncilMemberClaimNode = 0x31,
 
 				TypeMaxCount
