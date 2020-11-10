@@ -43,6 +43,9 @@ networkCopyNameAsLowercase (BREthereumNetwork network);
 extern BREthereumChainId
 networkGetChainId (BREthereumNetwork network);
 
+extern BREthereumChainId
+networkGetChainIdOld(BREthereumNetwork network);
+
 extern BREthereumNetworkId
 networkGetNetworkId (BREthereumNetwork network);
 

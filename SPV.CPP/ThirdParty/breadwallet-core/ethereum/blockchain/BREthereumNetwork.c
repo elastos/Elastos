@@ -41,6 +41,17 @@ networkGetChainId (BREthereumNetwork network) {
     return network->chainId;
 }
 
+extern BREthereumChainId
+networkGetChainIdOld(BREthereumNetwork network) {
+	if (!strcmp(network->name, "mainnet")) {
+		return 1;
+	} else if (!strcmp(network->name, "testnet")) {
+		return 3;
+	}
+
+	return 0;
+}
+
 extern BREthereumNetworkId
 networkGetNetworkId (BREthereumNetwork network) {
     networkInitilizeAllIfAppropriate();

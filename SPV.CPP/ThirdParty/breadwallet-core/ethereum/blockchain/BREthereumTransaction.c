@@ -363,7 +363,7 @@ transactionRlpEncode(BREthereumTransaction transaction,
     // scheme using v = 27 and v = 28 remains valid and continues to operate under the same rules
     // as it does now.
 
-    transaction->chainId = networkGetChainId(network);
+//    transaction->chainId = networkGetChainId(network);
 
     switch (type) {
         case RLP_TYPE_TRANSACTION_UNSIGNED:
@@ -458,6 +458,13 @@ transactionRlpDecode (BRRlpItem item,
         transaction->signature.sig.vrs.v = (eipChainId > 30
                                             ? eipChainId - 8 - 2 * transaction->chainId
                                             : eipChainId);
+        if (transaction->signature.sig.vrs.v != 0x1b && transaction->signature.sig.vrs.v != 0x1c) {
+        	transaction->chainId = networkGetChainIdOld(network);
+        	transaction->signature.sig.vrs.v = (eipChainId > 30
+												? eipChainId - 8 - 2 * transaction->chainId
+												: eipChainId);
+			assert(transaction->signature.sig.vrs.v == 27 || transaction->signature.sig.vrs.v == 28);
+		}
         
         BRRlpData rData = rlpDecodeBytesSharedDontRelease (coder, items[7]);
         assert (32 >= rData.bytesCount);
