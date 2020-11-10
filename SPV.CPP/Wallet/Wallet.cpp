@@ -1659,6 +1659,25 @@ static int tracking(int argc, char *argv[]) {
 	return 0;
 }
 
+// loglevel (trace | debug | info ...)
+static int loglevel(int argc, char *argv[]) {
+	checkParam(2);
+	if (manager == nullptr) {
+		std::cerr << "wallet manager is null" << std::endl; \
+		return ERRNO_APP; \
+	}
+
+	std::string level = argv[1];
+
+	try {
+		manager->SetLogLevel(level);
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+	return 0;
+}
+
 // vote (cr | dpos)
 static int vote(int argc, char *argv[]) {
 	checkParam(2);
@@ -2471,6 +2490,7 @@ struct command {
 	{"network",    _network,       "[netType]                                        Show current net type or set net type: 'MainNet', 'TestNet', 'RegTest', 'PrvNet'"},
 	{"verbose",    verbose,        "(on | off)                                       Set verbose mode."},
 	{"tracking",   tracking,       "                                                 Create proposal tracking tx."},
+	{"loglevel",   loglevel,       "(trace | debug | info | warning | error | critical | off"},
 	{"exit", NULL,               "                                                 Quit wallet."},
 	{"quit", NULL,               "                                                 Quit wallet."},
 	{NULL,   NULL, NULL}

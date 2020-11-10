@@ -146,6 +146,8 @@ namespace Elastos {
 
 			virtual void FlushData();
 
+			virtual void SetLogLevel(const std::string &level);
+
 		protected:
 			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;
 

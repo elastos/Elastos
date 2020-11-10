@@ -567,6 +567,23 @@ namespace Elastos {
 						  });
 		}
 
+		void MasterWalletManager::SetLogLevel(const std::string &level) {
+			ArgInfo("{}", GetFunName());
+			ArgInfo("level: {}", level);
+
+			if (level != "trace" &&
+				level != "debug" &&
+				level != "info" &&
+				level != "warning" &&
+				level != "error" &&
+				level != "critical" &&
+				level != "off") {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid level");
+			}
+
+			Log::setLevel(spdlog::level::from_str(level));
+		}
+
 		std::vector<std::string> MasterWalletManager::GetAllMasterWalletID() const {
 			ArgInfo("{}", GetFunName());
 
