@@ -69,7 +69,7 @@ addressCreateKey (const BRKey *keyWithPubKeyProvided);
  * @return newly allocated memory of char*
  */
 extern char *
-addressGetEncodedString (BREthereumAddress address, int useChecksum);
+addressGetEncodedString (BREthereumAddress *address, int useChecksum);
 
 
 /**
@@ -88,12 +88,12 @@ addressFillEncodedString (BREthereumAddress address,
 extern BREthereumHash
 addressGetHash (BREthereumAddress address);
 
-extern BREthereumAddress
+extern BREthereumAddress*
 addressRlpDecode (BRRlpItem item,
                      BRRlpCoder coder);
 
 extern BRRlpItem
-addressRlpEncode(BREthereumAddress address,
+addressRlpEncode(BREthereumAddress *address,
                     BRRlpCoder coder);
 
 extern BREthereumBoolean

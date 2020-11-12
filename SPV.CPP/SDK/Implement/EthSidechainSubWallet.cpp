@@ -387,7 +387,10 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 							nlohmann::json tx = *it;
 							hash = tx["hash"].get<std::string>();
 							from = tx["from"].get<std::string>();
-							to = tx["to"].get<std::string>();
+							if (tx["to"].is_null())
+								to.clear();
+							else
+								to = tx["to"].get<std::string>();
 							contract = tx["contract"].get<std::string>();
 							amount = tx["amount"].get<std::string>();
 							gasLimit = tx["gasLimit"].get<std::string>();

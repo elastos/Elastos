@@ -30,7 +30,10 @@ typedef struct BREthereumTokenRecord *BREthereumToken;
 
 extern BREthereumAddress
 tokenGetAddressRaw (BREthereumToken token);
-    
+
+extern BREthereumAddress*
+tokenGetAddressPtrRaw (BREthereumToken token);
+
 /**
  * Return the token address as a '0x'-prefixed string.  DO NOT FREE THIS.
  */

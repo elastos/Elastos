@@ -415,7 +415,7 @@ ewmHandleAnnounceSubmitTransfer (BREthereumEWM ewm,
 typedef struct {
     BREthereumHash hash;
     BREthereumAddress from;
-    BREthereumAddress to;
+    BREthereumAddress *to;
     BREthereumAddress contract;
     UInt256 amount;
     uint64_t gasLimit;
@@ -433,6 +433,7 @@ typedef struct {
 
 static inline void
 ewmClientAnnounceTransactionBundleRelease (BREthereumEWMClientAnnounceTransactionBundle *bundle) {
+    if (NULL != bundle->to) free(bundle->to);
     free (bundle->data);
     free (bundle);
 }

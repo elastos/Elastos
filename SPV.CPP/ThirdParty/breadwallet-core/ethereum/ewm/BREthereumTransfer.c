@@ -117,7 +117,7 @@ struct BREthereumTransferRecord {
     /*
      * The target
      */
-    BREthereumAddress targetAddress;
+    BREthereumAddress *targetAddress;
 
     /**
      * The amount - which includes a 'currency' and will/must be consistent with the
@@ -184,14 +184,17 @@ struct BREthereumTransferRecord {
  */
 static BREthereumTransfer
 transferCreateDetailed (BREthereumAddress sourceAddress,
-                        BREthereumAddress targetAddress,
+                        BREthereumAddress *targetAddress,
                         BREthereumAmount amount,
                         BREthereumFeeBasis feeBasis,
                         OwnershipGiven BREthereumTransaction originatingTransaction) {
     BREthereumTransfer transfer = calloc (1, sizeof(struct BREthereumTransferRecord));
 
     transfer->sourceAddress = sourceAddress;
-    transfer->targetAddress = targetAddress;
+    if (NULL != targetAddress) {
+        transfer->targetAddress = calloc(1, sizeof(BREthereumAddress));
+        *transfer->targetAddress = *targetAddress;
+    }
     transfer->amount = amount;
     transfer->feeBasis = feeBasis;
     transfer->gasEstimate = gasCreate(0);
@@ -205,7 +208,7 @@ transferCreateDetailed (BREthereumAddress sourceAddress,
 
 extern BREthereumTransfer
 transferCreate (BREthereumAddress sourceAddress,
-                BREthereumAddress targetAddress,
+                BREthereumAddress *targetAddress,
                 BREthereumAmount amount,
                 BREthereumFeeBasis feeBasis,
                 BREthereumTransferBasisType transferBasisType) {
@@ -318,7 +321,7 @@ transferCreateWithLog (OwnershipGiven BREthereumLog log,
 
     // No originating transaction
     BREthereumTransfer transfer = transferCreateDetailed (sourceAddress,
-                                                          targetAddress,
+                                                          &targetAddress,
                                                           amount,
                                                           feeBasis,
                                                           NULL);
@@ -338,6 +341,7 @@ extern void
 transferRelease (BREthereumTransfer transfer) {
     transactionRelease (transfer->originatingTransaction);
     transferBasisRelease (&transfer->basis);
+    if (NULL != transfer->targetAddress) free(transfer->targetAddress);
     free (transfer);
 }
 
@@ -346,7 +350,7 @@ transferGetSourceAddress (BREthereumTransfer transfer) {
     return transfer->sourceAddress;
 }
 
-extern BREthereumAddress
+extern BREthereumAddress*
 transferGetTargetAddress (BREthereumTransfer transfer) {
     return transfer->targetAddress;
 }
@@ -696,7 +700,7 @@ transferProvideOriginatingTransactionData (BREthereumTransfer transfer) {
             UInt256 value = amountGetTokenQuantity(transfer->amount).valueAsInteger;
             
             char address[ADDRESS_ENCODED_CHARS];
-            addressFillEncodedString(transfer->targetAddress, 0, address);
+            addressFillEncodedString(NULL == transfer->targetAddress ? EMPTY_ADDRESS_INIT : *transfer->targetAddress, 0, address);
             
             // Data is a HEX ENCODED string
             return (char *) contractEncode (contractERC20, functionERC20Transfer,
@@ -709,13 +713,13 @@ transferProvideOriginatingTransactionData (BREthereumTransfer transfer) {
     }
 }
 
-static BREthereumAddress
+static BREthereumAddress*
 transferProvideOriginatingTransactionTargetAddress (BREthereumTransfer transfer) {
     switch (amountGetType(transfer->amount)) {
         case AMOUNT_ETHER:
             return transfer->targetAddress;
         case AMOUNT_TOKEN:
-            return tokenGetAddressRaw(amountGetToken(transfer->amount));
+            return tokenGetAddressPtrRaw(amountGetToken(transfer->amount));
     }
 }
 
@@ -760,7 +764,7 @@ transferGetEffectiveAmountInEther(BREthereumTransfer transfer) {
     }
 }
 
-private_extern BREthereumAddress
+private_extern BREthereumAddress*
 transferGetEffectiveTargetAddress (BREthereumTransfer transfer) {
     return transferProvideOriginatingTransactionTargetAddress (transfer);
 }

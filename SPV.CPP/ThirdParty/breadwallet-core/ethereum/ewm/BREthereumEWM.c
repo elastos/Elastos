@@ -855,10 +855,10 @@ ewmSyncToDepthGetLastConfirmedSendTransferHeightPredicate (ewmSyncToDepthGetLast
     BREthereumAddress accountAddress = accountGetPrimaryAddress (account);
 
     BREthereumAddress source = transferGetSourceAddress (transfer);
-    BREthereumAddress target = transferGetTargetAddress (transfer);
+    BREthereumAddress *target = transferGetTargetAddress (transfer);
 
     BREthereumBoolean accountIsSource = addressEqual (source, accountAddress);
-    BREthereumBoolean accountIsTarget = addressEqual (target, accountAddress);
+    BREthereumBoolean accountIsTarget = NULL == target ? ETHEREUM_BOOLEAN_FALSE : addressEqual (*target, accountAddress);
 
     uint64_t blockNumber = 0;
     // check that the transfer has been included, is a send and has been confirmed as final
@@ -1200,9 +1200,14 @@ ewmWalletCreateTransfer(BREthereumEWM ewm,
                         const char *recvAddress,
                         BREthereumAmount amount) {
     BREthereumTransfer transfer = NULL;
+	BREthereumAddress *addressPtr = NULL, brAddress;
+	if (strlen(recvAddress) > 0) {
+		brAddress = addressCreate(recvAddress);
+		addressPtr = &brAddress;
+	}
 
     pthread_mutex_lock(&ewm->lock);
-    transfer = walletCreateTransfer(wallet, addressCreate(recvAddress), amount);
+    transfer = walletCreateTransfer(wallet, addressPtr, amount);
     pthread_mutex_unlock(&ewm->lock);
 
     // Transfer DOES NOT have a hash yet because it is not signed; but it is inserted in the
@@ -1225,9 +1230,15 @@ ewmWalletCreateTransferGeneric(BREthereumEWM ewm,
                                const char *data) {
     BREthereumTransfer transfer = NULL;
 
+    BREthereumAddress *addressPtr = NULL, brAddress;
+    if (strlen(recvAddress) > 0) {
+		brAddress = addressCreate(recvAddress);
+		addressPtr = &brAddress;
+	}
+
     pthread_mutex_lock(&ewm->lock);
     transfer = walletCreateTransferGeneric(wallet,
-                                              addressCreate(recvAddress),
+                                              addressPtr,
                                               amount,
                                               gasPrice,
                                               gasLimit,
@@ -1252,8 +1263,14 @@ ewmWalletCreateTransferWithFeeBasis (BREthereumEWM ewm,
                                      BREthereumFeeBasis feeBasis) {
     BREthereumTransfer transfer = NULL;
 
+	BREthereumAddress *addressPtr = NULL, brAddress;
+	if (strlen(recvAddress) > 0) {
+		brAddress = addressCreate(recvAddress);
+		addressPtr = &brAddress;
+	}
+
     pthread_mutex_lock(&ewm->lock);
-    transfer = walletCreateTransferWithFeeBasis (wallet, addressCreate(recvAddress), amount, feeBasis);
+    transfer = walletCreateTransferWithFeeBasis (wallet, addressPtr, amount, feeBasis);
     pthread_mutex_unlock(&ewm->lock);
 
     // Transfer DOES NOT have a hash yet because it is not signed; but it is inserted in the
@@ -1295,7 +1312,7 @@ ewmWalletEstimateTransferFeeForTransfer (BREthereumEWM ewm,
                                          BREthereumWallet wallet,
                                          BREthereumCookie cookie,
                                          BREthereumAddress source,
-                                         BREthereumAddress target,
+                                         BREthereumAddress *target,
                                          BREthereumAmount amount,
                                          BREthereumGasPrice gasPrice,
                                          BREthereumGas gasLimit) {
@@ -1341,9 +1358,10 @@ ewmWalletCreateTransferToCancel(BREthereumEWM ewm,
 
     // Create a new transaction with: a) targetAddress to self (sourceAddress), b) 0 ETH, c)
     // gasPrice increased (to replacement value).
+    BREthereumAddress sourceAddress = transactionGetSourceAddress(oldTransaction);
     BREthereumTransaction transaction =
-    transactionCreate (transactionGetSourceAddress(oldTransaction),
-                       transactionGetSourceAddress(oldTransaction),
+    transactionCreate (sourceAddress,
+                       &sourceAddress,
                        etherCreateZero(),
                        gasPriceCreate(newGasPrice),
                        transactionGetGasLimit(oldTransaction),
@@ -2148,7 +2166,7 @@ ewmHandleGetBlocks (BREthereumEWM ewm,
                     uint64_t blockStart,
                     uint64_t blockStop) {
 
-    char *strAddress = addressGetEncodedString(address, 0);
+    char *strAddress = addressGetEncodedString(&address, 0);
 
     ewm->client.funcGetBlocks (ewm->client.context,
                                ewm,
@@ -2183,7 +2201,8 @@ ewmUpdateWalletBalance(BREthereumEWM ewm,
         switch (ewm->mode) {
             case CRYPTO_SYNC_MODE_API_ONLY:
             case CRYPTO_SYNC_MODE_API_WITH_P2P_SEND: {
-                char *address = addressGetEncodedString(walletGetAddress(wallet), 0);
+                BREthereumAddress brAddress = walletGetAddress(wallet);
+                char *address = addressGetEncodedString(&brAddress, 0);
 
                 ewm->client.funcGetBalance (ewm->client.context,
                                             ewm,
@@ -2228,7 +2247,8 @@ ewmUpdateNonce (BREthereumEWM ewm) {
     switch (ewm->mode) {
         case CRYPTO_SYNC_MODE_API_ONLY:
         case CRYPTO_SYNC_MODE_API_WITH_P2P_SEND: {
-            char *address = addressGetEncodedString(accountGetPrimaryAddress(ewm->account), 0);
+            BREthereumAddress primaryAddress = accountGetPrimaryAddress(ewm->account);
+            char *address = addressGetEncodedString(&primaryAddress, 0);
 
             ewm->client.funcGetNonce (ewm->client.context,
                                       ewm,
@@ -2259,7 +2279,8 @@ ewmUpdateTransactions (BREthereumEWM ewm) {
     switch (ewm->mode) {
         case CRYPTO_SYNC_MODE_API_ONLY:
         case CRYPTO_SYNC_MODE_API_WITH_P2P_SEND: {
-            char *address = addressGetEncodedString(accountGetPrimaryAddress(ewm->account), 0);
+            BREthereumAddress primaryAddress = accountGetPrimaryAddress(ewm->account);
+            char *address = addressGetEncodedString(&primaryAddress, 0);
 
             ewm->client.funcGetTransactions (ewm->client.context,
                                              ewm,
@@ -2297,7 +2318,8 @@ ewmUpdateLogs (BREthereumEWM ewm,
     switch (ewm->mode) {
         case CRYPTO_SYNC_MODE_API_ONLY:
         case CRYPTO_SYNC_MODE_API_WITH_P2P_SEND: {
-            char *address = addressGetEncodedString(accountGetPrimaryAddress(ewm->account), 0);
+            BREthereumAddress primaryAddress = accountGetPrimaryAddress(ewm->account);
+            char *address = addressGetEncodedString(&primaryAddress, 0);
             char *encodedAddress =
             eventERC20TransferEncodeAddress (event, address);
             const char *contract = ewmGetWalletContractAddress(ewm, wid);
@@ -2503,7 +2525,7 @@ ewmTransferGetRawDataHexEncoded(BREthereumEWM ewm,
 
 /// MARK: - Transfer
 
-extern BREthereumAddress
+extern BREthereumAddress*
 ewmTransferGetTarget (BREthereumEWM ewm,
                       BREthereumTransfer transfer) {
     return transferGetTargetAddress(transfer);

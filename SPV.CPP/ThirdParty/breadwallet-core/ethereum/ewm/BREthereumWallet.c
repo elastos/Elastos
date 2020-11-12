@@ -230,7 +230,7 @@ walletEstimateTransferFeeDetailed (BREthereumWallet wallet,
 //
 extern BREthereumTransfer
 walletCreateTransferWithFeeBasis (BREthereumWallet wallet,
-                                  BREthereumAddress recvAddress,
+                                  BREthereumAddress *recvAddress,
                                   BREthereumAmount amount,
                                   BREthereumFeeBasis feeBasis) {
     BREthereumTransfer transfer = transferCreate (wallet->address, recvAddress, amount, feeBasis,
@@ -243,7 +243,7 @@ walletCreateTransferWithFeeBasis (BREthereumWallet wallet,
 
 extern BREthereumTransfer
 walletCreateTransfer(BREthereumWallet wallet,
-                     BREthereumAddress recvAddress,
+                     BREthereumAddress *recvAddress,
                      BREthereumAmount amount) {
     
     return walletCreateTransferWithFeeBasis (wallet, recvAddress, amount,
@@ -257,7 +257,7 @@ walletCreateTransfer(BREthereumWallet wallet,
 
 extern BREthereumTransfer
 walletCreateTransferGeneric (BREthereumWallet wallet,
-                             BREthereumAddress recvAddress,
+                             BREthereumAddress *recvAddress,
                              BREthereumEther amount,
                              BREthereumGasPrice gasPrice,
                              BREthereumGas gasLimit,
@@ -683,7 +683,7 @@ extern BRRlpItem
 walletStateEncode (const BREthereumWalletState state,
                    BRRlpCoder coder) {
     return rlpEncodeList (coder, 3,
-                          addressRlpEncode (state->address, coder),
+                          addressRlpEncode (&state->address, coder),
                           rlpEncodeUInt256 (coder, state->amount, 0),
                           rlpEncodeUInt64  (coder, state->nonce, 0));
 }
@@ -697,7 +697,13 @@ walletStateDecode (BRRlpItem item,
     const BRRlpItem *items = rlpDecodeList (coder, item, &itemsCount);
     assert (3 == itemsCount);
 
-    state->address = addressRlpDecode (items[0], coder);
+    BREthereumAddress *addr = addressRlpDecode (items[0], coder);
+    if (NULL != addr) {
+        state->address = *addr;
+        free(addr);
+    } else {
+        state->address = EMPTY_ADDRESS_INIT;
+    }
     state->amount  = rlpDecodeUInt256 (coder, items[1], 0);
     state->nonce   = rlpDecodeUInt64  (coder, items[2], 0);
 

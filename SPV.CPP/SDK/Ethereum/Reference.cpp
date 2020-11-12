@@ -33,6 +33,9 @@ namespace Elastos {
 		}
 
 		std::string Reference::GetCString(char *data) const {
+			if (data == NULL)
+				return "";
+
 			std::string result = data;
 			free(data);
 			data = NULL;

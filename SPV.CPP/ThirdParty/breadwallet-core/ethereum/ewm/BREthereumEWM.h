@@ -251,7 +251,7 @@ ewmWalletEstimateTransferFeeForTransfer (BREthereumEWM ewm,
                                          BREthereumWallet wallet,
                                          BREthereumCookie cookie,
                                          BREthereumAddress source,
-                                         BREthereumAddress target,
+                                         BREthereumAddress *target,
                                          BREthereumAmount amount,
                                          BREthereumGasPrice gasPrice,
                                          BREthereumGas gasLimit);
@@ -303,7 +303,7 @@ extern void
 ewmTransferDelete (BREthereumEWM ewm,
                    BREthereumTransfer transfer);
 
-extern BREthereumAddress
+extern BREthereumAddress*
 ewmTransferGetTarget (BREthereumEWM ewm,
                       BREthereumTransfer transfer);
 

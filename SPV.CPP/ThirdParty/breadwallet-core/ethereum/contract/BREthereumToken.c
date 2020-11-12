@@ -70,6 +70,11 @@ tokenGetAddressRaw (BREthereumToken token) {
     return token->raw;
 }
 
+extern BREthereumAddress*
+tokenGetAddressPtrRaw (BREthereumToken token) {
+	return &token->raw;
+}
+
 extern const char *
 tokenGetAddress(BREthereumToken token) {
     return token->address;
@@ -191,7 +196,7 @@ extern BRRlpItem
 tokenEncode (BREthereumToken token,
              BRRlpCoder coder) {
     return rlpEncodeList (coder, 7,
-                          addressRlpEncode (token->raw, coder),
+                          addressRlpEncode (&token->raw, coder),
                           rlpEncodeString (coder, token->symbol),
                           rlpEncodeString (coder, token->name),
                           rlpEncodeString (coder, token->description),
@@ -209,8 +214,14 @@ tokenDecode (BRRlpItem item,
     const BRRlpItem *items = rlpDecodeList (coder, item, &itemsCount);
     assert (7 == itemsCount);
 
-    token->raw     = addressRlpDecode (items[0], coder);
-    token->address = addressGetEncodedString(token->raw, 1);
+    BREthereumAddress *addr = addressRlpDecode (items[0], coder);
+    if (NULL != addr) {
+		token->raw = *addr;
+		free(addr);
+    } else {
+		token->raw = EMPTY_ADDRESS_INIT;
+    }
+    token->address = addressGetEncodedString(&token->raw, 1);
     token->symbol  = rlpDecodeString (coder, items[1]);
     token->name    = rlpDecodeString (coder, items[2]);
     token->description = rlpDecodeString(coder, items[3]);

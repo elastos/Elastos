@@ -55,11 +55,11 @@ namespace Elastos {
 
 		std::string EthereumTransfer::getSourceAddress() const {
 			BREthereumAddress source = ewmTransferGetSource(_ewm->getRaw(), getRaw());
-			return GetCString(addressGetEncodedString(source, 1));
+			return GetCString(addressGetEncodedString(&source, 1));
 		}
 
 		std::string EthereumTransfer::getTargetAddress() const {
-			BREthereumAddress target = ewmTransferGetTarget(_ewm->getRaw(), getRaw());
+			BREthereumAddress *target = ewmTransferGetTarget(_ewm->getRaw(), getRaw());
 			return GetCString(addressGetEncodedString(target, 1));
 		}
 

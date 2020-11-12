@@ -464,7 +464,7 @@ namespace Elastos {
 			// confirmations
 			// txreceipt_status
 											  const std::string &isError) {
-			ewmAnnounceTransaction(_ewm, id, hash.data(), from.data(), to.data(), contract.data(), amount.data(),
+			ewmAnnounceTransaction(_ewm, id, hash.data(), from.data(), to.empty() ? NULL : to.data(), contract.data(), amount.data(),
 								   gasLimit.data(), gasPrice.data(), data.data(), nonce.data(), gasUsed.data(),
 								   blockNumber.data(), blockHash.data(), blockConfirmations.data(),
 								   blockTransactionIndex.data(), blockTimestamp.data(), isError.data());
@@ -824,7 +824,7 @@ namespace Elastos {
 		}
 
 		bool EthereumEWM::addressIsValid(const std::string &address) {
-			return ETHEREUM_BOOLEAN_IS_TRUE(addressValidateString(address.data()));
+			return address.empty() || ETHEREUM_BOOLEAN_IS_TRUE(addressValidateString(address.data()));
 		}
 
 		void EthereumEWM::ensureValidAddress(const std::string &address) {

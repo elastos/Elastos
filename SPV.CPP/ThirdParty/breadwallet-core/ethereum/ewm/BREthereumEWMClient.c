@@ -203,7 +203,8 @@ ewmGetGasEstimate (BREthereumEWM ewm,
                 BREthereumGasPrice gasPrice = feeBasisGetGasPrice (feeBasis);
                 BREthereumTransaction transaction = transferGetOriginatingTransaction(transfer);
 
-                char *from = addressGetEncodedString (transferGetEffectiveSourceAddress(transfer), 0);
+                BREthereumAddress sourceAddress = transferGetEffectiveSourceAddress(transfer);
+                char *from = addressGetEncodedString (&sourceAddress, 0);
                 char *to   = addressGetEncodedString (transferGetEffectiveTargetAddress(transfer), 0);
                 char *amount = coerceStringPrefaced (amountInEther.valueInWEI, 16, "0x");
                 char *price  = coerceStringPrefaced (gasPrice.etherPerGas.valueInWEI, 16, "0x");
@@ -454,7 +455,12 @@ ewmAnnounceTransaction(BREthereumEWM ewm,
     bundle->hash = hashCreate(hashString);
 
     bundle->from = addressCreate(from);
-    bundle->to = addressCreate(to);
+    if (NULL == to) {
+        bundle->to = NULL;
+    } else {
+        bundle->to = calloc(1, sizeof(BREthereumAddress));
+        *bundle->to = addressCreate(to);
+    }
     bundle->contract = (NULL == contract || '\0' == contract[0]
                         ? EMPTY_ADDRESS_INIT
                         : addressCreate(contract));

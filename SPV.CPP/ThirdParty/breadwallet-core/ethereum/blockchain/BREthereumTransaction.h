@@ -45,7 +45,7 @@ typedef struct BREthereumTransactionRecord *BREthereumTransaction;
 
 extern BREthereumTransaction
 transactionCreate(BREthereumAddress sourceAddress,
-                  BREthereumAddress targetAddress,
+                  BREthereumAddress *targetAddress,
                   BREthereumEther amount,
                   BREthereumGasPrice gasPrice,
                   BREthereumGas gasLimit,
@@ -64,7 +64,7 @@ transactionReleaseForSet (void *ignore, void *item);
 extern BREthereumAddress
 transactionGetSourceAddress(BREthereumTransaction transaction);
 
-extern BREthereumAddress
+extern BREthereumAddress*
 transactionGetTargetAddress(BREthereumTransaction transaction);
 
 extern BREthereumBoolean

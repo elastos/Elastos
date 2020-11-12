@@ -120,7 +120,7 @@ addressDetailFillKey(BREthereumAddressDetail *address, const BRKey *key, uint32_
     
     
     address->raw = addressCreateKey(key);
-    char *string = addressGetEncodedString(address->raw, 1);
+    char *string = addressGetEncodedString(&address->raw, 1);
     memcpy (address->string, string, 42);
     address->string[42] = '\0';
     free (string);

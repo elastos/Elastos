@@ -540,7 +540,7 @@ blockHeaderRlpEncode (BREthereumBlockHeader header,
 
     items[ 0] = hashRlpEncode(header->parentHash, coder);
     items[ 1] = hashRlpEncode(header->ommersHash, coder);
-    items[ 2] = addressRlpEncode(header->beneficiary, coder);
+    items[ 2] = addressRlpEncode(&header->beneficiary, coder);
     items[ 3] = hashRlpEncode(header->stateRoot, coder);
     items[ 4] = hashRlpEncode(header->transactionsRoot, coder);
     items[ 5] = hashRlpEncode(header->receiptsRoot, coder);
@@ -574,7 +574,13 @@ blockHeaderRlpDecode (BRRlpItem item,
 
     header->parentHash = hashRlpDecode(items[0], coder);
     header->ommersHash = hashRlpDecode(items[1], coder);
-    header->beneficiary = addressRlpDecode(items[2], coder);
+    BREthereumAddress *tmpAddress = addressRlpDecode(items[2], coder);
+    if (tmpAddress != NULL) {
+        header->beneficiary = *tmpAddress;
+        free(tmpAddress);
+    } else {
+        header->beneficiary = EMPTY_ADDRESS_INIT;
+    }
     header->stateRoot = hashRlpDecode(items[3], coder);
     header->transactionsRoot = hashRlpDecode(items[4], coder);
     header->receiptsRoot = hashRlpDecode(items[5], coder);

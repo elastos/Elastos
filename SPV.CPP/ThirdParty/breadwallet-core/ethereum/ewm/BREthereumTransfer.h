@@ -35,7 +35,7 @@ typedef enum  {
  */
 extern BREthereumTransfer
 transferCreate (BREthereumAddress sourceAddress,
-                BREthereumAddress targetAddress,
+                BREthereumAddress *targetAddress,
                 BREthereumAmount amount,
                 BREthereumFeeBasis feeBasis,
                 BREthereumTransferBasisType transferBasisType);
@@ -66,7 +66,7 @@ transferRelease (BREthereumTransfer transfer);
 extern BREthereumAddress
 transferGetSourceAddress (BREthereumTransfer transfer);
 
-extern BREthereumAddress
+extern BREthereumAddress*
 transferGetTargetAddress (BREthereumTransfer transfer);
 
 extern BREthereumAmount
@@ -235,7 +235,7 @@ transferStatusCreate (BREthereumTransactionStatus status);
 private_extern BREthereumEther
 transferGetEffectiveAmountInEther (BREthereumTransfer transfer);
 
-private_extern BREthereumAddress
+private_extern BREthereumAddress*
 transferGetEffectiveTargetAddress (BREthereumTransfer transfer);
 
 private_extern BREthereumAddress

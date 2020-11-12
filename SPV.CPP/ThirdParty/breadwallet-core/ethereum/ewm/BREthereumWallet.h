@@ -76,18 +76,18 @@ walletEstimateTransferFeeDetailed (BREthereumWallet wallet,
  */
 extern BREthereumTransfer
 walletCreateTransfer(BREthereumWallet wallet,
-                        BREthereumAddress recvAddress,
+                        BREthereumAddress *recvAddress,
                         BREthereumAmount amount);
 
 extern BREthereumTransfer
 walletCreateTransferWithFeeBasis (BREthereumWallet wallet,
-                                  BREthereumAddress recvAddress,
+                                  BREthereumAddress *recvAddress,
                                   BREthereumAmount amount,
                                   BREthereumFeeBasis feeBasis);
 
 extern BREthereumTransfer
 walletCreateTransferGeneric(BREthereumWallet wallet,
-                            BREthereumAddress recvAddress,
+                            BREthereumAddress *recvAddress,
                             BREthereumEther amount,
                             BREthereumGasPrice gasPrice,
                             BREthereumGas gasLimit,
