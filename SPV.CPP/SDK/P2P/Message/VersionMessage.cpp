@@ -9,6 +9,7 @@
 
 #define ENABLED_SERVICES   0ULL  // we don't provide full blocks to remote nodes
 #define PROTOCOL_VERSION   70013
+#define CRPROTOCOL_VERSION 80000
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -63,7 +64,17 @@ namespace Elastos {
 			}
 			_peer->SetLastBlock(uint32_t(height));
 
-			_peer->info("got version {}, services {}", _peer->GetVersion(), _peer->GetServices());
+			uint8_t relay = 0;
+			if (!stream.ReadUint8(relay)) {
+				_peer->warn("version msg without relay");
+			}
+
+			std::string versionString;
+			if (!stream.ReadVarString(versionString)) {
+				_peer->warn("version msg without version-string");
+			}
+
+			_peer->info("got version: {}, services: {}, relay: {}, v: {}", _peer->GetVersion(), _peer->GetServices(), relay, versionString);
 			SendMessageParameter param;
 			_peer->SendMessage(MSG_VERACK, param);
 			return true;
@@ -72,7 +83,7 @@ namespace Elastos {
 		void VersionMessage::Send(const SendMessageParameter &param) {
 			ByteStream stream;
 
-			stream.WriteUint32(PROTOCOL_VERSION);
+			stream.WriteUint32(CRPROTOCOL_VERSION);
 			stream.WriteUint64(ENABLED_SERVICES);
 			stream.WriteUint32(uint32_t(time(nullptr)));
 			stream.WriteUint16(_peer->GetPort());
@@ -80,6 +91,7 @@ namespace Elastos {
 			stream.WriteUint64(_peer->GetNonce());
 			stream.WriteUint64(0);
 			stream.WriteUint8(0);
+			stream.WriteVarString("spv-" SPVSDK_VERSION_MESSAGE);
 
 			SendMessage(stream.GetBytes(), Type());
 		}
