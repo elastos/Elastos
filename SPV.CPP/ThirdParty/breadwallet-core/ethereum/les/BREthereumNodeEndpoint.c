@@ -428,7 +428,7 @@ nodeEndpointRecvData (BREthereumNodeEndpoint endpoint,
         gettimeofday(&tnow, NULL);
         if (n == 0) error = ECONNRESET;
         else if (n < 0 && errno != EWOULDBLOCK) error = errno;
-        else if (tnow.tv_sec - tbegin.tv_sec > 30) error = ETIMEDOUT;
+        else if (tnow.tv_sec - tbegin.tv_sec > 3) error = ETIMEDOUT;
         else if (n < 0 && errno == EWOULDBLOCK) continue;
         else {
             totalCount += n;
