@@ -356,16 +356,17 @@ namespace Elastos {
 		}
 
 		// normal or elip
-		void CRCProposal::SerializeOwnerUnsigned(ByteStream &ostream, uint8_t version) const {
-			ostream.WriteUint16(_type);
-			ostream.WriteVarString(_categoryData);
-			ostream.WriteVarBytes(_ownerPublicKey);
-			ostream.WriteBytes(_draftHash);
-			ostream.WriteVarUint(_budgets.size());
-			for (size_t i = 0; i < _budgets.size(); ++i) {
-				_budgets[i].Serialize(ostream);
-			}
-			ostream.WriteBytes(_recipient.ProgramHash());
+		void CRCProposal::SerializeOwnerUnsigned(ByteStream &stream, uint8_t version) const {
+			stream.WriteUint16(_type);
+			stream.WriteVarString(_categoryData);
+			stream.WriteVarBytes(_ownerPublicKey);
+			stream.WriteBytes(_draftHash);
+			if (version >= CRCProposalVersion01)
+				stream.WriteVarBytes(_draftData);
+			stream.WriteVarUint(_budgets.size());
+			for (size_t i = 0; i < _budgets.size(); ++i)
+				_budgets[i].Serialize(stream);
+			stream.WriteBytes(_recipient.ProgramHash());
 		}
 
 		bool CRCProposal::DeserializeOwnerUnsigned(const ByteStream &stream, uint8_t version) {
@@ -382,6 +383,13 @@ namespace Elastos {
 			if (!stream.ReadBytes(_draftHash)) {
 				SPVLOG_ERROR("deserialize draftHash");
 				return false;
+			}
+
+			if (version >= CRCProposalVersion01) {
+				if (!stream.ReadVarBytes(_draftData)) {
+					SPVLOG_ERROR("deserialize draftdata");
+					return false;
+				}
 			}
 
 			uint64_t count = 0;

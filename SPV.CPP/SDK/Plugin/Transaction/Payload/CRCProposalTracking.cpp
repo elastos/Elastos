@@ -188,12 +188,14 @@ namespace Elastos {
 			return size;
 		}
 
-		void CRCProposalTracking::SerializeOwnerUnsigned(ByteStream &ostream, uint8_t version) const {
-			ostream.WriteBytes(_proposalHash);
-			ostream.WriteBytes(_messageHash);
-			ostream.WriteUint8(_stage);
-			ostream.WriteVarBytes(_ownerPubKey);
-			ostream.WriteVarBytes(_newOwnerPubKey);
+		void CRCProposalTracking::SerializeOwnerUnsigned(ByteStream &stream, uint8_t version) const {
+			stream.WriteBytes(_proposalHash);
+			stream.WriteBytes(_messageHash);
+			if (version >= CRCProposalTrackingVersion01)
+				stream.WriteVarBytes(_messageData);
+			stream.WriteUint8(_stage);
+			stream.WriteVarBytes(_ownerPubKey);
+			stream.WriteVarBytes(_newOwnerPubKey);
 		}
 
 		bool CRCProposalTracking::DeserializeOwnerUnsigned(const ByteStream &stream, uint8_t version) {
@@ -205,6 +207,13 @@ namespace Elastos {
 			if (!stream.ReadBytes(_messageHash)) {
 				SPVLOG_ERROR("deserialize document hash");
 				return false;
+			}
+
+			if (version >= CRCProposalTrackingVersion01) {
+				if (!stream.ReadVarBytes(_messageData)) {
+					SPVLOG_ERROR("deserialize msg data");
+					return false;
+				}
 			}
 
 			if (!stream.ReadUint8(_stage)) {
@@ -245,12 +254,11 @@ namespace Elastos {
 
 		void CRCProposalTracking::SerializeSecretaryUnsigned(ByteStream &stream, uint8_t version) const {
 			SerializeNewOwnerUnsigned(stream, version);
-
 			stream.WriteVarBytes(_newOwnerSign);
-
 			stream.WriteUint8(_type);
-
 			stream.WriteBytes(_secretaryGeneralOpinionHash);
+			if (version >= CRCProposalTrackingVersion01)
+				stream.WriteVarBytes(_secretaryGeneralOpinionData);
 		}
 
 		bool CRCProposalTracking::DeserializeSecretaryUnsigned(const ByteStream &stream, uint8_t version) {
@@ -272,6 +280,13 @@ namespace Elastos {
 			if (!stream.ReadBytes(_secretaryGeneralOpinionHash)) {
 				SPVLOG_ERROR("deserialize secretary opinion hash");
 				return false;
+			}
+
+			if (version >= CRCProposalTrackingVersion01) {
+				if (!stream.ReadVarBytes(_secretaryGeneralOpinionData)) {
+					SPVLOG_ERROR("deserialize secretary opinion data");
+					return false;
+				}
 			}
 
 			return true;

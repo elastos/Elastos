@@ -28,6 +28,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 #define CRCProposalTrackingDefaultVersion 0
+#define CRCProposalTrackingVersion01 0x01
 
 		class CRCProposalTracking : public IPayload {
 		public:
@@ -145,6 +146,7 @@ namespace Elastos {
 		private:
 			uint256 _proposalHash;
 			uint256 _messageHash;
+			bytes_t _messageData;
 			uint8_t _stage;
 			bytes_t _ownerPubKey;
 			bytes_t _newOwnerPubKey;
@@ -152,6 +154,7 @@ namespace Elastos {
 			bytes_t _newOwnerSign;
 			CRCProposalTracking::Type _type;
 			uint256 _secretaryGeneralOpinionHash;
+			bytes_t _secretaryGeneralOpinionData;
 			bytes_t _secretaryGeneralSignature;
 		};
 

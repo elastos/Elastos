@@ -31,6 +31,8 @@ namespace Elastos {
 	namespace ElaWallet {
 
 #define CRCProposalDefaultVersion 0
+#define CRCProposalVersion01 0x01
+
 		class Budget : public JsonSerializer {
 		public:
 			enum Type {
@@ -156,7 +158,7 @@ namespace Elastos {
 
 		public:
 			// normal or elip
-			void SerializeOwnerUnsigned(ByteStream &ostream, uint8_t version) const;
+			void SerializeOwnerUnsigned(ByteStream &stream, uint8_t version) const;
 
 			bool DeserializeOwnerUnsigned(const ByteStream &stream, uint8_t version);
 
@@ -313,6 +315,7 @@ namespace Elastos {
 			std::string _categoryData;
 			bytes_t _ownerPublicKey;
 			uint256 _draftHash;
+			bytes_t _draftData;
 			std::vector <Budget> _budgets;
 			Address _recipient;
 			uint256 _targetProposalHash;

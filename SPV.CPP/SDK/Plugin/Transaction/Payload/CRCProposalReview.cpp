@@ -103,33 +103,42 @@ namespace Elastos {
 			return size;
 		}
 
-		void CRCProposalReview::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
-			ostream.WriteBytes(_proposalHash);
-			ostream.WriteUint8(_voteResult);
-			ostream.WriteBytes(_opinionHash);
-			ostream.WriteBytes(_did.ProgramHash());
+		void CRCProposalReview::SerializeUnsigned(ByteStream &stream, uint8_t version) const {
+			stream.WriteBytes(_proposalHash);
+			stream.WriteUint8(_voteResult);
+			stream.WriteBytes(_opinionHash);
+			if (version >= CRCProposalReviewVersion01)
+				stream.WriteVarBytes(_opinionData);
+			stream.WriteBytes(_did.ProgramHash());
 		}
 
-		bool CRCProposalReview::DeserializeUnsigned(const ByteStream &istream, uint8_t version) {
-			if (!istream.ReadBytes(_proposalHash)) {
+		bool CRCProposalReview::DeserializeUnsigned(const ByteStream &stream, uint8_t version) {
+			if (!stream.ReadBytes(_proposalHash)) {
 				SPVLOG_ERROR("deserialize proposal hash");
 				return false;
 			}
 
 			uint8_t opinion = 0;
-			if (!istream.ReadUint8(opinion)) {
+			if (!stream.ReadUint8(opinion)) {
 				SPVLOG_ERROR("deserialize opinion");
 				return false;
 			}
 			_voteResult = VoteResult(opinion);
 
-			if (!istream.ReadBytes(_opinionHash)) {
-				SPVLOG_ERROR("deesrialize opinion hash");
+			if (!stream.ReadBytes(_opinionHash)) {
+				SPVLOG_ERROR("desrialize opinion hash");
 				return false;
 			}
 
+			if (version >= CRCProposalReviewVersion01) {
+				if (!stream.ReadVarBytes(_opinionData)) {
+					SPVLOG_ERROR("deserialize opinion data");
+					return false;
+				}
+			}
+
 			uint168 programHash;
-			if (!istream.ReadBytes(programHash)) {
+			if (!stream.ReadBytes(programHash)) {
 				SPVLOG_ERROR("deserialize did");
 				return false;
 			}
