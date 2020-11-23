@@ -731,8 +731,24 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			nlohmann::json eJson = EthereumEWM::TransferEvent2Json(event);
 			eJson["WalletSymbol"] = wallet->getSymbol();
 			eJson["TxHash"] = transaction->getIdentifier();
-			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
 
+			BREthereumTransfer rawTransfer = transaction->getRaw();
+			BREthereumTransaction rawTx = transferGetBasisTransaction(rawTransfer);
+
+			BREthereumContractFunction function = contractLookupFunctionForEncoding (contractERC20, transactionGetData(rawTx));
+			if (NULL != function && functionERC20Transfer == function) {
+				BRCoreParseStatus status;
+				UInt256 funcAmount = functionERC20TransferDecodeAmount(function, transactionGetData(rawTx), &status);
+				char *funcAddr   = functionERC20TransferDecodeAddress (function, transactionGetData(rawTx));
+				char *funcAmt    = coerceString(funcAmount, 10);
+				eJson["Token"] = transaction->getTargetAddress();
+				eJson["TokenFunction"] = "ERC20Transfer";
+				eJson["TokenAmount"] = funcAmt;
+				eJson["TokenAddress"] = funcAddr;
+				free (funcAmt); free (funcAddr);
+			}
+
+			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
 			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
 				_callback->OnETHSCEventHandled(eJson);
@@ -1013,6 +1029,22 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 					jtx["SourceAddress"] = transfers[i]->getSourceAddress();
 					jtx["TargetAddress"] = transfers[i]->getTargetAddress();
 					jtx["Nonce"] = transfers[i]->getNonce();
+
+					BREthereumTransfer rawTransfer = transfers[i]->getRaw();
+					BREthereumTransaction rawTx = transferGetBasisTransaction(rawTransfer);
+
+					BREthereumContractFunction function = contractLookupFunctionForEncoding (contractERC20, transactionGetData(rawTx));
+					if (NULL != function && functionERC20Transfer == function) {
+						BRCoreParseStatus status;
+						UInt256 funcAmount = functionERC20TransferDecodeAmount(function, transactionGetData(rawTx), &status);
+						char *funcAddr   = functionERC20TransferDecodeAddress (function, transactionGetData(rawTx));
+						char *funcAmt    = coerceString(funcAmount, 10);
+						jtx["Token"] = transfers[i]->getTargetAddress();
+						jtx["TokenFunction"] = "ERC20Transfer";
+						jtx["TokenAmount"] = funcAmt;
+						jtx["TokenAddress"] = funcAddr;
+						free (funcAmt); free (funcAddr);
+					}
 					txList.push_back(jtx);
 
 					if (!txid.empty())
