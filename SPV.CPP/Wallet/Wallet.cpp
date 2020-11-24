@@ -352,10 +352,10 @@ public:
 	virtual nlohmann::json GetTokens(int id) {
 		nlohmann::json j, tokens = nlohmann::json::array(), token;
 		// rpc request
-#if 0
+#if 1
 		token["address"] = "0xfdce7fb4050cd43c654c6cecead950343990ce75";
 		token["symbol"] = "TTECH";
-		token["name"] = "TTECH";
+		token["name"] = "Trinity TECH";
 		token["description"] = "";
 		token["decimals"] = 0;
 		token["defaultGasLimit"] = "";

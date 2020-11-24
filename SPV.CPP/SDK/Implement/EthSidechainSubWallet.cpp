@@ -735,17 +735,22 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			BREthereumTransfer rawTransfer = transaction->getRaw();
 			BREthereumTransaction rawTx = transferGetBasisTransaction(rawTransfer);
 
-			BREthereumContractFunction function = contractLookupFunctionForEncoding (contractERC20, transactionGetData(rawTx));
-			if (NULL != function && functionERC20Transfer == function) {
-				BRCoreParseStatus status;
-				UInt256 funcAmount = functionERC20TransferDecodeAmount(function, transactionGetData(rawTx), &status);
-				char *funcAddr   = functionERC20TransferDecodeAddress (function, transactionGetData(rawTx));
-				char *funcAmt    = coerceString(funcAmount, 10);
-				eJson["Token"] = transaction->getTargetAddress();
-				eJson["TokenFunction"] = "ERC20Transfer";
-				eJson["TokenAmount"] = funcAmt;
-				eJson["TokenAddress"] = funcAddr;
-				free (funcAmt); free (funcAddr);
+			if (rawTx != nullptr) {
+				BREthereumContractFunction function = contractLookupFunctionForEncoding(contractERC20,
+																						transactionGetData(rawTx));
+				if (NULL != function && functionERC20Transfer == function) {
+					BRCoreParseStatus status;
+					UInt256 funcAmount = functionERC20TransferDecodeAmount(function, transactionGetData(rawTx),
+																		   &status);
+					char *funcAddr = functionERC20TransferDecodeAddress(function, transactionGetData(rawTx));
+					char *funcAmt = coerceString(funcAmount, 10);
+					eJson["Token"] = transaction->getTargetAddress();
+					eJson["TokenFunction"] = "ERC20Transfer";
+					eJson["TokenAmount"] = funcAmt;
+					eJson["TokenAddress"] = funcAddr;
+					free(funcAmt);
+					free(funcAddr);
+				}
 			}
 
 			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
