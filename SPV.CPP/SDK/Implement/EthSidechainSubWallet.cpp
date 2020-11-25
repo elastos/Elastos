@@ -736,12 +736,10 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			BREthereumTransaction rawTx = transferGetBasisTransaction(rawTransfer);
 
 			if (rawTx != nullptr) {
-				BREthereumContractFunction function = contractLookupFunctionForEncoding(contractERC20,
-																						transactionGetData(rawTx));
+				BREthereumContractFunction function = contractLookupFunctionForEncoding(contractERC20, transactionGetData(rawTx));
 				if (NULL != function && functionERC20Transfer == function) {
 					BRCoreParseStatus status;
-					UInt256 funcAmount = functionERC20TransferDecodeAmount(function, transactionGetData(rawTx),
-																		   &status);
+					UInt256 funcAmount = functionERC20TransferDecodeAmount(function, transactionGetData(rawTx), &status);
 					char *funcAddr = functionERC20TransferDecodeAddress(function, transactionGetData(rawTx));
 					char *funcAmt = coerceString(funcAmount, 10);
 					eJson["Token"] = transaction->getTargetAddress();
@@ -750,6 +748,32 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 					eJson["TokenAddress"] = funcAddr;
 					free(funcAmt);
 					free(funcAddr);
+				}
+			} else {
+				BREthereumLog rawLog = transferGetBasisLog(rawTransfer);
+				if (rawLog == nullptr) {
+					Log::warn("Transaction & Log is null");
+				} else {
+					BREthereumHash logHash = logGetHash (rawLog);
+					char *logHashString = hashAsString(logHash);
+
+					BREthereumAddress logAddress = logGetAddress(rawLog);
+					char *logAddressString = addressGetEncodedString(&logAddress, 1);
+
+					nlohmann::json topicArray = nlohmann::json::array();
+					size_t topicCount = logGetTopicsCount(rawLog);
+					for (size_t i = 0; i < topicCount; ++i) {
+						BREthereumLogTopic topic = logGetTopic(rawLog, i);
+						BREthereumLogTopicString topicString = logTopicAsString (topic);
+						topicArray.push_back(topicString.chars);
+					}
+
+					eJson["LogHash"] = logHashString;
+					eJson["LogAddress"] = logAddressString;
+					eJson["LogTopics"] = topicArray;
+
+					free(logHashString);
+					free(logAddressString);
 				}
 			}
 
@@ -1038,17 +1062,46 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 					BREthereumTransfer rawTransfer = transfers[i]->getRaw();
 					BREthereumTransaction rawTx = transferGetBasisTransaction(rawTransfer);
 
-					BREthereumContractFunction function = contractLookupFunctionForEncoding (contractERC20, transactionGetData(rawTx));
-					if (NULL != function && functionERC20Transfer == function) {
-						BRCoreParseStatus status;
-						UInt256 funcAmount = functionERC20TransferDecodeAmount(function, transactionGetData(rawTx), &status);
-						char *funcAddr   = functionERC20TransferDecodeAddress (function, transactionGetData(rawTx));
-						char *funcAmt    = coerceString(funcAmount, 10);
-						jtx["Token"] = transfers[i]->getTargetAddress();
-						jtx["TokenFunction"] = "ERC20Transfer";
-						jtx["TokenAmount"] = funcAmt;
-						jtx["TokenAddress"] = funcAddr;
-						free (funcAmt); free (funcAddr);
+					if (rawTx != NULL) {
+						BREthereumContractFunction function = contractLookupFunctionForEncoding(contractERC20, transactionGetData( rawTx));
+						if (NULL != function && functionERC20Transfer == function) {
+							BRCoreParseStatus status;
+							UInt256 funcAmount = functionERC20TransferDecodeAmount(function, transactionGetData(rawTx), &status);
+							char *funcAddr = functionERC20TransferDecodeAddress(function, transactionGetData(rawTx));
+							char *funcAmt = coerceString(funcAmount, 10);
+							jtx["Token"] = transfers[i]->getTargetAddress();
+							jtx["TokenFunction"] = "ERC20Transfer";
+							jtx["TokenAmount"] = funcAmt;
+							jtx["TokenAddress"] = funcAddr;
+							free(funcAmt);
+							free(funcAddr);
+						}
+					} else {
+						BREthereumLog rawLog = transferGetBasisLog(rawTransfer);
+						if (rawLog == nullptr) {
+							Log::warn("Transaction & Log is null");
+						} else {
+							BREthereumHash logHash = logGetHash (rawLog);
+							char *logHashString = hashAsString(logHash);
+
+							BREthereumAddress logAddress = logGetAddress(rawLog);
+							char *logAddressString = addressGetEncodedString(&logAddress, 1);
+
+							nlohmann::json topicArray = nlohmann::json::array();
+							size_t topicCount = logGetTopicsCount(rawLog);
+							for (size_t i = 0; i < topicCount; ++i) {
+								BREthereumLogTopic topic = logGetTopic(rawLog, i);
+								BREthereumLogTopicString topicString = logTopicAsString (topic);
+								topicArray.push_back(topicString.chars);
+							}
+
+							jtx["LogHash"] = logHashString;
+							jtx["LogAddress"] = logAddressString;
+							jtx["LogTopics"] = topicArray;
+
+							free(logHashString);
+							free(logAddressString);
+						}
 					}
 					txList.push_back(jtx);
 
