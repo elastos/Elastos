@@ -605,10 +605,13 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 							address = token["address"].get<std::string>();
 							symbol = token["symbol"].get<std::string>();
 							name = token["name"].get<std::string>();
-							description = token["description"].get<std::string>();
 							decimals = token["decimals"].get<int>();
-							defaultGasLimit = token["defaultGasLimit"].get<std::string>();
-							defaultGasPrice = token["defaultGasPrice"].get<std::string>();
+							if (token.contains("description"))
+								description = token["description"].get<std::string>();
+							if (token.contains("defaultGasLimit"))
+								defaultGasLimit = token["defaultGasLimit"].get<std::string>();
+							if (token.contains("defaultGasPrice"))
+								defaultGasPrice = token["defaultGasPrice"].get<std::string>();
 
 							_client->_ewm->announceToken(address, id, symbol, name, description, decimals, defaultGasLimit, defaultGasPrice);
 						}

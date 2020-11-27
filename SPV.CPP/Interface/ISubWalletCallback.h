@@ -219,10 +219,10 @@ namespace Elastos {
 			 *   "address": "0x407d73d8a49eeb85d32cf465507dd71d507100c1",
 			 *   "symbol": "ELA",
 			 *   "name": "elastos",
-			 *   "description": "desc",
 			 *   "decimals": 18,
-			 *   "defaultGasLimit": "0x1388",
-			 *   "defaultGasPrice": "0x1dfd14000" // 8049999872 Wei
+			 *   "description": "desc", // Optional
+			 *   "defaultGasLimit": "0x1388", // Optional
+			 *   "defaultGasPrice": "0x1dfd14000" // Optional 8049999872 Wei
 			 * },{
 			 *   ...
 			 * }]
