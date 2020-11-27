@@ -33,6 +33,28 @@ namespace Elastos {
 #define CRCProposalDefaultVersion 0
 #define CRCProposalVersion01 0x01
 
+#define JsonKeyType "Type"
+#define JsonKeyStage "Stage"
+#define JsonKeyAmount "Amount"
+
+#define JsonKeyType "Type"
+#define JsonKeyCategoryData "CategoryData"
+#define JsonKeyOwnerPublicKey "OwnerPublicKey"
+#define JsonKeyDraftHash "DraftHash"
+#define JsonKeyDraftData "DraftData"
+#define JsonKeyBudgets "Budgets"
+#define JsonKeyRecipient "Recipient"
+#define JsonKeyTargetProposalHash "TargetProposalHash"
+#define JsonKeyNewRecipient "NewRecipient"
+#define JsonKeyNewOwnerPublicKey "NewOwnerPublicKey"
+#define JsonKeySecretaryPublicKey "SecretaryGeneralPublicKey"
+#define JsonKeySecretaryDID "SecretaryGeneralDID"
+#define JsonKeySignature "Signature"
+#define JsonKeyNewOwnerSignature "NewOwnerSignature"
+#define JsonKeySecretarySignature "SecretaryGeneralSignature"
+#define JsonKeyCRCouncilMemberDID "CRCouncilMemberDID"
+#define JsonKeyCRCouncilMemberSignature "CRCouncilMemberSignature"
+
 		class Budget : public JsonSerializer {
 		public:
 			enum Type {

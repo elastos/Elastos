@@ -28,17 +28,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-#define JsonKeyProposalHash "ProposalHash"
-#define JsonKeyMessageHash "MessageHash"
-#define JsonKeyStage "Stage"
-#define JsonKeyOwnerPublicKey "OwnerPublicKey"
-#define JsonKeyNewOwnerPublicKey "NewOwnerPublicKey"
-#define JsonKeyOwnerSignature "OwnerSignature"
-#define JsonKeyNewOwnerSignature "NewOwnerSignature"
-#define JsonKeyType "Type"
-#define JsonKeySecretaryGeneralOpinionHash "SecretaryGeneralOpinionHash"
-#define JsonKeySecretaryGeneralSignature "SecretaryGeneralSignature"
-
 		CRCProposalTracking::CRCProposalTracking() {
 
 		}
@@ -316,6 +305,8 @@ namespace Elastos {
 			nlohmann::json j;
 			j[JsonKeyProposalHash] = _proposalHash.GetHex();
 			j[JsonKeyMessageHash] = _messageHash.GetHex();
+			if (version >= CRCProposalTrackingVersion01)
+				j[JsonKeyMessageData] = std::string(_messageData.begin(), _messageData.end());
 			j[JsonKeyStage] = _stage;
 			j[JsonKeyOwnerPublicKey] = _ownerPubKey.getHex();
 			j[JsonKeyNewOwnerPublicKey] = _newOwnerPubKey.getHex();
@@ -325,6 +316,10 @@ namespace Elastos {
 		void CRCProposalTracking::FromJsonOwnerUnsigned(const nlohmann::json &j, uint8_t version) {
 			_proposalHash.SetHex(j[JsonKeyProposalHash].get<std::string>());
 			_messageHash.SetHex(j[JsonKeyMessageHash].get<std::string>());
+			if (version >= CRCProposalTrackingVersion01) {
+				std::string messageData = j[JsonKeyMessageData].get<std::string>();
+				_messageData.assign(messageData.begin(), messageData.end());
+			}
 			_stage = j[JsonKeyStage].get<uint8_t>();
 			_ownerPubKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
 			_newOwnerPubKey.setHex(j[JsonKeyNewOwnerPublicKey].get<std::string>());
@@ -346,6 +341,8 @@ namespace Elastos {
 			j[JsonKeyNewOwnerSignature] = _newOwnerSign.getHex();
 			j[JsonKeyType] = _type;
 			j[JsonKeySecretaryGeneralOpinionHash] = _secretaryGeneralOpinionHash.GetHex();
+			if (version >= CRCProposalTrackingVersion01)
+				j[JsonKeySecretaryGeneralOpinionData] = std::string(_secretaryGeneralOpinionData.begin(), _secretaryGeneralOpinionData.end());
 			return j;
 		}
 
@@ -354,6 +351,10 @@ namespace Elastos {
 			_newOwnerSign.setHex(j[JsonKeyNewOwnerSignature].get<std::string>());
 			_type = CRCProposalTracking::Type(j[JsonKeyType].get<uint8_t>());
 			_secretaryGeneralOpinionHash.SetHex(j[JsonKeySecretaryGeneralOpinionHash].get<std::string>());
+			if (version >= CRCProposalTrackingVersion01) {
+				std::string data = j[JsonKeySecretaryGeneralOpinionData].get<std::string>();
+				_secretaryGeneralOpinionData.assign(data.begin(), data.end());
+			}
 		}
 
 		nlohmann::json CRCProposalTracking::ToJson(uint8_t version) const {
@@ -462,6 +463,7 @@ namespace Elastos {
 		CRCProposalTracking &CRCProposalTracking::operator=(const CRCProposalTracking &payload) {
 			_proposalHash = payload._proposalHash;
 			_messageHash = payload._messageHash;
+			_messageData = payload._messageData;
 			_stage = payload._stage;
 			_ownerPubKey = payload._ownerPubKey;
 			_newOwnerPubKey = payload._newOwnerPubKey;
@@ -469,6 +471,7 @@ namespace Elastos {
 			_newOwnerSign = payload._newOwnerSign;
 			_type = payload._type;
 			_secretaryGeneralOpinionHash = payload._secretaryGeneralOpinionHash;
+			_secretaryGeneralOpinionData = payload._secretaryGeneralOpinionData;
 			_secretaryGeneralSignature = payload._secretaryGeneralSignature;
 			return *this;
 		}

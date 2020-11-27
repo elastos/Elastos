@@ -31,6 +31,13 @@ namespace Elastos {
 #define CRCProposalReviewDefaultVersion 0
 #define CRCProposalReviewVersion01 0x01
 
+#define JsonKeyProposalHash "ProposalHash"
+#define JsonKeyVoteResult "VoteResult"
+#define JsonKeyOpinionHash "OpinionHash"
+#define JsonKeyOpinionData "OpinionData"
+#define JsonKeyDID "DID"
+#define JsonKeySignature "Signature"
+
 		class CRCProposalReview : public IPayload {
 		public:
 			enum VoteResult {

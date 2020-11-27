@@ -1103,16 +1103,22 @@ namespace Elastos {
 			ArgInfo("payload: {}", payload.dump());
 
 			CRCProposal proposal;
+			uint8_t version = CRCProposalDefaultVersion;
 			try {
-				proposal.FromJsonNormalOwnerUnsigned(payload, CRCProposalDefaultVersion);
+				if (payload.contains(JsonKeyDraftData)) {
+					version = CRCProposalVersion01;
+				} else {
+					version = CRCProposalDefaultVersion;
+				}
+				proposal.FromJsonNormalOwnerUnsigned(payload, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
-			ErrorChecker::CheckParam(!proposal.IsValidNormalOwnerUnsigned(CRCProposalDefaultVersion),
+			ErrorChecker::CheckParam(!proposal.IsValidNormalOwnerUnsigned(version),
 									 Error::InvalidArgument, "invalid payload");
 
-			std::string digest = proposal.DigestNormalOwnerUnsigned(CRCProposalDefaultVersion).GetHex();
+			std::string digest = proposal.DigestNormalOwnerUnsigned(version).GetHex();
 
 			ArgInfo("r => {}", digest);
 			return digest;
@@ -1123,16 +1129,22 @@ namespace Elastos {
 			ArgInfo("payload: {}", payload.dump());
 
 			CRCProposal proposal;
+			uint8_t version = CRCProposalDefaultVersion;
 			try {
-				proposal.FromJsonNormalCRCouncilMemberUnsigned(payload, CRCProposalDefaultVersion);
+				if (payload.contains(JsonKeyDraftData)) {
+					version = CRCProposalVersion01;
+				} else {
+					version = CRCProposalDefaultVersion;
+				}
+				proposal.FromJsonNormalCRCouncilMemberUnsigned(payload, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
-			ErrorChecker::CheckParam(!proposal.IsValidNormalCRCouncilMemberUnsigned(CRCProposalDefaultVersion),
+			ErrorChecker::CheckParam(!proposal.IsValidNormalCRCouncilMemberUnsigned(version),
 									 Error::InvalidArgument, "invalid payload");
 
-			std::string digest = proposal.DigestNormalCRCouncilMemberUnsigned(CRCProposalDefaultVersion).GetHex();
+			std::string digest = proposal.DigestNormalCRCouncilMemberUnsigned(version).GetHex();
 
 			ArgInfo("r => {}", digest);
 			return digest;
@@ -1143,16 +1155,22 @@ namespace Elastos {
 			ArgInfo("payload: {}", payload.dump());
 
 			PayloadPtr p = PayloadPtr(new CRCProposal());
+			uint8_t version = CRCProposalDefaultVersion;
 			try {
-				p->FromJson(payload, 0);
+				if (payload.contains(JsonKeyDraftData)) {
+					version = CRCProposalVersion01;
+				} else {
+					version = CRCProposalDefaultVersion;
+				}
+				p->FromJson(payload, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
-			ErrorChecker::CheckParam(!p->IsValid(CRCProposalDefaultVersion), Error::InvalidArgument, "invalid payload");
+			ErrorChecker::CheckParam(!p->IsValid(version), Error::InvalidArgument, "invalid payload");
 
 			ByteStream stream;
-			p->Serialize(stream, CRCProposalDefaultVersion);
+			p->Serialize(stream, version);
 			uint256 hash(sha256_2(stream.GetBytes()));
 			std::string hashString = hash.GetHex();
 
@@ -1169,13 +1187,19 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 
 			PayloadPtr p = PayloadPtr(new CRCProposal());
+			uint8_t version = CRCProposalDefaultVersion;
 			try {
-				p->FromJson(payload, 0);
+				if (payload.contains(JsonKeyDraftData)) {
+					version = CRCProposalVersion01;
+				} else {
+					version = CRCProposalDefaultVersion;
+				}
+				p->FromJson(payload, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
-			ErrorChecker::CheckParam(!p->IsValid(CRCProposalDefaultVersion), Error::InvalidArgument, "invalid payload");
+			ErrorChecker::CheckParam(!p->IsValid(version), Error::InvalidArgument, "invalid payload");
 
 			AddressPtr receiveAddr = wallet->GetReceiveAddress();
 			OutputArray outputs;
@@ -1203,17 +1227,23 @@ namespace Elastos {
 			ArgInfo("payload: {}", payload.dump());
 
 			CRCProposalReview proposalReview;
+			uint8_t version = CRCProposalReviewDefaultVersion;
 			try {
-				proposalReview.FromJsonUnsigned(payload, CRCProposalReviewDefaultVersion);
+				if (payload.contains(JsonKeyOpinionData)) {
+					version = CRCProposalReviewVersion01;
+				} else {
+					version = CRCProposalReviewDefaultVersion;
+				}
+				proposalReview.FromJsonUnsigned(payload, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
-			if (!proposalReview.IsValidUnsigned(CRCProposalReviewDefaultVersion)) {
+			if (!proposalReview.IsValidUnsigned(version)) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
 			}
 
-			std::string digest = proposalReview.DigestUnsigned(CRCProposalReviewDefaultVersion).GetHex();
+			std::string digest = proposalReview.DigestUnsigned(version).GetHex();
 
 			ArgInfo("r => {}", digest);
 			return digest;
@@ -1227,13 +1257,18 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 
 			PayloadPtr p = PayloadPtr(new CRCProposalReview());
+			uint8_t version = CRCProposalReviewDefaultVersion;
 			try {
-				p->FromJson(payload, CRCProposalReviewDefaultVersion);
+				if (payload.contains(JsonKeyOpinionData))
+					version = CRCProposalReviewVersion01;
+				else
+					version = CRCProposalReviewDefaultVersion;
+				p->FromJson(payload, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
-			if (!p->IsValid(CRCProposalReviewDefaultVersion))
+			if (!p->IsValid(version))
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
 
 			OutputArray outputs;
@@ -1342,11 +1377,11 @@ namespace Elastos {
 			nlohmann::json result;
 			EncodeTx(result, tx);
 
-			std::vector<std::string> dropedTypes;
+			std::vector<std::string> droppedTypes;
 			for(VoteContentArray::iterator it = dropedList.begin(); it != dropedList.end(); ++it) {
-				dropedTypes.push_back((*it).GetTypeString());
+				droppedTypes.push_back((*it).GetTypeString());
 			}
-			result["DropVotes"] = dropedTypes;
+			result["DropVotes"] = droppedTypes;
 
 			ArgInfo("r => {}", result.dump());
 
@@ -1360,6 +1395,10 @@ namespace Elastos {
 			uint8_t version = CRCProposalTrackingDefaultVersion;
 			CRCProposalTracking proposalTracking;
 			try {
+				if (payload.contains(JsonKeyMessageData))
+					version = CRCProposalTrackingVersion01;
+				else
+					version = CRCProposalTrackingDefaultVersion;
 				proposalTracking.FromJsonOwnerUnsigned(payload, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
@@ -1381,6 +1420,10 @@ namespace Elastos {
 			uint8_t version = CRCProposalTrackingDefaultVersion;
 			CRCProposalTracking proposalTracking;
 			try {
+				if (payload.contains(JsonKeyMessageData))
+					version = CRCProposalTrackingVersion01;
+				else
+					version = CRCProposalTrackingDefaultVersion;
 				proposalTracking.FromJsonNewOwnerUnsigned(payload, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
@@ -1403,6 +1446,10 @@ namespace Elastos {
 			uint8_t version = CRCProposalTrackingDefaultVersion;
 			CRCProposalTracking proposalTracking;
 			try {
+				if (payload.contains(JsonKeyMessageData) && payload.contains(JsonKeySecretaryGeneralOpinionData))
+					version = CRCProposalTrackingVersion01;
+				else
+					version = CRCProposalTrackingDefaultVersion;
 				proposalTracking.FromJsonSecretaryUnsigned(payload, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
@@ -1428,6 +1475,10 @@ namespace Elastos {
 			uint8_t version = CRCProposalTrackingDefaultVersion;
 			PayloadPtr p(new CRCProposalTracking());
 			try {
+				if (payload.contains(JsonKeyMessageData) && payload.contains(JsonKeySecretaryGeneralOpinionData))
+					version = CRCProposalTrackingVersion01;
+				else
+					version = CRCProposalTrackingDefaultVersion;
 				p->FromJson(payload, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
@@ -1464,8 +1515,12 @@ namespace Elastos {
 			uint8_t version = CRCProposalDefaultVersion;
 			CRCProposal proposal;
 			try {
+				if (payload.contains(JsonKeyDraftData))
+					version = CRCProposalVersion01;
+				else
+					version = CRCProposalDefaultVersion;
 				nlohmann::json payloadFixed = payload;
-				payloadFixed["Type"] = CRCProposal::secretaryGeneralElection;
+				payloadFixed[JsonKeyType] = CRCProposal::secretaryGeneralElection;
 				proposal.FromJsonSecretaryElectionUnsigned(payloadFixed, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
@@ -1489,8 +1544,12 @@ namespace Elastos {
 			uint8_t version = CRCProposalDefaultVersion;
 			CRCProposal proposal;
 			try {
+				if (payload.contains(JsonKeyDraftData))
+					version = CRCProposalVersion01;
+				else
+					version = CRCProposalDefaultVersion;
 				nlohmann::json payloadFixed = payload;
-				payloadFixed["Type"] = CRCProposal::secretaryGeneralElection;
+				payloadFixed[JsonKeyType] = CRCProposal::secretaryGeneralElection;
 				proposal.FromJsonSecretaryElectionCRCouncilMemberUnsigned(payloadFixed, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
@@ -1516,8 +1575,12 @@ namespace Elastos {
 			uint8_t version = CRCProposalDefaultVersion;
 			PayloadPtr p(new CRCProposal());
 			try {
+				if (payload.contains(JsonKeyDraftData))
+					version = CRCProposalVersion01;
+				else
+					version = CRCProposalDefaultVersion;
 				nlohmann::json payloadFixed = payload;
-				payloadFixed["Type"] = CRCProposal::secretaryGeneralElection;
+				payloadFixed[JsonKeyType] = CRCProposal::secretaryGeneralElection;
 				p->FromJson(payloadFixed, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
@@ -1556,8 +1619,12 @@ namespace Elastos {
 			uint8_t version = CRCProposalDefaultVersion;
 			CRCProposal proposal;
 			try {
+				if (payload.contains(JsonKeyDraftData))
+					version = CRCProposalVersion01;
+				else
+					version = CRCProposalDefaultVersion;
 				nlohmann::json payloadFixed = payload;
-				payloadFixed["Type"] = CRCProposal::changeProposalOwner;
+				payloadFixed[JsonKeyType] = CRCProposal::changeProposalOwner;
 				proposal.FromJsonChangeOwnerUnsigned(payloadFixed, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
@@ -1580,8 +1647,12 @@ namespace Elastos {
 			uint8_t version = CRCProposalDefaultVersion;
 			CRCProposal proposal;
 			try {
+				if (payload.contains(JsonKeyDraftData))
+					version = CRCProposalVersion01;
+				else
+					version = CRCProposalDefaultVersion;
 				nlohmann::json payloadFixed = payload;
-				payloadFixed["Type"] = CRCProposal::changeProposalOwner;
+				payloadFixed[JsonKeyType] = CRCProposal::changeProposalOwner;
 				proposal.FromJsonChangeOwnerCRCouncilMemberUnsigned(payloadFixed, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
@@ -1607,8 +1678,12 @@ namespace Elastos {
 			uint8_t version = CRCProposalDefaultVersion;
 			PayloadPtr p(new CRCProposal());
 			try {
+				if (payload.contains(JsonKeyDraftData))
+					version = CRCProposalVersion01;
+				else
+					version = CRCProposalDefaultVersion;
 				nlohmann::json payloadFixed = payload;
-				payloadFixed["Type"] = CRCProposal::changeProposalOwner;
+				payloadFixed[JsonKeyType] = CRCProposal::changeProposalOwner;
 				p->FromJson(payloadFixed, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
@@ -1647,8 +1722,12 @@ namespace Elastos {
 			uint8_t version = CRCProposalDefaultVersion;
 			CRCProposal proposal;
 			try {
+				if (payload.contains(JsonKeyDraftData))
+					version = CRCProposalVersion01;
+				else
+					version = CRCProposalDefaultVersion;
 				nlohmann::json payloadFixed = payload;
-				payloadFixed["Type"] = CRCProposal::terminateProposal;
+				payloadFixed[JsonKeyType] = CRCProposal::terminateProposal;
 				proposal.FromJsonTerminateProposalOwnerUnsigned(payloadFixed, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
@@ -1671,8 +1750,12 @@ namespace Elastos {
 			uint8_t version = CRCProposalDefaultVersion;
 			CRCProposal proposal;
 			try {
+				if (payload.contains(JsonKeyDraftData))
+					version = CRCProposalVersion01;
+				else
+					version = CRCProposalDefaultVersion;
 				nlohmann::json payloadFixed = payload;
-				payloadFixed["Type"] = CRCProposal::terminateProposal;
+				payloadFixed[JsonKeyType] = CRCProposal::terminateProposal;
 				proposal.FromJsonTerminateProposalCRCouncilMemberUnsigned(payloadFixed, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
@@ -1698,8 +1781,12 @@ namespace Elastos {
 			uint8_t version = CRCProposalDefaultVersion;
 			PayloadPtr p(new CRCProposal());
 			try {
+				if (payload.contains(JsonKeyDraftData))
+					version = CRCProposalVersion01;
+				else
+					version = CRCProposalDefaultVersion;
 				nlohmann::json payloadFixed = payload;
-				payloadFixed["Type"] = CRCProposal::terminateProposal;
+				payloadFixed[JsonKeyType] = CRCProposal::terminateProposal;
 				p->FromJson(payloadFixed, version);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");

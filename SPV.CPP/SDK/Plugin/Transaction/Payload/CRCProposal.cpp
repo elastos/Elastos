@@ -29,27 +29,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-#define JsonKeyType "Type"
-#define JsonKeyStage "Stage"
-#define JsonKeyAmount "Amount"
-
-#define JsonKeyType "Type"
-#define JsonKeyCategoryData "CategoryData"
-#define JsonKeyOwnerPublicKey "OwnerPublicKey"
-#define JsonKeyDraftHash "DraftHash"
-#define JsonKeyBudgets "Budgets"
-#define JsonKeyRecipient "Recipient"
-#define JsonKeyTargetProposalHash "TargetProposalHash"
-#define JsonKeyNewRecipient "NewRecipient"
-#define JsonKeyNewOwnerPublicKey "NewOwnerPublicKey"
-#define JsonKeySecretaryPublicKey "SecretaryGeneralPublicKey"
-#define JsonKeySecretaryDID "SecretaryGeneralDID"
-#define JsonKeySignature "Signature"
-#define JsonKeyNewOwnerSignature "NewOwnerSignature"
-#define JsonKeySecretarySignature "SecretaryGeneralSignature"
-#define JsonKeyCRCouncilMemberDID "CRCouncilMemberDID"
-#define JsonKeyCRCouncilMemberSignature "CRCouncilMemberSignature"
-
 		Budget::Budget() {
 
 		}
@@ -472,6 +451,8 @@ namespace Elastos {
 			stream.WriteVarString(_categoryData);
 			stream.WriteVarBytes(_ownerPublicKey);
 			stream.WriteBytes(_draftHash);
+			if (version >= CRCProposalVersion01)
+				stream.WriteVarBytes(_draftData);
 			stream.WriteBytes(_targetProposalHash);
 			stream.WriteBytes(_newRecipient.ProgramHash());
 			stream.WriteVarBytes(_newOwnerPublicKey);
@@ -491,6 +472,13 @@ namespace Elastos {
 			if (!stream.ReadBytes(_draftHash)) {
 				SPVLOG_ERROR("deserialize draftHash");
 				return false;
+			}
+
+			if (version >= CRCProposalVersion01) {
+				if (!stream.ReadVarBytes(_draftData)) {
+					SPVLOG_ERROR("deserialize draftData");
+					return false;
+				}
 			}
 
 			if (!stream.ReadBytes(_targetProposalHash)) {
@@ -574,6 +562,8 @@ namespace Elastos {
 			j[JsonKeyCategoryData] = _categoryData;
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
+			if (version >= CRCProposalVersion01)
+				j[JsonKeyDraftData] = std::string(_draftData.begin(), _draftData.end());
 			j[JsonKeyTargetProposalHash] = _targetProposalHash.GetHex();
 			j[JsonKeyNewRecipient] = _newRecipient.String();
 			j[JsonKeyNewOwnerPublicKey] = _newOwnerPublicKey.getHex();
@@ -586,6 +576,10 @@ namespace Elastos {
 			_categoryData = j[JsonKeyCategoryData].get<std::string>();
 			_ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
+			if (version >= CRCProposalVersion01) {
+				std::string data = j[JsonKeyDraftData].get<std::string>();
+				_draftData.assign(data.begin(), data.end());
+			}
 			_targetProposalHash.SetHex(j[JsonKeyTargetProposalHash].get<std::string>());
 			_newRecipient = Address(j[JsonKeyNewRecipient].get<std::string>());
 			_newOwnerPublicKey.setHex(j[JsonKeyNewOwnerPublicKey].get<std::string>());
@@ -696,6 +690,8 @@ namespace Elastos {
 			stream.WriteVarString(_categoryData);
 			stream.WriteVarBytes(_ownerPublicKey);
 			stream.WriteBytes(_draftHash);
+			if (version >= CRCProposalVersion01)
+				stream.WriteVarBytes(_draftData);
 			stream.WriteBytes(_targetProposalHash);
 		}
 
@@ -713,6 +709,13 @@ namespace Elastos {
 			if (!stream.ReadBytes(_draftHash)) {
 				SPVLOG_ERROR("deserialize terminate proposal draft hash");
 				return false;
+			}
+
+			if (version >= CRCProposalVersion01) {
+				if (!stream.ReadVarBytes(_draftData)) {
+					SPVLOG_ERROR("deserialize terminate proposal draftData");
+					return false;
+				}
 			}
 
 			if (!stream.ReadBytes(_targetProposalHash)) {
@@ -778,6 +781,8 @@ namespace Elastos {
 			j[JsonKeyCategoryData] = _categoryData;
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
+			if (version >= CRCProposalVersion01)
+				j[JsonKeyDraftData] = std::string(_draftData.begin(), _draftData.end());
 			j[JsonKeyTargetProposalHash] = _targetProposalHash.GetHex();
 
 			return j;
@@ -788,6 +793,10 @@ namespace Elastos {
 			_categoryData = j[JsonKeyCategoryData].get<std::string>();
 			_ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
+			if (version >= CRCProposalVersion01) {
+				std::string data = j[JsonKeyDraftData].get<std::string>();
+				_draftData.assign(data.begin(), data.end());
+			}
 			_targetProposalHash.SetHex(j[JsonKeyTargetProposalHash].get<std::string>());
 		}
 
@@ -884,11 +893,13 @@ namespace Elastos {
 			stream.WriteVarString(_categoryData);
 			stream.WriteVarBytes(_ownerPublicKey);
 			stream.WriteBytes(_draftHash);
+			if (version >= CRCProposalVersion01)
+				stream.WriteVarBytes(_draftData);
 			stream.WriteVarBytes(_secretaryPublicKey);
 			stream.WriteBytes(_secretaryDID.ProgramHash());
 		}
 
-		bool CRCProposal::DeserializeSecretaryElectionUnsigned(const ByteStream &stream, uint8_t verion) {
+		bool CRCProposal::DeserializeSecretaryElectionUnsigned(const ByteStream &stream, uint8_t version) {
 			if (!stream.ReadVarString(_categoryData)) {
 				SPVLOG_ERROR("deserialize category data");
 				return false;
@@ -902,6 +913,13 @@ namespace Elastos {
 			if (!stream.ReadBytes(_draftHash)) {
 				SPVLOG_ERROR("deserialize draft hash");
 				return false;
+			}
+
+			if (version >= CRCProposalVersion01) {
+				if (!stream.ReadVarBytes(_draftData)) {
+					SPVLOG_ERROR("deserialize draft data");
+					return false;
+				}
 			}
 
 			if (!stream.ReadVarBytes(_secretaryPublicKey)) {
@@ -979,6 +997,8 @@ namespace Elastos {
 			j[JsonKeyCategoryData] = _categoryData;
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
+			if (version >= CRCProposalVersion01)
+				j[JsonKeyDraftData] = std::string(_draftData.begin(), _draftData.end());
 			j[JsonKeySecretaryPublicKey] = _secretaryPublicKey.getHex();
 			j[JsonKeySecretaryDID] = _secretaryDID.String();
 
@@ -990,6 +1010,10 @@ namespace Elastos {
 			_categoryData = j[JsonKeyCategoryData].get<std::string>();
 			_ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
+			if (version >= CRCProposalVersion01) {
+				std::string data = j[JsonKeyDraftData].get<std::string>();
+				_draftData.assign(data.begin(), data.end());
+			}
 			_secretaryPublicKey.setHex(j[JsonKeySecretaryPublicKey].get<std::string>());
 			_secretaryDID = Address(j[JsonKeySecretaryDID].get<std::string>());
 		}
@@ -1155,6 +1179,8 @@ namespace Elastos {
 			j[JsonKeyCategoryData] = _categoryData;
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
+			if (version >= CRCProposalVersion01)
+				j[JsonKeyDraftData] = std::string(_draftData.begin(), _draftData.end());
 			j[JsonKeyBudgets] = _budgets;
 			j[JsonKeyRecipient] = _recipient.String();
 			return j;
@@ -1165,6 +1191,10 @@ namespace Elastos {
 			_categoryData = j[JsonKeyCategoryData].get<std::string>();
 			_ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
+			if (version >= CRCProposalVersion01) {
+				std::string draftData = j[JsonKeyDraftData].get<std::string>();
+				_draftData.assign(draftData.begin(), draftData.end());
+			}
 			_budgets = j[JsonKeyBudgets].get<std::vector<Budget>>();
 			_recipient = Address(j[JsonKeyRecipient].get<std::string>());
 		}
@@ -1337,6 +1367,7 @@ namespace Elastos {
 			_categoryData = payload._categoryData;
 			_ownerPublicKey = payload._ownerPublicKey;
 			_draftHash = payload._draftHash;
+			_draftData = payload._draftData;
 			_budgets = payload._budgets;
 			_recipient = payload._recipient;
 			_targetProposalHash = payload._targetProposalHash;
@@ -1365,6 +1396,7 @@ namespace Elastos {
 								_categoryData == realPayload._categoryData &&
 								_ownerPublicKey == realPayload._ownerPublicKey &&
 								_draftHash == realPayload._draftHash &&
+								_draftData == realPayload._draftData &&
 								_budgets == realPayload._budgets &&
 								_recipient == realPayload._recipient &&
 								_signature == realPayload._signature &&
@@ -1377,6 +1409,7 @@ namespace Elastos {
 								_categoryData == realPayload._categoryData &&
 								_ownerPublicKey == realPayload._ownerPublicKey &&
 								_draftHash == realPayload._draftHash &&
+								_draftData == realPayload._draftData &&
 								_secretaryPublicKey == realPayload._secretaryPublicKey &&
 								_secretaryDID == realPayload._secretaryDID &&
 								_signature == realPayload._signature &&
@@ -1390,6 +1423,7 @@ namespace Elastos {
 								_categoryData == realPayload._categoryData &&
 								_ownerPublicKey == realPayload._ownerPublicKey &&
 								_draftHash == realPayload._draftHash &&
+								_draftData == realPayload._draftData &&
 								_targetProposalHash == realPayload._targetProposalHash &&
 								_newRecipient == realPayload._newRecipient &&
 								_newOwnerPublicKey == realPayload._newOwnerPublicKey &&
@@ -1404,6 +1438,7 @@ namespace Elastos {
 								_categoryData == realPayload._categoryData &&
 								_ownerPublicKey == realPayload._ownerPublicKey &&
 								_draftHash == realPayload._draftHash &&
+								_draftData == realPayload._draftData &&
 								_targetProposalHash == realPayload._targetProposalHash &&
 								_signature == realPayload._signature &&
 								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&

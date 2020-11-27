@@ -26,12 +26,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-#define JsonKeyProposalHash "ProposalHash"
-#define JsonKeyVoteResult "VoteResult"
-#define JsonKeyOpinionHash "OpinionHash"
-#define JsonKeyDID "DID"
-#define JsonKeySignature "Signature"
-
 		CRCProposalReview::CRCProposalReview() {
 
 		}
@@ -171,6 +165,8 @@ namespace Elastos {
 			j[JsonKeyProposalHash] = _proposalHash.GetHex();
 			j[JsonKeyVoteResult] = _voteResult;
 			j[JsonKeyOpinionHash] = _opinionHash.GetHex();
+			if (version >= CRCProposalReviewVersion01)
+				j[JsonKeyOpinionData] = std::string(_opinionData.begin(), _opinionData.end());
 			j[JsonKeyDID] = _did.String();
 			return j;
 		}
@@ -179,6 +175,10 @@ namespace Elastos {
 			_proposalHash.SetHex(j[JsonKeyProposalHash].get<std::string>());
 			_voteResult = VoteResult(j[JsonKeyVoteResult].get<uint8_t>());
 			_opinionHash.SetHex(j[JsonKeyOpinionHash].get<std::string>());
+			if (version >= CRCProposalReviewVersion01) {
+				std::string opinionData = j[JsonKeyOpinionData].get<std::string>();
+				_opinionData.assign(opinionData.begin(), opinionData.end());
+			}
 			_did = Address(j[JsonKeyDID].get<std::string>());
 		}
 
@@ -233,6 +233,7 @@ namespace Elastos {
 			_proposalHash = payload._proposalHash;
 			_voteResult = payload._voteResult;
 			_opinionHash = payload._opinionHash;
+			_opinionData = payload._opinionData;
 			_did = payload._did;
 			_signature = payload._signature;
 			return *this;

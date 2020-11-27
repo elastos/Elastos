@@ -30,6 +30,19 @@ namespace Elastos {
 #define CRCProposalTrackingDefaultVersion 0
 #define CRCProposalTrackingVersion01 0x01
 
+#define JsonKeyProposalHash "ProposalHash"
+#define JsonKeyMessageHash "MessageHash"
+#define JsonKeyMessageData "MessageData"
+#define JsonKeyStage "Stage"
+#define JsonKeyOwnerPublicKey "OwnerPublicKey"
+#define JsonKeyNewOwnerPublicKey "NewOwnerPublicKey"
+#define JsonKeyOwnerSignature "OwnerSignature"
+#define JsonKeyNewOwnerSignature "NewOwnerSignature"
+#define JsonKeyType "Type"
+#define JsonKeySecretaryGeneralOpinionHash "SecretaryGeneralOpinionHash"
+#define JsonKeySecretaryGeneralOpinionData "SecretaryGeneralOpinionData"
+#define JsonKeySecretaryGeneralSignature "SecretaryGeneralSignature"
+
 		class CRCProposalTracking : public IPayload {
 		public:
 			enum Type {
