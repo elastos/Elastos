@@ -25,9 +25,13 @@
 #include <Common/Log.h>
 #include <WalletCore/Base58.h>
 #include <WalletCore/Key.h>
+#include <Common/Base64.h>
+#include <Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
+
+#define DRAFT_DATA_MAX_SIZE (1024 * 1024)
 
 		Budget::Budget() {
 
@@ -563,7 +567,7 @@ namespace Elastos {
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
 			if (version >= CRCProposalVersion01)
-				j[JsonKeyDraftData] = std::string(_draftData.begin(), _draftData.end());
+				j[JsonKeyDraftData] = Base64::Encode(_draftData);
 			j[JsonKeyTargetProposalHash] = _targetProposalHash.GetHex();
 			j[JsonKeyNewRecipient] = _newRecipient.String();
 			j[JsonKeyNewOwnerPublicKey] = _newOwnerPublicKey.getHex();
@@ -577,8 +581,11 @@ namespace Elastos {
 			_ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
 			if (version >= CRCProposalVersion01) {
-				std::string data = j[JsonKeyDraftData].get<std::string>();
-				_draftData.assign(data.begin(), data.end());
+				std::string draftData = j[JsonKeyDraftData].get<std::string>();
+				_draftData = Base64::Decode(draftData);
+				ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
+				uint256 draftHash(sha256_2(_draftData));
+				ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
 			}
 			_targetProposalHash.SetHex(j[JsonKeyTargetProposalHash].get<std::string>());
 			_newRecipient = Address(j[JsonKeyNewRecipient].get<std::string>());
@@ -782,7 +789,7 @@ namespace Elastos {
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
 			if (version >= CRCProposalVersion01)
-				j[JsonKeyDraftData] = std::string(_draftData.begin(), _draftData.end());
+				j[JsonKeyDraftData] = Base64::Encode(_draftData);
 			j[JsonKeyTargetProposalHash] = _targetProposalHash.GetHex();
 
 			return j;
@@ -794,8 +801,11 @@ namespace Elastos {
 			_ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
 			if (version >= CRCProposalVersion01) {
-				std::string data = j[JsonKeyDraftData].get<std::string>();
-				_draftData.assign(data.begin(), data.end());
+				std::string draftData = j[JsonKeyDraftData].get<std::string>();
+				_draftData = Base64::Decode(draftData);
+				ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
+				uint256 draftHash(sha256_2(_draftData));
+				ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
 			}
 			_targetProposalHash.SetHex(j[JsonKeyTargetProposalHash].get<std::string>());
 		}
@@ -998,7 +1008,7 @@ namespace Elastos {
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
 			if (version >= CRCProposalVersion01)
-				j[JsonKeyDraftData] = std::string(_draftData.begin(), _draftData.end());
+				j[JsonKeyDraftData] = Base64::Encode(_draftData);
 			j[JsonKeySecretaryPublicKey] = _secretaryPublicKey.getHex();
 			j[JsonKeySecretaryDID] = _secretaryDID.String();
 
@@ -1011,8 +1021,11 @@ namespace Elastos {
 			_ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
 			if (version >= CRCProposalVersion01) {
-				std::string data = j[JsonKeyDraftData].get<std::string>();
-				_draftData.assign(data.begin(), data.end());
+				std::string draftData = j[JsonKeyDraftData].get<std::string>();
+				_draftData = Base64::Decode(draftData);
+				ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
+				uint256 draftHash(sha256_2(_draftData));
+				ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
 			}
 			_secretaryPublicKey.setHex(j[JsonKeySecretaryPublicKey].get<std::string>());
 			_secretaryDID = Address(j[JsonKeySecretaryDID].get<std::string>());
@@ -1180,7 +1193,7 @@ namespace Elastos {
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
 			if (version >= CRCProposalVersion01)
-				j[JsonKeyDraftData] = std::string(_draftData.begin(), _draftData.end());
+				j[JsonKeyDraftData] = Base64::Encode(_draftData);
 			j[JsonKeyBudgets] = _budgets;
 			j[JsonKeyRecipient] = _recipient.String();
 			return j;
@@ -1193,7 +1206,10 @@ namespace Elastos {
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
 			if (version >= CRCProposalVersion01) {
 				std::string draftData = j[JsonKeyDraftData].get<std::string>();
-				_draftData.assign(draftData.begin(), draftData.end());
+				_draftData = Base64::Decode(draftData);
+				ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
+				uint256 draftHash(sha256_2(_draftData));
+				ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
 			}
 			_budgets = j[JsonKeyBudgets].get<std::vector<Budget>>();
 			_recipient = Address(j[JsonKeyRecipient].get<std::string>());

@@ -1111,7 +1111,7 @@ namespace Elastos {
 					version = CRCProposalDefaultVersion;
 				}
 				proposal.FromJsonNormalOwnerUnsigned(payload, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
@@ -1137,7 +1137,7 @@ namespace Elastos {
 					version = CRCProposalDefaultVersion;
 				}
 				proposal.FromJsonNormalCRCouncilMemberUnsigned(payload, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
@@ -1163,7 +1163,7 @@ namespace Elastos {
 					version = CRCProposalDefaultVersion;
 				}
 				p->FromJson(payload, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
@@ -1195,7 +1195,7 @@ namespace Elastos {
 					version = CRCProposalDefaultVersion;
 				}
 				p->FromJson(payload, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
@@ -1235,7 +1235,7 @@ namespace Elastos {
 					version = CRCProposalReviewDefaultVersion;
 				}
 				proposalReview.FromJsonUnsigned(payload, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
@@ -1264,7 +1264,7 @@ namespace Elastos {
 				else
 					version = CRCProposalReviewDefaultVersion;
 				p->FromJson(payload, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
@@ -1400,7 +1400,7 @@ namespace Elastos {
 				else
 					version = CRCProposalTrackingDefaultVersion;
 				proposalTracking.FromJsonOwnerUnsigned(payload, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
@@ -1425,7 +1425,7 @@ namespace Elastos {
 				else
 					version = CRCProposalTrackingDefaultVersion;
 				proposalTracking.FromJsonNewOwnerUnsigned(payload, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
@@ -1451,7 +1451,7 @@ namespace Elastos {
 				else
 					version = CRCProposalTrackingDefaultVersion;
 				proposalTracking.FromJsonSecretaryUnsigned(payload, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
@@ -1480,7 +1480,7 @@ namespace Elastos {
 				else
 					version = CRCProposalTrackingDefaultVersion;
 				p->FromJson(payload, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
@@ -1522,7 +1522,7 @@ namespace Elastos {
 				nlohmann::json payloadFixed = payload;
 				payloadFixed[JsonKeyType] = CRCProposal::secretaryGeneralElection;
 				proposal.FromJsonSecretaryElectionUnsigned(payloadFixed, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
 			}
 
@@ -1551,7 +1551,7 @@ namespace Elastos {
 				nlohmann::json payloadFixed = payload;
 				payloadFixed[JsonKeyType] = CRCProposal::secretaryGeneralElection;
 				proposal.FromJsonSecretaryElectionCRCouncilMemberUnsigned(payloadFixed, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
 			}
 
@@ -1582,7 +1582,7 @@ namespace Elastos {
 				nlohmann::json payloadFixed = payload;
 				payloadFixed[JsonKeyType] = CRCProposal::secretaryGeneralElection;
 				p->FromJson(payloadFixed, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
 			}
 
@@ -1626,7 +1626,7 @@ namespace Elastos {
 				nlohmann::json payloadFixed = payload;
 				payloadFixed[JsonKeyType] = CRCProposal::changeProposalOwner;
 				proposal.FromJsonChangeOwnerUnsigned(payloadFixed, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
 			}
 
@@ -1654,7 +1654,7 @@ namespace Elastos {
 				nlohmann::json payloadFixed = payload;
 				payloadFixed[JsonKeyType] = CRCProposal::changeProposalOwner;
 				proposal.FromJsonChangeOwnerCRCouncilMemberUnsigned(payloadFixed, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
 			}
 
@@ -1685,7 +1685,7 @@ namespace Elastos {
 				nlohmann::json payloadFixed = payload;
 				payloadFixed[JsonKeyType] = CRCProposal::changeProposalOwner;
 				p->FromJson(payloadFixed, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
 			}
 
@@ -1729,7 +1729,7 @@ namespace Elastos {
 				nlohmann::json payloadFixed = payload;
 				payloadFixed[JsonKeyType] = CRCProposal::terminateProposal;
 				proposal.FromJsonTerminateProposalOwnerUnsigned(payloadFixed, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
 			}
 
@@ -1757,7 +1757,7 @@ namespace Elastos {
 				nlohmann::json payloadFixed = payload;
 				payloadFixed[JsonKeyType] = CRCProposal::terminateProposal;
 				proposal.FromJsonTerminateProposalCRCouncilMemberUnsigned(payloadFixed, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
 			}
 
@@ -1788,7 +1788,7 @@ namespace Elastos {
 				nlohmann::json payloadFixed = payload;
 				payloadFixed[JsonKeyType] = CRCProposal::terminateProposal;
 				p->FromJson(payloadFixed, version);
-			} catch (const std::exception &e) {
+			} catch (const nlohmann::json::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
 			}
 

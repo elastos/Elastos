@@ -24,9 +24,14 @@
 #include <Common/Log.h>
 #include <Common/hash.h>
 #include <WalletCore/Key.h>
+#include <Common/Base64.h>
+#include <Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
+
+#define MESSAGE_DATA_MAX_SIZE (800 * 1024)
+#define OPINION_DATA_MAX_SIZE (200 * 1024)
 
 		CRCProposalTracking::CRCProposalTracking() {
 
@@ -306,7 +311,7 @@ namespace Elastos {
 			j[JsonKeyProposalHash] = _proposalHash.GetHex();
 			j[JsonKeyMessageHash] = _messageHash.GetHex();
 			if (version >= CRCProposalTrackingVersion01)
-				j[JsonKeyMessageData] = std::string(_messageData.begin(), _messageData.end());
+				j[JsonKeyMessageData] = Base64::Encode(_messageData);
 			j[JsonKeyStage] = _stage;
 			j[JsonKeyOwnerPublicKey] = _ownerPubKey.getHex();
 			j[JsonKeyNewOwnerPublicKey] = _newOwnerPubKey.getHex();
@@ -318,7 +323,10 @@ namespace Elastos {
 			_messageHash.SetHex(j[JsonKeyMessageHash].get<std::string>());
 			if (version >= CRCProposalTrackingVersion01) {
 				std::string messageData = j[JsonKeyMessageData].get<std::string>();
-				_messageData.assign(messageData.begin(), messageData.end());
+				_messageData = Base64::Decode(messageData);
+				ErrorChecker::CheckParam(_messageData.size() > MESSAGE_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "message data size too large");
+				uint256 messageHash(sha256_2(_messageData));
+				ErrorChecker::CheckParam(messageHash != _messageHash, Error::ProposalHashNotMatch, "message hash not match");
 			}
 			_stage = j[JsonKeyStage].get<uint8_t>();
 			_ownerPubKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
@@ -342,7 +350,7 @@ namespace Elastos {
 			j[JsonKeyType] = _type;
 			j[JsonKeySecretaryGeneralOpinionHash] = _secretaryGeneralOpinionHash.GetHex();
 			if (version >= CRCProposalTrackingVersion01)
-				j[JsonKeySecretaryGeneralOpinionData] = std::string(_secretaryGeneralOpinionData.begin(), _secretaryGeneralOpinionData.end());
+				j[JsonKeySecretaryGeneralOpinionData] = Base64::Encode(_secretaryGeneralOpinionData);
 			return j;
 		}
 
@@ -353,7 +361,10 @@ namespace Elastos {
 			_secretaryGeneralOpinionHash.SetHex(j[JsonKeySecretaryGeneralOpinionHash].get<std::string>());
 			if (version >= CRCProposalTrackingVersion01) {
 				std::string data = j[JsonKeySecretaryGeneralOpinionData].get<std::string>();
-				_secretaryGeneralOpinionData.assign(data.begin(), data.end());
+				_secretaryGeneralOpinionData = Base64::Decode(data);
+				ErrorChecker::CheckParam(_secretaryGeneralOpinionData.size() > OPINION_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "opinion data size too large");
+				uint256 opinionHash(sha256_2(_secretaryGeneralOpinionData));
+				ErrorChecker::CheckParam(opinionHash != _secretaryGeneralOpinionHash, Error::ProposalHashNotMatch, "opinion hash not match");
 			}
 		}
 

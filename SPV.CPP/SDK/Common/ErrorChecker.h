@@ -95,6 +95,8 @@ namespace Elastos {
 				DepositNotFound = 20059,
 				TooMuchInputs = 20060,
 				LastVoteConfirming = 20061,
+				ProposalContentTooLarge = 20062,
+				ProposalHashNotMatch = 20063,
 				// ethereum side chain error code
 				InvalidUnitType = 31000,
 				InvalidEthereumAddress = 32000,

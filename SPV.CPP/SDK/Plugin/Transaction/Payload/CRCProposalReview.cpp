@@ -22,9 +22,13 @@
 #include "CRCProposalReview.h"
 #include <Common/Log.h>
 #include <Common/hash.h>
+#include <Common/Base64.h>
+#include <Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
+
+#define OPINION_DATA_MAX_SIZE (1024 * 1024)
 
 		CRCProposalReview::CRCProposalReview() {
 
@@ -166,7 +170,7 @@ namespace Elastos {
 			j[JsonKeyVoteResult] = _voteResult;
 			j[JsonKeyOpinionHash] = _opinionHash.GetHex();
 			if (version >= CRCProposalReviewVersion01)
-				j[JsonKeyOpinionData] = std::string(_opinionData.begin(), _opinionData.end());
+				j[JsonKeyOpinionData] = Base64::Encode(_opinionData);
 			j[JsonKeyDID] = _did.String();
 			return j;
 		}
@@ -177,7 +181,10 @@ namespace Elastos {
 			_opinionHash.SetHex(j[JsonKeyOpinionHash].get<std::string>());
 			if (version >= CRCProposalReviewVersion01) {
 				std::string opinionData = j[JsonKeyOpinionData].get<std::string>();
-				_opinionData.assign(opinionData.begin(), opinionData.end());
+				_opinionData = Base64::Decode(opinionData);
+				ErrorChecker::CheckParam(_opinionData.size() > OPINION_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "opinion hash too large");
+				uint256 opinionHash(sha256_2(_opinionData));
+				ErrorChecker::CheckParam(opinionHash != _opinionHash, Error::ProposalHashNotMatch, "opinion hash not match");
 			}
 			_did = Address(j[JsonKeyDID].get<std::string>());
 		}
