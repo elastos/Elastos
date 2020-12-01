@@ -37,6 +37,8 @@ namespace Elastos {
 
 			nlohmann::json Get(const std::string &url) const;
 
+			nlohmann::json Post(const std::string &url, const std::string &rawData) const;
+
 		private:
 			CURL *_curl;
 		};

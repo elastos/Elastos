@@ -488,7 +488,7 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback) {
 				int id = rid;
-				std::vector<uint64_t> numbers;
+				std::set<uint64_t> numberSet;
 				nlohmann::json r = _callback->GetTransactions(address, blockNumberStart, blockNumberStop, rid);
 				ArgInfo("getTransactions => {}", r.dump(4));
 
@@ -516,7 +516,7 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 								uint64_t blockNum;
 								ss << blockNumber;
 								ss >> blockNum;
-								numbers.push_back(blockNum);
+								numberSet.insert(blockNum);
 							}
 						}
 					} catch (const std::exception &e) {
@@ -528,8 +528,13 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 					return;
 				}
 
-				std::string ETH_EVENT_ERC20_TRANSFER = "0xa9059cbb";
-				r = _callback->GetLogs("", address, ETH_EVENT_ERC20_TRANSFER, blockNumberStart, blockNumberStop, rid);
+				char *pEncodedAddress = eventERC20TransferEncodeAddress(eventERC20Transfer, address.c_str());
+				std::string encodedAddress = pEncodedAddress;
+				free(pEncodedAddress);
+				std::string selector = eventGetSelector(eventERC20Transfer);
+				ArgInfo("address: {}", encodedAddress);
+				ArgInfo("event: {}", selector);
+				r = _callback->GetLogs("", encodedAddress, selector, blockNumberStart, blockNumberStop, rid);
 				ArgInfo("getLogs => {}", r.dump(4));
 
 				if (!r.empty()) {
@@ -544,8 +549,10 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 							topics = log["topics"].get<std::vector<std::string>>();
 							blockNumber = log["blockNumber"].get<std::string>();
 
-							if (topics.size() == 3) {
+							if (topics.size() >= 3) {
 								std::string addressLower = address, topicsLower1 = topics[1], topicsLower2 = topics[2];
+								topicsLower1.erase(2, 24);
+								topicsLower2.erase(2, 24);
 								std::transform(addressLower.begin(), addressLower.end(), addressLower.begin(), tolower);
 								std::transform(topicsLower1.begin(), topicsLower1.end(), topicsLower1.begin(), tolower);
 								std::transform(topicsLower2.begin(), topicsLower2.end(), topicsLower2.begin(), tolower);
@@ -554,10 +561,8 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 
 								if (include) {
 									std::stringstream ss;
-									uint64_t blockNum;
-									ss << blockNumber;
-									ss >> blockNum;
-									numbers.push_back(blockNum);
+									uint64_t blockNum = strtoull(blockNumber.c_str(), NULL, 0);
+									numberSet.insert(blockNum);
 								}
 							}
 						}
@@ -570,6 +575,7 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 					return;
 				}
 
+				std::vector<uint64_t> numbers(numberSet.begin(), numberSet.end());
 				_client->_ewm->announceBlocks(id, numbers);
 			}
 		}

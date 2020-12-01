@@ -71,6 +71,32 @@ namespace Elastos {
 			return length;
 		}
 
+		typedef struct HttpRequestBody {
+			size_t used;
+			size_t sz;
+			char *data;
+		} HttpRequestBody;
+
+		static size_t HttpRequestBodyReadCallback(void *dest, size_t size,
+												  size_t nmemb, void *userdata)
+		{
+			HttpRequestBody *request = (HttpRequestBody *)userdata;
+			size_t length = size * nmemb;
+			size_t bytes_copy = request->sz - request->used;
+
+			if (bytes_copy) {
+				if(bytes_copy > length)
+					bytes_copy = length;
+
+				memcpy(dest, request->data + request->used, bytes_copy);
+
+				request->used += bytes_copy;
+				return bytes_copy;
+			}
+
+			return 0;
+		}
+
 		RPCHelper::RPCHelper() {
 			/* In windows, this will init the winsock stuff */
 			curl_global_init(CURL_GLOBAL_ALL);
@@ -106,6 +132,48 @@ namespace Elastos {
 			memset(&response, 0, sizeof(response));
 			/* Perform the request */
 			CURLcode rc = curl_easy_perform(_curl);
+			if (rc != CURLE_OK) {
+				fprintf(stderr, "RPC call error, status: %d, message: %s", rc, curl_easy_strerror(rc));
+				if (response.data)
+					free(response.data);
+
+				return j;
+			}
+
+			((char *)response.data)[response.used] = 0;
+			std::string jstring = std::string((char *)response.data);
+			j = nlohmann::json::parse(jstring);
+			free(response.data);
+
+			return j;
+		}
+
+		nlohmann::json RPCHelper::Post(const std::string &url, const std::string &rawData) const {
+			nlohmann::json j;
+			if (_curl == nullptr) {
+				return j;
+			}
+			HttpRequestBody request;
+			request.used = 0;
+			request.sz = rawData.size();
+			request.data = (char *)rawData.c_str();
+			curl_easy_setopt(_curl, CURLOPT_URL, url.c_str());
+			curl_easy_setopt(_curl, CURLOPT_POST, 1L);
+			curl_easy_setopt(_curl, CURLOPT_READFUNCTION, HttpRequestBodyReadCallback);
+			curl_easy_setopt(_curl, CURLOPT_READDATA, &request);
+			curl_easy_setopt(_curl, CURLOPT_POSTFIELDSIZE, (long)request.sz);
+			HttpResponseBody response;
+			curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, HttpResponseBodyWriteCallback);
+			curl_easy_setopt(_curl, CURLOPT_WRITEDATA, &response);
+
+			struct curl_slist *headers = NULL;
+			headers = curl_slist_append(headers, "Content-Type: application/json");
+//			headers = curl_slist_append(headers, "Accept: application/json");
+			curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, headers);
+
+			memset(&response, 0, sizeof(response));
+			CURLcode rc = curl_easy_perform(_curl);
+			curl_slist_free_all(headers);
 			if (rc != CURLE_OK) {
 				fprintf(stderr, "RPC call error, status: %d, message: %s", rc, curl_easy_strerror(rc));
 				if (response.data)

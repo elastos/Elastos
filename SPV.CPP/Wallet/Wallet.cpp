@@ -341,9 +341,40 @@ public:
 								   uint64_t endBlockNumber,
 								   int id) {
 		nlohmann::json j, log, logs = nlohmann::json::array();
-		// rpc request
-		// TODO fix here later
-		// ...
+
+		if (contract.empty()) {
+			RPCHelper rpcHelper;
+			char hex[20];
+			nlohmann::json rawJson, param, params = nlohmann::json::array(), topics = nlohmann::json::array();
+
+			rawJson["jsonrpc"] = "2.0";
+			rawJson["method"] = "eth_getLogs";
+
+			topics.push_back(event);
+			topics.push_back(nlohmann::json());
+			topics.push_back(address);
+			param["topics"] = topics;
+
+			sprintf(hex, "0x%llx", begBlockNumber);
+			param["fromBlock"] = hex;
+			sprintf(hex, "0x%llx", endBlockNumber);
+			param["toBlock"] = hex;
+			params.push_back(param);
+			rawJson["params"] = params;
+
+			rawJson["id"] = id;
+			std::string url = "http://api.elastos.io:21636";
+			std::string rawData = rawJson.dump();
+			nlohmann::json respond = rpcHelper.Post(url, rawData);
+
+			nlohmann::json result = respond["result"];
+			if (result.is_array()) {
+				logs = result;
+			}
+		} else {
+			// TODO: ...
+		}
+
 		j["id"] = id;
 		j["result"] = logs;
 		return j;
