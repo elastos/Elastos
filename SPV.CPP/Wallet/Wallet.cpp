@@ -1099,23 +1099,23 @@ static int didtx(int argc, char *argv[]) {
 		getSubWallet(subWallet, currentWallet, CHAINID_ID);
 
 		std::string didDoc;
+		nlohmann::json payload;
 		if (argc == 2) {
 			std::string filepath = argv[1];
 			std::ifstream is(filepath);
-			std::string line;
-			while (!is.eof()) {
-				is >> line;
-				didDoc += line;
-				line.clear();
+			if (!is.good()) {
+				std::cout << "file '" << filepath << "' do not exist!" << std::endl;
+				return ERRNO_APP;
 			}
+			is >> payload;
 		} else {
 			struct termios told = enableLongInput();
 			std::cout << "Enter id document: ";
-			std::getline(std::cin, didDoc);
+			std::cin >> payload;
 			recoveryTTYSetting(&told);
 		}
 
-		nlohmann::json tx = subWallet->CreateIDTransaction(nlohmann::json::parse(didDoc), "");
+		nlohmann::json tx = subWallet->CreateIDTransaction(payload, "");
 		signAndPublishTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);

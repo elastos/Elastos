@@ -416,7 +416,7 @@ namespace Elastos {
 				}
 			}
 
-			ErrorChecker::ThrowLogicException(Error::Address, "Can't found code and path for address " + addr->String());
+			Log::error("Can't found code and path for address {}", addr->String());
 
 			return false;
 		}
