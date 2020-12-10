@@ -154,7 +154,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
 
     @Override
     protected void initView(View view) {
-        tvTitle.setText(R.string.adddidinfo);
+        tvTitle.setText(R.string.createlocalcredencial);
         tvTitleRight.setVisibility(View.VISIBLE);
         diduiPresenter = new DIDUIPresenter();
         initItemDate();

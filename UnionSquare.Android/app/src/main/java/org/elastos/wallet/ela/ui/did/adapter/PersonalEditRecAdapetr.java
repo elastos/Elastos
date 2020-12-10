@@ -25,6 +25,7 @@ package org.elastos.wallet.ela.ui.did.adapter;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,13 +91,25 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
         PersonalInfoItemEntity personalInfoItemEntity = list.get(position);
         int index = personalInfoItemEntity.getIndex();
         if (holder instanceof ViewHolder3) {
-            ((ViewHolder3) holder).et2.setFocusable(true);
-            ((ViewHolder3) holder).et2.setOnClickListener(null);
             ((ViewHolder3) holder).et1.setHint(personalInfoItemEntity.getHintShow1());
             ((ViewHolder3) holder).et2.setHint(personalInfoItemEntity.getHintShow2());
             ((ViewHolder3) holder).et1.setText(personalInfoItemEntity.getText1());
             ((ViewHolder3) holder).et2.setText(personalInfoItemEntity.getText2());
-            if (personalInfoItemEntity.getType() == -2) {
+            if (index == 5) {
+                //手机号
+                //android:inputType="phone"
+                ((ViewHolder3) holder).et1.setInputType(InputType.TYPE_CLASS_PHONE);
+                ((ViewHolder3) holder).et2.setInputType(InputType.TYPE_CLASS_PHONE);
+                ((ViewHolder3) holder).et1.setFilters(new InputFilter[]{new InputFilter.LengthFilter(6)});
+                ((ViewHolder3) holder).et2.setFilters(new InputFilter[]{new InputFilter.LengthFilter(15)});
+
+            } else {
+                ((ViewHolder3) holder).et1.setInputType(InputType.TYPE_CLASS_TEXT);
+                ((ViewHolder3) holder).et2.setInputType(InputType.TYPE_CLASS_TEXT);
+                ((ViewHolder3) holder).et1.setFilters(new InputFilter[0]);
+                ((ViewHolder3) holder).et2.setFilters(new InputFilter[0]);
+            }
+            if (commonRvListener != null && personalInfoItemEntity.getType() == -2) {
                 //自定义多行
                 ((ViewHolder3) holder).et2.setFocusable(false);
                 ((ViewHolder3) holder).et2.setOnClickListener(new View.OnClickListener() {
@@ -106,6 +119,12 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
                         commonRvListener.onRvItemClick(v, holder.getAdapterPosition(), personalInfoItemEntity);
                     }
                 });
+            } else {
+                ((ViewHolder3) holder).et2.setFocusable(true);
+                ((ViewHolder3) holder).et2.setFocusableInTouchMode(true);
+                ((ViewHolder3) holder).et2.requestFocus();
+                ((ViewHolder3) holder).et2.findFocus();
+                ((ViewHolder3) holder).et2.setOnClickListener(null);
             }
 
         } else if (holder instanceof ViewHolder2) {

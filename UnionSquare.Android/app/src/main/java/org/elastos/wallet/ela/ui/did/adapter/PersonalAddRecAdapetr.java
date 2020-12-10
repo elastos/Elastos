@@ -25,6 +25,7 @@ package org.elastos.wallet.ela.ui.did.adapter;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -100,15 +101,27 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
             });
 
         } else if (holder instanceof ViewHolder2) {
-            //自定义项
-            //手机号
-            ((ViewHolder2) holder).et2.setOnClickListener(null);
-            ((ViewHolder2) holder).et2.setFocusable(true);
+            //自定义项和手机号
+
             ((ViewHolder2) holder).et1.setText(personalInfoItemEntity.getText1());
             ((ViewHolder2) holder).et2.setText(personalInfoItemEntity.getText2());
             ((ViewHolder2) holder).et1.setHint(personalInfoItemEntity.getHintShow1());
             ((ViewHolder2) holder).et2.setHint(personalInfoItemEntity.getHintShow2());
-            if (commonRvListener != null && index > 13 && personalInfoItemEntity.getType() == -2) {
+            if (index == 5) {
+                //手机号
+                //android:inputType="phone"
+                ((ViewHolder2) holder).et1.setInputType(InputType.TYPE_CLASS_PHONE);
+                ((ViewHolder2) holder).et2.setInputType(InputType.TYPE_CLASS_PHONE);
+                ((ViewHolder2) holder).et1.setFilters(new InputFilter[]{new InputFilter.LengthFilter(6)});
+                ((ViewHolder2) holder).et2.setFilters(new InputFilter[]{new InputFilter.LengthFilter(15)});
+
+            } else {
+                ((ViewHolder2) holder).et1.setInputType(InputType.TYPE_CLASS_TEXT);
+                ((ViewHolder2) holder).et2.setInputType(InputType.TYPE_CLASS_TEXT);
+                ((ViewHolder2) holder).et1.setFilters(new InputFilter[0]);
+                ((ViewHolder2) holder).et2.setFilters(new InputFilter[0]);
+            }
+            if (commonRvListener != null && personalInfoItemEntity.getType() == -2) {
                 //自定义项多行
                 ((ViewHolder2) holder).et2.setFocusable(false);
                 ((ViewHolder2) holder).et2.setOnClickListener(new View.OnClickListener() {
@@ -118,6 +131,13 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
                         commonRvListener.onRvItemClick(v, holder.getAdapterPosition(), personalInfoItemEntity);
                     }
                 });
+            } else {
+                //单行和手机
+                ((ViewHolder2) holder).et2.setOnClickListener(null);
+                ((ViewHolder2) holder).et2.setFocusable(true);
+                ((ViewHolder2) holder).et2.setFocusableInTouchMode(true);
+                ((ViewHolder2) holder).et2.requestFocus();
+                ((ViewHolder2) holder).et2.findFocus();
             }
 
         } else if (holder instanceof ViewHolder3) {
