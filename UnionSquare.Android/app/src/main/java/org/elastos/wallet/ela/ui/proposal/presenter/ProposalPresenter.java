@@ -183,7 +183,7 @@ public class ProposalPresenter extends NewPresenterAbstract {
     }
 
     public void backProposalJwt(String type, String scanResult, String data, String payPasswd, BaseFragment baseFragment) {
-        String result = scanResult.replace("elastos://crproposal/", "");
+        String result = scanResult.replace("https://did.elastos.net/crproposal/", "");
         RecieveProposalFatherJwtEntity entity = JSON.parseObject(JwtUtils.getJwtPayload(result), RecieveProposalFatherJwtEntity.class);
 
         ProposalCallBackEntity callBackJwtEntity = new ProposalCallBackEntity();

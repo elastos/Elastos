@@ -508,9 +508,9 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
             scanResult = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(scanResult) /*&& matcherUtil.isMatcherAddr(result)*/) {
-                if (scanResult.startsWith("elastos://crproposal/")) {
+                if (scanResult.startsWith("https://did.elastos.net/crproposal/")) {
                     //兼容elastos:
-                    String result = scanResult.replace("elastos://crproposal/", "");
+                    String result = scanResult.replace("https://did.elastos.net/crproposal/", "");
                     try {
                         String payload = JwtUtils.getJwtPayload(result);
                         RecieveReviewJwtEntity curentJwtEntity = JSON.parseObject(payload, RecieveReviewJwtEntity.class);

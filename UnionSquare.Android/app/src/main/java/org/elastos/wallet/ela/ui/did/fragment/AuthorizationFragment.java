@@ -131,7 +131,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
             scanResult = data.getString("scanResult");
             String webName = data.getString("webName", getString(R.string.serviceprovider));
 
-            String result = scanResult.replace("elastos://credaccess/", "");
+            String result = scanResult.replace("https://did.elastos.net/credaccess/", "");
             jwtParts = result.split("\\.");
             String payload = JwtUtils.getJwtPayload(result);
             recieveLoginAuthorizedJwtEntity = JSON.parseObject(payload, RecieveLoginAuthorizedJwtEntity.class);

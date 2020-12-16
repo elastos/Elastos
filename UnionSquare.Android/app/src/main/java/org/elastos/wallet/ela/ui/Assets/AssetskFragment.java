@@ -285,7 +285,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             restoreScanData();
             scanResult = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(scanResult) /*&& matcherUtil.isMatcherAddr(result)*/) {
-                if (scanResult.startsWith("elastos:")) {
+                if (scanResult.startsWith("elastos:")||scanResult.startsWith("https://did.elastos.net/")) {
                     //兼容elastos:
                     scanElastos(scanResult);
                 } else {
@@ -356,23 +356,23 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
      * @param result
      */
     private void scanElastos(String result) {
-        if (result.startsWith("elastos://credaccess/")) {
+        if (result.startsWith("https://did.elastos.net/credaccess/")) {
             //did
             ////0 普通单签 1单签只读 2普通多签 3多签只读
             if (wallet.getType() != 0) {
                 toErroScan(scanResult);
 
             }
-            decodeWebJwt("elastos://credaccess/", result);
+            decodeWebJwt("https://did.elastos.net/credaccess/", result);
 
-        } else if (result.startsWith("elastos://crproposal/")) {
+        } else if (result.startsWith("https://did.elastos.net/crproposal/")) {
             //社区提案的二维码
             ////0 普通单签 1单签只读 2普通多签 3多签只读
             if (wallet.getType() != 0) {
                 toErroScan(scanResult);
                 return;
             }
-            decodeWebJwt("elastos://crproposal/", result);
+            decodeWebJwt("https://did.elastos.net/crproposal/", result);
 
         } else {
             //钱包转账地址情况 elastos:EJQcgWDazveSy436TauPJ3R8PCYpifp6HA?amount=6666.00000000
@@ -1340,13 +1340,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         } catch (DIDStoreException e) {
             e.printStackTrace();
         }
-        if (scanResult.startsWith("elastos://credaccess/")) {
+        if (scanResult.startsWith("https://did.elastos.net/credaccess/")) {
             //did
             toAuthorization(name);
 
-        } else if (scanResult.startsWith("elastos://crproposal/")) {
+        } else if (scanResult.startsWith("https://did.elastos.net/crproposal/")) {
             //社区提案的二维码
-            String result = scanResult.replace("elastos://crproposal/", "");
+            String result = scanResult.replace("https://did.elastos.net/crproposal/", "");
             String payload = JwtUtils.getJwtPayload(result);
             RecieveProposalFatherJwtEntity entity = JSON.parseObject(payload, RecieveProposalFatherJwtEntity.class);
             String command = entity.getCommand().toLowerCase();

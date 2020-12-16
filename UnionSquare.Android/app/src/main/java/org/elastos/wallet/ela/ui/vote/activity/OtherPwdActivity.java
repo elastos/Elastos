@@ -50,6 +50,7 @@ import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.JwtUtils;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 
@@ -261,6 +262,8 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
         //DIDURL didurl = new DIDURL( getMyDID().getDid(), "primary");
         // boolean b=getMyDID().getDIDDocument().ver(didurl,payload.getBytes());
         Log.i("???payload", payload);
+        //String sign = getMyDID().getDIDDocument().signDigest(payPasswd, JwtUtils.hex2byteBe(digist));
+        //boolean sign1 = getMyDID().getDIDDocument().verifyDigest(payload, JwtUtils.hex2byteBe(digist));
         presenter.createIDTransaction(wallet.getWalletId(), payload, this);
         Looper.loop();// 进入loop中的循环，查看消息队列
 

@@ -144,7 +144,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
     protected void setExtraData(Bundle data) {
         wallet = data.getParcelable("wallet");
         scanResult = data.getString("scanResult");
-        String result = scanResult.replace("elastos://crproposal/", "");
+        String result = scanResult.replace("https://did.elastos.net/crproposal/", "");
         String payload = JwtUtils.getJwtPayload(result);
         proposaltype = data.getString("proposaltype");
         switch (proposaltype.toLowerCase()) {
