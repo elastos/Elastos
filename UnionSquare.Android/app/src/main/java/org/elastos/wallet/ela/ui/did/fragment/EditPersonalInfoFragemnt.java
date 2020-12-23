@@ -207,8 +207,8 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         personalInfoItemEntity.setHintShow1(showDatum);
         personalInfoItemEntity.setHintChose(choseDatum);
         if (i == 5) {
-            personalInfoItemEntity.setHintShow2(getString(R.string.pleaseinputmobile));
-            personalInfoItemEntity.setHintChose2(getString(R.string.phonecode));
+            personalInfoItemEntity.setHintShow1(getString(R.string.phonecode));
+            personalInfoItemEntity.setHintShow2(getString(R.string.phonenumber));
         }
 
         return personalInfoItemEntity;

@@ -23,6 +23,7 @@
 package org.elastos.wallet.ela.ui.did.adapter;
 
 import android.content.Context;
+import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -95,50 +96,40 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
             ((ViewHolder3) holder).et2.setHint(personalInfoItemEntity.getHintShow2());
             ((ViewHolder3) holder).et1.setText(personalInfoItemEntity.getText1());
             ((ViewHolder3) holder).et2.setText(personalInfoItemEntity.getText2());
-            if (index == 5) {
-                //手机号
-                //android:inputType="phone"
-                ((ViewHolder3) holder).et1.setInputType(InputType.TYPE_CLASS_PHONE);
-                ((ViewHolder3) holder).et2.setInputType(InputType.TYPE_CLASS_PHONE);
-                ((ViewHolder3) holder).et1.setFilters(new InputFilter[]{new InputFilter.LengthFilter(6)});
-                ((ViewHolder3) holder).et2.setFilters(new InputFilter[]{new InputFilter.LengthFilter(15)});
+            ((ViewHolder3) holder).et1.setFilters(new InputFilter[]{new InputFilter.LengthFilter(24)});
+            if (personalInfoItemEntity.getType() == -1) {
+                initEditView(((ViewHolder3) holder).et2);
+                ((ViewHolder3) holder).et2.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
 
-            } else {
-                ((ViewHolder3) holder).et1.setInputType(InputType.TYPE_CLASS_TEXT);
-                ((ViewHolder3) holder).et2.setInputType(InputType.TYPE_CLASS_TEXT);
-                ((ViewHolder3) holder).et1.setFilters(new InputFilter[0]);
-                ((ViewHolder3) holder).et2.setFilters(new InputFilter[0]);
-            }
-            if (commonRvListener != null && personalInfoItemEntity.getType() == -2) {
+            } else if (personalInfoItemEntity.getType() == -2) {
                 //自定义多行
                 ((ViewHolder3) holder).et2.setFocusable(false);
+                ((ViewHolder3) holder).et2.setFilters(new InputFilter[]{new InputFilter.LengthFilter(800)});
                 ((ViewHolder3) holder).et2.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+
                         personalInfoItemEntity.setText1(((ViewHolder3) holder).et1.getText().toString());
-                        commonRvListener.onRvItemClick(v, holder.getAdapterPosition(), personalInfoItemEntity);
+                        if (commonRvListener != null) {
+                            commonRvListener.onRvItemClick(v, holder.getAdapterPosition(), personalInfoItemEntity);
+                        }
                     }
                 });
-            } else {
-                ((ViewHolder3) holder).et2.setFocusable(true);
-                ((ViewHolder3) holder).et2.setFocusableInTouchMode(true);
-                ((ViewHolder3) holder).et2.requestFocus();
-                ((ViewHolder3) holder).et2.findFocus();
-                ((ViewHolder3) holder).et2.setOnClickListener(null);
             }
 
         } else if (holder instanceof ViewHolder2) {
-            ((ViewHolder2) holder).tv1.setText(personalInfoItemEntity.getHintChose2());
-            ((ViewHolder2) holder).tv2.setText(personalInfoItemEntity.getHintChose());
+            //手机号
+            ((ViewHolder2) holder).tv1.setText(personalInfoItemEntity.getHintShow1());
+            ((ViewHolder2) holder).tv2.setText(personalInfoItemEntity.getHintShow2());
             ((ViewHolder2) holder).et1.setText(personalInfoItemEntity.getText1());
             ((ViewHolder2) holder).et2.setText(personalInfoItemEntity.getText2());
+            ((ViewHolder2) holder).et1.setInputType(InputType.TYPE_CLASS_PHONE);
+            ((ViewHolder2) holder).et2.setInputType(InputType.TYPE_CLASS_PHONE);
+            ((ViewHolder2) holder).et1.setFilters(new InputFilter[]{new InputFilter.LengthFilter(6)});
+            ((ViewHolder2) holder).et2.setFilters(new InputFilter[]{new InputFilter.LengthFilter(15)});
 
         } else if (holder instanceof ViewHolder1) {
-            /*if (index > 13) {
-                //自定义项多行  是否是单独的新布局
-                ((ViewHolder1) holder).tv1.setText(personalInfoItemEntity.getText1());
-                ((ViewHolder1) holder).tv2.setText(personalInfoItemEntity.getText2());
-            } else {*/
+
             ((ViewHolder1) holder).tv1.setText(personalInfoItemEntity.getHintChose());
             ((ViewHolder1) holder).tv2.setText(personalInfoItemEntity.getText1());
             //}
@@ -171,6 +162,17 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
             });
         }
 
+    }
+
+    private void initEditView(EditText view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && view.getFocusable() == EditText.FOCUSABLE) {
+            return;
+        }
+        view.setOnClickListener(null);
+        view.setFocusable(true);
+        view.setFocusableInTouchMode(true);
+        view.requestFocus();
+        view.findFocus();
     }
 
     @Override
