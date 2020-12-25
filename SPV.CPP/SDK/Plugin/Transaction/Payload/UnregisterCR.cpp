@@ -12,6 +12,11 @@ namespace Elastos {
 
 		}
 
+		UnregisterCR::UnregisterCR(const uint168 &cid, const bytes_t &sign) :
+			_cid(cid),
+			_signature(sign) {
+		}
+
 		UnregisterCR::~UnregisterCR() {
 
 		}
@@ -104,5 +109,18 @@ namespace Elastos {
 			_signature = payload._signature;
 			return *this;
 		}
+
+		bool UnregisterCR::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const UnregisterCR &p = dynamic_cast<const UnregisterCR &>(payload);
+				return _cid == p._cid &&
+					   _signature == p._signature;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of UnregisterCR");
+			}
+
+			return false;
+		}
+
 	}
 }

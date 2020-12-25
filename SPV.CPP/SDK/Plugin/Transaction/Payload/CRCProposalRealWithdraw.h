@@ -51,6 +51,8 @@ namespace Elastos {
 
 			CRCProposalRealWithdraw &operator=(const CRCProposalRealWithdraw &payload);
 
+			bool Equal(const IPayload &payload, uint8_t version) const override;
+
 		private:
 			std::vector<uint256> _withdrawTxHashes;
 		};

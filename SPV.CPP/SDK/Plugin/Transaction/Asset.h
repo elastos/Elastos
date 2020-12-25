@@ -79,9 +79,9 @@ namespace Elastos {
 
 			virtual size_t EstimateSize() const;
 
-			virtual void Serialize(ByteStream &ostream) const;
+			virtual void Serialize(ByteStream &stream, bool extend = false) const;
 
-			virtual bool Deserialize(const ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &stream, bool extend = false);
 
 			virtual nlohmann::json ToJson() const;
 
@@ -90,6 +90,8 @@ namespace Elastos {
 			const uint256 &GetHash() const;
 
 			void SetHash(const uint256 &hash);
+
+			bool operator==(const Asset &asset) const;
 
 		public:
 			static const uint256 &GetELAAssetID();

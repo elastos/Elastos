@@ -38,6 +38,7 @@ namespace Elastos {
 
 			CoinBase &operator=(const CoinBase &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			bytes_t _coinBaseData;
 		};

@@ -17,6 +17,9 @@ namespace Elastos {
 		public:
 			CRInfo();
 
+			CRInfo(const bytes_t &code, const uint168 &cid, const uint168 &did,
+				   const std::string &nickName, const std::string &url, uint64_t location, const bytes_t &signature);
+
 			~CRInfo();
 
 			const bytes_t &GetCode() const;
@@ -67,6 +70,7 @@ namespace Elastos {
 
 			CRInfo &operator=(const CRInfo &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			bytes_t _code;
 			uint168 _cid;

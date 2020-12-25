@@ -53,20 +53,8 @@ namespace Elastos {
 			return true;
 		}
 
-		bool IDTransaction::IsDPoSTransaction() const {
-			return false;
-		}
-
-		bool IDTransaction::IsCRCTransaction() const {
-			return false;
-		}
-
-		bool IDTransaction::IsProposalTransaction() const {
-			return false;
-		}
-
-		bool IDTransaction::IsIDTransaction() const {
-			return _type == didTransaction;
+		std::vector<uint8_t> IDTransaction::GetIDTxTypes() {
+			return {didTransaction};
 		}
 
 	}

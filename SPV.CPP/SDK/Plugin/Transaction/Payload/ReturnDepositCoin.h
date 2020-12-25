@@ -31,6 +31,8 @@ namespace Elastos {
 			virtual IPayload &operator=(const IPayload &payload);
 
 			ReturnDepositCoin &operator=(const ReturnDepositCoin &payload);
+
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		};
 
 	}

@@ -67,6 +67,10 @@ namespace Elastos {
 
 			const uint256 &GetMessageHash() const;
 
+			void SetMessageData(const bytes_t &data);
+
+			const bytes_t &GetMessageData() const;
+
 			void SetStage(uint8_t stage);
 
 			uint8_t GetStage() const;
@@ -94,6 +98,10 @@ namespace Elastos {
 			void SetSecretaryGeneralOpinionHash(const uint256 &hash);
 
 			const uint256 &GetSecretaryGeneralOpinionHash()  const;
+
+			void SetSecretaryGeneralOpinionData(const bytes_t &data);
+
+			const bytes_t &GetSecretaryGeneralOpinionData()  const;
 
 			void SetSecretaryGeneralSignature(const bytes_t &signature);
 
@@ -153,6 +161,7 @@ namespace Elastos {
 
 			CRCProposalTracking &operator=(const CRCProposalTracking &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			mutable uint256 _digestOwnerUnsigned, _digestNewOwnerUnsigned, _digestSecretaryUnsigned;
 

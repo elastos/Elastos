@@ -103,7 +103,11 @@ namespace Elastos {
 		}
 
 		static uint168 getRandUInt168(void) {
-			return uint168(getRandBytes(21));
+			std::vector<uint8_t> prefixs = {PrefixStandard, PrefixMultiSign, PrefixCrossChain, PrefixCRExpenses, PrefixDeposit, PrefixIDChain, PrefixDestroy};
+			uint168 programHash(getRandBytes(21));
+			uint8_t index = getRandUInt8() % prefixs.size();
+			*programHash.begin() = prefixs[index];
+			return programHash;
 		}
 
 		static void initTransaction(Transaction &tx, const Transaction::TxVersion &version) {
@@ -115,10 +119,9 @@ namespace Elastos {
 			tx.SetFee(getRandUInt64());
 
 			for (size_t i = 0; i < 20; ++i) {
-				InputPtr input(new TransactionInput());
-				input->SetTxHash(getRanduint256());
-				input->SetIndex(getRandUInt16());
-				input->SetSequence(getRandUInt32());
+				uint168 programHash = getRandUInt168();
+				*programHash.begin() = Prefix::PrefixStandard;
+				InputPtr input(new TransactionInput(getRanduint256(), getRandUInt16(), getRandBigInt(), Address(programHash)));
 				tx.AddInput(input);
 			}
 
@@ -154,8 +157,6 @@ namespace Elastos {
 				bytes_t parameter = getRandBytes(25);
 				tx.AddProgram(ProgramPtr(new Program("", code, parameter)));
 			}
-
-			tx.GetHash();
 		}
 
 		static void verifyTransaction(const Transaction &tx1, const Transaction &tx2, bool checkAll = true) {

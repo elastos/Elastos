@@ -242,5 +242,22 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool CRCProposalWithdraw::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const CRCProposalWithdraw &p = dynamic_cast<const CRCProposalWithdraw &>(payload);
+				bool equal = _proposalHash == p._proposalHash &&
+							 _ownerPubkey == p._ownerPubkey &&
+							 _signature == p._signature;
+
+				if (version >= CRCProposalWithdrawVersion_01)
+					equal = equal && _recipient == p._recipient && _amount == p._amount;
+
+				return equal;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of CRCProposalWithdraw");
+			}
+
+			return false;
+		}
 	}
 }

@@ -12,12 +12,10 @@ namespace Elastos {
 
 		void BigInt::allocate() {
 			this->autoclear = false;
-			if (!(this->bn = BN_new())) {
-				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt allocate error");
-			}
-			if (!(this->ctx = BN_CTX_new())) {
-				if (this->bn) BN_free(this->bn);
-				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt ctx new");
+			if ((this->bn = BN_new())) {
+				if (!(this->ctx = BN_CTX_new())) {
+					if (this->bn) BN_free(this->bn);
+				}
 			}
 		}
 
@@ -291,7 +289,7 @@ namespace Elastos {
 
 			char *hex = BN_bn2hex(this->bn);
 			if (!hex) {
-				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt bn2hex");
+				return bytes;
 			}
 
 			bytes.setHex(std::string(hex));

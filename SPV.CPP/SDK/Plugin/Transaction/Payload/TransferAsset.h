@@ -33,6 +33,7 @@ namespace Elastos {
 
 			TransferAsset &operator=(const TransferAsset &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		};
 	}
 }

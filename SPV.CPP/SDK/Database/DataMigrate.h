@@ -20,21 +20,37 @@
  * SOFTWARE.
  */
 
-#ifndef __ELASTOS_SPVSDK_TXHASHPROPOSAL_H__
-#define __ELASTOS_SPVSDK_TXHASHPROPOSAL_H__
+#ifndef __ELASTOS_SPVSDK_DATAMIGRATE_H__
+#define __ELASTOS_SPVSDK_DATAMIGRATE_H__
 
-#include "SimpleTable.h"
+#include "Sqlite.h"
+#include "TableBase.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class TxHashProposal : public SimpleTable {
+		class DataMigrate : public TableBase {
 		public:
-			TxHashProposal(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
+			DataMigrate(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
 
-			~TxHashProposal();
+			~DataMigrate();
 
-			virtual void InitializeTable();
+			void InitializeTable() override;
+
+			bool SetDataMigrateDoneInner(const std::string &type);
+
+			bool SetDataMigrateDone(const std::string &type);
+
+			bool IsDataMigrateDone(const std::string &type) const;
+
+		private:
+			const std::string _tableName = "dataMigrate";
+			const std::string _type = "type";
+			const std::string _done = "done";
+			const std::string _tableCreation = "CREATE TABLE IF NOT EXISTS " +
+											   _tableName + "(" +
+											   _type + " TEXT PRIMARY KEY NOT NULL," +
+											   _done + " INTEGER DEFAULT 0);";
 		};
 
 	}

@@ -35,13 +35,14 @@ namespace Elastos {
 #define MERKLEBLOCK_ISO "ela2"
 		MerkleBlockDataSource::MerkleBlockDataSource(Sqlite *sqlite, SqliteTransactionType type) :
 			TableBase(type, sqlite) {
+			TableBase::ExecInTransaction(MB_DATABASE_CREATE);
 		}
 
 		MerkleBlockDataSource::~MerkleBlockDataSource() {
 		}
 
 		void MerkleBlockDataSource::InitializeTable() {
-			TableBase::InitializeTable(MB_DATABASE_CREATE);
+			TableBase::ExecInTransaction(MB_DATABASE_CREATE);
 		}
 
 		bool MerkleBlockDataSource::PutMerkleBlock(const MerkleBlockPtr &blockPtr) {

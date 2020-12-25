@@ -31,41 +31,37 @@ namespace Elastos {
 			_tableName = "UTXOTable";
 			_txHash = "txHash";
 			_index = "outputIndex";
+			_tableCreation = "CREATE TABLE IF NOT EXISTS " + _tableName + "(" +
+							 _txHash + " TEXT NOT NULL," + _index + " INTEGER);";
+			TableBase::ExecInTransaction(_tableCreation);
 		}
 
 		UTXOStore::~UTXOStore() {
 		}
 
 		void UTXOStore::InitializeTable() {
-			_tableCreation = "create table if not exists " + _tableName + "(" +
-						_txHash + " text not null," + _index + " integer);";
-			TableBase::InitializeTable(_tableCreation);
+			_tableCreation = "cREATE TABLE IF NOT EXISTS " + _tableName + "(" +
+						_txHash + " TEXT NOT NULL," + _index + " INTEGER);";
+			TableBase::ExecInTransaction(_tableCreation);
 		}
 
 		bool UTXOStore::PutInternal(const UTXOEntity &entity) {
 			std::string sql("INSERT INTO " + _tableName + "(" + _txHash + "," + _index + ") VALUES (?, ?);");
 
-			sqlite3_stmt *stmt;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}" + sql);
-				return false;
-			}
+			return SqliteWrapper(sql, [&entity, this](sqlite3_stmt *stmt) {
+				if (!_sqlite->BindText(stmt, 1, entity._hash, nullptr) ||
+					!_sqlite->BindInt(stmt, 2, entity._n)) {
+					Log::error("bind args");
+					return false;
+				}
 
-			if (!_sqlite->BindText(stmt, 1, entity._hash, nullptr) ||
-				!_sqlite->BindInt(stmt, 2, entity._n)) {
-				Log::error("bind args");
-			}
+				if (SQLITE_DONE != _sqlite->Step(stmt)) {
+					Log::error("step");
+					return false;
+				}
 
-			if (SQLITE_DONE != _sqlite->Step(stmt)) {
-				Log::error("step");
-			}
-
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("utxo put finalize");
-				return false;
-			}
-
-			return true;
+				return true;
+			});
 		}
 
 		bool UTXOStore::Puts(const std::vector<UTXOEntity> &entities) {
@@ -84,25 +80,19 @@ namespace Elastos {
 
 		std::vector<UTXOEntity> UTXOStore::Gets() const {
 			std::vector<UTXOEntity> utxos;
-			int r;
 			std::string sql("SELECT " + _txHash + "," + _index + " FROM " + _tableName + ";");
 
-			sqlite3_stmt *stmt;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}", sql);
-				return {};
-			}
+			if (!SqliteWrapper(sql, [&utxos, this](sqlite3_stmt *stmt) {
+				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+					UTXOEntity utxo;
+					utxo._hash = _sqlite->ColumnText(stmt, 0);
+					utxo._n = _sqlite->ColumnInt(stmt, 1);
 
-			while (SQLITE_ROW == (r = _sqlite->Step(stmt))) {
-				UTXOEntity utxo;
-				utxo._hash = _sqlite->ColumnText(stmt, 0);
-				utxo._n = _sqlite->ColumnInt(stmt, 1);
+					utxos.push_back(utxo);
+				}
 
-				utxos.push_back(utxo);
-			}
-
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("Tx get all finalize");
+				return true;
+			})) {
 				return {};
 			}
 
@@ -140,27 +130,20 @@ namespace Elastos {
 		bool UTXOStore::DeleteInternal(const UTXOEntity &entity) {
 			std::string sql("DELETE FROM " + _tableName + " WHERE " + _txHash + " = ? AND " + _index + " = ?;");
 
-			sqlite3_stmt *stmt;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}", sql);
-				return false;
-			}
+			return SqliteWrapper(sql, [&entity, this](sqlite3_stmt *stmt) {
+				if (!_sqlite->BindText(stmt, 1, entity._hash, nullptr) ||
+					!_sqlite->BindInt(stmt, 2, entity._n)) {
+					Log::error("bind args");
+					return false;
+				}
 
-			if (!_sqlite->BindText(stmt, 1, entity._hash, nullptr) ||
-				!_sqlite->BindInt(stmt, 2, entity._n)) {
-				Log::error("bind args");
-			}
+				if (SQLITE_DONE != _sqlite->Step(stmt)) {
+					Log::error("stmp");
+					return false;
+				}
 
-			if (SQLITE_DONE != _sqlite->Step(stmt)) {
-				Log::error("stmp");
-			}
-
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("utxo delete finalize");
-				return false;
-			}
-
-			return true;
+				return true;
+			});
 		}
 
 		bool UTXOStore::Delete(const std::vector<UTXOEntity> &entities) {

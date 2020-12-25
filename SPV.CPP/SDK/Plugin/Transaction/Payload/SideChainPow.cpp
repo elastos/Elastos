@@ -136,5 +136,18 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool SideChainPow::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const SideChainPow &p = dynamic_cast<const SideChainPow &>(payload);
+				return _sideBlockHash == p._sideBlockHash &&
+					   _sideGenesisHash == p._sideGenesisHash &&
+					   _blockHeight == p._blockHeight &&
+					   _signedData == p._signedData;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of SideChainPow");
+			}
+
+			return false;
+		}
 	}
 }

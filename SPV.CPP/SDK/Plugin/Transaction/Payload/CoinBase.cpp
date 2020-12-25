@@ -78,5 +78,15 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool CoinBase::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const CoinBase &p = dynamic_cast<const CoinBase &>(payload);
+				return _coinBaseData == p._coinBaseData;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of CoinBase");
+			}
+
+			return false;
+		}
 	}
 }

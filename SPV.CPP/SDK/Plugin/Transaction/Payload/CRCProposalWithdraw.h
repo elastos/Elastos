@@ -80,6 +80,7 @@ namespace Elastos {
 
 			CRCProposalWithdraw &operator=(const CRCProposalWithdraw &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			mutable uint256 _digest;
 

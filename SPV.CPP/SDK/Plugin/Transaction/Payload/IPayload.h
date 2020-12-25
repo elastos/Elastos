@@ -31,6 +31,8 @@ namespace Elastos {
 			virtual bool IsValid(uint8_t version) const;
 
 			virtual IPayload &operator=(const IPayload &payload) = 0;
+
+			virtual bool Equal(const IPayload &payload, uint8_t version) const = 0;
 		};
 
 		typedef boost::shared_ptr<IPayload> PayloadPtr;

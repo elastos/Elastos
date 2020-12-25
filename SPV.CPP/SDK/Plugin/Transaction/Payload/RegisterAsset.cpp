@@ -103,5 +103,18 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool RegisterAsset::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const RegisterAsset &p = dynamic_cast<const RegisterAsset &>(payload);
+				return *_asset == *p._asset &&
+					   _amount == p._amount &&
+					   _controller == p._controller;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of RegisterAsset");
+			}
+
+			return false;
+		}
+
 	}
 }

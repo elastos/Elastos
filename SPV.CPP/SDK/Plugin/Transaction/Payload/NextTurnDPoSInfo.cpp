@@ -31,6 +31,15 @@ namespace Elastos {
 
 		}
 
+		NextTurnDPoSInfo::NextTurnDPoSInfo(uint32_t blockHeight,
+										   const std::vector<bytes_t> &crPubkeys,
+										   const std::vector<bytes_t> &dposPubkeys) :
+			_workingHeight(blockHeight),
+			_crPublicKeys(crPubkeys),
+			_dposPublicKeys(dposPubkeys) {
+
+		}
+
 		NextTurnDPoSInfo::NextTurnDPoSInfo(const NextTurnDPoSInfo &payload) {
 			operator=(payload);
 		}
@@ -150,12 +159,14 @@ namespace Elastos {
 
 			nlohmann::json crPubKeys = j["CRPublicKeys"];
 			nlohmann::json dposPubKeys = j["DPoSPublicKeys"];
+			_crPublicKeys.clear();
 			for (nlohmann::json::iterator it = crPubKeys.begin(); it != crPubKeys.end(); ++it) {
 				bytes_t pubkey;
 				pubkey.setHex((*it).get<std::string>());
 				_crPublicKeys.push_back(pubkey);
 			}
 
+			_dposPublicKeys.clear();
 			for (nlohmann::json::iterator it = dposPubKeys.begin(); it != dposPubKeys.end(); ++it) {
 				bytes_t pubkey;
 				pubkey.setHex((*it).get<std::string>());
@@ -181,5 +192,17 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool NextTurnDPoSInfo::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const NextTurnDPoSInfo &p = dynamic_cast<const NextTurnDPoSInfo &>(payload);
+				return _workingHeight == p._workingHeight &&
+					   _crPublicKeys == p._crPublicKeys &&
+					   _dposPublicKeys == p._dposPublicKeys;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of NextTurnDPoSInfo");
+			}
+
+			return false;
+		}
 	}
 }

@@ -92,22 +92,43 @@ namespace Elastos {
 		}
 
 		bool TableBase::DeleteAll(const std::string &tableName) {
-			return DoTransaction([&tableName, this]() {
-				std::string sql = "DELETE FROM " + tableName + ";";
+			std::string sql = "DELETE FROM " + tableName + ";";
+			return ExecInTransaction(sql);
+		}
 
+		bool TableBase::SqliteWrapper(const std::string &sql, const boost::function<bool(sqlite3_stmt *stmt)> &fun) const {
+			bool r = true;
+			sqlite3_stmt *stmt = NULL;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return false;
+			}
+
+			try {
+				if (!fun(stmt))
+					r = false;
+			} catch (const std::exception &e) {
+				r = false;
+				Log::error("Data base error: {}", e.what());
+			}
+
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("get tx finalize");
+				return false;
+			}
+
+			return r;
+		}
+
+		bool TableBase::ExecInTransaction(const std::string &sql) {
+			return DoTransaction([&sql, this]() {
 				if (!_sqlite->exec(sql, nullptr, nullptr)) {
 					Log::error("exec sql: {}", sql);
 					return false;
 				}
-
 				return true;
 			});
 		}
 
-		void TableBase::InitializeTable(const std::string &constructScript) {
-			_sqlite->BeginTransaction(_txType);
-			_sqlite->exec(constructScript, nullptr, nullptr);
-			_sqlite->EndTransaction();
-		}
 	}
 }

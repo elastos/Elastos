@@ -24,10 +24,10 @@ namespace Elastos {
 			return 0;
 		}
 
-		void PayloadDefault::Serialize(ByteStream &ostream) const {
+		void PayloadDefault::Serialize(ByteStream &stream, bool extend) const {
 		}
 
-		bool PayloadDefault::Deserialize(const ByteStream &istream) {
+		bool PayloadDefault::Deserialize(const ByteStream &stream, bool extend) {
 			return true;
 		}
 
@@ -51,6 +51,16 @@ namespace Elastos {
 
 		PayloadDefault& PayloadDefault::operator=(const PayloadDefault &payload) {
 			return *this;
+		}
+
+		bool PayloadDefault::operator==(const IOutputPayload &payload) const {
+			try {
+				const PayloadDefault &payloadDefault = dynamic_cast<const PayloadDefault &>(payload);
+				return true;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of PayloadDefault");
+			}
+			return false;
 		}
 
 	}

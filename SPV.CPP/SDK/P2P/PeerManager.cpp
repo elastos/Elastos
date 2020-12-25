@@ -1097,7 +1097,7 @@ namespace Elastos {
 			PublishedTransaction pubTx;
 
 			{
-				_wallet->StripTransaction(tx);
+				_wallet->FixTransaction(tx);
 				boost::mutex::scoped_lock scopedLock(lock);
 				peer->info("relayed tx");
 

@@ -48,6 +48,7 @@ namespace Elastos {
 
 			WithdrawFromSideChain &operator=(const WithdrawFromSideChain &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			uint32_t _blockHeight;
 			std::string _genesisBlockAddress;

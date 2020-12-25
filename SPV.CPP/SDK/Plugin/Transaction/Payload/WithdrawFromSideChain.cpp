@@ -124,6 +124,7 @@ namespace Elastos {
 			_blockHeight = j["BlockHeight"].get<uint32_t>();
 			_genesisBlockAddress = j["GenesisBlockAddress"].get<std::string>();
 
+			_sideChainTransactionHash.clear();
 			nlohmann::json hashes = j["SideChainTransactionHash"];
 			for (nlohmann::json::iterator it = hashes.begin(); it != hashes.end(); ++it)
 				_sideChainTransactionHash.emplace_back((*it).get<std::string>());
@@ -148,5 +149,17 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool WithdrawFromSideChain::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const WithdrawFromSideChain &p = dynamic_cast<const WithdrawFromSideChain &>(payload);
+				return _blockHeight == p._blockHeight &&
+					   _genesisBlockAddress == p._genesisBlockAddress &&
+					   _sideChainTransactionHash == p._sideChainTransactionHash;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of WithdrawFromSideChain");
+			}
+
+			return false;
+		}
 	}
 }

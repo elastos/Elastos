@@ -22,7 +22,7 @@ namespace Elastos {
 		public:
 			RechargeToSideChain();
 
-			RechargeToSideChain(const bytes_t &merkeProff, const bytes_t &mainChainTransaction);
+			RechargeToSideChain(const bytes_t &merkeProof, const bytes_t &mainChainTransaction, const uint256 &hash);
 
 			RechargeToSideChain(const RechargeToSideChain &payload);
 
@@ -42,6 +42,7 @@ namespace Elastos {
 
 			RechargeToSideChain &operator=(const RechargeToSideChain &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			bytes_t _merkeProof;
 			bytes_t _mainChainTransaction;

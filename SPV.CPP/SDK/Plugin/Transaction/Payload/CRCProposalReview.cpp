@@ -62,6 +62,14 @@ namespace Elastos {
 			return _opinionHash;
 		}
 
+		void CRCProposalReview::SetOpinionData(const bytes_t &data) {
+			_opinionData = data;
+		}
+
+		const bytes_t &CRCProposalReview::GetOpinionData() const {
+			return _opinionData;
+		}
+
 		void CRCProposalReview::SetDID(const Address &DID) {
 			_did = DID;
 		}
@@ -94,6 +102,10 @@ namespace Elastos {
 			size += _proposalHash.size();
 			size += sizeof(uint8_t);
 			size += _opinionHash.size();
+			if (version >= CRCProposalReviewVersion01) {
+				size += stream.WriteVarUint(_opinionData.size());
+				size += _opinionData.size();
+			}
 			size += _did.ProgramHash().size();
 			size += stream.WriteVarUint(_signature.size());
 			size += _signature.size();
@@ -244,6 +256,26 @@ namespace Elastos {
 			_did = payload._did;
 			_signature = payload._signature;
 			return *this;
+		}
+
+		bool CRCProposalReview::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const CRCProposalReview &p = dynamic_cast<const CRCProposalReview &>(payload);
+				bool equal = _proposalHash == p._proposalHash &&
+					   _voteResult == p._voteResult &&
+					   _opinionHash == p._opinionHash &&
+					   _did == p._did &&
+					   _signature == p._signature;
+
+				if (version >= CRCProposalReviewVersion01)
+					equal = equal && _opinionData == p._opinionData;
+
+				return equal;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of CRCProposalReview");
+			}
+
+			return false;
 		}
 
 	}

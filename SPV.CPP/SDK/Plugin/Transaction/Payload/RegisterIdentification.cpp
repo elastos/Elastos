@@ -248,6 +248,10 @@ namespace Elastos {
 			_contents.push_back(content);
 		}
 
+		void RegisterIdentification::SetContent(const std::vector<SignContent> &contents) {
+			_contents = contents;
+		}
+
 		void RegisterIdentification::RemoveContent(size_t index) {
 			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
@@ -272,5 +276,17 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool RegisterIdentification::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const RegisterIdentification &p = dynamic_cast<const RegisterIdentification &>(payload);
+				return _id == p._id &&
+					   _sign == p._sign &&
+					   _contents == p._contents;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of RegisterIdentification");
+			}
+
+			return false;
+		}
 	}
 }

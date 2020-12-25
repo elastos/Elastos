@@ -49,6 +49,8 @@
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
 
+			bool operator==(const DIDHeaderInfo &info) const;
+
 		private:
 			std::string _specification;
 			std::string _operation;
@@ -169,6 +171,8 @@
 			void AutoFill(const std::string &did);
 
 			void ToOrderJson(JsonGenerator *generator) const;
+
+			bool operator==(const DIDProofInfo &info) const;
 
 		private:
 			std::string _type;
@@ -392,6 +396,7 @@
 
 			DIDInfo &operator=(const DIDInfo &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			DIDHeaderInfo _header;
 			std::string _payload;

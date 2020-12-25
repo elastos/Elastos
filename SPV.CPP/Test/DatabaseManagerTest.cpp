@@ -7,16 +7,25 @@
 #include <catch.hpp>
 #include "TestHelper.h"
 
-#include <Database/TransactionNormal.h>
 #include <Database/DatabaseManager.h>
 #include <Common/Log.h>
-#include <Wallet/UTXO.h>
 #include <Plugin/Registry.h>
 #include <Plugin/ELAPlugin.h>
 #include <Plugin/IDPlugin.h>
 #include <Plugin/TokenPlugin.h>
 
 #include <fstream>
+#include <Plugin/Transaction/Payload/CoinBase.h>
+#include <Plugin/Transaction/Payload/TransferAsset.h>
+#include <Plugin/Transaction/Payload/RechargeToSideChain.h>
+#include <Plugin/Transaction/Payload/WithdrawFromSideChain.h>
+#include <Plugin/Transaction/Payload/TransferCrossChainAsset.h>
+#include <Plugin/Transaction/Payload/ProducerInfo.h>
+#include <Plugin/Transaction/Payload/CancelProducer.h>
+#include <Plugin/Transaction/Payload/ReturnDepositCoin.h>
+#include <Plugin/Transaction/Payload/NextTurnDPoSInfo.h>
+#include <Plugin/Transaction/Payload/CRInfo.h>
+#include <Plugin/Transaction/Payload/UnregisterCR.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -27,19 +36,13 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 	std::string pluginType = "ELA";
 #define DEFAULT_RECORD_CNT 20
 
-	SECTION("Prepare to test") {
-		srand(time(nullptr));
-
-		if (boost::filesystem::exists(DBFILE) && boost::filesystem::is_regular_file(DBFILE)) {
-			boost::filesystem::remove(DBFILE);
-		}
-
-		REQUIRE(!boost::filesystem::exists(DBFILE));
-	}
+	srand(time(nullptr));
 
 	SECTION("Asset test") {
 #define TEST_ASSET_RECORD_CNT DEFAULT_RECORD_CNT
 		DatabaseManager dm(DBFILE);
+
+		REQUIRE(dm.DeleteAllAssets());
 
 		// save
 		std::vector<AssetEntity> assets;
@@ -117,6 +120,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Merkle Block save test") {
 			DatabaseManager *dbm = new DatabaseManager(DBFILE);
+			REQUIRE(dbm->DeleteAllBlocks());
 			MerkleBlockPtr merkleBlock(Registry::Instance()->CreateMerkleBlock(pluginType));
 
 			merkleBlock->SetHeight(110);
@@ -205,6 +209,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Peer save test") {
 			DatabaseManager dbm(DBFILE);
+			REQUIRE(dbm.DeleteAllPeers());
 			REQUIRE(dbm.PutPeers(peerToSave));
 		}
 
@@ -279,6 +284,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Peer save test") {
 			DatabaseManager dbm(DBFILE);
+			REQUIRE(dbm.DeleteAllBlackPeers());
 			REQUIRE(dbm.PutBlackPeers(peerToSave));
 		}
 
@@ -338,107 +344,248 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 	}
 
 	SECTION("Transaction test") {
-#define TEST_TX_RECORD_CNT DEFAULT_RECORD_CNT
-		static std::vector<TransactionPtr> txToSave;
-		static std::vector<TransactionPtr> txToUpdate;
+#define TEST_TX_RECORD_CNT 120
 
-		SECTION("Transaction prepare for testing") {
-			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
+		SECTION("Transaction save and read test") {
+			DatabaseManager dbm(DBFILE);
+
+			REQUIRE(dbm.DeleteAllTx());
+			REQUIRE(dbm.GetAllTxCnt() == 0);
+			std::vector<TxEntity> entities;
+			std::vector<TransactionPtr> txs;
+			std::map<std::string, TransactionPtr> txmap;
+
+			// put 1
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new CoinBase(getRandBytes(50)));
+				TransactionPtr tx(new Transaction(Transaction::coinBase, payload));
+				initTransaction(*tx, Transaction::V09);
+				tx->SetPayloadVersion(0);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			// put 2
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new TransferAsset());
+				TransactionPtr tx(new Transaction(Transaction::transferAsset, payload));
+				initTransaction(*tx, Transaction::V09);
+				tx->SetPayloadVersion(0);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			// put 3
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new RechargeToSideChain(getRandBytes(20), getRandBytes(30), getRanduint256()));
+				TransactionPtr tx(new Transaction(Transaction::rechargeToSideChain, payload));
+				initTransaction(*tx, Transaction::V09);
+				tx->SetPayloadVersion(RechargeToSideChain::V1);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			// put 4
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new WithdrawFromSideChain(getRandUInt32(), getRandString(30), {getRanduint256()}));
+				TransactionPtr tx(new Transaction(Transaction::withdrawFromSideChain, payload));
+				initTransaction(*tx, Transaction::V09);
+				tx->SetPayloadVersion(0);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			// put 5
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new TransferCrossChainAsset({TransferInfo(getRandString(30), getRandUInt16(), getRandBigInt())}));
+				TransactionPtr tx(new Transaction(Transaction::transferCrossChainAsset, payload));
+				initTransaction(*tx, Transaction::V09);
+				tx->SetPayloadVersion(0);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			// put 6
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new ProducerInfo(getRandBytes(33),
+																 getRandBytes(33),
+																 getRandString(10),
+																 getRandString(20),
+																 getRandUInt64(),
+																 getRandString(30),
+																 getRandBytes(64)));
+				TransactionPtr tx(new Transaction(Transaction::registerProducer, payload));
+				initTransaction(*tx, Transaction::V09);
+				tx->SetPayloadVersion(0);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			// put 7
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new CancelProducer(getRandBytes(33),
+																   getRandBytes(64)));
+				TransactionPtr tx(new Transaction(Transaction::cancelProducer, payload));
+				initTransaction(*tx, Transaction::V09);
+				tx->SetPayloadVersion(0);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			// put 8
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());
+				TransactionPtr tx(new Transaction(Transaction::returnDepositCoin, payload));
+				initTransaction(*tx, Transaction::V09);
+				tx->SetPayloadVersion(0);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			// put 9
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new NextTurnDPoSInfo(getRandUInt32(), {getRandBytes(33)}, {getRandBytes(33)}));
+				TransactionPtr tx(new Transaction(Transaction::nextTurnDPOSInfo, payload));
+				initTransaction(*tx, Transaction::V09);
+				tx->SetPayloadVersion(0);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			// put 10
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new CRInfo(getRandBytes(21),
+														   getRandUInt168(),
+														   getRandUInt168(),
+														   getRandString(10),
+														   getRandString(30),
+														   getRandUInt64(),
+														   getRandBytes(64)));
+				TransactionPtr tx(new Transaction(Transaction::registerCR, payload));
+				initTransaction(*tx, Transaction::V09);
+				tx->SetPayloadVersion(CRInfoDIDVersion);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			// put 11
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new UnregisterCR(getRandUInt168(), getRandBytes(64)));
+				TransactionPtr tx(new Transaction(Transaction::unregisterCR, payload));
+				initTransaction(*tx, Transaction::V09);
+
+				tx->SetPayloadVersion(0);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			// put 12
+			for (int i = 0; i < 10; ++i) {
+				TxEntity e;
+				PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());
+				TransactionPtr tx(new Transaction(Transaction::returnCRDepositCoin, payload));
+				initTransaction(*tx, Transaction::V09);
+				tx->SetPayloadVersion(0);
+				tx->Encode(e);
+				txs.push_back(tx);
+				entities.push_back(e);
+				txmap[tx->GetHash().GetHex()] = tx;
+			}
+
+			REQUIRE(dbm.PutTx(entities));
+
+			// read & verify tx
+			entities.clear();
+			REQUIRE(dbm.GetTx(entities));
+			REQUIRE(entities.size() == txs.size());
+
+			for (int i = 0; i < entities.size(); ++i) {
 				TransactionPtr tx(new Transaction());
-
-				for (size_t i = 0; i < 2; ++i) {
-					InputPtr input(new TransactionInput());
-					input->SetTxHash(getRanduint256());
-					input->SetIndex(getRandUInt16());
-					input->SetSequence(getRandUInt32());
-					tx->AddInput(input);
-				}
-				for (size_t i = 0; i < 20; ++i) {
-					Address toAddress("EJKPFkAwx7G6dniGMvsb7eG1V8gmhxFU9Z");
-					OutputPtr output(new TransactionOutput(10, toAddress));
-					tx->AddOutput(output);
-				}
-				tx->SetBlockHeight(getRandUInt32());
-				tx->SetTimestamp(getRandUInt32());
-				txToSave.push_back(tx);
+				REQUIRE(tx->Decode(entities[i]));
+				REQUIRE((*tx == *txs[i]));
 			}
 
-			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
+			// update
+			std::vector<std::string> hashes;
+			for (int i = TEST_TX_RECORD_CNT / 2; i < TEST_TX_RECORD_CNT; ++i)
+				hashes.push_back(txs[i]->GetHash().GetHex());
+			REQUIRE(dbm.UpdateTx(hashes, TX_UNCONFIRMED, 0));
+
+			// verify update
+			entities.clear();
+			REQUIRE(dbm.GetTx(entities));
+			for (int i = TEST_TX_RECORD_CNT / 2; i < TEST_TX_RECORD_CNT; ++i) {
 				TransactionPtr tx(new Transaction());
-				tx->FromJson(txToSave[i]->ToJson());
-				tx->SetBlockHeight((uint32_t) 1234);
-				tx->SetTimestamp((uint32_t) 12345678);
-				txToUpdate.push_back(tx);
-			}
-		}
-
-		SECTION("Transaction save test") {
-			DatabaseManager dbm(DBFILE);
-			for (int i = 0; i < txToSave.size(); ++i) {
-				REQUIRE(dbm.PutNormalTxn(txToSave[i]));
-			}
-		}
-
-		SECTION("Transaction read test") {
-			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionPtr> readTx = dbm.GetNormalTxns(CHAINID_MAINCHAIN);
-			REQUIRE(txToSave.size() == readTx.size());
-
-			for (int i = 0; i < readTx.size(); ++i) {
-				ByteStream toSaveStream;
-				txToSave[i]->Serialize(toSaveStream);
-				ByteStream readStream;
-				readTx[i]->Serialize(readStream);
-				REQUIRE(readStream.GetBytes() == toSaveStream.GetBytes());
-				REQUIRE(readTx[i]->GetHash() == txToSave[i]->GetHash());
-				REQUIRE(readTx[i]->GetTimestamp() == txToSave[i]->GetTimestamp());
-				REQUIRE(readTx[i]->GetBlockHeight() == txToSave[i]->GetBlockHeight());
-			}
-		}
-
-		SECTION("Transaction udpate test") {
-			DatabaseManager dbm(DBFILE);
-
-			REQUIRE(dbm.UpdateNormalTxn(txToUpdate));
-		}
-
-		SECTION("Transaction read after update test") {
-			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionPtr> readTx = dbm.GetNormalTxns(CHAINID_MAINCHAIN);
-			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
-
-			for (int i = 0; i < readTx.size(); ++i) {
-				ByteStream updateStream;
-				txToUpdate[i]->Serialize(updateStream);
-				ByteStream readStream;
-				readTx[i]->Serialize(readStream);
-
-				REQUIRE(readStream.GetBytes() == updateStream.GetBytes());
-				REQUIRE(readTx[i]->GetHash() == txToUpdate[i]->GetHash());
-				REQUIRE(readTx[i]->GetTimestamp() == txToUpdate[i]->GetTimestamp());
-				REQUIRE(readTx[i]->GetBlockHeight() == txToUpdate[i]->GetBlockHeight());
-			}
-		}
-
-		SECTION("Transaction delete by txHash test") {
-			DatabaseManager dbm(DBFILE);
-
-			for (int i = 0; i < txToUpdate.size(); ++i) {
-				REQUIRE(dbm.DeleteNormalTxn(txToUpdate[i]->GetHash()));
+				REQUIRE(tx->Decode(entities[i]));
+				REQUIRE(tx->GetBlockHeight() == TX_UNCONFIRMED);
+				REQUIRE(tx->GetTimestamp() == 0);
 			}
 
-			std::vector<TransactionPtr> readTx = dbm.GetNormalTxns(CHAINID_MAINCHAIN);
-			REQUIRE(0 == readTx.size());
-		}
+			// make fake utxo
+			std::vector<UTXOEntity> utxoEntities;
+			for (int i = 0; i < TEST_TX_RECORD_CNT / 2; ++i) {
+				UTXOEntity e(txs[i]->GetHash().GetHex(), 0);
+				utxoEntities.push_back(e);
+			}
+			REQUIRE(dbm.DeleteAllUTXOs());
+			REQUIRE(dbm.PutUTXOs(utxoEntities));
 
+			// read & verify utxo tx
+			entities.clear();
+			REQUIRE(dbm.GetUTXOTx(entities));
+			for (int i = 0; i < TEST_TX_RECORD_CNT / 2; ++i)
+				REQUIRE(txmap.find(entities[i].GetTxHash()) != txmap.end());
+
+			// delete
+			for (int i = 0; i < TEST_TX_RECORD_CNT / 2; ++i)
+				REQUIRE(dbm.DeleteTx(txs[i]->GetHash().GetHex()));
+
+			// verify delete
+			entities.clear();
+			REQUIRE(dbm.GetTx(entities));
+			REQUIRE(entities.size() == TEST_TX_RECORD_CNT / 2);
+			for (int i = TEST_TX_RECORD_CNT / 2; i < TEST_TX_RECORD_CNT; ++i) {
+				TransactionPtr tx(new Transaction());
+				REQUIRE(tx->Decode(entities[i - TEST_TX_RECORD_CNT / 2]));
+				REQUIRE(tx->GetHash().GetHex() == txs[i]->GetHash().GetHex());
+			}
+		}
 	}
 
 	SECTION("UTXO Store Test") {
-		if (boost::filesystem::exists(DBFILE) && boost::filesystem::is_regular_file(DBFILE)) {
-			boost::filesystem::remove(DBFILE);
-		}
-
-		REQUIRE(!boost::filesystem::exists(DBFILE));
 #define TEST_UTXO_RECORD_CNT DEFAULT_RECORD_CNT
 		std::vector<UTXOEntity> utxoToSave;
 
@@ -453,6 +600,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		// save
 		DatabaseManager *dbm = new DatabaseManager(DBFILE);
+
+		REQUIRE(dbm->DeleteAllUTXOs());
 
 		REQUIRE(dbm->PutUTXOs(utxoToSave));
 
@@ -498,11 +647,6 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 	}
 
 	SECTION("Used address Test") {
-		if (boost::filesystem::exists(DBFILE) && boost::filesystem::is_regular_file(DBFILE)) {
-			boost::filesystem::remove(DBFILE);
-		}
-
-		REQUIRE(!boost::filesystem::exists(DBFILE));
 #define TEST_USED_ADDRESS_CNT DEFAULT_RECORD_CNT
 		std::vector<std::string> usedAddress;
 
@@ -514,6 +658,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		// save
 		DatabaseManager *dbm = new DatabaseManager(DBFILE);
+		REQUIRE(dbm->DeleteAllUsedAddresses());
 		REQUIRE(dbm->PutUsedAddresses(usedAddress, false));
 		// test insert or replace
 		REQUIRE(dbm->PutUsedAddresses(usedAddress, false));
@@ -547,29 +692,6 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		REQUIRE(dbm->GetUTXOs().empty());
 
 		delete dbm;
-	}
-
-	SECTION("UTXO and tx test") {
-		// prepare data
-		std::vector<TransactionPtr> txns;
-		std::vector<std::string> txHashDPoS;
-#define TEST_TXNS_COUNT 10 // 1500
-
-		for (uint64_t i = 0; i < TEST_TXNS_COUNT; ++i) {
-			TransactionPtr tx(new Transaction());
-			initTransaction(*tx, Transaction::TxVersion::V09);
-			txns.push_back(tx);
-			if (txHashDPoS.size() < TEST_TXNS_COUNT)
-				txHashDPoS.push_back(tx->GetHash().GetHex());
-		}
-
-		DatabaseManager dm(DBFILE);
-		REQUIRE(dm.PutNormalTxns(txns));
-		REQUIRE(dm.PutTxHashDPoS(txHashDPoS));
-
-		std::vector<TransactionPtr> txnsDPoS = dm.GetTxDPoS(CHAINID_MAINCHAIN);
-
-		REQUIRE(txnsDPoS.size() == TEST_TXNS_COUNT);
 	}
 
 }

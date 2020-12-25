@@ -16,9 +16,10 @@ namespace Elastos {
 
 		}
 
-		RechargeToSideChain::RechargeToSideChain(const bytes_t &merkeProff, const bytes_t &mainChainTransaction) {
-			_merkeProof = merkeProff;
+		RechargeToSideChain::RechargeToSideChain(const bytes_t &merkeProof, const bytes_t &mainChainTransaction, const uint256 &hash) {
+			_merkeProof = merkeProof;
 			_mainChainTransaction = mainChainTransaction;
+			_mainChainTxHash = hash;
 		}
 
 		RechargeToSideChain::RechargeToSideChain(const RechargeToSideChain &payload) {
@@ -86,7 +87,7 @@ namespace Elastos {
 				j["MerkleProof"] = _merkeProof.getHex();
 				j["MainChainTransaction"] = _mainChainTransaction.getHex();
 			} else if (version == RechargeToSideChain::V1) {
-				j["MainChaianTxHash"] = _mainChainTxHash.GetHex();
+				j["MainChainTxHash"] = _mainChainTxHash.GetHex();
 			} else {
 				Log::error("toJson: invalid recharge to side chain payload version = {}", version);
 			}
@@ -124,5 +125,22 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool RechargeToSideChain::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const RechargeToSideChain &p = dynamic_cast<const RechargeToSideChain &>(payload);
+
+				if (version == RechargeToSideChain::V0)
+					return _merkeProof == p._merkeProof && _mainChainTransaction == p._mainChainTransaction;
+
+				if (version == RechargeToSideChain::V1)
+					return _mainChainTxHash == p._mainChainTxHash;
+
+				return false;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of RechargeToSideChain");
+			}
+
+			return false;
+		}
 	}
 }

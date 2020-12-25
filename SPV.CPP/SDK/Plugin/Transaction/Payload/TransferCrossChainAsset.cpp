@@ -48,6 +48,12 @@ namespace Elastos {
 			_crossChainAmount.setDec(j["CrossChainAmount"].get<std::string>());
 		}
 
+		bool TransferInfo::operator==(const TransferInfo &info) const {
+			return _crossChainAddress == info._crossChainAddress &&
+				   _outputIndex == info._outputIndex &&
+				   _crossChainAmount == info._crossChainAmount;
+		}
+
 		TransferCrossChainAsset::TransferCrossChainAsset() {
 
 		}
@@ -158,6 +164,7 @@ namespace Elastos {
 				return;
 			}
 
+			_info.clear();
 			for (nlohmann::json::const_iterator it = j.cbegin(); it != j.cend(); ++it) {
 				TransferInfo info;
 				info.FromJson(*it, version);
@@ -180,6 +187,17 @@ namespace Elastos {
 			_info = payload._info;
 
 			return *this;
+		}
+
+		bool TransferCrossChainAsset::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const TransferCrossChainAsset &p = dynamic_cast<const TransferCrossChainAsset &>(payload);
+				return _info == p._info;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of TransferCrossChainAsset");
+			}
+
+			return false;
 		}
 
 	}

@@ -42,6 +42,7 @@ namespace Elastos {
 
 			Record &operator=(const Record &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			std::string _recordType;
 			bytes_t _recordData;

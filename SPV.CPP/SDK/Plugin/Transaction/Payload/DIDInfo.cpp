@@ -118,6 +118,12 @@ namespace Elastos {
 			}
 		}
 
+		bool DIDHeaderInfo::operator==(const DIDHeaderInfo &info) const {
+			return _specification == info._specification &&
+				   _operation == info._operation &&
+				   _previousTxid == info._previousTxid;
+		}
+
 		DIDPubKeyInfo::DIDPubKeyInfo() {
 
 		}
@@ -997,6 +1003,12 @@ namespace Elastos {
 			JsonGenerator_WriteEndObject(generator);
 		}
 
+		bool DIDProofInfo::operator==(const DIDProofInfo &info) const {
+			return _type == info._type &&
+				   _verificationMethod == info._verificationMethod &&
+				   _signature == info._signature;
+		}
+
 		nlohmann::json DIDProofInfo::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
@@ -1192,5 +1204,17 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool DIDInfo::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const DIDInfo &p = dynamic_cast<const DIDInfo &>(payload);
+				return _header == p._header &&
+					   _payload == p._payload &&
+					   _proof == p._proof;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of DIDInfo");
+			}
+
+			return false;
+		}
 	}
 }

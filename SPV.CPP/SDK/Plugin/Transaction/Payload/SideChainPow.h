@@ -53,6 +53,7 @@ namespace Elastos {
 
 			SideChainPow &operator=(const SideChainPow &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			uint256 _sideBlockHash;
 			uint256 _sideGenesisHash;

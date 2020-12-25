@@ -19,6 +19,7 @@ namespace Elastos {
 		class TransactionInput;
 		class Program;
 		class Attribute;
+		class TxEntity;
 		typedef boost::shared_ptr<Wallet> WalletPtr;
 		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
 		typedef std::vector<OutputPtr> OutputArray;
@@ -29,7 +30,7 @@ namespace Elastos {
 		typedef boost::shared_ptr<Attribute> AttributePtr;
 		typedef std::vector<AttributePtr> AttributeArray;
 
-		class Transaction : public JsonSerializer {
+		class Transaction : public ELAMessageSerializable, public JsonSerializer {
 		public:
 			enum {
 				coinBase                 = 0x00,
@@ -81,17 +82,21 @@ namespace Elastos {
 		public:
 			Transaction();
 
-			Transaction(uint8_t type, const PayloadPtr &payload);
+			Transaction(uint8_t type, PayloadPtr payload);
 
 			Transaction(const Transaction &tx);
 
 			Transaction &operator=(const Transaction &tx);
 
+			bool operator==(const Transaction &tx) const;
+
 			virtual ~Transaction();
 
-			void Serialize(ByteStream &ostream, bool extend = false) const;
+			void Serialize(ByteStream &stream, bool extend = false) const;
 
-			bool Deserialize(const ByteStream &istream, bool extend = false);
+			bool Deserialize(const ByteStream &stream, bool extend = false);
+
+			bool DeserializeOld(const ByteStream &stream, bool extend = false);
 
 			virtual bool DeserializeType(const ByteStream &istream);
 
@@ -109,9 +114,9 @@ namespace Elastos {
 
 			void ResetHash();
 
-			const TxVersion &GetVersion() const;
+			uint8_t GetVersion() const;
 
-			void SetVersion(const TxVersion &version);
+			void SetVersion(uint8_t version);
 
 			const std::vector<OutputPtr> &GetOutputs() const;
 
@@ -135,13 +140,13 @@ namespace Elastos {
 
 			uint8_t GetTransactionType() const;
 
-			virtual bool IsDPoSTransaction() const;
+			void SetTransactionType(uint8_t type);
 
-			virtual bool IsCRCTransaction() const;
+			static std::vector<uint8_t> GetDPoSTxTypes();
 
-			virtual bool IsProposalTransaction() const;
+			static std::vector<uint8_t> GetCRCTxTypes();
 
-			virtual bool IsIDTransaction() const;
+			static std::vector<uint8_t> GetProposalTypes();
 
 			uint32_t GetLockTime() const;
 
@@ -215,6 +220,10 @@ namespace Elastos {
 
 			std::string GetConfirmStatus(uint32_t walletBlockHeight) const;
 
+			bool Decode(const TxEntity &e);
+
+			bool Encode(TxEntity &e);
+
 		public:
 			virtual PayloadPtr InitPayload(uint8_t type);
 
@@ -227,7 +236,7 @@ namespace Elastos {
 			bool _isRegistered;
 			mutable uint256 _txHash;
 
-			TxVersion _version; // uint8_t
+			uint8_t _version; // uint8_t
 			uint32_t _lockTime;
 			uint32_t _blockHeight;
 			time_t _timestamp; // time interval since unix epoch

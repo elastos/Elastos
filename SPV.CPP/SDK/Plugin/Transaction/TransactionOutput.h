@@ -38,9 +38,9 @@ namespace Elastos {
 
 			size_t EstimateSize() const;
 
-			void Serialize(ByteStream &ostream, uint8_t txVersion, bool extend = false) const;
+			void Serialize(ByteStream &stream, uint8_t txVersion, bool extend = false) const;
 
-			bool Deserialize(const ByteStream &istream, uint8_t txVersion, bool extend = false);
+			bool Deserialize(const ByteStream &stream, uint8_t txVersion, bool extend = false);
 
 			bool IsValid() const;
 
@@ -74,11 +74,13 @@ namespace Elastos {
 
 			void FromJson(const nlohmann::json &j);
 
-			size_t GetSize() const;
-
 			uint16_t FixedIndex() const;
 
 			void SetFixedIndex(uint16_t index);
+
+			bool operator==(const TransactionOutput &o) const;
+
+			bool operator!=(const TransactionOutput &o) const;
 
 		private:
 			uint16_t _fixedIndex;

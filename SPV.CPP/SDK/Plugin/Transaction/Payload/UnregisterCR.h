@@ -13,6 +13,8 @@ namespace Elastos {
 		public:
 			UnregisterCR();
 
+			UnregisterCR(const uint168 &cid, const bytes_t &sign);
+
 			~UnregisterCR();
 
 			void SetCID(const uint168 &cid);
@@ -40,6 +42,8 @@ namespace Elastos {
 			virtual IPayload &operator=(const IPayload &payload);
 
 			UnregisterCR &operator=(const UnregisterCR &payload);
+
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			uint168 _cid;
 			bytes_t _signature;

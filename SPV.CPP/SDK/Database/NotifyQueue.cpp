@@ -30,7 +30,7 @@ namespace Elastos {
 	namespace ElaWallet {
 		NotifyQueue::NotifyQueue(const boost::filesystem::path &path)
 			: TableBase(new Sqlite(path)) {
-			InitializeTable(NOTIFY_QUEUE_TABLE_CREATE);
+			ExecInTransaction(NOTIFY_QUEUE_TABLE_CREATE);
 		}
 
 		NotifyQueue::~NotifyQueue() {
@@ -46,28 +46,21 @@ namespace Elastos {
 					  NOTIFY_QUEUE_COLUMN_HEIGHT + "," +
 					  NOTIFY_QUEUE_COLUMN_LAST_NOTIFY_TIME + ") VALUES(?,?,?);";
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}", sql);
-					return false;
-				}
+				return SqliteWrapper(sql, [this, &record, &tx_hash](sqlite3_stmt *stmt) {
+					if (!_sqlite->BindText(stmt, 1, tx_hash, nullptr) ||
+						!_sqlite->BindInt(stmt, 2, record->height) ||
+						!_sqlite->BindInt64(stmt, 3, record->last_notify_time)) {
+						Log::error("bind args");
+						return false;
+					}
 
-				if (!_sqlite->BindText(stmt, 1, tx_hash, nullptr) ||
-					!_sqlite->BindInt(stmt, 2, record->height) ||
-					!_sqlite->BindInt64(stmt, 3, record->last_notify_time)) {
-					Log::error("bind args");
-				}
+					if (SQLITE_DONE != _sqlite->Step(stmt)) {
+						Log::error("step");
+						return false;
+					}
 
-				if (SQLITE_DONE != _sqlite->Step(stmt)) {
-					Log::error("step");
-				}
-
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("NotifyQueue Upset finalize");
-					return false;
-				}
-
-				return true;
+					return true;
+				});
 			});
 		}
 
@@ -82,25 +75,21 @@ namespace Elastos {
 				  " FROM " + NOTIFY_QUEUE_TABLE +
 				  " WHERE " + NOTIFY_QUEUE_COLUMN_HEIGHT + " != 0 AND " + NOTIFY_QUEUE_COLUMN_HEIGHT + " <= ?;";
 
-			sqlite3_stmt *stmt;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}", sql);
-				return {};
-			}
+			if (!SqliteWrapper(sql, [&rows, &current, this](sqlite3_stmt *stmt) {
+				if (!_sqlite->BindInt(stmt, 1, current - 5)) {
+					Log::error("bind args");
+					return false;
+				}
 
-			if (!_sqlite->BindInt(stmt, 1, current - 5)) {
-				Log::error("bind args");
-			}
+				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+					RecordPtr row(new Record(uint256(_sqlite->ColumnText(stmt, 0)),
+											 (uint32_t) _sqlite->ColumnInt(stmt, 1),
+											 (time_t) _sqlite->ColumnInt(stmt, 2)));
+					rows.push_back(row);
+				}
 
-			while (SQLITE_ROW == _sqlite->Step(stmt)) {
-				RecordPtr row(new Record(uint256(_sqlite->ColumnText(stmt, 0)),
-										 (uint32_t) _sqlite->ColumnInt(stmt, 1),
-										 (time_t) _sqlite->ColumnInt(stmt, 2)));
-				rows.push_back(row);
-			}
-
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("NotifyQueue GetAllConfirmed finalize");
+				return true;
+			})) {
 				return {};
 			}
 
@@ -114,26 +103,19 @@ namespace Elastos {
 				sql = "DELETE FROM " + NOTIFY_QUEUE_TABLE +
 					  " WHERE " + NOTIFY_QUEUE_COLUMN_TX_HASH + " = ?;";
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}", sql);
-					return false;
-				}
+				return SqliteWrapper(sql, [&hash, this](sqlite3_stmt *stmt) {
+					if (!_sqlite->BindText(stmt, 1, hash, nullptr)) {
+						Log::error("bind args");
+						return false;
+					}
 
-				if (!_sqlite->BindText(stmt, 1, hash, nullptr)) {
-					Log::error("bind args");
-				}
+					if (SQLITE_DONE != _sqlite->Step(stmt)) {
+						Log::error("step");
+						return false;
+					}
 
-				if (SQLITE_DONE != _sqlite->Step(stmt)) {
-					Log::error("step");
-				}
-
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("NotifyQueue Delete finalize");
-					return false;
-				}
-
-				return true;
+					return true;
+				});
 			});
 		}
 

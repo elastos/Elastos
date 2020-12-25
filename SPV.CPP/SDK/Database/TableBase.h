@@ -49,11 +49,13 @@ namespace Elastos {
 		protected:
 			bool ContainTable(const std::string &tableName) const;
 
-			void InitializeTable(const std::string &constructScript);
+			bool ExecInTransaction(const std::string &sql);
 
 			bool DoTransaction(const boost::function<bool()> &fun) const;
 
 			bool DeleteAll(const std::string &tableName);
+
+			bool SqliteWrapper(const std::string &sql, const boost::function<bool(sqlite3_stmt *stmt)> &fun) const;
 
 		protected:
 			Sqlite *_sqlite;

@@ -120,7 +120,7 @@ TEST_CASE("Account test", "[Account]") {
 		std::string passphrase = "1234Abcd";
 		std::string payPasswd = "12345678";
 
-		AccountPtr account(new Account("Data/resetpasswd", mnemonic, passphrase, payPasswd, false));
+		AccountPtr account(new Account("resetpasswd", mnemonic, passphrase, payPasswd, false));
 		account->Save();
 
 		REQUIRE_NOTHROW(account->VerifyPayPassword(payPasswd));

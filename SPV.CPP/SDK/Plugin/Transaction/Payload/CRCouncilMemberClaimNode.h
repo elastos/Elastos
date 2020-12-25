@@ -53,7 +53,7 @@ namespace Elastos {
 
 			CRCouncilMemberClaimNode &operator=(const CRCouncilMemberClaimNode &payload);
 
-			bool operator==(const IPayload &payload) const;
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 
 		public:
 			void SerializeUnsigned(ByteStream &stream, uint8_t version) const;

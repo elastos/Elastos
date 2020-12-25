@@ -14,6 +14,8 @@ namespace Elastos {
 		public:
 			CancelProducer();
 
+			CancelProducer(const bytes_t &pubkey, const bytes_t &sign);
+
 			CancelProducer(const CancelProducer &payload);
 
 			~CancelProducer();
@@ -41,6 +43,8 @@ namespace Elastos {
 			virtual IPayload &operator=(const IPayload &payload);
 
 			CancelProducer &operator=(const CancelProducer &payload);
+
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 
 		private:
 			bytes_t _publicKey;

@@ -53,12 +53,6 @@ namespace Elastos {
 		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;
 		typedef boost::weak_ptr<DatabaseManager> DatabaseManagerWeakPtr;
 
-		enum TxnType {
-			TXN_NORMAL = 0x01,
-			TXN_PENDING = 0x02,
-			TXN_COINBASE = 0x04
-		};
-
 		class Wallet : public Lockable {
 		public:
 			class Listener {
@@ -67,9 +61,9 @@ namespace Elastos {
 
 				virtual void onTxAdded(const TransactionPtr &tx) = 0;
 
-				virtual void onTxUpdated(const std::vector<TransactionPtr> &txns) = 0;
+				virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) = 0;
 
-				virtual void onTxDeleted(const TransactionPtr &tx, bool notifyUser, bool recommendRescan) = 0;
+				virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) = 0;
 
 				virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller) = 0;
 			};
@@ -152,6 +146,7 @@ namespace Elastos {
 
 			void UpdateTransactions(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
 
+			// Get tx
 			TransactionPtr TransactionForHash(const uint256 &transactionHash) const;
 
 			std::vector<TransactionPtr> GetDPoSTransactions() const;
@@ -162,10 +157,19 @@ namespace Elastos {
 
 			std::vector<TransactionPtr> GetDIDTransactions() const;
 
+			std::vector<TransactionPtr> GetCoinbaseTransactions(size_t offset, size_t limit, bool invertMatch = false) const;
+
 			std::map<uint256, TransactionPtr> TransactionsForInputs(const InputArray &inputs) const;
 
-			bool TransactionIsValid(const TransactionPtr &transaction);
+			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
 
+			size_t GetCoinbaseTransactionCount(bool invertMatch = false) const;
+
+			time_t GetEarliestTxTimestamp() const;
+
+			void DeleteTransaction(const uint256 &hash);
+
+			bool TransactionIsValid(const TransactionPtr &transaction);
 #if 0
 			bool TransactionIsPending(const TransactionPtr &transaction);
 
@@ -176,7 +180,7 @@ namespace Elastos {
 
 			bool IsReceiveTransaction(const TransactionPtr &tx) const;
 
-			bool StripTransaction(const TransactionPtr &tx) const;
+			bool FixTransaction(const TransactionPtr &tx) const;
 
 			void SignTransaction(const TransactionPtr &tx, const std::string &payPassword) const;
 
@@ -192,8 +196,6 @@ namespace Elastos {
 			UTXOArray GetAllUTXO(const std::string &address) const;
 
 			UTXOArray GetVoteUTXO() const;
-
-			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
 
 			void SetTxUnconfirmedAfter(uint32_t blockHeight);
 
@@ -237,15 +239,11 @@ namespace Elastos {
 
 			void balanceChanged(const uint256 &asset, const BigInt &balance);
 
-			void txnReplace(const std::vector<TransactionPtr> &txConfirmed,
-							const std::vector<TransactionPtr> &txPending,
-							const std::vector<TransactionPtr> &txCoinbase);
-
 			void txAdded(const TransactionPtr &tx);
 
-			void txUpdated(const std::vector<TransactionPtr> &txns);
+			void txUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			void txDeleted(const TransactionPtr &tx, bool notifyUser, bool recommendRescan);
+			void txDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
 			void assetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
@@ -253,25 +251,25 @@ namespace Elastos {
 
 			std::vector<TransactionPtr> loadTxnAfter(uint32_t height) const;
 
+			TransactionPtr loadTxn(const uint256 &hash) const;
+
 			bool containTxn(const uint256 &hash) const;
 
-			std::vector<TransactionPtr> LoadUTXOTxn() const;
+			std::map<uint256, TransactionPtr> loadUTXOTxn() const;
 
-			std::vector<UTXOPtr> LoadUTXOs() const;
+			bool deleteTx(const uint256 &hash);
 
-			std::vector<AssetPtr> LoadAssets();
+			std::vector<UTXOPtr> loadUTXOs() const;
+
+			std::vector<AssetPtr> loadAssets();
 
 			AddressSet LoadUsedAddress() const;
 
-			void SaveSpecialTxHash(const std::vector<std::string> &txHashDPoS,
-								   const std::vector<std::string> &txHashCRC,
-								   const std::vector<std::string> &txHashProposal,
-								   const std::vector<std::string> &txHashDID,
-								   bool replace = false);
-		public:
-			std::vector<TransactionPtr> LoadTxn(TxnType type) const;
+		private:
+			// will remove later
+			std::vector<TransactionPtr> LoadAllOldTx() const;
 
-			TransactionPtr LoadTxn(const uint256 &hash) const;
+			bool SaveAllTx(const std::vector<TransactionPtr> &txns);
 
 		protected:
 			friend class GroupedAsset;

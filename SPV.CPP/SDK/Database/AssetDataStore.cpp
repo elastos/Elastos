@@ -30,14 +30,16 @@ namespace Elastos {
 
 		AssetDataStore::AssetDataStore(Sqlite *sqlite, SqliteTransactionType type) :
 			TableBase(type, sqlite) {
+			TableBase::ExecInTransaction(ASSET_DATABASE_CREATE);
+			TableBase::ExecInTransaction("DROP TABLE IF EXISTS " + ASSET_OLD_TABLE_NAME + ";");
 		}
 
 		AssetDataStore::~AssetDataStore() {
 		}
 
 		void AssetDataStore::InitializeTable() {
-			TableBase::InitializeTable(ASSET_DATABASE_CREATE);
-			TableBase::InitializeTable("drop table if exists " + ASSET_OLD_TABLE_NAME + ";");
+			TableBase::ExecInTransaction(ASSET_DATABASE_CREATE);
+			TableBase::ExecInTransaction("DROP TABLE IF EXISTS " + ASSET_OLD_TABLE_NAME + ";");
 		}
 
 		bool AssetDataStore::PutAsset(const std::string &iso, const AssetEntity &asset) {
@@ -55,30 +57,21 @@ namespace Elastos {
 
 		bool AssetDataStore::DeleteAsset(const std::string &assetID) {
 			return DoTransaction([&assetID, this]() {
-				std::string sql;
+				std::string sql = "DELETE FROM " + ASSET_TABLE_NAME + " WHERE " + ASSET_COLUMN_ID + " = ?;";
 
-				sql = "DELETE FROM " + ASSET_TABLE_NAME + " WHERE " + ASSET_COLUMN_ID + " = ?;";
+				return SqliteWrapper(sql, [&assetID, this](sqlite3_stmt *stmt) {
+					if (!_sqlite->BindText(stmt, 1, assetID, nullptr)) {
+						Log::error("bind text");
+						return false;
+					}
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("Prepare sql {}", sql);
-					return false;
-				}
+					if (SQLITE_DONE != _sqlite->Step(stmt)) {
+						Log::error("step");
+						return false;
+					}
 
-				if (!_sqlite->BindText(stmt, 1, assetID, nullptr)) {
-					Log::error("bind text");
-				}
-
-				if (SQLITE_DONE != _sqlite->Step(stmt)) {
-					Log::error("step");
-				}
-
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("Asset delete finalize");
-					return false;
-				}
-
-				return true;
+					return true;
+				});
 			});
 		}
 
@@ -93,33 +86,22 @@ namespace Elastos {
 		std::vector<AssetEntity> AssetDataStore::GetAllAssets() const {
 			std::vector<AssetEntity> assets;
 
-			AssetEntity asset;
-			std::string sql;
-
-			sql = "SELECT " + ASSET_COLUMN_ID + ", " + ASSET_AMOUNT + ", " + ASSET_BUFF + " FROM " +
+			std::string sql = "SELECT " + ASSET_COLUMN_ID + ", " + ASSET_AMOUNT + ", " + ASSET_BUFF + " FROM " +
 				  ASSET_TABLE_NAME + ";";
 
-			sqlite3_stmt *stmt;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}", sql);
-				return {};
-			}
+			if (!SqliteWrapper(sql, [&assets, this](sqlite3_stmt *stmt) {
+				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+					AssetEntity asset;
+					asset.AssetID = _sqlite->ColumnText(stmt, 0);
+					asset.Amount.setDec(_sqlite->ColumnText(stmt, 1));
+					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 2);
+					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 2);
+					asset.Asset.assign(pdata, pdata + len);
+					assets.push_back(asset);
+				}
 
-			while (SQLITE_ROW == _sqlite->Step(stmt)) {
-
-				asset.AssetID = _sqlite->ColumnText(stmt, 0);
-				asset.Amount.setDec(_sqlite->ColumnText(stmt, 1));
-
-				const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 2);
-				size_t len = (size_t) _sqlite->ColumnBytes(stmt, 2);
-
-				asset.Asset.assign(pdata, pdata + len);
-
-				assets.push_back(asset);
-			}
-
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("Asset get all finalize");
+				return true;
+			}))  {
 				return {};
 			}
 
@@ -127,105 +109,78 @@ namespace Elastos {
 		}
 
 		bool AssetDataStore::SelectAsset(const std::string &assetID, AssetEntity &asset) const {
-			bool found = false;
-			std::string sql;
-
-			sql = "SELECT " + ASSET_AMOUNT + ", " + ASSET_BUFF + " FROM " + ASSET_TABLE_NAME + " WHERE " +
+			std::string sql = "SELECT " + ASSET_AMOUNT + ", " + ASSET_BUFF + " FROM " + ASSET_TABLE_NAME + " WHERE " +
 				  ASSET_COLUMN_ID + " = ?;";
 
-			sqlite3_stmt *stmt;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}", sql);
-				return false;
-			}
+			return SqliteWrapper(sql, [&assetID, &asset, this](sqlite3_stmt *stmt) {
+				bool found = false;
 
-			if (!_sqlite->BindText(stmt, 1, assetID, nullptr)) {
-				Log::error("bind text");
-			}
+				if (!_sqlite->BindText(stmt, 1, assetID, nullptr)) {
+					Log::error("bind text");
+					return false;
+				}
 
-			if (SQLITE_ROW == _sqlite->Step(stmt)) {
-				found = true;
+				if (SQLITE_ROW == _sqlite->Step(stmt)) {
+					found = true;
 
-				asset.AssetID = assetID;
-				asset.Amount.setDec(_sqlite->ColumnText(stmt, 0));
+					asset.AssetID = assetID;
+					asset.Amount.setDec(_sqlite->ColumnText(stmt, 0));
 
-				const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
-				size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
+					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
+					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
 
-				asset.Asset.assign(pdata, pdata + len);
-			}
+					asset.Asset.assign(pdata, pdata + len);
+				}
 
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("Asset select finalize");
-				return false;
-			}
-
-			return found;
+				return found;
+			});
 		}
 
 		bool AssetDataStore::InsertAsset(const std::string &iso, const AssetEntity &asset) {
-			std::string sql;
-
-			sql = "INSERT INTO " + ASSET_TABLE_NAME + "(" + ASSET_COLUMN_ID + "," +
+			std::string sql = "INSERT INTO " + ASSET_TABLE_NAME + "(" + ASSET_COLUMN_ID + "," +
 				  ASSET_AMOUNT + "," + ASSET_BUFF + "," + ASSET_ISO + ") VALUES (?, ?, ?, ?);";
 
-			sqlite3_stmt *stmt;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}", sql);
-				return false;
-			}
+			return SqliteWrapper(sql, [&iso, &asset, this](sqlite3_stmt *stmt) {
+				if (!_sqlite->BindText(stmt, 1, asset.AssetID, nullptr) ||
+					!_sqlite->BindText(stmt, 2, asset.Amount.getDec(), nullptr) ||
+					!_sqlite->BindBlob(stmt, 3, asset.Asset, nullptr) ||
+					!_sqlite->BindText(stmt, 4, iso, nullptr)) {
+					Log::error("bind args");
+					return false;
+				}
 
-			if (!_sqlite->BindText(stmt, 1, asset.AssetID, nullptr) ||
-				!_sqlite->BindText(stmt, 2, asset.Amount.getDec(), nullptr) ||
-				!_sqlite->BindBlob(stmt, 3, asset.Asset, nullptr) ||
-				!_sqlite->BindText(stmt, 4, iso, nullptr)) {
-				Log::error("bind args");
-			}
+				if (SQLITE_DONE != _sqlite->Step(stmt)) {
+					Log::error("step");
+					return false;
+				}
 
-			if (SQLITE_DONE != _sqlite->Step(stmt)) {
-				Log::error("step");
-			}
-
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("Asset insert finalize");
-				return false;
-			}
-
-			return true;
+				return true;
+			});
 		}
 
 		bool AssetDataStore::UpdateAsset(const std::string &iso, const AssetEntity &asset) {
-			std::string sql;
+			std::string sql = "UPDATE " + ASSET_TABLE_NAME + " SET "
+							  + ASSET_AMOUNT + " = ?, "
+							  + ASSET_BUFF + " = ?, "
+							  + ASSET_ISO + " = ?"
+							  + " WHERE " + ASSET_COLUMN_ID + " = ?;";
 
-			sql = "UPDATE " + ASSET_TABLE_NAME + " SET "
-				  + ASSET_AMOUNT + " = ?, "
-				  + ASSET_BUFF + " = ?, "
-				  + ASSET_ISO + " = ?"
-				  + " WHERE " + ASSET_COLUMN_ID + " = ?;";
+			return SqliteWrapper(sql, [&iso, &asset, this](sqlite3_stmt *stmt) {
+				if (!_sqlite->BindText(stmt, 1, asset.Amount.getDec(), nullptr) ||
+					!_sqlite->BindBlob(stmt, 2, asset.Asset, nullptr) ||
+					!_sqlite->BindText(stmt, 3, iso, nullptr) ||
+					!_sqlite->BindText(stmt, 4, asset.AssetID, nullptr)) {
+					Log::error("bind args");
+					return false;
+				}
 
-			sqlite3_stmt *stmt;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}" + sql);
-				return false;
-			}
+				if (SQLITE_DONE != _sqlite->Step(stmt)) {
+					Log::error("step");
+					return false;
+				}
 
-			if (!_sqlite->BindText(stmt, 1, asset.Amount.getDec(), nullptr) ||
-				!_sqlite->BindBlob(stmt, 2, asset.Asset, nullptr) ||
-				!_sqlite->BindText(stmt, 3, iso, nullptr) ||
-				!_sqlite->BindText(stmt, 4, asset.AssetID, nullptr)) {
-				Log::error("bind args");
-			}
-
-			if (SQLITE_DONE != _sqlite->Step(stmt)) {
-				Log::error("step");
-			}
-
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("Asset update finalize");
-				return false;
-			}
-
-			return true;
+				return true;
+			});
 		}
 
 	}

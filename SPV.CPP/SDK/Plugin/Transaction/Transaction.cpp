@@ -30,6 +30,7 @@
 #include <Plugin/Transaction/Payload/NextTurnDPoSInfo.h>
 #include <Plugin/Transaction/Payload/CRCAssetsRectify.h>
 #include <Wallet/Wallet.h>
+#include <Database/TxTable.h>
 
 #include <Common/Log.h>
 #include <Common/ErrorChecker.h>
@@ -38,6 +39,7 @@
 
 #include <boost/make_shared.hpp>
 #include <cstring>
+#include <utility>
 
 #define STANDARD_FEE_PER_KB 10000
 #define DEFAULT_PAYLOAD_TYPE  transferAsset
@@ -60,7 +62,7 @@ namespace Elastos {
 			_payload = InitPayload(_type);
 		}
 
-		Transaction::Transaction(uint8_t type, const PayloadPtr &payload) :
+		Transaction::Transaction(uint8_t type, PayloadPtr payload) :
 			_version(TxVersion::Default),
 			_lockTime(TX_LOCKTIME),
 			_blockHeight(TX_UNCONFIRMED),
@@ -70,7 +72,7 @@ namespace Elastos {
 			_isRegistered(false),
 			_txHash(0),
 			_timestamp(0),
-			_payload(payload) {
+			_payload(std::move(payload)) {
 		}
 
 		Transaction::Transaction(const Transaction &tx) {
@@ -117,6 +119,52 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool Transaction::operator==(const Transaction &tx) const {
+			bool equal = _version == tx._version &&
+						 _lockTime == tx._lockTime &&
+						 _blockHeight == tx._blockHeight &&
+						 _timestamp == tx._timestamp &&
+						 _type == tx._type &&
+						 _payloadVersion == tx._payloadVersion &&
+						 _outputs.size() == tx._outputs.size() &&
+						 _inputs.size() == tx._inputs.size() &&
+						 _attributes.size() == tx._attributes.size() &&
+						 _programs.size() == tx._programs.size();
+
+			if (equal)
+				equal = _payload->Equal(*tx._payload, _payloadVersion);
+
+			if (equal)
+				for (int i = 0; i < _outputs.size(); ++i)
+					if (*_outputs[i] != *tx._outputs[i]) {
+						equal = false;
+						break;
+					}
+
+			if (equal)
+				for (int i = 0; i < _inputs.size(); ++i)
+					if (*_inputs[i] != *tx._inputs[i]) {
+						equal = false;
+						break;
+					}
+
+			if (equal)
+				for (int i = 0; i < _attributes.size(); ++i)
+					if (*_attributes[i] != *tx._attributes[i]) {
+						equal = false;
+						break;
+					}
+
+			if (equal)
+				for (int i = 0; i < _programs.size(); ++i)
+					if (*_programs[i] != *tx._programs[i]) {
+						equal = false;
+						break;
+					}
+
+			return equal;
+		}
+
 		Transaction::~Transaction() {
 		}
 
@@ -145,11 +193,11 @@ namespace Elastos {
 			_txHash = hash;
 		}
 
-		const Transaction::TxVersion &Transaction::GetVersion() const {
+		uint8_t Transaction::GetVersion() const {
 			return _version;
 		}
 
-		void Transaction::SetVersion(const TxVersion &version) {
+		void Transaction::SetVersion(uint8_t version) {
 			_version = version;
 		}
 
@@ -157,32 +205,20 @@ namespace Elastos {
 			return _type;
 		}
 
-		bool Transaction::IsDPoSTransaction() const {
-			return _type == Transaction::registerProducer ||
-				   _type == Transaction::cancelProducer ||
-				   _type == Transaction::updateProducer ||
-				   _type == Transaction::returnDepositCoin ||
-				   _type == Transaction::activateProducer;
+		void Transaction::SetTransactionType(uint8_t type) {
+			_type = type;
 		}
 
-		bool Transaction::IsCRCTransaction() const {
-			return _type == registerCR ||
-				   _type == unregisterCR ||
-				   _type == updateCR ||
-				   _type == returnCRDepositCoin ||
-				   _type == crCouncilMemberClaimNode;
+		std::vector<uint8_t> Transaction::GetDPoSTxTypes() {
+			return {registerProducer, cancelProducer, updateProducer, returnDepositCoin, activateProducer};
 		}
 
-		bool Transaction::IsProposalTransaction() const {
-			return _type == crcProposal ||
-				   _type == crcProposalReview ||
-				   _type == crcProposalTracking ||
-				   _type == crcAppropriation ||
-				   _type == crcProposalWithdraw;
+		std::vector<uint8_t> Transaction::GetCRCTxTypes() {
+			return {registerCR, unregisterCR, updateCR, returnCRDepositCoin, crCouncilMemberClaimNode};
 		}
 
-		bool Transaction::IsIDTransaction() const {
-			return false;
+		std::vector<uint8_t> Transaction::GetProposalTypes() {
+			return {crcProposal, crcProposalReview, crcProposalTracking, crcAppropriation, crcProposalWithdraw};
 		}
 
 		void Transaction::Reinit() {
@@ -467,7 +503,7 @@ namespace Elastos {
 
 			ostream.WriteVarUint(_inputs.size());
 			for (size_t i = 0; i < _inputs.size(); i++) {
-				_inputs[i]->Serialize(ostream);
+				_inputs[i]->Serialize(ostream, extend);
 			}
 
 			ostream.WriteVarUint(_outputs.size());
@@ -539,7 +575,7 @@ namespace Elastos {
 			_inputs.reserve(inCount);
 			for (size_t i = 0; i < inCount; i++) {
 				InputPtr input(new TransactionInput());
-				if (!input->Deserialize(istream)) {
+				if (!input->Deserialize(istream, extend)) {
 					Log::error("deserialize tx input [{}] error", i);
 					return false;
 				}
@@ -591,9 +627,113 @@ namespace Elastos {
 				_programs.push_back(program);
 			}
 
+#if 0
 			ByteStream stream;
 			SerializeUnsigned(stream);
-			_txHash = sha256_2((stream.GetBytes()));
+			_txHash = sha256_2(stream.GetBytes());
+#endif
+
+			return true;
+		}
+
+		bool Transaction::DeserializeOld(const ByteStream &stream, bool extend) {
+			Reinit();
+
+			if (!DeserializeType(stream)) {
+				return false;
+			}
+
+			if (!stream.ReadByte(_payloadVersion))
+				return false;
+
+			_payload = InitPayload(_type);
+
+			if (_payload == nullptr) {
+				Log::error("new _payload with _type={} when deserialize error", _type);
+				return false;
+			}
+			if (!_payload->Deserialize(stream, _payloadVersion))
+				return false;
+
+			uint64_t attributeLength = 0;
+			if (!stream.ReadVarUint(attributeLength))
+				return false;
+
+			for (size_t i = 0; i < attributeLength; i++) {
+				AttributePtr attribute(new Attribute());
+				if (!attribute->Deserialize(stream)) {
+					Log::error("deserialize tx attribute[{}] error", i);
+					return false;
+				}
+				_attributes.push_back(attribute);
+			}
+
+			uint64_t inCount = 0;
+			if (!stream.ReadVarUint(inCount)) {
+				Log::error("deserialize tx inCount error");
+				return false;
+			}
+
+			_inputs.reserve(inCount);
+			for (size_t i = 0; i < inCount; i++) {
+				InputPtr input(new TransactionInput());
+				if (!input->Deserialize(stream)) {
+					Log::error("deserialize tx input [{}] error", i);
+					return false;
+				}
+				_inputs.push_back(input);
+			}
+
+			uint64_t outputLength = 0;
+			if (!stream.ReadVarUint(outputLength)) {
+				Log::error("deserialize tx output len error");
+				return false;
+			}
+
+			if (outputLength > UINT16_MAX) {
+				Log::error("deserialize tx: too much outputs: {}", outputLength);
+				return false;
+			}
+
+			_outputs.reserve(outputLength);
+			for (size_t i = 0; i < outputLength; i++) {
+				OutputPtr output(new TransactionOutput());
+				if (!output->Deserialize(stream, _version, extend)) {
+					Log::error("deserialize tx output[{}] error", i);
+					return false;
+				}
+
+				if (!extend) {
+					output->SetFixedIndex((uint16_t) i);
+				}
+				_outputs.push_back(output);
+			}
+
+			if (!stream.ReadUint32(_lockTime)) {
+				Log::error("deserialize tx lock time error");
+				return false;
+			}
+
+			uint64_t programLength = 0;
+			if (!stream.ReadVarUint(programLength)) {
+				Log::error("deserialize tx program length error");
+				return false;
+			}
+
+			for (size_t i = 0; i < programLength; i++) {
+				ProgramPtr program(new Program());
+				if (!program->Deserialize(stream, extend)) {
+					Log::error("deserialize program[{}] error", i);
+					return false;
+				}
+				_programs.push_back(program);
+			}
+
+#if 0
+			ByteStream stream;
+			SerializeUnsigned(stream);
+			_txHash = sha256_2(stream.GetBytes());
+#endif
 
 			return true;
 		}
@@ -914,7 +1054,7 @@ namespace Elastos {
 		}
 
 		bool Transaction::IsEqual(const Transaction &tx) const {
-			return _txHash == tx.GetHash();
+			return GetHash() == tx.GetHash();
 		}
 
 		uint32_t Transaction::GetConfirms(uint32_t walletBlockHeight) const {
@@ -935,6 +1075,145 @@ namespace Elastos {
 			}
 
 			return status;
+		}
+
+		bool Transaction::Decode(const TxEntity &e) {
+			_txHash = uint256(e.GetTxHash());
+			_blockHeight = e.GetHeight();
+			_timestamp = e.GetTimestamp();
+			_type = e.GetType();
+			_version = e.GetVersion();
+			_payloadVersion = e.GetPayloadVersion();
+			_lockTime = e.GetLockTime();
+
+			_payload = InitPayload(_type);
+
+			if (_payload == nullptr) {
+				Log::error("new _payload with _type={} when deserialize error", _type);
+				return false;
+			}
+
+			ByteStream stream(e.GetPayload());
+			if (!_payload->Deserialize(stream, _payloadVersion))
+				return false;
+
+			// attributes
+			stream = ByteStream(e.GetAttributes());
+			uint64_t attributeLength = 0;
+			if (!stream.ReadVarUint(attributeLength))
+				return false;
+
+			_attributes.reserve(attributeLength);
+			for (size_t i = 0; i < attributeLength; i++) {
+				AttributePtr attribute(new Attribute());
+				if (!attribute->Deserialize(stream)) {
+					Log::error("deserialize tx attribute[{}] error", i);
+					return false;
+				}
+				_attributes.push_back(attribute);
+			}
+
+			// inputs
+			stream = ByteStream(e.GetInputs());
+			uint64_t inCount = 0;
+			if (!stream.ReadVarUint(inCount)) {
+				Log::error("deserialize tx inCount error");
+				return false;
+			}
+
+			_inputs.reserve(inCount);
+			for (size_t i = 0; i < inCount; i++) {
+				InputPtr input(new TransactionInput());
+				if (!input->Deserialize(stream, true)) {
+					Log::error("deserialize tx input [{}] error", i);
+					return false;
+				}
+				_inputs.push_back(input);
+			}
+
+			// outputs
+			stream = ByteStream(e.GetOutputs());
+			uint64_t outputLength = 0;
+			if (!stream.ReadVarUint(outputLength)) {
+				Log::error("deserialize tx output len error");
+				return false;
+			}
+
+			if (outputLength > UINT16_MAX) {
+				Log::error("deserialize tx: too much outputs: {}", outputLength);
+				return false;
+			}
+
+			_outputs.reserve(outputLength);
+			for (size_t i = 0; i < outputLength; i++) {
+				OutputPtr output(new TransactionOutput());
+				if (!output->Deserialize(stream, _version, true)) {
+					Log::error("deserialize tx output[{}] error", i);
+					return false;
+				}
+
+				_outputs.push_back(output);
+			}
+
+			// programs
+			stream = ByteStream(e.GetPrograms());
+			uint64_t programLength = 0;
+			if (!stream.ReadVarUint(programLength)) {
+				Log::error("deserialize tx program length error");
+				return false;
+			}
+
+			_programs.reserve(programLength);
+			for (size_t i = 0; i < programLength; i++) {
+				ProgramPtr program(new Program());
+				if (!program->Deserialize(stream, true)) {
+					Log::error("deserialize program[{}] error", i);
+					return false;
+				}
+				_programs.push_back(program);
+			}
+
+			return true;
+		}
+
+		bool Transaction::Encode(TxEntity &e) {
+			e.SetTxHash(GetHash().GetHex());
+			e.SetHeight(_blockHeight);
+			e.SetTimestamp(_timestamp);
+			e.SetVersion(_version);
+			e.SetType(_type);
+			e.SetPayloadVersion(_payloadVersion);
+			e.SetLockTime(_lockTime);
+
+			ByteStream stream;
+			_payload->Serialize(stream, _payloadVersion);
+			e.SetPayload(stream.GetBytes());
+
+			stream.Reset();
+			stream.WriteVarUint(_attributes.size());
+			for (AttributePtr &a : _attributes)
+				a->Serialize(stream);
+			e.SetAttributes(stream.GetBytes());
+
+			stream.Reset();
+			stream.WriteVarUint(_inputs.size());
+			for (InputPtr &in : _inputs)
+				in->Serialize(stream, true);
+			e.SetInputs(stream.GetBytes());
+
+			stream.Reset();
+			stream.WriteVarUint(_outputs.size());
+			for (OutputPtr &out : _outputs)
+				out->Serialize(stream, _version, true);
+			e.SetOutputs(stream.GetBytes());
+
+			stream.Reset();
+			stream.WriteVarUint(_programs.size());
+			for (ProgramPtr &p : _programs)
+				p->Serialize(stream, true);
+			e.SetPrograms(stream.GetBytes());
+
+			return true;
 		}
 
 	}

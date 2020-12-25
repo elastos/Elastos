@@ -21,6 +21,8 @@ namespace Elastos {
 			virtual bytes_t getData() const;
 
 			virtual IOutputPayload &operator=(const IOutputPayload &payload) = 0;
+
+			virtual bool operator==(const IOutputPayload &payload) const = 0;
 		};
 
 		typedef boost::shared_ptr<IOutputPayload> OutputPayloadPtr;

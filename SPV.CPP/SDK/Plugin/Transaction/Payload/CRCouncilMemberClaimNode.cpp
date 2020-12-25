@@ -114,7 +114,7 @@ namespace Elastos {
 			return *this;
 		}
 
-		bool CRCouncilMemberClaimNode::operator==(const IPayload &payload) const {
+		bool CRCouncilMemberClaimNode::Equal(const IPayload &payload, uint8_t version) const {
 			bool equal = false;
 
 			try {

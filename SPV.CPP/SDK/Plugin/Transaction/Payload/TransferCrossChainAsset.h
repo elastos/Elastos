@@ -31,6 +31,8 @@ namespace Elastos {
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
 
+			virtual bool operator==(const TransferInfo &payload) const;
+
 		private:
 			friend TransferCrossChainAsset;
 
@@ -68,6 +70,7 @@ namespace Elastos {
 
 			TransferCrossChainAsset &operator=(const TransferCrossChainAsset &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			std::vector<TransferInfo> _info;
 		};

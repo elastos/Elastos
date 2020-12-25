@@ -55,5 +55,16 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool TransferAsset::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const TransferAsset &p = dynamic_cast<const TransferAsset &>(payload);
+				return true;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of TransferAsset");
+			}
+
+			return false;
+		}
+
 	}
 }

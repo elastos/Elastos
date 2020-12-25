@@ -130,6 +130,10 @@ namespace Elastos {
 
 			const uint256 &GetDraftHash() const;
 
+			void SetDraftData(const bytes_t &draftData);
+
+			const bytes_t &GetDraftData() const;
+
 			void SetBudgets(const std::vector<Budget> &budgets);
 
 			const std::vector<Budget> &GetBudgets() const;
@@ -313,7 +317,7 @@ namespace Elastos {
 
 			CRCProposal &operator=(const CRCProposal &payload);
 
-			bool operator==(const IPayload &payload) const;
+			bool Equal(const IPayload &payload, uint8_t version) const override;
 
 		private:
 			// normal & elip

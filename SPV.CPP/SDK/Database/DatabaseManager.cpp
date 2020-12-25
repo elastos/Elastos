@@ -22,7 +22,6 @@
 
 #include "DatabaseManager.h"
 #include <Plugin/Transaction/Transaction.h>
-#include <Plugin/Transaction/IDTransaction.h>
 #include <Common/Log.h>
 
 namespace Elastos {
@@ -33,32 +32,13 @@ namespace Elastos {
 			_sqlite(path),
 			_peerDataSource(&_sqlite),
 			_peerBlackList(&_sqlite),
-			_transactionCoinbase(&_sqlite),
-			_transactionNormal(&_sqlite),
-			_transactionPending(&_sqlite),
 			_assetDataStore(&_sqlite),
 			_merkleBlockDataSource(&_sqlite),
-			_didDataStore(&_sqlite),
 			_utxoStore(&_sqlite),
 			_addressUsed(&_sqlite),
-			_txHashCRC(&_sqlite),
-			_txHashDPoS(&_sqlite),
-			_txHashProposal(&_sqlite),
-			_txHashDID(&_sqlite) {
-			_peerDataSource.InitializeTable();
-			_peerBlackList.InitializeTable();
-			_transactionCoinbase.InitializeTable();
-			_transactionNormal.InitializeTable();
-			_transactionPending.InitializeTable();
-			_assetDataStore.InitializeTable();
-			_merkleBlockDataSource.InitializeTable();
-			_didDataStore.InitializeTable();
-			_utxoStore.InitializeTable();
-			_addressUsed.InitializeTable();
-			_txHashCRC.InitializeTable();
-			_txHashDPoS.InitializeTable();
-			_txHashProposal.InitializeTable();
-			_txHashDID.InitializeTable();
+			_txTable(&_sqlite),
+			_dataMigrate(&_sqlite)
+		{
 		}
 
 		DatabaseManager::DatabaseManager() : DatabaseManager("spv_wallet.db") {}
@@ -66,99 +46,28 @@ namespace Elastos {
 		DatabaseManager::~DatabaseManager() {}
 
 		void DatabaseManager::ClearData() {
-			_transactionCoinbase.DeleteAll();
-			_transactionNormal.DeleteAll();
-			_transactionPending.DeleteAll();
 			_merkleBlockDataSource.DeleteAllBlocks();
 			_utxoStore.DeleteAll();
 			_addressUsed.DeleteAll();
-			_txHashCRC.DeleteAll();
-			_txHashDPoS.DeleteAll();
-			_txHashProposal.DeleteAll();
-			_txHashDID.DeleteAll();
 		}
 
-		bool DatabaseManager::ReplaceTxns(const std::vector<TransactionPtr> &txConfirmed,
-										  const std::vector<TransactionPtr> &txPending,
-										  const std::vector<TransactionPtr> &txCoinbase) {
-			bool r = true;
-			_transactionCoinbase.RemoveOld();
-
-			_sqlite.BeginTransaction(IMMEDIATE);
-			if (!_transactionNormal._Puts(txConfirmed, true)) {
-				Log::error("replace tx confirmed");
-				r = false;
-			}
-			if (!_transactionPending._Puts(txPending, true)) {
-				Log::error("replace tx pending");
-				r = false;
-			}
-			if (!_transactionCoinbase._Puts(txCoinbase, true)) {
-				Log::error("replace tx coinbase");
-				r = false;
-			}
-			_sqlite.EndTransaction();
-
-			return r;
+		bool DatabaseManager::TxTableDataMigrateDone() {
+			return _dataMigrate.IsDataMigrateDone(_txTable.GetTableName());
 		}
 
-		bool DatabaseManager::ContainTxn(const uint256 &hash) const {
-			return _transactionNormal.ContainHash(hash) ||
-				   _transactionPending.ContainHash(hash) ||
-				   _transactionCoinbase.ContainHash(hash);
-		}
-
-		bool DatabaseManager::UpdateTxns(const std::vector<TransactionPtr> &txns) {
-			bool r = true;
-			std::vector<uint256> deletePending, deleteNormal, deleteCoinbase, hashesUpdate;
-			std::vector<TransactionPtr> txNormal, txCoinbase, txPending;
-			for (const TransactionPtr &tx : txns) {
-				if (tx->IsUnconfirmed()) {
-					if (tx->IsCoinBase()) {
-						deleteCoinbase.push_back(tx->GetHash());
-					} else {
-						deleteNormal.push_back(tx->GetHash());
-					}
-
-					txPending.push_back(tx);
-				} else {
-					deletePending.push_back(tx->GetHash());
-					if (tx->IsCoinBase())
-						txCoinbase.push_back(tx);
-					else
-						txNormal.push_back(tx);
-				}
-			}
+		bool DatabaseManager::SetTxTableDataMigrateDone() {
+			bool r = false;
 
 			_sqlite.BeginTransaction(IMMEDIATE);
 
-			if (!deletePending.empty())
-				r = _transactionPending._DeleteByHashes(deletePending) && r;
-			if (!deleteNormal.empty())
-				r = _transactionNormal._DeleteByHashes(deleteNormal) && r;
-			if (!deleteCoinbase.empty())
-				r = _transactionCoinbase._DeleteByHashes(deleteCoinbase) && r;
-
-			for (TransactionPtr &tx : txCoinbase) {
-				if (_transactionCoinbase.ContainHash(tx->GetHash())) {
-					r = _transactionCoinbase._Update(tx) && r;
+			if (_dataMigrate.SetDataMigrateDoneInner(_txTable.GetTableName())) {
+				if (_txTable.RemoveOldTxTableInner()) {
+					r = true;
 				} else {
-					r = _transactionCoinbase._Put(tx) && r;
+					Log::error("remove old tx table");
 				}
-			}
-			for (TransactionPtr &tx : txNormal) {
-				if (_transactionNormal.ContainHash(tx->GetHash())) {
-					r = _transactionNormal._Update(tx) && r;
-				} else {
-					r = _transactionNormal._Put(tx) && r;
-				}
-			}
-			for (TransactionPtr &tx : txPending) {
-				if (_transactionPending.ContainHash(tx->GetHash())) {
-					r = _transactionPending._Update(tx) && r;
-				} else {
-					r = _transactionPending._Put(tx) && r;
-				}
+			} else {
+				Log::error("set data migrate done");
 			}
 
 			_sqlite.EndTransaction();
@@ -166,155 +75,64 @@ namespace Elastos {
 			return r;
 		}
 
-		bool DatabaseManager::PutCoinbaseTxns(const std::vector<TransactionPtr> &txns) {
-			return _transactionCoinbase.Puts(txns);
+		bool DatabaseManager::ContainTx(const std::string &hash) const {
+			return _txTable.ContainTx(hash);
 		}
 
-		bool DatabaseManager::PutCoinbaseTxn(const TransactionPtr &txn) {
-			return _transactionCoinbase.Put(txn);
+		bool DatabaseManager::GetUTXOTx(std::vector<TxEntity> &entities) const {
+			return _txTable.GetTx(entities, _utxoStore.GetTableName(), _utxoStore.GetTxHashColumnName());
 		}
 
-		bool DatabaseManager::DeleteAllCoinbase() {
-			return _transactionCoinbase.DeleteAll();
+		bool DatabaseManager::GetTx(std::vector<TxEntity> &entities, uint32_t height) const {
+			return _txTable.GetTx(entities, height);
 		}
 
-		size_t DatabaseManager::GetCoinbaseTotalCount() const {
-			return _transactionCoinbase.GetAllCount();
+		bool DatabaseManager::GetTx(std::vector<TxEntity> &entities, const std::vector<uint8_t> &types) const {
+			return _txTable.GetTx(entities, types);
 		}
 
-		TransactionPtr DatabaseManager::GetCoinbaseTxn(const uint256 &hash, const std::string &chainID) const {
-			return _transactionCoinbase.Get(hash, chainID);
+		bool DatabaseManager::GetTx(std::vector<TxEntity> &entities) const {
+			return _txTable.GetTx(entities);
 		}
 
-		std::vector<TransactionPtr> DatabaseManager::GetCoinbaseTxns(const std::string &chainID, uint32_t height) const {
-			return _transactionCoinbase.GetAfter(chainID, height);
+		bool DatabaseManager::GetTx(std::vector<TxEntity> &entities, const std::set<std::string> &hashes) const {
+			return _txTable.GetTx(entities, hashes);
 		}
 
-		std::vector<TransactionPtr> DatabaseManager::GetCoinbaseTxns(const std::string &chainID) const {
-			return _transactionCoinbase.GetAll(chainID);
+		bool DatabaseManager::GetTx(std::vector<TxEntity> &entities, uint8_t type, bool invertMatch, size_t offset, size_t limit, bool desc) const {
+			return _txTable.GetTx(entities, type, invertMatch, offset, limit, desc);
 		}
 
-		std::vector<TransactionPtr> DatabaseManager::GetCoinbaseUTXOTxn(const std::string &chainID) const {
-			return _transactionCoinbase.GetTxnBaseOnHash(chainID, _utxoStore.GetTableName(),
-														 _utxoStore.GetTxHashColumnName());
+		size_t DatabaseManager::GetTxCnt(uint8_t type, bool invertMatch) const {
+			return _txTable.GetTxCnt(type, invertMatch);
 		}
 
-		std::vector<TransactionPtr> DatabaseManager::GetCoinbaseUniqueTxns(const std::string &chainID,
-																		   const std::set<std::string> &hashes) const {
-			return _transactionCoinbase.GetUniqueTxns(chainID, hashes);
+		size_t DatabaseManager::GetAllTxCnt() const {
+			return _txTable.GetAllTxCnt();
 		}
 
-		std::vector<TransactionPtr> DatabaseManager::GetCoinbaseTxns(const std::string &chainID, size_t offset,
-																	 size_t limit, bool asc) const {
-			return _transactionCoinbase.Gets(chainID, offset, limit, asc);
+		time_t DatabaseManager::GetEarliestTxTimestamp() const {
+			return _txTable.GetEarliestTxTimestamp();
 		}
 
-		bool DatabaseManager::UpdateCoinbaseTxn(const std::vector<TransactionPtr> &txns) {
-			return _transactionCoinbase.Update(txns);
+		bool DatabaseManager::PutTx(const std::vector<TxEntity> &entities) {
+			return _txTable.PutTx(entities);
 		}
 
-		bool DatabaseManager::DeleteCoinbaseTxn(const uint256 &hash) {
-			return _transactionCoinbase.DeleteByHash(hash);
+		bool DatabaseManager::UpdateTx(const std::vector<std::string> &hashes, uint32_t height, time_t timestamp) {
+			return _txTable.UpdateTx(hashes, height, timestamp);
 		}
 
-		bool DatabaseManager::PutNormalTxn(const TransactionPtr &tx) {
-			return _transactionNormal.Put(tx);
+		bool DatabaseManager::DeleteTx(const std::string &hash) {
+			return _txTable.DeleteTx(hash);
 		}
 
-		bool DatabaseManager::PutNormalTxns(const std::vector<TransactionPtr> &txns) {
-			return _transactionNormal.Puts(txns);
+		bool DatabaseManager::DeleteAllTx() {
+			return _txTable.DeleteAll();
 		}
 
-		bool DatabaseManager::DeleteAllNormalTxns() {
-			return _transactionNormal.DeleteAll();
-		}
-
-		size_t DatabaseManager::GetNormalTotalCount() const {
-			return _transactionNormal.GetAllCount();
-		}
-
-		time_t DatabaseManager::GetNormalEarliestTxnTimestamp() const {
-			return _transactionNormal.GetEarliestTxnTimestamp();
-		}
-
-		TransactionPtr DatabaseManager::GetNormalTxn(const uint256 &hash, const std::string &chainID) const {
-			return _transactionNormal.Get(hash, chainID);
-		}
-
-		std::vector<TransactionPtr> DatabaseManager::GetNormalTxns(const std::string &chainID, uint32_t height) const {
-			return _transactionNormal.GetAfter(chainID, height);
-		}
-
-		std::vector<TransactionPtr> DatabaseManager::GetNormalTxns(const std::string &chainID) const {
-			return _transactionNormal.GetAll(chainID);
-		}
-
-		std::vector<TransactionPtr> DatabaseManager::GetNormalUTXOTxn(const std::string &chainID) const {
-			return _transactionNormal.GetTxnBaseOnHash(chainID, _utxoStore.GetTableName(),
-													   _utxoStore.GetTxHashColumnName());
-		}
-
-		std::vector<TransactionPtr> DatabaseManager::GetNormalUniqueTxns(const std::string &chainID,
-																		 const std::set<std::string> &hashes) const {
-			return _transactionNormal.GetUniqueTxns(chainID, hashes);
-		}
-
-		std::vector<TransactionPtr> DatabaseManager::GetNormalTxns(const std::string &chainID, size_t offset,
-																   size_t limit, bool asc) const {
-			return _transactionNormal.Gets(chainID, offset, limit, asc);
-		}
-
-		bool DatabaseManager::UpdateNormalTxn(const std::vector<TransactionPtr> &txns) {
-			return _transactionNormal.Update(txns);
-		}
-
-		bool DatabaseManager::DeleteNormalTxn(const uint256 &hash) {
-			return _transactionNormal.DeleteByHash(hash);
-		}
-
-		bool DatabaseManager::DeleteNormalTxn(const std::vector<uint256> &hashes) {
-			return _transactionNormal.DeleteByHashes(hashes);
-		}
-
-		bool DatabaseManager::PutPendingTxn(const TransactionPtr &txn) {
-			return _transactionPending.Put(txn);
-		}
-
-		bool DatabaseManager::PutPendingTxns(const std::vector<TransactionPtr> &txns) {
-			return _transactionPending.Puts(txns);
-		}
-
-		bool DatabaseManager::DeleteAllPendingTxns() {
-			return _transactionPending.DeleteAll();
-		}
-
-		bool DatabaseManager::DeletePendingTxn(const uint256 &hash) {
-			return _transactionPending.DeleteByHash(hash);
-		}
-
-		bool DatabaseManager::DeletePendingTxns(const std::vector<uint256> &hashes) {
-			return _transactionPending.DeleteByHashes(hashes);
-		}
-
-		size_t DatabaseManager::GetPendingTxnTotalCount() const {
-			return _transactionPending.GetAllCount();
-		}
-
-		TransactionPtr DatabaseManager::GetPendingTxn(const uint256 &hash, const std::string &chainID) const {
-			return _transactionPending.Get(hash, chainID);
-		}
-
-		std::vector<TransactionPtr> DatabaseManager::GetAllPendingTxns(const std::string &chainID) const {
-			return _transactionPending.GetAll(chainID);
-		}
-
-		std::vector<TransactionPtr> DatabaseManager::GetPendingUniqueTxns(const std::string &chainID,
-																		  const std::set<std::string> &hashes) const {
-			return _transactionPending.GetUniqueTxns(chainID, hashes);
-		}
-
-		bool DatabaseManager::ExistPendingTxnTable() const {
-			return _transactionPending.TableExist();
+		bool DatabaseManager::GetAllOldTx(std::vector<TxOldEntity> &entities) const {
+			return _txTable.GetAllOldTx(entities);
 		}
 
 		bool DatabaseManager::PutPeer(const PeerEntity &peerEntity) {
@@ -438,95 +256,19 @@ namespace Elastos {
 			return _addressUsed.DeleteAll();
 		}
 
-		// TxHash CRC
-		bool DatabaseManager::PutTxHashCRC(const std::vector<std::string> &txHashes, bool replace) {
-			return _txHashCRC.Puts(txHashes, replace);
-		}
-
-		std::vector<std::string> DatabaseManager::GetTxHashCRC() const {
-			return _txHashCRC.Gets();
-		}
-
-		bool DatabaseManager::DeleteAllTxHashCRC() {
-			return _txHashCRC.DeleteAll();
-		}
-
-		std::vector<TransactionPtr> DatabaseManager::GetTxCRC(const std::string &chainID) const {
-			return _transactionNormal.GetTxnBaseOnHash(chainID, _txHashCRC.GetTableName(),
-												_txHashCRC.GetTxHashColumnName());
-		}
-
-		// TxHash DPoS
-		bool DatabaseManager::PutTxHashDPoS(const std::vector<std::string> &txHashes, bool replace) {
-			return _txHashDPoS.Puts(txHashes, replace);
-		}
-
-		std::vector<std::string> DatabaseManager::GetTxHashDPoS() const {
-			return _txHashDPoS.Gets();
-		}
-
-		bool DatabaseManager::DeleteAllTxHashDPoS() {
-			return _txHashDPoS.DeleteAll();
-		}
-
-		std::vector<TransactionPtr> DatabaseManager::GetTxDPoS(const std::string &chainID) const {
-			return _transactionNormal.GetTxnBaseOnHash(chainID, _txHashDPoS.GetTableName(),
-												_txHashDPoS.GetTxHashColumnName());
-		}
-
-		// TxHash Proposal
-		bool DatabaseManager::PutTxHashProposal(const std::vector<std::string> &txHashes, bool replace) {
-			return _txHashProposal.Puts(txHashes, replace);
-		}
-
-		std::vector<std::string> DatabaseManager::GetTxHashProposal() const {
-			return _txHashProposal.Gets();
-		}
-
-		bool DatabaseManager::DeleteAllTxHashProposal() {
-			return _txHashProposal.DeleteAll();
-		}
-
-		std::vector<TransactionPtr> DatabaseManager::GetTxProposal(const std::string &chainID) const {
-			return _transactionNormal.GetTxnBaseOnHash(chainID, _txHashProposal.GetTableName(),
-												_txHashProposal.GetTxHashColumnName());
-		}
-
-		bool DatabaseManager::PutTxHashDID(const std::vector<std::string> &txHashes, bool replace) {
-			return _txHashDID.Puts(txHashes, replace);
-		}
-
-		std::vector<std::string> DatabaseManager::GetTxHashDID() const {
-			return _txHashDID.Gets();
-		}
-
-		bool DatabaseManager::DeleteAllTxHashDID() {
-			return _txHashDID.DeleteAll();
-		}
-
-		std::vector<TransactionPtr> DatabaseManager::GetTxDID(const std::string &chainID) const {
-			return _transactionNormal.GetTxnBaseOnHash(chainID, _txHashDID.GetTableName(),
-												_txHashDID.GetTxHashColumnName());
-		}
-
-		bool DatabaseManager::ExistTxHashTable() const {
-			return _txHashCRC.ContainTable() && _txHashDPoS.ContainTable() && _txHashProposal.ContainTable();
+		bool DatabaseManager::TxTableDataMigrateDone() const {
+			return _dataMigrate.IsDataMigrateDone(_txTable.GetTableName());
 		}
 
 		void DatabaseManager::flush() {
-			_transactionNormal.flush();
-			_transactionCoinbase.flush();
-			_transactionPending.flush();
-			_merkleBlockDataSource.flush();
 			_peerDataSource.flush();
+			_peerBlackList.flush();
+			_merkleBlockDataSource.flush();
 			_assetDataStore.flush();
-			_didDataStore.flush();
 			_utxoStore.flush();
 			_addressUsed.flush();
-			_txHashProposal.flush();
-			_txHashDPoS.flush();
-			_txHashCRC.flush();
-			_txHashDID.flush();
+			_txTable.flush();
+			_dataMigrate.flush();
 		}
 
 	} // namespace ElaWallet

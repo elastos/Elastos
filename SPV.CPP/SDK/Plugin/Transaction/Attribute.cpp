@@ -61,13 +61,13 @@ namespace Elastos {
 			return size;
 		}
 
-		void Attribute::Serialize(ByteStream &ostream) const {
-			ostream.WriteUint8(_usage);
-			ostream.WriteVarBytes(_data);
+		void Attribute::Serialize(ByteStream &stream, bool extend) const {
+			stream.WriteUint8(_usage);
+			stream.WriteVarBytes(_data);
 		}
 
-		bool Attribute::Deserialize(const ByteStream &istream) {
-			if (!istream.ReadBytes(&_usage, 1)) {
+		bool Attribute::Deserialize(const ByteStream &stream, bool extend) {
+			if (!stream.ReadBytes(&_usage, 1)) {
 				Log::error("Attribute deserialize usage fail");
 				return false;
 			}
@@ -77,7 +77,7 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!istream.ReadVarBytes(_data)) {
+			if (!stream.ReadVarBytes(_data)) {
 				Log::error("Attribute deserialize data fail");
 				return false;
 			}
@@ -97,5 +97,14 @@ namespace Elastos {
 			_usage = j["Usage"].get<Usage>();
 			_data.setHex(j["Data"].get<std::string>());
 		}
+
+		bool Attribute::operator==(const Attribute &a) const {
+			return _usage == a._usage && _data == a._data;
+		}
+
+		bool Attribute::operator!=(const Attribute &a) const {
+			return !operator==(a);
+		}
+
 	}
 }

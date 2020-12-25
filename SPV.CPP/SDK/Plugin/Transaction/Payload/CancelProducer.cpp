@@ -13,6 +13,12 @@ namespace Elastos {
 
 		}
 
+		CancelProducer::CancelProducer(const bytes_t &pubkey, const bytes_t &sign) :
+			_publicKey(pubkey),
+			_signature(sign) {
+
+		}
+
 		CancelProducer::CancelProducer(const CancelProducer &payload) {
 			operator=(payload);
 		}
@@ -99,6 +105,18 @@ namespace Elastos {
 			_publicKey = payload._publicKey;
 			_signature = payload._signature;
 			return *this;
+		}
+
+		bool CancelProducer::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const CancelProducer &p = dynamic_cast<const CancelProducer &>(payload);
+				return _publicKey == p._publicKey &&
+					   _signature == p._signature;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of CancelProducer");
+			}
+
+			return false;
 		}
 
 	}

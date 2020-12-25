@@ -17,7 +17,7 @@ namespace Elastos {
 		class Transaction;
 		class Address;
 
-		class Program : public JsonSerializer {
+		class Program : public ELAMessageSerializable, public JsonSerializer {
 		public:
 			Program();
 
@@ -49,13 +49,17 @@ namespace Elastos {
 
 			size_t EstimateSize() const;
 
-			void Serialize(ByteStream &ostream, bool extend = false) const;
+			void Serialize(ByteStream &stream, bool extend = false) const;
 
-			bool Deserialize(const ByteStream &istream, bool extend = false);
+			bool Deserialize(const ByteStream &stream, bool extend = false);
 
 			virtual nlohmann::json ToJson() const;
 
 			virtual void FromJson(const nlohmann::json &j);
+
+			bool operator==(const Program &p) const;
+
+			bool operator!=(const Program &p) const;
 
 		private:
 			std::string _path;

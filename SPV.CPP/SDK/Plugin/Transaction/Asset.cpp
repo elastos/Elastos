@@ -59,36 +59,36 @@ namespace Elastos {
 			return size;
 		}
 
-		void Asset::Serialize(ByteStream &ostream) const {
-			ostream.WriteVarString(_name);
-			ostream.WriteVarString(_description);
-			ostream.WriteBytes(&_precision, 1);
-			ostream.WriteBytes(&_assetType, 1);
-			ostream.WriteBytes(&_recordType, 1);
+		void Asset::Serialize(ByteStream &stream, bool extend) const {
+			stream.WriteVarString(_name);
+			stream.WriteVarString(_description);
+			stream.WriteBytes(&_precision, 1);
+			stream.WriteBytes(&_assetType, 1);
+			stream.WriteBytes(&_recordType, 1);
 		}
 
-		bool Asset::Deserialize(const ByteStream &istream) {
-			if (!istream.ReadVarString(_name)) {
+		bool Asset::Deserialize(const ByteStream &stream, bool extend) {
+			if (!stream.ReadVarString(_name)) {
 				Log::error("Asset payload deserialize name fail");
 				return false;
 			}
 
-			if (!istream.ReadVarString(_description)) {
+			if (!stream.ReadVarString(_description)) {
 				Log::error("Asset payload deserialize description fail");
 				return false;
 			}
 
-			if (!istream.ReadBytes(&_precision, 1)) {
+			if (!stream.ReadBytes(&_precision, 1)) {
 				Log::error("Asset payload deserialize precision fail");
 				return false;
 			}
 
-			if (!istream.ReadBytes(&_assetType, 1)) {
+			if (!stream.ReadBytes(&_assetType, 1)) {
 				Log::error("Asset payload deserialize asset type fail");
 				return false;
 			}
 
-			if (!istream.ReadBytes(&_recordType, 1)) {
+			if (!stream.ReadBytes(&_recordType, 1)) {
 				Log::error("Asset payload deserialize record type fail");
 				return false;
 			}
@@ -150,5 +150,12 @@ namespace Elastos {
 			_hash = hash;
 		}
 
+		bool Asset::operator==(const Asset &asset) const {
+			return _name == asset._name &&
+				   _description == asset._description &&
+				   _precision == asset._precision &&
+				   _assetType == asset._assetType &&
+				   _recordType == asset._recordType;
+		}
 	}
 }

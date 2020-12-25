@@ -14,6 +14,14 @@ namespace Elastos {
 		public:
 			ProducerInfo();
 
+			ProducerInfo(const bytes_t &ownerPublicKey,
+						 const bytes_t &nodePublicKey,
+						 const std::string &nickName,
+						 const std::string &url,
+						 uint64_t location,
+						 const std::string &address,
+						 const bytes_t &signature);
+
 			ProducerInfo(const ProducerInfo &payload);
 
 			~ProducerInfo();
@@ -64,6 +72,7 @@ namespace Elastos {
 
 			ProducerInfo &operator=(const ProducerInfo &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			bytes_t _ownerPublicKey;
 			bytes_t _nodePublicKey;

@@ -13,6 +13,23 @@ namespace Elastos {
 
 		}
 
+		CRInfo::CRInfo(const bytes_t &code,
+					   const uint168 &cid,
+					   const uint168 &did,
+					   const std::string &nickName,
+					   const std::string &url,
+					   uint64_t location,
+					   const bytes_t &signature) :
+			_code(code),
+			_cid(cid),
+			_did(did),
+			_nickName(nickName),
+			_url(url),
+			_location(location),
+			_signature(signature) {
+
+		}
+
 		CRInfo::~CRInfo() {
 
 		}
@@ -218,6 +235,27 @@ namespace Elastos {
 			_location = payload._location;
 			_signature = payload._signature;
 			return *this;
+		}
+
+		bool CRInfo::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const CRInfo &p = dynamic_cast<const CRInfo &>(payload);
+				bool equal = _code == p._code &&
+							 _cid == p._cid &&
+							 _nickName == p._nickName &&
+							 _url == p._url &&
+							 _location == p._location &&
+							 _signature == p._signature;
+
+				if (version > CRInfoDIDVersion)
+					equal = equal && _did == p._did;
+
+				return equal;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of CRInfo");
+			}
+
+			return false;
 		}
 	}
 }

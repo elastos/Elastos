@@ -49,6 +49,8 @@ namespace Elastos {
 			virtual IPayload &operator=(const IPayload &payload);
 
 			CRCAppropriation &operator=(const CRCAppropriation &payload);
+
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		};
 
 	}

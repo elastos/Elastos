@@ -61,7 +61,7 @@ namespace Elastos {
 				const CRCAppropriation &payloadCRCAppropriation  = dynamic_cast<const CRCAppropriation &>(payload);
 				operator=(payloadCRCAppropriation);
 			} catch (const std::bad_cast &e) {
-				Log::error("payload is not instance of TransferAsset");
+				Log::error("payload is not instance of CRCAppropriation");
 			}
 
 			return *this;
@@ -69,6 +69,17 @@ namespace Elastos {
 
 		CRCAppropriation &CRCAppropriation::operator=(const CRCAppropriation &payload) {
 			return *this;
+		}
+
+		bool CRCAppropriation::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const CRCAppropriation &p = dynamic_cast<const CRCAppropriation &>(payload);
+				return true;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of CRCAppropriation");
+			}
+
+			return false;
 		}
 
 	}

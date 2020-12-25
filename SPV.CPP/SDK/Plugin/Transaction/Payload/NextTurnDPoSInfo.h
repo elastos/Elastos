@@ -32,6 +32,8 @@ namespace Elastos {
 		public:
 			NextTurnDPoSInfo();
 
+			NextTurnDPoSInfo(uint32_t blockHeight, const std::vector<bytes_t> &crPubkeys, const std::vector<bytes_t> &dposPubkeys);
+
 			NextTurnDPoSInfo(const NextTurnDPoSInfo &payload);
 
 			~NextTurnDPoSInfo();
@@ -62,6 +64,7 @@ namespace Elastos {
 
 			NextTurnDPoSInfo &operator=(const NextTurnDPoSInfo &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			uint32_t _workingHeight;
 			std::vector<bytes_t> _crPublicKeys;

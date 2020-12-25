@@ -105,6 +105,12 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 
 	std::vector<IMasterWallet *> masterWallets;
 	masterWallets = manager->GetAllMasterWallets();
+	if (!masterWallets.empty()) {
+		for (IMasterWallet *mw : masterWallets) {
+			manager->DestroyWallet(mw->GetID());
+		}
+		masterWallets = manager->GetAllMasterWallets();
+	}
 	REQUIRE(masterWallets.empty());
 
 	mnemonic = MasterWallet::GenerateMnemonic("english", __rootPath);
@@ -194,6 +200,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	ls.SaveTo(path);
 
 	DatabaseManager dm(__rootPath + masterWalletId + "/ELA.db");
+	dm.SetTxTableDataMigrateDone();
 
 	std::string xprv = ls.GetxPrivKey();
 	bytes_t bytes = AES::DecryptCCM(xprv, payPassword);
@@ -242,13 +249,15 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		for (const OutputPtr &o : tx->GetOutputs())
 			utxoEntities.emplace_back(txHash, o->FixedIndex());
 
-		dm.PutNormalTxn(tx);
+		TxEntity e;
+		tx->Encode(e);
+		dm.PutTx({e});
 		dm.PutUTXOs(utxoEntities);
 
 		txlist.push_back(tx);
 	}
 
-	REQUIRE(dm.GetNormalTxns(CHAINID_MAINCHAIN).size() == txCount);
+	REQUIRE(dm.GetTxCnt(Transaction::coinBase, true) == txCount);
 	REQUIRE(dm.GetUTXOs().size() == 20 * txCount);
 
 	//transfer to another address
@@ -308,9 +317,11 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	}
 
 	REQUIRE(dm.DeleteUTXOs(utxoRemoved));
-	REQUIRE(dm.PutNormalTxn(tx));
+	TxEntity e;
+	tx->Encode(e);
+	REQUIRE(dm.PutTx({e}));
 
-	REQUIRE(dm.GetNormalTxns(CHAINID_MAINCHAIN).size() == txCount + 1);
+	REQUIRE(dm.GetTxCnt(Transaction::coinBase, true) == txCount + 1);
 
 	//put coinbase tx
 	utxoEntities.clear();
@@ -323,10 +334,11 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
 		txHash = txn->GetHash().GetHex();
 		utxoEntities.emplace_back(txHash, 0);
-		REQUIRE(dm.PutCoinbaseTxn(txn));
+		txn->Encode(e);
+		REQUIRE(dm.PutTx({e}));
 	}
 	REQUIRE(dm.PutUTXOs(utxoEntities));
-	REQUIRE(dm.GetCoinbaseTotalCount() == txCount);
+	REQUIRE(dm.GetTxCnt(Transaction::coinBase, false) == txCount);
 	utxoEntities.clear();
 	for (int i = 0; i < txCount; ++i) {
 		TransactionPtr txn(new Transaction(Transaction::coinBase, PayloadPtr(new CoinBase())));
@@ -337,10 +349,11 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
 		txHash = txn->GetHash().GetHex();
 		utxoEntities.emplace_back(txHash, 0);
-		dm.PutCoinbaseTxn(txn);
+		txn->Encode(e);
+		dm.PutTx({e});
 	}
 	REQUIRE(dm.PutUTXOs(utxoEntities));
-	REQUIRE(dm.GetCoinbaseTotalCount() == 2 * txCount);
+	REQUIRE(dm.GetTxCnt(Transaction::coinBase, false) == 2 * txCount);
 
 	// put merkle block
 	MerkleBlockPtr block = Registry::Instance()->CreateMerkleBlock("ELA");

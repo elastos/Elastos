@@ -57,6 +57,14 @@ namespace Elastos {
 			return _messageHash;
 		}
 
+		void CRCProposalTracking::SetMessageData(const bytes_t &data) {
+			_messageData = data;
+		}
+
+		const bytes_t &CRCProposalTracking::GetMessageData() const {
+			return _messageData;
+		}
+
 		void CRCProposalTracking::SetStage(uint8_t stage) {
 			_stage = stage;
 		}
@@ -113,6 +121,14 @@ namespace Elastos {
 			return _secretaryGeneralOpinionHash;
 		}
 
+		void CRCProposalTracking::SetSecretaryGeneralOpinionData(const bytes_t &data) {
+			_secretaryGeneralOpinionData = data;
+		}
+
+		const bytes_t &CRCProposalTracking::GetSecretaryGeneralOpinionData()  const {
+			return _secretaryGeneralOpinionData;
+		}
+
 		void CRCProposalTracking::SetSecretaryGeneralSignature(const bytes_t &signature) {
 			_secretaryGeneralSignature = signature;
 		}
@@ -155,6 +171,12 @@ namespace Elastos {
 			ByteStream stream;
 			size_t size = 0;
 
+			if (version >= CRCProposalTrackingVersion01) {
+				size += stream.WriteVarUint(_messageData.size());
+				size += _messageData.size();
+				size += stream.WriteVarUint(_secretaryGeneralOpinionData.size());
+				size += _secretaryGeneralOpinionData.size();
+			}
 			size += _proposalHash.size();
 			size += _messageHash.size();
 
@@ -487,5 +509,30 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool CRCProposalTracking::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const CRCProposalTracking &p = dynamic_cast<const CRCProposalTracking &>(payload);
+				bool equal = _proposalHash == p._proposalHash &&
+							 _messageHash == p._messageHash &&
+							 _stage == p._stage &&
+							 _ownerPubKey == p._ownerPubKey &&
+							 _newOwnerPubKey == p._newOwnerPubKey &&
+							 _ownerSign == p._ownerSign &&
+							 _newOwnerSign == p._newOwnerSign &&
+							 _type == p._type &&
+							 _secretaryGeneralOpinionHash == p._secretaryGeneralOpinionHash &&
+							 _secretaryGeneralSignature == p._secretaryGeneralSignature;
+
+				if (version >= CRCProposalTrackingVersion01)
+					equal = equal && _messageData == p._messageData &&
+							_secretaryGeneralOpinionData == p._secretaryGeneralOpinionData;
+
+				return equal;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of CRCProposalTracking");
+			}
+
+			return false;
+		}
 	}
 }

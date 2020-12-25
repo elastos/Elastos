@@ -106,5 +106,17 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool Record::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const Record &p = dynamic_cast<const Record &>(payload);
+				return _recordData == p._recordData &&
+					   _recordType == p._recordType;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of Record");
+			}
+
+			return false;
+		}
+
 	}
 }

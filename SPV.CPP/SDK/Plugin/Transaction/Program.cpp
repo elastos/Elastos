@@ -199,27 +199,27 @@ namespace Elastos {
 			return size;
 		}
 
-		void Program::Serialize(ByteStream &ostream, bool extend) const {
-			ostream.WriteVarBytes(_parameter);
-			ostream.WriteVarBytes(_code);
+		void Program::Serialize(ByteStream &stream, bool extend) const {
+			stream.WriteVarBytes(_parameter);
+			stream.WriteVarBytes(_code);
 			if (extend) {
-				ostream.WriteVarString(_path);
+				stream.WriteVarString(_path);
 			}
 		}
 
-		bool Program::Deserialize(const ByteStream &istream, bool extend) {
-			if (!istream.ReadVarBytes(_parameter)) {
+		bool Program::Deserialize(const ByteStream &stream, bool extend) {
+			if (!stream.ReadVarBytes(_parameter)) {
 				Log::error("Program deserialize parameter fail");
 				return false;
 			}
 
-			if (!istream.ReadVarBytes(_code)) {
+			if (!stream.ReadVarBytes(_code)) {
 				Log::error("Program deserialize code fail");
 				return false;
 			}
 
 			if (extend) {
-				if (!istream.ReadVarString(_path)) {
+				if (!stream.ReadVarString(_path)) {
 					Log::error("Program deserialize path fail");
 					return false;
 				}
@@ -244,6 +244,14 @@ namespace Elastos {
 
 			_parameter.setHex(j["Parameter"].get<std::string>());
 			_code.setHex(j["Code"].get<std::string>());
+		}
+
+		bool Program::operator==(const Program &p) const {
+			return _code == p._code && _parameter == p._parameter;
+		}
+
+		bool Program::operator!=(const Program &p) const {
+			return !operator==(p);
 		}
 
 	}

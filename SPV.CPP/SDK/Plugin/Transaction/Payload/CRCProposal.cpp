@@ -167,6 +167,14 @@ namespace Elastos {
 			return _draftHash;
 		}
 
+		void CRCProposal::SetDraftData(const bytes_t &draftData) {
+			_draftData = draftData;
+		}
+
+		const bytes_t &CRCProposal::GetDraftData() const {
+			return _draftData;
+		}
+
 		void CRCProposal::SetBudgets(const std::vector<Budget> &budgets) {
 			_budgets = budgets;
 		}
@@ -284,6 +292,10 @@ namespace Elastos {
 			size += _categoryData.size();
 			size += stream.WriteVarUint(_ownerPublicKey.size());
 			size += _ownerPublicKey.size();
+			if (version >= CRCProposalVersion01) {
+				size += stream.WriteVarUint(_draftData.size());
+				size += _draftData.size();
+			}
 			size += _draftHash.size();
 
 			switch (_type) {
@@ -1400,7 +1412,7 @@ namespace Elastos {
 			return *this;
 		}
 
-		bool CRCProposal::operator==(const IPayload &payload) const {
+		bool CRCProposal::Equal(const IPayload &payload, uint8_t version) const {
 			bool equal = false;
 			try {
 				const CRCProposal &realPayload = dynamic_cast<const CRCProposal &>(payload);
@@ -1412,12 +1424,13 @@ namespace Elastos {
 								_categoryData == realPayload._categoryData &&
 								_ownerPublicKey == realPayload._ownerPublicKey &&
 								_draftHash == realPayload._draftHash &&
-								_draftData == realPayload._draftData &&
 								_budgets == realPayload._budgets &&
 								_recipient == realPayload._recipient &&
 								_signature == realPayload._signature &&
 								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
 								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
+						if (version >= CRCProposalVersion01)
+							equal = equal && _draftData == realPayload._draftData;
 						break;
 
 					case secretaryGeneralElection:
@@ -1425,13 +1438,14 @@ namespace Elastos {
 								_categoryData == realPayload._categoryData &&
 								_ownerPublicKey == realPayload._ownerPublicKey &&
 								_draftHash == realPayload._draftHash &&
-								_draftData == realPayload._draftData &&
 								_secretaryPublicKey == realPayload._secretaryPublicKey &&
 								_secretaryDID == realPayload._secretaryDID &&
 								_signature == realPayload._signature &&
 								_secretarySignature == realPayload._secretarySignature &&
 								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
 								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
+						if (version >= CRCProposalVersion01)
+							equal = equal && _draftData == realPayload._draftData;
 						break;
 
 					case changeProposalOwner:
@@ -1439,7 +1453,6 @@ namespace Elastos {
 								_categoryData == realPayload._categoryData &&
 								_ownerPublicKey == realPayload._ownerPublicKey &&
 								_draftHash == realPayload._draftHash &&
-								_draftData == realPayload._draftData &&
 								_targetProposalHash == realPayload._targetProposalHash &&
 								_newRecipient == realPayload._newRecipient &&
 								_newOwnerPublicKey == realPayload._newOwnerPublicKey &&
@@ -1447,6 +1460,8 @@ namespace Elastos {
 								_newOwnerSignature == realPayload._newOwnerSignature &&
 								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
 								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
+						if (version >= CRCProposalVersion01)
+							equal = equal && _draftData == realPayload._draftData;
 						break;
 
 					case terminateProposal:
@@ -1454,11 +1469,12 @@ namespace Elastos {
 								_categoryData == realPayload._categoryData &&
 								_ownerPublicKey == realPayload._ownerPublicKey &&
 								_draftHash == realPayload._draftHash &&
-								_draftData == realPayload._draftData &&
 								_targetProposalHash == realPayload._targetProposalHash &&
 								_signature == realPayload._signature &&
 								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
 								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
+						if (version >= CRCProposalVersion01)
+							equal = equal && _draftData == realPayload._draftData;
 						break;
 
 					default:

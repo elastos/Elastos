@@ -63,6 +63,10 @@ namespace Elastos {
 
 			const uint256 &GetOpinionHash() const;
 
+			void SetOpinionData(const bytes_t &data);
+
+			const bytes_t &GetOpinionData() const;
+
 			void SetDID(const Address &DID);
 
 			const Address &GetDID() const;
@@ -99,6 +103,8 @@ namespace Elastos {
 			virtual IPayload &operator=(const IPayload &payload);
 
 			CRCProposalReview &operator=(const CRCProposalReview &payload);
+
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 
 		private:
 			mutable uint256 _digest;

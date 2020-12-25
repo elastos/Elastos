@@ -14,6 +14,23 @@ namespace Elastos {
 
 		}
 
+		ProducerInfo::ProducerInfo(const bytes_t &ownerPublicKey,
+								   const bytes_t &nodePublicKey,
+								   const std::string &nickName,
+								   const std::string &url,
+								   uint64_t location,
+								   const std::string &address,
+								   const bytes_t &signature) :
+			_ownerPublicKey(ownerPublicKey),
+			_nodePublicKey(nodePublicKey),
+			_nickName(nickName),
+			_url(url),
+			_location(location),
+			_address(address),
+			_signature(signature) {
+
+		}
+
 		ProducerInfo::ProducerInfo(const ProducerInfo &payload) {
 			operator=(payload);
 		}
@@ -200,5 +217,21 @@ namespace Elastos {
 			return *this;
 		}
 
+		bool ProducerInfo::Equal(const IPayload &payload, uint8_t version) const {
+			try {
+				const ProducerInfo &p = dynamic_cast<const ProducerInfo &>(payload);
+				return _ownerPublicKey == p._ownerPublicKey &&
+					   _nodePublicKey == p._nodePublicKey &&
+					   _nickName == p._nickName &&
+					   _url == p._url &&
+					   _location == p._location &&
+					   _address == p._address &&
+					   _signature == p._signature;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of ProducerInfo");
+			}
+
+			return false;
+		}
 	}
 }

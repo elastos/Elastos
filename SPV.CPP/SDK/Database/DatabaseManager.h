@@ -24,19 +24,13 @@
 #define __ELASTOS_SDK_DATABASEMANAGER_H__
 
 #include "MerkleBlockDataSource.h"
-#include "TransactionNormal.h"
 #include "PeerDataSource.h"
 #include "PeerBlackList.h"
 #include "AssetDataStore.h"
-#include "TransactionCoinbase.h"
-#include "TransactionPending.h"
-#include "DIDDataStore.h"
 #include "UTXOStore.h"
 #include "AddressUsed.h"
-#include "TxHashCRC.h"
-#include "TxHashDPoS.h"
-#include "TxHashProposal.h"
-#include "TxHashDID.h"
+#include "TxTable.h"
+#include "DataMigrate.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -55,93 +49,39 @@ namespace Elastos {
 
 			void ClearData();
 
-			bool ReplaceTxns(const std::vector<TransactionPtr> &txConfirmed,
-							 const std::vector<TransactionPtr> &txPending,
-							 const std::vector<TransactionPtr> &txCoinbase);
+			bool TxTableDataMigrateDone();
 
-			bool ContainTxn(const uint256 &hash) const;
+			bool SetTxTableDataMigrateDone();
 
-			bool UpdateTxns(const std::vector<TransactionPtr> &txns);
+			bool ContainTx(const std::string &hash) const;
 
-			// CoinBase Transaction
-			bool PutCoinbaseTxns(const std::vector<TransactionPtr> &txns);
+			bool GetUTXOTx(std::vector<TxEntity> &entities) const;
 
-			bool PutCoinbaseTxn(const TransactionPtr &txn);
+			bool GetTx(std::vector<TxEntity> &entities, uint32_t height) const;
 
-			bool DeleteAllCoinbase();
+			bool GetTx(std::vector<TxEntity> &entities, const std::vector<uint8_t> &types) const;
 
-			size_t GetCoinbaseTotalCount() const;
+			bool GetTx(std::vector<TxEntity> &entities) const;
 
-			TransactionPtr GetCoinbaseTxn(const uint256 &hash, const std::string &chainID) const;
+			bool GetTx(std::vector<TxEntity> &entities, const std::set<std::string> &hashes) const;
 
-			std::vector<TransactionPtr> GetCoinbaseTxns(const std::string &chainID, uint32_t height) const;
+			bool GetTx(std::vector<TxEntity> &entities, uint8_t type, bool invertMatch, size_t offset, size_t limit, bool desc) const;
 
-			std::vector<TransactionPtr> GetCoinbaseTxns(const std::string &chainID) const;
+			size_t GetTxCnt(uint8_t type, bool invertMatch) const;
 
-			std::vector<TransactionPtr> GetCoinbaseUTXOTxn(const std::string &chainID) const;
+			size_t GetAllTxCnt() const;
 
-			std::vector<TransactionPtr> GetCoinbaseUniqueTxns(const std::string &chainID,
-															  const std::set<std::string> &hashes) const;
+			time_t GetEarliestTxTimestamp() const;
 
-			std::vector<TransactionPtr>
-			GetCoinbaseTxns(const std::string &chainID, size_t offset, size_t limit, bool asc = false) const;
+			bool PutTx(const std::vector<TxEntity> &entities);
 
-			bool UpdateCoinbaseTxn(const std::vector<TransactionPtr> &txns);
+			bool UpdateTx(const std::vector<std::string> &hashes, uint32_t height, time_t timestamp);
 
-			bool DeleteCoinbaseTxn(const uint256 &hash);
+			bool DeleteTx(const std::string &hash);
 
-			// Normal Transaction
-			bool PutNormalTxn(const TransactionPtr &tx);
+			bool DeleteAllTx();
 
-			bool PutNormalTxns(const std::vector<TransactionPtr> &txns);
-
-			bool DeleteAllNormalTxns();
-
-			size_t GetNormalTotalCount() const;
-
-			time_t GetNormalEarliestTxnTimestamp() const;
-
-			TransactionPtr GetNormalTxn(const uint256 &hash, const std::string &chainID) const;
-
-			std::vector<TransactionPtr> GetNormalTxns(const std::string &chainID, uint32_t height) const;
-
-			std::vector<TransactionPtr> GetNormalTxns(const std::string &chainID) const;
-
-			std::vector<TransactionPtr> GetNormalUTXOTxn(const std::string &chainID) const;
-
-			std::vector<TransactionPtr> GetNormalUniqueTxns(const std::string &chainID,
-															const std::set<std::string> &hashes) const;
-
-			std::vector<TransactionPtr>
-			GetNormalTxns(const std::string &chainID, size_t offset, size_t limit, bool asc = false) const;
-
-			bool UpdateNormalTxn(const std::vector<TransactionPtr> &txns);
-
-			bool DeleteNormalTxn(const uint256 &hash);
-
-			bool DeleteNormalTxn(const std::vector<uint256> &hashes);
-
-			// Pending Transaction
-			bool PutPendingTxn(const TransactionPtr &txn);
-
-			bool PutPendingTxns(const std::vector<TransactionPtr> &txns);
-
-			bool DeleteAllPendingTxns();
-
-			bool DeletePendingTxn(const uint256 &hash);
-
-			bool DeletePendingTxns(const std::vector<uint256> &hashes);
-
-			size_t GetPendingTxnTotalCount() const;
-
-			TransactionPtr GetPendingTxn(const uint256 &hash, const std::string &chainID) const;
-
-			std::vector<TransactionPtr> GetAllPendingTxns(const std::string &chainID) const;
-
-			std::vector<TransactionPtr> GetPendingUniqueTxns(const std::string &chainID,
-															 const std::set<std::string> &hashes) const;
-
-			bool ExistPendingTxnTable() const;
+			bool GetAllOldTx(std::vector<TxOldEntity> &entities) const;
 
 			// Peer Address
 			bool PutPeer(const PeerEntity &peerEntity);
@@ -207,44 +147,7 @@ namespace Elastos {
 
 			bool DeleteAllUsedAddresses();
 
-			// TxHash CRC
-			bool PutTxHashCRC(const std::vector<std::string> &txHashes, bool replace = false);
-
-			std::vector<std::string> GetTxHashCRC() const;
-
-			bool DeleteAllTxHashCRC();
-
-			std::vector<TransactionPtr> GetTxCRC(const std::string &chainID) const;
-
-			// TxHash DPoS
-			bool PutTxHashDPoS(const std::vector<std::string> &txHashes, bool replace = false);
-
-			std::vector<std::string> GetTxHashDPoS() const;
-
-			bool DeleteAllTxHashDPoS();
-
-			std::vector<TransactionPtr> GetTxDPoS(const std::string &chainID) const;
-
-			// TxHash Proposal
-			bool PutTxHashProposal(const std::vector<std::string> &txHashes, bool replace = false);
-
-			std::vector<std::string> GetTxHashProposal() const;
-
-			bool DeleteAllTxHashProposal();
-
-			std::vector<TransactionPtr> GetTxProposal(const std::string &chainID) const;
-
-			// TxHash DID
-			bool PutTxHashDID(const std::vector<std::string> &txHashes, bool replace = false);
-
-			std::vector<std::string> GetTxHashDID() const;
-
-			bool DeleteAllTxHashDID();
-
-			std::vector<TransactionPtr> GetTxDID(const std::string &chainID) const;
-
-			// TxHash common
-			bool ExistTxHashTable() const;
+			bool TxTableDataMigrateDone() const;
 
 			// common
 			const boost::filesystem::path &GetPath() const;
@@ -256,18 +159,12 @@ namespace Elastos {
 			Sqlite _sqlite;
 			PeerDataSource _peerDataSource;
 			PeerBlackList _peerBlackList;
-			TransactionCoinbase _transactionCoinbase;
-			TransactionNormal _transactionNormal;
-			TransactionPending _transactionPending;
 			MerkleBlockDataSource _merkleBlockDataSource;
 			AssetDataStore _assetDataStore;
-			DIDDataStore _didDataStore;
 			UTXOStore _utxoStore;
 			AddressUsed _addressUsed;
-			TxHashCRC _txHashCRC;
-			TxHashDPoS _txHashDPoS;
-			TxHashProposal _txHashProposal;
-			TxHashDID _txHashDID;
+			TxTable _txTable;
+			DataMigrate _dataMigrate;
 		};
 
 		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;

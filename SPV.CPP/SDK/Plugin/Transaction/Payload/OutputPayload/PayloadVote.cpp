@@ -76,6 +76,10 @@ namespace Elastos {
 			}
 		}
 
+		bool CandidateVotes::operator==(const CandidateVotes &cv) const {
+			return _candidate == cv._candidate && _votes == cv._votes;
+		}
+
 		VoteContent::VoteContent() : _type(Delegate) {
 
 		}
@@ -204,6 +208,9 @@ namespace Elastos {
 			}
 		}
 
+		bool VoteContent::operator==(const VoteContent &vc) const {
+			return _type == vc._type && _candidates == vc._candidates;
+		}
 
 		PayloadVote::PayloadVote(uint8_t version) :
 				_version(version) {
@@ -259,30 +266,30 @@ namespace Elastos {
 			return size;
 		}
 
-		void PayloadVote::Serialize(ByteStream &ostream) const {
-			ostream.WriteUint8(_version);
+		void PayloadVote::Serialize(ByteStream &stream, bool extend) const {
+			stream.WriteUint8(_version);
 
-			ostream.WriteVarUint(_content.size());
+			stream.WriteVarUint(_content.size());
 			for (size_t i = 0; i < _content.size(); ++i) {
-				_content[i].Serialize(ostream, _version);
+				_content[i].Serialize(stream, _version);
 			}
 		}
 
-		bool PayloadVote::Deserialize(const ByteStream &istream) {
-			if (!istream.ReadUint8(_version)) {
+		bool PayloadVote::Deserialize(const ByteStream &stream, bool extend) {
+			if (!stream.ReadUint8(_version)) {
 				Log::error("payload vote deserialize version error");
 				return false;
 			}
 
 			uint64_t contentCount = 0;
-			if (!istream.ReadVarUint(contentCount)) {
+			if (!stream.ReadVarUint(contentCount)) {
 				Log::error("payload vote deserialize content count error");
 				return false;
 			}
 
 			_content.resize(contentCount);
 			for (size_t i = 0; i < contentCount; ++i) {
-				if (!_content[i].Deserialize(istream, _version)) {
+				if (!_content[i].Deserialize(stream, _version)) {
 					Log::error("payload vote deserialize content error");
 					return false;
 				}
@@ -330,6 +337,17 @@ namespace Elastos {
 			_content = payload._content;
 
 			return *this;
+		}
+
+		bool PayloadVote::operator==(const IOutputPayload &payload) const {
+			try {
+				const PayloadVote &payloadVote = dynamic_cast<const PayloadVote &>(payload);
+				return _version == payloadVote._version && _content == payloadVote._content;
+			} catch (const std::bad_cast &e) {
+				Log::error("payload is not instance of PayloadVote");
+			}
+
+			return false;
 		}
 
 	}

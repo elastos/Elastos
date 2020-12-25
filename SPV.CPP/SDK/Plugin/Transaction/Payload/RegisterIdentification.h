@@ -17,11 +17,32 @@ namespace Elastos {
 				uint256 DataHash;
 				std::string Proof;
 				std::string Info;
+
+				ValueItem() {}
+
+				ValueItem(const uint256 &hash, const std::string &p, const std::string &i) :
+					DataHash(hash), Proof(p), Info(i) {}
+
+				bool operator==(const ValueItem &vi) const {
+					return DataHash == vi.DataHash &&
+						   Proof == vi.Proof &&
+						   Info == vi.Info;
+				}
 			};
 
 			struct SignContent {
 				std::string Path;
 				std::vector<ValueItem> Values;
+
+				SignContent() {}
+
+				SignContent(const std::string &p, const std::vector<ValueItem> &v) :
+				 Path(p), Values(v) {}
+
+				bool operator==(const SignContent &sc) const {
+					return Path == sc.Path &&
+						   Values == sc.Values;
+				}
 			};
 
 		public:
@@ -51,6 +72,8 @@ namespace Elastos {
 
 			void AddContent(const SignContent &content);
 
+			void SetContent(const std::vector<SignContent> &contents);
+
 			void RemoveContent(size_t index);
 
 			const bytes_t &GetSign() const;
@@ -73,6 +96,7 @@ namespace Elastos {
 
 			RegisterIdentification &operator=(const RegisterIdentification &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			std::string _id;
 			bytes_t _sign;

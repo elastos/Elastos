@@ -34,6 +34,8 @@ namespace Elastos {
 			nlohmann::json ToJson(uint8_t version) const;
 
 			void FromJson(const nlohmann::json &j, uint8_t version);
+
+			bool operator==(const CandidateVotes &cv) const;
 		private:
 			bytes_t  _candidate;
 			BigInt _votes;
@@ -80,6 +82,8 @@ namespace Elastos {
 			nlohmann::json ToJson(uint8_t version) const;
 
 			void FromJson(const nlohmann::json &j, uint8_t version);
+
+			bool operator==(const VoteContent &vc) const;
 		private:
 			Type _type;
 			std::vector<CandidateVotes> _candidates;
@@ -105,9 +109,9 @@ namespace Elastos {
 
 			virtual size_t EstimateSize() const;
 
-			virtual void Serialize(ByteStream &ostream) const;
+			virtual void Serialize(ByteStream &stream, bool extend = false) const;
 
-			virtual bool Deserialize(const ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &stream, bool extend = false);
 
 			virtual nlohmann::json ToJson() const;
 
@@ -117,6 +121,7 @@ namespace Elastos {
 
 			virtual PayloadVote &operator=(const PayloadVote &payload);
 
+			virtual bool operator==(const IOutputPayload &payload) const;
 		private:
 			uint8_t _version;
 			std::vector<VoteContent> _content;

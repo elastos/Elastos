@@ -64,6 +64,7 @@ namespace Elastos {
 
 			RegisterAsset &operator=(const RegisterAsset &payload);
 
+			virtual bool Equal(const IPayload &payload, uint8_t version) const;
 		private:
 			AssetPtr _asset;
 			uint64_t _amount;

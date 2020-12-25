@@ -7,6 +7,8 @@
 
 #include <Common/ByteStream.h>
 #include <Common/JsonSerializer.h>
+#include <Common/BigInt.h>
+#include <WalletCore/Address.h>
 #include <Plugin/Interface/ELAMessageSerializable.h>
 
 #include <nlohmann/json.hpp>
@@ -26,6 +28,8 @@ namespace Elastos {
 
 			TransactionInput(const uint256 &txHash, uint16_t index);
 
+			TransactionInput(const uint256 &txHash, uint16_t index, const BigInt &amount, const Address &addr);
+
 			~TransactionInput();
 
 			const uint256 &TxHash() const;
@@ -42,9 +46,9 @@ namespace Elastos {
 
 			size_t EstimateSize() const;
 
-			void Serialize(ByteStream &ostream) const;
+			void Serialize(ByteStream &stream, bool extend = false) const;
 
-			bool Deserialize(const ByteStream &istream);
+			bool Deserialize(const ByteStream &stream, bool extend = false);
 
 			nlohmann::json ToJson() const;
 
@@ -52,10 +56,29 @@ namespace Elastos {
 
 			size_t GetSize() const;
 
+			void FixDetail(const BigInt &amount, const Address &addr);
+
+			bool ContainDetail() const;
+
+			const BigInt &GetAmount() const;
+
+			void SetAmount(const BigInt &amount);
+
+			const Address &GetAddress() const;
+
+			void SetAddress(const Address &addr);
+
+			bool operator==(const TransactionInput &in) const;
+
+			bool operator!=(const TransactionInput &in) const;
 		private:
 			uint256 _txHash;
 			uint16_t _index;
 			uint32_t _sequence;
+
+			bool _containDetail; // input from current wallet
+			BigInt _amount;
+			Address _addr;
 		};
 
 		typedef boost::shared_ptr<TransactionInput> InputPtr;

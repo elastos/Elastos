@@ -44,13 +44,17 @@ namespace Elastos {
 
 			virtual size_t EstimateSize() const;
 
-			virtual void Serialize(ByteStream &ostream) const;
+			virtual void Serialize(ByteStream &stream, bool extend = false) const;
 
-			virtual bool Deserialize(const ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &stream, bool extend = false);
 
 			virtual nlohmann::json ToJson() const;
 
 			virtual void FromJson(const nlohmann::json &j);
+
+			bool operator==(const Attribute &a) const;
+
+			bool operator!=(const Attribute &a) const;
 
 		private:
 			Usage _usage;

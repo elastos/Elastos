@@ -40,7 +40,7 @@ namespace Elastos {
 
 		void SPVModule::SubmitTxReceipt(const uint256 &tx_hash) {
 			_notify_queue.Delete(tx_hash);
-			DeleteTxn(tx_hash);
+			GetWallet()->DeleteTransaction(tx_hash);
 		}
 
 		void SPVModule::onTxAdded(const TransactionPtr &tx) {
@@ -51,18 +51,18 @@ namespace Elastos {
 			_notify_queue.Upsert(NotifyQueue::RecordPtr(new NotifyQueue::Record(tx->GetHash(), tx->GetBlockHeight())));
 		}
 
-		void SPVModule::onTxUpdated(const std::vector<TransactionPtr> &txns) {
-			SpvService::onTxUpdated(txns); // Call parent.
+		void SPVModule::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
+			SpvService::onTxUpdated(hashes, blockHeight, timestamp); // Call parent.
 
-			for (auto tx : txns) {
-				if (GetTransaction(tx->GetHash(), CHAINID_MAINCHAIN))
-					_notify_queue.Upsert(NotifyQueue::RecordPtr(new NotifyQueue::Record(tx->GetHash(), tx->GetBlockHeight())));
+			for (auto &hash : hashes) {
+				if (GetWallet()->ContainsTransaction(hash))
+					_notify_queue.Upsert(NotifyQueue::RecordPtr(new NotifyQueue::Record(hash, blockHeight)));
 			}
 		}
 
-		void SPVModule::onTxDeleted(const TransactionPtr &tx, bool notify, bool rescan) {
-			SpvService::onTxDeleted(tx, rescan, false); // Call parent.
-			_notify_queue.Delete(tx->GetHash());
+		void SPVModule::onTxDeleted(const uint256 &hash, bool notify, bool rescan) {
+			SpvService::onTxDeleted(hash, rescan, false); // Call parent.
+			_notify_queue.Delete(hash);
 		}
 
 		void SPVModule::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) {
@@ -85,7 +85,7 @@ namespace Elastos {
 					new NotifyQueue::Record(record->tx_hash, record->height, now)));
 
 				// Notify the confirmed transactions through the registered listener.
-				TransactionPtr tx = GetTransaction(record->tx_hash, CHAINID_MAINCHAIN);
+				TransactionPtr tx = GetWallet()->TransactionForHash(record->tx_hash);
 				if (_listener && tx)
 					_listener->OnDepositTxConfirmed(tx);
 			}

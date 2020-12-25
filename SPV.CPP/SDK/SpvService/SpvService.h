@@ -42,14 +42,6 @@ namespace Elastos {
 
 			void ExecutorStop();
 
-			time_t GetFirstTxnTimestamp() const;
-
-			TransactionPtr GetTransaction(const uint256 &hash, const std::string &chainID);
-
-			size_t GetAllTransactionCount(TxnType type) const;
-
-			std::vector<TransactionPtr> LoadTxnDesc(const std::string &chainID, TxnType type, size_t offset, size_t limit) const;
-
 			void RegisterWalletListener(Wallet::Listener *listener);
 
 			void RegisterPeerManagerListener(PeerManager::Listener *listener);
@@ -63,9 +55,9 @@ namespace Elastos {
 
 			virtual void onTxAdded(const TransactionPtr &tx);
 
-			virtual void onTxUpdated(const std::vector<TransactionPtr> &txns);
+			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			virtual void onTxDeleted(const TransactionPtr &tx, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
 			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
@@ -91,14 +83,6 @@ namespace Elastos {
 			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
-			virtual void DeleteTxn(const uint256 &hash);
-
-			virtual std::vector<TransactionPtr> loadCoinbaseTxns(const std::string &chainID);
-
-			virtual std::vector<TransactionPtr> loadConfirmedTxns(const std::string &chainID);
-
-			virtual std::vector<TransactionPtr> loadPendingTxns(const std::string &chainID);
-
 			virtual std::vector<MerkleBlockPtr> loadBlocks(const std::string &chainID);
 
 			virtual std::vector<PeerInfo> loadPeers();

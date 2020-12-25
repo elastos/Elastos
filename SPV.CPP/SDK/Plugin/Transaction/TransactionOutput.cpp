@@ -254,24 +254,14 @@ namespace Elastos {
 
 		void TransactionOutput::FromJson(const nlohmann::json &j) {
 			_fixedIndex = j["FixedIndex"].get<uint16_t>();
-			if (j["Amount"].is_number()) {
-				_amount.setUint64(j["Amount"].get<uint64_t>());
-			} else if (j["Amount"].is_string()) {
-				_amount.setDec(j["Amount"].get<std::string>());
-			}
+			_amount.setDec(j["Amount"].get<std::string>());
 			_assetID.SetHex(j["AssetId"].get<std::string>());
 			_outputLock = j["OutputLock"].get<uint32_t>();
-			uint168 programHash;
-			programHash.SetHex(j["ProgramHash"].get<std::string>());
-			_addr->SetProgramHash(programHash);
+			_addr->SetProgramHash(uint168(j["ProgramHash"].get<std::string>()));
 
 			_outputType = Type(j["OutputType"].get<uint8_t>());
 			_payload = GeneratePayload(_outputType);
 			_payload->FromJson(j["Payload"]);
-		}
-
-		size_t TransactionOutput::GetSize() const {
-			return _assetID.size() + sizeof(_amount) + sizeof(_outputLock) + _addr->ProgramHash().size();
 		}
 
 		uint16_t TransactionOutput::FixedIndex() const {
@@ -280,6 +270,20 @@ namespace Elastos {
 
 		void TransactionOutput::SetFixedIndex(uint16_t index) {
 			_fixedIndex = index;
+		}
+
+		bool TransactionOutput::operator==(const TransactionOutput &o) const {
+			return _assetID == o._assetID &&
+				   _amount == o._amount &&
+				   _outputLock == o._outputLock &&
+				   *_addr == *o._addr &&
+				   _fixedIndex == o._fixedIndex &&
+				   _outputType == o._outputType &&
+				   *_payload == *o._payload;
+		}
+
+		bool TransactionOutput::operator!=(const TransactionOutput &o) const {
+			return !operator==(o);;
 		}
 
 	}

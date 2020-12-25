@@ -23,18 +23,32 @@
 #ifndef __ELASTOS_SDK_ADDRESSUSED_H__
 #define __ELASTOS_SDK_ADDRESSUSED_H__
 
-#include "SimpleTable.h"
+#include "TableBase.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class AddressUsed : public SimpleTable {
+		class AddressUsed : public TableBase {
 		public:
 			AddressUsed(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
 
 			~AddressUsed();
 
 			virtual void InitializeTable();
+
+			bool Puts(const std::vector<std::string> &items, bool replace);
+
+			std::vector<std::string> Gets() const;
+
+			bool DeleteAll();
+
+		private:
+			bool PutInternal(const std::string &item);
+
+		private:
+			const std::string _tableName = "UsedAddressTable";
+			const std::string _columnName = "Address";
+			const std::string _tableCreation = "CREATE TABLE IF NOT EXISTS " + _tableName + "(" + _columnName + " TEXT NOT NULL UNIQUE);";
 		};
 
 	}
