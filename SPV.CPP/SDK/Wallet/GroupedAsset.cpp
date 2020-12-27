@@ -422,9 +422,9 @@ namespace Elastos {
 														  TransactionOutput::Type::VoteOutput, outputPayload)));
 			if (totalInputAmount > totalOutputAmount + feeAmount) {
 				// change
-				AddressPtr changeAddress = _parent->_subAccount->UnusedAddresses(1, 1)[0];
+				Address changeAddress = *firstInput->Output()->Addr();
 				BigInt changeAmount = totalInputAmount - totalOutputAmount - feeAmount;
-				OutputPtr changeOutput(new TransactionOutput(changeAmount, *changeAddress));
+				OutputPtr changeOutput(new TransactionOutput(changeAmount, changeAddress));
 				tx->AddOutput(changeOutput);
 			}
 
