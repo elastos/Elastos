@@ -2136,6 +2136,15 @@ ewmHandleSync (BREthereumEWM ewm,
             SUCCESS,
             { .changed = { ewm->state, EWM_STATE_SYNCING }}
         };
+
+        BREthereumEWMEvent e = (BREthereumEWMEvent) {
+            EWM_EVENT_SYNC_PROGRESS,
+            SUCCESS,
+            { .syncProgress = {
+                NO_CRYPTO_SYNC_TIMESTAMP, // We do not have a timestamp
+                syncCompletePercent }}
+        };
+        ewmSignalEWMEvent (ewm, e);
     }
     else if (blockNumberCurrent == blockNumberStop) {
         event = (BREthereumEWMEvent) {
@@ -2143,6 +2152,15 @@ ewmHandleSync (BREthereumEWM ewm,
             SUCCESS,
             { .changed = { ewm->state, EWM_STATE_CONNECTED }}
         };
+
+        BREthereumEWMEvent e = (BREthereumEWMEvent) {
+            EWM_EVENT_SYNC_PROGRESS,
+            SUCCESS,
+            { .syncProgress = {
+                NO_CRYPTO_SYNC_TIMESTAMP, // We do not have a timestamp
+                syncCompletePercent }}
+        };
+        ewmSignalEWMEvent (ewm, e);
     }
     else {
         event = (BREthereumEWMEvent) {
