@@ -54,7 +54,8 @@ namespace Elastos {
 
 			/**
 			 *
-			 * @param targetAddress
+			 * @param targetAddress "" is different from "0x0000000000000000000000000000000000000000". "" means
+			 * address is null.
 			 * @param amount Decimal string in unit.  The `number` must be either an integer or have
 			 * a single decimal point with at least one preceeding characters.  Thus: 0.001, 1.0000, 12
 			 * and 12.100 are all valid.  But .1 is invalid (required 0.1).

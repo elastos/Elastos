@@ -209,6 +209,12 @@ namespace Elastos {
 			 */
 			virtual void FlushData() = 0;
 
+			/**
+			 *
+			 * @param level can be value of: "trace", "debug", "info", "warning", "error", "critical", "off"
+			 */
+			virtual void SetLogLevel(const std::string &level) = 0;
+
 		};
 
 	}

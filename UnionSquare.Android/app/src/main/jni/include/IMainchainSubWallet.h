@@ -553,6 +553,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
 			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "Budgets": [{"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}],
 			 *    "Recipient": "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", // address
 			 * }
@@ -583,6 +584,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4", // Owner DID public key
 			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "Budgets": [                 // same as mention on method ProposalOwnerDigest()
 			 *      {"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}
 			 *    ],
@@ -615,6 +617,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4", // Owner DID public key
 			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "Budgets": [                 // same as mention on method ProposalOwnerDigest()
 			 *      {"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}
 			 *    ],
@@ -644,6 +647,7 @@ namespace Elastos {
 			 *   "ProposalHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
 			 *   "VoteResult": 1,    // approve = 0, reject = 1, abstain = 2
 			 *   "OpinionHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *   "OpinionData": "", // Optional, string format, limit 1 Mbytes
 			 *   "DID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY", // did of CR council member
 			 * }
 			 *
@@ -659,6 +663,7 @@ namespace Elastos {
 			 *   "ProposalHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
 			 *   "VoteResult": 1,    // approve = 0, reject = 1, abstain = 2
 			 *   "OpinionHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *   "OpinionData": "", // Optional, string format, limit 1 Mbytes
 			 *   "DID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY", // did of CR council member's did
 			 *   // signature of CR council member
 			 *   "Signature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76"
@@ -681,6 +686,7 @@ namespace Elastos {
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageData": "", // Optional, string format, limit 800 Kbytes
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -698,6 +704,7 @@ namespace Elastos {
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageData": "", // Optional, string format, limit 800 Kbytes
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -716,6 +723,7 @@ namespace Elastos {
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageData": "", // Optional, string format, limit 800 Kbytes
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -725,6 +733,7 @@ namespace Elastos {
 			 *   "NewOwnerSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
 			 *   "Type": 0, // common = 0, progress = 1, rejected = 2, terminated = 3, changeOwner = 4, finalized = 5
 			 *   "SecretaryGeneralOpinionHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "SecretaryGeneralOpinionData": "", // Optional, string format, limit 200 Kbytes
 			 * }
 			 *
 			 * @return Digest of payload
@@ -739,6 +748,7 @@ namespace Elastos {
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageData": "", // Optional, string format, limit 800 Kbytes
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -748,6 +758,7 @@ namespace Elastos {
 			 *   "NewOwnerSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
 			 *   "Type": 0, // common = 0, progress = 1, rejected = 2, terminated = 3, changeOwner = 4, finalized = 5
 			 *   "SecretaryGeneralOpinionHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "SecretaryGeneralOpinionData": "", // Optional, string format, limit 200 Kbytes
 			 *   "SecretaryGeneralSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109"
 			 * }
 			 *
@@ -766,6 +777,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
 			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "SecretaryGeneralPublicKey": "...",
 			 *    "SecretaryGeneralDID": "...",
 			 * }
@@ -780,6 +792,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
 			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "SecretaryGeneralPublicKey": "...",
 			 *    "SecretaryGeneralDID": "...",
 			 *    "Signature": "...",
@@ -797,6 +810,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
 			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "SecretaryGeneralPublicKey": "...",
 			 *    "SecretaryGeneralDID": "...",
 			 *    "Signature": "...",
@@ -820,6 +834,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "...",
 			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "TargetProposalHash": "...",
 			 *    "NewRecipient": "...",
 			 *    "NewOwnerPublicKey": "...",
@@ -834,6 +849,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "...",
 			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "TargetProposalHash": "...",
 			 *    "NewRecipient": "...",
 			 *    "NewOwnerPublicKey": "...",
@@ -851,6 +867,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "...",
 			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "TargetProposalHash": "...",
 			 *    "NewRecipient": "...",
 			 *    "NewOwnerPublicKey": "...",
@@ -874,6 +891,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "...",
 			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "TargetProposalHash": "...",
 			 * }
 			 * @return
@@ -886,6 +904,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "...",
 			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "TargetProposalHash": "...",
 			 *    "Signature": "...",
 			 *    "CRCouncilMemberDID": "...",
@@ -900,6 +919,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "...",
 			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "TargetProposalHash": "...",
 			 *    "Signature": "...",
 			 *    "CRCouncilMemberDID": "...",
