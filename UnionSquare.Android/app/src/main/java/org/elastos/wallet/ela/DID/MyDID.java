@@ -36,6 +36,7 @@ import org.elastos.did.Issuer;
 import org.elastos.did.VerifiableCredential;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.wallet.ela.DID.adapter.MyDIDAdapter;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
@@ -405,6 +406,17 @@ public class MyDID {
                if (vc1 != null) {
                    didStore.deleteCredential(did, didurl);
                }*/
+
+    public boolean isCurrentCredential(String fromJson) {
+        try {
+            VerifiableCredential vcFrom = VerifiableCredential.fromJson(fromJson);
+            return vcFrom.getId().getDid().toString().equals(did.toString());
+        } catch (MalformedCredentialException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean restoreCredential(String fromJson, String pwd, Date expires) {
 
         try {

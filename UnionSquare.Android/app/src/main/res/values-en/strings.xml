@@ -825,4 +825,5 @@
     <string name="certificateagain">Re-verify</string>
     <string name="qrcodeexp">QR code has expired</string>
     <string name="createlocalcredencial">Create Local Credentials</string>
+    <string name="credencialnotmatch">凭证文件不匹配</string>
 </resources>

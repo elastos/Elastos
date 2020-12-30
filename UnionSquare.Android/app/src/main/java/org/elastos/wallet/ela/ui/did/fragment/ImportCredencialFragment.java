@@ -175,11 +175,15 @@ public class ImportCredencialFragment extends BaseFragment implements NewBaseVie
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "readFile":
+                CommmonStringEntity entity = (CommmonStringEntity) baseEntity;
+                credentialJson = entity.getData();
+                if (!getMyDID().isCurrentCredential(credentialJson)) {
+                    showToastMessage(getString(R.string.credencialnotmatch));
+                    break;
+                }
                 new DialogUtil().showWarmPrompt1(getBaseActivity(), getString(R.string.covercredencial), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        CommmonStringEntity entity = (CommmonStringEntity) baseEntity;
-                        credentialJson = entity.getData();
                         //输入密码
                         Intent intent = new Intent(getActivity(), VertifyPwdActivity.class);
                         intent.putExtra("walletId", wallet.getWalletId());
