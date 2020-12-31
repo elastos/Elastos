@@ -453,8 +453,15 @@ namespace Elastos {
 			nlohmann::json j = GetAllTransactionCommon(!txid.empty(),
 				[this, &wallet]() {
 					return wallet->GetCoinbaseTransactionCount(true);
-				}, [this, &wallet, &start, &count]() {
-					return wallet->GetCoinbaseTransactions(start, count, true);
+				}, [this, &wallet, &start, &count, &txid]() {
+					std::vector<TransactionPtr> txs;
+					if (!txid.empty()) {
+						TransactionPtr tx = wallet->TransactionForHash(uint256(txid));
+						txs.push_back(tx);
+					} else {
+						txs = wallet->GetCoinbaseTransactions(start, count, true);
+					}
+					return txs;
 				});
 
 			ArgInfo("r => {}", j.dump());
@@ -471,10 +478,17 @@ namespace Elastos {
 
 			nlohmann::json j = GetAllTransactionCommon(!txID.empty(),
 				[this, &wallet]() {
-				return wallet->GetCoinbaseTransactionCount();
-			}, [this, &wallet, &start, &count]() {
-				return wallet->GetCoinbaseTransactions(start, count);
-			});
+					return wallet->GetCoinbaseTransactionCount();
+				}, [this, &wallet, &start, &count, &txID]() {
+					std::vector<TransactionPtr> txs;
+					if (!txID.empty()) {
+						TransactionPtr tx = wallet->TransactionForHash(uint256(txID));
+						txs.push_back(tx);
+					} else {
+						txs = wallet->GetCoinbaseTransactions(start, count);
+					}
+					return txs;
+				});
 
 			ArgInfo("r => {}", j.dump());
 			return j;
