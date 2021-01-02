@@ -404,8 +404,8 @@ namespace Elastos {
 						}
 
 						if (ContainsTx(tx)) {
-//							tx->SetTimestamp(timestamp);
-//							tx->SetBlockHeight(blockHeight);
+							tx->SetTimestamp(timestamp);
+							tx->SetBlockHeight(blockHeight);
 							hashes.push_back(txHashes[i]);
 
 							if (needUpdate)
@@ -596,7 +596,8 @@ namespace Elastos {
 				auto it = txmap.find(in->TxHash());
 				if (it != txmap.end()) {
 					OutputPtr o = it->second->OutputOfIndex(in->Index());
-					in->FixDetail(o->Amount(), *o->Addr());
+					if (o)
+						in->FixDetail(o->Amount(), *o->Addr());
 				}
 			}
 
