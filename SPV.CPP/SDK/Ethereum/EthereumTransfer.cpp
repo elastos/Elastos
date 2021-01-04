@@ -24,6 +24,7 @@
  * SOFTWARE.
  */
 
+#include <Common/Log.h>
 #include "EthereumTransfer.h"
 #include "EthereumEWM.h"
 
@@ -157,6 +158,73 @@ namespace Elastos {
 				desc = GetCString(errorDescription);
 
 			return desc;
+		}
+
+		nlohmann::json EthereumTransfer::ToJson() const {
+			nlohmann::json j;
+			j["IsConfirmed"] = isConfirmed();
+			j["IsSubmitted"] = isSubmitted();
+			j["IsErrored"] = isErrored();
+			j["ErrorDesc"] = isErrored() ? getErrorDescription() : "";
+			j["Hash"] = getIdentifier();
+			j["OrigTxHash"] = getOriginationTransactionHash();
+			j["Amount"] = getAmount(EthereumAmount::ETHER_WEI);
+			j["Timestamp"] = getBlockTimestamp();
+			j["Fee"] = getFee(EthereumAmount::ETHER_WEI);
+			j["Confirmations"] = getBlockConfirmations();
+			j["GasPrice"] = getGasPrice();
+			j["GasLimit"] = getGasLimit();
+			j["GasUsed"] = getGasUsed();
+			j["BlockNumber"] = getBlockNumber();
+			j["SourceAddress"] = getSourceAddress();
+			j["TargetAddress"] = getTargetAddress();
+			j["Nonce"] = getNonce();
+
+			BREthereumTransfer rawTransfer = getRaw();
+			BREthereumTransaction rawTx = transferGetBasisTransaction(rawTransfer);
+
+			if (rawTx != NULL) {
+				BREthereumContractFunction function = contractLookupFunctionForEncoding(contractERC20, transactionGetData( rawTx));
+				if (NULL != function && functionERC20Transfer == function) {
+					BRCoreParseStatus status;
+					UInt256 funcAmount = functionERC20TransferDecodeAmount(function, transactionGetData(rawTx), &status);
+					char *funcAddr = functionERC20TransferDecodeAddress(function, transactionGetData(rawTx));
+					char *funcAmt = coerceString(funcAmount, 10);
+					j["Token"] = getTargetAddress();
+					j["TokenFunction"] = "ERC20Transfer";
+					j["TokenAmount"] = funcAmt;
+					j["TokenAddress"] = funcAddr;
+					free(funcAmt);
+					free(funcAddr);
+				}
+			} else {
+				BREthereumLog rawLog = transferGetBasisLog(rawTransfer);
+				if (rawLog == nullptr) {
+					Log::warn("Transaction & Log is null");
+				} else {
+					BREthereumHash logHash = logGetHash (rawLog);
+					char *logHashString = hashAsString(logHash);
+
+					BREthereumAddress logAddress = logGetAddress(rawLog);
+					char *logAddressString = addressGetEncodedString(&logAddress, 1);
+
+					nlohmann::json topicArray = nlohmann::json::array();
+					size_t topicCount = logGetTopicsCount(rawLog);
+					for (size_t i = 0; i < topicCount; ++i) {
+						BREthereumLogTopic topic = logGetTopic(rawLog, i);
+						BREthereumLogTopicString topicString = logTopicAsString (topic);
+						topicArray.push_back(topicString.chars);
+					}
+
+					j["LogHash"] = logHashString;
+					j["LogAddress"] = logAddressString;
+					j["LogTopics"] = topicArray;
+
+					free(logHashString);
+					free(logAddressString);
+				}
+			}
+			return j;
 		}
 
 	}

@@ -153,25 +153,8 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 						const EthereumTransferPtr &transfer = transfers[i];
 						std::string transferID = GetTransferID(transfer);
 						if (txid.empty() || txid == transferID || txid == transfer->getIdentifier()) {
-							nlohmann::json jtx;
+							nlohmann::json jtx = transfer->ToJson();
 							jtx["ID"] = transferID;
-							jtx["IsConfirmed"] = transfer->isConfirmed();
-							jtx["IsSubmitted"] = transfer->isSubmitted();
-							jtx["IsErrored"] = transfer->isErrored();
-							jtx["ErrorDesc"] = transfer->isErrored() ? transfer->getErrorDescription() : "";
-							jtx["Hash"] = transfer->getIdentifier();
-							jtx["OrigTxHash"] = transfer->getOriginationTransactionHash();
-							jtx["Amount"] = transfer->getAmount(EthereumAmount::ETHER_WEI);
-							jtx["Timestamp"] = transfer->getBlockTimestamp();
-							jtx["Fee"] = transfer->getFee(EthereumAmount::ETHER_WEI);
-							jtx["Confirmations"] = transfer->getBlockConfirmations();
-							jtx["GasPrice"] = transfer->getGasPrice();
-							jtx["GasLimit"] = transfer->getGasLimit();
-							jtx["GasUsed"] = transfer->getGasUsed();
-							jtx["BlockNumber"] = transfer->getBlockNumber();
-							jtx["SourceAddress"] = transfer->getSourceAddress();
-							jtx["TargetAddress"] = transfer->getTargetAddress();
-							jtx["Nonce"] = transfer->getNonce();
 							txList.push_back(jtx);
 
 							if (!txid.empty())
@@ -1049,69 +1032,8 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			for (size_t i = start; i < transfers.size() && i - start < count; ++i) {
 				std::string transferID = GetTransferID(transfers[i]);
 				if (txid.empty() || txid == transferID || txid == transfers[i]->getIdentifier()) {
-					jtx["ID"] = transferID;
-					jtx["IsConfirmed"] = transfers[i]->isConfirmed();
-					jtx["IsSubmitted"] = transfers[i]->isSubmitted();
-					jtx["IsErrored"] = transfers[i]->isErrored();
-					jtx["ErrorDesc"] = transfers[i]->isErrored() ? transfers[i]->getErrorDescription() : "";
-					jtx["Hash"] = transfers[i]->getIdentifier();
-					jtx["OrigTxHash"] = transfers[i]->getOriginationTransactionHash();
-					jtx["Amount"] = transfers[i]->getAmount(EthereumAmount::ETHER_WEI);
-					jtx["Timestamp"] = transfers[i]->getBlockTimestamp();
-					jtx["Fee"] = transfers[i]->getFee(EthereumAmount::ETHER_WEI);
-					jtx["Confirmations"] = transfers[i]->getBlockConfirmations();
-					jtx["GasPrice"] = transfers[i]->getGasPrice();
-					jtx["GasLimit"] = transfers[i]->getGasLimit();
-					jtx["GasUsed"] = transfers[i]->getGasUsed();
-					jtx["BlockNumber"] = transfers[i]->getBlockNumber();
-					jtx["SourceAddress"] = transfers[i]->getSourceAddress();
-					jtx["TargetAddress"] = transfers[i]->getTargetAddress();
-					jtx["Nonce"] = transfers[i]->getNonce();
-
-					BREthereumTransfer rawTransfer = transfers[i]->getRaw();
-					BREthereumTransaction rawTx = transferGetBasisTransaction(rawTransfer);
-
-					if (rawTx != NULL) {
-						BREthereumContractFunction function = contractLookupFunctionForEncoding(contractERC20, transactionGetData( rawTx));
-						if (NULL != function && functionERC20Transfer == function) {
-							BRCoreParseStatus status;
-							UInt256 funcAmount = functionERC20TransferDecodeAmount(function, transactionGetData(rawTx), &status);
-							char *funcAddr = functionERC20TransferDecodeAddress(function, transactionGetData(rawTx));
-							char *funcAmt = coerceString(funcAmount, 10);
-							jtx["Token"] = transfers[i]->getTargetAddress();
-							jtx["TokenFunction"] = "ERC20Transfer";
-							jtx["TokenAmount"] = funcAmt;
-							jtx["TokenAddress"] = funcAddr;
-							free(funcAmt);
-							free(funcAddr);
-						}
-					} else {
-						BREthereumLog rawLog = transferGetBasisLog(rawTransfer);
-						if (rawLog == nullptr) {
-							Log::warn("Transaction & Log is null");
-						} else {
-							BREthereumHash logHash = logGetHash (rawLog);
-							char *logHashString = hashAsString(logHash);
-
-							BREthereumAddress logAddress = logGetAddress(rawLog);
-							char *logAddressString = addressGetEncodedString(&logAddress, 1);
-
-							nlohmann::json topicArray = nlohmann::json::array();
-							size_t topicCount = logGetTopicsCount(rawLog);
-							for (size_t i = 0; i < topicCount; ++i) {
-								BREthereumLogTopic topic = logGetTopic(rawLog, i);
-								BREthereumLogTopicString topicString = logTopicAsString (topic);
-								topicArray.push_back(topicString.chars);
-							}
-
-							jtx["LogHash"] = logHashString;
-							jtx["LogAddress"] = logAddressString;
-							jtx["LogTopics"] = topicArray;
-
-							free(logHashString);
-							free(logAddressString);
-						}
-					}
+					jtx = transfers[i]->ToJson();
+					jtx ["ID"] = transferID;
 					txList.push_back(jtx);
 
 					if (!txid.empty())

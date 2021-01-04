@@ -31,6 +31,7 @@
 
 #include <ethereum/ewm/BREthereumTransfer.h>
 #include <boost/shared_ptr.hpp>
+#include <intermediates/include/nlohmann/json.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -87,6 +88,8 @@ namespace Elastos {
 			uint64_t getBlockConfirmations() const;
 
 			std::string getErrorDescription() const;
+
+			nlohmann::json ToJson() const;
 
 		};
 
