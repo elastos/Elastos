@@ -431,20 +431,27 @@ namespace Elastos {
 		}
 
 		bool TxTable::GetAllOldTx(std::vector<TxOldEntity> &entities) const {
-			std::string sql = "SELECT " + _oldTxHash + "," + _oldBuff + "," + _oldBlockHeight + "," +
-							  _oldTimestamp + "," + _oldiso + " FROM " + _tableNameNormal + ";";
-			if (!GetOldTxCommon(sql, entities))
-				Log::error("get old normal tx fail");
+			std::string sql;
+			if (ContainTable(_tableNameNormal)) {
+				sql = "SELECT " + _oldTxHash + "," + _oldBuff + "," + _oldBlockHeight + "," +
+								  _oldTimestamp + "," + _oldiso + " FROM " + _tableNameNormal + ";";
+				if (!GetOldTxCommon(sql, entities))
+					Log::error("get old normal tx fail");
+			}
 
-			sql = "SELECT " + _oldTxHash + "," + _oldBuff + "," + _oldBlockHeight + "," +
-				  _oldTimestamp + "," + _oldiso + " FROM " + _tableNameCoinbase + ";";
-			if (!GetOldTxCommon(sql, entities))
-				Log::error("get old coinbase tx fail");
+			if (ContainTable(_tableNameCoinbase)) {
+				sql = "SELECT " + _oldTxHash + "," + _oldBuff + "," + _oldBlockHeight + "," +
+					  _oldTimestamp + "," + _oldiso + " FROM " + _tableNameCoinbase + ";";
+				if (!GetOldTxCommon(sql, entities))
+					Log::error("get old coinbase tx fail");
+			}
 
-			sql = "SELECT " + _oldTxHash + "," + _oldBuff + "," + _oldBlockHeight + "," +
-				  _oldTimestamp + "," + _oldiso + " FROM " + _tableNamePending + ";";
-			if (!GetOldTxCommon(sql, entities))
-				Log::error("get old pending tx fail");
+			if (ContainTable(_tableNamePending)) {
+				sql = "SELECT " + _oldTxHash + "," + _oldBuff + "," + _oldBlockHeight + "," +
+					  _oldTimestamp + "," + _oldiso + " FROM " + _tableNamePending + ";";
+				if (!GetOldTxCommon(sql, entities))
+					Log::error("get old pending tx fail");
+			}
 
 			return true;
 		}
@@ -462,7 +469,7 @@ namespace Elastos {
 			};
 
 			for (std::string &table : tables) {
-				std::string sql = "DROP TABLE " + table + ";";
+				std::string sql = "DROP TABLE IF EXIST " + table + ";";
 				if (!_sqlite->exec(sql, nullptr, nullptr)) {
 					r = false;
 					Log::error("exec sql: {}", sql);
