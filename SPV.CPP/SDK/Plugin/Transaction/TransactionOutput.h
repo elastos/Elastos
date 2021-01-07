@@ -22,6 +22,8 @@ namespace Elastos {
 			enum Type {
 				Default    = 0x00,
 				VoteOutput = 0x01,
+				Mapping    = 0x02,
+				CrossChain = 0x03
 			};
 
 		public:

@@ -49,6 +49,7 @@
 #include <map>
 #include <ethereum/base/BREthereumAddress.h>
 #include <ethereum/base/BREthereumLogic.h>
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadCrossChain.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -78,6 +79,7 @@ namespace Elastos {
 			ArgInfo("sideChainAddr: {}", sideChainAddress);
 			ArgInfo("memo: {}", memo);
 
+			uint8_t payloadVersion = TransferCrossChainVersion;
 			ErrorChecker::CheckBigIntAmount(amount);
 			ErrorChecker::CheckParam(sideChainID == CHAINID_MAINCHAIN, Error::InvalidArgument, "can not be mainChain");
 
@@ -91,16 +93,23 @@ namespace Elastos {
 				ErrorChecker::CheckParam(addressValidateString(sideChainAddress.c_str()) != ETHEREUM_BOOLEAN_TRUE, Error::Address, "invalid ethsc address");
 			}
 
-			TransferInfo info(sideChainAddress, 0, value);
-			PayloadPtr payload = PayloadPtr(new TransferCrossChainAsset({info}));
-
-			ChainConfigPtr configPtr =  _parent->GetChainConfig(sideChainID);
+			PayloadPtr payload;
 			OutputArray outputs;
-			Address receiveAddr(configPtr->GenesisAddress());
-			outputs.emplace_back(OutputPtr(new TransactionOutput(value + DEPOSIT_OR_WITHDRAW_FEE, receiveAddr)));
-			AddressPtr fromAddr(new Address(fromAddress));
+			Address receiveAddr(_parent->GetChainConfig(sideChainID)->GenesisAddress());
 
+			if (payloadVersion == TransferCrossChainVersion) {
+				TransferInfo info(sideChainAddress, 0, value);
+				payload = PayloadPtr(new TransferCrossChainAsset({info}));
+				outputs.emplace_back(OutputPtr(new TransactionOutput(value + DEPOSIT_OR_WITHDRAW_FEE, receiveAddr)));
+			} else if (payloadVersion == TransferCrossChainVersionV1) {
+				payload = PayloadPtr(new TransferCrossChainAsset());
+				OutputPayloadPtr outputPayload(new PayloadCrossChain(CrossChainOutputVersion, sideChainAddress, value, bytes_t()));
+				outputs.emplace_back(OutputPtr(new TransactionOutput(value + DEPOSIT_OR_WITHDRAW_FEE, receiveAddr, Asset::GetELAAssetID(), TransactionOutput::CrossChain, outputPayload)));
+			}
+
+			AddressPtr fromAddr(new Address(fromAddress));
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::transferCrossChainAsset, payload, fromAddr, outputs, memo);
+			tx->SetPayloadVersion(payloadVersion);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

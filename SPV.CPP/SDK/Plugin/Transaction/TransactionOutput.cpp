@@ -6,11 +6,11 @@
 
 #include <Common/Utils.h>
 #include <Common/Log.h>
-#include <WalletCore/Key.h>
 #include <Plugin/Transaction/Asset.h>
 #include <Plugin/Transaction/Transaction.h>
 #include <Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
 #include <Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadCrossChain.h>
 
 #include <iostream>
 #include <cstring>
@@ -228,6 +228,8 @@ namespace Elastos {
 				case VoteOutput:
 					payload = OutputPayloadPtr(new PayloadVote());
 					break;
+				case CrossChain:
+					payload = OutputPayloadPtr(new PayloadCrossChain());
 
 				default:
 					payload = nullptr;

@@ -5,7 +5,6 @@
 #include "TransferCrossChainAsset.h"
 #include <Common/Log.h>
 #include <WalletCore/Base58.h>
-#include <WalletCore/Key.h>
 #include <WalletCore/Address.h>
 
 namespace Elastos {
@@ -35,17 +34,25 @@ namespace Elastos {
 		nlohmann::json TransferInfo::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
-			j["CrossChainAddress"] = _crossChainAddress;
-			j["OutputIndex"] = _outputIndex;
-			j["CrossChainAmount"] = _crossChainAmount.getDec();
+			if (version == TransferCrossChainVersion) {
+				j["CrossChainAddress"] = _crossChainAddress;
+				j["OutputIndex"] = _outputIndex;
+				j["CrossChainAmount"] = _crossChainAmount.getDec();
+			} else if (version == TransferCrossChainVersionV1) {
+
+			}
 
 			return j;
 		}
 
 		void TransferInfo::FromJson(const nlohmann::json &j, uint8_t version) {
-			_crossChainAddress = j["CrossChainAddress"].get<std::string>();
-			_outputIndex = j["OutputIndex"].get<uint16_t>();
-			_crossChainAmount.setDec(j["CrossChainAmount"].get<std::string>());
+			if (version == TransferCrossChainVersion) {
+				_crossChainAddress = j["CrossChainAddress"].get<std::string>();
+				_outputIndex = j["OutputIndex"].get<uint16_t>();
+				_crossChainAmount.setDec(j["CrossChainAmount"].get<std::string>());
+			} else if (version == TransferCrossChainVersionV1) {
+
+			}
 		}
 
 		bool TransferInfo::operator==(const TransferInfo &info) const {
@@ -71,15 +78,19 @@ namespace Elastos {
 		}
 
 		bool TransferCrossChainAsset::IsValid(uint8_t version) const {
-			if (_info.empty())
-				return false;
-
-			for (size_t i = 0; i < _info.size(); ++i) {
-				if (!Address(_info[i]._crossChainAddress).Valid())
+			if (version == TransferCrossChainVersion) {
+				if (_info.empty())
 					return false;
 
-				if (_info[i]._crossChainAmount == 0)
-					return false;
+				for (size_t i = 0; i < _info.size(); ++i) {
+					if (!Address(_info[i]._crossChainAddress).Valid())
+						return false;
+
+					if (_info[i]._crossChainAmount == 0)
+						return false;
+				}
+			} else if (version == TransferCrossChainVersionV1) {
+
 			}
 
 			return true;
@@ -91,58 +102,68 @@ namespace Elastos {
 
 		size_t TransferCrossChainAsset::EstimateSize(uint8_t version) const {
 			size_t size = 0;
-			ByteStream stream;
+			if (version == TransferCrossChainVersion) {
+				ByteStream stream;
 
-			size += stream.WriteVarUint(_info.size());
-			for (size_t i = 0; i < _info.size(); ++i) {
-				size += stream.WriteVarUint(_info[i]._crossChainAddress.size());
-				size += _info[i]._crossChainAddress.size();
-				size += stream.WriteVarUint(_info[i]._outputIndex);
-				size += sizeof(_info[i]._outputIndex);
+				size += stream.WriteVarUint(_info.size());
+				for (size_t i = 0; i < _info.size(); ++i) {
+					size += stream.WriteVarUint(_info[i]._crossChainAddress.size());
+					size += _info[i]._crossChainAddress.size();
+					size += stream.WriteVarUint(_info[i]._outputIndex);
+					size += sizeof(_info[i]._outputIndex);
+				}
+			} else if (version == TransferCrossChainVersionV1) {
+
 			}
 
 			return size;
 		}
 
 		void TransferCrossChainAsset::Serialize(ByteStream &ostream, uint8_t version) const {
-			size_t len = _info.size();
-			ostream.WriteVarUint((uint64_t)len);
-			for (size_t i = 0; i < _info.size(); ++i) {
-				ostream.WriteVarString(_info[i]._crossChainAddress);
-				ostream.WriteVarUint(_info[i]._outputIndex);
-				ostream.WriteUint64(_info[i]._crossChainAmount.getUint64());
+			if (version == TransferCrossChainVersion) {
+				size_t len = _info.size();
+				ostream.WriteVarUint((uint64_t) len);
+				for (size_t i = 0; i < _info.size(); ++i) {
+					ostream.WriteVarString(_info[i]._crossChainAddress);
+					ostream.WriteVarUint(_info[i]._outputIndex);
+					ostream.WriteUint64(_info[i]._crossChainAmount.getUint64());
+				}
+			} else if (version == TransferCrossChainVersionV1) {
 			}
 		}
 
 		bool TransferCrossChainAsset::Deserialize(const ByteStream &istream, uint8_t version) {
-			uint64_t len = 0;
-			if (!istream.ReadVarUint(len)) {
-				Log::error("Payload transfer cross chain asset deserialize fail");
-				return false;
-			}
-
-			TransferInfo info;
-			for (uint64_t i = 0; i < len; ++i) {
-				if (!istream.ReadVarString(info._crossChainAddress)) {
-					Log::error("Payload transfer cross chain asset deserialize cross chain address fail");
+			if (version == TransferCrossChainVersion) {
+				uint64_t len = 0;
+				if (!istream.ReadVarUint(len)) {
+					Log::error("Payload transfer cross chain asset deserialize fail");
 					return false;
 				}
 
-				uint64_t index;
-				if (!istream.ReadVarUint(index)) {
-					Log::error("Payload transfer cross chain asset deserialize output index fail");
-					return false;
-				}
-				info._outputIndex = (uint16_t) index;
+				TransferInfo info;
+				for (uint64_t i = 0; i < len; ++i) {
+					if (!istream.ReadVarString(info._crossChainAddress)) {
+						Log::error("Payload transfer cross chain asset deserialize cross chain address fail");
+						return false;
+					}
 
-				uint64_t amount;
-				if (!istream.ReadUint64(amount)) {
-					Log::error("Payload transfer cross chain asset deserialize cross chain amount fail");
-					return false;
-				}
-				info._crossChainAmount.setUint64(amount);
+					uint64_t index;
+					if (!istream.ReadVarUint(index)) {
+						Log::error("Payload transfer cross chain asset deserialize output index fail");
+						return false;
+					}
+					info._outputIndex = (uint16_t) index;
 
-				_info.push_back(info);
+					uint64_t amount;
+					if (!istream.ReadUint64(amount)) {
+						Log::error("Payload transfer cross chain asset deserialize cross chain amount fail");
+						return false;
+					}
+					info._crossChainAmount.setUint64(amount);
+
+					_info.push_back(info);
+				}
+			} else if (version == TransferCrossChainVersionV1) {
 			}
 
 			return true;
@@ -151,24 +172,30 @@ namespace Elastos {
 		nlohmann::json TransferCrossChainAsset::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
-			for (size_t i = 0; i < _info.size(); ++i) {
-				j.push_back(_info[i].ToJson(version));
+			if (version == TransferCrossChainVersion) {
+				for (size_t i = 0; i < _info.size(); ++i) {
+					j.push_back(_info[i].ToJson(version));
+				}
+			} else if (version == TransferCrossChainVersionV1) {
 			}
 
 			return j;
 		}
 
 		void TransferCrossChainAsset::FromJson(const nlohmann::json &j, uint8_t version) {
-			if (!j.is_array()) {
-				Log::error("cross chain info json should be array");
-				return;
-			}
+			if (version == TransferCrossChainVersion) {
+				if (!j.is_array()) {
+					Log::error("cross chain info json should be array");
+					return;
+				}
 
-			_info.clear();
-			for (nlohmann::json::const_iterator it = j.cbegin(); it != j.cend(); ++it) {
-				TransferInfo info;
-				info.FromJson(*it, version);
-				_info.push_back(info);
+				_info.clear();
+				for (nlohmann::json::const_iterator it = j.cbegin(); it != j.cend(); ++it) {
+					TransferInfo info;
+					info.FromJson(*it, version);
+					_info.push_back(info);
+				}
+			} else if (version == TransferCrossChainVersionV1) {
 			}
 		}
 
@@ -192,7 +219,11 @@ namespace Elastos {
 		bool TransferCrossChainAsset::Equal(const IPayload &payload, uint8_t version) const {
 			try {
 				const TransferCrossChainAsset &p = dynamic_cast<const TransferCrossChainAsset &>(payload);
-				return _info == p._info;
+				if (version == TransferCrossChainVersion) {
+					return _info == p._info;
+				} else if (version == TransferCrossChainVersionV1) {
+					return true;
+				}
 			} catch (const std::bad_cast &e) {
 				Log::error("payload is not instance of TransferCrossChainAsset");
 			}

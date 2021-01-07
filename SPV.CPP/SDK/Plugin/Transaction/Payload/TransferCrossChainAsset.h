@@ -15,6 +15,9 @@ namespace Elastos {
 
 		class TransferCrossChainAsset;
 
+#define TransferCrossChainVersion 0x00
+#define TransferCrossChainVersionV1 0x01
+
 		class TransferInfo {
 		public:
 			TransferInfo();

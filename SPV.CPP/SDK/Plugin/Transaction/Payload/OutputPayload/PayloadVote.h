@@ -119,7 +119,7 @@ namespace Elastos {
 
 			virtual IOutputPayload &operator=(const IOutputPayload &payload);
 
-			virtual PayloadVote &operator=(const PayloadVote &payload);
+			PayloadVote &operator=(const PayloadVote &payload);
 
 			virtual bool operator==(const IOutputPayload &payload) const;
 		private:
