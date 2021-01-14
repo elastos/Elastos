@@ -52,8 +52,6 @@ namespace Elastos {
 
 			~AssetDataStore();
 
-			virtual void InitializeTable();
-
 			bool PutAsset(const std::string &iso, const AssetEntity &asset);
 
 			bool DeleteAsset(const std::string &assetID);

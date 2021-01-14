@@ -72,6 +72,7 @@ namespace Elastos {
 						const WalletPtr &wallet,
 						time_t earliestKeyTime,
 						uint32_t reconnectSeconds,
+						int syncMode,
 						const std::vector<MerkleBlockPtr> &blocks,
 						const std::vector<PeerInfo> &peers,
 						const std::set<PeerInfo> &blackPeers,
@@ -82,6 +83,8 @@ namespace Elastos {
 			~PeerManager();
 
 			void SetWallet(const WalletPtr &wallet);
+
+			void SetSyncMode(int mode);
 			/**
 			* Connect to bitcoin peer-to-peer network (also call this whenever networkIsReachable()
 			* status changes)
@@ -289,6 +292,7 @@ namespace Elastos {
 			std::vector<PeerPtr> _connectedPeers;
 			PeerPtr _downloadPeer;
 
+			int _syncMode;
 			mutable std::string _downloadPeerName;
 			time_t _keepAliveTimestamp, _earliestKeyTime;
 			uint32_t _reconnectSeconds, _syncStartHeight, _filterUpdateHeight, _estimatedHeight;

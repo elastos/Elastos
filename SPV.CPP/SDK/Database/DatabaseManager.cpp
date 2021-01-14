@@ -37,7 +37,7 @@ namespace Elastos {
 			_utxoStore(&_sqlite),
 			_addressUsed(&_sqlite),
 			_txTable(&_sqlite),
-			_dataMigrate(&_sqlite)
+			_settings(&_sqlite)
 		{
 		}
 
@@ -51,8 +51,8 @@ namespace Elastos {
 			_addressUsed.DeleteAll();
 		}
 
-		bool DatabaseManager::TxTableDataMigrateDone() {
-			return _dataMigrate.IsDataMigrateDone(_txTable.GetTableName());
+		bool DatabaseManager::TxTableDataMigrateDone() const {
+			return _settings.GetSetting(_txTable.GetTableName() + "Migrate") == 1;
 		}
 
 		bool DatabaseManager::SetTxTableDataMigrateDone() {
@@ -60,7 +60,7 @@ namespace Elastos {
 
 			_sqlite.BeginTransaction(IMMEDIATE);
 
-			if (_dataMigrate.SetDataMigrateDoneInner(_txTable.GetTableName())) {
+			if (_settings.PutSettingInner(_txTable.GetTableName() + "Migrate", 1)) {
 				if (_txTable.RemoveOldTxTableInner()) {
 					r = true;
 				} else {
@@ -73,6 +73,14 @@ namespace Elastos {
 			_sqlite.EndTransaction();
 
 			return r;
+		}
+
+		int DatabaseManager::GetSyncMode() const {
+			return _settings.GetSetting("syncMode");
+		}
+
+		bool DatabaseManager::SetSyncMode(int mode) {
+			return _settings.PutSetting("syncMode", mode);
 		}
 
 		bool DatabaseManager::ContainTx(const std::string &hash) const {
@@ -256,10 +264,6 @@ namespace Elastos {
 			return _addressUsed.DeleteAll();
 		}
 
-		bool DatabaseManager::TxTableDataMigrateDone() const {
-			return _dataMigrate.IsDataMigrateDone(_txTable.GetTableName());
-		}
-
 		void DatabaseManager::flush() {
 			_peerDataSource.flush();
 			_peerBlackList.flush();
@@ -268,7 +272,7 @@ namespace Elastos {
 			_utxoStore.flush();
 			_addressUsed.flush();
 			_txTable.flush();
-			_dataMigrate.flush();
+			_settings.flush();
 		}
 
 	} // namespace ElaWallet

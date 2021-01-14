@@ -35,15 +35,17 @@ namespace Elastos {
 			PeerEntity() :
 				id(0),
 				port(0),
-				timeStamp(0)
+				timeStamp(0),
+				speed(0)
 			{
 			}
 
-			PeerEntity(long i, const uint128 &addr, uint16_t p, uint64_t ts) :
+			PeerEntity(long i, const uint128 &addr, uint16_t p, uint64_t ts, int s) :
 				id(i),
 				address(addr),
 				port(p),
-				timeStamp(ts)
+				timeStamp(ts),
+				speed(s)
 			{
 			}
 
@@ -51,6 +53,7 @@ namespace Elastos {
 			uint128 address;
 			uint16_t port;
 			uint64_t timeStamp;
+			int speed;
 		};
 
 		class PeerDataSource : public TableBase {
@@ -59,8 +62,6 @@ namespace Elastos {
 			PeerDataSource(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
 
 			~PeerDataSource();
-
-			virtual void InitializeTable();
 
 			bool PutPeer(const PeerEntity &peerEntity);
 
@@ -83,19 +84,20 @@ namespace Elastos {
 			/*
 			 * peer table
 			 */
-			const std::string PEER_TABLE_NAME = "peerTable";
+			const std::string PEER_OLD_TABLE_NAME = "peerTable";
+			const std::string PEER_TABLE_NAME = "peersTable";
 			const std::string PEER_COLUMN_ID = "_id";
-			const std::string PEER_ADDRESS = "peerAddress";
-			const std::string PEER_PORT = "peerPort";
-			const std::string PEER_TIMESTAMP = "peerTimestamp";
-			const std::string PEER_ISO = "peerISO";
+			const std::string PEER_ADDRESS = "address";
+			const std::string PEER_PORT = "port";
+			const std::string PEER_TIMESTAMP = "timestamp";
+			const std::string PEER_SPEED = "speed";
 
-			const std::string PEER_DATABASE_CREATE = "create table if not exists " + PEER_TABLE_NAME + " (" +
-				PEER_COLUMN_ID + " integer primary key autoincrement, " +
-				PEER_ADDRESS + " blob," +
-				PEER_PORT + " integer," +
-				PEER_TIMESTAMP + " integer," +
-				PEER_ISO + " text default 'ELA');";
+			const std::string PEER_DATABASE_CREATE = "CREATE TABLE IF NOT EXISTS " + PEER_TABLE_NAME + " (" +
+				PEER_COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				PEER_ADDRESS + " BLOB," +
+				PEER_PORT + " INTEGER," +
+				PEER_TIMESTAMP + " INTEGER," +
+				PEER_SPEED + " INTEGER);";
 		};
 
 	}

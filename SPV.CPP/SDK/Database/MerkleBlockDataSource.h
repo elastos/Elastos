@@ -42,8 +42,6 @@ namespace Elastos {
 
 			~MerkleBlockDataSource();
 
-			virtual void InitializeTable();
-
 			bool PutMerkleBlock(const MerkleBlockPtr &blockPtr);
 
 			bool PutMerkleBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);

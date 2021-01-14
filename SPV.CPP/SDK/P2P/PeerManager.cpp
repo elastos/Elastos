@@ -41,15 +41,7 @@ namespace Elastos {
 		}
 
 		void PeerManager::FireSyncProgress(double progress, const PeerPtr &peer, const MerkleBlockPtr &block) {
-			struct timeval tv;
-			gettimeofday(&tv, NULL);
-
-			uint64_t now = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-			uint64_t milliseconds = now - peer->GetDownloadStartTime();
-			uint32_t bytesPerSecond = 0;
-
-			if (milliseconds != 0)
-				bytesPerSecond = peer->GetDownloadBytes() * 1000 / milliseconds;
+			uint32_t bytesPerSecond = (uint32_t) peer->CalculateDownloadSpeed();
 
 			peer->ScheduleDownloadStartTime();
 			peer->SetDownloadBytes(0);
@@ -128,6 +120,7 @@ namespace Elastos {
 								 const WalletPtr &wallet,
 								 time_t earliestKeyTime,
 								 uint32_t reconnectSeconds,
+								 int syncMode,
 								 const std::vector<MerkleBlockPtr> &blocks,
 								 const std::vector<PeerInfo> &peers,
 								 const std::set<PeerInfo> &blackPeers,
@@ -141,6 +134,7 @@ namespace Elastos {
 				_netType(netType),
 				_chainParams(params),
 
+				_syncMode(syncMode),
 				_syncSucceeded(false),
 				_enableReconnect(true),
 
@@ -214,6 +208,10 @@ namespace Elastos {
 
 		void PeerManager::SetWallet(const WalletPtr &wallet) {
 			_wallet = wallet;
+		}
+
+		void PeerManager::SetSyncMode(int mode) {
+			_syncMode = mode;
 		}
 
 		Peer::ConnectStatus PeerManager::GetConnectStatusInternal() const {
@@ -522,7 +520,7 @@ namespace Elastos {
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
 				_maxConnectCount = (addrList[0] == 0) ? PEER_MAX_CONNECTIONS : 1;
-				_fixedPeer = PeerInfo(addrList[0], port, 0, 0);
+				_fixedPeer = PeerInfo(addrList[0], port, 0, 0, 0);
 				_peers.clear();
 			}
 
@@ -813,7 +811,7 @@ namespace Elastos {
 				std::vector<uint128> addrList = AddressLookup(dnsSeeds[0]);
 				for (std::vector<uint128>::iterator addr = addrList.begin();
 					 addr != addrList.end() && (*addr) != 0; addr++) {
-					_peers.emplace_back(*addr, _chainParams->StandardPort(), now, services);
+					_peers.emplace_back(*addr, _chainParams->StandardPort(), now, services, 0);
 				}
 
 				ts.tv_sec = 0;
@@ -2032,7 +2030,7 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scopedLock(lock);
 			for (std::vector<uint128>::iterator addr = addrList.begin(); addr != addrList.end() && (*addr) != 0; addr++) {
-				_peers.emplace_back(*addr, _chainParams->StandardPort(), now, services);
+				_peers.emplace_back(*addr, _chainParams->StandardPort(), now, services, 0);
 			}
 			_dnsThreadCount--;
 		}

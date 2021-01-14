@@ -136,8 +136,6 @@ namespace Elastos {
 
 			~TxTable();
 
-			void InitializeTable() override;
-
 			const std::string &GetTableName() const;
 
 			bool ContainTx(const std::string &hash) const;

@@ -665,6 +665,11 @@ namespace Elastos {
 			_walletManager->SyncStart();
 		}
 
+		void SubWallet::SetSyncMode(int mode) {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			_walletManager->SetSyncMode(mode);
+		}
+
 		nlohmann::json SubWallet::GetBasicInfo() const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 

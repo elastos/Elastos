@@ -39,12 +39,6 @@ namespace Elastos {
 		UTXOStore::~UTXOStore() {
 		}
 
-		void UTXOStore::InitializeTable() {
-			_tableCreation = "cREATE TABLE IF NOT EXISTS " + _tableName + "(" +
-						_txHash + " TEXT NOT NULL," + _index + " INTEGER);";
-			TableBase::ExecInTransaction(_tableCreation);
-		}
-
 		bool UTXOStore::PutInternal(const UTXOEntity &entity) {
 			std::string sql("INSERT INTO " + _tableName + "(" + _txHash + "," + _index + ") VALUES (?, ?);");
 

@@ -1101,6 +1101,10 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 
 		}
 
+		void EthSidechainSubWallet::SetSyncMode(int mode) {
+			ArgInfo("{} {}", _walletID, GetFunName());
+		}
+
 		void EthSidechainSubWallet::StartP2P() {
 			_client->_ewm->connect();
 		}

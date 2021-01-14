@@ -36,10 +36,6 @@ namespace Elastos {
 		PeerBlackList::~PeerBlackList() {
 		}
 
-		void PeerBlackList::InitializeTable() {
-			TableBase::ExecInTransaction(_tableCreateSql);
-		}
-
 		bool PeerBlackList::PutPeer(const PeerEntity &peerEntity) {
 			if (Contain(peerEntity))
 				return true;

@@ -21,33 +21,29 @@
  */
 
 #include <Common/Log.h>
-#include "DataMigrate.h"
+#include "Settings.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		DataMigrate::DataMigrate(Sqlite *sqlite, SqliteTransactionType type) :
+		Settings::Settings(Sqlite *sqlite, SqliteTransactionType type) :
 			TableBase(type, sqlite) {
 			TableBase::ExecInTransaction(_tableCreation);
 		}
 
-		DataMigrate::~DataMigrate() {
+		Settings::~Settings() {
 
 		}
 
-		void DataMigrate::InitializeTable() {
-			TableBase::ExecInTransaction(_tableCreation);
-		}
-
-		bool DataMigrate::SetDataMigrateDoneInner(const std::string &type) {
+		bool Settings::PutSettingInner(const std::string &name, int value) {
 			std::string sql;
 
 			sql = "INSERT OR REPLACE INTO " + _tableName + "(" +
-				  _type + "," + _done + ") VALUES (?,?);";
+				  _name + "," + _value + ") VALUES (?,?);";
 
-			return SqliteWrapper(sql, [&type, this](sqlite3_stmt *stmt) {
-				if (!_sqlite->BindText(stmt, 1, type, nullptr) ||
-					!_sqlite->BindInt(stmt, 2, 1)) {
+			return SqliteWrapper(sql, [&name, &value, this](sqlite3_stmt *stmt) {
+				if (!_sqlite->BindText(stmt, 1, name, nullptr) ||
+					!_sqlite->BindInt(stmt, 2, value)) {
 					Log::error("bind args");
 					return false;
 				}
@@ -61,35 +57,35 @@ namespace Elastos {
 			});
 		}
 
-		bool DataMigrate::SetDataMigrateDone(const std::string &type) {
-			return DoTransaction([&type, this]() {
-				return this->SetDataMigrateDoneInner(type);
+		bool Settings::PutSetting(const std::string &name, int value) {
+			return DoTransaction([&name, &value, this]() {
+				return this->PutSettingInner(name, value);
 			});
 		}
 
-		bool DataMigrate::IsDataMigrateDone(const std::string &type) const {
-			bool done = false;
+		int Settings::GetSetting(const std::string &name) const {
+			int value = 0;
 			std::string sql;
 
-			sql = "SELECT " + _done + " FROM " + _tableName + " WHERE " + _type + " = ?;";
+			sql = "SELECT " + _value + " FROM " + _tableName + " WHERE " + _name + " = ?;";
 
-			if (!SqliteWrapper(sql, [&type, &done, this](sqlite3_stmt *stmt) {
+			if (!SqliteWrapper(sql, [&name, &value, this](sqlite3_stmt *stmt) {
 
-				if (!_sqlite->BindText(stmt, 1, type, nullptr)) {
+				if (!_sqlite->BindText(stmt, 1, name, nullptr)) {
 					Log::error("bind args");
 					return false;
 				}
 
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					done = _sqlite->ColumnInt(stmt, 0) == 1;
+					value = _sqlite->ColumnInt(stmt, 0);
 				}
 
 				return true;
 			})) {
-				return false;
+				return value;
 			}
 
-			return done;
+			return value;
 		}
 
 	}

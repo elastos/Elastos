@@ -116,8 +116,24 @@ namespace Elastos {
 			_info.Timestamp = timestamp;
 		}
 
-		time_t Peer::GetDownloadStartTime() const {
-			return _downloadStartTime;
+		int Peer::GetDownloadSpeed() const {
+			return _info.GetSpeed();
+		}
+
+		int Peer::CalculateDownloadSpeed() {
+			struct timeval tv;
+			gettimeofday(&tv, NULL);
+
+			uint64_t now = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+			uint64_t tripTime = now - _downloadStartTime;
+			int speed = 0;
+
+			if (tripTime != 0) {
+				speed = _downloadBytes * 1000 / tripTime;
+				_info.SetSpeed(speed);
+			}
+
+			return speed;
 		}
 
 		void Peer::ScheduleDownloadStartTime() {

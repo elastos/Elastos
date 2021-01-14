@@ -203,6 +203,8 @@ namespace Elastos {
 
 			virtual void Resync();
 
+			virtual void SetSyncMode(int mode);
+
 			virtual void StartP2P();
 
 			virtual void StopP2P();

@@ -37,8 +37,6 @@ namespace Elastos {
 
 			~UTXOStore();
 
-			virtual void InitializeTable();
-
 			bool Puts(const std::vector<UTXOEntity> &entities);
 
 			std::vector<UTXOEntity> Gets() const;

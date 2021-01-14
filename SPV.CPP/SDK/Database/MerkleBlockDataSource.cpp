@@ -41,10 +41,6 @@ namespace Elastos {
 		MerkleBlockDataSource::~MerkleBlockDataSource() {
 		}
 
-		void MerkleBlockDataSource::InitializeTable() {
-			TableBase::ExecInTransaction(MB_DATABASE_CREATE);
-		}
-
 		bool MerkleBlockDataSource::PutMerkleBlock(const MerkleBlockPtr &blockPtr) {
 			return DoTransaction([&blockPtr, this]() {
 				return this->PutMerkleBlockInternal(blockPtr);

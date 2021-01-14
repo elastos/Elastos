@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef __ELASTOS_SPVSDK_DATAMIGRATE_H__
-#define __ELASTOS_SPVSDK_DATAMIGRATE_H__
+#ifndef __ELASTOS_SPVSDK_Settings_H__
+#define __ELASTOS_SPVSDK_Settings_H__
 
 #include "Sqlite.h"
 #include "TableBase.h"
@@ -29,28 +29,26 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class DataMigrate : public TableBase {
+		class Settings : public TableBase {
 		public:
-			DataMigrate(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
+			Settings(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
 
-			~DataMigrate();
+			~Settings();
 
-			void InitializeTable() override;
+			bool PutSettingInner(const std::string &name, int value);
 
-			bool SetDataMigrateDoneInner(const std::string &type);
+			bool PutSetting(const std::string &name, int value);
 
-			bool SetDataMigrateDone(const std::string &type);
-
-			bool IsDataMigrateDone(const std::string &type) const;
+			int GetSetting(const std::string &name) const;
 
 		private:
-			const std::string _tableName = "dataMigrate";
-			const std::string _type = "type";
-			const std::string _done = "done";
+			const std::string _tableName = "Settings";
+			const std::string _name = "name";
+			const std::string _value = "value";
 			const std::string _tableCreation = "CREATE TABLE IF NOT EXISTS " +
 											   _tableName + "(" +
-											   _type + " TEXT PRIMARY KEY NOT NULL," +
-											   _done + " INTEGER DEFAULT 0);";
+											   _name + " TEXT PRIMARY KEY NOT NULL," +
+											   _value + " INTEGER DEFAULT 0);";
 		};
 
 	}

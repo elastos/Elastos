@@ -40,8 +40,6 @@ namespace Elastos {
 
 			TableBase(SqliteTransactionType type, Sqlite *sqlite);
 
-			virtual void InitializeTable();
-
 			virtual ~TableBase();
 
 			void flush();

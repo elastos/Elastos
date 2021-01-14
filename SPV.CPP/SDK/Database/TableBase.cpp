@@ -37,10 +37,6 @@ namespace Elastos {
 				_txType(type) {
 		}
 
-		void TableBase::InitializeTable() {
-
-		}
-
 		TableBase::~TableBase() {
 
 		}

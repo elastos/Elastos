@@ -50,6 +50,8 @@ namespace Elastos {
 
 			void DatabaseFlush();
 
+			void SetSyncMode(int mode);
+
 		public:
 			virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance);
 
@@ -84,6 +86,8 @@ namespace Elastos {
 
 		protected:
 			virtual std::vector<MerkleBlockPtr> loadBlocks(const std::string &chainID);
+
+			virtual int loadSyncMode();
 
 			virtual std::vector<PeerInfo> loadPeers();
 

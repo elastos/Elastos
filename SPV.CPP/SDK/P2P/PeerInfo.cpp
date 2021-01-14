@@ -17,24 +17,27 @@ namespace Elastos {
 				Port(0),
 				Timestamp(0),
 				Services(SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM),
-				Flags(0) {
+				Flags(0),
+				DownloadSpeed(0) {
 
 		}
 
-		PeerInfo::PeerInfo(const uint128 &addr, uint16_t port, uint64_t timestamp) :
+		PeerInfo::PeerInfo(int speed, const uint128 &addr, uint16_t port, uint64_t timestamp) :
 				Port(port),
 				Timestamp(timestamp),
 				Address(addr),
 				Services(SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM),
-				Flags(0) {
+				Flags(0),
+				DownloadSpeed(speed) {
 		}
 
-		PeerInfo::PeerInfo(const uint128 &addr, uint16_t port, uint64_t timestamp, uint64_t services) :
+		PeerInfo::PeerInfo(const uint128 &addr, uint16_t port, uint64_t timestamp, uint64_t services, int speed) :
 				Port(port),
 				Timestamp(timestamp),
 				Services(services),
 				Address(addr),
-				Flags(0) {
+				Flags(0),
+				DownloadSpeed(speed) {
 		}
 
 		PeerInfo::PeerInfo(const PeerInfo &peerInfo) {
@@ -47,6 +50,7 @@ namespace Elastos {
 			Port = peerInfo.Port;
 			Flags = peerInfo.Flags;
 			Services = peerInfo.Services;
+			DownloadSpeed = peerInfo.DownloadSpeed;
 
 			return *this;
 		}
@@ -90,6 +94,14 @@ namespace Elastos {
 			}
 
 			return std::string(temp);
+		}
+
+		void PeerInfo::SetSpeed(int speed) {
+			DownloadSpeed = speed;
+		}
+
+		int PeerInfo::GetSpeed() const {
+			return DownloadSpeed;
 		}
 
 	}

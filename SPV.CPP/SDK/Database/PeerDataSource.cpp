@@ -32,14 +32,11 @@ namespace Elastos {
 
 		PeerDataSource::PeerDataSource(Sqlite *sqlite, SqliteTransactionType type) :
 			TableBase(type, sqlite) {
+			TableBase::ExecInTransaction("DROP TABLE IF EXIST " + PEER_OLD_TABLE_NAME + ";");
 			TableBase::ExecInTransaction(PEER_DATABASE_CREATE);
 		}
 
 		PeerDataSource::~PeerDataSource() {
-		}
-
-		void PeerDataSource::InitializeTable() {
-			TableBase::ExecInTransaction(PEER_DATABASE_CREATE);
 		}
 
 		bool PeerDataSource::PutPeer(const PeerEntity &peerEntity) {
@@ -64,13 +61,13 @@ namespace Elastos {
 
 		bool PeerDataSource::PutPeerInternal(const PeerEntity &peerEntity) {
 			std::string sql = "INSERT INTO " + PEER_TABLE_NAME + " (" + PEER_ADDRESS + "," + PEER_PORT + "," +
-				  PEER_TIMESTAMP + "," + PEER_ISO + ") VALUES (?, ?, ?, ?);";
+				  PEER_TIMESTAMP + "," + PEER_SPEED + ") VALUES (?, ?, ?, ?);";
 
 			return SqliteWrapper(sql, [&peerEntity, this](sqlite3_stmt *stmt) {
 				if (!_sqlite->BindBlob(stmt, 1, peerEntity.address.begin(), peerEntity.address.size(), nullptr) ||
 					!_sqlite->BindInt(stmt, 2, peerEntity.port) ||
 					!_sqlite->BindInt64(stmt, 3, peerEntity.timeStamp) ||
-					!_sqlite->BindText(stmt, 4, "", nullptr)) {
+					!_sqlite->BindInt(stmt, 4, peerEntity.speed)) {
 					Log::error("bind args");
 					return false;
 				}
@@ -139,8 +136,7 @@ namespace Elastos {
 		std::vector<PeerEntity> PeerDataSource::GetAllPeers() const {
 			std::vector<PeerEntity> peers;
 
-			std::string sql = "SELECT " + PEER_COLUMN_ID + ", " + PEER_ADDRESS + ", " + PEER_PORT + ", " +
-				  PEER_TIMESTAMP + " FROM " + PEER_TABLE_NAME + ";";
+			std::string sql = "SELECT * FROM " + PEER_TABLE_NAME + ";";
 
 			if (!SqliteWrapper(sql, [&peers, this](sqlite3_stmt *stmt) {
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
@@ -160,6 +156,9 @@ namespace Elastos {
 
 					// timestamp
 					peer.timeStamp = _sqlite->ColumnInt64(stmt, 3);
+
+					// speed
+					peer.speed = _sqlite->ColumnInt(stmt, 4);
 
 					peers.push_back(peer);
 				}

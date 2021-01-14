@@ -60,6 +60,11 @@ namespace Elastos {
 			_databaseManager->flush();
 		}
 
+		void SpvService::SetSyncMode(int mode) {
+			_databaseManager->SetSyncMode(mode);
+			GetPeerManager()->SetSyncMode(mode);
+		}
+
 		void SpvService::onBalanceChanged(const uint256 &asset, const BigInt &balance) {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&asset, &balance](Wallet::Listener *listener) {
@@ -172,6 +177,7 @@ namespace Elastos {
 				peerEntity.address = peers[i].Address;
 				peerEntity.port = peers[i].Port;
 				peerEntity.timeStamp = peers[i].Timestamp;
+				peerEntity.speed = peers[i].DownloadSpeed;
 				peerEntityList.push_back(peerEntity);
 			}
 			_databaseManager->PutPeers(peerEntityList);
@@ -221,13 +227,17 @@ namespace Elastos {
 			return _databaseManager->GetAllMerkleBlocks(chainID);
 		}
 
+		int SpvService::loadSyncMode() {
+			return _databaseManager->GetSyncMode();
+		}
+
 		std::vector<PeerInfo> SpvService::loadPeers() {
 			std::vector<PeerInfo> peers;
 
 			std::vector<PeerEntity> peersEntity = _databaseManager->GetAllPeers();
 
 			for (size_t i = 0; i < peersEntity.size(); ++i) {
-				peers.push_back(PeerInfo(peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp));
+				peers.push_back(PeerInfo(peersEntity[i].speed, peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp));
 			}
 
 			return peers;
@@ -239,7 +249,7 @@ namespace Elastos {
 			std::vector<PeerEntity> entity = _databaseManager->GetAllBlackPeers();
 
 			for (size_t i = 0; i < entity.size(); ++i) {
-				peers.insert(PeerInfo(entity[i].address, entity[i].port, entity[i].timeStamp));
+				peers.insert(PeerInfo(entity[i].speed, entity[i].address, entity[i].port, entity[i].timeStamp));
 			}
 
 			return peers;

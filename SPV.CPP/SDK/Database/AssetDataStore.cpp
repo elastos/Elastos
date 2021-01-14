@@ -37,11 +37,6 @@ namespace Elastos {
 		AssetDataStore::~AssetDataStore() {
 		}
 
-		void AssetDataStore::InitializeTable() {
-			TableBase::ExecInTransaction(ASSET_DATABASE_CREATE);
-			TableBase::ExecInTransaction("DROP TABLE IF EXISTS " + ASSET_OLD_TABLE_NAME + ";");
-		}
-
 		bool AssetDataStore::PutAsset(const std::string &iso, const AssetEntity &asset) {
 			AssetEntity existAsset;
 			if (SelectAsset(asset.AssetID, existAsset)) {

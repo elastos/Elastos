@@ -22,12 +22,13 @@ namespace Elastos {
 			uint64_t Services; // bitcoin network services supported by peer
 			uint64_t Timestamp; // timestamp reported by peer
 			uint8_t Flags; // scratch variable
+			int DownloadSpeed;
 
 			PeerInfo();
 
-			PeerInfo(const uint128 &addr, uint16_t port, uint64_t timestamp);
+			PeerInfo(int speed, const uint128 &addr, uint16_t port, uint64_t timestamp);
 
-			PeerInfo(const uint128 &addr, uint16_t port, uint64_t timestamp, uint64_t services);
+			PeerInfo(const uint128 &addr, uint16_t port, uint64_t timestamp, uint64_t services, int speed);
 
 			PeerInfo(const PeerInfo &peerInfo);
 
@@ -44,6 +45,10 @@ namespace Elastos {
 			bool IsIPv4() const;
 
 			std::string GetHost() const;
+
+			void SetSpeed(int speed);
+
+			int GetSpeed() const;
 		};
 
 	}

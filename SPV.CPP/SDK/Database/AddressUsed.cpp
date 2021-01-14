@@ -34,10 +34,6 @@ namespace Elastos {
 		AddressUsed::~AddressUsed() {
 		}
 
-		void AddressUsed::InitializeTable() {
-			TableBase::ExecInTransaction(_tableCreation);
-		}
-
 		bool AddressUsed::Puts(const std::vector<std::string> &items, bool replace) {
 			return DoTransaction([&items, &replace, this]() {
 				if (replace) {

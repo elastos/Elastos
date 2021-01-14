@@ -43,6 +43,7 @@ namespace Elastos {
 						nullptr,
 						earliestPeerTime,
 						config->DisconnectionTime(),
+						loadSyncMode(),
 						loadBlocks(chainID),
 						peers,
 						loadBlackPeers(),
@@ -120,6 +121,10 @@ namespace Elastos {
 
 		std::vector<MerkleBlockPtr> CoreSpvService::loadBlocks(const std::string &chainID) {
 			return {};
+		}
+
+		int CoreSpvService::loadSyncMode() {
+			return -1;
 		}
 
 		std::vector<PeerInfo> CoreSpvService::loadPeers() {

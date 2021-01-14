@@ -77,6 +77,8 @@ namespace Elastos {
 		protected:
 			virtual std::vector<MerkleBlockPtr> loadBlocks(const std::string &chainID);
 
+			virtual int loadSyncMode();
+
 			virtual std::vector<PeerInfo> loadPeers();
 
 			virtual std::set<PeerInfo> loadBlackPeers();

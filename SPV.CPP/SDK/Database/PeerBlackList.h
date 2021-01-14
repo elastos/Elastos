@@ -38,8 +38,6 @@ namespace Elastos {
 
 			~PeerBlackList();
 
-			virtual void InitializeTable();
-
 			bool PutPeer(const PeerEntity &peerEntity);
 
 			bool PutPeers(const std::vector<PeerEntity> &peerEntities);

@@ -30,7 +30,7 @@
 #include "UTXOStore.h"
 #include "AddressUsed.h"
 #include "TxTable.h"
-#include "DataMigrate.h"
+#include "Settings.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -49,10 +49,16 @@ namespace Elastos {
 
 			void ClearData();
 
-			bool TxTableDataMigrateDone();
+			// settings
+			bool TxTableDataMigrateDone() const;
 
 			bool SetTxTableDataMigrateDone();
 
+			int GetSyncMode() const;
+
+			bool SetSyncMode(int mode);
+
+			// txTable
 			bool ContainTx(const std::string &hash) const;
 
 			bool GetUTXOTx(std::vector<TxEntity> &entities) const;
@@ -147,8 +153,6 @@ namespace Elastos {
 
 			bool DeleteAllUsedAddresses();
 
-			bool TxTableDataMigrateDone() const;
-
 			// common
 			const boost::filesystem::path &GetPath() const;
 
@@ -164,7 +168,7 @@ namespace Elastos {
 			UTXOStore _utxoStore;
 			AddressUsed _addressUsed;
 			TxTable _txTable;
-			DataMigrate _dataMigrate;
+			Settings _settings;
 		};
 
 		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;

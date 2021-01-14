@@ -64,7 +64,7 @@ namespace Elastos {
 						_peer->error("addr msg read port fail");
 						return false;
 					}
-					PeerInfo p(address, port, timestamp, services);
+					PeerInfo p(address, port, timestamp, services, 0);
 
 					if ((p.Services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
 						_peer->warn("p[{}]: t: {} s: {} {}:{} dropped: don't carry full blocks",

@@ -66,14 +66,6 @@ namespace Elastos {
 
 		}
 
-		void TxTable::InitializeTable() {
-			TableBase::ExecInTransaction(_tableCreation);
-			CreateIndexTxHash();
-			CreateIndexType();
-			CreateIndexTimestamp();
-			CreateIndexHeight();
-		}
-
 		const std::string &TxTable::GetTableName() const {
 			return _tableName;
 		}
