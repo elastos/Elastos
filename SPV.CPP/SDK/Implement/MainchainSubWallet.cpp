@@ -1216,6 +1216,7 @@ namespace Elastos {
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposal, p,
 														  nullptr, outputs, memo);
+			tx->SetPayloadVersion(version);
 
 			if (tx->GetOutputs().size() < 2) {
 				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "balanace not enough");
@@ -1286,6 +1287,7 @@ namespace Elastos {
 			AddressPtr fromAddr(new Address(""));
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposalReview, p, fromAddr, outputs, memo);
+			tx->SetPayloadVersion(version);
 
 			if (tx->GetOutputs().size() < 2)
 				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "balance not enough");
@@ -1502,6 +1504,7 @@ namespace Elastos {
 			AddressPtr fromAddr(new Address(""));
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposalTracking, p, fromAddr, outputs, memo);
+			tx->SetPayloadVersion(version);
 
 			if (tx->GetOutputs().size() < 2)
 				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "balance not enough");
@@ -1604,6 +1607,7 @@ namespace Elastos {
 			AddressPtr fromAddr(new Address(""));
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposal, p, fromAddr, outputs, memo);
+			tx->SetPayloadVersion(version);
 
 			if (tx->GetOutputs().size() < 2)
 				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "balance not enough");
@@ -1707,6 +1711,7 @@ namespace Elastos {
 			AddressPtr fromAddr(new Address(""));
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposal, p, fromAddr, outputs, memo);
+			tx->SetPayloadVersion(version);
 
 			if (tx->GetOutputs().size() < 2)
 				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "balance not enough");
@@ -1810,6 +1815,7 @@ namespace Elastos {
 			AddressPtr fromAddr(new Address(""));
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposal, p, fromAddr, outputs, memo);
+			tx->SetPayloadVersion(version);
 
 			if (tx->GetOutputs().size() < 2)
 				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "balance not enough");
