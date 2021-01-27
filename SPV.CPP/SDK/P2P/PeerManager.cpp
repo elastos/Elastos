@@ -41,7 +41,7 @@ namespace Elastos {
 		}
 
 		void PeerManager::FireSyncProgress(double progress, const PeerPtr &peer, const MerkleBlockPtr &block) {
-			uint32_t bytesPerSecond = (uint32_t) peer->CalculateDownloadSpeed();
+			uint32_t bytesPerSecond = (uint32_t) peer->GetDownloadSpeed();
 
 			peer->ScheduleDownloadStartTime();
 			peer->SetDownloadBytes(0);
@@ -158,8 +158,12 @@ namespace Elastos {
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
 
+			for (const PeerInfo &pi : blackPeers) {
+				if (pi.Timestamp > time(NULL) - 3600 * 24 * 30) {
+					_blackPeers.insert(pi);
+				}
+			}
 			_peers = peers;
-			_blackPeers.insert(blackPeers.begin(), blackPeers.end());
 			SortPeers();
 
 			InitBlocks(blocks);
@@ -278,12 +282,39 @@ namespace Elastos {
 					FindPeers();
 				}
 
-				peers.insert(peers.end(), _peers.begin(), _peers.end());
+				bool pickPeerRandomly = true;
+				if (_syncMode == 1) {
+					std::sort(_peers.begin(), _peers.end(), [](const PeerInfo &first, const PeerInfo &second) {
+						return first.DownloadSpeed > second.DownloadSpeed;
+					});
 
+					size_t cnt;
+					for (cnt = 0; cnt < _peers.size(); ++cnt) {
+						if (_peers[cnt].DownloadSpeed == 0)
+							break;
+					}
+
+					if (cnt > _peers.size() * 4 / 5) {
+						pickPeerRandomly = false;
+						peers.insert(peers.end(), _peers.begin(), _peers.end());
+					} else {
+						pickPeerRandomly = true;
+						peers.insert(peers.end(), _peers.begin() + cnt, _peers.end());
+					}
+				} else {
+					pickPeerRandomly = true;
+					peers.insert(peers.end(), _peers.begin(), _peers.end());
+				}
+
+				Log::info("mode: {}, randomly: {}", _syncMode, pickPeerRandomly);
 				while (!peers.empty() && _connectedPeers.size() < _maxConnectCount) {
-					size_t i = BRRand((uint32_t) peers.size()); // index of random peer
-
-					i = i * i / peers.size(); // bias random peer selection toward peers with more recent timestamp
+					size_t i = 0;
+					if (pickPeerRandomly) {
+						i = BRRand((uint32_t)peers.size()); // index of random peer
+						i = i * i / peers.size(); // bias random peer selection toward peers with more recent timestamp
+					} else {
+						i = 0;
+					}
 
 					for (size_t j = _connectedPeers.size(); i != SIZE_MAX && j > 0; j--) {
 						if (peers[i] != _connectedPeers[j - 1]->GetPeerInfo()) continue;
@@ -867,7 +898,12 @@ namespace Elastos {
 
 			lock.lock();
 
-
+			for (auto &p : _peers) {
+				if (p == peer->GetPeerInfo()) {
+					p = peer->GetPeerInfo();
+					break;
+				}
+			}
 			// TODO: XXX does this work with 0.11 pruned nodes?
 			if ((peer->GetServices() & _chainParams->Services()) != _chainParams->Services()) {
 				peer->warn("unsupported node type");
@@ -885,7 +921,6 @@ namespace Elastos {
 				peer->warn("peer->services: {} != SERVICES_NODE_NETWORK", peer->GetServices());
 				peer->warn("node doesn't carry full blocks");
 				peer->Disconnect();
-				_blackPeers.insert(peer->GetPeerInfo());
 			} else if (peer->GetLastBlock() + 10 < _lastBlock->GetHeight()) {
 				peer->warn("peer->lastBlock: {} !=  lastBlock->height: {}", peer->GetLastBlock(),
 						   _lastBlock->GetHeight());
@@ -936,7 +971,7 @@ namespace Elastos {
 				_isConnected = 1;
 				_estimatedHeight = peer->GetLastBlock();
 				_connectFailureCount = 0; // reset connect failure count
-				//peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
+				peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
 
 				peer->ScheduleDownloadStartTime();
 				LoadBloomFilter(peer);
@@ -967,6 +1002,7 @@ namespace Elastos {
 			int willSave = 0, txError = 0;
 			bool willReconnect = false, isBlack = false, connectionStatusChanged = false;
 			Peer::ConnectStatus status = Peer::Disconnected;
+			PeerInfo blackPeerInfo = peer->GetPeerInfo();
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
@@ -975,6 +1011,11 @@ namespace Elastos {
 					_connectFailureCount++;
 					PeerMisbehaving(peer);
 				} else if (error) { // timeout or some non-protocol related network error
+					if (error == ENOLINK) {
+						blackPeerInfo.Timestamp = time(NULL);
+						if (_blackPeers.insert(blackPeerInfo).second)
+							isBlack = true;
+					}
 					RemovePeer(peer);
 					_connectFailureCount++;
 
@@ -987,11 +1028,6 @@ namespace Elastos {
 
 				for (size_t i = _txRelays.size(); i > 0; i--) {
 					_txRelays[i - 1].RemovePeer(peer);
-				}
-
-				if (_blackPeers.find(peer->GetPeerInfo()) != _blackPeers.end()) {
-					RemovePeer(peer);
-					isBlack = true;
 				}
 
 				if (peer == _downloadPeer) { // download peer disconnected
@@ -1064,6 +1100,16 @@ namespace Elastos {
 				}
 
 				std::sort(save.begin(), save.end(), [](const PeerInfo &first, const PeerInfo &second) {
+					return first.DownloadSpeed > second.DownloadSpeed;
+				});
+
+				int i;
+				for (i = 0; i < save.size(); ++i) {
+					if (save[i].DownloadSpeed == 0)
+						break;
+				}
+
+				std::sort(save.begin() + i, save.end(), [](const PeerInfo &first, const PeerInfo &second) {
 					return first.Timestamp > second.Timestamp;
 				});
 
@@ -1360,9 +1406,19 @@ namespace Elastos {
 					txTotal += block->GetTotalTx();
 					if ((block->GetHeight() % 500) == 0 || txHashes.size() > 0 ||
 						block->GetHeight() >= peer->GetLastBlock()) {
+						peer->CalculateDownloadSpeed();
 						peer->info("adding block #{}, {}, false positive rate: {}",
 								   block->GetHeight(), txTotal, _fpRate);
+						for (auto &p : _peers) {
+							if (p == peer->GetPeerInfo()) {
+								p = peer->GetPeerInfo();
+								break;
+							}
+						}
+						FireSavePeers(true, _peers);
 						FireSyncProgress(GetSyncProgressInternal(0), peer, block);
+						if (peer->GetDownloadSpeed() < 10000)
+							peer->Disconnect();
 						txTotal = 0;
 					}
 

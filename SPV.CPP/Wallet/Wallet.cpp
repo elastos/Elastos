@@ -1978,6 +1978,25 @@ static int _sync(int argc, char *argv[]) {
 	return 0;
 }
 
+// syncmode chainID (0 | 1)
+static int _syncMode(int argc, char *argv[]) {
+	checkParam(3);
+	checkCurrentWallet();
+
+	std::string chainID = argv[1];
+	int mode = atoi(argv[2]);
+
+	try {
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
+		subWallet->SetSyncMode(mode);
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+	return 0;
+}
+
 // resync chainID
 static int _resync(int argc, char *argv[]) {
 	checkParam(2);
@@ -2493,6 +2512,7 @@ struct command {
 	{"cid",        _cid,           "                                                 List cid of IDChain"},
 	{"publickeys", publickeys,     "                                                 List public keys of IDChain"},
 	{"sync",       _sync,          "chainID (start | stop)                           Start or stop sync of wallet"},
+	{"syncmode",   _syncMode,      "chainID (0 | 1)                                  0: deserialization priority. 1: speed priority."},
 	{"resync",     _resync,        "chainID                                          Clear all merkle blocks and transactions, and then resync from the beginning"},
 	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},
 	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},

@@ -32,7 +32,7 @@ namespace Elastos {
 
 		PeerDataSource::PeerDataSource(Sqlite *sqlite, SqliteTransactionType type) :
 			TableBase(type, sqlite) {
-			TableBase::ExecInTransaction("DROP TABLE IF EXIST " + PEER_OLD_TABLE_NAME + ";");
+			TableBase::ExecInTransaction("DROP TABLE IF EXISTS " + PEER_OLD_TABLE_NAME + ";");
 			TableBase::ExecInTransaction(PEER_DATABASE_CREATE);
 		}
 

@@ -377,6 +377,7 @@ namespace Elastos {
 			friend class Message;
 
 			PeerInfo _info;
+			std::vector<int> _recentSpeed;
 
 			std::string _managerID;
 			uint32_t _magicNumber;

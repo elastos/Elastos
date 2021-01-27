@@ -95,7 +95,7 @@ namespace Elastos {
 
 			virtual std::vector<AssetPtr> loadAssets();
 
-			virtual const PeerManagerListenerPtr &createPeerManagerListener();
+			// virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
 //			virtual const WalletListenerPtr &createWalletListener();
 

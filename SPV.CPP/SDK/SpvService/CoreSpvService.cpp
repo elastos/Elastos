@@ -33,10 +33,6 @@ namespace Elastos {
 				ErrorChecker::ThrowParamException(Error::InvalidChainID, "invalid chain ID");
 			}
 
-			std::vector<PeerInfo> peers;
-			if (chainID != CHAINID_IDCHAIN && netType != "MainNet")
-				peers = loadPeers();
-
 			if (_peerManager == nullptr) {
 				_peerManager = PeerManagerPtr(new PeerManager(
 						config->ChainParameters(),
@@ -45,7 +41,7 @@ namespace Elastos {
 						config->DisconnectionTime(),
 						loadSyncMode(),
 						loadBlocks(chainID),
-						peers,
+						loadPeers(),
 						loadBlackPeers(),
 						createPeerManagerListener(),
 						chainID,

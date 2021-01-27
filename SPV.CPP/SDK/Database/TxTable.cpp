@@ -461,7 +461,7 @@ namespace Elastos {
 			};
 
 			for (std::string &table : tables) {
-				std::string sql = "DROP TABLE IF EXIST " + table + ";";
+				std::string sql = "DROP TABLE IF EXISTS " + table + ";";
 				if (!_sqlite->exec(sql, nullptr, nullptr)) {
 					r = false;
 					Log::error("exec sql: {}", sql);

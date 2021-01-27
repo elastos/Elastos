@@ -41,14 +41,13 @@ namespace Elastos {
 				_peer->error("malformed version message, parse timestamp fail");
 				return false;
 			}
-//			_peer->SetTimestamp(timestamp);
+			_peer->SetTimestamp(timestamp);
 
 			uint16_t port = 0;
 			if (!stream.ReadUint16(port)) {
 				_peer->error("malformed version message, parse port fail");
 				return false;
 			}
-//			_peer->SetPort(port);
 
 			uint64_t nonce = 0;
 			if (!stream.ReadUint64(nonce)) {

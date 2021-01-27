@@ -272,6 +272,7 @@ namespace Elastos {
 			return assets;
 		}
 
+#if 0
 		const CoreSpvService::PeerManagerListenerPtr &SpvService::createPeerManagerListener() {
 			if (_peerManagerListener == nullptr) {
 				_peerManagerListener = PeerManagerListenerPtr(
@@ -280,7 +281,6 @@ namespace Elastos {
 			return _peerManagerListener;
 		}
 
-#if 0
 		const CoreSpvService::WalletListenerPtr &SpvService::createWalletListener() {
 			if (_walletListener == nullptr) {
 				_walletListener = WalletListenerPtr(new WrappedExecutorWalletListener(this, &_executor));

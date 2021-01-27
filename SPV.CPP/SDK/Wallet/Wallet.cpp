@@ -71,7 +71,7 @@ namespace Elastos {
 						auto it = txMap.find(in->TxHash());
 						if (it != txMap.end()) {
 							OutputPtr o = it->second->OutputOfIndex(in->Index());
-							in->FixDetail(o->Amount(), *o->Addr());
+							if (o) in->FixDetail(o->Amount(), *o->Addr());
 						}
 					}
 				}
