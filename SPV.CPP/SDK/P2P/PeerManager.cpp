@@ -26,7 +26,7 @@
 #include <boost/thread.hpp>
 #include <arpa/inet.h>
 
-#define PROTOCOL_TIMEOUT      40.0
+#define PROTOCOL_TIMEOUT      120.0
 #define MAX_CONNECT_FAILURES  1000 // notify user of network problems after this many connect failures in a row
 #define PEER_FLAG_SYNCED      0x01
 #define PEER_FLAG_NEEDSUPDATE 0x02
