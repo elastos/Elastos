@@ -147,6 +147,14 @@ namespace Elastos {
 			virtual bool IsAddressValid(const std::string &address) const = 0;
 
 			/**
+			 *
+			 * @param chainID chain id of subwallet
+			 * @param address address of subwallet
+			 * @return
+			 */
+			virtual bool IsSubWalletAddressValid(const std::string &chainID, const std::string &address) const = 0;
+
+			/**
 			 * Get all chain ids of supported chains.
 			 * @return a list of chain id.
 			 */
@@ -158,6 +166,15 @@ namespace Elastos {
 			 * @param newPassword new pay password.
 			 */
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
+
+			/**
+			 * Reset payment password of current wallet
+			 * @param mnemonic mnemonic
+			 * @param passphrase passphrase
+			 * @param newPassword New password will be set.
+			 */
+			virtual void ResetPassword(const std::string &mnemonic, const std::string &passphrase,
+				const std::string &newPassword) = 0;
 
 		};
 

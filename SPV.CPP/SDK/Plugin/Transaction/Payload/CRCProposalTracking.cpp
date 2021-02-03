@@ -24,20 +24,14 @@
 #include <Common/Log.h>
 #include <Common/hash.h>
 #include <WalletCore/Key.h>
+#include <Common/Base64.h>
+#include <Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-#define JsonKeyProposalHash "ProposalHash"
-#define JsonKeyMessageHash "MessageHash"
-#define JsonKeyStage "Stage"
-#define JsonKeyOwnerPublicKey "OwnerPublicKey"
-#define JsonKeyNewOwnerPublicKey "NewOwnerPublicKey"
-#define JsonKeyOwnerSignature "OwnerSignature"
-#define JsonKeyNewOwnerSignature "NewOwnerSignature"
-#define JsonKeyType "Type"
-#define JsonKeySecretaryGeneralOpinionHash "SecretaryGeneralOpinionHash"
-#define JsonKeySecretaryGeneralSignature "SecretaryGeneralSignature"
+#define MESSAGE_DATA_MAX_SIZE (800 * 1024)
+#define OPINION_DATA_MAX_SIZE (200 * 1024)
 
 		CRCProposalTracking::CRCProposalTracking() {
 
@@ -188,12 +182,14 @@ namespace Elastos {
 			return size;
 		}
 
-		void CRCProposalTracking::SerializeOwnerUnsigned(ByteStream &ostream, uint8_t version) const {
-			ostream.WriteBytes(_proposalHash);
-			ostream.WriteBytes(_messageHash);
-			ostream.WriteUint8(_stage);
-			ostream.WriteVarBytes(_ownerPubKey);
-			ostream.WriteVarBytes(_newOwnerPubKey);
+		void CRCProposalTracking::SerializeOwnerUnsigned(ByteStream &stream, uint8_t version) const {
+			stream.WriteBytes(_proposalHash);
+			stream.WriteBytes(_messageHash);
+			if (version >= CRCProposalTrackingVersion01)
+				stream.WriteVarBytes(_messageData);
+			stream.WriteUint8(_stage);
+			stream.WriteVarBytes(_ownerPubKey);
+			stream.WriteVarBytes(_newOwnerPubKey);
 		}
 
 		bool CRCProposalTracking::DeserializeOwnerUnsigned(const ByteStream &stream, uint8_t version) {
@@ -205,6 +201,13 @@ namespace Elastos {
 			if (!stream.ReadBytes(_messageHash)) {
 				SPVLOG_ERROR("deserialize document hash");
 				return false;
+			}
+
+			if (version >= CRCProposalTrackingVersion01) {
+				if (!stream.ReadVarBytes(_messageData)) {
+					SPVLOG_ERROR("deserialize msg data");
+					return false;
+				}
 			}
 
 			if (!stream.ReadUint8(_stage)) {
@@ -245,12 +248,11 @@ namespace Elastos {
 
 		void CRCProposalTracking::SerializeSecretaryUnsigned(ByteStream &stream, uint8_t version) const {
 			SerializeNewOwnerUnsigned(stream, version);
-
 			stream.WriteVarBytes(_newOwnerSign);
-
 			stream.WriteUint8(_type);
-
 			stream.WriteBytes(_secretaryGeneralOpinionHash);
+			if (version >= CRCProposalTrackingVersion01)
+				stream.WriteVarBytes(_secretaryGeneralOpinionData);
 		}
 
 		bool CRCProposalTracking::DeserializeSecretaryUnsigned(const ByteStream &stream, uint8_t version) {
@@ -272,6 +274,13 @@ namespace Elastos {
 			if (!stream.ReadBytes(_secretaryGeneralOpinionHash)) {
 				SPVLOG_ERROR("deserialize secretary opinion hash");
 				return false;
+			}
+
+			if (version >= CRCProposalTrackingVersion01) {
+				if (!stream.ReadVarBytes(_secretaryGeneralOpinionData)) {
+					SPVLOG_ERROR("deserialize secretary opinion data");
+					return false;
+				}
 			}
 
 			return true;
@@ -301,6 +310,8 @@ namespace Elastos {
 			nlohmann::json j;
 			j[JsonKeyProposalHash] = _proposalHash.GetHex();
 			j[JsonKeyMessageHash] = _messageHash.GetHex();
+			if (version >= CRCProposalTrackingVersion01)
+				j[JsonKeyMessageData] = Base64::Encode(_messageData);
 			j[JsonKeyStage] = _stage;
 			j[JsonKeyOwnerPublicKey] = _ownerPubKey.getHex();
 			j[JsonKeyNewOwnerPublicKey] = _newOwnerPubKey.getHex();
@@ -310,6 +321,13 @@ namespace Elastos {
 		void CRCProposalTracking::FromJsonOwnerUnsigned(const nlohmann::json &j, uint8_t version) {
 			_proposalHash.SetHex(j[JsonKeyProposalHash].get<std::string>());
 			_messageHash.SetHex(j[JsonKeyMessageHash].get<std::string>());
+			if (version >= CRCProposalTrackingVersion01) {
+				std::string messageData = j[JsonKeyMessageData].get<std::string>();
+				_messageData = Base64::Decode(messageData);
+				ErrorChecker::CheckParam(_messageData.size() > MESSAGE_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "message data size too large");
+				uint256 messageHash(sha256_2(_messageData));
+				ErrorChecker::CheckParam(messageHash != _messageHash, Error::ProposalHashNotMatch, "message hash not match");
+			}
 			_stage = j[JsonKeyStage].get<uint8_t>();
 			_ownerPubKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
 			_newOwnerPubKey.setHex(j[JsonKeyNewOwnerPublicKey].get<std::string>());
@@ -331,6 +349,8 @@ namespace Elastos {
 			j[JsonKeyNewOwnerSignature] = _newOwnerSign.getHex();
 			j[JsonKeyType] = _type;
 			j[JsonKeySecretaryGeneralOpinionHash] = _secretaryGeneralOpinionHash.GetHex();
+			if (version >= CRCProposalTrackingVersion01)
+				j[JsonKeySecretaryGeneralOpinionData] = Base64::Encode(_secretaryGeneralOpinionData);
 			return j;
 		}
 
@@ -339,6 +359,13 @@ namespace Elastos {
 			_newOwnerSign.setHex(j[JsonKeyNewOwnerSignature].get<std::string>());
 			_type = CRCProposalTracking::Type(j[JsonKeyType].get<uint8_t>());
 			_secretaryGeneralOpinionHash.SetHex(j[JsonKeySecretaryGeneralOpinionHash].get<std::string>());
+			if (version >= CRCProposalTrackingVersion01) {
+				std::string data = j[JsonKeySecretaryGeneralOpinionData].get<std::string>();
+				_secretaryGeneralOpinionData = Base64::Decode(data);
+				ErrorChecker::CheckParam(_secretaryGeneralOpinionData.size() > OPINION_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "opinion data size too large");
+				uint256 opinionHash(sha256_2(_secretaryGeneralOpinionData));
+				ErrorChecker::CheckParam(opinionHash != _secretaryGeneralOpinionHash, Error::ProposalHashNotMatch, "opinion hash not match");
+			}
 		}
 
 		nlohmann::json CRCProposalTracking::ToJson(uint8_t version) const {
@@ -447,6 +474,7 @@ namespace Elastos {
 		CRCProposalTracking &CRCProposalTracking::operator=(const CRCProposalTracking &payload) {
 			_proposalHash = payload._proposalHash;
 			_messageHash = payload._messageHash;
+			_messageData = payload._messageData;
 			_stage = payload._stage;
 			_ownerPubKey = payload._ownerPubKey;
 			_newOwnerPubKey = payload._newOwnerPubKey;
@@ -454,6 +482,7 @@ namespace Elastos {
 			_newOwnerSign = payload._newOwnerSign;
 			_type = payload._type;
 			_secretaryGeneralOpinionHash = payload._secretaryGeneralOpinionHash;
+			_secretaryGeneralOpinionData = payload._secretaryGeneralOpinionData;
 			_secretaryGeneralSignature = payload._secretaryGeneralSignature;
 			return *this;
 		}

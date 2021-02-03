@@ -3,7 +3,7 @@
 //  Core
 //
 //  Created by Ed Gamble on 9/1/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -47,7 +47,9 @@ BREthereumLESMessageSpec messageLESSpecs [NUMBER_OF_LES_MESSAGE_IDENTIFIERS] = {
     { "HelperTrieProofs",    LES_MESSAGE_USE_RESPONSE      },
     { "SendTx2",          LES_MESSAGE_USE_REQUEST,     64  },
     { "GetTxStatus",      LES_MESSAGE_USE_REQUEST,    256  },
-    { "TxStatus",         LES_MESSAGE_USE_RESPONSE         }
+    { "TxStatus",         LES_MESSAGE_USE_RESPONSE         },
+    { "Stop",             LES_MESSAGE_USE_STATUS           },
+    { "Resume",           LES_MESSAGE_USE_STATUS           }
 };
 extern const char *
 messageLESGetIdentifierName (BREthereumLESMessageIdentifier identifer) {
@@ -187,6 +189,7 @@ messageLESAnnounceDecode (BRRlpItem item,
     message.headNumber = rlpDecodeUInt64 (coder.rlp, items[1], 1);
     message.headTotalDifficulty = rlpDecodeUInt256 (coder.rlp, items[2], 1);
     message.reorgDepth = rlpDecodeUInt64 (coder.rlp, items[3], 1);
+    message.pairs = NULL;
 
     // TODO: Decode Keys
 //    if (5 == itemsCount) {
@@ -534,7 +537,7 @@ extern void
 messageLESHeaderProofsConsume (BREthereumLESMessageHeaderProofs *message,
                                BRArrayOf(BREthereumBlockHeader) *headers,
                                BRArrayOf(BREthereumMPTNodePath) *paths) {
-    if (NULL != headers) { *headers = message->headers; message->headers = NULL; };
+    if (NULL != headers) { *headers = message->headers; message->headers = NULL; }
     if (NULL != paths)   { *paths   = message->paths;   message->paths   = NULL; }
 }
 
@@ -560,7 +563,6 @@ messageLESProofsV2Decode (BRRlpItem item,
     uint64_t reqId = rlpDecodeUInt64 (coder.rlp, items[0], 1);
     uint64_t bv    = rlpDecodeUInt64 (coder.rlp, items[1], 1);
 
-    // TODO: See GetProofs - should be an array of PATHS
     return (BREthereumLESMessageProofsV2) {
         reqId,
         bv,
@@ -568,9 +570,99 @@ messageLESProofsV2Decode (BRRlpItem item,
     };
 }
 
+extern void
+messageLESProofsV2Consume (BREthereumLESMessageProofsV2 *message,
+						   BRArrayOf(BREthereumMPTNodePath) *paths) {
+	if (paths != NULL) { array_add(*paths, message->path); message->path = NULL; }
+}
+
 /// MARK: LES GetHelperTrieProofs
 
+static BRRlpItem
+helperTrieProofNumbersEncodeList (BRArrayOf(uint64_t) sectionIdx,
+							  BRArrayOf(uint64_t) blkNumbers,
+							  BREthereumMessageCoder coder) {
+	size_t itemsCount = array_count(blkNumbers);
+	BRRlpItem items[itemsCount];
+
+	for (size_t index = 0; index < itemsCount; index++) {
+		uint8_t blkNumberBytes[8];
+		UInt64SetBE(blkNumberBytes, blkNumbers[index]);
+		items[index] = rlpEncodeList (coder.rlp, 5,
+									  rlpEncodeUInt64 (coder.rlp, 0, 1),
+									  rlpEncodeUInt64 (coder.rlp, sectionIdx[index], 1),
+									  rlpEncodeBytes(coder.rlp, blkNumberBytes, sizeof(blkNumberBytes)),
+									  rlpEncodeUInt64 (coder.rlp, 0, 1),  // level
+									  rlpEncodeUInt64 (coder.rlp, 2, 1)); // auxReq
+	}
+
+	return rlpEncodeListItems (coder.rlp, items, itemsCount);
+}
+
+static BRRlpItem
+messageLESGetHelperTrieProofsEncode (BREthereumLESMessageGetHelperTrieProofs message, BREthereumMessageCoder coder) {
+	// [[subType: P, sectionIdx: P, key: B, fromLevel: P, auxReq: P], ...]
+	return rlpEncodeList2 (coder.rlp,
+						   rlpEncodeUInt64 (coder.rlp, message.reqId, 1),
+						   helperTrieProofNumbersEncodeList (message.sectionIdx, message.blkNumbers, coder));
+}
+
 /// MARK: LES HelperTrieProofs
+
+static void helperTrieProofsDecode (BRRlpItem item, BREthereumMessageCoder coder,
+									BRArrayOf(BREthereumBlockHeader) *headers,
+									BRArrayOf(BREthereumMPTNodePath) *paths) {
+	size_t itemsCount = 0;
+	const BRRlpItem *items = rlpDecodeList (coder.rlp, item, &itemsCount);
+	assert (2 == itemsCount);
+
+	array_new (*headers, 1);
+	array_new (*paths,   1);
+
+	BREthereumMPTNodePath path   = mptNodePathDecode (items[0], coder.rlp);
+
+	size_t headerItemsCount = 0;
+	const BRRlpItem *headerItems = rlpDecodeList (coder.rlp, items[1], &headerItemsCount);
+	assert (1 == headerItemsCount);
+
+	BRRlpData headerData = rlpDecodeBytes (coder.rlp, headerItems[0]);
+	BRRlpItem headerItem = rlpGetItem(coder.rlp, headerData);
+
+	BREthereumBlockHeader header = blockHeaderRlpDecode (headerItem, RLP_TYPE_NETWORK, coder.rlp);
+
+	array_add (*headers, header);
+	array_add (*paths,   path);
+}
+
+static BREthereumLESMessageHelperTrieProofs
+messageLESHelperTrieProofsDecode (BRRlpItem item, BREthereumMessageCoder coder) {
+	size_t itemsCount = 0;
+	const BRRlpItem *items = rlpDecodeList(coder.rlp, item, &itemsCount);
+	assert (3 == itemsCount);
+
+	uint64_t reqId = rlpDecodeUInt64 (coder.rlp, items[0], 1);
+	uint64_t bv    = rlpDecodeUInt64 (coder.rlp, items[1], 1);
+
+	BRArrayOf(BREthereumBlockHeader) headers;
+	BRArrayOf(BREthereumMPTNodePath) paths;
+
+	helperTrieProofsDecode (items[2], coder, &headers, &paths);
+
+	return (BREthereumLESMessageHelperTrieProofs) {
+		reqId,
+		bv,
+		headers,
+		paths
+	};
+}
+
+extern void
+messageLESHelperTrieProofsConsume (BREthereumLESMessageHelperTrieProofs *message,
+								   BRArrayOf(BREthereumBlockHeader) *headers,
+								   BRArrayOf(BREthereumMPTNodePath) *paths) {
+	if (NULL != headers) { *headers = message->headers; message->headers = NULL; }
+	if (NULL != paths)   { *paths   = message->paths;   message->paths   = NULL; }
+}
 
 /// MARK: LES SendTx2
 
@@ -605,6 +697,20 @@ extern void
 messageLESTxStatusConsume (BREthereumLESMessageTxStatus *message,
                            BRArrayOf(BREthereumTransactionStatus) *stati) {
     if (NULL != stati) { *stati = message->stati; message->stati = NULL; }
+}
+
+/// MARK: LES Stop
+static BREthereumLESMessageStop messageLESStopDecode (BRRlpItem item, BREthereumMessageCoder coder) {
+
+	return (BREthereumLESMessageStop) {};
+}
+
+/// MARK: LES Resume
+static BREthereumLESMessageResume messageLESResumeDecode(BRRlpItem item, BREthereumMessageCoder coder) {
+	uint64_t bv = rlpDecodeUInt64 (coder.rlp, item, 1);
+	return (BREthereumLESMessageResume) {
+		bv
+	};
 }
 
 /**
@@ -692,10 +798,25 @@ messageLESDecode (BRRlpItem item,
                 LES_MESSAGE_PROOFS_V2,
                 { .proofsV2 = messageLESProofsV2Decode (item, coder)} };
 
+    	case LES_MESSAGE_HELPER_TRIE_PROOFS:
+    		return (BREthereumLESMessage) {
+    			LES_MESSAGE_HELPER_TRIE_PROOFS,
+				{.helperTrieProofs = messageLESHelperTrieProofsDecode(item, coder)} };
+
         case LES_MESSAGE_TX_STATUS:
             return (BREthereumLESMessage) {
                 LES_MESSAGE_TX_STATUS,
                 { .txStatus = messageLESTxStatusDecode (item, coder)} };
+
+    	case LES_MESSAGE_STOP:
+    		return (BREthereumLESMessage) {
+    			LES_MESSAGE_STOP,
+    			{ .stop = messageLESStopDecode(item, coder) } };
+
+    	case LES_MESSAGE_RESUME:
+    		return (BREthereumLESMessage) {
+    			LES_MESSAGE_RESUME,
+				{.resume = messageLESResumeDecode(item, coder)} };
 
         default:
             BRFail();
@@ -747,6 +868,10 @@ messageLESEncode (BREthereumLESMessage message,
             body = messageLESGetProofsV2Encode (message.u.getProofsV2, coder);
             //rlpShowItem (coder.rlp, body, "LES GetProofsV2");
             break;
+
+    	case LES_MESSAGE_GET_HELPER_TRIE_PROOFS:
+    		body = messageLESGetHelperTrieProofsEncode(message.u.getHelperTrieProofs, coder);
+    		break;
 
         case LES_MESSAGE_GET_TX_STATUS:
             body = messageLESGetTxStatusEncode (message.u.getTxStatus, coder);
@@ -867,6 +992,12 @@ messageLESRelease (BREthereumLESMessage *message) {
             if (NULL != message->u.txStatus.stati)
                 array_free (message->u.txStatus.stati);
             break;
+
+    	case LES_MESSAGE_STOP:
+    		break;
+
+    	case LES_MESSAGE_RESUME:
+    		break;
     }
 }
 
@@ -937,6 +1068,8 @@ messageLESGetRequestIdInternal (const BREthereumLESMessage *message) {
         case LES_MESSAGE_SEND_TX2: return message->u.sendTx2.reqId;
         case LES_MESSAGE_GET_TX_STATUS: return message->u.getTxStatus.reqId;
         case LES_MESSAGE_TX_STATUS: return message->u.txStatus.reqId;
+        case LES_MESSAGE_STOP: return LES_MESSAGE_NO_REQUEST_ID;
+        case LES_MESSAGE_RESUME: return LES_MESSAGE_NO_REQUEST_ID;
     }
 }
 
@@ -954,4 +1087,9 @@ extern uint64_t
 messageLESGetChtNumber (uint64_t blkNumber) {
     assert (0 != blkNumber);
     return 1 + blkNumber / LES_MESSAGE_CHT_PERIOD;
+}
+
+extern uint64_t messageLESGetSectionIdxNumber (uint64_t blkNumber) {
+	assert (0 != blkNumber);
+	return 1 + blkNumber / 32768;
 }

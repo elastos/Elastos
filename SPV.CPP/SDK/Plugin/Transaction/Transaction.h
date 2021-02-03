@@ -54,6 +54,7 @@ namespace Elastos {
 				IllegalSidechainEvidence = 0x11,
 				InactiveArbitrators      = 0x12,
 				UpdateVersion            = 0x13,
+				nextTurnDPOSInfo         = 0x14,
 
 				registerCR               = 0x21,
 				unregisterCR             = 0x22,
@@ -65,6 +66,9 @@ namespace Elastos {
 				crcProposalTracking      = 0x27,
 				crcAppropriation         = 0x28,
 				crcProposalWithdraw      = 0x29,
+				crcProposalRealWithdraw  = 0x2a,
+				crcAssetsRectify         = 0x2b,
+				crCouncilMemberClaimNode = 0x31,
 
 				TypeMaxCount
 			};
@@ -189,7 +193,7 @@ namespace Elastos {
 
 			const std::vector<ProgramPtr> &GetPrograms() const;
 
-			nlohmann::json GetSummary(const WalletPtr &wallet, uint32_t confirms, bool detail);
+			nlohmann::json GetSummary(const WalletPtr &wallet, const std::map<std::string, std::string> &genesisAddresses, uint32_t confirms, bool detail);
 
 			uint8_t	GetPayloadVersion() const;
 

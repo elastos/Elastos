@@ -66,6 +66,7 @@ namespace Elastos {
 											  const AddressPtr &fromAddress,
 											  const std::string &memo,
 											  bool max,
+											  const BigInt &fee,
 											  bool pickVoteFirst = false);
 
 			void AddFeeForTx(TransactionPtr &tx);

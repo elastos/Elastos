@@ -145,6 +145,10 @@ namespace Elastos {
 
 			nlohmann::json GetRegisteredCRInfo() const override;
 
+			std::string CRCouncilMemberClaimNodeDigest(const nlohmann::json &payload) const override;
+
+			nlohmann::json CreateCRCouncilMemberClaimNodeTransaction(const nlohmann::json &payload, const std::string &memo = "") override;
+
 		public:
 			//////////////////////////////////////////////////
 			/*                     Proposal                 */
@@ -179,14 +183,43 @@ namespace Elastos {
 															 const std::string &memo) override;
 
 			//////////////////////////////////////////////////
+			/*      Proposal Secretary General Election     */
+			//////////////////////////////////////////////////
+			std::string ProposalSecretaryGeneralElectionDigest(
+				const nlohmann::json &payload) const override;
+
+			std::string ProposalSecretaryGeneralElectionCRCouncilMemberDigest(
+				const nlohmann::json &payload) const override;
+
+			nlohmann::json CreateSecretaryGeneralElectionTransaction(
+				const nlohmann::json &payload, const std::string &memo = "") override;
+
+			//////////////////////////////////////////////////
+			/*             Proposal Change Owner            */
+			//////////////////////////////////////////////////
+			std::string ProposalChangeOwnerDigest(const nlohmann::json &payload) const override;
+
+			std::string ProposalChangeOwnerCRCouncilMemberDigest(const nlohmann::json &payload) const override ;
+
+			nlohmann::json CreateProposalChangeOwnerTransaction(
+				const nlohmann::json &payload, const std::string &memo = "") override ;
+
+			//////////////////////////////////////////////////
+			/*           Proposal Terminate Proposal        */
+			//////////////////////////////////////////////////
+			std::string TerminateProposalOwnerDigest(const nlohmann::json &payload) const override ;
+
+			std::string TerminateProposalCRCouncilMemberDigest(const nlohmann::json &payload) const override;
+
+			nlohmann::json CreateTerminateProposalTransaction(
+				const nlohmann::json &payload, const std::string &memo = "") override;
+
+			//////////////////////////////////////////////////
 			/*               Proposal Withdraw              */
 			//////////////////////////////////////////////////
 			std::string ProposalWithdrawDigest(const nlohmann::json &payload) const override;
 
-			nlohmann::json CreateProposalWithdrawTransaction(const std::string &recipient,
-															 const std::string &amount,
-															 const nlohmann::json &utxo,
-															 const nlohmann::json &payload,
+			nlohmann::json CreateProposalWithdrawTransaction(const nlohmann::json &payload,
 															 const std::string &memo) override;
 
 		private:

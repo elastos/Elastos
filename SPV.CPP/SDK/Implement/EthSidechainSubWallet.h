@@ -36,8 +36,11 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class MasterWallet;
+
 		class ChainConfig;
+
 		class CoinInfo;
+
 		class EthereumClient;
 
 		typedef boost::shared_ptr<ChainConfig> ChainConfigPtr;
@@ -50,15 +53,33 @@ namespace Elastos {
 		public: // implement IEthSidechainSubWallet
 			virtual ~EthSidechainSubWallet();
 
+			virtual nlohmann::json CreateTransfer(const std::string &targetAddress,
+												  const std::string &amount,
+												  EthereumAmountUnit amountUnit) const;
+
+			virtual nlohmann::json CreateTransferGeneric(const std::string &targetAddress,
+														 const std::string &amount,
+														 EthereumAmountUnit amountUnit,
+														 const std::string &gasPrice,
+														 EthereumAmountUnit gasPriceUnit,
+														 const std::string &gasLimit,
+														 const std::string &data) const;
+
+			virtual void DeleteTransfer(const nlohmann::json &tx);
+
+			virtual nlohmann::json GetTokenTransactions(uint32_t start, uint32_t count, const std::string &txid,
+														const std::string &tokenSymbol) const;
+
 		public:
 			// implement callback of Client
 			virtual void getGasPrice(BREthereumWallet wid, int rid);
 
 			virtual void getGasEstimate(BREthereumWallet wid,
-										BREthereumTransfer tid,
+										BREthereumCookie cookie,
 										const std::string &from,
 										const std::string &to,
 										const std::string &amount,
+										const std::string &gasPrice,
 										const std::string &data,
 										int rid);
 
@@ -68,10 +89,12 @@ namespace Elastos {
 			submitTransaction(BREthereumWallet wid, BREthereumTransfer tid, const std::string &rawTransaction,
 							  int rid);
 
+			// announce one-by-one
 			virtual void
 			getTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber,
 							int rid);
 
+			// announce one-by-one
 			virtual void getLogs(const std::string &contract,
 								 const std::string &address,
 								 const std::string &event,
@@ -85,32 +108,25 @@ namespace Elastos {
 								   uint64_t blockNumberStop,
 								   int rid);
 
+			// announce one-by-one
 			virtual void getTokens(int rid);
 
 			virtual void getBlockNumber(int rid);
 
 			virtual void getNonce(const std::string &address, int rid);
 
-			virtual void handleEWMEvent(EthereumEWM::EWMEvent event, EthereumEWM::Status status,
-										const std::string &errorDescription);
+			virtual void handleEWMEvent(const BREthereumEWMEvent &event);
 
-			virtual void handlePeerEvent(EthereumEWM::PeerEvent event, EthereumEWM::Status status,
-										 const std::string &errorDescription);
+			virtual void handlePeerEvent(const BREthereumPeerEvent &event);
 
 			virtual void handleWalletEvent(const EthereumWalletPtr &wallet,
-										   EthereumEWM::WalletEvent event, EthereumEWM::Status status,
-										   const std::string &errorDescription);
+										   const BREthereumWalletEvent &event);
 
-			virtual void handleTokenEvent(const EthereumTokenPtr &token, EthereumEWM::TokenEvent event);
-
-			virtual void handleBlockEvent(const EthereumBlockPtr &block,
-										  EthereumEWM::BlockEvent event, EthereumEWM::Status status,
-										  const std::string &errorDescription);
+			virtual void handleTokenEvent(const EthereumTokenPtr &token, const BREthereumTokenEvent &event);
 
 			virtual void handleTransferEvent(const EthereumWalletPtr &wallet,
 											 const EthereumTransferPtr &transaction,
-											 EthereumEWM::TransactionEvent event, EthereumEWM::Status status,
-											 const std::string &errorDescription);
+											 const BREthereumTransferEvent &event);
 			// implement ISubWallet
 		public:
 			virtual std::string GetChainID() const;
@@ -179,6 +195,8 @@ namespace Elastos {
 
 			virtual bool SetFixedPeer(const std::string &address, uint16_t port);
 
+			virtual nlohmann::json GetLastBlockInfo() const;
+
 			virtual void SyncStart();
 
 			virtual void SyncStop();
@@ -190,6 +208,7 @@ namespace Elastos {
 			virtual void StopP2P();
 
 			virtual void FlushData();
+
 		protected:
 			friend class MasterWallet;
 

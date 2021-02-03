@@ -3,7 +3,7 @@
 //  Core
 //
 //  Created by Ed Gamble on 8/14/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -63,6 +63,13 @@ nodeEndpointCreate (BREthereumDISNeighbor dis);
 extern BREthereumNodeEndpoint
 nodeEndpointCreateLocal (BREthereumLESRandomContext randomContext);
 
+/**
+ * Create a Node Endpoint from `enode`.  If `enode` cannot be parsed then NULL is returned.
+ *
+ * @param enode the node endpoint specification
+ *
+ * @return a new endpoint or NULL
+ */
 extern BREthereumNodeEndpoint
 nodeEndpointCreateEnode (const char *enode);
 

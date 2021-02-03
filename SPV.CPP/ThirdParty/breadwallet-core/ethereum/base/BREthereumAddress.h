@@ -3,7 +3,7 @@
 //  BRCore
 //
 //  Created by Ed Gamble on 5/17/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -69,7 +69,7 @@ addressCreateKey (const BRKey *keyWithPubKeyProvided);
  * @return newly allocated memory of char*
  */
 extern char *
-addressGetEncodedString (BREthereumAddress address, int useChecksum);
+addressGetEncodedString (BREthereumAddress *address, int useChecksum);
 
 
 /**
@@ -88,12 +88,12 @@ addressFillEncodedString (BREthereumAddress address,
 extern BREthereumHash
 addressGetHash (BREthereumAddress address);
 
-extern BREthereumAddress
+extern BREthereumAddress*
 addressRlpDecode (BRRlpItem item,
                      BRRlpCoder coder);
 
 extern BRRlpItem
-addressRlpEncode(BREthereumAddress address,
+addressRlpEncode(BREthereumAddress *address,
                     BRRlpCoder coder);
 
 extern BREthereumBoolean

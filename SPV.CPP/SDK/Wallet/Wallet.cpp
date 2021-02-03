@@ -308,7 +308,8 @@ namespace Elastos {
 												 const AddressPtr &fromAddress,
 												 const OutputArray &outputs,
 												 const std::string &memo,
-												 bool max) {
+												 bool max,
+												 const BigInt &fee) {
 			for (const OutputPtr &output : outputs) {
 				ErrorChecker::CheckParam(!output->Addr()->Valid(), Error::CreateTransaction,
 										 "invalid receiver address");
@@ -334,7 +335,7 @@ namespace Elastos {
 
 			ErrorChecker::CheckParam(!containAsset, Error::InvalidAsset, "asset not found: " + assetID.GetHex());
 
-			TransactionPtr tx = _groupedAssets[assetID]->CreateTxForOutputs(type, payload, outputs, fromAddress, memoFixed, max);
+			TransactionPtr tx = _groupedAssets[assetID]->CreateTxForOutputs(type, payload, outputs, fromAddress, memoFixed, max, fee);
 
 			if (assetID != Asset::GetELAAssetID())
 				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx);

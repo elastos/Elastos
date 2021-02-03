@@ -22,15 +22,13 @@
 #include "CRCProposalReview.h"
 #include <Common/Log.h>
 #include <Common/hash.h>
+#include <Common/Base64.h>
+#include <Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-#define JsonKeyProposalHash "ProposalHash"
-#define JsonKeyVoteResult "VoteResult"
-#define JsonKeyOpinionHash "OpinionHash"
-#define JsonKeyDID "DID"
-#define JsonKeySignature "Signature"
+#define OPINION_DATA_MAX_SIZE (1024 * 1024)
 
 		CRCProposalReview::CRCProposalReview() {
 
@@ -103,33 +101,42 @@ namespace Elastos {
 			return size;
 		}
 
-		void CRCProposalReview::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
-			ostream.WriteBytes(_proposalHash);
-			ostream.WriteUint8(_voteResult);
-			ostream.WriteBytes(_opinionHash);
-			ostream.WriteBytes(_did.ProgramHash());
+		void CRCProposalReview::SerializeUnsigned(ByteStream &stream, uint8_t version) const {
+			stream.WriteBytes(_proposalHash);
+			stream.WriteUint8(_voteResult);
+			stream.WriteBytes(_opinionHash);
+			if (version >= CRCProposalReviewVersion01)
+				stream.WriteVarBytes(_opinionData);
+			stream.WriteBytes(_did.ProgramHash());
 		}
 
-		bool CRCProposalReview::DeserializeUnsigned(const ByteStream &istream, uint8_t version) {
-			if (!istream.ReadBytes(_proposalHash)) {
+		bool CRCProposalReview::DeserializeUnsigned(const ByteStream &stream, uint8_t version) {
+			if (!stream.ReadBytes(_proposalHash)) {
 				SPVLOG_ERROR("deserialize proposal hash");
 				return false;
 			}
 
 			uint8_t opinion = 0;
-			if (!istream.ReadUint8(opinion)) {
+			if (!stream.ReadUint8(opinion)) {
 				SPVLOG_ERROR("deserialize opinion");
 				return false;
 			}
 			_voteResult = VoteResult(opinion);
 
-			if (!istream.ReadBytes(_opinionHash)) {
-				SPVLOG_ERROR("deesrialize opinion hash");
+			if (!stream.ReadBytes(_opinionHash)) {
+				SPVLOG_ERROR("desrialize opinion hash");
 				return false;
 			}
 
+			if (version >= CRCProposalReviewVersion01) {
+				if (!stream.ReadVarBytes(_opinionData)) {
+					SPVLOG_ERROR("deserialize opinion data");
+					return false;
+				}
+			}
+
 			uint168 programHash;
-			if (!istream.ReadBytes(programHash)) {
+			if (!stream.ReadBytes(programHash)) {
 				SPVLOG_ERROR("deserialize did");
 				return false;
 			}
@@ -162,6 +169,8 @@ namespace Elastos {
 			j[JsonKeyProposalHash] = _proposalHash.GetHex();
 			j[JsonKeyVoteResult] = _voteResult;
 			j[JsonKeyOpinionHash] = _opinionHash.GetHex();
+			if (version >= CRCProposalReviewVersion01)
+				j[JsonKeyOpinionData] = Base64::Encode(_opinionData);
 			j[JsonKeyDID] = _did.String();
 			return j;
 		}
@@ -170,6 +179,13 @@ namespace Elastos {
 			_proposalHash.SetHex(j[JsonKeyProposalHash].get<std::string>());
 			_voteResult = VoteResult(j[JsonKeyVoteResult].get<uint8_t>());
 			_opinionHash.SetHex(j[JsonKeyOpinionHash].get<std::string>());
+			if (version >= CRCProposalReviewVersion01) {
+				std::string opinionData = j[JsonKeyOpinionData].get<std::string>();
+				_opinionData = Base64::Decode(opinionData);
+				ErrorChecker::CheckParam(_opinionData.size() > OPINION_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "opinion hash too large");
+				uint256 opinionHash(sha256_2(_opinionData));
+				ErrorChecker::CheckParam(opinionHash != _opinionHash, Error::ProposalHashNotMatch, "opinion hash not match");
+			}
 			_did = Address(j[JsonKeyDID].get<std::string>());
 		}
 
@@ -224,6 +240,7 @@ namespace Elastos {
 			_proposalHash = payload._proposalHash;
 			_voteResult = payload._voteResult;
 			_opinionHash = payload._opinionHash;
+			_opinionData = payload._opinionData;
 			_did = payload._did;
 			_signature = payload._signature;
 			return *this;

@@ -106,9 +106,14 @@ namespace Elastos {
 
 			virtual bool IsAddressValid(const std::string &address) const;
 
+			virtual bool IsSubWalletAddressValid(const std::string &chainID, const std::string &address) const;
+
 			virtual std::vector<std::string> GetSupportedChains() const;
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
+
+			virtual void ResetPassword(const std::string &mnemonic, const std::string &passphrase,
+									   const std::string &newPassword);
 
 			void InitSubWallets();
 

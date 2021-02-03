@@ -23,12 +23,15 @@
 #ifndef __ELASTOS_SPVSDK_CRCPROPOSALWITHDRAW_H__
 #define __ELASTOS_SPVSDK_CRCPROPOSALWITHDRAW_H__
 
+#include <WalletCore/Address.h>
+#include <Common/BigInt.h>
 #include "IPayload.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 #define CRCProposalWithdrawVersion 0
+#define CRCProposalWithdrawVersion_01 0x01
 
 		class CRCProposalWithdraw : public IPayload {
 		public:
@@ -69,7 +72,7 @@ namespace Elastos {
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
 
-			bool IsValidUnsigned(uint8_t versin) const;
+			bool IsValidUnsigned(uint8_t version) const;
 
 			virtual bool IsValid(uint8_t version) const;
 
@@ -83,6 +86,8 @@ namespace Elastos {
 		private:
 			uint256 _proposalHash;
 			bytes_t _ownerPubkey;
+			Address _recipient;
+			BigInt _amount;
 			bytes_t _signature;
 		};
 

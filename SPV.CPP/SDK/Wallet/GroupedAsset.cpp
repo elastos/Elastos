@@ -163,7 +163,7 @@ namespace Elastos {
 				tx->AddAttribute(AttributePtr(new Attribute(Attribute::Memo, bytes_t(memo.c_str(), memo.size()))));
 
 			{
-				boost::mutex::scoped_lock scopedLock(_parent->GetLock());
+				_parent->GetLock().lock();
 
 				for (UTXOSet::iterator u = _utxosDeposit.begin(); u != _utxosDeposit.end(); ++u) {
 					if (_parent->IsUTXOSpending(*u) || (*u)->Index() != 0)
@@ -179,11 +179,15 @@ namespace Elastos {
 						bytes_t code;
 						std::string path;
 						inputAddr = (*u)->Output()->Addr();
-						_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+						if (!_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path)) {
+							_parent->GetLock().unlock();
+							ErrorChecker::ThrowParamException(Error::Address, "Can't found code and path for input");
+						}
 						tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 					}
 				}
 				feeAmount = CalculateFee(_parent->_feePerKb, tx->EstimateSize());
+				_parent->GetLock().unlock();
 			} // boost::mutex::scoped_lock
 
 			if (tx->GetInputs().empty()) {
@@ -248,11 +252,11 @@ namespace Elastos {
 			std::vector<BigInt> oldVoteAmount;
 
 			{
-				boost::mutex::scoped_lock scopedLock(_parent->GetLock());
+				_parent->GetLock().lock();
 				for (UTXOSet::const_iterator u = _utxosVote.cbegin(); u != _utxosVote.cend(); ++u) {
 					if ((*u)->GetConfirms(_parent->_blockHeight) < 2 || _parent->IsUTXOSpending(*u)) {
+						_parent->GetLock().unlock();
 						ErrorChecker::ThrowLogicException(Error::LastVoteConfirming, "Last vote tx is pending");
-						return nullptr;
 					}
 
 					PayloadVote *pv = dynamic_cast<PayloadVote *>((*u)->Output()->GetPayload().get());
@@ -274,14 +278,14 @@ namespace Elastos {
 
 							oldVoteContent.push_back(vc);
 							if (vc.GetType() == VoteContent::CRC || vc.GetType() == VoteContent::CRCImpeachment) {
-								oldVoteAmount.push_back(BigInt(vc.GetTotalVoteAmount()));
+								oldVoteAmount.emplace_back(vc.GetTotalVoteAmount());
 							} else if (vc.GetType() == VoteContent::Delegate ||
 									   vc.GetType() == VoteContent::CRCProposal) {
-								oldVoteAmount.push_back(BigInt(vc.GetMaxVoteAmount()));
+								oldVoteAmount.emplace_back(vc.GetMaxVoteAmount());
 							} else {
+								_parent->GetLock().unlock();
 								ErrorChecker::ThrowLogicException(Error::LastVoteConfirming,
 																  "Invalid vote content type");
-								return nullptr;
 							}
 							if (oldVoteAmount.back() > totalOutputAmount)
 								totalOutputAmount = oldVoteAmount.back();
@@ -312,7 +316,10 @@ namespace Elastos {
 
 					firstInput = *u;
 					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+					if (!_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path)) {
+						_parent->GetLock().unlock();
+						ErrorChecker::ThrowParamException(Error::Address, "Can't found code and path for input");
+					}
 					tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 				}
 				feeAmount = CalculateFee(_parent->_feePerKb, tx->EstimateSize());
@@ -336,7 +343,10 @@ namespace Elastos {
 					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
 						continue;
 					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+					if (!_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path)) {
+						_parent->GetLock().unlock();
+						ErrorChecker::ThrowParamException(Error::Address, "Can't found code and path for input");
+					}
 					tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
 					txSize = tx->EstimateSize();
@@ -348,13 +358,14 @@ namespace Elastos {
 						firstInput = *u;
 
 					if (txSize >= TX_MAX_SIZE) { // transaction size-in-bytes too large
+						_parent->GetLock().unlock();
 						BigInt maxAmount = totalInputAmount - feeAmount;
-						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
+						ErrorChecker::ThrowParamException(Error::CreateTransactionExceedSize,
 													 "Tx size too large, max available amount: " + maxAmount.getDec() +
 													 " sela");
-						return nullptr;
 					}
 				}
+				_parent->GetLock().unlock();
 			} // boost::mutex::scoped_lock
 
 			VoteContentArray newVoteContent;
@@ -434,7 +445,7 @@ namespace Elastos {
 				tx->AddAttribute(AttributePtr(new Attribute(Attribute::Memo, bytes_t(memo.c_str(), memo.size()))));
 
 			{
-				boost::mutex::scoped_lock scopedLock(_parent->GetLock());
+				_parent->GetLock().lock();
 				UTXOArray utxo2Pick(_utxos.begin(), _utxos.end());
 				std::sort(utxo2Pick.begin(), utxo2Pick.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
 					return a->Output()->Amount() > b->Output()->Amount();
@@ -457,7 +468,10 @@ namespace Elastos {
 					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
 					bytes_t code;
 					std::string path;
-					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+					if (!_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path)) {
+						_parent->GetLock().unlock();
+						ErrorChecker::ThrowParamException(Error::Address, "Can't found code and path for input");
+					}
 					tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
 					totalInputAmount += (*u)->Output()->Amount();
@@ -466,6 +480,7 @@ namespace Elastos {
 					if (_asset->GetName() == "ELA")
 						feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 				}
+				_parent->GetLock().unlock();
 			} // boost::mutex::scoped_lock
 
 			if (totalInputAmount <= feeAmount) {
@@ -497,6 +512,7 @@ namespace Elastos {
 														const AddressPtr &fromAddress,
 														const std::string &memo,
 														bool max,
+                                                        const BigInt &fee,
 														bool pickVoteFirst) {
 			ErrorChecker::CheckLogic(outputs.empty(), Error::InvalidArgument, "outputs should not be empty");
 			ErrorChecker::CheckParam(max && outputs.size() > 1, Error::InvalidArgument,
@@ -504,7 +520,8 @@ namespace Elastos {
 
 			TransactionPtr txn = TransactionPtr(new Transaction(type, payload));
 			BigInt totalOutputAmount(0), totalInputAmount(0);
-			uint64_t txSize = 0, feeAmount = 0;
+			uint64_t txSize = 0;
+			BigInt feeAmount = 0;
 			bytes_t code;
 			std::string path;
 			bool lastUTXOPending = false;
@@ -519,11 +536,16 @@ namespace Elastos {
 			txn->SetOutputs(outputs);
 
 			{
-				boost::mutex::scoped_lock scopedLock(_parent->GetLock());
-				if (_asset->GetName() == "ELA")
-					feeAmount = CalculateFee(_parent->_feePerKb, txn->EstimateSize());
+				_parent->GetLock().lock();
+				if (_asset->GetName() == "ELA") {
+				    if (fee <= 0) {
+					    feeAmount.setUint64(CalculateFee(_parent->_feePerKb, txn->EstimateSize()));
+				    } else {
+				        feeAmount = fee;
+				    }
+				}
 
-				if (pickVoteFirst && totalInputAmount < totalOutputAmount + feeAmount) {
+				if (pickVoteFirst && (max || totalInputAmount < totalOutputAmount + feeAmount)) {
 					// voted utxo
 					for (UTXOSet::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
 						if (_parent->IsUTXOSpending(*u)) {
@@ -535,13 +557,19 @@ namespace Elastos {
 							continue;
 
 						txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-						_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+						if (!_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path)) {
+							_parent->GetLock().unlock();
+							ErrorChecker::ThrowParamException(Error::Address, "Can't found code and path for input");
+						}
 						txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 						totalInputAmount += (*u)->Output()->Amount();
 
 						txSize = txn->EstimateSize();
-						if (_asset->GetName() == "ELA")
-							feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+						if (_asset->GetName() == "ELA") {
+                            if (fee <= 0) {
+                                feeAmount.setUint64(CalculateFee(_parent->_feePerKb, txn->EstimateSize()));
+                            }
+                        }
 					}
 				}
 
@@ -567,24 +595,32 @@ namespace Elastos {
 					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
 						continue;
 					txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+					if (!_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path)) {
+						_parent->GetLock().unlock();
+						ErrorChecker::ThrowParamException(Error::Address, "Can't found code and path for input");
+					}
 					txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
 					txSize = txn->EstimateSize();
 					if (txSize >= TX_MAX_SIZE) { // transaction size-in-bytes too large
-						if (!pickVoteFirst)
+						_parent->GetLock().unlock();
+						if (!pickVoteFirst && !_utxosVote.empty()) {
 							return CreateTxForOutputs(type, payload, outputs, fromAddress, memo, max, !pickVoteFirst);
+						}
 
 						BigInt maxAmount = totalInputAmount - feeAmount;
-						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
+						ErrorChecker::ThrowParamException(Error::CreateTransactionExceedSize,
 													 "Tx size too large, max available amount: " + maxAmount.getDec() +
 													 " sela");
 						return nullptr;
 					}
 
 					totalInputAmount += (*u)->Output()->Amount();
-					if (_asset->GetName() == "ELA")
-						feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+					if (_asset->GetName() == "ELA") {
+                        if (fee <= 0) {
+                            feeAmount.setUint64(CalculateFee(_parent->_feePerKb, txn->EstimateSize()));
+                        }
+					}
 				}
 
 				if (!pickVoteFirst && (max || totalInputAmount < totalOutputAmount + feeAmount)) {
@@ -599,15 +635,22 @@ namespace Elastos {
 							continue;
 
 						txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-						_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+						if (!_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path)) {
+							_parent->GetLock().unlock();
+							ErrorChecker::ThrowParamException(Error::Address, "Can't found code and path for input");
+						}
 						txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 						totalInputAmount += (*u)->Output()->Amount();
 
 						txSize = txn->EstimateSize();
-						if (_asset->GetName() == "ELA")
-							feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+						if (_asset->GetName() == "ELA") {
+                            if (fee <= 0) {
+                                feeAmount.setUint64(CalculateFee(_parent->_feePerKb, txn->EstimateSize()));
+                            }
+						}
 					}
 				}
+				_parent->GetLock().unlock();
 			} // boost::mutex::scoped_lock
 
 			if (max) {
@@ -637,7 +680,7 @@ namespace Elastos {
 					BigInt changeAmount = totalInputAmount - totalOutputAmount - feeAmount;
 					txn->AddOutput(OutputPtr(new TransactionOutput(changeAmount, *addresses[0], assetID)));
 				}
-				txn->SetFee(feeAmount);
+				txn->SetFee(feeAmount.getUint64());
 			}
 
 			return txn;
@@ -663,7 +706,7 @@ namespace Elastos {
 			}
 
 			{
-				boost::mutex::scoped_lock scopedLock(_parent->GetLock());
+				_parent->GetLock().lock();
 
 				txSize = tx->EstimateSize();
 				feeAmount = CalculateFee(_parent->_feePerKb, txSize);
@@ -687,15 +730,18 @@ namespace Elastos {
 					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
 						continue;
 					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+					if (!_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path)) {
+						_parent->GetLock().unlock();
+						ErrorChecker::ThrowParamException(Error::Address, "Can't found code and path for input");
+					}
 					tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
 					txSize = tx->EstimateSize();
 					if (txSize > TX_MAX_SIZE) { // transaction size-in-bytes too large
-						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
+						_parent->GetLock().unlock();
+						ErrorChecker::ThrowParamException(Error::CreateTransactionExceedSize,
 													 "Tx size too large, max available amount for fee: " +
 													 totalInputAmount.getDec() + " sela");
-						break;
 					}
 
 					totalInputAmount += (*u)->Output()->Amount();
@@ -714,7 +760,10 @@ namespace Elastos {
 							continue;
 
 						tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-						_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+						if (!_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path)) {
+							_parent->GetLock().unlock();
+							ErrorChecker::ThrowParamException(Error::Address, "Can't found code and path for input");
+						}
 						tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
 						totalInputAmount += (*u)->Output()->Amount();
@@ -723,6 +772,7 @@ namespace Elastos {
 							feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 					}
 				}
+				_parent->GetLock().unlock();
 			} // boost::mutex::scope_lock
 
 			if (totalInputAmount < feeAmount) {

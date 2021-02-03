@@ -26,6 +26,7 @@
 
 #include "EthereumWallet.h"
 #include "EthereumEWM.h"
+#include <Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -127,7 +128,7 @@ namespace Elastos {
 		}
 
 		void EthereumWallet::estimateGas(const EthereumTransferPtr &transaction) {
-			ewmUpdateGasEstimate(_ewm->getRaw(), getRaw(), transaction->getRaw());
+//			ewmUpdateGasEstimate(_ewm->getRaw(), getRaw(), transaction->getRaw());
 		}
 
 		// Transactions
@@ -178,7 +179,6 @@ namespace Elastos {
 																  const std::string &gasLimit,
 																  const std::string &data) const {
 			_ewm->ensureValidAddress(targetAddress);
-			assert(!EthereumAmount::isTokenUnit(amountUnit) && !EthereumAmount::isTokenUnit(gasPriceUnit));
 
 			BREthereumTransfer transfer = createRawTransactionGeneric(targetAddress, amount,
 																	  amountUnit, gasPrice,
@@ -217,6 +217,7 @@ namespace Elastos {
 								 ? amountCreateEtherString(amount.data(), (BREthereumEtherUnit) unit, &status)
 								 : amountCreateTokenQuantityString(token, amount.data(),
 																   (BREthereumTokenQuantityUnit) unit, &status);
+			ErrorChecker::CheckParam(status != CORE_PARSE_OK, Error::InvalidArgument, "invalid amount");
 			return ewmWalletCreateTransfer(node, wallet, targetAddress.data(), a);
 		}
 
@@ -232,9 +233,12 @@ namespace Elastos {
 
 			// Get an actual Amount
 			BREthereumEther brAmount = etherCreateString(amount.data(), (BREthereumEtherUnit) amountUnit, &status);
+			ErrorChecker::CheckParam(status != CORE_PARSE_OK, Error::InvalidArgument, "invalid amount");
 
-			BREthereumGasPrice brGasPrice = gasPriceCreate(
-				etherCreateString(gasPrice.data(), (BREthereumEtherUnit) gasPriceUnit, &status));
+			BREthereumEther gasPriceEther = etherCreateString(gasPrice.data(), (BREthereumEtherUnit) gasPriceUnit, &status);
+			ErrorChecker::CheckParam(status != CORE_PARSE_OK, Error::InvalidArgument, "invalid gasPrice");
+
+			BREthereumGasPrice brGasPrice = gasPriceCreate(gasPriceEther);
 
 			BREthereumGas brGasLimit = gasCreate(strtoull(gasLimit.data(), NULL, 0));
 
@@ -269,6 +273,7 @@ namespace Elastos {
 				EthereumTransferPtr t(new EthereumTransfer(_ewm, transactionIds[i], _defaultUnit));
 				transactions.push_back(t);
 			}
+			free(transactionIds);
 
 			return transactions;
 		}

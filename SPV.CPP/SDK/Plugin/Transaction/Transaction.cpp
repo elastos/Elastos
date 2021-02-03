@@ -25,6 +25,10 @@
 #include <Plugin/Transaction/Payload/CRCProposalReview.h>
 #include <Plugin/Transaction/Payload/CRCProposalTracking.h>
 #include <Plugin/Transaction/Payload/CRCProposalWithdraw.h>
+#include <Plugin/Transaction/Payload/CRCProposalRealWithdraw.h>
+#include <Plugin/Transaction/Payload/CRCouncilMemberClaimNode.h>
+#include <Plugin/Transaction/Payload/NextTurnDPoSInfo.h>
+#include <Plugin/Transaction/Payload/CRCAssetsRectify.h>
 #include <Wallet/Wallet.h>
 
 #include <Common/Log.h>
@@ -165,7 +169,8 @@ namespace Elastos {
 			return _type == registerCR ||
 				   _type == unregisterCR ||
 				   _type == updateCR ||
-				   _type == returnCRDepositCoin;
+				   _type == returnCRDepositCoin ||
+				   _type == crCouncilMemberClaimNode;
 		}
 
 		bool Transaction::IsProposalTransaction() const {
@@ -325,9 +330,6 @@ namespace Elastos {
 		bool Transaction::IsSigned() const {
 			if (_type == rechargeToSideChain || _type == coinBase)
 				return true;
-
-			if (_type == crcProposalWithdraw)
-				return _payload->IsValid(CRCProposalWithdrawVersion);
 
 			if (_programs.size() == 0)
 				return false;
@@ -676,13 +678,14 @@ namespace Elastos {
 			return fee;
 		}
 
-		nlohmann::json Transaction::GetSummary(const WalletPtr &wallet, uint32_t confirms, bool detail) {
+		nlohmann::json Transaction::GetSummary(const WalletPtr &wallet, const std::map<std::string, std::string> &genesisAddresses, uint32_t confirms, bool detail) {
 			std::string addr;
 			nlohmann::json summary, outputPayload;
 			std::vector<nlohmann::json> outputPayloads;
 			std::string direction = "Received";
 			BigInt inputAmount(0), outputAmount(0), changeAmount(0);
 			uint64_t fee = 0;
+			std::string topUpSidechain;
 			std::map<std::string, BigInt>::iterator it;
 			std::map<uint256, TransactionPtr> txInput = wallet->TransactionsForInputs(_inputs);
 
@@ -722,6 +725,12 @@ namespace Elastos {
 			for (OutputArray::iterator o = _outputs.begin(); o != _outputs.end(); ++o) {
 				const BigInt &oAmount = (*o)->Amount();
 				addr = (*o)->Addr()->String();
+				for (std::map<std::string, std::string>::const_iterator it = genesisAddresses.cbegin(); it != genesisAddresses.cend(); ++it) {
+					if (addr == it->second) {
+						topUpSidechain = it->first;
+						break;
+					}
+				}
 
 				if ((*o)->GetType() == TransactionOutput::VoteOutput) {
 					outputPayload = (*o)->GetPayload()->ToJson();
@@ -776,6 +785,7 @@ namespace Elastos {
 			summary["Direction"] = direction;
 			summary["Amount"] = amount.getDec();
 			summary["Type"] = GetTransactionType();
+			summary["TopUpSidechain"] = topUpSidechain;
 			summary["Height"] = GetBlockHeight();
 			if (detail) {
 				std::string memo;
@@ -852,6 +862,8 @@ namespace Elastos {
 				payload = PayloadPtr(new CancelProducer());
 			} else if (type == returnDepositCoin) {
 				payload = PayloadPtr(new ReturnDepositCoin());
+			} else if (type == nextTurnDPOSInfo) {
+				payload = PayloadPtr(new NextTurnDPoSInfo());
 			} else if (type == registerCR || type == updateCR) {
 				payload = PayloadPtr(new CRInfo());
 			} else if (type == unregisterCR) {
@@ -866,6 +878,12 @@ namespace Elastos {
 				payload = PayloadPtr(new CRCProposalTracking());
 			} else if (type == crcProposalWithdraw) {
 				payload = PayloadPtr(new CRCProposalWithdraw());
+			} else if (type == crcProposalRealWithdraw) {
+				payload = PayloadPtr(new CRCProposalRealWithdraw());
+			} else if (type == crcAssetsRectify) {
+				payload = PayloadPtr(new CRCAssetsRectify());
+			} else if (type == crCouncilMemberClaimNode) {
+				payload = PayloadPtr(new CRCouncilMemberClaimNode());
 			}
 
 			return payload;

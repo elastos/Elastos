@@ -55,11 +55,11 @@ namespace Elastos {
 
 		std::string EthereumTransfer::getSourceAddress() const {
 			BREthereumAddress source = ewmTransferGetSource(_ewm->getRaw(), getRaw());
-			return GetCString(addressGetEncodedString(source, 1));
+			return GetCString(addressGetEncodedString(&source, 1));
 		}
 
 		std::string EthereumTransfer::getTargetAddress() const {
-			BREthereumAddress target = ewmTransferGetTarget(_ewm->getRaw(), getRaw());
+			BREthereumAddress *target = ewmTransferGetTarget(_ewm->getRaw(), getRaw());
 			return GetCString(addressGetEncodedString(target, 1));
 		}
 
@@ -96,11 +96,10 @@ namespace Elastos {
 		}
 
 		std::string EthereumTransfer::getFee() const {
-			return getFee(EthereumAmount::Unit::ETHER_GWEI);
+			return getFee(EthereumAmount::Unit::ETHER_WEI);
 		}
 
 		std::string EthereumTransfer::getFee(EthereumAmount::Unit unit) const {
-			assert(!EthereumAmount::isTokenUnit(unit));
 			int overflow = 0;
 			BREthereumEther fee = ewmTransferGetFee(_ewm->getRaw(), getRaw(), &overflow);
 			std::string feeString;
@@ -112,11 +111,10 @@ namespace Elastos {
 		}
 
 		std::string EthereumTransfer::getGasPrice() const {
-			return getGasPrice(EthereumAmount::Unit::ETHER_GWEI);
+			return getGasPrice(EthereumAmount::Unit::ETHER_WEI);
 		}
 
 		std::string EthereumTransfer::getGasPrice(EthereumAmount::Unit unit) const {
-			assert(!EthereumAmount::isTokenUnit(unit));
 			BREthereumGasPrice price = ewmTransferGetGasPrice(_ewm->getRaw(), getRaw(),
 															  (BREthereumEtherUnit) unit);
 			return GetCString(ewmCoerceEtherAmountToString(_ewm->getRaw(),

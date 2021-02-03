@@ -29,6 +29,15 @@ namespace Elastos {
 	namespace ElaWallet {
 
 #define CRCProposalReviewDefaultVersion 0
+#define CRCProposalReviewVersion01 0x01
+
+#define JsonKeyProposalHash "ProposalHash"
+#define JsonKeyVoteResult "VoteResult"
+#define JsonKeyOpinionHash "OpinionHash"
+#define JsonKeyOpinionData "OpinionData"
+#define JsonKeyDID "DID"
+#define JsonKeySignature "Signature"
+
 		class CRCProposalReview : public IPayload {
 		public:
 			enum VoteResult {
@@ -67,9 +76,9 @@ namespace Elastos {
 		public:
 			virtual size_t EstimateSize(uint8_t version) const;
 
-			void SerializeUnsigned(ByteStream &ostream, uint8_t version) const;
+			void SerializeUnsigned(ByteStream &stream, uint8_t version) const;
 
-			bool DeserializeUnsigned(const ByteStream &istream, uint8_t version);
+			bool DeserializeUnsigned(const ByteStream &stream, uint8_t version);
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
@@ -98,6 +107,7 @@ namespace Elastos {
 			uint256 _proposalHash;
 			VoteResult _voteResult;
 			uint256 _opinionHash;
+			bytes_t _opinionData;
 			Address _did;
 			bytes_t _signature;
 		};

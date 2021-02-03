@@ -3,7 +3,7 @@
 //  Core
 //
 //  Created by Ed Gamble on 9/4/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -112,24 +112,24 @@ provisionCreateMessageLES (BREthereumProvision *provisionMulti,
             BRArrayOf(uint64_t) messageBlkNumbers;
             array_new (messageBlkNumbers, messageContentLimit);
 
-            BRArrayOf(uint64_t) messageChtNumbers;
-            array_new (messageChtNumbers, messageContentLimit);
+            BRArrayOf(uint64_t) messageSectionIdxNumbers;
+            array_new (messageSectionIdxNumbers, messageContentLimit);
 
             size_t numbersOffset = index * messageContentLimit;
 
             for (size_t i = 0; i < minimum (messageContentLimit, numbersCount - numbersOffset); i++) {
                 uint64_t blkNumber = numbers[(numbersOffset + i)];
-                uint64_t chtNumber = messageLESGetChtNumber(blkNumber);
+                uint64_t sectionIdx = messageLESGetSectionIdxNumber(blkNumber);
 
                 array_add (messageBlkNumbers, blkNumber);
-                array_add (messageChtNumbers, chtNumber);
+                array_add (messageSectionIdxNumbers, sectionIdx);
             }
 
             return (BREthereumMessage) {
                 MESSAGE_LES,
                 { .les = {
-                    LES_MESSAGE_GET_HEADER_PROOFS,
-                    { .getHeaderProofs = { messageId, messageChtNumbers, messageBlkNumbers }}}}
+                    LES_MESSAGE_GET_HELPER_TRIE_PROOFS,
+                    { .getHelperTrieProofs = { messageId, messageSectionIdxNumbers, messageBlkNumbers }}}}
             };
         }
 
@@ -216,8 +216,8 @@ provisionCreateMessageLES (BREthereumProvision *provisionMulti,
             return (BREthereumMessage) {
                 MESSAGE_LES,
                 { .les = {
-                    LES_MESSAGE_GET_PROOFS,
-                    { .getProofs = { messageId, specs }}}}
+                    LES_MESSAGE_GET_PROOFS_V2,
+                    { .getProofsV2 = { messageId, specs }}}}
             };
         }
 
@@ -317,7 +317,7 @@ provisionHandleMessageLES (BREthereumProvision *provisionMulti,
         }
 
         case PROVISION_BLOCK_PROOFS: {
-            assert (LES_MESSAGE_HEADER_PROOFS == message.identifier);
+            assert (LES_MESSAGE_HELPER_TRIE_PROOFS == message.identifier);
 
             BREthereumProvisionProofs *provision = &provisionMulti->u.proofs;
             BRArrayOf(BREthereumBlockHeaderProof) provisionProofs = provision->proofs;
@@ -327,7 +327,7 @@ provisionHandleMessageLES (BREthereumProvision *provisionMulti,
             BRArrayOf(BREthereumBlockHeader) messageHeaders;
             BRArrayOf(BREthereumMPTNodePath) messagePaths;
 
-            messageLESHeaderProofsConsume (&message.u.headerProofs, &messageHeaders, &messagePaths);
+            messageLESHelperTrieProofsConsume (&message.u.helperTrieProofs, &messageHeaders, &messagePaths);
 
             if (0 == array_count(messageHeaders))
                 status = PROVISION_ERROR;
@@ -420,7 +420,7 @@ provisionHandleMessageLES (BREthereumProvision *provisionMulti,
         }
 
         case PROVISION_ACCOUNTS: {
-            assert (LES_MESSAGE_PROOFS == message.identifier);
+            assert (LES_MESSAGE_PROOFS_V2 == message.identifier);
             BREthereumProvisionAccounts *provision = &provisionMulti->u.accounts;
             BREthereumHash hash = addressGetHash(provision->address);
             BREthereumData key  = { sizeof(BREthereumHash), hash.bytes };
@@ -431,10 +431,11 @@ provisionHandleMessageLES (BREthereumProvision *provisionMulti,
             BREthereumProvisionIdentifier identifier = messageLESGetRequestId (&message);
 
             BRArrayOf(BREthereumMPTNodePath) messagePaths;
-            messageLESProofsConsume(&message.u.proofs, &messagePaths);
+            array_new (messagePaths, 1);
+            messageLESProofsV2Consume(&message.u.proofsV2, &messagePaths);
 
             if (0 == array_count(messagePaths))
-                status = PROVISION_ERROR;
+                status = PROVISION_SUCCESS;
             else {
                 // We need a coder to RLP decode the proof's RLP data into an AccountState.  We could,
                 // and probably should, pass the coder for LES all the way down here.  It is a long

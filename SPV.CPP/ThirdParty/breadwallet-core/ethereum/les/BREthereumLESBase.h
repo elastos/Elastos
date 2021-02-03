@@ -3,7 +3,7 @@
 //  Core
 //
 //  Created by Ed Gamble on 9/1/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -34,14 +34,14 @@
 
 /** */
 #define LES_SUPPORT_GETH
-#define LES_SUPPORT_GETH_VERSION        (2)
+#define LES_SUPPORT_GETH_VERSION        (3)
 #define LES_SUPPORT_GETH_ANNOUNCE_TYPE  (1)
 
 /**
  * We can optionally only bootstrap from a BRD server.  Setting this overrides the subsequent
  * LES_BOOTSTRAP_LCL_ONLY
  */
-// #define LES_BOOTSTRAP_BRD_ONLY
+#define LES_BOOTSTRAP_BRD_ONLY
 
 /**
  * For debugging only, we can optionally only bootstrap from a LCL (local) server.

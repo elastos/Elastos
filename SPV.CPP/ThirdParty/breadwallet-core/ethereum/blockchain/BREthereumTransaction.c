@@ -1,9 +1,9 @@
 //
 //  BBREthereumTransaction.c
-//  breadwallet-core Ethereum
+//  Core Ethereum
 //
 //  Created by Ed Gamble on 2/21/2018.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -40,7 +40,7 @@ struct BREthereumTransactionRecord {
     /**
      * The target address - recvs 'amount'
      */
-    BREthereumAddress targetAddress;
+    BREthereumAddress *targetAddress;
 
     /**
      * The amount transferred from sourceAddress to targetAddress.  Note that this is not
@@ -93,7 +93,7 @@ struct BREthereumTransactionRecord {
 
 extern BREthereumTransaction
 transactionCreate(BREthereumAddress sourceAddress,
-                  BREthereumAddress targetAddress,
+                  BREthereumAddress *targetAddress,
                   BREthereumEther amount,
                   BREthereumGasPrice gasPrice,
                   BREthereumGas gasLimit,
@@ -103,7 +103,14 @@ transactionCreate(BREthereumAddress sourceAddress,
 
     transactionSetStatus(transaction, transactionStatusCreate (TRANSACTION_STATUS_UNKNOWN));
     transaction->sourceAddress = sourceAddress;
-    transaction->targetAddress = targetAddress;
+
+    if (targetAddress != NULL) {
+        transaction->targetAddress = calloc(1, sizeof(BREthereumAddress));
+        *transaction->targetAddress = *targetAddress;
+    } else {
+        transaction->targetAddress = NULL;
+    }
+
     transaction->amount = amount;
     transaction->gasPrice = gasPrice;
     transaction->gasLimit = gasLimit;           // Must not be changed.
@@ -127,6 +134,10 @@ transactionCopy (BREthereumTransaction transaction) {
     BREthereumTransaction copy = calloc (1, sizeof (struct BREthereumTransactionRecord));
     memcpy (copy, transaction, sizeof (struct BREthereumTransactionRecord));
     copy->data = (NULL == transaction->data ? NULL : strdup(transaction->data));
+    if (NULL != transaction->targetAddress) {
+        copy->targetAddress = calloc(1, sizeof(BREthereumAddress));
+        *copy->targetAddress = *transaction->targetAddress;
+    }
 
 #if defined (TRANSACTION_LOG_ALLOC_COUNT)
     eth_log ("MEM", "TX Copy - Count: %d", ++transactionAllocCount);
@@ -139,6 +150,7 @@ extern void
 transactionRelease (BREthereumTransaction transaction) {
     if (NULL != transaction) {
         if (NULL != transaction->data) free (transaction->data);
+        if (NULL != transaction->targetAddress) free (transaction->targetAddress);
 #if defined (TRANSACTION_LOG_ALLOC_COUNT)
         eth_log ("MEM", "TX Release - Count: %d", --transactionAllocCount);
 #endif
@@ -156,7 +168,7 @@ transactionGetSourceAddress(BREthereumTransaction transaction) {
     return transaction->sourceAddress;
 }
 
-extern BREthereumAddress
+extern BREthereumAddress*
 transactionGetTargetAddress(BREthereumTransaction transaction) {
     return transaction->targetAddress;
 }
@@ -165,7 +177,7 @@ extern BREthereumBoolean
 transactionHasAddress (BREthereumTransaction transaction,
                        BREthereumAddress address) {
     return (ETHEREUM_BOOLEAN_IS_TRUE(addressEqual(address, transaction->sourceAddress))
-            || ETHEREUM_BOOLEAN_IS_TRUE(addressEqual(address, transaction->targetAddress))
+            || (transaction->targetAddress != NULL && ETHEREUM_BOOLEAN_IS_TRUE(addressEqual(address, *transaction->targetAddress)))
             ? ETHEREUM_BOOLEAN_TRUE
             : ETHEREUM_BOOLEAN_FALSE);
 }
@@ -175,22 +187,34 @@ transactionGetAmount(BREthereumTransaction transaction) {
     return transaction->amount;
 }
 
+extern BREthereumFeeBasis
+transactionGetFeeBasis (BREthereumTransaction transaction) {
+    BREthereumGas gas = (ETHEREUM_BOOLEAN_IS_TRUE(transactionIsConfirmed(transaction))
+                         ? transaction->status.u.included.gasUsed
+                         : transaction->gasLimit);
+
+    return (BREthereumFeeBasis) {
+        FEE_BASIS_GAS,
+        { gas, transaction->gasPrice }
+    };
+}
+
 extern BREthereumEther
 transactionGetFee (BREthereumTransaction transaction, int *overflow) {
-    return etherCreate
-    (mulUInt256_Overflow(transaction->gasPrice.etherPerGas.valueInWEI,
-                         createUInt256 (ETHEREUM_BOOLEAN_IS_TRUE(transactionIsConfirmed(transaction))
-                                        ? transaction->status.u.included.gasUsed.amountOfGas
-                                        : transaction->gasLimit.amountOfGas),
-                         overflow));
+    return feeBasisGetFee (transactionGetFeeBasis(transaction), overflow);
+}
+
+extern BREthereumFeeBasis
+transactionGetFeeBasisLimit (BREthereumTransaction transaction) {
+    return (BREthereumFeeBasis) {
+        FEE_BASIS_GAS,
+        { transaction-> gasLimit, transaction->gasPrice }
+    };
 }
 
 extern BREthereumEther
 transactionGetFeeLimit (BREthereumTransaction transaction, int *overflow) {
-    return etherCreate
-    (mulUInt256_Overflow(transaction->gasPrice.etherPerGas.valueInWEI,
-                         createUInt256 (transaction->gasLimit.amountOfGas),
-                         overflow));
+    return feeBasisGetFee (transactionGetFeeBasisLimit(transaction), overflow);
 }
 
 extern BREthereumGasPrice
@@ -351,7 +375,8 @@ transactionRlpEncode(BREthereumTransaction transaction,
     // scheme using v = 27 and v = 28 remains valid and continues to operate under the same rules
     // as it does now.
 
-    transaction->chainId = networkGetChainId(network);
+    if (ETHEREUM_BOOLEAN_IS_FALSE(transactionIsSigned(transaction)))
+		transaction->chainId = networkGetChainId(network);
 
     switch (type) {
         case RLP_TYPE_TRANSACTION_UNSIGNED:
@@ -379,7 +404,7 @@ transactionRlpEncode(BREthereumTransaction transaction,
 
             // For ARCHIVE add in a few things beyond 'SIGNED / NETWORK'
             if (RLP_TYPE_ARCHIVE == type) {
-                items[ 9] = addressRlpEncode(transaction->sourceAddress, coder);
+                items[ 9] = addressRlpEncode(&transaction->sourceAddress, coder);
                 items[10] = hashRlpEncode(transaction->hash, coder);
                 items[11] = transactionStatusRLPEncode(transaction->status, coder);
                 itemsCount += 3;
@@ -446,6 +471,13 @@ transactionRlpDecode (BRRlpItem item,
         transaction->signature.sig.vrs.v = (eipChainId > 30
                                             ? eipChainId - 8 - 2 * transaction->chainId
                                             : eipChainId);
+        if (transaction->signature.sig.vrs.v != 0x1b && transaction->signature.sig.vrs.v != 0x1c) {
+        	transaction->chainId = networkGetChainIdOld(network);
+        	transaction->signature.sig.vrs.v = (eipChainId > 30
+												? eipChainId - 8 - 2 * transaction->chainId
+												: eipChainId);
+			assert(transaction->signature.sig.vrs.v == 27 || transaction->signature.sig.vrs.v == 28);
+		}
         
         BRRlpData rData = rlpDecodeBytesSharedDontRelease (coder, items[7]);
         assert (32 >= rData.bytesCount);
@@ -460,12 +492,17 @@ transactionRlpDecode (BRRlpItem item,
     }
     
     switch (type) {
-        case RLP_TYPE_ARCHIVE:
-            // Extract the archive-specific data
-            transaction->sourceAddress = addressRlpDecode(items[9], coder);
-            transaction->hash = hashRlpDecode(items[10], coder);
-            transaction->status = transactionStatusRLPDecode(items[11], NULL, coder);
-            break;
+        case RLP_TYPE_ARCHIVE: {
+			// Extract the archive-specific data
+			BREthereumAddress *tmpAddress = addressRlpDecode(items[9], coder);
+			if (NULL != tmpAddress) {
+				transaction->sourceAddress = *tmpAddress;
+				free(tmpAddress);
+			}
+			transaction->hash = hashRlpDecode(items[10], coder);
+			transaction->status = transactionStatusRLPDecode(items[11], NULL, coder);
+			break;
+		}
 
         case RLP_TYPE_TRANSACTION_SIGNED: {
             // With a SIGNED RLP encoding, we can extract the source address and compute the hash.
@@ -595,7 +632,7 @@ transactionShow (BREthereumTransaction transaction, const char *topic) {
     int overflow;
 
     char *hash = hashAsString (transaction->hash);
-    char *source = addressGetEncodedString(transaction->sourceAddress, 1);
+    char *source = addressGetEncodedString(&transaction->sourceAddress, 1);
     char *target = addressGetEncodedString(transactionGetTargetAddress(transaction), 1);
     char *amount = etherGetValueString (transactionGetAmount(transaction), ETHER);
     char *gasP   = etherGetValueString (transactionGetGasPrice(transaction).etherPerGas, GWEI);
@@ -625,9 +662,9 @@ transactionShow (BREthereumTransaction transaction, const char *topic) {
         char *funcAddr   = functionERC20TransferDecodeAddress (function, transaction->data);
         char *funcAmt    = coerceString(funcAmount, 10);
 
-        BREthereumToken token = tokenLookup(target);
+        // BREthereumToken token = tokenLookup(target);
 
-        eth_log (topic, "    Token : %s", (NULL == token ? "???" : tokenGetSymbol(token)));
+        eth_log (topic, "    Token : %s", target); //  (NULL == token ? "???" : tokenGetSymbol(token)));
         eth_log (topic, "    TokFnc: %s", "erc20 transfer");
         eth_log (topic, "    TokAmt: %s", funcAmt);
         eth_log (topic, "    TokAdr: %s", funcAddr);
@@ -636,8 +673,9 @@ transactionShow (BREthereumTransaction transaction, const char *topic) {
 
     }
     free (totalWEI); free (total); free (fee); free (gasP);
-    free (amount); free (target); free (source); free (hash);
-
+    free (amount); free (hash);
+	if (target) free (target);
+	if (source) free (source);
 }
 
 extern void

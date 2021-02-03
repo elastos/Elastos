@@ -3,7 +3,7 @@
 //  BRCore
 //
 //  Created by Ed Gamble on 5/17/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -43,9 +43,6 @@ extern BREthereumAddress
 addressCreateKey (const BRKey *key) {
     BREthereumAddress address;
 
-    //assert ( 0 == key->compressed);
-    //assert (65 == BRKeyPubKey(key, NULL, 0));
-
     // We interrupt your regularly scheduled programming...
 
     // "Use any method you like to get it in the form of an hexadecimal string
@@ -77,9 +74,12 @@ addressCreateKey (const BRKey *key) {
 
 
 extern char *
-addressGetEncodedString (BREthereumAddress address, int useChecksum) {
+addressGetEncodedString (BREthereumAddress *address, int useChecksum) {
+	if (address == NULL)
+		return NULL;
+
     char *string = calloc (1, ADDRESS_ENCODED_CHARS);
-    addressFillEncodedString(address, useChecksum, string);
+    addressFillEncodedString(*address, useChecksum, string);
     return string;
 }
 
@@ -156,14 +156,15 @@ addressGetHash (BREthereumAddress address) {
     return hashCreateFromData(data);
 }
 
-extern BREthereumAddress
+extern BREthereumAddress*
 addressRlpDecode (BRRlpItem item, BRRlpCoder coder) {
-    BREthereumAddress address = EMPTY_ADDRESS_INIT;
+    BREthereumAddress *address = NULL;
 
     BRRlpData data = rlpDecodeBytes(coder, item);
     if (0 != data.bytesCount) {
+        address = calloc(1, sizeof(BREthereumAddress));
         assert (20 == data.bytesCount);
-        memcpy (address.bytes, data.bytes, 20);
+        memcpy (address->bytes, data.bytes, 20);
     }
 
     rlpDataRelease(data);
@@ -171,9 +172,12 @@ addressRlpDecode (BRRlpItem item, BRRlpCoder coder) {
 }
 
 extern BRRlpItem
-addressRlpEncode(BREthereumAddress address,
+addressRlpEncode(BREthereumAddress *address,
                  BRRlpCoder coder) {
-    return rlpEncodeBytes(coder, address.bytes, 20);
+	if (address == NULL)
+		return rlpEncodeBytes(coder, NULL, 0);
+
+    return rlpEncodeBytes(coder, address->bytes, 20);
 }
 
 extern BREthereumBoolean

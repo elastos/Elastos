@@ -3,7 +3,7 @@
 //  Core
 //
 //  Created by Ed Gamble on 5/24/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -176,7 +176,7 @@ extern BREthereumBCS
 bcsCreate (BREthereumNetwork network,
            BREthereumAddress address,
            BREthereumBCSListener listener,
-           BREthereumMode mode,
+           BRCryptoSyncMode mode,
            OwnershipGiven BRSetOf(BREthereumNodeConfig) peers,
            OwnershipGiven BRSetOf(BREthereumBlock) blocks,
            OwnershipGiven BRSetOf(BREthereumTransaction) transactions,
@@ -265,14 +265,15 @@ bcsCreate (BREthereumNetwork network,
         chainHeader = blockCheckpointCreatePartialBlockHeader(checkpoint);
     }
 
-    // There is no need to discover nodes if we are in BRD_ONLY mode.
-    BREthereumBoolean discoverNodes = AS_ETHEREUM_BOOLEAN (mode != BRD_ONLY);
 #if defined (LES_DISABLE_DISCOVERY)
-    discoverNodes = ETHEREUM_BOOLEAN_FALSE;
+    BREthereumBoolean discoverNodes = ETHEREUM_BOOLEAN_FALSE;
+#else
+    // There is no need to discover nodes if we are in BRD_ONLY mode.
+    BREthereumBoolean discoverNodes = AS_ETHEREUM_BOOLEAN (mode != CRYPTO_SYNC_MODE_API_ONLY);
 #endif
 
-    BREthereumBoolean handleSync = AS_ETHEREUM_BOOLEAN (P2P_ONLY == mode ||
-                                                        P2P_WITH_BRD_SYNC == mode);
+    BREthereumBoolean handleSync = AS_ETHEREUM_BOOLEAN (CRYPTO_SYNC_MODE_P2P_ONLY == mode ||
+                                                        CRYPTO_SYNC_MODE_P2P_WITH_API_SYNC == mode);
 
     bcs->les = lesCreate (bcs->network,
                           (BREthereumLESCallbackContext) bcs,
@@ -379,11 +380,11 @@ bcsSyncRange (BREthereumBCS bcs,
     uint64_t blockNumberStartAdjusted;
 
     switch (bcs->mode) {
-        case BRD_ONLY:
-        case BRD_WITH_P2P_SEND:
+        case CRYPTO_SYNC_MODE_API_ONLY:
+        case CRYPTO_SYNC_MODE_API_WITH_P2P_SEND:
             assert (0);
 
-        case P2P_WITH_BRD_SYNC:
+        case CRYPTO_SYNC_MODE_P2P_WITH_API_SYNC:
             //
             // For a PRIME_WITH_ENDPOINT sync we rely 100% on the BRD backend to provide any and
             // all blocks of interest - which is any block involving `address` in a transaction
@@ -398,7 +399,7 @@ bcsSyncRange (BREthereumBCS bcs,
             blockNumberStartAdjusted = maximum (blockNumberStart, blockNumberStop - SYNC_LINEAR_LIMIT + 1);
             break;
 
-        case P2P_ONLY:
+        case CRYPTO_SYNC_MODE_P2P_ONLY:
             //
             // For a FULL_BLOCKCHAIN sync we run our 'N-Ary Search on Account Changes' algorithm
             // which has a (current) weakness on 'ERC20 transfers w/ address as target'.  So, we
@@ -422,7 +423,7 @@ bcsSyncRange (BREthereumBCS bcs,
 extern void
 bcsSync (BREthereumBCS bcs,
          uint64_t blockNumber) {
-    assert (P2P_ONLY == bcs->mode || P2P_WITH_BRD_SYNC == bcs->mode);
+    assert (CRYPTO_SYNC_MODE_P2P_ONLY == bcs->mode || CRYPTO_SYNC_MODE_P2P_WITH_API_SYNC == bcs->mode);
 
     // Stop a sync that is currently in progress.
     if (ETHEREUM_BOOLEAN_IS_TRUE(bcsSyncInProgress(bcs)))
@@ -443,7 +444,7 @@ bcsSyncInProgress (BREthereumBCS bcs) {
 extern void
 bcsSendTransaction (BREthereumBCS bcs,
                     BREthereumTransaction transaction) {
-    assert (BRD_ONLY != bcs->mode);
+    assert (CRYPTO_SYNC_MODE_API_ONLY != bcs->mode);
     bcsSignalSubmitTransaction (bcs, transactionCopy (transaction));
 }
 
@@ -452,7 +453,7 @@ bcsSendTransactionRequest (BREthereumBCS bcs,
                            BREthereumHash transactionHash,
                            uint64_t blockNumber,
                            uint64_t blockTransactionIndex) {
-    assert (P2P_ONLY == bcs->mode || P2P_WITH_BRD_SYNC == bcs->mode);
+    assert (CRYPTO_SYNC_MODE_P2P_ONLY == bcs->mode || CRYPTO_SYNC_MODE_P2P_WITH_API_SYNC == bcs->mode);
     // There is a transaction in `blockNumber` - get the block header and 'flow through' the logic
     // to find the suspected transaction.
     lesProvideBlockHeaders (bcs->les,
@@ -467,7 +468,7 @@ bcsSendLogRequest (BREthereumBCS bcs,
                    BREthereumHash transactionHash,
                    uint64_t blockNumber,
                    uint64_t blockTransactionIndex) {
-    assert (P2P_ONLY == bcs->mode || P2P_WITH_BRD_SYNC == bcs->mode);
+    assert (CRYPTO_SYNC_MODE_P2P_ONLY == bcs->mode || CRYPTO_SYNC_MODE_P2P_WITH_API_SYNC == bcs->mode);
     // There is a log in `blockNumber` - get the block header and 'flow through' the logic to find
     // the suspected log.
     lesProvideBlockHeaders (bcs->les,
@@ -482,7 +483,7 @@ bcsReportInterestingBlocks (BREthereumBCS bcs,
                             // interest
                             // request id
                             BRArrayOf(uint64_t) blockNumbers) {
-    assert (P2P_ONLY == bcs->mode || P2P_WITH_BRD_SYNC == bcs->mode);
+    assert (CRYPTO_SYNC_MODE_P2P_ONLY == bcs->mode || CRYPTO_SYNC_MODE_P2P_WITH_API_SYNC == bcs->mode);
     eth_log ("BCS", "Report Interesting Blocks: %zu", array_count(blockNumbers));
     for (size_t index = 0; index < array_count(blockNumbers); index++)
         lesProvideBlockHeaders (bcs->les,
@@ -600,6 +601,9 @@ bcsHandleSubmitTransaction (BREthereumBCS bcs,
     int pendingIndex = bcsLookupPendingTransaction (bcs, hash);
     if (-1 != pendingIndex) return;  // already pending, so skip out.
 
+    // We only ever submit transactions that are UNKNOWN.
+    assert (TRANSACTION_STATUS_UNKNOWN == transactionGetStatus(transaction).type);
+
     // Make the transaction pending.
     bcsPendTransaction(bcs, transaction);
 
@@ -621,7 +625,7 @@ bcsHandleStatus (BREthereumBCS bcs,
                  BREthereumHash headHash,
                  uint64_t headNumber) {
     // If we are not a P2P_* node, we won't handle announcements
-    if (BRD_ONLY == bcs->mode || BRD_WITH_P2P_SEND == bcs->mode) {
+    if (CRYPTO_SYNC_MODE_API_ONLY == bcs->mode || CRYPTO_SYNC_MODE_API_WITH_P2P_SEND == bcs->mode) {
 #if defined (BCS_REPORT_IGNORED_ANNOUNCE)
         eth_log ("BCS", "Status %" PRIu64 " Ignored (not P2P) <== %s",
                  headNumber,
@@ -647,7 +651,7 @@ bcsHandleAnnounce (BREthereumBCS bcs,
                    UInt256 headTotalDifficulty,
                    uint64_t reorgDepth) {
     // If we are not a P2P_* node, we won't handle announcements
-    if (BRD_ONLY == bcs->mode || BRD_WITH_P2P_SEND == bcs->mode) {
+    if (CRYPTO_SYNC_MODE_API_ONLY == bcs->mode || CRYPTO_SYNC_MODE_API_WITH_P2P_SEND == bcs->mode) {
 #if defined (BCS_REPORT_IGNORED_ANNOUNCE)
         eth_log ("BCS", "Block %" PRIu64 " Ignored (not P2P) <== %s",
                  headNumber,
@@ -1262,6 +1266,9 @@ bcsBlockHasMatchingLogs (BREthereumBCS bcs,
 static BREthereumBoolean
 bcsBlockNeedsAccountState (BREthereumBCS bcs,
                            BREthereumBlock block) {
+	if (blockGetNumber(block) >= bcsSyncGetLastBlockNumber(bcs->sync))
+		return ETHEREUM_BOOLEAN_TRUE;
+
     return ETHEREUM_BOOLEAN_FALSE;
 }
 
@@ -1383,17 +1390,17 @@ bcsHandleBlockHeaders (BREthereumBCS bcs,
 
     array_free(headers);
 
+	if (NULL != receiptsHashes && array_count(receiptsHashes) > 0)
+		lesProvideReceipts (bcs->les, node,
+							(BREthereumLESProvisionContext) bcs,
+							(BREthereumLESProvisionCallback) bcsSignalProvision,
+							receiptsHashes);
+
     if (NULL != bodiesHashes && array_count(bodiesHashes) > 0)
         lesProvideBlockBodies (bcs->les, node,
                                (BREthereumLESProvisionContext) bcs,
                                (BREthereumLESProvisionCallback) bcsSignalProvision,
                                bodiesHashes);
-
-    if (NULL != receiptsHashes && array_count(receiptsHashes) > 0)
-        lesProvideReceipts (bcs->les, node,
-                            (BREthereumLESProvisionContext) bcs,
-                            (BREthereumLESProvisionCallback) bcsSignalProvision,
-                            receiptsHashes);
 
     if (NULL != accountsHashes && array_count(accountsHashes) > 0)
         lesProvideAccountStates (bcs->les, node,
@@ -1530,9 +1537,26 @@ bcsHandleBlockBody (BREthereumBCS bcs,
     for (int i = 0; i < array_count(transactions); i++) {
         BREthereumTransaction tx = transactions[i];
         assert (NULL != tx);
-        
+
+        // get transaction logs
+        BREthereumLog log = NULL;
+        BREthereumBlockStatus blockStatus = blockGetStatus(block);
+        if (blockStatus.logs) {
+			for (size_t li = 0; li < array_count(blockStatus.logs); li++) {
+				BREthereumTransactionStatus status = logGetStatus(blockStatus.logs[li]);
+				uint64_t transactionIndex = -1;
+				if (transactionStatusExtractIncluded(&status, NULL, NULL, &transactionIndex, NULL, NULL) &&
+					transactionIndex == i) {
+					log = blockStatus.logs[i];
+					break;
+				}
+			}
+		}
+
         // If it is our transaction (as source or target), handle it.
-        if (ETHEREUM_BOOLEAN_IS_TRUE(transactionHasAddress(tx, bcs->address))) {
+        if (ETHEREUM_BOOLEAN_IS_TRUE(transactionHasAddress(tx, bcs->address)) ||
+			(log != NULL &&
+			ETHEREUM_BOOLEAN_TRUE == logMatchesAddress(log, bcs->address, ETHEREUM_BOOLEAN_TRUE))) {
             eth_log("BCS", "Bodies %" PRIu64 " Found Transaction at %d",
                     blockGetNumber(block), i);
 
@@ -1582,7 +1606,7 @@ bcsHandleBlockBody (BREthereumBCS bcs,
 
         // 3) We want the account state too - because we've found a transaction for bcs->address
         // and the account changed (instead of computing the account, we'll query definitively).
-        if (ETHEREUM_BOOLEAN_IS_TRUE (blockHasStatusAccountStateRequest (block, BLOCK_REQUEST_NOT_NEEDED))) {
+        if (0 && ETHEREUM_BOOLEAN_IS_TRUE (blockHasStatusAccountStateRequest (block, BLOCK_REQUEST_NOT_NEEDED))) {
             blockReportStatusAccountStateRequest(block, BLOCK_REQUEST_PENDING);
             lesProvideAccountStatesOne (bcs->les, node,
                                         (BREthereumLESProvisionContext) bcs,
@@ -1892,7 +1916,7 @@ bcsHandleTransactionReceiptsMultiple (BREthereumBCS bcs,
  *     Note: we'll only remove from pending if two back-to-back nodes report the same status.
  *
  *  b) if a node reports a transaction as errored (other than 'dropped'), we'll remove the
- *     transaction from pending and mark the transaction as ERRORED.  If is posslble that the
+ *     transaction from pending and mark the transaction as ERRORED.  It is posslble that the
  *     transaction does get included in a subsequently announced block.  Having the tranaction
  *     subsequently included implies a race condition between nodes, I think.  Note: we'll only
  *     remote from pending if two back-to-back statuses report the same error.
@@ -1901,6 +1925,11 @@ bcsHandleTransactionReceiptsMultiple (BREthereumBCS bcs,
  *     on its face) we'll ignore the UNKNOWN status.  The transaction stays pending, future status
  *     requests occur and we'll hopefully get better status info.  Or, the transaction will be
  *     part of an announced block.
+ *
+ * There are races here.  Say we've connected to two nodes that are reliably reporting status.  We
+ * get a TxStatus response from A, B and then B, A.  If 'B' is error, we'll declare the transaction
+ * in error and unpend.  However, as we noted above, once the transaction is in a block, it will
+ * move to INCLUDED.
  *
  * What does this imply from a User's perspective.  They might see a transaction in error that
  * comes back to life as INCLUDED.  Worse, they might see a transaction in error and try to
@@ -1940,12 +1969,15 @@ bcsHandleTransactionStatus (BREthereumBCS bcs,
             return;
 
         case TRANSACTION_STATUS_QUEUED:
-            needStatus = TRANSACTION_STATUS_UNKNOWN == oldStatus.type;
+            // See below comment in PENDING.
+            needStatus = TRANSACTION_STATUS_QUEUED != oldStatus.type;
             break;
 
         case TRANSACTION_STATUS_PENDING:
-            needStatus = (TRANSACTION_STATUS_UNKNOWN == oldStatus.type ||
-                          TRANSACTION_STATUS_QUEUED  == oldStatus.type);
+            // Be willing to go PENDING no matter the prior status.  In particular, if some status
+            // is ERROR (like a node is syncing and reject sthe transaction submission outright) and
+            // some other node reports PENDING, then go to PENDING (needStatus = 1).
+            needStatus = TRANSACTION_STATUS_PENDING != oldStatus.type;
             break;
 
         case TRANSACTION_STATUS_INCLUDED:
@@ -2274,19 +2306,22 @@ bcsHandleProvision (BREthereumBCS bcs,
                     //
                     // This can cause problems... as in, we are queryng a node based on a recent
                     // block but upon resubmission the other node is behind.
+#if 0
                     lesRetryProvision (bcs->les,
                                        NODE_REFERENCE_ANY,
                                        (BREthereumLESProvisionContext) bcs,
                                        (BREthereumLESProvisionCallback) bcsSignalProvision,
                                        provision);
                     needProvisionRelease = 0;
+#endif
 
                     eth_log ("BCS", "Resubmitted Provision: %zu: %s",
                              provision->identifier,
                              provisionGetTypeName(provision->type));
                     break;
 
-                default: break;
+                case PROVISION_ERROR_NODE_DATA:
+                    break;
             }
             break;
 

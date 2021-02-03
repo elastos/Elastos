@@ -468,6 +468,32 @@ namespace Elastos {
 			}
 		}
 
+		void Account::ResetPassword(const std::string &mnemonic, const std::string &passphrase, const std::string &newPassword) {
+			if (!_localstore->Readonly()) {
+				ErrorChecker::CheckPassword(newPassword, "New");
+
+				uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
+				HDSeed hdseed(seed.bytes());
+				HDKeychain rootkey(hdseed.getExtendedKey(true));
+				std::string xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
+				if (xPubKey != _localstore->GetxPubKey())
+					ErrorChecker::ThrowParamException(Error::InvalidArgument, "xpub not match");
+
+				std::string encryptedSeed = AES::EncryptCCM(bytes_t(seed.begin(), seed.size()), newPassword);
+				std::string encryptedMnemonic = AES::EncryptCCM(bytes_t(mnemonic.data(), mnemonic.size()), newPassword);
+				std::string encryptedxPrvKey = AES::EncryptCCM(rootkey.extkey(), newPassword);
+				HDKeychain requestKey = rootkey.getChild("1'/0");
+				std::string encryptedRequestPrvKey = AES::EncryptCCM(requestKey.privkey(), newPassword);
+
+				_localstore->SetSeed(encryptedSeed);
+				_localstore->SetMnemonic(encryptedMnemonic);
+				_localstore->SetxPrivKey(encryptedxPrvKey);
+				_localstore->SetRequestPrivKey(encryptedRequestPrvKey);
+
+				_localstore->Save();
+			}
+		}
+
 		nlohmann::json Account::GetBasicInfo() const {
 			nlohmann::json j;
 			if (GetSignType() == MultiSign)
@@ -577,8 +603,8 @@ namespace Elastos {
 			_localstore->SetSubWalletInfoList(info);
 		}
 
-		void Account::RemoveSubWalletInfo(const CoinInfoPtr &info) {
-			_localstore->RemoveSubWalletInfo(info);
+		void Account::RemoveSubWalletInfo(const std::string &chainID) {
+			_localstore->RemoveSubWalletInfo(chainID);
 		}
 
 		KeyStore Account::ExportKeystore(const std::string &payPasswd) const {
@@ -926,7 +952,8 @@ namespace Elastos {
 			bytes = rootkey.getChild("44'/0'/1'/0/0").pubkey();
 			_localstore->SetOwnerPubKey(bytes.getHex());
 
-			if (_localstore->GetSeed().empty() && !_localstore->HasPassPhrase() && !_localstore->GetMnemonic().empty()) {
+			if ((_localstore->GetSeed().empty() || _localstore->GetETHSCPrimaryPubKey().empty()) &&
+				!_localstore->HasPassPhrase() && !_localstore->GetMnemonic().empty()) {
 				if (mnemonic.empty()) {
 					bytes = AES::DecryptCCM(_localstore->GetMnemonic(), payPasswd);
 					mnemonic = std::string((char *) &bytes[0], bytes.size());

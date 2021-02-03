@@ -1,9 +1,9 @@
 //
 //  BBREthereumBlock.c
-//  breadwallet-core Ethereum
+//  Core Ethereum
 //
 //  Created by Ed Gamble on 3/23/2018.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -39,6 +39,8 @@ static unsigned int blockHeaderAllocCount = 0;
 #define EIP155_FORK_BLOCK_NUMBER      (2675000)
 #define EIP158_FORK_BLOCK_NUMBER      (2675000)
 #define BYZANTIUM_FORK_BLOCK_NUMBER   (4370000)
+#define ISTANBUL_FORK_BLOCK_NUMBER    (9069000)
+
 
 /// MARK: - Block Status
 
@@ -143,7 +145,7 @@ struct BREthereumBlockHeaderRecord {
      * An arbitrary byte array containing data relevant to this block. This must be 32 bytes or
      * fewer; formally Hx.
      */
-    uint8_t extraData [1024];
+    uint8_t extraData [20480];
     uint32_t extraDataCount;
 
     /**
@@ -438,7 +440,7 @@ blockHeaderValidateGasUsed (BREthereumBlockHeader this,
 static int
 blockHeaderValidateExtraData (BREthereumBlockHeader this,
                               BREthereumBlockHeader parent) {
-    return this->extraDataCount <= 1024;
+    return this->extraDataCount <= sizeof(this->extraData);
 }
 
 #if defined (INCLUDE_UNUSED_FUNCTION)
@@ -538,7 +540,7 @@ blockHeaderRlpEncode (BREthereumBlockHeader header,
 
     items[ 0] = hashRlpEncode(header->parentHash, coder);
     items[ 1] = hashRlpEncode(header->ommersHash, coder);
-    items[ 2] = addressRlpEncode(header->beneficiary, coder);
+    items[ 2] = addressRlpEncode(&header->beneficiary, coder);
     items[ 3] = hashRlpEncode(header->stateRoot, coder);
     items[ 4] = hashRlpEncode(header->transactionsRoot, coder);
     items[ 5] = hashRlpEncode(header->receiptsRoot, coder);
@@ -572,7 +574,13 @@ blockHeaderRlpDecode (BRRlpItem item,
 
     header->parentHash = hashRlpDecode(items[0], coder);
     header->ommersHash = hashRlpDecode(items[1], coder);
-    header->beneficiary = addressRlpDecode(items[2], coder);
+    BREthereumAddress *tmpAddress = addressRlpDecode(items[2], coder);
+    if (tmpAddress != NULL) {
+        header->beneficiary = *tmpAddress;
+        free(tmpAddress);
+    } else {
+        header->beneficiary = EMPTY_ADDRESS_INIT;
+    }
     header->stateRoot = hashRlpDecode(items[3], coder);
     header->transactionsRoot = hashRlpDecode(items[4], coder);
     header->receiptsRoot = hashRlpDecode(items[5], coder);
@@ -897,7 +905,9 @@ blockLinkLogsWithTransactions (BREthereumBlock block) {
         BREthereumLog log = block->status.logs[index];
         BREthereumTransactionStatus status = logGetStatus(log);
         uint64_t transactionIndex; size_t logIndex;
-        assert (transactionStatusExtractIncluded(&status, NULL, NULL, &transactionIndex, NULL, NULL));
+
+        int transactionIncluded = transactionStatusExtractIncluded (&status, NULL, NULL, &transactionIndex, NULL, NULL);
+        assert (transactionIncluded);
 
         // Importantly, note that the log has no reference to the transaction itself.  And, if only
         // implicitly, we assume that `block` has the correct transaction at transactionIndex.
@@ -1428,8 +1438,7 @@ static struct BREthereumBlockHeaderRecord genesisMainnetBlockHeaderRecord = {
     0,
 
     // uint8_t extraData [32];
-    { 0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,
-      0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0 },
+    { 0 },
 
     // uint8_t extraDataCount;
     0,
@@ -1698,29 +1707,21 @@ initializeGenesisBlocks (void) {
 
 /// MARK: - Block Checkpoint
 
-BREthereumBlockCheckpoint
+static BREthereumBlockCheckpoint
 ethereumMainnetCheckpoints [] = {
-    {       0, "\xd4\xe5\x67\x40\xf8\x76\xae\xf8\xc0\x10\xb8\x6a\x40\xd5\xf5\x67\x45\xa1\x18\xd0\x90\x6a\x34\xe6\x9a\xec\x8c\x0d\xb1\xcb\x8f\xa3", { .std = "17179869184"              },          0 },
-    { 4000000, "\xb8\xa3\xf7\xf5\xcf\xc1\x74\x8f\x91\xa6\x84\xf2\x0f\xe8\x90\x31\x20\x2c\xba\xdc\xd1\x50\x78\xc4\x9b\x85\xec\x2a\x57\xf4\x38\x53", { .std = "469024977881526938386"    }, 1499633567 },
-    { 4500000, "\x43\x34\x0a\x6d\x23\x25\x32\xc3\x28\x21\x1d\x8a\x8c\x0f\xa8\x4a\xf6\x58\xdb\xff\x1f\x49\x06\xab\x7a\x7d\x4e\x41\xf8\x2f\xe3\xa3", { .std = "1386905480746946772236"   }, 1509953783 },
-    { 5000000, "\x7d\x5a\x43\x69\x27\x3c\x72\x34\x54\xac\x13\x7f\x48\xa4\xf1\x42\xb0\x97\xaa\x27\x79\x46\x4e\x65\x05\xf1\xb1\xc5\xe3\x7b\x53\x82", { .std = "2285199027754071740498"   }, 1517319693 },
-    { 5500000, "\x2d\x3a\x15\x4e\xee\x9f\x90\x66\x6c\x6e\x82\x4f\x11\xe1\x5f\x2d\x60\xb0\x53\x23\xa8\x12\x54\xf6\x00\x75\xc3\x4a\x61\xef\x12\x4d", { .std = "3825806101695195923560"   }, 1524611221 },
-    { 6000000, "\xbe\x84\x7b\xe2\xbc\xeb\x74\xe6\x60\xda\xf9\x6b\x3f\x06\x69\xd5\x8f\x59\xdc\x91\x01\x71\x56\x89\xa0\x0e\xf8\x64\xa5\x40\x8f\x43", { .std = "5484495551037046114587"   }, 1532118564 },
-    { 6500000, "\x70\xc8\x1c\x3c\xb2\x56\xb5\xb9\x30\xf0\x5b\x24\x4d\x09\x5c\xb4\x84\x5e\x98\x08\xc4\x8d\x88\x1e\x3c\xc3\x1d\x18\xae\x4c\x3a\xe5", { .std = "7174074700595750315193"   }, 1539330275 },
+    {       0, HASH_INIT("6afc2eb01956dfe192dc4cd065efdf6c3c80448776ca367a7246d279e228ff0a"), { .std = "0x1" },          0x1 },
 };
 #define CHECKPOINT_MAINNET_COUNT      (sizeof (ethereumMainnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
 
 static BREthereumBlockCheckpoint
 ethereumTestnetCheckpoints [] = {
-//    {       0, "\x41\x94\x10\x23\x68\x09\x23\xe0\xfe\x4d\x74\xa3\x4b\xda\xc8\x14\x1f\x25\x40\xe3\xae\x90\x62\x37\x18\xe4\x7d\x66\xd1\xca\x4a\x2d", { .std = "0x100000" },  0 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
-	{       0, "\x69\x8e\x5e\xc1\x33\x06\x4d\xab\xb7\xc4\x2e\xb4\xb2\xbd\xfa\x21\xe7\xb7\xc2\x32\x6b\x0b\x71\x9d\x5a\xb7\xf4\x52\xae\x8f\x5e\xe4", { .std = "0x1" },  0}, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
+    {       0, HASH_INIT("698e5ec133064dabb7c42eb4b2bdfa21e7b7c2326b0b719d5ab7f452ae8f5ee4"), { .std = "0x1" },  1541053856 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
 };
 #define CHECKPOINT_TESTNET_COUNT      (sizeof (ethereumTestnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
 
 static BREthereumBlockCheckpoint
 ethereumRinkebyCheckpoints [] = {
-//    {       0, "\x63\x41\xfd\x3d\xaf\x94\xb7\x48\xc7\x2c\xed\x5a\x5b\x26\x02\x8f\x24\x74\xf5\xf0\x0d\x82\x45\x04\xe4\xfa\x37\xa7\x57\x67\xe1\x77", { .std = "0x01" },  0x58ee40ba }, //  439 days  6 hrs ago (Apr-12-2017 03:20:50 PM +UTC)
-	{       0, "\x69\x40\xd4\xee\x80\x21\x8d\x11\x09\x8c\x99\xdb\x11\xe9\x97\x68\x6e\x58\x7e\xc4\x82\xc7\x28\x1e\x01\x5c\x12\xf1\x15\x2e\x71\xb5", { .std = "0x01" },  1541053864 }, //  439 days  6 hrs ago (Apr-12-2017 03:20:50 PM +UTC)
+    {       0, HASH_INIT("6940d4ee80218d11098c99db11e997686e587ec482c7281e015c12f1152e71b5"), { .std = "0x1" },  1541053864 }, //  439 days  6 hrs ago (Apr-12-2017 03:20:50 PM +UTC)
 };
 #define CHECKPOINT_RINKEBY_COUNT      (sizeof (ethereumRinkebyCheckpoints) / sizeof (BREthereumBlockCheckpoint))
 

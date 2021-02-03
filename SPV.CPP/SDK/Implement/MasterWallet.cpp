@@ -290,11 +290,11 @@ namespace Elastos {
 
 		void MasterWallet::CloseAllSubWallets() {
 			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ) {
-				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
+				ISubWallet *subWallet = it->second;
 				std::string id = _id + ":" + subWallet->GetChainID();
 				Log::info("{} closing...", id);
-				stopPeerManager(subWallet);
 
+				subWallet->SyncStop();
 				it = _createdWallets.erase(it);
 
 				delete subWallet;
@@ -310,11 +310,11 @@ namespace Elastos {
 			if (_createdWallets.find(chainID) == _createdWallets.end())
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "chainID not found");
 
-			SubWallet *subWallet = dynamic_cast<SubWallet *>(_createdWallets[chainID]);
-			_account->RemoveSubWalletInfo(subWallet->_info);
+			ISubWallet *subWallet = _createdWallets[chainID];
+			subWallet->SyncStop();
+			_account->RemoveSubWalletInfo(subWallet->GetChainID());
 			_account->Save();
 
-			stopPeerManager(subWallet);
 			_createdWallets.erase(chainID);
 
 			delete subWallet;
@@ -513,6 +513,22 @@ namespace Elastos {
 			return valid;
 		}
 
+		bool MasterWallet::IsSubWalletAddressValid(const std::string &chainID, const std::string &address) const {
+			ArgInfo("{} {}", _id, GetFunName());
+			ArgInfo("chainID: {}", chainID);
+			ArgInfo("address: {}", address);
+
+			bool valid = false;
+			if (chainID == CHAINID_MAINCHAIN || chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
+				valid = Address(address).Valid();
+			} else if (chainID == CHAINID_ESC) {
+				valid = addressValidateString(address.c_str()) == ETHEREUM_BOOLEAN_TRUE;
+			}
+
+			ArgInfo("r => {}", valid);
+			return valid;
+		}
+
 		std::vector<std::string> MasterWallet::GetSupportedChains() const {
 			ArgInfo("{} {}", _id, GetFunName());
 
@@ -535,6 +551,18 @@ namespace Elastos {
 			_account->ChangePassword(oldPassword, newPassword);
 		}
 
+		void MasterWallet::ResetPassword(const std::string &mnemonic, const std::string &passphrase,
+										 const std::string &newPassword) {
+			ArgInfo("{} {}", _id, GetFunName());
+			ArgInfo("m: *");
+			ArgInfo("passphrase: *");
+			ArgInfo("passwd: *");
+
+			_account->ResetPassword(mnemonic, passphrase, newPassword);
+
+			ArgInfo("r => ");
+		}
+
 		nlohmann::json MasterWallet::GetBasicInfo() const {
 			ArgInfo("{} {}", _id, GetFunName());
 
@@ -551,7 +579,8 @@ namespace Elastos {
 		void MasterWallet::FlushData() {
 			for (WalletMap::const_iterator it = _createdWallets.cbegin(); it != _createdWallets.cend(); ++it) {
 				SubWallet *subWallet = dynamic_cast<SubWallet*>(it->second);
-				subWallet->FlushData();
+				if (subWallet)
+					subWallet->FlushData();
 			}
 		}
 

@@ -71,6 +71,8 @@ namespace Elastos {
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
 
+			virtual void ResetPassword(const std::string &mnemonic, const std::string &passphrase, const std::string &newPassword) = 0;
+
 			virtual nlohmann::json GetBasicInfo() const = 0;
 
 			virtual SignType GetSignType() const = 0;
@@ -101,7 +103,7 @@ namespace Elastos {
 
 			virtual void SetSubWalletInfoList(const std::vector<CoinInfoPtr> &info) = 0;
 
-			virtual void RemoveSubWalletInfo(const CoinInfoPtr &info) = 0;
+			virtual void RemoveSubWalletInfo(const std::string &chainID) = 0;
 
 			virtual KeyStore ExportKeystore(const std::string &payPasswd) const = 0;
 

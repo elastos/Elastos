@@ -246,6 +246,12 @@ namespace Elastos {
 					const std::string &assetID) const = 0;
 
 			/**
+			 * Get last block information including "Height", "Timestamp", "Hash"
+			 * @return information in json format.
+			 */
+			virtual nlohmann::json GetLastBlockInfo() const = 0;
+
+			/**
 			 * Use fixed peer to sync
 			 * @param address IP or domain name.
 			 * @param port p2p port.

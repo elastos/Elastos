@@ -18,9 +18,12 @@
 
 using namespace Elastos::ElaWallet;
 
+const std::string rootpath = "Data";
+
 TEST_CASE("Sign transaction test", "[SignTransaction]") {
 	Log::registerMultiLogger();
 
+	boost::filesystem::create_directory(rootpath);
 	nlohmann::json content = "{\"Attributes\":[{\"Data\":\"353634383333303934\",\"Usage\":0}],\"BlockHeight\":2147483647,\"Fee\":10000,\"Inputs\":[{\"Address\":\"8Gqrkk876Kc1HUjeG9evyFsc91RGYWyQj4\",\"Amount\":200000000,\"Index\":0,\"Script\":\"76a914134a742f7782c295d3ea18cb59cd0101b21b1a2f88ac\",\"Sequence\":4294967295,\"Signature\":\"\",\"TxHash\":\"e77c3bea963d124311076d4737372cbb23aef8d63d5eadaad578455d481cc025\"}],\"IsRegistered\":false,\"LockTime\":0,\"Outputs\":[{\"FixedIndex\":0,\"Address\":\"Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ\",\"Amount\":\"10000000\",\"AssetId\":\"b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3\",\"OutputLock\":0,\"ProgramHash\":\"21db215de2758b7d743f66e4c66cfcc35dc54ccbcb\",\"OutputType\":0,\"Payload\":null},{\"FixedIndex\":1,\"Address\":\"8Gqrkk876Kc1HUjeG9evyFsc91RGYWyQj4\",\"Amount\":\"189990000\",\"AssetId\":\"b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3\",\"OutputLock\":0,\"ProgramHash\":\"12134a742f7782c295d3ea18cb59cd0101b21b1a2f\",\"OutputType\":0,\"Payload\":null}],\"PayLoad\":null,\"PayloadVersion\":0,\"Programs\":[],\"Remark\":\"\",\"Timestamp\":0,\"TxHash\":\"80a0eb3c6bbce2c21d542c7ce9d248fe013fc1c757addd7fcee04b14098d5fa7\",\"Type\":2,\"Version\":1}"_json;
 
 	SECTION("Sign and Verify") {
@@ -56,25 +59,25 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			uint32_t requiredSignCount = 3;
 			uint32_t coinIndex = 0;
 
-			AccountPtr account1(new Account("Data/1", mnemonic1, passphrase, payPasswd, false));
+			AccountPtr account1(new Account(rootpath + "/1", mnemonic1, passphrase, payPasswd, false));
 			SubAccountPtr subAccount1(new SubAccount(account1, coinIndex));
 			subAccount1->Init();
 			std::string multiSignPubKey1 = account1->MasterPubKeyHDPMString();
 			bytes_t ownerPubKey1 = account1->OwnerPubKey();
 
-			AccountPtr account2(new Account("Data/2", mnemonic2, passphrase, payPasswd, false));
+			AccountPtr account2(new Account(rootpath + "/2", mnemonic2, passphrase, payPasswd, false));
 			SubAccountPtr subAccount2(new SubAccount(account2, coinIndex));
 			subAccount2->Init();
 			std::string multiSignPubKey2 = account2->MasterPubKeyHDPMString();
 			bytes_t ownerPubKey2 = account2->OwnerPubKey();
 
-			AccountPtr account3(new Account("Data/3", mnemonic3, passphrase, payPasswd, false));
+			AccountPtr account3(new Account(rootpath + "/3", mnemonic3, passphrase, payPasswd, false));
 			SubAccountPtr subAccount3(new SubAccount(account3, coinIndex));
 			subAccount3->Init();
 			std::string multiSignPubKey3 = account3->MasterPubKeyHDPMString();
 			bytes_t ownerPubKey3 = account3->OwnerPubKey();
 
-			AccountPtr account4(new Account("Data/4", mnemonic4, passphrase, payPasswd, false));
+			AccountPtr account4(new Account(rootpath + "/4", mnemonic4, passphrase, payPasswd, false));
 			SubAccountPtr subAccount4(new SubAccount(account4, coinIndex));
 			subAccount4->Init();
 			std::string multiSignPubKey4 = account4->MasterPubKeyHDPMString();
@@ -161,7 +164,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				cosigners.push_back(PublicKeyRing(account3->RequestPubKey().getHex(), multiSignPubKey3));
 				cosigners.push_back(PublicKeyRing(account4->RequestPubKey().getHex(), multiSignPubKey4));
 
-				AccountPtr multiSignAccount(new Account("Data/multisign", cosigners, requiredSignCount, false, false));
+				AccountPtr multiSignAccount(new Account(rootpath + "/multisign", cosigners, requiredSignCount, false, false));
 				SubAccountPtr multiSignSubAccount(new SubAccount(multiSignAccount, coinIndex));
 				multiSignSubAccount->Init();
 				AddressArray addresses;
@@ -195,7 +198,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				cosigners.push_back(PublicKeyRing(account4->RequestPubKey().getHex(), multiSignPubKey4));
 
 				AccountPtr multiSignAccount1(
-					new Account("Data/m1", mnemonic1, passphrase, payPasswd, cosigners, requiredSignCount, false,
+					new Account(rootpath + "/m1", mnemonic1, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms1(new SubAccount(multiSignAccount1, coinIndex));
 				ms1->Init();
@@ -208,7 +211,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				cosigners.push_back(PublicKeyRing(account4->RequestPubKey().getHex(), multiSignPubKey4));
 
 				AccountPtr multiSignAccount2(
-					new Account("Data/m2", mnemonic2, passphrase, payPasswd, cosigners, requiredSignCount, false,
+					new Account(rootpath + "/m2", mnemonic2, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms2(new SubAccount(multiSignAccount2, coinIndex));
 				ms2->Init();
@@ -221,7 +224,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				cosigners.push_back(PublicKeyRing(account4->RequestPubKey().getHex(), multiSignPubKey4));
 
 				AccountPtr multiSignAccount3(
-					new Account("Data/m3", mnemonic3, passphrase, payPasswd, cosigners, requiredSignCount, false,
+					new Account(rootpath + "/m3", mnemonic3, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms3(new SubAccount(multiSignAccount3, coinIndex));
 				ms3->Init();
@@ -234,7 +237,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				cosigners.push_back(PublicKeyRing(account3->RequestPubKey().getHex(), multiSignPubKey3));
 
 				AccountPtr multiSignAccount4(
-					new Account("Data/m4", mnemonic4, passphrase, payPasswd, cosigners, requiredSignCount, false,
+					new Account(rootpath + "/m4", mnemonic4, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms4(new SubAccount(multiSignAccount4, coinIndex));
 				ms4->Init();
@@ -248,7 +251,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				cosigners.push_back(PublicKeyRing(account4->RequestPubKey().getHex(), multiSignPubKey4));
 
 				AccountPtr multiSignAccount5(
-					new Account("Data/multisign-readonly", cosigners, requiredSignCount, false, false));
+					new Account(rootpath + "/multisign-readonly", cosigners, requiredSignCount, false, false));
 
 				SubAccountPtr ms5(new SubAccount(multiSignAccount5, coinIndex));
 				ms5->Init();
@@ -295,7 +298,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		)"_json;
 		KeyStore ks;
 		REQUIRE_NOTHROW(ks.Import(keystoreJson, backupPasswd));
-		AccountPtr account1(new Account("Data/AccountTestMultiSignFromWeb", ks, payPasswd));
+		AccountPtr account1(new Account(rootpath + "/AccountTestMultiSignFromWeb", ks, payPasswd));
 		SubAccountPtr ms1(new SubAccount(account1, 0));
 		ms1->Init();
 
@@ -307,7 +310,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		std::vector<PublicKeyRing> cosigners = account1->MasterPubKeyRing();
 
 
-		AccountPtr account2(new Account("Data/MultiSignRO", cosigners, account1->GetM(), false, true));
+		AccountPtr account2(new Account(rootpath + "/MultiSignRO", cosigners, account1->GetM(), false, true));
 		SubAccountPtr ms2(new SubAccount(account2, 0));
 		ms2->Init();
 		AddressArray addr2;
@@ -331,7 +334,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 		AccountPtr account3;
 		SubAccountPtr ms3;
-		REQUIRE_NOTHROW(account3 = AccountPtr(new Account("Data/ReadOnly", readonlyJSON)));
+		REQUIRE_NOTHROW(account3 = AccountPtr(new Account(rootpath + "/ReadOnly", readonlyJSON)));
 		REQUIRE_NOTHROW(ms3 = SubAccountPtr(new SubAccount(account3, 0)));
 		ms3->Init();
 		REQUIRE(account3->GetM() == account1->GetM());

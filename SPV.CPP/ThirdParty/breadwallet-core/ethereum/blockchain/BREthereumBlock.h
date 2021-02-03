@@ -1,9 +1,9 @@
 //
 //  BBREthereumBlock.h
-//  breadwallet-core Ethereum
+//  Core Ethereum
 //
 //  Created by Ed Gamble on 3/23/2018.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -180,8 +180,8 @@ extern uint64_t
 chtRootNumberGetFromNumber (uint64_t number);
 
 
-#define BLOCK_HEADER_CHT_ROOT_INTERVAL          (2048)
-#define BLOCK_HEADER_CHT_ROOT_INTERVAL_SHIFT    (11)          // 2048 == (1 << 11)
+#define BLOCK_HEADER_CHT_ROOT_INTERVAL          (32768)
+#define BLOCK_HEADER_CHT_ROOT_INTERVAL_SHIFT    (15)          // 2048 == (1 << 11) change to 32768 == (1 << 15)
 
 /// MARK: - Block
 

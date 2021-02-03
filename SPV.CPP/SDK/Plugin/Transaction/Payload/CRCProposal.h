@@ -31,6 +31,30 @@ namespace Elastos {
 	namespace ElaWallet {
 
 #define CRCProposalDefaultVersion 0
+#define CRCProposalVersion01 0x01
+
+#define JsonKeyType "Type"
+#define JsonKeyStage "Stage"
+#define JsonKeyAmount "Amount"
+
+#define JsonKeyType "Type"
+#define JsonKeyCategoryData "CategoryData"
+#define JsonKeyOwnerPublicKey "OwnerPublicKey"
+#define JsonKeyDraftHash "DraftHash"
+#define JsonKeyDraftData "DraftData"
+#define JsonKeyBudgets "Budgets"
+#define JsonKeyRecipient "Recipient"
+#define JsonKeyTargetProposalHash "TargetProposalHash"
+#define JsonKeyNewRecipient "NewRecipient"
+#define JsonKeyNewOwnerPublicKey "NewOwnerPublicKey"
+#define JsonKeySecretaryPublicKey "SecretaryGeneralPublicKey"
+#define JsonKeySecretaryDID "SecretaryGeneralDID"
+#define JsonKeySignature "Signature"
+#define JsonKeyNewOwnerSignature "NewOwnerSignature"
+#define JsonKeySecretarySignature "SecretaryGeneralSignature"
+#define JsonKeyCRCouncilMemberDID "CRCouncilMemberDID"
+#define JsonKeyCRCouncilMemberSignature "CRCouncilMemberSignature"
+
 		class Budget : public JsonSerializer {
 		public:
 			enum Type {
@@ -61,6 +85,8 @@ namespace Elastos {
 
 			void FromJson(const nlohmann::json &j) override;
 
+			bool operator==(const Budget &budget) const;
+
 		private:
 			Budget::Type _type;
 			uint8_t _stage;
@@ -72,15 +98,15 @@ namespace Elastos {
 			enum Type {
 				normal = 0x0000,
 				elip = 0x0100,
-//				flowElip = 0x0101,
-//				infoElip = 0x0102,
-//				mainChainUpgradeCode = 0x0200,
-//				sideChainUpgradeCode = 0x0300,
-//				registerSideChain = 0x0301,
-//				secretaryGeneral = 0x0400,
-//				changeSponsor = 0x0401,
-//				closeProposal = 0x0402,
-//				dappConsensus = 0x0500,
+				flowElip = 0x0101,
+				infoElip = 0x0102,
+				mainChainUpgradeCode = 0x0200,
+				sideChainUpgradeCode = 0x0300,
+				registerSideChain = 0x0301,
+				secretaryGeneralElection = 0x0400,
+				changeProposalOwner = 0x0401,
+				terminateProposal = 0x0402,
+				dappConsensus = 0x0500,
 				maxType
 			};
 
@@ -100,10 +126,6 @@ namespace Elastos {
 
 			const bytes_t &GetOwnerPublicKey() const;
 
-			void SetCRCouncilMemberDID(const Address &crSponsorDID);
-
-			const Address &GetCRCouncilMemberDID() const;
-
 			void SetDraftHash(const uint256 &draftHash);
 
 			const uint256 &GetDraftHash() const;
@@ -116,48 +138,174 @@ namespace Elastos {
 
 			const Address &GetRecipient() const;
 
+			void SetTargetProposalHash(const uint256 &hash);
+
+			const uint256 &GetTargetProposalHash() const;
+
+			void SetNewRecipient(const Address &recipient);
+
+			const Address &GetNewRecipient() const;
+
+			void SetNewOwnerPublicKey(const bytes_t &pubkey);
+
+			const bytes_t &GetNewOwnerPublicKey() const;
+
+			void SetSecretaryPublicKey(const bytes_t &pubkey);
+
+			const bytes_t GetSecretaryPublicKey() const;
+
+			void SetSecretaryDID(const Address &did);
+
+			const Address &GetSecretaryDID() const;
+
 			void SetSignature(const bytes_t &signature);
 
 			const bytes_t &GetSignature() const;
+
+			void SetNewOwnerSignature(const bytes_t &sign);
+
+			const bytes_t &GetNewOwnerSignature() const;
+
+			void SetSecretarySignature(const bytes_t &sign);
+
+			const bytes_t &GetSecretarySignature() const;
+
+			void SetCRCouncilMemberDID(const Address &crSponsorDID);
+
+			const Address &GetCRCouncilMemberDID() const;
 
 			void SetCRCouncilMemberSignature(const bytes_t &signature);
 
 			const bytes_t &GetCRCouncilMemberSignature() const;
 
-			const uint256 &DigestOwnerUnsigned(uint8_t version) const;
-
-			const uint256 &DigestCRCouncilMemberUnsigned(uint8_t version) const;
-
 		public:
-			size_t EstimateSize(uint8_t version) const override;
+			// normal or elip
+			void SerializeOwnerUnsigned(ByteStream &stream, uint8_t version) const;
 
-			void SerializeOwnerUnsigned(ByteStream &ostream, uint8_t version) const;
-
-			bool DeserializeOwnerUnsigned(const ByteStream &istream, uint8_t version);
+			bool DeserializeOwnerUnsigned(const ByteStream &stream, uint8_t version);
 
 			void SerializeCRCouncilMemberUnsigned(ByteStream &ostream, uint8_t version) const;
 
 			bool DeserializeCRCouncilMemberUnsigned(const ByteStream &istream, uint8_t version);
 
-			void Serialize(ByteStream &ostream, uint8_t version) const override;
+			void SerializeNormalOrELIP(ByteStream &stream, uint8_t version) const;
 
-			bool Deserialize(const ByteStream &istream, uint8_t version) override;
+			bool DeserializeNormalOrELIP(const ByteStream &stream, uint8_t version);
 
-			nlohmann::json ToJsonOwnerUnsigned(uint8_t version) const;
+			nlohmann::json ToJsonNormalOwnerUnsigned(uint8_t version) const;
 
-			void FromJsonOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+			void FromJsonNormalOwnerUnsigned(const nlohmann::json &j, uint8_t version);
 
-			nlohmann::json ToJsonCRCouncilMemberUnsigned(uint8_t version) const;
+			nlohmann::json ToJsonNormalCRCouncilMemberUnsigned(uint8_t version) const;
 
-			void FromJsonCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+			void FromJsonNormalCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+			bool IsValidNormalOwnerUnsigned(uint8_t version) const;
+
+			bool IsValidNormalCRCouncilMemberUnsigned(uint8_t version) const;
+
+			const uint256 &DigestNormalOwnerUnsigned(uint8_t version) const;
+
+			const uint256 &DigestNormalCRCouncilMemberUnsigned(uint8_t version) const;
+
+			// change owner
+			void SerializeChangeOwnerUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeChangeOwnerUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeChangeOwnerCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeChangeOwnerCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeChangeOwner(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeChangeOwner(const ByteStream &stream, uint8_t version);
+
+			nlohmann::json ToJsonChangeOwnerUnsigned(uint8_t version) const;
+
+			void FromJsonChangeOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonChangeOwnerCRCouncilMemberUnsigned(uint8_t version) const;
+
+			void FromJsonChangeOwnerCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+			bool IsValidChangeOwnerUnsigned(uint8_t version) const;
+
+			bool IsValidChangeOwnerCRCouncilMemberUnsigned(uint8_t version) const;
+
+			const uint256 &DigestChangeOwnerUnsigned(uint8_t version) const;
+
+			const uint256 &DigestChangeOwnerCRCouncilMemberUnsigned(uint8_t version) const;
+
+			// terminate proposal
+			void SerializeTerminateProposalUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeTerminateProposalUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeTerminateProposalCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeTerminateProposalCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeTerminateProposal(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeTerminateProposal(const ByteStream &stream, uint8_t version);
+
+			nlohmann::json ToJsonTerminateProposalOwnerUnsigned(uint8_t version) const;
+
+			void FromJsonTerminateProposalOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const;
+
+			void FromJsonTerminateProposalCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+			bool IsValidTerminateProposalOwnerUnsigned(uint8_t version) const;
+
+			bool IsValidTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const;
+
+			const uint256 &DigestTerminateProposalOwnerUnsigned(uint8_t version) const;
+
+			const uint256 &DigestTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const;
+
+			// secretary election
+			void SerializeSecretaryElectionUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeSecretaryElectionUnsigned(const ByteStream &stream, uint8_t verion);
+
+			void SerializeSecretaryElectionCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeSecretaryElectionCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeSecretaryElection(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeSecretaryElection(const ByteStream &stream, uint8_t version);
+
+			nlohmann::json ToJsonSecretaryElectionUnsigned(uint8_t version) const;
+
+			void FromJsonSecretaryElectionUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
+
+			void FromJsonSecretaryElectionCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+			bool IsValidSecretaryElectionUnsigned(uint8_t version) const;
+
+			bool IsValidSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
+
+			const uint256 &DigestSecretaryElectionUnsigned(uint8_t version) const;
+
+			const uint256 &DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
+
+			// override interface
+			size_t EstimateSize(uint8_t version) const override;
+
+			// top serialize or deserialize
+			void Serialize(ByteStream &stream, uint8_t version) const override;
+
+			bool Deserialize(const ByteStream &stream, uint8_t version) override;
 
 			nlohmann::json ToJson(uint8_t version) const override;
 
 			void FromJson(const nlohmann::json &j, uint8_t version) override;
-
-			bool IsValidOwnerUnsigned(uint8_t version) const;
-
-			bool IsValidCRCouncilMemberUnsigned(uint8_t version) const;
 
 			bool IsValid(uint8_t version) const override;
 
@@ -165,18 +313,41 @@ namespace Elastos {
 
 			CRCProposal &operator=(const CRCProposal &payload);
 
+			bool operator==(const IPayload &payload) const;
+
 		private:
+			// normal & elip
 			mutable uint256 _digestOwnerUnsigned;
 			mutable uint256 _digestCRCouncilMemberUnsigned;
+
+			// secretary election
+			mutable uint256 _digestSecretaryElectionUnsigned;
+			mutable uint256 _digestSecretaryElectionCRCouncilMemberUnsigned;
+
+			// change owner
+			mutable uint256 _digestChangeOwnerUnsigned;
+			mutable uint256 _digestChangeOwnerCRCouncilMemberUnsigned;
+
+			// terminate proposal
+			mutable uint256 _digestTerminateProposalOwnerUnsigned;
+			mutable uint256 _digestTerminateProposalCRCouncilMemberUnsigned;
 
 		private:
 			CRCProposal::Type _type;
 			std::string _categoryData;
 			bytes_t _ownerPublicKey;
 			uint256 _draftHash;
+			bytes_t _draftData;
 			std::vector <Budget> _budgets;
 			Address _recipient;
+			uint256 _targetProposalHash;
+			Address _newRecipient;
+			bytes_t _newOwnerPublicKey;
+			bytes_t _secretaryPublicKey;
+			Address _secretaryDID;
 			bytes_t _signature;
+			bytes_t _newOwnerSignature;
+			bytes_t _secretarySignature;
 
 			// cr council member did
 			Address _crCouncilMemberDID;

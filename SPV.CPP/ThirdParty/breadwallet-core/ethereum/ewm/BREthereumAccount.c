@@ -1,9 +1,9 @@
 //
 //  BBREthereumAddress.c
-//  breadwallet-core Ethereum
+//  Core Ethereum
 //
 //  Created by Ed Gamble on 2/21/2018.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -11,11 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "support/BRCrypto.h"
 #include "support/BRKey.h"
 #include "support/BRBIP32Sequence.h"
 #include "support/BRBIP39Mnemonic.h"
-#include "support/BRBase58.h"
 #include "support/BRBIP39WordsEn.h"
 #include "ethereum/base/BREthereumBase.h"
 #include "BREthereumAccount.h"
@@ -122,7 +120,7 @@ addressDetailFillKey(BREthereumAddressDetail *address, const BRKey *key, uint32_
     
     
     address->raw = addressCreateKey(key);
-    char *string = addressGetEncodedString(address->raw, 1);
+    char *string = addressGetEncodedString(&address->raw, 1);
     memcpy (address->string, string, 42);
     address->string[42] = '\0';
     free (string);
@@ -139,8 +137,9 @@ addressDetailFillSeed (BREthereumAddressDetail *address, UInt512 seed, uint32_t 
     // "The private key must be 32 bytes and not begin with 0x00 and the public one must be
     // uncompressed and 64 bytes long or 65 with the constant 0x04 prefix. More on that in the
     // next section. ...
-    
-    assert (65 == BRKeyPubKey(&key, NULL, 0));
+
+    size_t keyLen = BRKeyPubKey(&key, NULL, 0);
+    assert (65 == keyLen);
     
     // "The public key is what we need in order to derive its Ethereum address. Every EC public key
     // begins with the 0x04 prefix before giving the location of the two point on the curve. You

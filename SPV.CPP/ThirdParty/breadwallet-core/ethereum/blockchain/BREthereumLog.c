@@ -3,7 +3,7 @@
 //  BRCore
 //
 //  Created by Ed Gamble on 5/10/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -455,7 +455,11 @@ logRlpDecode (BRRlpItem item,
     assert ((3 == itemsCount && RLP_TYPE_NETWORK == type) ||
             (6 == itemsCount && RLP_TYPE_ARCHIVE == type));
 
-    log->address = addressRlpDecode(items[0], coder);
+    BREthereumAddress *tmpAddress = addressRlpDecode(items[0], coder);
+    if (tmpAddress != NULL) {
+        log->address = *tmpAddress;
+        free(tmpAddress);
+    }
     log->topics = logTopicsRlpDecode (items[1], coder);
 
     log->data = rlpGetData (coder, items[2]); //  rlpDecodeBytes(coder, items[2]);
@@ -482,7 +486,7 @@ logRlpEncode(BREthereumLog log,
     
     BRRlpItem items[6]; // more than enough
 
-    items[0] = addressRlpEncode(log->address, coder);
+    items[0] = addressRlpEncode(&log->address, coder);
     items[1] = logTopicsRlpEncode(log, coder);
     items[2] = rlpGetItem(coder, log->data); //  rlpEncodeBytes(coder, log->data.bytes, log->data.bytesCount);
 

@@ -8,14 +8,12 @@ execute_process(
 	OUTPUT_VARIABLE SPVSDK_VERSION
 )
 
-execute_process(
-	COMMAND git describe --dirty --always --tags --exclude "*-pre"
-	COMMAND tr -d "\n"
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	OUTPUT_VARIABLE SPVSDK_VERSION_MESSAGE
-)
+if(SPVSDK_VERSION MATCHES "^[0-9]*\\.[0-9]*\\.[0-9]*$")
+	project(Elastos-spvsdk VERSION ${SPVSDK_VERSION})
+else()
+	project(Elastos-spvsdk)
+endif()
 
-project(Elastos-spvsdk VERSION ${SPVSDK_VERSION})
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
@@ -57,6 +55,13 @@ option(ARGUMENT_LOG_ENABLE "Eenable print argument that caller pass through" ON)
 option(SPV_CONSOLE_LOG "Enable console log" OFF)
 option(SPV_BUILD_TEST_CASES "Build test cases" OFF)
 option(SPV_BUILD_APPS "Build command line elawallet" ON)
+
+execute_process(
+	COMMAND git describe --dirty --always --tags --exclude "*-pre"
+	COMMAND tr -d "\n"
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	OUTPUT_VARIABLE SPVSDK_VERSION_MESSAGE
+)
 
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig.h.in

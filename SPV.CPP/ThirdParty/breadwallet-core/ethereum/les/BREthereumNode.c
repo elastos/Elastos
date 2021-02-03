@@ -3,7 +3,7 @@
 //  Core
 //
 //  Created by Ed Gamble on 8/13/18.
-//  Copyright © 2018 Breadwinner AG.  All rights reserved.
+//  Copyright © 2018-2019 Breadwinner AG.  All rights reserved.
 //
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
@@ -76,11 +76,11 @@ nodeSend (BREthereumNode node,
 #define HEPUBLIC_BYTES      32
 #define NONCE_BYTES         32
 
-#define authBufLen (SIG_SIZE_BYTES + HEPUBLIC_BYTES + PUBLIC_SIZE_BYTES + NONCE_BYTES + 1)
-#define authCipherBufLen (authBufLen + 65 + 16 + 32)
+static const ssize_t authBufLen = SIG_SIZE_BYTES + HEPUBLIC_BYTES + PUBLIC_SIZE_BYTES + NONCE_BYTES + 1;
+static const ssize_t authCipherBufLen =  authBufLen + 65 + 16 + 32;
 
-#define ackBufLen (PUBLIC_SIZE_BYTES + NONCE_BYTES + 1)
-#define ackCipherBufLen (ackBufLen + 65 + 16 + 32)
+static const ssize_t ackBufLen = PUBLIC_SIZE_BYTES + NONCE_BYTES + 1;
+static const ssize_t ackCipherBufLen =  ackBufLen + 65 + 16 + 32;
 
 //
 static int _sendAuthInitiator(BREthereumNode node);
@@ -320,6 +320,10 @@ typedef struct {
 
 } BREthereumNodeProvisioner;
 
+static long provisionerMessageWaitingResposeCount(BREthereumNodeProvisioner *provisioner) {
+	return provisioner->messagesCount - provisioner->messagesRemainingCount - provisioner->messagesReceivedCount;
+}
+
 static int
 provisionerSendMessagesPending (BREthereumNodeProvisioner *provisioner) {
     return provisioner->messagesRemainingCount > 0;
@@ -505,6 +509,9 @@ struct BREthereumNodeRecord {
 
     /** TRUE if we've discovered the neighbors of this node */
     BREthereumBoolean discovered;
+
+    /** Stop message will freeze client */
+    BREthereumBoolean frozen;
 
     /** When waiting to receive a message, timeout when time exceeds `timeout`. */
     time_t timeout;
@@ -696,6 +703,7 @@ nodeCreate (BREthereumNodePriority priority,
     node->coder.messageIdOffset = 0x00;  // Changed with 'hello' message exchange.
 
     node->discovered = ETHEREUM_BOOLEAN_FALSE;
+    node->frozen = ETHEREUM_BOOLEAN_FALSE;
 
     node->frameCoder = frameCoderCreate();
 
@@ -1061,18 +1069,18 @@ nodeProcessRecvLES (BREthereumNode node,
             break;
 
         case LES_MESSAGE_CONTRACT_CODES:
-        case LES_MESSAGE_HELPER_TRIE_PROOFS:;
+        case LES_MESSAGE_PROOFS:
+        case LES_MESSAGE_HEADER_PROOFS:
             eth_log (LES_LOG_TOPIC, "Recv: [ LES, %15s ] Unexpected Response",
                      messageLESGetIdentifierName (message.identifier));
             break;
 
+        case LES_MESSAGE_HELPER_TRIE_PROOFS:;
         case LES_MESSAGE_BLOCK_HEADERS:
         case LES_MESSAGE_BLOCK_BODIES:
         case LES_MESSAGE_RECEIPTS:
-        case LES_MESSAGE_PROOFS:
         case LES_MESSAGE_PROOFS_V2:
         case LES_MESSAGE_TX_STATUS:
-        case LES_MESSAGE_HEADER_PROOFS:
             // Find the provisioner applicable to `message`...
             for (size_t index = 0; index < array_count (node->provisioners); index++) {
                 BREthereumNodeProvisioner *provisioner = &node->provisioners[index];
@@ -1089,6 +1097,17 @@ nodeProcessRecvLES (BREthereumNode node,
                 }
             }
             break;
+    	case LES_MESSAGE_STOP:
+    		for (size_t index = 0; index < array_count (node->provisioners); index++) {
+    			BREthereumNodeProvisioner *provisioner = &node->provisioners[index];
+    			provisioner->messagesRemainingCount = provisioner->messagesCount - provisioner->messagesReceivedCount;
+    		}
+    		node->frozen = ETHEREUM_BOOLEAN_TRUE;
+    		break;
+
+    	case LES_MESSAGE_RESUME:
+    		node->frozen = ETHEREUM_BOOLEAN_FALSE;
+    		break;
     }
     if (mustReleaseMessage) messageLESRelease (&message);
 }
@@ -1358,7 +1377,7 @@ nodeProcess (BREthereumNode node,
                 // No release for `message` - it has be OwnershipGiven in the above
             }
 
-            if (FD_ISSET (socket, send)) {
+            if (FD_ISSET (socket, send) && ETHEREUM_BOOLEAN_IS_FALSE(node->frozen)) {
                 nodeUpdateTimeoutRecv(node, now);   // override prior timeout; expect a response.
 
                 // Send if we can.  Really only applies to provision messages, for PIP and LES, using
@@ -1370,7 +1389,9 @@ nodeProcess (BREthereumNode node,
 
                     case NODE_ROUTE_TCP:
                         // Look for the pending message in some provisioner
-                        for (size_t index = 0; index < array_count (node->provisioners); index++)
+                        for (size_t index = 0; index < array_count (node->provisioners); index++) {
+                            if (provisionerMessageWaitingResposeCount(&node->provisioners[index]) > 0)
+                                break;
                             if (provisionerSendMessagesPending (&node->provisioners[index])) {
                                 BREthereumNodeStatus status = provisionerMessageSend(&node->provisioners[index]);
                                 switch (status) {
@@ -1382,6 +1403,7 @@ nodeProcess (BREthereumNode node,
                                 // Only send one at a time - socket might be blocked
                                 break; // from for node->provisioners
                             }
+                        }
                         break;
                 }
             }

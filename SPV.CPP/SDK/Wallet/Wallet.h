@@ -21,7 +21,7 @@
 #define TX_FEE_PER_KB        1000ULL     // standard tx fee per kb of tx size, rounded up to nearest kb
 #define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output
 #define TX_INPUT_SIZE        148         // estimated size for a typical compact pubkey transaction input
-#define TX_MAX_SIZE          120000      // no tx can be larger than this size in bytes
+#define TX_MAX_SIZE          (1024 * 1024) // no tx can be larger than this size in bytes
 #define TX_UNCONFIRMED INT32_MAX
 #define DEFAULT_FEE_PER_KB (10000)                  // 10 satoshis-per-byte
 #define MIN_FEE_PER_KB     TX_FEE_PER_KB                       // bitcoind 0.12 default min-relay fee
@@ -140,7 +140,7 @@ namespace Elastos {
 
 			TransactionPtr CreateTransaction(uint8_t type, const PayloadPtr &payload,
 											 const AddressPtr &fromAddress, const OutputArray &outputs,
-											 const std::string &memo, bool max = false);
+											 const std::string &memo, bool max = false, const BigInt &fee = 0);
 
 			bool ContainsTransaction(const TransactionPtr &transaction);
 

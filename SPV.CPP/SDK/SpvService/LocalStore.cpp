@@ -9,7 +9,6 @@
 #include <Common/Utils.h>
 #include <Common/JsonSerializer.h>
 #include <WalletCore/Base58.h>
-#include <WalletCore/BIP39.h>
 #include <WalletCore/AES.h>
 #include <WalletCore/CoinInfo.h>
 #include <WalletCore/HDKeychain.h>
@@ -81,6 +80,15 @@ namespace Elastos {
 
 					if (j.find("ethscPrimaryPubKey") != j.end()) {
 						_ethscPrimaryPubKey = j["ethscPrimaryPubKey"].get<std::string>();
+						bool isEmpty = true;
+						for (size_t i = 2; i < _ethscPrimaryPubKey.length(); ++i) {
+							if (_ethscPrimaryPubKey[i] != '0') {
+								isEmpty = false;
+								break;
+							}
+						}
+						if (isEmpty || _ethscPrimaryPubKey[0] != '0' || _ethscPrimaryPubKey[1] != '4')
+							_ethscPrimaryPubKey.clear();
 					} else {
 						_ethscPrimaryPubKey.clear();
 					}
@@ -381,9 +389,9 @@ namespace Elastos {
 			_subWalletsInfoList.push_back(info);
 		}
 
-		void LocalStore::RemoveSubWalletInfo(const CoinInfoPtr &info) {
+		void LocalStore::RemoveSubWalletInfo(const std::string &chainID) {
 			for (std::vector<CoinInfoPtr>::iterator it = _subWalletsInfoList.begin(); it != _subWalletsInfoList.end(); ++it) {
-				if (info->GetChainID() == (*it)->GetChainID()) {
+				if (chainID == (*it)->GetChainID()) {
 					_subWalletsInfoList.erase(it);
 					break;
 				}

@@ -112,6 +112,8 @@ namespace Elastos {
 
 			uint32_t GetLastBlockTimestamp() const;
 
+			uint256 GetLastBlockHash() const;
+
 			time_t GetKeepAliveTimestamp() const;
 
 			void SetKeepAliveTimestamp(time_t t);

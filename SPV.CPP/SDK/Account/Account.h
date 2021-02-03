@@ -88,6 +88,8 @@ namespace Elastos {
 
 			void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
+			void ResetPassword(const std::string &mnemonic, const std::string &passphrase, const std::string &newPassword);
+
 			nlohmann::json GetBasicInfo() const;
 
 			SignType GetSignType() const;
@@ -118,7 +120,7 @@ namespace Elastos {
 
 			void SetSubWalletInfoList(const std::vector<CoinInfoPtr> &info);
 
-			void RemoveSubWalletInfo(const CoinInfoPtr &info);
+			void RemoveSubWalletInfo(const std::string &chainID);
 
 			KeyStore ExportKeystore(const std::string &payPasswd) const;
 

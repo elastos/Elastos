@@ -24,6 +24,15 @@ include_directories(
 	${PROJECT_INT_DIST_DIR}/include/catch2
 )
 
+if(MSVC)
+	add_definitions(/FI"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common/BRNameFix.h")
+	add_definitions(/FI"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common/secp256k1_name_fix.h")
+else()
+	# GCC or Clang
+	add_definitions(-include ${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common/BRNameFix.h)
+	add_definitions(-include ${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common/secp256k1_name_fix.h)
+endif()
+
 link_directories(
 	${PROJECT_INT_DIST_DIR}/lib
 	${CMAKE_CURRENT_BINARY_DIR}/../SDK
@@ -34,9 +43,9 @@ foreach(src ${TEST_SOURCE_FILES})
 	add_executable(${TEST_TARGET_NAME} ${src})
 
 	if(SPV_ENABLE_STATIC)
-		target_link_libraries(${TEST_TARGET_NAME} spvsdk-static dl boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3)
+		target_link_libraries(${TEST_TARGET_NAME} spvsdk-static dl boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3 resolv)
 	else()
-		target_link_libraries(${TEST_TARGET_NAME} spvsdk dl)
+		target_link_libraries(${TEST_TARGET_NAME} spvsdk dl resolv)
 	endif()
 	add_dependencies(${TEST_TARGET_NAME} libspvsdk catch2)
 

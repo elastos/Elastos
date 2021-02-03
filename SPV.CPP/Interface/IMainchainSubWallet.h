@@ -517,6 +517,28 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json GetRegisteredCRInfo() const = 0;
 
+			/**
+			 * Generate digest for signature of CR council members
+			 * @param payload
+			 * {
+			 *   "NodePublicKey": "...",
+			 *   "CRCouncilMemberDID": "...",
+			 * }
+			 * @return
+			 */
+			virtual std::string CRCouncilMemberClaimNodeDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload
+			 * {
+			 *   "NodePublicKey": "...",
+			 *   "CRCouncilMemberDID": "...",
+			 *   "CRCouncilMemberSignature": "..."
+			 * }
+			 * @return
+			 */
+			virtual nlohmann::json CreateCRCouncilMemberClaimNodeTransaction(const nlohmann::json &payload, const std::string &memo = "") = 0;
+
 
 		public:
 			//////////////////////////////////////////////////
@@ -531,6 +553,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
 			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "Budgets": [{"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}],
 			 *    "Recipient": "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", // address
 			 * }
@@ -561,6 +584,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4", // Owner DID public key
 			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "Budgets": [                 // same as mention on method ProposalOwnerDigest()
 			 *      {"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}
 			 *    ],
@@ -593,6 +617,7 @@ namespace Elastos {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
 			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4", // Owner DID public key
 			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
 			 *    "Budgets": [                 // same as mention on method ProposalOwnerDigest()
 			 *      {"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}
 			 *    ],
@@ -622,6 +647,7 @@ namespace Elastos {
 			 *   "ProposalHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
 			 *   "VoteResult": 1,    // approve = 0, reject = 1, abstain = 2
 			 *   "OpinionHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *   "OpinionData": "", // Optional, string format, limit 1 Mbytes
 			 *   "DID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY", // did of CR council member
 			 * }
 			 *
@@ -637,6 +663,7 @@ namespace Elastos {
 			 *   "ProposalHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
 			 *   "VoteResult": 1,    // approve = 0, reject = 1, abstain = 2
 			 *   "OpinionHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *   "OpinionData": "", // Optional, string format, limit 1 Mbytes
 			 *   "DID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY", // did of CR council member's did
 			 *   // signature of CR council member
 			 *   "Signature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76"
@@ -659,6 +686,7 @@ namespace Elastos {
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageData": "", // Optional, string format, limit 800 Kbytes
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -676,6 +704,7 @@ namespace Elastos {
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageData": "", // Optional, string format, limit 800 Kbytes
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -694,6 +723,7 @@ namespace Elastos {
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageData": "", // Optional, string format, limit 800 Kbytes
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -703,6 +733,7 @@ namespace Elastos {
 			 *   "NewOwnerSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
 			 *   "Type": 0, // common = 0, progress = 1, rejected = 2, terminated = 3, changeOwner = 4, finalized = 5
 			 *   "SecretaryGeneralOpinionHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "SecretaryGeneralOpinionData": "", // Optional, string format, limit 200 Kbytes
 			 * }
 			 *
 			 * @return Digest of payload
@@ -717,6 +748,7 @@ namespace Elastos {
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageData": "", // Optional, string format, limit 800 Kbytes
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -726,6 +758,7 @@ namespace Elastos {
 			 *   "NewOwnerSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
 			 *   "Type": 0, // common = 0, progress = 1, rejected = 2, terminated = 3, changeOwner = 4, finalized = 5
 			 *   "SecretaryGeneralOpinionHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "SecretaryGeneralOpinionData": "", // Optional, string format, limit 200 Kbytes
 			 *   "SecretaryGeneralSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109"
 			 * }
 			 *
@@ -734,6 +767,169 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json
 			CreateProposalTrackingTransaction(const nlohmann::json &payload, const std::string &memo = "") = 0;
+
+			//////////////////////////////////////////////////
+			/*      Proposal Secretary General Election     */
+			//////////////////////////////////////////////////
+			/**
+			 * @param payload Proposal secretary election payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
+			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+			 *    "SecretaryGeneralPublicKey": "...",
+			 *    "SecretaryGeneralDID": "...",
+			 * }
+			 * @return
+			 */
+			virtual std::string ProposalSecretaryGeneralElectionDigest(
+				const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload Proposal secretary election payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
+			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+			 *    "SecretaryGeneralPublicKey": "...",
+			 *    "SecretaryGeneralDID": "...",
+			 *    "Signature": "...",
+			 *    "SecretaryGeneralSignature": "...",
+			 *    "CRCouncilMemberDID": "...",
+			 * }
+			 * @return
+			 */
+			virtual std::string ProposalSecretaryGeneralElectionCRCouncilMemberDigest(
+				const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload Proposal secretary election payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
+			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+			 *    "SecretaryGeneralPublicKey": "...",
+			 *    "SecretaryGeneralDID": "...",
+			 *    "Signature": "...",
+			 *    "SecretaryGeneralSignature": "...",
+			 *    "CRCouncilMemberDID": "...",
+			 *    "CRCouncilMemberSignature": "..."
+			 * }
+			 * @param memo Remarks string.
+			 * @return
+			 */
+			virtual nlohmann::json CreateSecretaryGeneralElectionTransaction(
+				const nlohmann::json &payload, const std::string &memo = "") = 0;
+
+			//////////////////////////////////////////////////
+			/*             Proposal Change Owner            */
+			//////////////////////////////////////////////////
+			/**
+			 * Use for owner & new owner sign
+			 * @param payload Proposal change owner payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+			 *    "TargetProposalHash": "...",
+			 *    "NewRecipient": "...",
+			 *    "NewOwnerPublicKey": "...",
+			 * }
+			 * @return
+			 */
+			virtual std::string ProposalChangeOwnerDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload Proposal change owner payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+			 *    "TargetProposalHash": "...",
+			 *    "NewRecipient": "...",
+			 *    "NewOwnerPublicKey": "...",
+			 *    "Signature": "...",
+			 *    "NewOwnerSignature": "...",
+			 *    "CRCouncilMemberDID": "..."
+			 * }
+			 * @return
+			 */
+			virtual std::string ProposalChangeOwnerCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload Proposal change owner payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+			 *    "TargetProposalHash": "...",
+			 *    "NewRecipient": "...",
+			 *    "NewOwnerPublicKey": "...",
+			 *    "Signature": "...",
+			 *    "NewOwnerSignature": "...",
+			 *    "CRCouncilMemberDID": "...",
+			 *    "CRCouncilMemberSignature": "...",
+			 * }
+			 * @param memo Remark string.
+			 * @return
+			 */
+			virtual nlohmann::json CreateProposalChangeOwnerTransaction(
+				const nlohmann::json &payload, const std::string &memo = "") = 0;
+
+			//////////////////////////////////////////////////
+			/*           Proposal Terminate Proposal        */
+			//////////////////////////////////////////////////
+			/**
+			 * @param payload Terminate proposal payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+			 *    "TargetProposalHash": "...",
+			 * }
+			 * @return
+			 */
+			virtual std::string TerminateProposalOwnerDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload Terminate proposal payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+			 *    "TargetProposalHash": "...",
+			 *    "Signature": "...",
+			 *    "CRCouncilMemberDID": "...",
+			 * }
+			 * @return
+			 */
+			virtual std::string TerminateProposalCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * @param payload Terminate proposal payload
+			 * {
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "...",
+			 *    "DraftHash": "...",
+			 *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+			 *    "TargetProposalHash": "...",
+			 *    "Signature": "...",
+			 *    "CRCouncilMemberDID": "...",
+			 *    "CRCouncilMemberSignature": "...",
+			 * }
+			 * @param memo Remark string.
+			 * @return
+			 */
+			virtual nlohmann::json CreateTerminateProposalTransaction(
+				const nlohmann::json &payload, const std::string &memo = "") = 0;
 
 			//////////////////////////////////////////////////
 			/*               Proposal Withdraw              */
@@ -745,6 +941,8 @@ namespace Elastos {
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   "Recipient": "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", // address
+			 *   "Amount": "100000000", // 1 ela = 100000000 sela
 			 * }
 			 *
 			 * @return Digest of payload.
@@ -753,24 +951,12 @@ namespace Elastos {
 
 			/**
 			 * Create proposal withdraw transaction.
-			 * Note: This tx does not need to be signed.
-			 *
-			 * @param recipient Recipient of proposal.
-			 * @param amount Withdraw amount.
-			 * @param utxo UTXO json array of address CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b.
-			 * [{
-			 *   "Hash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 *   "Index": 0,
-			 *   "Amount": "100000000",   // 1 ela = 100000000 sela
-			 * },{
-			 *   "Hash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 *   "Index": 2,
-			 *   "Amount": "200000000",   // 2 ela = 200000000 sela
-			 * }]
 			 * @param payload Proposal payload.
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   "Recipient": "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", // address
+			 *   "Amount": "100000000", // 1 ela = 100000000 sela
 			 *   "Signature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109"
 			 * }
 			 *
@@ -778,10 +964,7 @@ namespace Elastos {
 			 *
 			 * @return Transaction in JSON format.
 			 */
-			 virtual nlohmann::json CreateProposalWithdrawTransaction(const std::string &recipient,
-																	  const std::string &amount,
-																	  const nlohmann::json &utxo,
-																	  const nlohmann::json &payload,
+			 virtual nlohmann::json CreateProposalWithdrawTransaction(const nlohmann::json &payload,
 																	  const std::string &memo = "") = 0;
 
 		};
