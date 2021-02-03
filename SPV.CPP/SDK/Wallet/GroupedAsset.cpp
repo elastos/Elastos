@@ -512,6 +512,7 @@ namespace Elastos {
 														const AddressPtr &fromAddress,
 														const std::string &memo,
 														bool max,
+                                                        const BigInt &fee,
 														bool pickVoteFirst) {
 			ErrorChecker::CheckLogic(outputs.empty(), Error::InvalidArgument, "outputs should not be empty");
 			ErrorChecker::CheckParam(max && outputs.size() > 1, Error::InvalidArgument,
@@ -519,7 +520,8 @@ namespace Elastos {
 
 			TransactionPtr txn = TransactionPtr(new Transaction(type, payload));
 			BigInt totalOutputAmount(0), totalInputAmount(0);
-			uint64_t txSize = 0, feeAmount = 0;
+			uint64_t txSize = 0;
+			BigInt feeAmount = 0;
 			bytes_t code;
 			std::string path;
 			bool lastUTXOPending = false;
@@ -535,10 +537,15 @@ namespace Elastos {
 
 			{
 				_parent->GetLock().lock();
-				if (_asset->GetName() == "ELA")
-					feeAmount = CalculateFee(_parent->_feePerKb, txn->EstimateSize());
+				if (_asset->GetName() == "ELA") {
+				    if (fee <= 0) {
+					    feeAmount.setUint64(CalculateFee(_parent->_feePerKb, txn->EstimateSize()));
+				    } else {
+				        feeAmount = fee;
+				    }
+				}
 
-				if (pickVoteFirst && totalInputAmount < totalOutputAmount + feeAmount) {
+				if (pickVoteFirst && (max || totalInputAmount < totalOutputAmount + feeAmount)) {
 					// voted utxo
 					for (UTXOSet::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
 						if (_parent->IsUTXOSpending(*u)) {
@@ -558,8 +565,11 @@ namespace Elastos {
 						totalInputAmount += (*u)->Output()->Amount();
 
 						txSize = txn->EstimateSize();
-						if (_asset->GetName() == "ELA")
-							feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+						if (_asset->GetName() == "ELA") {
+                            if (fee <= 0) {
+                                feeAmount.setUint64(CalculateFee(_parent->_feePerKb, txn->EstimateSize()));
+                            }
+                        }
 					}
 				}
 
@@ -594,7 +604,7 @@ namespace Elastos {
 					txSize = txn->EstimateSize();
 					if (txSize >= TX_MAX_SIZE) { // transaction size-in-bytes too large
 						_parent->GetLock().unlock();
-						if (!pickVoteFirst) {
+						if (!pickVoteFirst && !_utxosVote.empty()) {
 							return CreateTxForOutputs(type, payload, outputs, fromAddress, memo, max, !pickVoteFirst);
 						}
 
@@ -606,8 +616,11 @@ namespace Elastos {
 					}
 
 					totalInputAmount += (*u)->Output()->Amount();
-					if (_asset->GetName() == "ELA")
-						feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+					if (_asset->GetName() == "ELA") {
+                        if (fee <= 0) {
+                            feeAmount.setUint64(CalculateFee(_parent->_feePerKb, txn->EstimateSize()));
+                        }
+					}
 				}
 
 				if (!pickVoteFirst && (max || totalInputAmount < totalOutputAmount + feeAmount)) {
@@ -630,8 +643,11 @@ namespace Elastos {
 						totalInputAmount += (*u)->Output()->Amount();
 
 						txSize = txn->EstimateSize();
-						if (_asset->GetName() == "ELA")
-							feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+						if (_asset->GetName() == "ELA") {
+                            if (fee <= 0) {
+                                feeAmount.setUint64(CalculateFee(_parent->_feePerKb, txn->EstimateSize()));
+                            }
+						}
 					}
 				}
 				_parent->GetLock().unlock();
@@ -664,7 +680,7 @@ namespace Elastos {
 					BigInt changeAmount = totalInputAmount - totalOutputAmount - feeAmount;
 					txn->AddOutput(OutputPtr(new TransactionOutput(changeAmount, *addresses[0], assetID)));
 				}
-				txn->SetFee(feeAmount);
+				txn->SetFee(feeAmount.getUint64());
 			}
 
 			return txn;

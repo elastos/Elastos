@@ -140,7 +140,7 @@ namespace Elastos {
 
 			TransactionPtr CreateTransaction(uint8_t type, const PayloadPtr &payload,
 											 const AddressPtr &fromAddress, const OutputArray &outputs,
-											 const std::string &memo, bool max = false);
+											 const std::string &memo, bool max = false, const BigInt &fee = 0);
 
 			bool ContainsTransaction(const TransactionPtr &transaction);
 
