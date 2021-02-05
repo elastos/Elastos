@@ -253,11 +253,14 @@ namespace Elastos {
 			}
 
 			std::string algorithm, data, chainID;
+			uint64_t fee = 0;
 
 			try {
 				algorithm = encodedTx["Algorithm"].get<std::string>();
 				data = encodedTx["Data"].get<std::string>();
 				chainID = encodedTx["ChainID"].get<std::string>();
+                if (encodedTx.contains("Fee"))
+                    fee = encodedTx["Fee"].get<uint64_t>();
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid input: " + std::string(e.what()));
 			}
@@ -284,6 +287,7 @@ namespace Elastos {
 			ByteStream stream(rawHex);
 			ErrorChecker::CheckParam(!tx->Deserialize(stream, true), Error::InvalidArgument,
 									 "Invalid input: deserialize fail");
+			tx->SetFee(fee);
 
 			SPVLOG_DEBUG("decoded tx: {}", tx->ToJson().dump(4));
 			return tx;
