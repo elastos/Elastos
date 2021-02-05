@@ -37,7 +37,8 @@ namespace Elastos {
 
 			virtual nlohmann::json CreateIDTransaction(
 					const nlohmann::json &payloadJson,
-					const std::string &memo = "");
+					const std::string &memo = "",
+                    const std::string &fee = "10000");
 
 			virtual nlohmann::json GetAllDID(uint32_t start, uint32_t count) const;
 

@@ -26,7 +26,7 @@
 #include <boost/thread.hpp>
 #include <arpa/inet.h>
 
-#define PROTOCOL_TIMEOUT      40.0
+#define PROTOCOL_TIMEOUT      120.0
 #define MAX_CONNECT_FAILURES  1000 // notify user of network problems after this many connect failures in a row
 #define PEER_FLAG_SYNCED      0x01
 #define PEER_FLAG_NEEDSUPDATE 0x02
@@ -1145,6 +1145,11 @@ namespace Elastos {
 				boost::mutex::scoped_lock scopedLock(lock);
 				peer->info("relayed tx");
 
+                // reschedule sync timeout
+                if (_syncStartHeight > 0 && peer == _downloadPeer) {
+                    peer->ScheduleDisconnect(PROTOCOL_TIMEOUT);
+                }
+
 				for (size_t i = _publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
 					if (_publishedTxHashes[i - 1] == tx->GetHash()) {
 						pubTx = _publishedTx[i - 1];
@@ -1167,11 +1172,6 @@ namespace Elastos {
 				}
 
 				if (tx && isWalletTx) {
-					// reschedule sync timeout
-					if (_syncStartHeight > 0 && peer == _downloadPeer) {
-						peer->ScheduleDisconnect(PROTOCOL_TIMEOUT);
-					}
-
 					if (_syncSucceeded && _wallet->AmountSentByTx(tx) > 0 &&
 						_wallet->TransactionIsValid(tx)) {
 						AddTxToPublishList(tx, Peer::PeerPubTxCallback());  // add valid send tx to mempool

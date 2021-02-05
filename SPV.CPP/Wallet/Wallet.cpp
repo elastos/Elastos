@@ -1115,7 +1115,7 @@ static int didtx(int argc, char *argv[]) {
 			recoveryTTYSetting(&told);
 		}
 
-		nlohmann::json tx = subWallet->CreateIDTransaction(payload, "");
+		nlohmann::json tx = subWallet->CreateIDTransaction(payload, "", "0");
 		signAndPublishTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
