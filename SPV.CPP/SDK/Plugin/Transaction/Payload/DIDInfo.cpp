@@ -653,6 +653,10 @@ namespace Elastos {
 			_id = id;
 		}
 
+        const std::vector<std::string> &DIDPayloadInfo::Controller() const {
+		    return _controller;
+		}
+
 		const DIDPubKeyInfoArray &DIDPayloadInfo::PublicKeyInfo() const {
 			return _publickey;
 		}
@@ -851,8 +855,17 @@ namespace Elastos {
 		}
 
 		void DIDPayloadInfo::FromJson(const nlohmann::json &j, uint8_t version) {
-			_id = j["id"].get<std::string>();
+		    if (j.contains("controller")) {
+                if (j.is_array()) {
+                    _controller = j["controller"].get<std::vector<std::string>>();
+                } else {
+                    _controller.push_back(j["controller"].get<std::string>());
+                }
+		    } else {
+                _id = j["id"].get<std::string>();
+		    }
 
+#if 0
 			nlohmann::json jPubKey = j["publicKey"];
 			for (nlohmann::json::iterator it = jPubKey.begin(); it != jPubKey.end(); ++it) {
 				DIDPubKeyInfo pubKeyInfo;
@@ -906,7 +919,7 @@ namespace Elastos {
 			if (j.find("proof") != j.end()) {
 				_proof.FromJson(j["proof"], version);
 			}
-
+#endif
 		}
 
 		DIDProofInfo::DIDProofInfo() {

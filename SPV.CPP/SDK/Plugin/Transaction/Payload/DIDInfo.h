@@ -310,6 +310,8 @@
 
 			void SetID(const std::string &id);
 
+			const std::vector<std::string> &Controller() const;
+
 			const DIDPubKeyInfoArray &PublicKeyInfo() const;
 
 			void SetPublickKey(const DIDPubKeyInfoArray &pubkey);
@@ -349,6 +351,7 @@
 
 		private:
 			std::string _id;
+			std::vector<std::string> _controller;
 			DIDPubKeyInfoArray _publickey;
 			DIDPubKeyInfoArray _authentication; // contain 0 or 1
 			DIDPubKeyInfoArray _authorization; // contain 0 or 1

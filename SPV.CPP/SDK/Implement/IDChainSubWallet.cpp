@@ -65,27 +65,39 @@ namespace Elastos {
 
             Address receiveAddr;
 			PayloadPtr payload = nullptr;
+            std::vector<OutputPtr> outputs;
 			try {
 				payload = PayloadPtr(new DIDInfo());
 				payload->FromJson(payloadJson, 0);
 
 				DIDInfo *didInfo = static_cast<DIDInfo *>(payload.get());
-				ErrorChecker::CheckParam(!didInfo->IsValid(0), Error::InvalidArgument, "verify did signature failed");
-				std::string id = didInfo->DIDPayload().ID();
-				std::vector<std::string> idSplited;
-				boost::algorithm::split(idSplited, id, boost::is_any_of(":"), boost::token_compress_on);
-				ErrorChecker::CheckParam(idSplited.size() != 3, Error::InvalidArgument,
-										 "invalid id format in payload JSON");
-				receiveAddr = Address(idSplited[2]);
-				ErrorChecker::CheckParam(!receiveAddr.Valid(), Error::InvalidArgument,
-										 "invalid receive addr(id) in payload JSON");
+//				ErrorChecker::CheckParam(!didInfo->IsValid(0), Error::InvalidArgument, "verify did signature failed");
+                std::vector<std::string> idSplited;
+                if (!didInfo->DIDPayload().Controller().empty()) {
+                    for (const std::string &controller : didInfo->DIDPayload().Controller()) {
+                        boost::algorithm::split(idSplited, controller, boost::is_any_of(":"), boost::token_compress_on);
+                        ErrorChecker::CheckParam(idSplited.size() != 3, Error::InvalidArgument,
+                                                 "invalid id format in payload JSON");
+                        receiveAddr = Address(idSplited[2]);
+                        ErrorChecker::CheckParam(!receiveAddr.Valid(), Error::InvalidArgument,
+                                                 "invalid receive addr(id) in payload JSON");
+                        outputs.push_back(OutputPtr(new TransactionOutput(0, receiveAddr, Asset::GetELAAssetID())));
+                    }
+                } else {
+                    std::string id = didInfo->DIDPayload().ID();
+                    boost::algorithm::split(idSplited, id, boost::is_any_of(":"), boost::token_compress_on);
+                    ErrorChecker::CheckParam(idSplited.size() != 3, Error::InvalidArgument,
+                                             "invalid id format in payload JSON");
+                    receiveAddr = Address(idSplited[2]);
+                    ErrorChecker::CheckParam(!receiveAddr.Valid(), Error::InvalidArgument,
+                                             "invalid receive addr(id) in payload JSON");
+                    outputs.push_back(OutputPtr(new TransactionOutput(0, receiveAddr, Asset::GetELAAssetID())));
+                }
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 												  "Create id tx param error: " + std::string(e.what()));
 			}
 
-			std::vector<OutputPtr> outputs;
-			outputs.push_back(OutputPtr(new TransactionOutput(0, receiveAddr, Asset::GetELAAssetID())));
 			AddressPtr fromAddr(new Address());
 
 			TransactionPtr tx = wallet->CreateTransaction(IDTransaction::didTransaction, payload, fromAddr, outputs, memo, false, userFee);
