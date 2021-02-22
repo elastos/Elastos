@@ -275,6 +275,11 @@ namespace Elastos {
 			 */
 			virtual void Resync() = 0;
 
+			/**
+			 * @param mode 0: deserialization priority. 1: speed priority
+			 */
+			virtual void SetSyncMode(int mode) = 0;
+
 		};
 
 	}
