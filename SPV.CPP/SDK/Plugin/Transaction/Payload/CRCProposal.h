@@ -97,16 +97,23 @@ namespace Elastos {
 		public:
 			enum Type {
 				normal = 0x0000,
+
 				elip = 0x0100,
 				flowElip = 0x0101,
 				infoElip = 0x0102,
+
 				mainChainUpgradeCode = 0x0200,
-				sideChainUpgradeCode = 0x0300,
-				registerSideChain = 0x0301,
+				didUpdateCode = 0x0201,
+				ethUpdateCode = 0x0202,
+
 				secretaryGeneralElection = 0x0400,
 				changeProposalOwner = 0x0401,
 				terminateProposal = 0x0402,
-				dappConsensus = 0x0500,
+				registerSideChain = 0x0410,
+
+                reserveCustomID = 0x0500,
+                receiveCustomID = 0x0501,
+                changeCustomIDFee = 0x0502,
 				maxType
 			};
 
@@ -299,6 +306,45 @@ namespace Elastos {
 
 			const uint256 &DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
 
+			// ReserveCustomID
+			void SerializeReserveCustomIDUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeReserveCustomIDUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeReserveCustomIDCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeReserveCustomIDCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+            void SerializeReserveCustomID(ByteStream &stream, uint8_t version) const;
+
+            bool DeserializeReserveCustomID(const ByteStream &stream, uint8_t version);
+
+			// ReceiveCustomID
+            void SerializeReceiveCustomIDUnsigned(ByteStream &stream, uint8_t version) const;
+
+            bool DeserializeReceiveCustomIDUnsigned(const ByteStream &stream, uint8_t version);
+
+            void SerializeReceiveCustomIDCRCCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+            bool DeserializeReceiveCustomIDCRCCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeReceiveCustomID(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeReceiveCustomID(const ByteStream &stream, uint8_t version);
+
+			// ChangeCustomIDFee
+            void SerializeChangeCustomIDFeeUnsigned(ByteStream &stream, uint8_t version) const;
+
+            bool DeserializeChangeCustomIDFeeUnsigned(const ByteStream &stream, uint8_t version);
+
+            void SerializeChangeCustomIDFeeCRCCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+            bool DeserializeChangeCustomIDFeeCRCCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+            void SerializeChangeCustomIDFee(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeChangeCustomIDFee(const ByteStream &stream, uint8_t version);
+
 			// override interface
 			size_t EstimateSize(uint8_t version) const override;
 
@@ -345,6 +391,10 @@ namespace Elastos {
 			std::vector <Budget> _budgets;
 			Address _recipient;
 			uint256 _targetProposalHash;
+			std::vector<std::string> _reservedCustomIDList;
+			std::vector<std::string> _receivedCustomIDList;
+			Address _receiverDID;
+			uint64_t _rateOfCustomIDFee;
 			Address _newRecipient;
 			bytes_t _newOwnerPublicKey;
 			bytes_t _secretaryPublicKey;
