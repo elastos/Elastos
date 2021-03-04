@@ -931,6 +931,153 @@ namespace Elastos {
 			virtual nlohmann::json CreateTerminateProposalTransaction(
 				const nlohmann::json &payload, const std::string &memo = "") = 0;
 
+            //////////////////////////////////////////////////
+            /*              Reserve Custom ID               */
+            //////////////////////////////////////////////////
+            /**
+             * @param payload Reserve Custom ID payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "ReservedCustomIDList": ["...", "...", ...],
+             * }
+             * @return
+             */
+            virtual nlohmann::json ReserveCustomIDOwnerDigest(const nlohmann::json &payload) const = 0;
+
+            /**
+             * @param payload Reserve Custom ID payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "ReservedCustomIDList": ["...", "...", ...],
+             *    "Signature": "...",
+             *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+             * }
+             * @return
+             */
+            virtual nlohmann::json ReserveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
+
+            /**
+             * @param payload Reserve Custom ID payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "ReservedCustomIDList": ["...", "...", ...],
+             *    "Signature": "...",
+             *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+             *    "CRCouncilMemberSignature": "...",
+             * }
+             * @return
+             */
+            virtual nlohmann::json CreateReserveCustomIDTransaction(
+                    const nlohmann::json &payload, const std::string &memo = "") = 0;
+
+            //////////////////////////////////////////////////
+            /*               Receive Custom ID              */
+            //////////////////////////////////////////////////
+            /**
+             * @param payload Receive Custom ID payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "ReceivedCustomIDList": ["...", "...", ...],
+             *    "ReceiverDID": "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP"
+             * }
+             * @return
+             */
+            virtual nlohmann::json ReceiveCustomIDOwnerDigest(const nlohmann::json &payload) const = 0;
+
+            /**
+             * @param payload Receive Custom ID payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "ReceivedCustomIDList": ["...", "...", ...],
+             *    "ReceiverDID": "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP"
+             *    "Signature": "...",
+             *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+             * }
+             * @return
+             */
+            virtual nlohmann::json ReceiveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
+
+            /**
+             * @param payload Receive Custom ID payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "ReceivedCustomIDList": ["...", "...", ...],
+             *    "ReceiverDID": "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP"
+             *    "Signature": "...",
+             *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+             *    "CRCouncilMemberSignature": "...",
+             * }
+             * @return
+             */
+            virtual nlohmann::json CreateReceiveCustomIDTransaction(
+                    const nlohmann::json &payload, const std::string &memo = "") = 0;
+
+            //////////////////////////////////////////////////
+            /*              Change Custom ID Fee            */
+            //////////////////////////////////////////////////
+            /**
+             * @param payload Change custom ID fee payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "RateOfCustomIDFee": 10000,
+             * }
+             * @return
+             */
+            virtual nlohmann::json ChangeCustomIDFeeOwnerDigest(const nlohmann::json &payload) const = 0;
+
+            /**
+             * @param payload Change custom ID fee payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "RateOfCustomIDFee": 10000,
+             *    "Signature": "...",
+             *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+             * }
+             * @return
+             */
+            virtual nlohmann::json ChangeCustomIDFeeCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
+
+            /**
+             * @param payload Change custom ID fee payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "RateOfCustomIDFee": 10000,
+             *    "Signature": "...",
+             *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+             *    "CRCouncilMemberSignature": "...",
+             * }
+             * @return
+             */
+            virtual nlohmann::json CreateChangeCustomIDFeeTransaction(
+                    const nlohmann::json &payload, const std::string &memo = "") = 0;
+
 			//////////////////////////////////////////////////
 			/*               Proposal Withdraw              */
 			//////////////////////////////////////////////////

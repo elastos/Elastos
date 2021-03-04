@@ -48,6 +48,10 @@ namespace Elastos {
 #define JsonKeyNewRecipient "NewRecipient"
 #define JsonKeyNewOwnerPublicKey "NewOwnerPublicKey"
 #define JsonKeySecretaryPublicKey "SecretaryGeneralPublicKey"
+#define JsonKeyReservedCustomIDList "ReservedCustomIDList"
+#define JsonKeyReceiverDID "ReceiverDID"
+#define JsonKeyReceivedCustomIDList "ReceivedCustomIDList"
+#define JsonKeyRateOfCustomIDFee "RateOfCustomIDFee"
 #define JsonKeySecretaryDID "SecretaryGeneralDID"
 #define JsonKeySignature "Signature"
 #define JsonKeyNewOwnerSignature "NewOwnerSignature"
@@ -319,6 +323,22 @@ namespace Elastos {
 
             bool DeserializeReserveCustomID(const ByteStream &stream, uint8_t version);
 
+            nlohmann::json ToJsonReserveCustomIDOwnerUnsigned(uint8_t version) const;
+
+            void FromJsonReserveCustomIDOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+
+            nlohmann::json ToJsonReserveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
+
+            void FromJsonReserveCustomIDCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+            bool IsValidReserveCustomIDOwnerUnsigned(uint8_t version) const;
+
+            bool IsValidReserveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
+
+            const uint256 &DigestReserveCustomIDOwnerUnsigned(uint8_t version) const;
+
+            const uint256 &DigestReserveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
+
 			// ReceiveCustomID
             void SerializeReceiveCustomIDUnsigned(ByteStream &stream, uint8_t version) const;
 
@@ -331,6 +351,22 @@ namespace Elastos {
 			void SerializeReceiveCustomID(ByteStream &stream, uint8_t version) const;
 
 			bool DeserializeReceiveCustomID(const ByteStream &stream, uint8_t version);
+
+			nlohmann::json ToJsonReceiveCustomIDOwnerUnsigned(uint8_t version) const;
+
+			void FromJsonReceiveCustomIDOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonReceiveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
+
+			void FromJsonReceiveCustomIDCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+			bool IsValidReceiveCustomIDOwnerUnsigned(uint8_t version) const;
+
+			bool IsValidReceiveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
+
+			const uint256 &DigestReceiveCustomIDOwnerUnsigned(uint8_t version) const;
+
+			const uint256 &DigestReceiveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
 
 			// ChangeCustomIDFee
             void SerializeChangeCustomIDFeeUnsigned(ByteStream &stream, uint8_t version) const;
@@ -345,7 +381,23 @@ namespace Elastos {
 
 			bool DeserializeChangeCustomIDFee(const ByteStream &stream, uint8_t version);
 
-			// override interface
+			nlohmann::json ToJsonChangeCustomIDFeeOwnerUnsigned(uint8_t version) const;
+
+			void FromJsonChangeCustomIDFeeOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonChangeCustomIDFeeCRCouncilMemberUnsigned(uint8_t version) const;
+
+			void FromJsonChangeCustomIDFeeCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+			bool IsValidChangeCustomIDFeeOwnerUnsigned(uint8_t version) const;
+
+			bool IsValidChangeCustomIDFeeCRCouncilMemberUnsigned(uint8_t version) const;
+
+            const uint256 &DigestChangeCustomIDFeeOwnerUnsigned(uint8_t version) const;
+
+            const uint256 &DigestChangeCustomIDFeeCRCouncilMemberUnsigned(uint8_t version) const;
+
+            // override interface
 			size_t EstimateSize(uint8_t version) const override;
 
 			// top serialize or deserialize
@@ -381,6 +433,18 @@ namespace Elastos {
 			// terminate proposal
 			mutable uint256 _digestTerminateProposalOwnerUnsigned;
 			mutable uint256 _digestTerminateProposalCRCouncilMemberUnsigned;
+
+			// reserve custom ID
+			mutable uint256 _digestReserveCustomIDOwnerUnsigned;
+			mutable uint256 _digestReserveCustomIDCRCouncilMemberUnsigned;
+
+			// receive custom ID
+			mutable uint256 _digestReceiveCustomIDOwnerUnsigned;
+			mutable uint256 _digestReceiveCustomIDCRCouncilMemberUnsigned;
+
+			// change custom ID fee
+			mutable uint256 _digestChangeCustomIDFeeOwnerUnsigned;
+			mutable uint256 _digestChangeCustomIDFeeCRCouncilMemberUnsigned;
 
 		private:
 			CRCProposal::Type _type;

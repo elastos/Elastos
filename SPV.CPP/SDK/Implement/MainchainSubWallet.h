@@ -214,6 +214,36 @@ namespace Elastos {
 			nlohmann::json CreateTerminateProposalTransaction(
 				const nlohmann::json &payload, const std::string &memo = "") override;
 
+            //////////////////////////////////////////////////
+            /*              Reserve Custom ID               */
+            //////////////////////////////////////////////////
+            nlohmann::json ReserveCustomIDOwnerDigest(const nlohmann::json &payload) const override;
+
+            nlohmann::json ReserveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const override;
+
+            nlohmann::json CreateReserveCustomIDTransaction(
+                    const nlohmann::json &payload, const std::string &memo = "") override;
+
+            //////////////////////////////////////////////////
+            /*               Receive Custom ID              */
+            //////////////////////////////////////////////////
+            nlohmann::json ReceiveCustomIDOwnerDigest(const nlohmann::json &payload) const override;
+
+            nlohmann::json ReceiveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const override;
+
+            nlohmann::json CreateReceiveCustomIDTransaction(
+                    const nlohmann::json &payload, const std::string &memo = "") override;
+
+            //////////////////////////////////////////////////
+            /*              Change Custom ID Fee            */
+            //////////////////////////////////////////////////
+            nlohmann::json ChangeCustomIDFeeOwnerDigest(const nlohmann::json &payload) const override;
+
+            nlohmann::json ChangeCustomIDFeeCRCouncilMemberDigest(const nlohmann::json &payload) const override;
+
+            nlohmann::json CreateChangeCustomIDFeeTransaction(
+                    const nlohmann::json &payload, const std::string &memo = "") override;
+
 			//////////////////////////////////////////////////
 			/*               Proposal Withdraw              */
 			//////////////////////////////////////////////////
