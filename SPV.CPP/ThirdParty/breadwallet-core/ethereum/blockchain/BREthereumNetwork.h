@@ -91,7 +91,11 @@ networkGetEnodesLocal (BREthereumNetwork network, int parity);
 extern const BREthereumNetwork ethereumMainnet;
 extern const BREthereumNetwork ethereumTestnet;
 extern const BREthereumNetwork ethereumRinkeby;
-
+extern const BREthereumNetwork ethereumPrvnet;
+extern const BREthereumNetwork ethereumDIDMainnet;
+extern const BREthereumNetwork ethereumDIDTestnet;
+extern const BREthereumNetwork ethereumDIDRinkeby;
+extern const BREthereumNetwork ethereumDIDPrvnet;
 #ifdef __cplusplus
 }
 #endif

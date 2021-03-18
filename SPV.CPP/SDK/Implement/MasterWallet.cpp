@@ -21,6 +21,7 @@
  */
 #include "IDChainSubWallet.h"
 #include "EthSidechainSubWallet.h"
+#include "EthIDChainSubWallet.h"
 #include "MainchainSubWallet.h"
 #include "SubWallet.h"
 #include "MasterWallet.h"
@@ -474,7 +475,9 @@ namespace Elastos {
 			} else if (info->GetChainID() == "TokenChain") {
 				return new TokenchainSubWallet(info, config, parent, netType);
 			} else if (info->GetChainID() == "ETHSC") {
-				return new EthSidechainSubWallet(info, config, parent, netType);
+                return new EthSidechainSubWallet(info, config, parent, netType);
+            } else if (info->GetChainID() == "ETHDID") {
+			    return new EthIDChainSubWallet(info, config, parent, netType);
 			} else {
 				ErrorChecker::ThrowLogicException(Error::InvalidChainID, "Invalid chain ID: " + info->GetChainID());
 			}

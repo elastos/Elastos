@@ -232,6 +232,144 @@ static struct BREthereumNetworkRecord ethereumRinkebyRecord = {
 };
 const BREthereumNetwork ethereumRinkeby = &ethereumRinkebyRecord;
 
+//
+// Prvnet
+//
+static struct BREthereumNetworkRecord ethereumPrvnetRecord = {
+        "prvnet", // aka "ropsten"
+        21,
+        21,
+        EMPTY_HASH_INIT,
+        EMPTY_HASH_INIT,
+        // Seeds
+        {   //"seed.ropsten.eth.brd.breadwallet.com",
+                //"seed.ropsten.eth.community.breadwallet.com",
+                NULL },
+
+        // Enodes
+
+        // BRD
+        {   "enode://5e1d6f9f74e33b2d1e2fda87efaf60a788b338c08eefd3a435e9c7de98645bc041421c27d9ed3927c7b5195febd691aff30de881842749f3030089df0e135232@3.208.184.54:20630",
+            "enode://30dc2b7986e2ec5902498ec26fad6fcecece617aa1652f227f684ede6a0939bb7a205ada1c91420d30b427c86bbdcc31fdfd6d955dd8f5854370f583025a0708@3.209.35.13:20630",
+            "enode://b0357d45e9070c1660f63f077e0e3b0054a18d93785589d498586b6e0b7ec7c5b39ef608e82e7280ca95019db7c36455275d98a3e8684916ba8f3a7aab4ad38b@3.210.227.193:20630",
+            NULL },
+        { NULL },
+        { NULL },
+        { NULL }
+};
+const BREthereumNetwork ethereumPrvnet = &ethereumPrvnetRecord;
+
+//
+// DID Mainnet
+//
+static struct BREthereumNetworkRecord ethereumDIDMainnetRecord = {
+        "mainnet-did",
+        20,
+        20,
+        EMPTY_HASH_INIT,
+        EMPTY_HASH_INIT,
+        // Seeds
+        { //"seed.mainnet.eth.brd.breadwallet.com",
+                //"seed.mainnet.eth.community.breadwallet.com",
+                NULL },
+
+        // Enodes
+
+        // BRD
+        { 	"enode://dee112e94b17b3b49366e5dec78d7e8a1ee342ff363b490819d40a55482046d333b2bd51b3d1ce250078c5315bf302758d13f63ac94fd8e43f6e54be8412c316@52.74.28.202:20630",
+             "enode://152fae4134f4db49d24905762ade694fc86e0a24124c0927c9c1cbc816bb9929e790d4fba236c7a55c9d9817df72c1d23353c2dccc3796bd397d72320a722ef1@52.62.113.83:20630",
+             "enode://dbfdb62b5cf4cb5a12ee1df68bfb4c0626ad5335ec5ee0c594c315b08a61e7f0bc8ce5b264136eec0db17db1e55f1bb0f1de67f9bb9c57bea77feef74f2baa2c@35.156.51.127:20630",
+             "enode://a1a37849c8a0d5247870fc2d70da053fdae503b99498daf63905728bc801a57818577a88b02895763a5af8037ab5378b3ea12eb01ec2546712cf5ebaab3e94c6@35.177.89.244:20630",
+             "enode://9b43d046414b722ec3e6237083ab413280555cf4ee5765c9a4c55c9fc86c979c7389840a35377846cf0c6923afa7fa3cd115f6d8152e1f8df24273466cb15cf1@52.53.134.102:20630",
+             NULL },
+
+        // Community
+        { NULL },
+
+        // Local - Parity
+        { NULL },
+
+        // Local - Geth
+        { NULL }
+};
+const BREthereumNetwork ethereumDIDMainnet = &ethereumDIDMainnetRecord;
+
+//
+// DID Testnet
+//
+static struct BREthereumNetworkRecord ethereumDIDTestnetRecord = {
+        "testnet-did", // aka "ropsten"
+        21,
+        21,
+        EMPTY_HASH_INIT,
+        EMPTY_HASH_INIT,
+        // Seeds
+        {   //"seed.ropsten.eth.brd.breadwallet.com",
+                //"seed.ropsten.eth.community.breadwallet.com",
+                NULL },
+
+        // Enodes
+
+        // BRD
+        {   "enode://5e1d6f9f74e33b2d1e2fda87efaf60a788b338c08eefd3a435e9c7de98645bc041421c27d9ed3927c7b5195febd691aff30de881842749f3030089df0e135232@3.208.184.54:20630",
+            "enode://30dc2b7986e2ec5902498ec26fad6fcecece617aa1652f227f684ede6a0939bb7a205ada1c91420d30b427c86bbdcc31fdfd6d955dd8f5854370f583025a0708@3.209.35.13:20630",
+            "enode://b0357d45e9070c1660f63f077e0e3b0054a18d93785589d498586b6e0b7ec7c5b39ef608e82e7280ca95019db7c36455275d98a3e8684916ba8f3a7aab4ad38b@3.210.227.193:20630",
+            NULL },
+        { NULL },
+        { NULL },
+        { NULL }
+};
+const BREthereumNetwork ethereumDIDTestnet = &ethereumDIDTestnetRecord;
+
+//
+// DID Rinkeby
+//
+static struct BREthereumNetworkRecord ethereumDIDRinkebyRecord = {
+        "rinkeby-did",
+        4,
+        4,
+        EMPTY_HASH_INIT,
+        EMPTY_HASH_INIT,
+        // Seeds
+        { NULL },
+
+        // Enodes
+
+        { "enode://fe44bc423f210805daad60cc5d308f449e9282c28a9aba91040d7c727cf5751d1ae9e85d32a430f4a6fe15c8eb52833a1747e8b28e6ed5ae291fdae32e6b9181@18.217.15.245:20630",
+          "enode://777e2a86687d675c05344acc6e24cefbd3e233759e8b89d7b3d101aeffc89e6292f66a115c5bfc30f250c120e6a2354a7a6ea304439cfded706de1c9ade61abf@18.217.15.245:20630",
+          "enode://deb84117dada6c2c8f9c5d9d44f749b6fbbefdc987a1611b683ead6e4e2ce8e0d05a196591a713376eee5d9c165d3888d2e175e8eb842e5a381f273c0268edca@18.217.15.245:20630",
+          NULL },
+        { NULL },
+        { NULL },
+        { NULL }
+};
+const BREthereumNetwork ethereumDIDRinkeby = &ethereumDIDRinkebyRecord;
+
+//
+// DID Prvnet
+//
+static struct BREthereumNetworkRecord ethereumDIDPrvnetRecord = {
+        "prvnet-did", // aka "ropsten"
+        1,
+        20,
+        EMPTY_HASH_INIT,
+        EMPTY_HASH_INIT,
+        // Seeds
+        {   //"seed.ropsten.eth.brd.breadwallet.com",
+                //"seed.ropsten.eth.community.breadwallet.com",
+                NULL },
+
+        // Enodes
+
+        // BRD
+        {   "enode://c8ca74c1f3c40d4607dd7f57ad4bda95c777492802a206c19293b0d4dbdf5387230df0910f5955e9973f9c48d85d8e72ef23fd8c4569a400ea0dab9369bd1cc0@114.250.87.29:2111",
+            NULL },
+        { NULL },
+        { NULL },
+        { NULL }
+};
+const BREthereumNetwork ethereumDIDPrvnet = &ethereumDIDPrvnetRecord;
+
 /*
 // RinkebyChainConfig contains the chain parameters to run a node on the Rinkeby test network.
 RinkebyChainConfig = &ChainConfig{
@@ -321,6 +459,47 @@ networkInitilizeAllIfAppropriate (void) {
         
         ethereumRinkebyRecord.trustedCheckpointBlockHeaderHash =
         hashCreate("0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177");
+
+        // Prvnet
+
+        ethereumPrvnetRecord.genesisBlockHeaderHash =
+                hashCreate("0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d");
+
+        ethereumPrvnetRecord.trustedCheckpointBlockHeaderHash =
+                hashCreate("0x1b1ba890510e06411fdee9bb64ca7705c56a1a4ce3559ddb34b3680c526cb419");
+
+        /* ETH DID */
+        // Mainnet
+
+        ethereumDIDMainnetRecord.genesisBlockHeaderHash =
+                hashCreate ("0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3");
+
+        ethereumDIDMainnetRecord.trustedCheckpointBlockHeaderHash =
+                hashCreate("0x04c2114a8cbe49ba5c37a03cc4b4b8d3adfc0bd2c78e0e726405dd84afca1d63");
+
+        // Testnet / 'Ropsten'
+
+        ethereumDIDTestnetRecord.genesisBlockHeaderHash =
+                hashCreate("0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d");
+
+        ethereumDIDTestnetRecord.trustedCheckpointBlockHeaderHash =
+                hashCreate("0x1b1ba890510e06411fdee9bb64ca7705c56a1a4ce3559ddb34b3680c526cb419");
+
+        // Rinkeby
+
+        ethereumDIDRinkebyRecord.genesisBlockHeaderHash =
+                hashCreate("0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177");
+
+        ethereumDIDRinkebyRecord.trustedCheckpointBlockHeaderHash =
+                hashCreate("0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177");
+
+        // Prvnet
+
+        ethereumDIDPrvnetRecord.genesisBlockHeaderHash =
+                hashCreate("0x44e11ae079dff7583e99c3cc623dd09ae2b6929a55650a13ab468aae1a47a62f");
+
+        ethereumDIDPrvnetRecord.trustedCheckpointBlockHeaderHash =
+                hashCreate("0x44e11ae079dff7583e99c3cc623dd09ae2b6929a55650a13ab468aae1a47a62f");
 
         // Notable RACE
         needsInitialization = 0;

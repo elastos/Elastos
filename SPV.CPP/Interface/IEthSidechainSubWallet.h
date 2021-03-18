@@ -23,6 +23,8 @@
 #ifndef __ELASTOS_SDK_IETHSIDECHAINSUBWALLET_H__
 #define __ELASTOS_SDK_IETHSIDECHAINSUBWALLET_H__
 
+#include "ISubWallet.h"
+
 namespace Elastos {
 	namespace ElaWallet {
 

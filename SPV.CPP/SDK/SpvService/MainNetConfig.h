@@ -197,6 +197,25 @@ namespace Elastos {
 				[0, "6afc2eb01956dfe192dc4cd065efdf6c3c80448776ca367a7246d279e228ff0a", 1, 1]
 			]
 		}
+	},
+	"ETHDID": {
+		"Index": 4,
+		"MinFee": 0,
+		"FeePerKB": 0,
+		"DisconnectionTime": 0,
+		"ChainParameters": {
+			"Services": 0,
+			"MagicNumber": 0,
+			"StandardPort": 0,
+			"TargetTimeSpan": 0,
+			"TargetTimePerBlock": 0,
+			"DNSSeeds": [
+				"127.0.0.1"
+			],
+			"CheckPoints": [
+				[0, "6afc2eb01956dfe192dc4cd065efdf6c3c80448776ca367a7246d279e228ff0a", 1, 1]
+			]
+		}
 	}
 }
 		)"_json;

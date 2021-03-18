@@ -1456,10 +1456,20 @@ static struct BREthereumBlockHeaderRecord genesisMainnetBlockHeaderRecord = {
 };
 static struct BREthereumBlockHeaderRecord genesisTestnetBlockHeaderRecord;
 static struct BREthereumBlockHeaderRecord genesisRinkebyBlockHeaderRecord;
+static struct BREthereumBlockHeaderRecord genesisPrvnetBlockHeaderRecord;
+static struct BREthereumBlockHeaderRecord genesisDIDMainnetBlockHeaderRecord;
+static struct BREthereumBlockHeaderRecord genesisDIDTestnetBlockHeaderRecord;
+static struct BREthereumBlockHeaderRecord genesisDIDRinkebyBlockHeaderRecord;
+static struct BREthereumBlockHeaderRecord genesisDIDPrvnetBlockHeaderRecord;
 
 const BREthereumBlockHeader ethereumMainnetBlockHeader = &genesisMainnetBlockHeaderRecord;
 const BREthereumBlockHeader ethereumTestnetBlockHeader = &genesisTestnetBlockHeaderRecord;
 const BREthereumBlockHeader ethereumRinkebyBlockHeader = &genesisRinkebyBlockHeaderRecord;
+const BREthereumBlockHeader ethereumPrvnetBlockHeader = &genesisPrvnetBlockHeaderRecord;
+const BREthereumBlockHeader ethereumDIDMainnetBlockHeader = &genesisDIDMainnetBlockHeaderRecord;
+const BREthereumBlockHeader ethereumDIDTestnetBlockHeader = &genesisDIDTestnetBlockHeaderRecord;
+const BREthereumBlockHeader ethereumDIDRinkebyBlockHeader = &genesisDIDRinkebyBlockHeaderRecord;
+const BREthereumBlockHeader ethereumDIDPrvnetBlockHeader = &genesisDIDPrvnetBlockHeaderRecord;
 
 static void
 initializeGenesisBlocks (void);
@@ -1474,13 +1484,14 @@ networkGetGenesisBlockHeader (BREthereumNetwork network) {
     }
 
     BREthereumBlockHeader genesisHeader =
-    (network == ethereumMainnet
-     ? ethereumMainnetBlockHeader
-     : (network == ethereumTestnet
-        ? ethereumTestnetBlockHeader
-        : (network == ethereumRinkeby
-           ? ethereumRinkebyBlockHeader
-           : NULL)));
+    (network == ethereumMainnet ? ethereumMainnetBlockHeader
+     : (network == ethereumTestnet ? ethereumTestnetBlockHeader
+        : (network == ethereumRinkeby ? ethereumRinkebyBlockHeader
+           : (network == ethereumPrvnet ? ethereumPrvnetBlockHeader
+              : (network == ethereumDIDMainnet ? ethereumDIDMainnetBlockHeader
+                 : (network == ethereumDIDTestnet ? ethereumDIDTestnetBlockHeader
+                    : (network == ethereumDIDRinkeby ? ethereumDIDRinkebyBlockHeader
+                       : (network == ethereumDIDPrvnet ? ethereumDIDPrvnetBlockHeader : NULL))))))));
 
     return genesisHeader == NULL ? NULL : blockHeaderCopy(genesisHeader);
 }
@@ -1569,6 +1580,24 @@ initializeGenesisBlocks (void) {
     header->mixHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
     header->nonce = 0x0000000000000000;
 
+    header = &genesisDIDMainnetBlockHeaderRecord;
+    header->hash = hashCreate("0x6afc2eb01956dfe192dc4cd065efdf6c3c80448776ca367a7246d279e228ff0a");
+    header->parentHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
+    header->ommersHash = hashCreate("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347");
+    header->beneficiary = addressCreate("0x0000000000000000000000000000000000000000");
+    header->stateRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->transactionsRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->receiptsRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->logsBloom = bloomFilterCreateString("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+    header->difficulty = createUInt256 (1);
+    header->number = 0x0;
+    header->gasLimit = 8700000000;
+    header->gasUsed = 0x0;
+    header->timestamp = 0x1;
+    decodeHex(header->extraData, 337, "00000000000000000000000000000000000000000000000000000000000000005141f2c88e84c0f9b4c1876df59e2530fbdc42f2f02090aec7d41b1880058cf5155fe030c3ec404e08319622794adcf7c05d9e8f6d251c3309e0ec3c8609fadecdc27e135343b7c8bdbf25f09a01458277466b8b6fbb66ac1db38343af158b22636996788207c68a3345104698ae24c4847bf748a32c97d158f0d33873227887ecf514064e3a7b94754ecb68470e2a9002b6aa3197cbec11f46971c73d79a8e80ddb5d59d98347dbbc60c63d09213e5fac0cbc6d8f547cedf3b298182abf49be4a717db9a0d14509fddb0ca03ffc56463ec0e6dda91c99f70a7bca505223c679c4bfdaee3463636ee4a8ff022b46e9eb0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 674);
+    header->extraDataCount = 337;
+    header->mixHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
+    header->nonce = 0x0000000000000000;
     // Testnet
     /*
     {"jsonrpc":"2.0","id":1,"result":
@@ -1636,6 +1665,24 @@ initializeGenesisBlocks (void) {
     header->mixHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
     header->nonce = 0x0000000000000000;
 
+    header = &genesisDIDTestnetBlockHeaderRecord;
+    header->hash = hashCreate("0x698e5ec133064dabb7c42eb4b2bdfa21e7b7c2326b0b719d5ab7f452ae8f5ee4");
+    header->parentHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
+    header->ommersHash = hashCreate("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347");
+    header->beneficiary = addressCreate("0x0000000000000000000000000000000000000000");
+    header->stateRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->transactionsRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->receiptsRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->logsBloom = bloomFilterCreateString("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+    header->difficulty = createUInt256 (0x1);
+    header->number = 0x0;
+    header->gasLimit = 8700000000;
+    header->gasUsed = 0x0;
+    header->timestamp = 1541053856;
+    decodeHex(header->extraData, 337, "0000000000000000000000000000000000000000000000000000000000000000d7b0ddec94d96d4c7870deac1a2fe3347b9b4b854dd0dd5e78c10842544cc1e88b5e1fcc3532abe1bb6ef39991b88e0121689a298d16b34dfca431561d8b61c0300fa3b6167bd76ad82c90feab038af0f3ca004f36ee4d3510553564bdb81ab5f1a5d4ed412a0777ad9bed14c4d53a883f618eb86de1723dedabf5d5fb905ef2148dcf3fdc08d53f03d534a5143b49ff57efc134816017a5cd0b99058946781f8c60febab3495b66047aaaac8639a2d0bd911737473e7ea53fbf71e091703893dd9b6d5b96a83db1b8ae7e3346330073552e1b7c8403f4e107406ff7d168f2f37649f1a5cf1cbc173e02e2897ccd83b10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 674);
+    header->extraDataCount = 337;
+    header->mixHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
+    header->nonce = 0x0000000000000000;
     // Rinkeby
     /*
     {"jsonrpc":"2.0","id":1,"result":
@@ -1703,6 +1750,65 @@ initializeGenesisBlocks (void) {
     header->extraDataCount = 337;
     header->mixHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
     header->nonce = 0x0000000000000000;
+
+    header = &genesisDIDRinkebyBlockHeaderRecord;
+    header->hash = hashCreate("0x6940d4ee80218d11098c99db11e997686e587ec482c7281e015c12f1152e71b5");
+    header->parentHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
+    header->ommersHash = hashCreate("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347");
+    header->beneficiary = addressCreate("0x0000000000000000000000000000000000000000");
+    header->stateRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->transactionsRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->receiptsRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->logsBloom = bloomFilterCreateString("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+    header->difficulty = createUInt256 (0x1);
+    header->number = 0x0;
+    header->gasLimit = 8700000000;
+    header->gasUsed = 0x0;
+    header->timestamp = 1541053864;
+    // TODO: Rinkeby ExtraData is oversized... ignore.
+    decodeHex(header->extraData, 337, "00000000000000000000000000000000000000000000000000000000000000007117360e9165f11c51c4231be16c602a5dd250b6aeabe3dd7b80adf0a884e572e84daf5eba0aa4ae8bb95e8f1ec991b71789497a09fd4997c468c3c277cd931d4864039fa48220f817519f5a8b0715b334185174992c36c79f78da5e009b9c22732738d635ae1cbf8c5a01a40943aff7e0c8d5d3c625bf96971037c3e90bb239b5b219b7ac14c8e301dca5f875ed22d90568dd99c56cb34c8d5204d610cb2b6107ebaaee24a9d8dd625ca9863af2347656df876a369c5f2b099abb3c050b8ba4355cf0dc29ebf4296e32b1fff289d05e719a58e1ad1fff1a924014c872064cd776e12d7163d329cc003bffb1b8b9de440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 674);
+    header->extraDataCount = 337;
+    header->mixHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
+    header->nonce = 0x0000000000000000;
+
+    // Prvnet
+    header = &genesisPrvnetBlockHeaderRecord;
+    header->hash = hashCreate("0x698e5ec133064dabb7c42eb4b2bdfa21e7b7c2326b0b719d5ab7f452ae8f5ee4");
+    header->parentHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
+    header->ommersHash = hashCreate("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347");
+    header->beneficiary = addressCreate("0x0000000000000000000000000000000000000000");
+    header->stateRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->transactionsRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->receiptsRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->logsBloom = bloomFilterCreateString("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+    header->difficulty = createUInt256 (0x1);
+    header->number = 0x0;
+    header->gasLimit = 8700000000;
+    header->gasUsed = 0x0;
+    header->timestamp = 1541053856;
+    decodeHex(header->extraData, 337, "0000000000000000000000000000000000000000000000000000000000000000d7b0ddec94d96d4c7870deac1a2fe3347b9b4b854dd0dd5e78c10842544cc1e88b5e1fcc3532abe1bb6ef39991b88e0121689a298d16b34dfca431561d8b61c0300fa3b6167bd76ad82c90feab038af0f3ca004f36ee4d3510553564bdb81ab5f1a5d4ed412a0777ad9bed14c4d53a883f618eb86de1723dedabf5d5fb905ef2148dcf3fdc08d53f03d534a5143b49ff57efc134816017a5cd0b99058946781f8c60febab3495b66047aaaac8639a2d0bd911737473e7ea53fbf71e091703893dd9b6d5b96a83db1b8ae7e3346330073552e1b7c8403f4e107406ff7d168f2f37649f1a5cf1cbc173e02e2897ccd83b10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 674);
+    header->extraDataCount = 337;
+    header->mixHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
+    header->nonce = 0x0000000000000000;
+
+    header = &genesisDIDPrvnetBlockHeaderRecord;
+    header->hash = hashCreate("0x44e11ae079dff7583e99c3cc623dd09ae2b6929a55650a13ab468aae1a47a62f");
+    header->parentHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
+    header->ommersHash = hashCreate("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347");
+    header->beneficiary = addressCreate("0x0000000000000000000000000000000000000000");
+    header->stateRoot = hashCreate("0x8c26791732e84d199d75d039c8d830ba52b958855dcc56b814da92626a9754d5");
+    header->transactionsRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->receiptsRoot = hashCreate("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
+    header->logsBloom = bloomFilterCreateString("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+    header->difficulty = createUInt256 (0x1);
+    header->number = 0x0;
+    header->gasLimit = 0x7a1200;
+    header->gasUsed = 0x0;
+    header->timestamp = 0x5d8adde5;
+    decodeHex(header->extraData, 217, "000000000000000000000000000000000000000000000000000000000000000053781e106a2e3378083bdcede1874e5c2a7225f8d9758863f280c25b0d1f2f81705e3725ccd5ac49fd7f1f6e2c5157a33dda2e91f58f32862f864d709b170f914ef3541cd29ee672a11c56d4b96b4b6f8aef2209eab2f60bc13da5e669ad832709f5e71d05f9b7a73f6ba0298c5c1943204a6a54839166b20000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 434);
+    header->extraDataCount = 217;
+    header->mixHash = hashCreate("0x0000000000000000000000000000000000000000000000000000000000000000");
+    header->nonce = 0x0000000000000000;
 }
 
 /// MARK: - Block Checkpoint
@@ -1725,6 +1831,36 @@ ethereumRinkebyCheckpoints [] = {
 };
 #define CHECKPOINT_RINKEBY_COUNT      (sizeof (ethereumRinkebyCheckpoints) / sizeof (BREthereumBlockCheckpoint))
 
+static BREthereumBlockCheckpoint
+        ethereumPrvnetCheckpoints [] = {
+        {       0, HASH_INIT("698e5ec133064dabb7c42eb4b2bdfa21e7b7c2326b0b719d5ab7f452ae8f5ee4"), { .std = "0x1" },  1541053856 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
+};
+#define CHECKPOINT_PRVNET_COUNT      (sizeof (ethereumPrvnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+
+static BREthereumBlockCheckpoint
+        ethereumDIDMainnetCheckpoints [] = {
+        {       0, HASH_INIT("6afc2eb01956dfe192dc4cd065efdf6c3c80448776ca367a7246d279e228ff0a"), { .std = "0x1" },          0x1 },
+};
+#define CHECKPOINT_DID_MAINNET_COUNT      (sizeof (ethereumDIDMainnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+
+static BREthereumBlockCheckpoint
+        ethereumDIDTestnetCheckpoints [] = {
+        {       0, HASH_INIT("698e5ec133064dabb7c42eb4b2bdfa21e7b7c2326b0b719d5ab7f452ae8f5ee4"), { .std = "0x1" },  1541053856 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
+};
+#define CHECKPOINT_DID_TESTNET_COUNT      (sizeof (ethereumDIDTestnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+
+static BREthereumBlockCheckpoint
+        ethereumDIDRinkebyCheckpoints [] = {
+        {       0, HASH_INIT("6940d4ee80218d11098c99db11e997686e587ec482c7281e015c12f1152e71b5"), { .std = "0x1" },  1541053864 }, //  439 days  6 hrs ago (Apr-12-2017 03:20:50 PM +UTC)
+};
+#define CHECKPOINT_DID_RINKEBY_COUNT      (sizeof (ethereumDIDRinkebyCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+
+static BREthereumBlockCheckpoint
+        ethereumDIDPrvnetCheckpoints [] = {
+        {       0, HASH_INIT("44e11ae079dff7583e99c3cc623dd09ae2b6929a55650a13ab468aae1a47a62f"), { .std = "0x1" },  0x5d8adde5 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
+};
+#define CHECKPOINT_DID_PRVNET_COUNT      (sizeof (ethereumDIDPrvnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+
 static void blockCheckpointInitialize (void) {
     static int needInitialization = 1;
     if (needInitialization) {
@@ -1746,6 +1882,37 @@ static void blockCheckpointInitialize (void) {
 
         for (size_t index = 0; index < CHECKPOINT_RINKEBY_COUNT; index++) {
             BREthereumBlockCheckpoint *cp = &ethereumRinkebyCheckpoints[index];
+            cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
+            assert (CORE_PARSE_OK == status);
+        }
+
+        for (size_t index = 0; index < CHECKPOINT_PRVNET_COUNT; index++) {
+            BREthereumBlockCheckpoint *cp = &ethereumPrvnetCheckpoints[index];
+            cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
+            assert (CORE_PARSE_OK == status);
+        }
+
+        // eth did
+        for (size_t index = 0; index < CHECKPOINT_DID_MAINNET_COUNT; index++) {
+            BREthereumBlockCheckpoint *cp = &ethereumDIDMainnetCheckpoints[index];
+            cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
+            assert (CORE_PARSE_OK == status);
+        }
+
+        for (size_t index = 0; index < CHECKPOINT_DID_TESTNET_COUNT; index++) {
+            BREthereumBlockCheckpoint *cp = &ethereumDIDTestnetCheckpoints[index];
+            cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
+            assert (CORE_PARSE_OK == status);
+        }
+
+        for (size_t index = 0; index < CHECKPOINT_DID_RINKEBY_COUNT; index++) {
+            BREthereumBlockCheckpoint *cp = &ethereumDIDRinkebyCheckpoints[index];
+            cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
+            assert (CORE_PARSE_OK == status);
+        }
+
+        for (size_t index = 0; index < CHECKPOINT_DID_PRVNET_COUNT; index++) {
+            BREthereumBlockCheckpoint *cp = &ethereumDIDPrvnetCheckpoints[index];
             cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
             assert (CORE_PARSE_OK == status);
         }
@@ -1772,6 +1939,33 @@ blockCheckpointFindForNetwork (BREthereumNetwork network,
         *count = CHECKPOINT_RINKEBY_COUNT;
         return ethereumRinkebyCheckpoints;
     }
+
+    if (network == ethereumPrvnet) {
+        *count = CHECKPOINT_PRVNET_COUNT;
+        return ethereumPrvnetCheckpoints;
+    }
+
+    // eth did
+    if (network == ethereumDIDMainnet) {
+        *count = CHECKPOINT_DID_MAINNET_COUNT;
+        return ethereumDIDMainnetCheckpoints;
+    }
+
+    if (network == ethereumDIDTestnet) {
+        *count = CHECKPOINT_DID_TESTNET_COUNT;
+        return ethereumDIDTestnetCheckpoints;
+    }
+
+    if (network == ethereumDIDRinkeby) {
+        *count = CHECKPOINT_DID_RINKEBY_COUNT;
+        return ethereumDIDRinkebyCheckpoints;
+    }
+
+    if (network == ethereumDIDPrvnet) {
+        *count = CHECKPOINT_DID_PRVNET_COUNT;
+        return ethereumDIDPrvnetCheckpoints;
+    }
+
     *count = 0;
     return NULL;
 }

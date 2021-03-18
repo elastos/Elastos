@@ -1,8 +1,4 @@
 /*
- * EthereumNetwork
- *
- * Created by Ed Gamble <ed@breadwallet.com> on 3/20/18.
- * Copyright (c) 2018 Breadwinner AG.  All right reserved.
  * Copyright (c) 2020 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,31 +20,21 @@
  * SOFTWARE.
  */
 
-#ifndef __ELASTOS_SDK_ETHEREUMNETWORK_H__
-#define __ELASTOS_SDK_ETHEREUMNETWORK_H__
+#ifndef __ELASTOS_SDK_IETHIDCHAINSUBWALLET_H__
+#define __ELASTOS_SDK_IETHIDCHAINSUBWALLET_H__
 
-#include <ethereum/blockchain/BREthereumNetwork.h>
-
-#include <boost/shared_ptr.hpp>
+#include "IEthSidechainSubWallet.h"
 
 namespace Elastos {
-	namespace ElaWallet {
+    namespace ElaWallet {
 
-		class EthereumNetwork {
-		public:
-			EthereumNetwork(BREthereumNetwork network);
+        class IEthIDChainSubWallet : public virtual IEthSidechainSubWallet {
+        public:
+            virtual ~IEthIDChainSubWallet() noexcept {}
 
-			~EthereumNetwork();
+        };
 
-			BREthereumNetwork getRaw() const;
-
-		private:
-			BREthereumNetwork _network;
-		};
-
-		typedef boost::shared_ptr<EthereumNetwork> EthereumNetworkPtr;
-
-	}
+    }
 }
 
-#endif //ELASTOS_SPVSDK_ETHEREUMNETWORK_H
+#endif //__ELASTOS_SDK_IETHIDCHAINSUBWALLET_H__

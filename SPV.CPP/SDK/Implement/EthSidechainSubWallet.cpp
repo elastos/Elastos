@@ -196,7 +196,34 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 				}
 			}
 
-			EthereumNetworkPtr network(new EthereumNetwork(netType));
+
+            BREthereumNetwork net = NULL;
+            if (info->GetChainID() == CHAINID_ETHDID) {
+                if (netType == "MainNet") {
+                    net = ethereumDIDMainnet;
+                } else if (netType == "TestNet") {
+                    net = ethereumDIDTestnet;
+                } else if (netType == "RegTest") {
+                    net = ethereumDIDRinkeby;
+                } else if (netType == "PrvNet") {
+                    net = ethereumDIDPrvnet;
+                } else {
+                    net = NULL;
+                }
+            } else {
+                if (netType == "MainNet") {
+                    net = ethereumMainnet;
+                } else if (netType == "TestNet") {
+                    net = ethereumTestnet;
+                } else if (netType == "RegTest") {
+                    net = ethereumRinkeby;
+                } else if (netType == "PrvNet") {
+                    net = ethereumPrvnet;
+                } else {
+                    net = NULL;
+                }
+            }
+			EthereumNetworkPtr network(new EthereumNetwork(net));
 			_client = ClientPtr(new EthereumClient(this, network, parent->GetDataPath(), pubkey));
 			_client->_ewm->getWallet()->setDefaultGasPrice(5000000000);
 		}
