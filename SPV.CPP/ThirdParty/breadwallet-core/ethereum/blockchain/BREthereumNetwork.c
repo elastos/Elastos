@@ -362,7 +362,7 @@ static struct BREthereumNetworkRecord ethereumDIDPrvnetRecord = {
         // Enodes
 
         // BRD
-        {   "enode://c8ca74c1f3c40d4607dd7f57ad4bda95c777492802a206c19293b0d4dbdf5387230df0910f5955e9973f9c48d85d8e72ef23fd8c4569a400ea0dab9369bd1cc0@114.250.87.29:2111",
+        {   "enode://9fde20fe0a07c6f384c4e13aa0b2cc89bf01a3375515fb8674b716ff9c381398617c59985f6b4e156665a366f33121b5e5bacc2b0dae59bafd1e97040ac3f67d@114.250.87.29:2111",
             NULL },
         { NULL },
         { NULL },
