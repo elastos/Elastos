@@ -76,11 +76,11 @@ nodeSend (BREthereumNode node,
 #define HEPUBLIC_BYTES      32
 #define NONCE_BYTES         32
 
-static const ssize_t authBufLen = SIG_SIZE_BYTES + HEPUBLIC_BYTES + PUBLIC_SIZE_BYTES + NONCE_BYTES + 1;
-static const ssize_t authCipherBufLen =  authBufLen + 65 + 16 + 32;
+#define authBufLen (SIG_SIZE_BYTES + HEPUBLIC_BYTES + PUBLIC_SIZE_BYTES + NONCE_BYTES + 1)
+#define authCipherBufLen (authBufLen + 65 + 16 + 32)
 
-static const ssize_t ackBufLen = PUBLIC_SIZE_BYTES + NONCE_BYTES + 1;
-static const ssize_t ackCipherBufLen =  ackBufLen + 65 + 16 + 32;
+#define ackBufLen (PUBLIC_SIZE_BYTES + NONCE_BYTES + 1)
+#define ackCipherBufLen (ackBufLen + 65 + 16 + 32)
 
 //
 static int _sendAuthInitiator(BREthereumNode node);

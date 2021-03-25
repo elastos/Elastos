@@ -52,6 +52,7 @@ using namespace Elastos::ElaWallet;
 static const std::string CHAINID_ELA = "ELA";
 static const std::string CHAINID_ID = "IDChain";
 static const std::string CHAINID_ETHSC = "ETHSC";
+static const std::string CHAINID_ETHDID = "ETHDID";
 static std::string walletRoot;
 static std::string network;
 
@@ -847,7 +848,7 @@ static int list(int argc, char *argv[]) {
 			for (const ISubWallet *subWallet : subWallets) {
 				std::string chainID = subWallet->GetChainID();
 				if (subWallet) {
-					if (chainID == CHAINID_ETHSC)
+					if (chainID.find("ETH") != std::string::npos)
 						snprintf(balance, sizeof(balance), "%25s", subWallet->GetBalance().c_str());
 					else
 						snprintf(balance, sizeof(balance), "%25.8lf", std::stod(subWallet->GetBalance()) / SELA_PER_ELA);
@@ -1888,7 +1889,7 @@ static int transfer(int argc, char *argv[]) {
 
 	try {
 		nlohmann::json tx;
-		if (chainID == CHAINID_ETHSC) {
+		if (chainID.find("ETH") !=  std::string::npos) {
 			IEthSidechainSubWallet *subWallet;
 			getSubWallet(subWallet, currentWallet, chainID);
 
@@ -2082,7 +2083,7 @@ static int _tx(int argc, char *argv[]) {
 				struct tm tm;
 				for (nlohmann::json::iterator it = tx.begin(); it != tx.end(); ++it) {
 					if (txHash.empty()) {
-						if (chainID == CHAINID_ETHSC) {
+						if (chainID.find("ETH") != std::string::npos) {
 							std::string Hash = (*it)["Hash"];
 							time_t t = (*it)["Timestamp"];
 							uint64_t confirm = (*it)["Confirmations"];
@@ -2147,19 +2148,20 @@ static int _tx(int argc, char *argv[]) {
 	return 0;
 }
 
-// tokentx tokenSymbol
+// tokentx chainID tokenSymbol
 static int _tokentx(int argc, char *argv[]) {
-	if (argc != 2) {
+	if (argc != 3) {
 		invalidCmdError();
 		return ERRNO_CMD;
 	}
 	checkCurrentWallet();
 
-	std::string tokenSymbol = argv[1];
+	std::string chainID = argv[1];
+	std::string tokenSymbol = argv[2];
 
 	try {
 		IEthSidechainSubWallet *subWallet;
-		getSubWallet(subWallet, currentWallet, CHAINID_ETHSC);
+		getSubWallet(subWallet, currentWallet, chainID);
 
 		int cntPerPage = 20;
 		int curPage = 1;
@@ -2517,7 +2519,7 @@ struct command {
 	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},
 	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},
 	{"tx",         _tx,            "chainID [coinbase]                               List all tx/coinbase tx records."},
-	{"tokentx",    _tokentx,       "tokenSymbol                                      List all token tx records."},
+	{"tokentx",    _tokentx,       "chainID tokenSymbol                              List all token tx records."},
 	{"rawtx",      _rawtx,         "chainID                                          Convert spv tx to rawtx"},
 	{"consolidate",consolidate,    "chainID                                          Consolidate fragmentary utxo"},
 	{"signtx",     signtx,         "chainID                                          Sign tx"},

@@ -1815,51 +1815,75 @@ initializeGenesisBlocks (void) {
 
 static BREthereumBlockCheckpoint
 ethereumMainnetCheckpoints [] = {
-    {       0, HASH_INIT("6afc2eb01956dfe192dc4cd065efdf6c3c80448776ca367a7246d279e228ff0a"), { .std = "0x1" },          0x1 },
+    {       0, EMPTY_HASH_INIT, { .std = "0x1" },          0x1 },
 };
 #define CHECKPOINT_MAINNET_COUNT      (sizeof (ethereumMainnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+const char *mainnetCheckpointString[CHECKPOINT_MAINNET_COUNT] = {
+        "6afc2eb01956dfe192dc4cd065efdf6c3c80448776ca367a7246d279e228ff0a"
+};
 
 static BREthereumBlockCheckpoint
 ethereumTestnetCheckpoints [] = {
-    {       0, HASH_INIT("698e5ec133064dabb7c42eb4b2bdfa21e7b7c2326b0b719d5ab7f452ae8f5ee4"), { .std = "0x1" },  1541053856 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
+    {       0, EMPTY_HASH_INIT, { .std = "0x1" },  1541053856 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
 };
 #define CHECKPOINT_TESTNET_COUNT      (sizeof (ethereumTestnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+const char *testnetCheckpointsString[CHECKPOINT_TESTNET_COUNT] = {
+        "698e5ec133064dabb7c42eb4b2bdfa21e7b7c2326b0b719d5ab7f452ae8f5ee4"
+};
 
 static BREthereumBlockCheckpoint
 ethereumRinkebyCheckpoints [] = {
-    {       0, HASH_INIT("6940d4ee80218d11098c99db11e997686e587ec482c7281e015c12f1152e71b5"), { .std = "0x1" },  1541053864 }, //  439 days  6 hrs ago (Apr-12-2017 03:20:50 PM +UTC)
+    {       0, EMPTY_HASH_INIT, { .std = "0x1" },  1541053864 }, //  439 days  6 hrs ago (Apr-12-2017 03:20:50 PM +UTC)
 };
 #define CHECKPOINT_RINKEBY_COUNT      (sizeof (ethereumRinkebyCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+const char *rinkebyCheckpointsString[CHECKPOINT_RINKEBY_COUNT] = {
+        "6940d4ee80218d11098c99db11e997686e587ec482c7281e015c12f1152e71b5"
+};
 
 static BREthereumBlockCheckpoint
         ethereumPrvnetCheckpoints [] = {
-        {       0, HASH_INIT("698e5ec133064dabb7c42eb4b2bdfa21e7b7c2326b0b719d5ab7f452ae8f5ee4"), { .std = "0x1" },  1541053856 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
+        {       0, EMPTY_HASH_INIT, { .std = "0x1" },  1541053856 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
 };
 #define CHECKPOINT_PRVNET_COUNT      (sizeof (ethereumPrvnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+const char *prvnetCheckpointsString[CHECKPOINT_PRVNET_COUNT] = {
+        "698e5ec133064dabb7c42eb4b2bdfa21e7b7c2326b0b719d5ab7f452ae8f5ee4"
+};
 
 static BREthereumBlockCheckpoint
         ethereumDIDMainnetCheckpoints [] = {
-        {       0, HASH_INIT("6afc2eb01956dfe192dc4cd065efdf6c3c80448776ca367a7246d279e228ff0a"), { .std = "0x1" },          0x1 },
+        {       0, EMPTY_HASH_INIT, { .std = "0x1" },          0x1 },
 };
 #define CHECKPOINT_DID_MAINNET_COUNT      (sizeof (ethereumDIDMainnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+const char *didmainnetCheckpointsString[CHECKPOINT_DID_MAINNET_COUNT] = {
+        "6afc2eb01956dfe192dc4cd065efdf6c3c80448776ca367a7246d279e228ff0a"
+};
 
 static BREthereumBlockCheckpoint
         ethereumDIDTestnetCheckpoints [] = {
-        {       0, HASH_INIT("698e5ec133064dabb7c42eb4b2bdfa21e7b7c2326b0b719d5ab7f452ae8f5ee4"), { .std = "0x1" },  1541053856 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
+        {       0, EMPTY_HASH_INIT, { .std = "0x1" },  1541053856 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
 };
 #define CHECKPOINT_DID_TESTNET_COUNT      (sizeof (ethereumDIDTestnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+const char *didtestnetCheckpointsString[CHECKPOINT_DID_TESTNET_COUNT] = {
+        "698e5ec133064dabb7c42eb4b2bdfa21e7b7c2326b0b719d5ab7f452ae8f5ee4"
+};
 
 static BREthereumBlockCheckpoint
         ethereumDIDRinkebyCheckpoints [] = {
-        {       0, HASH_INIT("6940d4ee80218d11098c99db11e997686e587ec482c7281e015c12f1152e71b5"), { .std = "0x1" },  1541053864 }, //  439 days  6 hrs ago (Apr-12-2017 03:20:50 PM +UTC)
+        {       0, EMPTY_HASH_INIT, { .std = "0x1" },  1541053864 }, //  439 days  6 hrs ago (Apr-12-2017 03:20:50 PM +UTC)
 };
 #define CHECKPOINT_DID_RINKEBY_COUNT      (sizeof (ethereumDIDRinkebyCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+const char *didrinkebyCheckpointsString[CHECKPOINT_DID_RINKEBY_COUNT] = {
+        "6940d4ee80218d11098c99db11e997686e587ec482c7281e015c12f1152e71b5"
+};
 
 static BREthereumBlockCheckpoint
         ethereumDIDPrvnetCheckpoints [] = {
-        {       0, HASH_INIT("44e11ae079dff7583e99c3cc623dd09ae2b6929a55650a13ab468aae1a47a62f"), { .std = "0x1" },  0x5d8adde5 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
+        {       0, EMPTY_HASH_INIT, { .std = "0x1" },  0x5d8adde5 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
 };
 #define CHECKPOINT_DID_PRVNET_COUNT      (sizeof (ethereumDIDPrvnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
+const char *didprvnetCheckpointsString[CHECKPOINT_DID_PRVNET_COUNT] = {
+        "44e11ae079dff7583e99c3cc623dd09ae2b6929a55650a13ab468aae1a47a62f"
+};
 
 static void blockCheckpointInitialize (void) {
     static int needInitialization = 1;
@@ -1870,24 +1894,28 @@ static void blockCheckpointInitialize (void) {
 
         for (size_t index = 0; index < CHECKPOINT_MAINNET_COUNT; index++) {
             BREthereumBlockCheckpoint *cp = &ethereumMainnetCheckpoints[index];
+            cp->hash = HASH_INIT(mainnetCheckpointString[index]);
             cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
             assert (CORE_PARSE_OK == status);
         }
 
         for (size_t index = 0; index < CHECKPOINT_TESTNET_COUNT; index++) {
             BREthereumBlockCheckpoint *cp = &ethereumTestnetCheckpoints[index];
+            cp->hash = HASH_INIT(testnetCheckpointsString[index]);
             cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
             assert (CORE_PARSE_OK == status);
         }
 
         for (size_t index = 0; index < CHECKPOINT_RINKEBY_COUNT; index++) {
             BREthereumBlockCheckpoint *cp = &ethereumRinkebyCheckpoints[index];
+            cp->hash = HASH_INIT(rinkebyCheckpointsString[index]);
             cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
             assert (CORE_PARSE_OK == status);
         }
 
         for (size_t index = 0; index < CHECKPOINT_PRVNET_COUNT; index++) {
             BREthereumBlockCheckpoint *cp = &ethereumPrvnetCheckpoints[index];
+            cp->hash = HASH_INIT(prvnetCheckpointsString[index]);
             cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
             assert (CORE_PARSE_OK == status);
         }
@@ -1895,24 +1923,28 @@ static void blockCheckpointInitialize (void) {
         // eth did
         for (size_t index = 0; index < CHECKPOINT_DID_MAINNET_COUNT; index++) {
             BREthereumBlockCheckpoint *cp = &ethereumDIDMainnetCheckpoints[index];
+            cp->hash = HASH_INIT(didmainnetCheckpointsString[index]);
             cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
             assert (CORE_PARSE_OK == status);
         }
 
         for (size_t index = 0; index < CHECKPOINT_DID_TESTNET_COUNT; index++) {
             BREthereumBlockCheckpoint *cp = &ethereumDIDTestnetCheckpoints[index];
+            cp->hash = HASH_INIT(didtestnetCheckpointsString[index]);
             cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
             assert (CORE_PARSE_OK == status);
         }
 
         for (size_t index = 0; index < CHECKPOINT_DID_RINKEBY_COUNT; index++) {
             BREthereumBlockCheckpoint *cp = &ethereumDIDRinkebyCheckpoints[index];
+            cp->hash = HASH_INIT(didrinkebyCheckpointsString[index]);
             cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
             assert (CORE_PARSE_OK == status);
         }
 
         for (size_t index = 0; index < CHECKPOINT_DID_PRVNET_COUNT; index++) {
             BREthereumBlockCheckpoint *cp = &ethereumDIDPrvnetCheckpoints[index];
+            cp->hash = HASH_INIT(didprvnetCheckpointsString[index]);
             cp->u.td = createUInt256Parse (cp->u.std, 0, &status);
             assert (CORE_PARSE_OK == status);
         }
