@@ -43,10 +43,10 @@ link_directories(
 )
 
 if (SPV_ENABLE_SHARED)
-    set(LIBS spvsdk resolv curl z crypto ssl)
-	set(ELAWALLET_DEPENDS libspvsdk libcurl)
+    set(LIBS spvsdk curl crypto ssl resolv z)
+	set(ELAWALLET_DEPENDS libcurl libspvsdk)
 elseif(SPV_ENABLE_STATIC)
-    set(LIBS spvsdk-static sqlite3 crypto ssl boost_system boost_filesystem boost_thread fruit resolv curl z)
+    set(LIBS spvsdk-static curl.a sqlite3.a ssl.a crypto.a boost_system.a boost_filesystem.a boost_thread.a fruit.a resolv z)
     set(ELAWALLET_DEPENDS libspvsdk libfruit boost libressl json libsqlite libcurl)
 else()
 	message(FATAL_ERROR "libspvsdk should enable static or shared")

@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <getopt.h>
 #include <sys/stat.h>
@@ -356,9 +357,9 @@ public:
 			topics.push_back(address);
 			param["topics"] = topics;
 
-			sprintf(hex, "0x%llx", begBlockNumber);
+			sprintf(hex, "0x%" PRIu64, begBlockNumber);
 			param["fromBlock"] = hex;
-			sprintf(hex, "0x%llx", endBlockNumber);
+			sprintf(hex, "0x%" PRIu64, endBlockNumber);
 			param["toBlock"] = hex;
 			params.push_back(param);
 			rawJson["params"] = params;
@@ -1823,7 +1824,10 @@ static int passwd(int argc, char *argv[]) {
 		} else if (argc == 2) {
 			std::cout << "Enter mnemonic:";
 			char line[1024] = {0};
-			fgets(line, sizeof(line), stdin);
+			if (NULL == fgets(line, sizeof(line), stdin)) {
+			    std::cerr << "fgets error" << std::endl;
+                return ERRNO_APP;
+			}
 			std::string mnemonic = line;
 			mnemonic.erase(mnemonic.find_first_of('\n'));
 			std::cout << "mnemonic: " << mnemonic << std::endl;
@@ -2092,7 +2096,7 @@ static int _tx(int argc, char *argv[]) {
 							localtime_r(&t, &tm);
 							strftime(buf, sizeof(buf), "%F %T", &tm);
 
-							printf("%s %8llu %s %s\n", Hash.c_str(), confirm, buf, amount.c_str());
+							printf("%s %8" PRIu64 " %s %s\n", Hash.c_str(), confirm, buf, amount.c_str());
 						} else {
 							std::string Hash = (*it)["TxHash"];
 							unsigned int confirm = (*it)["ConfirmStatus"];
@@ -2192,7 +2196,7 @@ static int _tokentx(int argc, char *argv[]) {
 						localtime_r(&t, &tm);
 						strftime(buf, sizeof(buf), "%F %T", &tm);
 
-						printf("%s %8llu %s %s\n", Hash.c_str(), confirm, buf, amount.c_str());
+						printf("%s %8" PRIu64 " %s %s\n", Hash.c_str(), confirm, buf, amount.c_str());
 					} else {
 						std::cout << (*it).dump(4) << std::endl;
 					}
