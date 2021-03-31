@@ -86,6 +86,17 @@ networkCopyNameAsLowercase (BREthereumNetwork network) {
     return networkName;
 }
 
+extern BREthereumBoolean
+networkNameContainDID(BREthereumNetwork network) {
+    if (network->name != NULL) {
+        size_t networkNameLen = strlen(network->name);
+        if (networkNameLen >= 4 && 0 == strcmp(network->name + networkNameLen - 4, "-did"))
+            return ETHEREUM_BOOLEAN_TRUE;
+    }
+
+    return ETHEREUM_BOOLEAN_FALSE;
+}
+
 extern const char**
 networkGetSeeds (BREthereumNetwork network) {
     return network->seeds;

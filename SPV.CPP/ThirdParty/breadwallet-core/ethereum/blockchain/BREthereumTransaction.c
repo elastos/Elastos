@@ -364,7 +364,12 @@ transactionRlpEncode(BREthereumTransaction transaction,
     items[2] = gasRlpEncode(transaction->gasLimit, coder);
     items[3] = addressRlpEncode(transaction->targetAddress, coder);
     items[4] = etherRlpEncode(transaction->amount, coder);
-    items[5] = rlpEncodeHexString(coder, transaction->data);
+
+    if (ETHEREUM_BOOLEAN_IS_TRUE(networkNameContainDID(network))) {
+        items[5] = rlpEncodeString(coder, transaction->data);
+    } else {
+        items[5] = rlpEncodeHexString(coder, transaction->data);
+    }
     itemsCount = 6;
 
     // EIP-155:
@@ -452,7 +457,12 @@ transactionRlpDecode (BRRlpItem item,
     
     transaction->targetAddress = addressRlpDecode(items[3], coder);
     transaction->amount = etherRlpDecode(items[4], coder);
-    transaction->data = rlpDecodeHexString (coder, items[5], "0x");
+
+    if (ETHEREUM_BOOLEAN_IS_TRUE(networkNameContainDID(network))) {
+        transaction->data = rlpDecodeString(coder, items[5]);
+    } else {
+        transaction->data = rlpDecodeHexString(coder, items[5], "0x");
+    }
     
     transaction->chainId = networkGetChainId(network);
     
