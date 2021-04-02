@@ -131,7 +131,7 @@ transactionReceiptRlpDecode (BRRlpItem item,
     
     size_t itemsCount = 0;
     const BRRlpItem *items = rlpDecodeList(coder, item, &itemsCount);
-    assert (4 == itemsCount);
+    assert (4 == itemsCount || 5 == itemsCount); // 5th is for DIDLog
     
     receipt->stateRoot = rlpDecodeBytes(coder, items[0]);
     receipt->gasUsed = rlpDecodeUInt64(coder, items[1], 0);
