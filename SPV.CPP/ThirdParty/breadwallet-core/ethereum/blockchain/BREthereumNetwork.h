@@ -13,7 +13,6 @@
 
 #include "support/BRInt.h"
 #include "ethereum/base/BREthereumHash.h"
-#include "ethereum/base/BREthereumLogic.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,9 +39,6 @@ networkGetName (BREthereumNetwork network);
 
 extern char *
 networkCopyNameAsLowercase (BREthereumNetwork network);
-
-extern BREthereumBoolean
-networkNameContainDID(BREthereumNetwork network);
 
 extern BREthereumChainId
 networkGetChainId (BREthereumNetwork network);
