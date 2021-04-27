@@ -31,7 +31,9 @@
 #include <Plugin/Transaction/Payload/TransferAsset.h>
 #include <Account/SubAccount.h>
 #include <WalletCore/CoinInfo.h>
+#include <Wallet/Wallet.h>
 #include <SpvService/Config.h>
+#include <Wallet/WalletCommon.h>
 
 #include <algorithm>
 
@@ -46,7 +48,6 @@ namespace Elastos {
 							 const ChainConfigPtr &config,
 							 MasterWallet *parent,
 							 const std::string &netType) :
-			PeerManager::Listener(),
 			_parent(parent),
 			_info(info),
 			_config(config),
@@ -58,21 +59,15 @@ namespace Elastos {
 			SubAccountPtr subAccount = SubAccountPtr(new SubAccount(_parent->_account, _config->Index()));
 			_walletManager = WalletManagerPtr(
 				new SpvService(_parent->GetID(), _info->GetChainID(), subAccount, subWalletDBPath,
-							   _info->GetEarliestPeerTime(), _config, netType));
-
-			_walletManager->RegisterWalletListener(this);
-			_walletManager->RegisterPeerManagerListener(this);
+							   _config, netType));
 
 			WalletPtr wallet = _walletManager->GetWallet();
-
-			wallet->SetFeePerKb(_config->FeePerKB());
 		}
 
 		SubWallet::SubWallet(const std::string &netType,
 							 MasterWallet *parent,
 							 const ChainConfigPtr &config,
 							 const CoinInfoPtr &info) :
-			PeerManager::Listener(),
 			_parent(parent),
 			_info(info),
 			_config(config),
@@ -81,9 +76,6 @@ namespace Elastos {
 		}
 
 		SubWallet::~SubWallet() {
-			if (_walletManager) {
-				_walletManager->ExecutorStop();
-			}
 		}
 
 		std::string SubWallet::GetChainID() const {
@@ -96,25 +88,6 @@ namespace Elastos {
 
 		const SubWallet::WalletManagerPtr &SubWallet::GetWalletManager() const {
 			return _walletManager;
-		}
-
-		nlohmann::json SubWallet::GetBalanceInfo() const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-
-			nlohmann::json info = _walletManager->GetWallet()->GetBalanceInfo();
-
-			ArgInfo("r => {}", info.dump());
-			return info;
-		}
-
-		std::string SubWallet::GetBalance() const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-
-			std::string balance = _walletManager->GetWallet()->GetBalance(Asset::GetELAAssetID()).getDec();
-
-			ArgInfo("r => {}", balance);
-
-			return balance;
 		}
 
 		std::string SubWallet::CreateAddress() {
@@ -167,54 +140,6 @@ namespace Elastos {
 
 			ArgInfo("r => {}", j.dump());
 			return j;
-		}
-
-		std::string SubWallet::GetBalanceWithAddress(const std::string &address) const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("addr: {}", address);
-
-			std::string balance = _walletManager->GetWallet()->GetBalanceWithAddress(Asset::GetELAAssetID(),
-																					 address).getDec();
-
-			ArgInfo("r => {}", balance);
-			return balance;
-		}
-
-		void SubWallet::AddCallback(ISubWalletCallback *subCallback) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("callback: *");
-
-			boost::mutex::scoped_lock scoped_lock(lock);
-
-			if (_callback != nullptr) {
-				Log::warn("{} callback registered, ignore", _walletManager->GetWallet()->GetWalletID());
-			} else {
-				_callback = subCallback;
-
-				const PeerManagerPtr &peerManager = _walletManager->GetPeerManager();
-
-				uint32_t currentHeight = peerManager->GetLastBlockHeight();
-				uint32_t lastBlockTime = peerManager->GetLastBlockTimestamp();
-				uint32_t progress = (uint32_t) (peerManager->GetSyncProgress(0) * 100);
-
-				nlohmann::json j;
-				j["Progress"] = progress;
-				j["LastBlockTime"] = lastBlockTime;
-				j["BytesPerSecond"] = 0;
-				j["DownloadPeer"] = "";
-
-				_callback->OnBlockSyncProgress(j);
-				ArgInfo("add callback done");
-			}
-		}
-
-		void SubWallet::RemoveCallback() {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			boost::mutex::scoped_lock scoped_lock(lock);
-
-			_callback = nullptr;
-
-			ArgInfo("remove callback done");
 		}
 
 		TransactionPtr SubWallet::CreateConsolidateTx(const std::string &memo, const uint256 &asset) const {
@@ -347,22 +272,6 @@ namespace Elastos {
 			return result;
 		}
 
-		nlohmann::json SubWallet::PublishTransaction(const nlohmann::json &tx) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("tx: {}", tx.dump());
-
-			TransactionPtr txn = DecodeTx(tx);
-
-			publishTransaction(txn);
-
-			nlohmann::json result;
-			result["TxHash"] = txn->GetHash().GetHex();
-			result["Fee"] = txn->GetFee();
-
-			ArgInfo("r => {}", result.dump());
-			return result;
-		}
-
 		std::string SubWallet::ConvertToRawTransaction(const nlohmann::json &tx) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("tx: {}", tx.dump());
@@ -377,36 +286,6 @@ namespace Elastos {
 			return rawtx;
 		}
 
-		nlohmann::json SubWallet::GetAllUTXOs(uint32_t start, uint32_t count, const std::string &address) const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("start: {}", start);
-			ArgInfo("count: {}", count);
-			ArgInfo("addr: {}", address);
-			size_t maxCount = 0, pageCount = 0;
-
-			const WalletPtr &wallet = _walletManager->GetWallet();
-
-			std::vector<UTXOPtr> UTXOs = wallet->GetAllUTXO(address);
-
-			maxCount = UTXOs.size();
-			nlohmann::json j, jutxos;
-
-			for (size_t i = start; i < UTXOs.size() && pageCount < count; ++i) {
-				nlohmann::json item;
-				item["Hash"] = UTXOs[i]->Hash().GetHex();
-				item["Index"] = UTXOs[i]->Index();
-				item["Amount"] = UTXOs[i]->Output()->Amount().getDec();
-				jutxos.push_back(item);
-				pageCount++;
-			}
-
-			j["MaxCount"] = maxCount;
-			j["UTXOs"] = jutxos;
-
-			ArgInfo("r => {}", j.dump());
-			return j;
-		}
-
 		nlohmann::json SubWallet::CreateConsolidateTransaction(const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("memo: {}", memo);
@@ -418,198 +297,6 @@ namespace Elastos {
 
 			ArgInfo("r => {}", result.dump());
 			return result;
-		}
-
-		nlohmann::json SubWallet::GetAllTransactionCommon(bool detail, const boost::function<size_t()> &getTxCnt,
-														  const boost::function<std::vector<TransactionPtr>()> &getTx) const {
-			nlohmann::json j;
-			uint32_t confirms = 0;
-			std::vector<nlohmann::json> jsonList;
-			const WalletPtr &wallet = _walletManager->GetWallet();
-			TransactionPtr txFound;
-			std::map<std::string, std::string> genesisAddresses;
-
-			genesisAddresses[CHAINID_IDCHAIN] = _parent->GetChainConfig(CHAINID_IDCHAIN)->GenesisAddress();
-			genesisAddresses[CHAINID_ESC] = _parent->GetChainConfig(CHAINID_ESC)->GenesisAddress();
-			genesisAddresses[CHAINID_TOKENCHAIN] = _parent->GetChainConfig(CHAINID_TOKENCHAIN)->GenesisAddress();
-
-			size_t txnMaxCount = getTxCnt();
-
-			j["MaxCount"] = txnMaxCount;
-			std::vector<TransactionPtr> txns = getTx();
-
-			for (size_t i = 0; i < txns.size(); ++i) {
-				confirms = txns[i]->GetConfirms(wallet->LastBlockHeight());
-				jsonList.push_back(txns[i]->GetSummary(wallet, genesisAddresses, confirms, detail));
-			}
-			j["Transactions"] = jsonList;
-
-			return j;
-		}
-
-		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &txid) const {
-			const WalletPtr &wallet = _walletManager->GetWallet();
-			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
-			ArgInfo("start: {}", start);
-			ArgInfo("count: {}", count);
-			ArgInfo("txid: {}", txid);
-
-			nlohmann::json j = GetAllTransactionCommon(!txid.empty(),
-				[this, &wallet]() {
-					return wallet->GetCoinbaseTransactionCount(true);
-				}, [this, &wallet, &start, &count, &txid]() {
-					std::vector<TransactionPtr> txs;
-					if (!txid.empty()) {
-						TransactionPtr tx = wallet->TransactionForHash(uint256(txid));
-						txs.push_back(tx);
-					} else {
-						txs = wallet->GetCoinbaseTransactions(start, count, true);
-					}
-					return txs;
-				});
-
-			ArgInfo("r => {}", j.dump());
-			return j;
-		}
-
-		nlohmann::json SubWallet::GetAllCoinBaseTransaction(uint32_t start, uint32_t count,
-															const std::string &txID) const {
-			const WalletPtr &wallet = _walletManager->GetWallet();
-			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
-			ArgInfo("start: {}", start);
-			ArgInfo("count: {}", count);
-			ArgInfo("txID: {}", txID);
-
-			nlohmann::json j = GetAllTransactionCommon(!txID.empty(),
-				[this, &wallet]() {
-					return wallet->GetCoinbaseTransactionCount();
-				}, [this, &wallet, &start, &count, &txID]() {
-					std::vector<TransactionPtr> txs;
-					if (!txID.empty()) {
-						TransactionPtr tx = wallet->TransactionForHash(uint256(txID));
-						txs.push_back(tx);
-					} else {
-						txs = wallet->GetCoinbaseTransactions(start, count);
-					}
-					return txs;
-				});
-
-			ArgInfo("r => {}", j.dump());
-			return j;
-		}
-
-		void SubWallet::publishTransaction(const TransactionPtr &tx) {
-			_walletManager->PublishTransaction(tx);
-		}
-
-		void SubWallet::onBalanceChanged(const uint256 &assetID, const BigInt &balance) {
-			ArgInfo("{} {} Balance: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), balance.getDec());
-			boost::mutex::scoped_lock scoped_lock(lock);
-
-			if (_callback) {
-				_callback->OnBalanceChanged(assetID.GetHex(), balance.getDec());
-			} else {
-				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
-			}
-		}
-
-		void SubWallet::onTxAdded(const TransactionPtr &tx) {
-			const uint256 &txHash = tx->GetHash();
-			ArgInfo("{} {} Hash: {}, h: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), txHash.GetHex(),
-					tx->GetBlockHeight());
-
-			fireTransactionStatusChanged(txHash, "Added", nlohmann::json(), 0);
-		}
-
-		void SubWallet::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
-			ArgInfo("{} {} size: {}, height: {}, timestamp: {}", _walletManager->GetWallet()->GetWalletID(),
-					GetFunName(), hashes.size(), blockHeight, timestamp);
-
-			uint32_t walletBlockHeight = _walletManager->GetWallet()->LastBlockHeight();
-			for (const uint256 &hash : hashes) {
-				uint32_t confirm = walletBlockHeight >= blockHeight ? walletBlockHeight - blockHeight + 1 : 0;
-
-				fireTransactionStatusChanged(hash, "Updated", nlohmann::json(), confirm);
-			}
-		}
-
-		void SubWallet::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			ArgInfo("{} {} hash: {}, notify: {}, rescan: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(),
-					hash.GetHex(), notifyUser, recommendRescan);
-
-			fireTransactionStatusChanged(hash, "Deleted", nlohmann::json(), 0);
-		}
-
-		void SubWallet::onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller) {
-			ArgInfo("{} {} asset: {}, amount: {}",
-					_walletManager->GetWallet()->GetWalletID(), GetFunName(),
-					asset->GetName(), amount, controller.GetHex());
-
-			boost::mutex::scoped_lock scoped_lock(lock);
-
-			if (_callback) {
-				_callback->OnAssetRegistered(asset->GetHash().GetHex(), asset->ToJson());
-			} else {
-				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
-			}
-		}
-
-		void SubWallet::syncStarted() {
-		}
-
-		void SubWallet::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond,
-									 const std::string &downloadPeer) {
-			struct tm tm;
-
-			localtime_r(&lastBlockTime, &tm);
-			char timeString[100] = {0};
-			strftime(timeString, sizeof(timeString), "%F %T", &tm);
-			ArgInfo("{} {} [{}] [{}] [{}%  {} Bytes / s]", _walletManager->GetWallet()->GetWalletID(), GetFunName(),
-					downloadPeer, timeString, progress, bytesPerSecond);
-
-			nlohmann::json j;
-			j["Progress"] = progress;
-			j["LastBlockTime"] = lastBlockTime;
-			j["BytesPerSecond"] = bytesPerSecond;
-			j["DownloadPeer"] = downloadPeer;
-
-			boost::mutex::scoped_lock scoped_lock(lock);
-
-			if (_callback) {
-				_callback->OnBlockSyncProgress(j);
-			} else {
-				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
-			}
-		}
-
-		void SubWallet::syncStopped(const std::string &error) {
-		}
-
-		void SubWallet::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
-		}
-
-		void SubWallet::txPublished(const std::string &hash, const nlohmann::json &result) {
-			ArgInfo("{} {} hash: {} reason: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), hash, result.dump());
-
-			boost::mutex::scoped_lock scoped_lock(lock);
-
-			if (_callback) {
-				_callback->OnTxPublished(hash, result);
-			} else {
-				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
-			}
-		}
-
-		void SubWallet::connectStatusChanged(const std::string &status) {
-			ArgInfo("{} {} status: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), status);
-
-			boost::mutex::scoped_lock scopedLock(lock);
-
-			if (_callback) {
-				_callback->OnConnectStatusChanged(status);
-			} else {
-				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
-			}
 		}
 
 		void SubWallet::fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
@@ -627,51 +314,8 @@ namespace Elastos {
 			return _info;
 		}
 
-		void SubWallet::StartP2P() {
-			_walletManager->SyncStart();
-		}
-
-		void SubWallet::StopP2P() {
-			_walletManager->SyncStop();
-			_walletManager->ExecutorStop();
-		}
-
 		void SubWallet::FlushData() {
 			_walletManager->DatabaseFlush();
-		}
-
-		time_t SubWallet::GetFirstTxnTimestamp() const {
-			return _walletManager->GetWallet()->GetEarliestTxTimestamp();
-		}
-
-		bool SubWallet::SetFixedPeer(const std::string &address, uint16_t port) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("address: {}", address);
-			ArgInfo("port: {}", port);
-			return _walletManager->GetPeerManager()->SetFixedPeer(address, port);
-		}
-
-		void SubWallet::SyncStart() {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			_walletManager->SyncStart();
-		}
-
-		void SubWallet::SyncStop() {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			_walletManager->SyncStop();
-		}
-
-		void SubWallet::Resync() {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			_walletManager->SyncStop();
-			_walletManager->GetWallet()->ClearData();
-			_walletManager->GetPeerManager()->ClearData();
-			_walletManager->SyncStart();
-		}
-
-		void SubWallet::SetSyncMode(int mode) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			_walletManager->SetSyncMode(mode);
 		}
 
 		nlohmann::json SubWallet::GetBasicInfo() const {
@@ -713,19 +357,6 @@ namespace Elastos {
 
 			ArgInfo("r => {}", info.dump());
 			return info;
-		}
-
-		nlohmann::json SubWallet::GetLastBlockInfo() const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-
-			nlohmann::json j;
-			j["Height"] = _walletManager->GetPeerManager()->GetLastBlockHeight();
-			j["Timestamp"] = _walletManager->GetPeerManager()->GetLastBlockTimestamp();
-			j["Hash"] = _walletManager->GetPeerManager()->GetLastBlockHash().GetHex();
-
-			ArgInfo("r => {}", j.dump());
-
-			return j;
 		}
 
 	}

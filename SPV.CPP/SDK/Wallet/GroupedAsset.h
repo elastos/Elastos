@@ -48,10 +48,6 @@ namespace Elastos {
 
 			const UTXOSet &GetCoinBaseUTXOs() const;
 
-			BigInt GetBalance() const;
-
-			nlohmann::json GetBalanceInfo();
-
 			TransactionPtr CreateRetrieveDepositTx(uint8_t type, const PayloadPtr &payload, const BigInt &amount,
 												   const AddressPtr &fromAddress, const std::string &memo);
 
@@ -69,27 +65,9 @@ namespace Elastos {
 											  const BigInt &fee,
 											  bool pickVoteFirst = false);
 
-			void AddFeeForTx(TransactionPtr &tx);
-
 			const AssetPtr &GetAsset() const;
 
-			bool AddUTXO(const UTXOPtr &o);
-
-			bool AddCoinBaseUTXO(const UTXOPtr &o);
-
-			UTXOArray RemoveUTXO(const std::vector<InputPtr> &inputs);
-
-			UTXOPtr RemoveUTXO(const UTXOPtr &u);
-
-			bool UpdateLockedBalance();
-
-			bool ContainUTXO(const UTXOPtr &o) const;
-
 		private:
-			uint64_t CalculateFee(uint64_t feePerKB, size_t size) const;
-
-		private:
-			BigInt _balance, _balanceVote, _balanceDeposit, _balanceLocked;
 			UTXOSet _utxos, _utxosVote, _utxosCoinbase, _utxosDeposit, _utxosLocked;
 
 			AssetPtr _asset;

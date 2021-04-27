@@ -49,12 +49,6 @@ namespace Elastos {
 					const std::string &mainChainAddress,
 					const std::string &memo) = 0;
 
-			/**
-			 * Get genesis address of the side chain, the address is a special address will be set to toAddress in CreateDepositTransaction.
-			 * @return genesis address of the side chain.
-			 */
-			virtual std::string GetGenesisAddress() const = 0;
-
 		};
 
 	}

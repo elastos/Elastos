@@ -40,6 +40,7 @@ namespace Elastos {
 					const std::string &sideChainID,
 					const std::string &amount,
 					const std::string &sideChainAddress,
+                    const std::string &lockAddress,
 					const std::string &memo) override;
 
 		public:
@@ -53,15 +54,11 @@ namespace Elastos {
 				const std::string &memo,
 				const nlohmann::json &invalidCandidates) override;
 
-			nlohmann::json GetVotedProducerList() const override;
-
 			nlohmann::json CreateVoteCRTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &votes,
 				const std::string &memo,
 				const nlohmann::json &invalidCandidates) override;
-
-			nlohmann::json GetVotedCRList() const override;
 
 			nlohmann::json CreateVoteCRCProposalTransaction(
 				const std::string &fromAddress,
@@ -74,8 +71,6 @@ namespace Elastos {
 				const nlohmann::json &votes,
 				const std::string &memo,
 				const nlohmann::json &invalidCandidates) override;
-
-			nlohmann::json GetVoteInfo(const std::string &type) const override;
 
 		public:
 			//////////////////////////////////////////////////
@@ -112,8 +107,6 @@ namespace Elastos {
 
 			std::string GetOwnerAddress() const override;
 
-			nlohmann::json GetRegisteredProducerInfo() const override;
-
 		public:
 			//////////////////////////////////////////////////
 			/*                      CRC                     */
@@ -142,8 +135,6 @@ namespace Elastos {
 			nlohmann::json CreateRetrieveCRDepositTransaction(const std::string &crPublicKey,
 															  const std::string &amount,
 															  const std::string &memo) override;
-
-			nlohmann::json GetRegisteredCRInfo() const override;
 
 			std::string CRCouncilMemberClaimNodeDigest(const nlohmann::json &payload) const override;
 

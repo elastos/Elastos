@@ -25,7 +25,6 @@
 #include <WalletCore/Mnemonic.h>
 #include <WalletCore/KeyStore.h>
 #include <SpvService/LocalStore.h>
-#include <Plugin/Registry.h>
 #include <Plugin/Transaction/Transaction.h>
 #include <Account/Account.h>
 
@@ -39,14 +38,12 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class CoinInfo;
-		class ChainParams;
 		class SubWallet;
 		class KeyStore;
 		class Config;
 		class ChainConfig;
 
 		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
-		typedef boost::shared_ptr<ChainParams> ChainParamsPtr;
 		typedef boost::shared_ptr<Config> ConfigPtr;
 		typedef boost::shared_ptr<ChainConfig> ChainConfigPtr;
 
@@ -214,10 +211,6 @@ namespace Elastos {
 											  const ChainConfigPtr &config,
 											  MasterWallet *parent,
 											  const std::string &netType);
-
-			virtual void startPeerManager(SubWallet *wallet);
-
-			virtual void stopPeerManager(SubWallet *wallet);
 
 			virtual void CloseAllSubWallets();
 

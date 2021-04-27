@@ -133,11 +133,7 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual nlohmann::json GetBalanceInfo() const;
-
 			virtual std::string GetBalance() const;
-
-			virtual std::string GetBalanceWithAddress(const std::string &address) const;
 
 			virtual std::string CreateAddress();
 
@@ -160,11 +156,6 @@ namespace Elastos {
 				const std::string &amount,
 				const std::string &memo);
 
-			virtual nlohmann::json GetAllUTXOs(
-				uint32_t start,
-				uint32_t count,
-				const std::string &address) const;
-
 			virtual nlohmann::json CreateConsolidateTransaction(
 				const std::string &memo);
 
@@ -180,30 +171,10 @@ namespace Elastos {
 
 			virtual std::string ConvertToRawTransaction(const nlohmann::json &tx);
 
-			virtual nlohmann::json GetAllTransaction(
-				uint32_t start,
-				uint32_t count,
-				const std::string &txid) const;
-
-			virtual nlohmann::json GetAllCoinBaseTransaction(
-				uint32_t start,
-				uint32_t count,
-				const std::string &txID) const;
-
 			virtual nlohmann::json GetAssetInfo(
 				const std::string &assetID) const;
 
-			virtual bool SetFixedPeer(const std::string &address, uint16_t port);
-
 			virtual nlohmann::json GetLastBlockInfo() const;
-
-			virtual void SyncStart();
-
-			virtual void SyncStop();
-
-			virtual void Resync();
-
-			virtual void SetSyncMode(int mode);
 
 			virtual void StartP2P();
 

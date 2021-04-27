@@ -10,9 +10,7 @@
 
 #include <Common/Log.h>
 #include <Common/ErrorChecker.h>
-#include <P2P/ChainParams.h>
-#include <Plugin/Registry.h>
-#include <WalletCore/Address.h>
+#include <Wallet/WalletCommon.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -20,9 +18,7 @@ namespace Elastos {
 		ChainConfig::ChainConfig() :
 			_index(0),
 			_minFee(0),
-			_feePerKB(0),
-			_disconnectionTime(0),
-			_chainParameters(nullptr) {
+			_feePerKB(0) {
 		}
 
 		const uint32_t &ChainConfig::Index() const {
@@ -35,18 +31,6 @@ namespace Elastos {
 
 		const uint64_t &ChainConfig::FeePerKB() const {
 			return _feePerKB;
-		}
-
-		const uint32_t &ChainConfig::DisconnectionTime() const {
-			return _disconnectionTime;
-		}
-
-		const std::string &ChainConfig::GenesisAddress() const {
-			return _genesisAddress;
-		}
-
-		const ChainParamsPtr &ChainConfig::ChainParameters() const {
-			return _chainParameters;
 		}
 
 		Config::Config(const Config &cfg) {
@@ -110,55 +94,6 @@ namespace Elastos {
 					if (chainConfigJson.find("FeePerKB") != chainConfigJson.end())
 						chainConfig->_feePerKB = chainConfigJson["FeePerKB"].get<uint64_t>();
 
-					if (chainConfigJson.find("DisconnectionTime") != chainConfigJson.end())
-						chainConfig->_disconnectionTime = chainConfigJson["DisconnectionTime"].get<uint32_t>();
-
-					if (chainConfigJson.find("ChainParameters") != chainConfigJson.end()) {
-						nlohmann::json chainParamsJson = chainConfigJson["ChainParameters"];
-						ChainParamsPtr chainParams(new ChainParams());
-
-						if (chainParamsJson.find("Services") != chainParamsJson.end())
-							chainParams->_services = chainParamsJson["Services"].get<uint64_t>();
-
-						if (chainParamsJson.find("MagicNumber") != chainParamsJson.end())
-							chainParams->_magicNumber = chainParamsJson["MagicNumber"].get<uint32_t>();
-
-						if (chainParamsJson.find("StandardPort") != chainParamsJson.end())
-							chainParams->_standardPort = chainParamsJson["StandardPort"].get<uint16_t>();
-
-						if (chainParamsJson.find("TargetTimeSpan") != chainParamsJson.end())
-							chainParams->_targetTimeSpan = chainParamsJson["TargetTimeSpan"].get<uint32_t>();
-
-						if (chainParamsJson.find("TargetTimePerBlock") != chainParamsJson.end())
-							chainParams->_targetTimePerBlock = chainParamsJson["TargetTimePerBlock"].get<uint32_t>();
-
-						if (chainParamsJson.find("DNSSeeds") != chainParamsJson.end())
-							chainParams->_dnsSeeds = chainParamsJson["DNSSeeds"].get<std::vector<std::string>>();
-
-						if (chainParamsJson.find("CheckPoints") != chainParamsJson.end()) {
-							nlohmann::json checkPointsJosn = chainParamsJson["CheckPoints"];
-							for (nlohmann::json::iterator it = checkPointsJosn.begin(); it != checkPointsJosn.end(); ++it) {
-								uint32_t height = (*it)[0].get<uint32_t>();
-								std::string hash = (*it)[1].get<std::string>();
-								time_t timestamp = (*it)[2].get<time_t>();
-								uint32_t target = (*it)[3].get<uint32_t>();
-								chainParams->_checkpoints.emplace_back(height, hash, timestamp, target);
-							}
-						}
-
-						uint256 hash = chainParams->_checkpoints[0].Hash();
-						bytes_t data;
-						data.push_back(hash.size());
-						data.append(hash.bytes().data(), hash.size());
-						data.push_back(SignTypeCrossChain); // The cross chain op code.
-
-						Address address;
-						address.SetRedeemScript(PrefixCrossChain, data);
-						chainConfig->_genesisAddress = address.String();
-
-						chainConfig->_chainParameters = chainParams;
-						Log::debug("Lock address {}: {}", chainID, chainConfig->_genesisAddress);
-					}
 					_chains[chainID] = chainConfig;
 				}
 

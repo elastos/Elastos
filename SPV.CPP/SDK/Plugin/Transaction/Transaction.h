@@ -102,8 +102,6 @@ namespace Elastos {
 
 			uint64_t CalculateFee(uint64_t feePerKb);
 
-			uint64_t GetTxFee(const boost::shared_ptr<Wallet> &wallet);
-
 			bool IsRegistered() const;
 
 			bool &IsRegistered();
@@ -198,8 +196,6 @@ namespace Elastos {
 
 			const std::vector<ProgramPtr> &GetPrograms() const;
 
-			nlohmann::json GetSummary(const WalletPtr &wallet, const std::map<std::string, std::string> &genesisAddresses, uint32_t confirms, bool detail);
-
 			uint8_t	GetPayloadVersion() const;
 
 			void SetPayloadVersion(uint8_t version);
@@ -219,10 +215,6 @@ namespace Elastos {
 			uint32_t GetConfirms(uint32_t walletBlockHeight) const;
 
 			std::string GetConfirmStatus(uint32_t walletBlockHeight) const;
-
-			bool Decode(const TxEntity &e);
-
-			bool Encode(TxEntity &e);
 
 		public:
 			virtual PayloadPtr InitPayload(uint8_t type);

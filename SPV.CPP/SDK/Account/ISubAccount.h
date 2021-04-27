@@ -22,7 +22,11 @@
 #ifndef __ELASTOS_SDK_ISUBACCOUNT_H__
 #define __ELASTOS_SDK_ISUBACCOUNT_H__
 
+#include "IAccount.h"
+
 #include <Common/Lockable.h>
+#include <WalletCore/Address.h>
+#include <WalletCore/Key.h>
 
 namespace Elastos {
 	namespace ElaWallet {

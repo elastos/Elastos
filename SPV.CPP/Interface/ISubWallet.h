@@ -77,25 +77,6 @@ namespace Elastos {
 			virtual nlohmann::json GetBasicInfo() const = 0;
 
 			/**
-			 * Get balances of all addresses in json format.
-			 * @return balances of all addresses in json format.
-			 */
-			virtual nlohmann::json GetBalanceInfo() const = 0;
-
-			/**
-			 * Get sum of balances of all addresses according to balance type.
-			 * @return sum of balances.
-			 */
-			virtual std::string GetBalance() const = 0;
-
-			/**
-			 * Get balance of only the specified address.
-			 * @param address is one of addresses created by current sub wallet.
-			 * @return balance of specified address.
-			 */
-			virtual std::string GetBalanceWithAddress(const std::string &address) const = 0;
-
-			/**
 			 * Create a new address or return existing unused address. Note that if create the sub wallet by setting the singleAddress to true, will always return the single address.
 			 * @return a new address or existing unused address.
 			 */
@@ -130,17 +111,6 @@ namespace Elastos {
 					uint32_t count) const = 0;
 
 			/**
-			 * Add a sub wallet callback object listened to current sub wallet.
-			 * @param subCallback is a pointer who want to listen events of current sub wallet.
-			 */
-			virtual void AddCallback(ISubWalletCallback *subCallback) = 0;
-
-			/**
-			 * Remove a sub wallet callback object listened to current sub wallet.
-			 */
-			virtual void RemoveCallback() = 0;
-
-			/**
 			 * Create a normal transaction and return the content of transaction in json format.
 			 * @param fromAddress specify which address we want to spend, or just input empty string to let wallet choose UTXOs automatically.
 			 * @param targetAddress specify which address we want to send.
@@ -153,18 +123,6 @@ namespace Elastos {
 					const std::string &targetAddress,
 					const std::string &amount,
 					const std::string &memo) = 0;
-
-			/**
-			 * Get all UTXO list. Include locked and pending and deposit utxos.
-			 * @param start specify start index of all utxos list.
-			 * @param count specify count of utxos we need.
-			 * @param address to filter the specify address's utxos. If empty, all utxo of all addresses wil be returned.
-			 * @return return all utxo in json format
-			 */
-			virtual nlohmann::json GetAllUTXOs(
-				uint32_t start,
-				uint32_t count,
-				const std::string &address) const = 0;
 
 			/**
 			 * Create a transaction to combine as many UTXOs as possible until transaction size reaches the max size.
@@ -198,44 +156,11 @@ namespace Elastos {
 					const nlohmann::json &tx) const = 0;
 
 			/**
-			 * Publish a transaction to p2p network.
-			 * @param tx signed transaction.
-			 * @return Sent result in json format.
-			 */
-			virtual nlohmann::json PublishTransaction(
-					const nlohmann::json &tx) = 0;
-
-			/**
 			 * Convert tx to raw transaction.
 			 * @param tx transaction json
 			 * @return  tx in hex string format.
 			 */
 			virtual std::string ConvertToRawTransaction(const nlohmann::json &tx)  = 0;
-
-			/**
-			 * Get all qualified normal transactions sorted by descent (newest first).
-			 * @param start specify start index of all transactions list.
-			 * @param count specify count of transactions we need.
-			 * @param txid transaction ID to be filtered.
-			 * @return All qualified transactions in json format.
-			 * {"MaxCount":3,"Transactions":[{"Amount":"20000","ConfirmStatus":"6+","Direction":"Received","Height":172570,"Status":"Confirmed","Timestamp":1557910458,"TxHash":"ff454532e57837cbe04f56a7e43f4209b5eb61d5d2a43a016a769c60d21125b6","Type":6},{"Amount":"10000","ConfirmStatus":"6+","Direction":"Received","Height":172569,"Status":"Confirmed","Timestamp":1557909659,"TxHash":"7253b2cefbac794b621b0080f0f5a4c27d5c91f65c83da75aad615062c42ac5a","Type":6},{"Amount":"100000","ConfirmStatus":"6+","Direction":"Received","Height":172300,"Status":"Confirmed","Timestamp":1557809019,"TxHash":"7e53bb8fe1617bdb57f7346bcf7d2e9dfa6b5d3f3524d0695046389bea79dcd9","Type":6}]}
-			 */
-			virtual nlohmann::json GetAllTransaction(
-					uint32_t start,
-					uint32_t count,
-					const std::string &txid) const = 0;
-
-			/**
-			 * Get all coinbase transactions sorted by descent (newest first).
-			 * @param start specify start index of all transactions list.
-			 * @param count specify count of transactions we need.
-			 * @param txID the filter can be transaction ID or empty. If empty, all transactions shall be qualified.
-			 * @return transaction[s] in json format.
-			 */
-			virtual nlohmann::json GetAllCoinBaseTransaction(
-				uint32_t start,
-				uint32_t count,
-				const std::string &txID) const = 0;
 
 			/**
 			 * Get an asset details by specified asset ID
@@ -244,41 +169,6 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json GetAssetInfo(
 					const std::string &assetID) const = 0;
-
-			/**
-			 * Get last block information including "Height", "Timestamp", "Hash"
-			 * @return information in json format.
-			 */
-			virtual nlohmann::json GetLastBlockInfo() const = 0;
-
-			/**
-			 * Use fixed peer to sync
-			 * @param address IP or domain name.
-			 * @param port p2p port.
-			 * @return return true if success, otherwise false.
-			 */
-			virtual bool SetFixedPeer(const std::string &address, uint16_t port) = 0;
-
-			/**
-			 * Start sync of P2P network
-			 */
-			virtual void SyncStart() = 0;
-
-			/**
-			 * Stop sync of P2P network
-			 */
-			virtual void SyncStop() = 0;
-
-			/**
-			 * Will delete all Merkle blocks and all transactions except the private key.
-			 * And then resync from the beginning.
-			 */
-			virtual void Resync() = 0;
-
-			/**
-			 * @param mode 0: deserialization priority. 1: speed priority
-			 */
-			virtual void SetSyncMode(int mode) = 0;
 
 		};
 

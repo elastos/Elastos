@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Elastos Foundation
+ * Copyright (c) 2021 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,53 +20,16 @@
  * SOFTWARE.
  */
 
-#ifndef __ELASTOS_SDK_DATABASEMANAGER_H__
-#define __ELASTOS_SDK_DATABASEMANAGER_H__
+#ifndef __ELASTOS_SDK_WALLETCOMMON_H__
+#define __ELASTOS_SDK_WALLETCOMMON_H__
 
-#include "AddressUsed.h"
-#include "Settings.h"
+#define CHAINID_MAINCHAIN  "ELA"
+#define CHAINID_IDCHAIN    "IDChain"
+#define CHAINID_TOKENCHAIN "TokenChain"
+#define CHAINID_ESC        "ETHSC"
+#define CHAINID_ETHDID     "ETHDID"
 
-namespace Elastos {
-	namespace ElaWallet {
+static const std::vector<std::string> supportChainIDList = {CHAINID_MAINCHAIN, CHAINID_IDCHAIN, CHAINID_TOKENCHAIN, CHAINID_ESC, CHAINID_ETHDID};
 
-		class DatabaseManager {
-		public:
-			DatabaseManager(const boost::filesystem::path &path);
 
-			DatabaseManager();
-
-			~DatabaseManager();
-
-			void ClearData();
-
-			// settings
-			int GetSyncMode() const;
-
-			bool SetSyncMode(int mode);
-
-			// Used Address
-			bool PutUsedAddresses(const std::vector<std::string> &addresses, bool replace);
-
-			std::vector<std::string> GetUsedAddresses() const;
-
-			bool DeleteAllUsedAddresses();
-
-			// common
-			const boost::filesystem::path &GetPath() const;
-
-			void flush();
-
-		private:
-			boost::filesystem::path _path;
-			Sqlite _sqlite;
-			AddressUsed _addressUsed;
-			Settings _settings;
-		};
-
-		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;
-		typedef boost::weak_ptr<DatabaseManager> DatabaseManagerWeakPtr;
-
-	}
-}
-
-#endif //__ELASTOS_SDK_DATABASEMANAGER_H__
+#endif

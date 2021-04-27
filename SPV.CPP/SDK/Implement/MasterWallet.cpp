@@ -25,7 +25,6 @@
 #include "MainchainSubWallet.h"
 #include "SubWallet.h"
 #include "MasterWallet.h"
-#include "TokenchainSubWallet.h"
 
 #include <Plugin/Transaction/Asset.h>
 #include <Common/Utils.h>
@@ -34,6 +33,7 @@
 #include <WalletCore/Mnemonic.h>
 #include <WalletCore/CoinInfo.h>
 #include <SpvService/Config.h>
+#include <Wallet/WalletCommon.h>
 
 #include <vector>
 #include <boost/filesystem.hpp>
@@ -295,7 +295,6 @@ namespace Elastos {
 				std::string id = _id + ":" + subWallet->GetChainID();
 				Log::info("{} closing...", id);
 
-				subWallet->SyncStop();
 				it = _createdWallets.erase(it);
 
 				delete subWallet;
@@ -312,7 +311,6 @@ namespace Elastos {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "chainID not found");
 
 			ISubWallet *subWallet = _createdWallets[chainID];
-			subWallet->SyncStop();
 			_account->RemoveSubWalletInfo(subWallet->GetChainID());
 			_account->Save();
 
@@ -358,7 +356,7 @@ namespace Elastos {
 				if (subWallet == nullptr)
 					continue;
 
-				time_t timestamp = subWallet->GetFirstTxnTimestamp();
+				time_t timestamp = 0;
 				if (timestamp > 0)
 					info->SetEaliestPeerTime(timestamp);
 			}
@@ -441,39 +439,10 @@ namespace Elastos {
 		ISubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfoPtr &info, const ChainConfigPtr &config,
 														MasterWallet *parent, const std::string &netType) {
 
-			if (_initFrom == CreateNormal) {
-				Log::info("Create new master wallet");
-				info->SetEaliestPeerTime(config->ChainParameters()->LastCheckpoint().Timestamp());
-			} else if (_initFrom == CreateMultiSign) {
-				if (_earliestPeerTime != 0) {
-					info->SetEaliestPeerTime(_earliestPeerTime);
-				} else {
-					info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
-				}
-				Log::info("Create new multi-sign master wallet");
-			} else if (_initFrom == ImportFromMnemonic) {
-				if (_earliestPeerTime != 0) {
-					info->SetEaliestPeerTime(_earliestPeerTime);
-				} else {
-					info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
-				}
-				Log::info("Import master wallet with mnemonic");
-			} else if (_initFrom == ImportFromKeyStore) {
-				Log::info("Master wallet import with keystore");
-			} else if (_initFrom == ImportFromLocalStore) {
-				Log::info("Master wallet init from local store");
-			} else {
-				Log::error("Should not be here");
-				info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
-			}
-			Log::info("{}:{} Ealiest peer time: {}", _id, info->GetChainID(), info->GetEarliestPeerTime());
-
 			if (info->GetChainID() == "ELA") {
 				return new MainchainSubWallet(info, config, parent, netType);
 			} else if (info->GetChainID() == "IDChain") {
 				return new IDChainSubWallet(info, config, parent, netType);
-			} else if (info->GetChainID() == "TokenChain") {
-				return new TokenchainSubWallet(info, config, parent, netType);
 			} else if (info->GetChainID() == "ETHSC") {
                 return new EthSidechainSubWallet(info, config, parent, netType);
             } else if (info->GetChainID() == "ETHDID") {
@@ -491,16 +460,6 @@ namespace Elastos {
 
 		AccountPtr MasterWallet::GetAccount() const {
 			return _account;
-		}
-
-		void MasterWallet::startPeerManager(SubWallet *wallet) {
-			if (_p2pEnable)
-				wallet->StartP2P();
-		}
-
-		void MasterWallet::stopPeerManager(SubWallet *wallet) {
-			if (_p2pEnable)
-				wallet->StopP2P();
 		}
 
 		bool MasterWallet::IsAddressValid(const std::string &address) const {

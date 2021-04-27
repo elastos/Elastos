@@ -23,6 +23,7 @@
 #include "MasterWallet.h"
 
 #include <Common/ErrorChecker.h>
+#include <Common/Log.h>
 #include <Plugin/Transaction/Payload/TransferCrossChainAsset.h>
 #include <SpvService/Config.h>
 #include <WalletCore/CoinInfo.h>
@@ -84,15 +85,6 @@ namespace Elastos {
 
 			ArgInfo("r => {}", result.dump());
 			return result;
-		}
-
-		std::string SidechainSubWallet::GetGenesisAddress() const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-
-			std::string address = _config->GenesisAddress();
-
-			ArgInfo("r => {}", address);
-			return address;
 		}
 
 	}

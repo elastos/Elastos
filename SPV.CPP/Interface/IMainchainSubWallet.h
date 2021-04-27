@@ -43,6 +43,7 @@ namespace Elastos {
 			 * @param sideChainID      Chain id of the side chain.
 			 * @param amount           The amount that will be deposit to the side chain.
 			 * @param sideChainAddress Receive address of side chain.
+			 * @param lockAddress      Generate from genesis block hash.
 			 * @memo                   Remarks string. Can be empty string.
 			 * @return                 The transaction in JSON format to be signed and published.
 			 */
@@ -51,6 +52,7 @@ namespace Elastos {
 					const std::string &sideChainID,
 					const std::string &amount,
 					const std::string &sideChainAddress,
+					const std::string &lockAddress,
 					const std::string &memo) = 0;
 
 		public:
@@ -196,64 +198,6 @@ namespace Elastos {
 				const std::string &memo,
 				const nlohmann::json &invalidCandidates) = 0;
 
-			/**
-			 * deprecated. Use GetVoteInfo instead.
-			 * Get vote information of current wallet.
-			 *
-			 * @return Vote information in JSON format.
-			 * example:
-			 * {
-			 * 	 "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "100000000",
-			 * 	 "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "100000000",
-			 * 	 ...
-			 * }
-			 */
-			virtual	nlohmann::json GetVotedProducerList() const = 0;
-
-			/**
-			 * deprecated. Use GetVoteInfo instead.
-			 * Get CR vote information of current wallet.
-			 *
-			 * @return Vote information in JSON format. The key is cid, and the value is the stake.
-			 * example:
-			 * {
-			 * 	 "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000",
-			 * 	 "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000",
-			 * 	 ...
-			 * }
-			 */
-			virtual	nlohmann::json GetVotedCRList() const = 0;
-
-			/**
-			 * Get summary or details of all types of votes
-			 * @type if the type is empty, a summary of all types of votes will return. Otherwise, the details of the specified type will return.
-			 *   type can be value: "Delegate", "CRC", "CRCProposal", "CRCImpeachment"
-			 * @return vote info in JSON format. Such as:
-			 *
-			 * details:
-			 *  [{
-			 *      "Type": "Delegate",
-			 *      "Amount": "200000000",
-			 *      "Votes": {"pubkey_1": "200000000","pubkey_2": "200000000"}
-			 *  },
-			 *  {
-			 *      "Type": "CRC",
-			 *      "Amount": "100000000",
-			 *      "Votes": {"cid_1": "50000000", "cid_2": "50000000"}
-			 *  },
-			 *  {
-			 *  	"Type": "CRCProposal",
-			 *  	"Amount": "100000000",
-			 *      "Votes": {"proposalHash_1": "100000000", "proposalHash_2": "100000000"}
-			 *  },
-			 *  {
-			 *  	"Type": "CRCImpeachment",
-			 *  	"Amount": "100000000",
-			 *  	"Votes": {"cid_1": "30000000", "cid_2": "70000000"}
-			 *  }]
-			 */
-			virtual nlohmann::json GetVoteInfo(const std::string &type) const = 0;
-
 		public:
 			//////////////////////////////////////////////////
 			/*                    Producer                  */
@@ -364,31 +308,6 @@ namespace Elastos {
 			 */
 			virtual std::string GetOwnerAddress() const = 0;
 
-			/**
-			 * Get information about whether the current wallet has been registered the producer.
-			 *
-			 * @return Information in JSON format. Such as:
-			 * { "Status": "Unregistered", "Info": null }
-			 *
-			 * {
-			 *    "Status": "Registered",
-			 *    "Info": {
-			 *      "OwnerPublicKey": "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-			 *      "NodePublicKey": "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-			 *      "NickName": "hello nickname",
-			 *      "URL": "www.google.com",
-			 *      "Location": 86,
-			 *      "Address": 127.0.0.1,
-			 *    }
-			 * }
-			 *
-			 * { "Status": "Canceled", "Info": { "Confirms": 2016 } }
-			 *
-			 * { "Status": "ReturnDeposit", "Info": null }
-			 */
-			virtual nlohmann::json GetRegisteredProducerInfo() const = 0;
-
-
 		public:
 			//////////////////////////////////////////////////
 			/*                      CRC                     */
@@ -491,31 +410,6 @@ namespace Elastos {
 					const std::string &crPublicKey,
 					const std::string &amount,
 					const std::string &memo) = 0;
-
-			/**
-			 * Get information about whether the current wallet has been registered the producer.
-			 *
-			 * @return Information in JSON format. Such as:
-			 * { "Status": "Unregistered", "Info": null }
-			 *
-			 * {
-			 *    "Status": "Registered",
-			 *    "Info": {
-			 *      "CROwnerPublicKey": "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-			 *      "CID": "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-			 *      "DID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-			 *      "BondedDID": true,
-			 *      "NickName": "hello nickname",
-			 *      "URL": "www.google.com",
-			 *      "Location": 86,
-			 *    }
-			 * }
-			 *
-			 * { "Status": "Canceled", "Info": { "Confirms": 2016 } }
-			 *
-			 * { "Status": "ReturnDeposit", "Info": null }
-			 */
-			virtual nlohmann::json GetRegisteredCRInfo() const = 0;
 
 			/**
 			 * Generate digest for signature of CR council members

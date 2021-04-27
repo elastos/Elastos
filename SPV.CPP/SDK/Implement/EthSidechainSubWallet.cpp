@@ -198,7 +198,7 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 
 
             BREthereumNetwork net = NULL;
-            if (info->GetChainID() == CHAINID_ETHDID) {
+            if (info->GetChainID() == "ETHDID") {
                 if (netType == "MainNet") {
                     net = ethereumDIDMainnet;
                 } else if (netType == "TestNet") {
@@ -828,34 +828,10 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			return j;
 		}
 
-		nlohmann::json EthSidechainSubWallet::GetBalanceInfo() const {
-			ArgInfo("{} {}", _walletID, GetFunName());
-
-			nlohmann::json j;
-			j["Info"] = "not ready";
-			j["Summary"] = nlohmann::json();
-
-			ArgInfo("r => {}", j.dump());
-			return j;
-		}
-
 		std::string EthSidechainSubWallet::GetBalance() const {
 			ArgInfo("{} {}", _walletID, GetFunName());
 
 			std::string balance = _client->_ewm->getWallet()->getBalance();
-
-			ArgInfo("r => {}", balance);
-			return balance;
-		}
-
-		std::string EthSidechainSubWallet::GetBalanceWithAddress(const std::string &address) const {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("addr: {}", address);
-
-			std::string primaryAddress = _client->_ewm->getWallet()->getAccount()->getPrimaryAddress();
-			std::string balance = "0";
-			if (primaryAddress == address)
-				balance = _client->_ewm->getWallet()->getBalance();
 
 			ArgInfo("r => {}", balance);
 			return balance;
@@ -933,20 +909,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 
 			j["ID"] = GetTransferID(tx);
 			j["Fee"] = tx->getFee(EthereumAmount::Unit::ETHER_ETHER);
-
-			ArgInfo("r => {}", j.dump());
-
-			return j;
-		}
-
-		nlohmann::json EthSidechainSubWallet::GetAllUTXOs(uint32_t start, uint32_t count,
-														  const std::string &address) const {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("start: {}", start);
-			ArgInfo("cnt: {}", count);
-			ArgInfo("addr: {}", address);
-
-			nlohmann::json j;
 
 			ArgInfo("r => {}", j.dump());
 
@@ -1040,50 +1002,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			return "";
 		}
 
-		nlohmann::json EthSidechainSubWallet::GetAllTransaction(uint32_t start, uint32_t count,
-																const std::string &txid) const {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("start: {}, cnt: {}, txid: {}", start, count, txid);
-
-			nlohmann::json j, jtx;
-			std::vector<nlohmann::json> txList;
-
-			std::vector<EthereumTransferPtr> transfers = _client->_ewm->getWallet()->getTransfers();
-			if (!txid.empty()) {
-				start = 0;
-				count = transfers.size();
-			}
-
-			std::reverse(transfers.begin(), transfers.end());
-
-			for (size_t i = start; i < transfers.size() && i - start < count; ++i) {
-				std::string transferID = GetTransferID(transfers[i]);
-				if (txid.empty() || txid == transferID || txid == transfers[i]->getIdentifier()) {
-					jtx = transfers[i]->ToJson();
-					jtx ["ID"] = transferID;
-					txList.push_back(jtx);
-
-					if (!txid.empty())
-						break;
-				}
-			}
-
-			j["MaxCount"] = transfers.size();
-			j["Transactions"] = txList;
-
-			ArgInfo("r => {}", j.dump());
-
-			return j;
-		}
-
-		nlohmann::json EthSidechainSubWallet::GetAllCoinBaseTransaction(uint32_t start, uint32_t count,
-																		const std::string &txID) const {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("start: {}, cnt: {}, txid: {}", start, count, txID);
-
-			return nlohmann::json();
-		}
-
 		nlohmann::json EthSidechainSubWallet::GetAssetInfo(const std::string &assetID) const {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("asset: {}", assetID);
@@ -1102,34 +1020,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 
 			ArgInfo("r => {}", j.dump());
 			return j;
-		}
-
-		bool EthSidechainSubWallet::SetFixedPeer(const std::string &address, uint16_t port) {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("addr: {}, port: {}", address, port);
-
-			ArgInfo("r => false");
-			return false;
-		}
-
-		void EthSidechainSubWallet::SyncStart() {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			_client->_ewm->updateTokens();
-			_client->_ewm->connect();
-		}
-
-		void EthSidechainSubWallet::SyncStop() {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			_client->_ewm->disconnect();
-		}
-
-		void EthSidechainSubWallet::Resync() {
-			ArgInfo("{} {}", _walletID, GetFunName());
-
-		}
-
-		void EthSidechainSubWallet::SetSyncMode(int mode) {
-			ArgInfo("{} {}", _walletID, GetFunName());
 		}
 
 		void EthSidechainSubWallet::StartP2P() {

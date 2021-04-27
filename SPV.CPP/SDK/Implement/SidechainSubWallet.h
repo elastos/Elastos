@@ -39,8 +39,6 @@ namespace Elastos {
 					const std::string &mainChainAddress,
 					const std::string &memo);
 
-			virtual std::string GetGenesisAddress() const;
-
 		protected:
 			friend class MasterWallet;
 

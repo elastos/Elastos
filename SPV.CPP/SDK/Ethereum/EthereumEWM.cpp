@@ -704,7 +704,6 @@ namespace Elastos {
 			_ewm(ewm),
 			_client(client),
 			_network(network),
-			_executor(1),
 			_account(EthereumAccountPtr(new EthereumAccount(this, ewmGetAccount(ewm)))) {
 		}
 
@@ -833,110 +832,80 @@ namespace Elastos {
 		}
 
 		void EthereumEWM::trampolineGetGasPrice(BREthereumEWM eid, BREthereumWallet wid, int rid) {
-			_executor.Execute(Runnable([this, wid, rid]() -> void {
-				_client->getGasPrice(wid, rid);
-			}));
+            _client->getGasPrice(wid, rid);
 		}
 
 		void EthereumEWM::trampolineGetGasEstimate(BREthereumEWM ewm, BREthereumWallet wid, BREthereumCookie cookie,
 												   const std::string &from, const std::string &to,
 												   const std::string &amount, const std::string &gasPrice,
 												   const std::string &data, int rid) {
-			_executor.Execute(Runnable([this, wid, cookie, from, to, amount, gasPrice, data, rid]() -> void {
-				_client->getGasEstimate(wid, cookie, from, to, amount, gasPrice, data, rid);
-			}));
+            _client->getGasEstimate(wid, cookie, from, to, amount, gasPrice, data, rid);
 		}
 
 		void EthereumEWM::trampolineGetBalance(BREthereumEWM eid, BREthereumWallet wid, const std::string &address,
 											   int rid) {
-			_executor.Execute(Runnable([this, wid, address, rid]() -> void {
-				_client->getBalance(wid, address, rid);
-			}));
+            _client->getBalance(wid, address, rid);
 		}
 
 		void EthereumEWM::trampolineSubmitTransaction(BREthereumEWM eid, BREthereumWallet wid, BREthereumTransfer tid,
 													  const std::string &rawTransaction, int rid) {
-			_executor.Execute(Runnable([this, wid, tid, rawTransaction, rid]() -> void {
-				_client->submitTransaction(wid, tid, rawTransaction, rid);
-			}));
+            _client->submitTransaction(wid, tid, rawTransaction, rid);
 		}
 
 		void
 		EthereumEWM::trampolineGetTransactions(BREthereumEWM eid, const std::string &address, uint64_t begBlockNumber,
 											   uint64_t endBlockNumber, int rid) {
-			_executor.Execute(Runnable([this, address, begBlockNumber, endBlockNumber, rid]() -> void {
-				_client->getTransactions(address, begBlockNumber, endBlockNumber, rid);
-			}));
+            _client->getTransactions(address, begBlockNumber, endBlockNumber, rid);
 		}
 
 		void EthereumEWM::trampolineGetLogs(BREthereumEWM eid, const std::string &contract, const std::string &address,
 											const std::string &event, uint64_t begBlockNumber, uint64_t endBlockNumber,
 											int rid) {
-			_executor.Execute(Runnable([this, contract, address, event, begBlockNumber, endBlockNumber, rid]() -> void {
-				_client->getLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
-			}));
+            _client->getLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
 		}
 
 		void EthereumEWM::trampolineGetBlocks(BREthereumEWM eid, const std::string &address, int interests,
 											  uint64_t blockNumberStart, uint64_t blockNumberStop, int rid) {
-			_executor.Execute(Runnable([this, address, interests, blockNumberStart, blockNumberStop, rid]() -> void {
-				_client->getBlocks(address, interests, blockNumberStart, blockNumberStop, rid);
-			}));
+            _client->getBlocks(address, interests, blockNumberStart, blockNumberStop, rid);
 		}
 
 		void EthereumEWM::trampolineGetTokens(BREthereumEWM eid, int rid) {
-			_executor.Execute(Runnable([this, rid]() -> void {
-				_client->getTokens(rid);
-			}));
+            _client->getTokens(rid);
 		}
 
 		void EthereumEWM::trampolineGetBlockNumber(BREthereumEWM eid, int rid) {
-			_executor.Execute(Runnable([this, rid]() -> void {
-				_client->getBlockNumber(rid);
-			}));
+            _client->getBlockNumber(rid);
 		}
 
 		void EthereumEWM::trampolineGetNonce(BREthereumEWM ewm, const std::string &address, int rid) {
-			_executor.Execute(Runnable([this, address, rid]() -> void {
-				_client->getNonce(address, rid);
-			}));
+            _client->getNonce(address, rid);
 		}
 
 		void EthereumEWM::trampolineEWMEvent(BREthereumEWM ewm, const BREthereumEWMEvent &event) {
-			_executor.Execute(Runnable([this, event]() -> void {
-				_client->handleEWMEvent(event);
-			}));
+            _client->handleEWMEvent(event);
 		}
 
 		void EthereumEWM::trampolinePeerEvent(BREthereumEWM ewm, const BREthereumPeerEvent &event) {
-			_executor.Execute(Runnable([this, event]() -> void {
-				_client->handlePeerEvent(event);
-			}));
+            _client->handlePeerEvent(event);
 		}
 
 		void EthereumEWM::trampolineWalletEvent(BREthereumEWM eid, BREthereumWallet wid,
 												const BREthereumWalletEvent &event) {
 			EthereumWalletPtr wallet = walletLookupOrCreate(wid, nullptr);
-			_executor.Execute(Runnable([this, wallet, event]() -> void {
-				_client->handleWalletEvent(wallet, event);
-			}));
+            _client->handleWalletEvent(wallet, event);
 		}
 
 		void EthereumEWM::trampolineTokenEvent(BREthereumEWM eid, BREthereumToken tokenId,
 											   const BREthereumTokenEvent &event) {
 			EthereumTokenPtr token = addTokenByReference(tokenId);
-			_executor.Execute(Runnable([this, token, event]() -> void {
-				_client->handleTokenEvent(token, event);
-			}));
+            _client->handleTokenEvent(token, event);
 		}
 
 		void EthereumEWM::trampolineTransferEvent(BREthereumEWM eid, BREthereumWallet wid, BREthereumTransfer tid,
 												  const BREthereumTransferEvent &event) {
 			EthereumWalletPtr wallet = walletLookupOrCreate(wid, nullptr);
 			EthereumTransferPtr transaction = transactionLookupOrCreate(tid);
-			_executor.Execute(Runnable([this, wallet, transaction, event]() -> void {
-				_client->handleTransferEvent(wallet, transaction, event);
-			}));
+            _client->handleTransferEvent(wallet, transaction, event);
 		}
 
 		BREthereumEWM EthereumEWM::getRaw() const {

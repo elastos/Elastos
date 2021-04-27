@@ -23,10 +23,12 @@
 #include "MasterWallet.h"
 
 #include <Common/Utils.h>
+#include <Common/Log.h>
 #include <Common/ErrorChecker.h>
 #include <WalletCore/Key.h>
 #include <WalletCore/CoinInfo.h>
 #include <Wallet/UTXO.h>
+#include <Wallet/WalletCommon.h>
 #include <Plugin/Transaction/Asset.h>
 #include <Plugin/Transaction/Payload/TransferCrossChainAsset.h>
 #include <Plugin/Transaction/Payload/ProducerInfo.h>
@@ -70,6 +72,7 @@ namespace Elastos {
 																	const std::string &sideChainID,
 																	const std::string &amount,
 																	const std::string &sideChainAddress,
+                                                                    const std::string &lockAddress,
 																	const std::string &memo) {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
@@ -77,6 +80,7 @@ namespace Elastos {
 			ArgInfo("sideChainID: {}", sideChainID);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("sideChainAddr: {}", sideChainAddress);
+			ArgInfo("lockAddress: {}", lockAddress);
 			ArgInfo("memo: {}", memo);
 
 			uint8_t payloadVersion = TransferCrossChainVersion;
@@ -95,7 +99,7 @@ namespace Elastos {
 
 			PayloadPtr payload;
 			OutputArray outputs;
-			Address receiveAddr(_parent->GetChainConfig(sideChainID)->GenesisAddress());
+			Address receiveAddr(lockAddress);
 
 			if (payloadVersion == TransferCrossChainVersion) {
 				TransferInfo info(sideChainAddress, 0, value);
@@ -498,109 +502,6 @@ namespace Elastos {
 			return result;
 		}
 
-		nlohmann::json MainchainSubWallet::GetVotedProducerList() const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-
-			WalletPtr wallet = _walletManager->GetWallet();
-			UTXOArray utxos = wallet->GetVoteUTXO();
-			nlohmann::json j;
-			std::map<std::string, BigInt> votedList;
-
-			for (size_t i = 0; i < utxos.size(); ++i) {
-				const OutputPtr &output = utxos[i]->Output();
-				if (output->GetType() != TransactionOutput::VoteOutput) {
-					continue;
-				}
-
-				const PayloadVote *pv = dynamic_cast<const PayloadVote *>(output->GetPayload().get());
-				if (pv == nullptr) {
-					continue;
-				}
-
-				BigInt stake = output->Amount();
-				uint8_t version = pv->Version();
-				const std::vector<VoteContent> &voteContents = pv->GetVoteContent();
-				std::for_each(voteContents.cbegin(), voteContents.cend(),
-							  [&votedList, &stake, &version](const VoteContent &vc) {
-								  if (vc.GetType() == VoteContent::Type::Delegate) {
-									  std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
-													[&votedList, &stake, &version](const CandidateVotes &cvs) {
-														std::string c = cvs.GetCandidate().getHex();
-														BigInt votes;
-
-														if (version == VOTE_PRODUCER_CR_VERSION)
-															votes = cvs.GetVotes();
-														else
-															votes = stake;
-
-														if (votedList.find(c) != votedList.end()) {
-															votedList[c] += votes;
-														} else {
-															votedList[c] = votes;
-														}
-													});
-								  }
-							  });
-
-			}
-
-			for (std::map<std::string, BigInt>::iterator it = votedList.begin(); it != votedList.end(); ++it)
-				j[(*it).first] = (*it).second.getDec();
-
-			ArgInfo("r => {}", j.dump());
-
-			return j;
-		}
-
-		nlohmann::json MainchainSubWallet::GetRegisteredProducerInfo() const {
-			WalletPtr wallet = _walletManager->GetWallet();
-			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
-
-			nlohmann::json j, info;
-
-			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetDPoSTransactions();
-
-			j["Status"] = "Unregistered";
-			j["Info"] = nlohmann::json();
-			for (const TransactionPtr &tx : list) {
-				if (tx->GetBlockHeight() == TX_UNCONFIRMED)
-					continue;
-
-				if (tx->GetTransactionType() == Transaction::registerProducer ||
-				    tx->GetTransactionType() == Transaction::updateProducer) {
-					const ProducerInfo *pinfo = dynamic_cast<const ProducerInfo *>(tx->GetPayload());
-					if (pinfo) {
-						info["OwnerPublicKey"] = pinfo->GetPublicKey().getHex();
-						info["NodePublicKey"] = pinfo->GetNodePublicKey().getHex();
-						info["NickName"] = pinfo->GetNickName();
-						info["URL"] = pinfo->GetUrl();
-						info["Location"] = pinfo->GetLocation();
-						info["Address"] = pinfo->GetAddress();
-						info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
-
-						j["Status"] = "Registered";
-						j["Info"] = info;
-					}
-				} else if (tx->GetTransactionType() == Transaction::cancelProducer) {
-					const CancelProducer *pc = dynamic_cast<const CancelProducer *>(tx->GetPayload());
-					if (pc) {
-						info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
-
-						j["Status"] = "Canceled";
-						j["Info"] = info;
-					}
-				} else if (tx->GetTransactionType() == Transaction::returnDepositCoin) {
-					info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
-
-					j["Status"] = "ReturnDeposit";
-					j["Info"] = info;
-				}
-			}
-
-			ArgInfo("r => {}", j.dump());
-			return j;
-		}
-
 		nlohmann::json MainchainSubWallet::GenerateCRInfoPayload(
 				const std::string &crPublicKey,
 				const std::string &did,
@@ -880,110 +781,6 @@ namespace Elastos {
 			return result;
 		}
 
-		nlohmann::json MainchainSubWallet::GetVotedCRList() const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-
-			WalletPtr wallet = _walletManager->GetWallet();
-			UTXOArray utxos = wallet->GetVoteUTXO();
-			nlohmann::json j;
-			std::map<std::string, BigInt> votedList;
-
-			for (size_t i = 0; i < utxos.size(); ++i) {
-				const OutputPtr &output = utxos[i]->Output();
-				if (output->GetType() != TransactionOutput::VoteOutput) {
-					continue;
-				}
-
-				const PayloadVote *pv = dynamic_cast<const PayloadVote *>(output->GetPayload().get());
-				if (pv == nullptr) {
-					continue;
-				}
-
-				const std::vector<VoteContent> &voteContents = pv->GetVoteContent();
-				std::for_each(voteContents.cbegin(), voteContents.cend(),
-				              [&votedList](const VoteContent &vc) {
-					              if (vc.GetType() == VoteContent::Type::CRC) {
-						              std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
-						                            [&votedList](const CandidateVotes &cv) {
-							                            std::string cid = Address(uint168(cv.GetCandidate())).String();
-							                            if (votedList.find(cid) != votedList.end()) {
-								                            votedList[cid] += cv.GetVotes();
-							                            } else {
-								                            votedList[cid] = cv.GetVotes();
-							                            }
-						                            });
-					              }
-				              });
-
-			}
-
-			for (std::map<std::string, BigInt>::iterator it = votedList.begin(); it != votedList.end(); ++it)
-				j[(*it).first] = (*it).second.getDec();
-
-			ArgInfo("r => {}", j.dump());
-
-			return j;
-		}
-
-		nlohmann::json MainchainSubWallet::GetRegisteredCRInfo() const {
-			WalletPtr wallet = _walletManager->GetWallet();
-			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
-
-			nlohmann::json j, info;
-
-			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetCRCTransactions();
-
-			j["Status"] = "Unregistered";
-			j["Info"] = nlohmann::json();
-			for (const TransactionPtr &tx : list) {
-				if (tx->GetBlockHeight() == TX_UNCONFIRMED) {
-					continue;
-				}
-
-				if (tx->GetTransactionType() == Transaction::registerCR ||
-				    tx->GetTransactionType() == Transaction::updateCR) {
-					const CRInfo *pinfo = dynamic_cast<const CRInfo *>(tx->GetPayload());
-					if (pinfo) {
-						ByteStream stream(pinfo->GetCode());
-						bytes_t pubKey;
-						stream.ReadVarBytes(pubKey);
-						Address cid(pinfo->GetCID());
-						Address did(pinfo->GetDID());
-						bool bondedDID = !pinfo->GetDID().bytes().isZero();
-
-						info["CROwnerPublicKey"] = pubKey.getHex();
-						info["CID"] = cid.String();
-						info["DID"] = bondedDID ? did.String() : "";
-						info["BondedDID"] = !did.ProgramHash().bytes().isZero();
-						info["NickName"] = pinfo->GetNickName();
-						info["URL"] = pinfo->GetUrl();
-						info["Location"] = pinfo->GetLocation();
-						info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
-
-						j["Status"] = "Registered";
-						j["Info"] = info;
-					}
-				} else if (tx->GetTransactionType() == Transaction::unregisterCR) {
-					const UnregisterCR *pc = dynamic_cast<const UnregisterCR *>(tx->GetPayload());
-					if (pc) {
-						info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
-
-						j["Status"] = "Canceled";
-						j["Info"] = info;
-
-					}
-				} else if (tx->GetTransactionType() == Transaction::returnCRDepositCoin) {
-					info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
-
-					j["Status"] = "ReturnDeposit";
-					j["Info"] = info;
-				}
-			}
-
-			ArgInfo("r => {}", j.dump());
-			return j;
-		}
-
 		std::string MainchainSubWallet::CRCouncilMemberClaimNodeDigest(const nlohmann::json &payload) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
@@ -1043,68 +840,6 @@ namespace Elastos {
 			ArgInfo("r => {}", result.dump());
 
 			return result;
-		}
-
-		nlohmann::json MainchainSubWallet::GetVoteInfo(const std::string &type) const {
-			WalletPtr wallet = _walletManager->GetWallet();
-			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
-			ArgInfo("type: {}", type);
-
-			UTXOArray utxos = wallet->GetVoteUTXO();
-			nlohmann::json jinfo = nlohmann::json::array();
-			time_t timestamp;
-
-			for (UTXOArray::iterator u = utxos.begin(); u != utxos.end(); ++u) {
-				const OutputPtr &output = (*u)->Output();
-				if (output->GetType() != TransactionOutput::VoteOutput) {
-					continue;
-				}
-
-				TransactionPtr tx = wallet->TransactionForHash((*u)->Hash());
-				assert(tx != nullptr);
-				timestamp = tx->GetTimestamp();
-
-				const PayloadVote *pv = dynamic_cast<const PayloadVote *>(output->GetPayload().get());
-				if (pv == nullptr) {
-					continue;
-				}
-
-				const std::vector<VoteContent> &voteContents = pv->GetVoteContent();
-				std::for_each(voteContents.cbegin(), voteContents.cend(),
-							  [&jinfo, &type, &timestamp](const VoteContent &vc) {
-								  nlohmann::json j;
-								  if (type.empty() || type == vc.GetTypeString()) {
-									  if (vc.GetType() == VoteContent::CRC || vc.GetType() == VoteContent::CRCImpeachment)
-										  j["Amount"] = vc.GetTotalVoteAmount().getDec();
-									  else if (vc.GetType() == VoteContent::Delegate || vc.GetType() == VoteContent::CRCProposal)
-										  j["Amount"] = vc.GetMaxVoteAmount().getDec();
-									  j["Type"] = vc.GetTypeString();
-									  j["Timestamp"] = timestamp;
-									  j["Expiry"] = nlohmann::json();
-									  nlohmann::json candidateVotes;
-									  std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
-													[&vc, &candidateVotes](const CandidateVotes &cv) {
-														std::string c;
-														if (vc.GetType() == VoteContent::CRC ||
-															vc.GetType() == VoteContent::CRCImpeachment) {
-															c = Address(uint168(cv.GetCandidate())).String();
-														} else if (vc.GetType() == VoteContent::CRCProposal) {
-															c = uint256(cv.GetCandidate()).GetHex();
-														} else if (vc.GetType() == VoteContent::Delegate) {
-															c = cv.GetCandidate().getHex();
-														}
-														candidateVotes[c] = cv.GetVotes().getDec();
-													});
-									  j["Votes"] = candidateVotes;
-									  jinfo.push_back(j);
-								  }
-							  });
-
-			}
-
-			ArgInfo("r => {}", jinfo.dump());
-
-			return jinfo;
 		}
 
 		std::string MainchainSubWallet::ProposalOwnerDigest(const nlohmann::json &payload) const {

@@ -37,7 +37,6 @@
 
 #include <ethereum/ewm/BREthereumEWM.h>
 #include <ethereum/blockchain/BREthereumBlock.h>
-#include <SpvService/BackgroundExecutor.h>
 
 #include <string>
 #include <boost/weak_ptr.hpp>
@@ -351,7 +350,6 @@ namespace Elastos {
 			TokenReferenceMap _tokensByReference;
 
 		private:
-			BackgroundExecutor _executor;
 			BREthereumEWM _ewm;
 			Client *_client;
 			EthereumNetworkPtr _network;

@@ -18,10 +18,6 @@ namespace Elastos {
 #define CONFIG_REGTEST "RegTest"
 #define CONFIG_PRVNET  "PrvNet"
 
-		class ChainParams;
-
-		typedef boost::shared_ptr<ChainParams> ChainParamsPtr;
-
 		class ChainConfig {
 		public:
 			ChainConfig();
@@ -32,21 +28,12 @@ namespace Elastos {
 
 			const uint64_t &FeePerKB() const;
 
-			const uint32_t &DisconnectionTime() const;
-
-			const std::string &GenesisAddress() const;
-
-			const ChainParamsPtr &ChainParameters() const;
-
 		private:
 			friend class Config;
 
 			uint32_t _index;
 			uint64_t _minFee;
 			uint64_t _feePerKB;
-			uint32_t _disconnectionTime;
-			std::string _genesisAddress;
-			ChainParamsPtr _chainParameters;
 		};
 
 		typedef boost::shared_ptr<ChainConfig> ChainConfigPtr;
