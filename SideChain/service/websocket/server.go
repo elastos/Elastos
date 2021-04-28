@@ -44,6 +44,7 @@ const (
 var (
 	ErrSessionExpired    = errors.New("session expired")
 	ErrIllegalDataFormat = errors.New("illegal data format")
+	ErrInvalidRequest    = errors.New("invalid request")
 	ErrInvalidMethod     = errors.New("invalid method")
 )
 
@@ -176,7 +177,11 @@ func (s *Server) handle(session *Session, data []byte, r *http.Request) bool {
 		log.Error("websocket OnDataHandle:", err)
 		return false
 	}
-	action := req["Action"].(string)
+	action, ok := req["Action"].(string)
+	if !ok {
+		s.response(session.id, "", nil, ErrInvalidRequest)
+		return false
+	}
 
 	handler, ok := s.handlers[action]
 	if !ok {
