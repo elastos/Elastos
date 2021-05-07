@@ -51,13 +51,20 @@ namespace Elastos {
 
 		}
 
-		nlohmann::json
-		IDChainSubWallet::CreateIDTransaction(const nlohmann::json &payloadJson, const std::string &memo, const std::string &fee) {
+		nlohmann::json IDChainSubWallet::CreateIDTransaction(
+		        const nlohmann::json &inputsJson,
+		        const nlohmann::json &payloadJson,
+		        const std::string &memo,
+		        const std::string &fee) {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
-			ArgInfo("payload: {}", payloadJson.dump());
+			ArgInfo("inputs: {}", inputsJson.dump());
+            ArgInfo("payload: {}", payloadJson.dump());
 			ArgInfo("memo: {}", memo);
 			ArgInfo("fee: {}", fee);
+
+			UTXOSet utxo;
+			UTXOFromJson(utxo, inputsJson);
 
             BigInt userFee;
             userFee.setDec(fee);
@@ -98,9 +105,7 @@ namespace Elastos {
 												  "Create id tx param error: " + std::string(e.what()));
 			}
 
-			AddressPtr fromAddr(new Address());
-
-			TransactionPtr tx = wallet->CreateTransaction(IDTransaction::didTransaction, payload, fromAddr, outputs, memo, false, userFee);
+			TransactionPtr tx = wallet->CreateTransaction(IDTransaction::didTransaction, payload, utxo, outputs, memo, userFee);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -121,7 +126,7 @@ namespace Elastos {
 
 			nlohmann::json didJson;
 			for (size_t i = 0; i < cid.size(); ++i) {
-				Address tmp(*cid[i]);
+				Address tmp = cid[i];
 				tmp.ConvertToDID();
 				didJson.push_back(tmp.String());
 			}
@@ -143,8 +148,8 @@ namespace Elastos {
 			size_t maxCount = _walletManager->GetWallet()->GetAllCID(cid, start, count);
 
 			nlohmann::json cidJosn;
-			for (AddressPtr &a : cid) {
-				cidJosn.push_back(a->String());
+			for (Address &a : cid) {
+				cidJosn.push_back(a.String());
 			}
 
 			j["CID"] = cidJosn;
@@ -162,7 +167,7 @@ namespace Elastos {
 			ArgInfo("message: {}", message);
 			ArgInfo("payPasswd: *");
 
-			AddressPtr didAddress(new Address(DIDOrCID));
+			Address didAddress(DIDOrCID);
 			std::string signature = _walletManager->GetWallet()->SignWithDID(didAddress, message, payPassword);
 
 			ArgInfo("r => {}", signature);
@@ -178,7 +183,7 @@ namespace Elastos {
 			ArgInfo("payPasswd: *");
 
 			ErrorChecker::CheckParam(digest.size() != 64, Error::InvalidArgument, "invalid digest");
-			AddressPtr didAddress(new Address(DIDOrCID));
+			Address didAddress(DIDOrCID);
 			std::string signature = _walletManager->GetWallet()->SignDigestWithDID(didAddress, uint256(digest), payPassword);
 
 			ArgInfo("r => {}", signature);

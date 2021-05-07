@@ -112,24 +112,32 @@ namespace Elastos {
 
 			/**
 			 * Create a normal transaction and return the content of transaction in json format.
-			 * @param fromAddress specify which address we want to spend, or just input empty string to let wallet choose UTXOs automatically.
-			 * @param targetAddress specify which address we want to send.
-			 * @param amount specify amount we want to send. "-1" means max.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * @param outputs Outputs which we want to send to. If there is change, a new output will be append. eg
+			 * [
+			 *   {
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * @param fee Fee amount. Bigint string in SELA
 			 * @param memo input memo attribute for describing.
 			 * @return If success return the content of transaction in json format.
 			 */
 			virtual nlohmann::json CreateTransaction(
-					const std::string &fromAddress,
-					const std::string &targetAddress,
-					const std::string &amount,
-					const std::string &memo) = 0;
-
-			/**
-			 * Create a transaction to combine as many UTXOs as possible until transaction size reaches the max size.
-			 * @param memo input memo attribute for describing.
-			 * @return If success return the content of transaction in json format.
-			 */
-			virtual nlohmann::json CreateConsolidateTransaction(
+					const nlohmann::json &inputs,
+					const nlohmann::json &outputs,
+					const std::string &fee,
 					const std::string &memo) = 0;
 
 			/**
@@ -161,14 +169,6 @@ namespace Elastos {
 			 * @return  tx in hex string format.
 			 */
 			virtual std::string ConvertToRawTransaction(const nlohmann::json &tx)  = 0;
-
-			/**
-			 * Get an asset details by specified asset ID
-			 * @param assetID asset hex code from asset hash.
-			 * @return asset info in json format.
-			 */
-			virtual nlohmann::json GetAssetInfo(
-					const std::string &assetID) const = 0;
 
 		};
 

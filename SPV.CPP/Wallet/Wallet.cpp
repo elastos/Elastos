@@ -969,12 +969,12 @@ static int deposit(int argc, char *argv[]) {
 			return ERRNO_APP;
 		}
 
-		nlohmann::json tx = subWallet->CreateDepositTransaction(
-			"", chainID, amount, sideChainAddress, "lock address ...", "");
+//		nlohmann::json tx = subWallet->CreateDepositTransaction(
+//			"", chainID, amount, sideChainAddress, "lock address ...", "");
 
-		std::cout << "Top up " << sideChainAddress << ":" << amount << " to " << chainID << std::endl;
+//		std::cout << "Top up " << sideChainAddress << ":" << amount << " to " << chainID << std::endl;
 
-		signAndShowTx(subWallet, tx);
+//		signAndShowTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1017,12 +1017,12 @@ static int withdraw(int argc, char *argv[]) {
 		ISidechainSubWallet *subWallet;
 		getSubWallet(subWallet, currentWallet, chainID);
 
-		nlohmann::json tx = subWallet->CreateWithdrawTransaction(
-			"", amount, mainChainAddress, "");
+//		nlohmann::json tx = subWallet->CreateWithdrawTransaction(
+//			"", amount, mainChainAddress, "");
 
-		std::cout << "Withdraw " << mainChainAddress << ":" << amount << " from " << chainID << std::endl;
+//		std::cout << "Withdraw " << mainChainAddress << ":" << amount << " from " << chainID << std::endl;
 
-		signAndShowTx(subWallet, tx);
+//		signAndShowTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1186,7 +1186,7 @@ static int _register(int argc, char *argv[]) {
 			std::string signature = idSubWallet->SignDigest(cid, digest, password);
 			payload["Signature"] = signature;
 
-			tx = subWallet->CreateRegisterCRTransaction("", payload, convertAmount("5000"), "");
+//			tx = subWallet->CreateRegisterCRTransaction("", payload, convertAmount("5000"), "");
 		} else if (registerWhat == "dpos") {
 			std::string ownerPubkey = subWallet->GetOwnerPublicKey();
 			std::string nickName, nodePubkey, url;
@@ -1209,7 +1209,7 @@ static int _register(int argc, char *argv[]) {
 
 			password = getpass("Enter payment password: ");
 			nlohmann::json payload = subWallet->GenerateProducerPayload(ownerPubkey, nodePubkey, nickName, url, "", location, password);
-			tx = subWallet->CreateRegisterProducerTransaction("", payload, convertAmount("5000"), "");
+//			tx = subWallet->CreateRegisterProducerTransaction("", payload, convertAmount("5000"), "");
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;
@@ -1251,12 +1251,12 @@ static int unregister(int argc, char *argv[]) {
 			std::string signature = idSubWallet->SignDigest(cid, digest, password);
 			payload["Signature"] = signature;
 
-			tx = subWallet->CreateUnregisterCRTransaction("", payload, "");
+//			tx = subWallet->CreateUnregisterCRTransaction("", payload, "");
 		} else if (registerWhat == "dpos") {
 			std::string ownerPubkey = subWallet->GetOwnerPublicKey();
 			password = getpass("Enter payment password: ");
 			nlohmann::json payload = subWallet->GenerateCancelProducerPayload(ownerPubkey, password);
-			tx = subWallet->CreateCancelProducerTransaction("", payload, "");
+//			tx = subWallet->CreateCancelProducerTransaction("", payload, "");
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;
@@ -1327,7 +1327,7 @@ static int retrieve(int argc, char *argv[]) {
 			std::string amount;
 			std::cin >> amount;
 
-			tx = subWallet->CreateRetrieveDepositTransaction(convertAmount(amount), "");
+//			tx = subWallet->CreateRetrieveDepositTransaction(convertAmount(amount), "");
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;
@@ -1478,9 +1478,9 @@ static int proposal(int argc, char *argv[]) {
 		payload["CRCouncilMemberSignature"] = signature;
 
 		std::cout << "Payload preview: " << std::endl << payload.dump(4) << std::endl;
-		nlohmann::json tx = subWallet->CreateProposalTransaction(payload);
+//		nlohmann::json tx = subWallet->CreateProposalTransaction(payload);
 
-		signAndShowTx(subWallet, tx);
+//		signAndShowTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1590,9 +1590,9 @@ static int tracking(int argc, char *argv[]) {
 
 		std::cout << "Proposal tracking payload preview: " << std::endl << payload.dump(4) << std::endl;
 
-		nlohmann::json tx = subWallet->CreateProposalTrackingTransaction(payload);
+//		nlohmann::json tx = subWallet->CreateProposalTrackingTransaction(payload);
 
-		signAndShowTx(subWallet, tx);
+//		signAndShowTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1642,7 +1642,7 @@ static int vote(int argc, char *argv[]) {
 								        }
 								    ]
 )"_json;
-			tx = subWallet->CreateVoteCRTransaction("", nlohmann::json::parse(voteJson), "", invalidProducer);
+//			tx = subWallet->CreateVoteCRTransaction("", nlohmann::json::parse(voteJson), "", invalidProducer);
 		} else if (voteType == "dpos") {
 			std::cout << "Enter number of votes:";
 			std::string stake;
@@ -1658,7 +1658,7 @@ static int vote(int argc, char *argv[]) {
 			std::cin >> pubKeys;
 			recoveryTTYSetting(&told);
 
-			tx = subWallet->CreateVoteProducerTransaction("", stake, nlohmann::json::parse(pubKeys), "", nlohmann::json::parse("[]"));
+//			tx = subWallet->CreateVoteProducerTransaction("", stake, nlohmann::json::parse(pubKeys), "", nlohmann::json::parse("[]"));
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;
@@ -1977,27 +1977,6 @@ static int _rawtx(int argc, char *argv[]) {
 	return 0;
 }
 
-// consolidate chainID
-static int consolidate(int argc, char *argv[]) {
-	checkParam(2);
-	checkCurrentWallet();
-
-	std::string chainID = argv[1];
-
-	try {
-		ISubWallet *subWallet;
-		getSubWallet(subWallet, currentWallet, chainID);
-
-		nlohmann::json tx = subWallet->CreateConsolidateTransaction("");
-		signAndShowTx(subWallet, tx);
-	} catch (const std::exception &e) {
-		exceptionError(e);
-		return ERRNO_APP;
-	}
-
-	return 0;
-}
-
 // signtx chainID
 static int signtx(int argc, char *argv[]) {
 	checkParam(2);
@@ -2120,7 +2099,6 @@ struct command {
 	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},
 	{"tokentx",    _tokentx,       "chainID tokenSymbol                              List all token tx records."},
 	{"rawtx",      _rawtx,         "chainID                                          Convert spv tx to rawtx"},
-	{"consolidate",consolidate,    "chainID                                          Consolidate fragmentary utxo"},
 	{"signtx",     signtx,         "chainID                                          Sign tx"},
 	{"transfer",   transfer,       "chainID                                          Transfer asset from `chainID`."},
 	{"receive",    _receive,       "chainID                                          Get receive address of `chainID`."},

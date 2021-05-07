@@ -37,16 +37,27 @@ namespace Elastos {
 
 			/**
 			 * Create a withdraw transaction and return the content of transaction in json format. Note that \p amount should greater than sum of \p so that we will leave enough fee for mainchain.
-			 * @param fromAddress specify which address we want to spend, or just input empty string to let wallet choose UTXOs automatically.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
 			 * @param amount specify amount we want to send.
 			 * @param mainChainAddress mainchain address.
+ 			 * @param fee Fee amount. Bigint string in SELA
 			 * @param memo input memo attribute for describing.
 			 * @return If success return the content of transaction in json format.
 			 */
 			virtual nlohmann::json CreateWithdrawTransaction(
-					const std::string &fromAddress,
+					const nlohmann::json &inputs,
 					const std::string &amount,
 					const std::string &mainChainAddress,
+					const std::string &fee,
 					const std::string &memo) = 0;
 
 		};

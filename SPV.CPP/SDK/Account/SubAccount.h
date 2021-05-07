@@ -49,15 +49,15 @@ namespace Elastos {
 
 			bool IsSingleAddress() const;
 
-			bool IsProducerDepositAddress(const AddressPtr &address) const;
+			bool IsProducerDepositAddress(const Address &address) const;
 
-			bool IsOwnerAddress(const AddressPtr &address) const;
+			bool IsOwnerAddress(const Address &address) const;
 
-			bool IsCRDepositAddress(const AddressPtr &address) const;
+			bool IsCRDepositAddress(const Address &address) const;
 
 			void SetUsedAddresses(const AddressSet &addresses);
 
-			bool AddUsedAddress(const AddressPtr &address);
+			bool AddUsedAddress(const Address &address);
 
 			size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const;
 
@@ -65,7 +65,7 @@ namespace Elastos {
 
 			AddressArray UnusedAddresses(uint32_t gapLimit, bool internal);
 
-			bool ContainsAddress(const AddressPtr &address) const;
+			bool ContainsAddress(const Address &address) const;
 
 			size_t GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
 			                        bool containInternal) const;
@@ -76,13 +76,13 @@ namespace Elastos {
 
 			void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) const;
 
-			Key GetKeyWithDID(const AddressPtr &did, const std::string &payPasswd) const;
+			Key GetKeyWithDID(const Address &did, const std::string &payPasswd) const;
 
 			Key DeriveOwnerKey(const std::string &payPasswd);
 
 			Key DeriveDIDKey(const std::string &payPasswd);
 
-			bool GetCodeAndPath(const AddressPtr &addr, bytes_t &code, std::string &path) const;
+			bool GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const;
 
 			size_t InternalChainIndex(const TransactionPtr &tx) const;
 
@@ -93,7 +93,7 @@ namespace Elastos {
 			uint32_t _coinIndex;
 			AddressArray _internalChain, _externalChain, _cid;
 			AddressSet _usedAddrs, _allAddrs, _allCID;
-			mutable AddressPtr _depositAddress, _ownerAddress, _crDepositAddress;
+			mutable Address _depositAddress, _ownerAddress, _crDepositAddress;
 
 			AccountPtr _parent;
 		};

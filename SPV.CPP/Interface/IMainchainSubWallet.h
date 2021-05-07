@@ -36,167 +36,100 @@ namespace Elastos {
 			virtual ~IMainchainSubWallet() noexcept {}
 
 			/**
-			 * Deposit token from the main chain to side chains, such as ID chain or token chain, etc.
+			 * Deposit token from the main chain to side chains, such as ID chain or token chain, etc
 			 *
-			 * @param fromAddress      If this address is empty, wallet will pick available UTXO automatically.
-			 *                         Otherwise, wallet will pick UTXO from the specific address.
-			 * @param sideChainID      Chain id of the side chain.
-			 * @param amount           The amount that will be deposit to the side chain.
-			 * @param sideChainAddress Receive address of side chain.
-			 * @param lockAddress      Generate from genesis block hash.
-			 * @memo                   Remarks string. Can be empty string.
-			 * @return                 The transaction in JSON format to be signed and published.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * NOTE:  (utxo input amount) >= amount + 10000 sela + fee
+			 * @param sideChainID Chain id of the side chain
+			 * @param amount The amount that will be deposit to the side chain.
+			 * @param sideChainAddress Receive address of side chain
+			 * @param lockAddress Generate from genesis block hash
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string
+			 * @return The transaction in JSON format to be signed and published
 			 */
 			virtual nlohmann::json CreateDepositTransaction(
-					const std::string &fromAddress,
+					const nlohmann::json &inputs,
 					const std::string &sideChainID,
 					const std::string &amount,
 					const std::string &sideChainAddress,
 					const std::string &lockAddress,
+					const std::string &fee,
 					const std::string &memo) = 0;
 
 		public:
+		    virtual std::string GetDepositAddress(const std::string &pubkey) const = 0;
 			//////////////////////////////////////////////////
 			/*                      Vote                    */
 			//////////////////////////////////////////////////
 			/**
 			 * Create vote transaction.
 			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param stake        Vote amount in sela. "-1" means max.
-			 * @param publicKeys   Public keys array in JSON format.
-			 * example:
-			 * 	[ "pubkey_1", "pubkey_2", ..., "pubkey_N" ]
-			 * @param memo         Remarks string. Can be empty string.
-			 * @invalidCandidates  invalid candidate except current vote candidates. Such as:
-			  						[
-								      	{
-								            "Type":"CRC",
-								            "Candidates":[ "cid", ...]
-								        },
-								        {
-								        	"Type":"CRCProposal",
-								        	"Candidates":[ "proposal hash", ...]
-								        },
-								        {
-								        	"Type": "CRCImpeachment",
-								        	"Candidates": [ "cid", ...]
-								        }
-								    ]
-			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-			 */
-			virtual nlohmann::json CreateVoteProducerTransaction(
-				const std::string &fromAddress,
-				const std::string &stake,
-				const nlohmann::json &pubicKeys,
-				const std::string &memo,
-				const nlohmann::json &invalidCandidates) = 0;
-
-			/**
-			 * Create vote cr transaction.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * @param voteContents Including all kinds of vote. eg
 			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param votes        Candidate's cid and votes in JSON format.
-			 * example:
-			 * {
-			 *      "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "100000000",
-			 *      "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000",
-			 *      ...
-			 * }
-			 * @param memo         Remarks string. Can be empty string.
-			 * @param invalidCandidates  invalid candidate except current vote candidates.
-			 * example:
-			  						[
-								      	{
-								            "Type":"CRCImpeachment",
-								            "Candidates":[ "cid", ...]
-								        },
-								        {
-								            "Type":"Delegate",
-								            "Candidates":[ "pubkey", ...]
-								        },
-								        {
-								        	"Type":"CRCProposal",
-								        	"Candidates":[ "proposal hash", ...]
-								        }
-								    ]
-			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-			 */
-			virtual nlohmann::json CreateVoteCRTransaction(
-				const std::string &fromAddress,
-				const nlohmann::json &votes,
-				const std::string &memo,
-				const nlohmann::json &invalidCandidates) = 0;
+			 * [
+			 *   {
+			 *     "Type":"CRC",
+			 *     "Candidates":
+			 *     {
+			 *       "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "100000000",
+			 *       ...
+			 *     }
+			 *   },
+			 *   {
+			 *     "Type":"CRCProposal",
+			 *     "Candidates":
+			 *     {
+			 *       "109780cf45c7a6178ad674ac647545b47b10c2c3e3b0020266d0707e5ca8af7c": "100000000",
+			 *       ...
+			 *     }
+			 *   },
+			 *   {
+			 *     "Type": "CRCImpeachment",
+			 *     "Candidates":
+			 *     {
+			 *       "innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs": "100000000",
+			 *       ...
+			 *     }
+			 *   },
+			 *   {
+			 *     "Type":"Delegate",
+			 *     "Candidates":
+			 *     {
+			 *       "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4": "100000000",
+			 *       ...
+			 *     }
+			 *   }
+			 * ]
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string.
 
-			/**
-			 * Create vote crc proposal transaction.
-			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param votes        Proposal hash and votes in JSON format. Such as:
-			 *                     {
-			 *                          "109780cf45c7a6178ad674ac647545b47b10c2c3e3b0020266d0707e5ca8af7c": "100000000",
-			 *                          "92990788d66bf558052d112f5498111747b3e28c55984d43fed8c8822ad9f1a7": "200000000"
-			 *                     }
-			 * @param memo         Remarks string. Can be empty string.
-			 * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
-			  						[
-								      	{
-								            "Type":"CRC",
-								            "Candidates":[ "cid", ...]
-								        },
-								        {
-								            "Type":"Delegate",
-								            "Candidates":[ "pubkey", ...]
-								        },
-								        {
-								        	"Type":"CRCImpeachment",
-								        	"Candidates":[ "cid", ...]
-								        }
-								    ]
-			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
+			 * @return The transaction in JSON format to be signed and published.
 			 */
-			virtual nlohmann::json CreateVoteCRCProposalTransaction(
-				const std::string &fromAddress,
-				const nlohmann::json &votes,
-				const std::string &memo,
-				const nlohmann::json &invalidCandidates) = 0;
-
-			/**
-			 * Create impeachment crc transaction.
-			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param votes        CRC cid and votes in JSON format. Such as:
-			 *                     {
-			 *                          "innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs": "100000000",
-			 *                          "iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww": "200000000"
-			 *                     }
-			 * @param memo         Remarks string. Can be empty string.
-			 * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
-			  						[
-								      	{
-								            "Type":"CRC",
-								            "Candidates":[ "cid", ...]
-								        },
-								        {
-								            "Type":"Delegate",
-								            "Candidates":[ "pubkey", ...]
-								        },
-								        {
-								        	"Type":"CRCProposal",
-								        	"Candidates":[ "proposal hash", ...]
-								        }
-								    ]
-			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-			 */
-			virtual nlohmann::json CreateImpeachmentCRCTransaction(
-				const std::string &fromAddress,
-				const nlohmann::json &votes,
-				const std::string &memo,
-				const nlohmann::json &invalidCandidates) = 0;
+			virtual nlohmann::json CreateVoteTransaction(
+				const nlohmann::json &inputs,
+				const nlohmann::json &voteContents,
+				const std::string &fee,
+				const std::string &memo) = 0;
 
 		public:
 			//////////////////////////////////////////////////
@@ -230,70 +163,111 @@ namespace Elastos {
 			 * Generate payaload for unregistering producer.
 			 *
 			 * @param ownerPublicKey The public key to identify a producer.
-			 * @param payPasswd      Pay password is using for signing the payload with the owner private key.
+			 * @param payPasswd Pay password is using for signing the payload with the owner private key.
 			 *
-			 * @return               The payload in JSON format.
+			 * @return The payload in JSON format.
 			 */
 			virtual nlohmann::json GenerateCancelProducerPayload(
 				const std::string &publicKey,
 				const std::string &payPasswd) const = 0;
 
 			/**
-			 * Create register producer transaction.
+			 * Create register producer transaction
 			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param payload      Generate by GenerateProducerPayload().
-			 * @param amount       Amount must lager than 500,000,000,000 sela
-			 * @param memo         Remarks string. Can be empty string.
-			 * @return             The transaction in JSON format to be signed and published.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * @param payload Generate by GenerateProducerPayload()
+			 * @param amount Amount must lager than 500,000,000,000 sela
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string
+			 * @return The transaction in JSON format to be signed and published
 			 */
 			virtual nlohmann::json CreateRegisterProducerTransaction(
-				const std::string &fromAddress,
+				const nlohmann::json &inputs,
 				const nlohmann::json &payload,
 				const std::string &amount,
+				const std::string &fee,
 				const std::string &memo) = 0;
 
 			/**
 			 * Create update producer transaction.
 			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param payload      Generate by GenerateProducerPayload().
-			 * @param memo         Remarks string. Can be empty string.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * @param payload Generate by GenerateProducerPayload().
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string.
 			 *
-			 * @return             The transaction in JSON format to be signed and published.
+			 * @return The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateUpdateProducerTransaction(
-				const std::string &fromAddress,
+				const nlohmann::json &inputs,
 				const nlohmann::json &payload,
+				const std::string &fee,
 				const std::string &memo) = 0;
 
 			/**
 			 * Create cancel producer transaction.
 			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param payload      Generate by GenerateCancelProducerPayload().
-			 * @param memo         Remarks string. Can be empty string.
-			 * @return             The transaction in JSON format to be signed and published.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * @param payload Generate by GenerateCancelProducerPayload().
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string.
+			 * @return The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateCancelProducerTransaction(
-				const std::string &fromAddress,
+				const nlohmann::json &inputs,
 				const nlohmann::json &payload,
+				const std::string &fee,
 				const std::string &memo) = 0;
 
 			/**
 			 * Create retrieve deposit transaction.
 			 *
-			 * @param amount     The available amount to be retrieved back.
-			 * @param memo       Remarks string. Can be empty string.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string.
 			 *
-			 * @return           The transaction in JSON format to be signed and published.
+			 * @return The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateRetrieveDepositTransaction(
-				const std::string &amount,
-				const std::string &memo) = 0;
+                    const nlohmann::json &inputs,
+                    const std::string &fee,
+                    const std::string &memo) = 0;
 
 			/**
 			 * Get owner public key.
@@ -357,58 +331,97 @@ namespace Elastos {
 			/**
 			 * Create register cr transaction.
 			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param payloadJSON  Generate by GenerateCRInfoPayload().
-			 * @param amount       Amount must lager than 500,000,000,000 sela
-			 * @param memo         Remarks string. Can be empty string.
-			 * @return             The transaction in JSON format to be signed and published.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * @param payloadJSON Generate by GenerateCRInfoPayload().
+			 * @param amount Amount must lager than 500,000,000,000 sela
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string.
+			 * @return The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateRegisterCRTransaction(
-					const std::string &fromAddress,
+					const nlohmann::json &inputs,
 					const nlohmann::json &payloadJSON,
 					const std::string &amount,
+					const std::string &fee,
 					const std::string &memo) = 0;
 
 			/**
 			 * Create update cr transaction.
 			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param payloadJSON  Generate by GenerateCRInfoPayload().
-			 * @param memo         Remarks string. Can be empty string.
-			 * @return             The transaction in JSON format to be signed and published.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * @param payloadJSON Generate by GenerateCRInfoPayload().
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string.
+			 * @return The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateUpdateCRTransaction(
-					const std::string &fromAddress,
+					const nlohmann::json &inputs,
 					const nlohmann::json &payloadJSON,
+					const std::string &fee,
 					const std::string &memo) = 0;
 
 			/**
 			 * Create unregister cr transaction.
 			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param payloadJSON  Generate by GenerateUnregisterCRPayload().
-			 * @param memo         Remarks string. Can be empty string.
-			 * @return             The transaction in JSON format to be signed and published.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * @param payloadJSON Generate by GenerateUnregisterCRPayload().
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string.
+			 * @return The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateUnregisterCRTransaction(
-					const std::string &fromAddress,
+					const nlohmann::json &inputs,
 					const nlohmann::json &payloadJSON,
+					const std::string &fee,
 					const std::string &memo) = 0;
 
 			/**
 			 * Create retrieve deposit cr transaction.
 			 *
-			 * @param crPublicKey The public key to identify a cr.
-			 * @param amount      The available amount to be retrieved back.
-			 * @param memo        Remarks string. Can be empty string.
-			 * @return            The transaction in JSON format to be signed and published.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string.
+			 * @return The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateRetrieveCRDepositTransaction(
-					const std::string &crPublicKey,
-					const std::string &amount,
+					const nlohmann::json &inputs,
+					const std::string &fee,
 					const std::string &memo) = 0;
 
 			/**
@@ -423,15 +436,31 @@ namespace Elastos {
 			virtual std::string CRCouncilMemberClaimNodeDigest(const nlohmann::json &payload) const = 0;
 
 			/**
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
 			 * @param payload
 			 * {
 			 *   "NodePublicKey": "...",
 			 *   "CRCouncilMemberDID": "...",
 			 *   "CRCouncilMemberSignature": "..."
 			 * }
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string.
 			 * @return
 			 */
-			virtual nlohmann::json CreateCRCouncilMemberClaimNodeTransaction(const nlohmann::json &payload, const std::string &memo = "") = 0;
+			virtual nlohmann::json CreateCRCouncilMemberClaimNodeTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") = 0;
 
 
 		public:
@@ -505,6 +534,16 @@ namespace Elastos {
 			/**
 			 * Create proposal transaction.
 			 *
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
 			 * @param payload Proposal payload signed by owner and CR committee.
 			 * {
 			 *    "Type": 0,                   // same as mention on method ProposalOwnerDigest()
@@ -523,11 +562,15 @@ namespace Elastos {
 			 *    "CRCouncilMemberSignature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76"
 			 * }
 			 *
-			 * @param memo Remarks string. Can be empty string.
-			 * @return The transaction in JSON format to be signed and published.
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string. Can be empty string
+			 * @return The transaction in JSON format to be signed and published
 			 */
-			virtual nlohmann::json CreateProposalTransaction(const nlohmann::json &payload,
-															 const std::string &memo = "") = 0;
+			virtual nlohmann::json CreateProposalTransaction(
+			        const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") = 0;
 
 
 			//////////////////////////////////////////////////
@@ -552,6 +595,16 @@ namespace Elastos {
 			/**
 			 * Create proposal review transaction.
 			 *
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
 			 * @param payload Signed payload.
  			 * {
 			 *   "ProposalHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
@@ -563,10 +616,13 @@ namespace Elastos {
 			 *   "Signature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76"
 			 * }
 			 *
+			 * @param fee Fee amount. Bigint string in SELA
 			 * @param memo Remarks string. Can be empty string.
 			 * @return The transaction in JSON format to be signed and published.
 			 */
-			virtual nlohmann::json CreateProposalReviewTransaction(const nlohmann::json &payload,
+			virtual nlohmann::json CreateProposalReviewTransaction(const nlohmann::json &inputs,
+                                                                   const nlohmann::json &payload,
+																   const std::string &fee,
 																   const std::string &memo = "") = 0;
 
 
@@ -638,6 +694,16 @@ namespace Elastos {
 			/**
 			 * Create proposal tracking transaction.
 			 *
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
 			 * @param payload Proposal tracking payload.
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
@@ -656,11 +722,14 @@ namespace Elastos {
 			 *   "SecretaryGeneralSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109"
 			 * }
 			 *
+			 * @param fee Fee amount. Bigint string in SELA
 			 * @param memo Remarks string. Can be empty string.
 			 * @return The transaction in JSON format to be signed and published.
 			 */
-			virtual nlohmann::json
-			CreateProposalTrackingTransaction(const nlohmann::json &payload, const std::string &memo = "") = 0;
+            virtual nlohmann::json CreateProposalTrackingTransaction(const nlohmann::json &inputs,
+                                                                     const nlohmann::json &payload,
+                                                                     const std::string &fee,
+                                                                     const std::string &memo = "") = 0;
 
 			//////////////////////////////////////////////////
 			/*      Proposal Secretary General Election     */
@@ -699,6 +768,16 @@ namespace Elastos {
 				const nlohmann::json &payload) const = 0;
 
 			/**
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
 			 * @param payload Proposal secretary election payload
 			 * {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
@@ -712,11 +791,15 @@ namespace Elastos {
 			 *    "CRCouncilMemberDID": "...",
 			 *    "CRCouncilMemberSignature": "..."
 			 * }
-			 * @param memo Remarks string.
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remarks string
 			 * @return
 			 */
 			virtual nlohmann::json CreateSecretaryGeneralElectionTransaction(
-				const nlohmann::json &payload, const std::string &memo = "") = 0;
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") = 0;
 
 			//////////////////////////////////////////////////
 			/*             Proposal Change Owner            */
@@ -756,6 +839,17 @@ namespace Elastos {
 			virtual std::string ProposalChangeOwnerCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
 
 			/**
+			 *
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
 			 * @param payload Proposal change owner payload
 			 * {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
@@ -770,11 +864,15 @@ namespace Elastos {
 			 *    "CRCouncilMemberDID": "...",
 			 *    "CRCouncilMemberSignature": "...",
 			 * }
+			 * @param fee Fee amount. Bigint string in SELA
 			 * @param memo Remark string.
 			 * @return
 			 */
 			virtual nlohmann::json CreateProposalChangeOwnerTransaction(
-				const nlohmann::json &payload, const std::string &memo = "") = 0;
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") = 0;
 
 			//////////////////////////////////////////////////
 			/*           Proposal Terminate Proposal        */
@@ -808,6 +906,16 @@ namespace Elastos {
 			virtual std::string TerminateProposalCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
 
 			/**
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
 			 * @param payload Terminate proposal payload
 			 * {
 			 *    "CategoryData": "testdata",  // limit: 4096 bytes
@@ -819,11 +927,15 @@ namespace Elastos {
 			 *    "CRCouncilMemberDID": "...",
 			 *    "CRCouncilMemberSignature": "...",
 			 * }
-			 * @param memo Remark string.
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remark string
 			 * @return
 			 */
 			virtual nlohmann::json CreateTerminateProposalTransaction(
-				const nlohmann::json &payload, const std::string &memo = "") = 0;
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") = 0;
 
             //////////////////////////////////////////////////
             /*              Reserve Custom ID               */
@@ -857,6 +969,16 @@ namespace Elastos {
             virtual nlohmann::json ReserveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
 
             /**
+             * @param inputs UTXO which will be used. eg
+             * [
+             *   {
+             *     "TxHash": "...", // string
+             *     "Index": 123, // int
+             *     "Address": "...", // string
+             *     "Amount": "100000000" // bigint string in SELA
+             *   },
+             *   ...
+             * ]
              * @param payload Reserve Custom ID payload
              * {
              *    "CategoryData": "testdata",  // limit: 4096 bytes
@@ -868,10 +990,15 @@ namespace Elastos {
              *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
              *    "CRCouncilMemberSignature": "...",
              * }
-             * @return
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remark string
+			 * @return
              */
             virtual nlohmann::json CreateReserveCustomIDTransaction(
-                    const nlohmann::json &payload, const std::string &memo = "") = 0;
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") = 0;
 
             //////////////////////////////////////////////////
             /*               Receive Custom ID              */
@@ -907,6 +1034,16 @@ namespace Elastos {
             virtual nlohmann::json ReceiveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
 
             /**
+             * @param inputs UTXO which will be used. eg
+             * [
+             *   {
+             *     "TxHash": "...", // string
+             *     "Index": 123, // int
+             *     "Address": "...", // string
+             *     "Amount": "100000000" // bigint string in SELA
+             *   },
+             *   ...
+             * ]
              * @param payload Receive Custom ID payload
              * {
              *    "CategoryData": "testdata",  // limit: 4096 bytes
@@ -919,10 +1056,15 @@ namespace Elastos {
              *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
              *    "CRCouncilMemberSignature": "...",
              * }
-             * @return
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remark string
+			 * @return
              */
             virtual nlohmann::json CreateReceiveCustomIDTransaction(
-                    const nlohmann::json &payload, const std::string &memo = "") = 0;
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") = 0;
 
             //////////////////////////////////////////////////
             /*              Change Custom ID Fee            */
@@ -956,6 +1098,16 @@ namespace Elastos {
             virtual nlohmann::json ChangeCustomIDFeeCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
 
             /**
+             * @param inputs UTXO which will be used. eg
+             * [
+             *   {
+             *     "TxHash": "...", // string
+             *     "Index": 123, // int
+             *     "Address": "...", // string
+             *     "Amount": "100000000" // bigint string in SELA
+             *   },
+             *   ...
+             * ]
              * @param payload Change custom ID fee payload
              * {
              *    "CategoryData": "testdata",  // limit: 4096 bytes
@@ -967,10 +1119,15 @@ namespace Elastos {
              *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
              *    "CRCouncilMemberSignature": "...",
              * }
-             * @return
+			 * @param fee Fee amount. Bigint string in SELA
+			 * @param memo Remark string
+			 * @return
              */
             virtual nlohmann::json CreateChangeCustomIDFeeTransaction(
-                    const nlohmann::json &payload, const std::string &memo = "") = 0;
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") = 0;
 
 			//////////////////////////////////////////////////
 			/*               Proposal Withdraw              */
@@ -992,6 +1149,16 @@ namespace Elastos {
 
 			/**
 			 * Create proposal withdraw transaction.
+             * @param inputs UTXO which will be used. eg
+             * [
+             *   {
+             *     "TxHash": "...", // string
+             *     "Index": 123, // int
+             *     "Address": "...", // string
+             *     "Amount": "100000000" // bigint string in SELA
+             *   },
+             *   ...
+             * ]
 			 * @param payload Proposal payload.
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
@@ -1000,13 +1167,16 @@ namespace Elastos {
 			 *   "Amount": "100000000", // 1 ela = 100000000 sela
 			 *   "Signature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109"
 			 * }
-			 *
+			 * @param fee Fee amount. Bigint string in SELA
 			 * @param memo Remarks string. Can be empty string.
 			 *
 			 * @return Transaction in JSON format.
 			 */
-			 virtual nlohmann::json CreateProposalWithdrawTransaction(const nlohmann::json &payload,
-																	  const std::string &memo = "") = 0;
+			 virtual nlohmann::json CreateProposalWithdrawTransaction(
+			         const nlohmann::json &inputs,
+                     const nlohmann::json &payload,
+                     const std::string &fee,
+                     const std::string &memo = "") = 0;
 
 		};
 

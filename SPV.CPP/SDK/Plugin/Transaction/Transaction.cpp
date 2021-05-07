@@ -236,21 +236,6 @@ namespace Elastos {
 			return _outputs;
 		}
 
-		void Transaction::FixIndex() {
-			for (uint16_t i = 0; i < _outputs.size(); ++i)
-				_outputs[i]->SetFixedIndex(i);
-		}
-
-		OutputPtr Transaction::OutputOfIndex(uint16_t fixedIndex) const {
-			std::vector<OutputPtr>::const_iterator it;
-			for (it = _outputs.cbegin(); it != _outputs.cend(); ++it) {
-				if ((*it)->FixedIndex() == fixedIndex)
-					return (*it);
-			}
-
-			return nullptr;
-		}
-
 		void Transaction::SetOutputs(const std::vector<OutputPtr> &outputs) {
 			_outputs = outputs;
 		}
@@ -507,7 +492,7 @@ namespace Elastos {
 
 			ostream.WriteVarUint(_outputs.size());
 			for (size_t i = 0; i < _outputs.size(); i++) {
-				_outputs[i]->Serialize(ostream, _version, extend);
+				_outputs[i]->Serialize(ostream, _version);
 			}
 
 			ostream.WriteUint32(_lockTime);
@@ -595,14 +580,11 @@ namespace Elastos {
 			_outputs.reserve(outputLength);
 			for (size_t i = 0; i < outputLength; i++) {
 				OutputPtr output(new TransactionOutput());
-				if (!output->Deserialize(istream, _version, extend)) {
+				if (!output->Deserialize(istream, _version)) {
 					Log::error("deserialize tx output[{}] error", i);
 					return false;
 				}
 
-				if (!extend) {
-					output->SetFixedIndex((uint16_t) i);
-				}
 				_outputs.push_back(output);
 			}
 
@@ -620,108 +602,6 @@ namespace Elastos {
 			for (size_t i = 0; i < programLength; i++) {
 				ProgramPtr program(new Program());
 				if (!program->Deserialize(istream, extend)) {
-					Log::error("deserialize program[{}] error", i);
-					return false;
-				}
-				_programs.push_back(program);
-			}
-
-#if 0
-			ByteStream stream;
-			SerializeUnsigned(stream);
-			_txHash = sha256_2(stream.GetBytes());
-#endif
-
-			return true;
-		}
-
-		bool Transaction::DeserializeOld(const ByteStream &stream, bool extend) {
-			Reinit();
-
-			if (!DeserializeType(stream)) {
-				return false;
-			}
-
-			if (!stream.ReadByte(_payloadVersion))
-				return false;
-
-			_payload = InitPayload(_type);
-
-			if (_payload == nullptr) {
-				Log::error("new _payload with _type={} when deserialize error", _type);
-				return false;
-			}
-			if (!_payload->Deserialize(stream, _payloadVersion))
-				return false;
-
-			uint64_t attributeLength = 0;
-			if (!stream.ReadVarUint(attributeLength))
-				return false;
-
-			for (size_t i = 0; i < attributeLength; i++) {
-				AttributePtr attribute(new Attribute());
-				if (!attribute->Deserialize(stream)) {
-					Log::error("deserialize tx attribute[{}] error", i);
-					return false;
-				}
-				_attributes.push_back(attribute);
-			}
-
-			uint64_t inCount = 0;
-			if (!stream.ReadVarUint(inCount)) {
-				Log::error("deserialize tx inCount error");
-				return false;
-			}
-
-			_inputs.reserve(inCount);
-			for (size_t i = 0; i < inCount; i++) {
-				InputPtr input(new TransactionInput());
-				if (!input->Deserialize(stream)) {
-					Log::error("deserialize tx input [{}] error", i);
-					return false;
-				}
-				_inputs.push_back(input);
-			}
-
-			uint64_t outputLength = 0;
-			if (!stream.ReadVarUint(outputLength)) {
-				Log::error("deserialize tx output len error");
-				return false;
-			}
-
-			if (outputLength > UINT16_MAX) {
-				Log::error("deserialize tx: too much outputs: {}", outputLength);
-				return false;
-			}
-
-			_outputs.reserve(outputLength);
-			for (size_t i = 0; i < outputLength; i++) {
-				OutputPtr output(new TransactionOutput());
-				if (!output->Deserialize(stream, _version, extend)) {
-					Log::error("deserialize tx output[{}] error", i);
-					return false;
-				}
-
-				if (!extend) {
-					output->SetFixedIndex((uint16_t) i);
-				}
-				_outputs.push_back(output);
-			}
-
-			if (!stream.ReadUint32(_lockTime)) {
-				Log::error("deserialize tx lock time error");
-				return false;
-			}
-
-			uint64_t programLength = 0;
-			if (!stream.ReadVarUint(programLength)) {
-				Log::error("deserialize tx program length error");
-				return false;
-			}
-
-			for (size_t i = 0; i < programLength; i++) {
-				ProgramPtr program(new Program());
-				if (!program->Deserialize(stream, extend)) {
 					Log::error("deserialize program[{}] error", i);
 					return false;
 				}

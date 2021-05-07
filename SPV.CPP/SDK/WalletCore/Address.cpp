@@ -22,7 +22,6 @@ namespace Elastos {
 		}
 
 		Address::Address(const std::string &address) {
-			_str = address;
 			if (address.empty()) {
 				_isValid = false;
 			} else {
@@ -47,15 +46,13 @@ namespace Elastos {
 			} else {
 				GenerateCode(prefix, pubkeys, m, did);
 				GenerateProgramHash(prefix);
-				if (CheckValid())
-					_str = Base58::CheckEncode(_programHash.bytes());
+				CheckValid();
 			}
 		}
 
 		Address::Address(const uint168 &programHash) {
 			_programHash = programHash;
-			if (CheckValid())
-				_str = Base58::CheckEncode(_programHash.bytes());
+			CheckValid();
 		}
 
 		Address::Address(const Address &address) {
@@ -75,7 +72,7 @@ namespace Elastos {
 		}
 
 		std::string Address::String() const {
-			return _str;
+			return Base58::CheckEncode(_programHash.bytes());
 		}
 
 		const uint168 &Address::ProgramHash() const {
@@ -84,8 +81,6 @@ namespace Elastos {
 
 		void Address::SetProgramHash(const uint168 &programHash) {
 			_programHash = programHash;
-			if (CheckValid())
-				_str = Base58::CheckEncode(_programHash.bytes());
 		}
 
 		SignType Address::PrefixToSignType(Prefix prefix) const {
@@ -118,8 +113,7 @@ namespace Elastos {
 		void Address::SetRedeemScript(Prefix prefix, const bytes_t &code) {
 			_code = code;
 			GenerateProgramHash(prefix);
-			if (CheckValid())
-				_str = Base58::CheckEncode(_programHash.bytes());
+			CheckValid();
 			ErrorChecker::CheckCondition(!_isValid, Error::InvalidArgument, "redeemscript is invalid");
 		}
 
@@ -130,7 +124,6 @@ namespace Elastos {
 				ErrorChecker::ThrowLogicException(Error::Address, "can't change to or from multi-sign prefix");
 
 			GenerateProgramHash(prefix);
-			_str = Base58::CheckEncode(_programHash.bytes());
 			return true;
 		}
 
@@ -138,7 +131,6 @@ namespace Elastos {
 			if (!_code.empty() && _programHash.prefix() == PrefixIDChain) {
 				_code.back() = SignTypeDID;
 				GenerateProgramHash(PrefixIDChain);
-				_str = Base58::CheckEncode(_programHash.bytes());
 			}
 		}
 
@@ -155,7 +147,6 @@ namespace Elastos {
 			_programHash = address._programHash;
 			_code = address._code;
 			_isValid = address._isValid;
-			_str = address._str;
 			return *this;
 		}
 

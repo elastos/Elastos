@@ -93,7 +93,7 @@ namespace Elastos {
 		std::string SubWallet::CreateAddress() {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 
-			std::string address = _walletManager->GetWallet()->GetReceiveAddress()->String();
+			std::string address = _walletManager->GetWallet()->GetReceiveAddress().String();
 
 			ArgInfo("r => {}", address);
 
@@ -111,7 +111,7 @@ namespace Elastos {
 
 			std::vector<std::string> addrString;
 			for (size_t i = 0; i < addresses.size(); ++i) {
-				addrString.push_back(addresses[i]->String());
+				addrString.push_back(addresses[i].String());
 			}
 
 			j["Addresses"] = addrString;
@@ -140,22 +140,6 @@ namespace Elastos {
 
 			ArgInfo("r => {}", j.dump());
 			return j;
-		}
-
-		TransactionPtr SubWallet::CreateConsolidateTx(const std::string &memo, const uint256 &asset) const {
-			std::string m;
-
-			if (!memo.empty())
-				m = "type:text,msg:" + memo;
-
-			TransactionPtr tx = _walletManager->GetWallet()->Consolidate(m, asset);
-
-			if (_info->GetChainID() == "ELA")
-				tx->SetVersion(Transaction::TxVersion::V09);
-
-			tx->FixIndex();
-
-			return tx;
 		}
 
 		void SubWallet::EncodeTx(nlohmann::json &result, const TransactionPtr &tx) const {
@@ -218,34 +202,69 @@ namespace Elastos {
 			return tx;
 		}
 
-		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &targetAddress,
-													const std::string &amount, const std::string &memo) {
+        bool SubWallet::UTXOFromJson(UTXOSet &utxo, const nlohmann::json &j) {
+            for (nlohmann::json::const_iterator it = j.cbegin(); it != j.cend(); ++it) {
+                if (!(*it).contains("TxHash") ||
+                    !(*it).contains("Index") ||
+                    !(*it).contains("Address") ||
+                    !(*it).contains("Amount")) {
+                    ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid inputs");
+                }
 
+                uint256 hash;
+                hash.SetHex((*it)["TxHash"].get<std::string>());
+                uint16_t n = (*it)["Index"].get<uint16_t>();
+
+                Address address((*it)["Address"].get<std::string>());
+                ErrorChecker::CheckParam(!address.Valid(), Error::InvalidArgument, "invalid address of inputs");
+
+                BigInt amount;
+                amount.setDec((*it)["Amount"].get<std::string>());
+                ErrorChecker::CheckParam(amount < 0, Error::InvalidArgument, "invalid amount of inputs");
+
+                utxo.insert(UTXOPtr(new UTXO(hash, n, address, amount)));
+            }
+            return true;
+		}
+
+        bool SubWallet::OutputsFromJson(OutputArray &outputs, const nlohmann::json &j) {
+            for (nlohmann::json::const_iterator it = j.cbegin(); it != j.cend(); ++it) {
+                BigInt amount;
+                amount.setDec((*it)["Amount"].get<std::string>());
+                ErrorChecker::CheckParam(amount < 0, Error::InvalidArgument, "invalid amount of outputs");
+
+                Address address((*it)["Address"].get<std::string>());
+                ErrorChecker::CheckParam(!address.Valid(), Error::InvalidArgument, "invalid address of outputs");
+
+                OutputPtr output(new TransactionOutput(TransactionOutput(amount, address)));
+                outputs.push_back(output);
+            }
+            return true;
+		}
+
+        nlohmann::json SubWallet::CreateTransaction(const nlohmann::json &inputsJson,
+                                                    const nlohmann::json &outputsJson,
+                                                    const std::string &fee,
+                                                    const std::string &memo) {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
-			ArgInfo("fromAddr: {}", fromAddress);
-			ArgInfo("targetAddr: {}", targetAddress);
-			ArgInfo("amount: {}", amount);
+			ArgInfo("inputs: {}", inputsJson.dump());
+			ArgInfo("outputs: {}", outputsJson.dump());
+			ArgInfo("fee: {}", fee);
 			ArgInfo("memo: {}", memo);
 
-			ErrorChecker::CheckBigIntAmount(amount);
-			bool max = false;
-			BigInt bnAmount;
-			if (amount == "-1") {
-				max = true;
-				bnAmount = 0;
-			} else {
-				bnAmount.setDec(amount);
-			}
+			UTXOSet utxos;
+            UTXOFromJson(utxos, inputsJson);
 
 			OutputArray outputs;
-			Address receiveAddr(targetAddress);
-			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, receiveAddr)));
-			AddressPtr fromAddr(new Address(fromAddress));
+			OutputsFromJson(outputs, outputsJson);
+
+			BigInt feeAmount;
+			feeAmount.setDec(fee);
 
 			PayloadPtr payload = PayloadPtr(new TransferAsset());
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::transferAsset,
-														  payload, fromAddr, outputs, memo, max);
+														  payload, utxos, outputs, memo, feeAmount);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -284,19 +303,6 @@ namespace Elastos {
 			ArgInfo("r => {}", rawtx);
 
 			return rawtx;
-		}
-
-		nlohmann::json SubWallet::CreateConsolidateTransaction(const std::string &memo) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("memo: {}", memo);
-
-			TransactionPtr tx = CreateConsolidateTx(memo, Asset::GetELAAssetID());
-
-			nlohmann::json result;
-			EncodeTx(result, tx);
-
-			ArgInfo("r => {}", result.dump());
-			return result;
 		}
 
 		void SubWallet::fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
@@ -339,23 +345,6 @@ namespace Elastos {
 
 			ArgInfo("r => {}", info.dump());
 
-			return info;
-		}
-
-		nlohmann::json SubWallet::GetAssetInfo(const std::string &assetID) const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("assetID: {}", assetID);
-
-			nlohmann::json info;
-
-			AssetPtr asset = _walletManager->GetWallet()->GetAsset(uint256(assetID));
-			info["Registered"] = (asset != nullptr);
-			if (asset != nullptr)
-				info["Info"] = asset->ToJson();
-			else
-				info["Info"] = {};
-
-			ArgInfo("r => {}", info.dump());
 			return info;
 		}
 

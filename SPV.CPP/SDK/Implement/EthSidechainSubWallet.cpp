@@ -892,37 +892,12 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			_callback = nullptr;
 		}
 
-		nlohmann::json EthSidechainSubWallet::CreateTransaction(const std::string &fromAddress,
-																const std::string &targetAddress,
-																const std::string &amount,
-																const std::string &memo) {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("from: {}", fromAddress);
-			ArgInfo("target: {}", targetAddress);
-			ArgInfo("amount: {}", amount);
-			ArgInfo("memo: {}", memo);
-
+		nlohmann::json EthSidechainSubWallet::CreateTransaction(const nlohmann::json &inputs,
+                                                                const nlohmann::json &outputs,
+                                                                const std::string &fee,
+                                                                const std::string &memo) {
 			ErrorChecker::ThrowParamException(Error::UnsupportOperation, "use IEthSidechainSubWallet::CreateTransfer() instead");
-
-			nlohmann::json j;
-			EthereumTransferPtr tx = _client->_ewm->getWallet()->createTransfer(targetAddress, amount, EthereumAmount::Unit::ETHER_ETHER);
-
-			j["ID"] = GetTransferID(tx);
-			j["Fee"] = tx->getFee(EthereumAmount::Unit::ETHER_ETHER);
-
-			ArgInfo("r => {}", j.dump());
-
-			return j;
-		}
-
-		nlohmann::json EthSidechainSubWallet::CreateConsolidateTransaction(const std::string &memo) {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("memo: {}", memo);
-
-			nlohmann::json j;
-
-			ArgInfo("r => {}", j.dump());
-			return j;
+			return nlohmann::json();
 		}
 
 		nlohmann::json EthSidechainSubWallet::SignTransaction(const nlohmann::json &tx,

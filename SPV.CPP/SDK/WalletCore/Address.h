@@ -105,18 +105,17 @@ namespace Elastos {
 		private:
 			uint168 _programHash;
 			bytes_t _code;
-			std::string _str;
 			bool _isValid;
 		};
 
 		typedef boost::shared_ptr<Address> AddressPtr;
 		typedef struct {
-			bool operator() (const AddressPtr &x, const AddressPtr &y) const {
-				return *x < *y;
+			bool operator() (const Address &x, const Address &y) const {
+				return x < y;
 			}
 		} AddressCompare;
-		typedef std::set<AddressPtr, AddressCompare> AddressSet;
-		typedef std::vector<AddressPtr> AddressArray;
+		typedef std::set<Address, AddressCompare> AddressSet;
+		typedef std::vector<Address> AddressArray;
 
 	}
 }

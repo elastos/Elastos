@@ -34,9 +34,10 @@ namespace Elastos {
 			virtual ~SidechainSubWallet();
 
 			virtual nlohmann::json CreateWithdrawTransaction(
-					const std::string &fromAddress,
+					const nlohmann::json &inputsJson,
 					const std::string &amount,
 					const std::string &mainChainAddress,
+					const std::string &fee,
 					const std::string &memo);
 
 		protected:

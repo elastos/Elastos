@@ -23,6 +23,8 @@
 #define __ELASTOS_SDK_MAINCHAINSUBWALLET_H__
 
 #include "SidechainSubWallet.h"
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
+
 #include <IMainchainSubWallet.h>
 
 namespace Elastos {
@@ -36,43 +38,26 @@ namespace Elastos {
 			~MainchainSubWallet();
 
 			nlohmann::json CreateDepositTransaction(
-					const std::string &fromAddress,
+					const nlohmann::json &inputsJson,
 					const std::string &sideChainID,
 					const std::string &amount,
 					const std::string &sideChainAddress,
                     const std::string &lockAddress,
+					const std::string &fee,
 					const std::string &memo) override;
 
 		public:
 			//////////////////////////////////////////////////
 			/*                      Vote                    */
 			//////////////////////////////////////////////////
-			nlohmann::json CreateVoteProducerTransaction(
-				const std::string &fromAddress,
-				const std::string &stake,
-				const nlohmann::json &publicKeys,
-				const std::string &memo,
-				const nlohmann::json &invalidCandidates) override;
-
-			nlohmann::json CreateVoteCRTransaction(
-				const std::string &fromAddress,
-				const nlohmann::json &votes,
-				const std::string &memo,
-				const nlohmann::json &invalidCandidates) override;
-
-			nlohmann::json CreateVoteCRCProposalTransaction(
-				const std::string &fromAddress,
-				const nlohmann::json &votes,
-				const std::string &memo,
-				const nlohmann::json &invalidCandidates) override;
-
-			nlohmann::json CreateImpeachmentCRCTransaction(
-				const std::string &fromAddress,
-				const nlohmann::json &votes,
-				const std::string &memo,
-				const nlohmann::json &invalidCandidates) override;
+			nlohmann::json CreateVoteTransaction(
+				const nlohmann::json &inputsJson,
+				const nlohmann::json &voteContentsJson,
+				const std::string &fee,
+				const std::string &memo) override;
 
 		public:
+            std::string GetDepositAddress(const std::string &pubkey) const override;
 			//////////////////////////////////////////////////
 			/*                    Producer                  */
 			//////////////////////////////////////////////////
@@ -87,20 +72,24 @@ namespace Elastos {
 			nlohmann::json GenerateCancelProducerPayload(const std::string &ownerPublicKey,
 														 const std::string &payPasswd) const override;
 
-			nlohmann::json CreateRegisterProducerTransaction(const std::string &fromAddress,
+			nlohmann::json CreateRegisterProducerTransaction(const nlohmann::json &inputsJson,
 															 const nlohmann::json &payload,
 															 const std::string &amount,
+															 const std::string &fee,
 															 const std::string &memo) override;
 
-			nlohmann::json CreateUpdateProducerTransaction(const std::string &fromAddress,
+			nlohmann::json CreateUpdateProducerTransaction(const nlohmann::json &inputsJson,
 														   const nlohmann::json &payload,
+														   const std::string &fee,
 														   const std::string &memo) override;
 
-			nlohmann::json CreateCancelProducerTransaction(const std::string &fromAddress,
+			nlohmann::json CreateCancelProducerTransaction(const nlohmann::json &inputsJson,
 														   const nlohmann::json &payload,
+														   const std::string &fee,
 														   const std::string &emmo) override;
 
-			nlohmann::json CreateRetrieveDepositTransaction(const std::string &amount,
+			nlohmann::json CreateRetrieveDepositTransaction(const nlohmann::json &inputsJson,
+                                                            const std::string &fee,
 															const std::string &memo) override;
 
 			std::string GetOwnerPublicKey() const override;
@@ -119,26 +108,32 @@ namespace Elastos {
 
 			nlohmann::json GenerateUnregisterCRPayload(const std::string &CID) const override;
 
-			nlohmann::json CreateRegisterCRTransaction(const std::string &fromAddress,
+			nlohmann::json CreateRegisterCRTransaction(const nlohmann::json &inputsJson,
 													   const nlohmann::json &payloadJSON,
 													   const std::string &amount,
+													   const std::string &fee,
 													   const std::string &memo) override;
 
-			nlohmann::json CreateUpdateCRTransaction(const std::string &fromAddress,
+			nlohmann::json CreateUpdateCRTransaction(const nlohmann::json &inputsJson,
 													 const nlohmann::json &payloadJSON,
+													 const std::string &fee,
 													 const std::string &memo) override;
 
-			nlohmann::json CreateUnregisterCRTransaction(const std::string &fromAddress,
+			nlohmann::json CreateUnregisterCRTransaction(const nlohmann::json &inputsJson,
 														 const nlohmann::json &payloadJSON,
+														 const std::string &fee,
 														 const std::string &memo) override;
 
-			nlohmann::json CreateRetrieveCRDepositTransaction(const std::string &crPublicKey,
-															  const std::string &amount,
+			nlohmann::json CreateRetrieveCRDepositTransaction(const nlohmann::json &inputsJson,
+															  const std::string &fee,
 															  const std::string &memo) override;
 
 			std::string CRCouncilMemberClaimNodeDigest(const nlohmann::json &payload) const override;
 
-			nlohmann::json CreateCRCouncilMemberClaimNodeTransaction(const nlohmann::json &payload, const std::string &memo = "") override;
+			nlohmann::json CreateCRCouncilMemberClaimNodeTransaction(const nlohmann::json &inputsJson,
+                                                                     const nlohmann::json &payloadJson,
+                                                                     const std::string &fee,
+                                                                     const std::string &memo = "") override;
 
 		public:
 			//////////////////////////////////////////////////
@@ -150,15 +145,20 @@ namespace Elastos {
 
 			std::string CalculateProposalHash(const nlohmann::json &payload) const override ;
 
-			nlohmann::json CreateProposalTransaction(const nlohmann::json &payload,
-													 const std::string &memo) override;
+			nlohmann::json CreateProposalTransaction(
+			        const nlohmann::json &inputsJson,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo) override;
 
 			//////////////////////////////////////////////////
 			/*               Proposal Review                */
 			//////////////////////////////////////////////////
 			std::string ProposalReviewDigest(const nlohmann::json &payload) const override;
 
-			nlohmann::json CreateProposalReviewTransaction(const nlohmann::json &payload,
+			nlohmann::json CreateProposalReviewTransaction(const nlohmann::json &inputsJson,
+                                                           const nlohmann::json &payload,
+														   const std::string &fee,
 														   const std::string &memo) override;
 
 			//////////////////////////////////////////////////
@@ -170,7 +170,9 @@ namespace Elastos {
 
 			std::string ProposalTrackingSecretaryDigest(const nlohmann::json &payload) const override;
 
-			nlohmann::json CreateProposalTrackingTransaction(const nlohmann::json &payload,
+            nlohmann::json CreateProposalTrackingTransaction(const nlohmann::json &inputsJson,
+                                                             const nlohmann::json &payload,
+															 const std::string &fee,
 															 const std::string &memo) override;
 
 			//////////////////////////////////////////////////
@@ -183,7 +185,10 @@ namespace Elastos {
 				const nlohmann::json &payload) const override;
 
 			nlohmann::json CreateSecretaryGeneralElectionTransaction(
-				const nlohmann::json &payload, const std::string &memo = "") override;
+                    const nlohmann::json &inputsJson,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") override;
 
 			//////////////////////////////////////////////////
 			/*             Proposal Change Owner            */
@@ -193,7 +198,10 @@ namespace Elastos {
 			std::string ProposalChangeOwnerCRCouncilMemberDigest(const nlohmann::json &payload) const override ;
 
 			nlohmann::json CreateProposalChangeOwnerTransaction(
-				const nlohmann::json &payload, const std::string &memo = "") override ;
+                    const nlohmann::json &inputsJson,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") override ;
 
 			//////////////////////////////////////////////////
 			/*           Proposal Terminate Proposal        */
@@ -203,7 +211,10 @@ namespace Elastos {
 			std::string TerminateProposalCRCouncilMemberDigest(const nlohmann::json &payload) const override;
 
 			nlohmann::json CreateTerminateProposalTransaction(
-				const nlohmann::json &payload, const std::string &memo = "") override;
+                    const nlohmann::json &inputsJson,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") override;
 
             //////////////////////////////////////////////////
             /*              Reserve Custom ID               */
@@ -213,7 +224,10 @@ namespace Elastos {
             nlohmann::json ReserveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const override;
 
             nlohmann::json CreateReserveCustomIDTransaction(
-                    const nlohmann::json &payload, const std::string &memo = "") override;
+                    const nlohmann::json &inputsJson,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") override;
 
             //////////////////////////////////////////////////
             /*               Receive Custom ID              */
@@ -223,7 +237,10 @@ namespace Elastos {
             nlohmann::json ReceiveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const override;
 
             nlohmann::json CreateReceiveCustomIDTransaction(
-                    const nlohmann::json &payload, const std::string &memo = "") override;
+                    const nlohmann::json &inputsJson,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") override;
 
             //////////////////////////////////////////////////
             /*              Change Custom ID Fee            */
@@ -233,18 +250,26 @@ namespace Elastos {
             nlohmann::json ChangeCustomIDFeeCRCouncilMemberDigest(const nlohmann::json &payload) const override;
 
             nlohmann::json CreateChangeCustomIDFeeTransaction(
-                    const nlohmann::json &payload, const std::string &memo = "") override;
+                    const nlohmann::json &inputsJson,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") override;
 
 			//////////////////////////////////////////////////
 			/*               Proposal Withdraw              */
 			//////////////////////////////////////////////////
 			std::string ProposalWithdrawDigest(const nlohmann::json &payload) const override;
 
-			nlohmann::json CreateProposalWithdrawTransaction(const nlohmann::json &payload,
-															 const std::string &memo) override;
+			nlohmann::json CreateProposalWithdrawTransaction(
+			        const nlohmann::json &inputsJson,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo) override;
 
 		private:
-			void FilterVoteCandidates(TransactionPtr &tx, const nlohmann::json &invalidCandidates) const;
+			bool VoteContentFromJson(VoteContentArray &voteContents, BigInt &maxAmount, const nlohmann::json &j);
+
+			bool VoteAmountFromJson(BigInt &voteAmount, const nlohmann::json &j);
 
 		protected:
 			friend class MasterWallet;
@@ -253,9 +278,6 @@ namespace Elastos {
 							   const ChainConfigPtr &config,
 							   MasterWallet *parent,
 							   const std::string &netType);
-
-			TransactionPtr CreateVoteTx(const VoteContent &voteContent, const std::string &memo, bool max,
-			                            VoteContentArray &dropedVotes);
 		};
 
 	}

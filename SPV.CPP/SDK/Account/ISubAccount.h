@@ -47,15 +47,15 @@ namespace Elastos {
 
 			virtual bool IsSingleAddress() const = 0;
 
-			virtual bool IsProducerDepositAddress(const AddressPtr &address) const = 0;
+			virtual bool IsProducerDepositAddress(const Address &address) const = 0;
 
-			virtual bool IsOwnerAddress(const AddressPtr &address) const = 0;
+			virtual bool IsOwnerAddress(const Address &address) const = 0;
 
-			virtual bool IsCRDepositAddress(const AddressPtr &address) const = 0;
+			virtual bool IsCRDepositAddress(const Address &address) const = 0;
 
 			virtual void SetUsedAddresses(const AddressSet &addresses) = 0;
 
-			virtual bool AddUsedAddress(const AddressPtr &address) = 0;
+			virtual bool AddUsedAddress(const Address &address) = 0;
 
 			virtual size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const = 0;
 
@@ -66,7 +66,7 @@ namespace Elastos {
 
 			virtual AddressArray UnusedAddresses(uint32_t gapLimit, bool internal) = 0;
 
-			virtual bool ContainsAddress(const AddressPtr &address) const = 0;
+			virtual bool ContainsAddress(const Address &address) const = 0;
 
 			virtual bytes_t OwnerPubKey() const = 0;
 
@@ -74,13 +74,13 @@ namespace Elastos {
 
 			virtual void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) const = 0;
 
-			virtual Key GetKeyWithDID(const AddressPtr &did, const std::string &payPasswd) const = 0;
+			virtual Key GetKeyWithDID(const Address &did, const std::string &payPasswd) const = 0;
 
 			virtual Key DeriveOwnerKey(const std::string &payPasswd) = 0;
 
 			virtual Key DeriveDIDKey(const std::string &payPasswd) = 0;
 
-			virtual bool GetCodeAndPath(const AddressPtr &addr, bytes_t &code, std::string &path) const = 0;
+			virtual bool GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const = 0;
 
 			virtual size_t InternalChainIndex(const TransactionPtr &tx) const = 0;
 

@@ -19,24 +19,20 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		TransactionOutput::TransactionOutput() :
-				_fixedIndex(0),
 				_outputLock(0),
 				_outputType(Type::Default) {
-			_addr = AddressPtr(new Address());
 			_amount.setUint64(0);
 			_payload = GeneratePayload(_outputType);
 		}
 
 		TransactionOutput::TransactionOutput(const TransactionOutput &output) {
-			_addr = AddressPtr(new Address());
 			this->operator=(output);
 		}
 
 		TransactionOutput &TransactionOutput::operator=(const TransactionOutput &o) {
-			_fixedIndex = o._fixedIndex;
 			_amount = o._amount;
 			_assetID = o._assetID;
-			*_addr = *o._addr;
+			_address = o._address;
 			_outputLock = o._outputLock;
 			_outputType = o._outputType;
 			_payload = GeneratePayload(o._outputType);
@@ -46,13 +42,12 @@ namespace Elastos {
 
 		TransactionOutput::TransactionOutput(const BigInt &a, const Address &addr, const uint256 &assetID,
 											 Type type, const OutputPayloadPtr &payload) :
-			_fixedIndex(0),
 			_outputLock(0),
 			_outputType(type) {
 
 			_assetID = assetID;
 			_amount = a;
-			_addr = AddressPtr(new Address(addr));
+			_address = addr;
 
 			if (payload == nullptr) {
 				_payload = GeneratePayload(_outputType);
@@ -64,8 +59,8 @@ namespace Elastos {
 		TransactionOutput::~TransactionOutput() {
 		}
 
-		const AddressPtr &TransactionOutput::Addr() const {
-			return _addr;
+		const Address &TransactionOutput::GetAddress() const {
+			return _address;
 		}
 
 		const BigInt &TransactionOutput::Amount() const {
@@ -90,12 +85,12 @@ namespace Elastos {
 			}
 
 			size += sizeof(_outputLock);
-			size += _addr->ProgramHash().size();
+			size += _address.ProgramHash().size();
 
 			return size;
 		}
 
-		void TransactionOutput::Serialize(ByteStream &ostream, uint8_t txVersion, bool extend) const {
+		void TransactionOutput::Serialize(ByteStream &ostream, uint8_t txVersion) const {
 			ostream.WriteBytes(_assetID);
 
 			if (_assetID == Asset::GetELAAssetID()) {
@@ -108,19 +103,15 @@ namespace Elastos {
 			}
 
 			ostream.WriteUint32(_outputLock);
-			ostream.WriteBytes(_addr->ProgramHash());
+			ostream.WriteBytes(_address.ProgramHash());
 
 			if (txVersion >= Transaction::TxVersion::V09) {
 				ostream.WriteUint8(_outputType);
 				_payload->Serialize(ostream);
 			}
-
-			if (extend) {
-				ostream.WriteUint16(_fixedIndex);
-			}
 		}
 
-		bool TransactionOutput::Deserialize(const ByteStream &istream, uint8_t txVersion, bool extend) {
+		bool TransactionOutput::Deserialize(const ByteStream &istream, uint8_t txVersion) {
 			if (!istream.ReadBytes(_assetID)) {
 				Log::error("deserialize output assetid error");
 				return false;
@@ -152,7 +143,7 @@ namespace Elastos {
 				Log::error("deserialize output program hash error");
 				return false;
 			}
-			_addr->SetProgramHash(programHash);
+			_address.SetProgramHash(programHash);
 
 			if (txVersion >= Transaction::TxVersion::V09) {
 				uint8_t outputType = 0;
@@ -168,11 +159,6 @@ namespace Elastos {
 					Log::error("tx output deserialize payload error");
 					return false;
 				}
-			}
-
-			if (extend && !istream.ReadUint16(_fixedIndex)) {
-				Log::error("deserialize output index error");
-				return false;
 			}
 
 			return true;
@@ -230,6 +216,7 @@ namespace Elastos {
 					break;
 				case CrossChain:
 					payload = OutputPayloadPtr(new PayloadCrossChain());
+					break;
 
 				default:
 					payload = nullptr;
@@ -242,12 +229,11 @@ namespace Elastos {
 		nlohmann::json TransactionOutput::ToJson() const {
 			nlohmann::json j;
 
-			j["FixedIndex"] = _fixedIndex;
 			j["Amount"] = _amount.getDec();
 			j["AssetId"] = _assetID.GetHex();
 			j["OutputLock"] = _outputLock;
-			j["ProgramHash"] = _addr->ProgramHash().GetHex();
-			j["Address"] = _addr->String();
+			j["ProgramHash"] = _address.ProgramHash().GetHex();
+			j["Address"] = _address.String();
 			j["OutputType"] = _outputType;
 			j["Payload"] = _payload->ToJson();
 
@@ -255,31 +241,21 @@ namespace Elastos {
 		}
 
 		void TransactionOutput::FromJson(const nlohmann::json &j) {
-			_fixedIndex = j["FixedIndex"].get<uint16_t>();
 			_amount.setDec(j["Amount"].get<std::string>());
 			_assetID.SetHex(j["AssetId"].get<std::string>());
 			_outputLock = j["OutputLock"].get<uint32_t>();
-			_addr->SetProgramHash(uint168(j["ProgramHash"].get<std::string>()));
+			_address.SetProgramHash(uint168(j["ProgramHash"].get<std::string>()));
 
 			_outputType = Type(j["OutputType"].get<uint8_t>());
 			_payload = GeneratePayload(_outputType);
 			_payload->FromJson(j["Payload"]);
 		}
 
-		uint16_t TransactionOutput::FixedIndex() const {
-			return _fixedIndex;
-		}
-
-		void TransactionOutput::SetFixedIndex(uint16_t index) {
-			_fixedIndex = index;
-		}
-
 		bool TransactionOutput::operator==(const TransactionOutput &o) const {
 			return _assetID == o._assetID &&
 				   _amount == o._amount &&
 				   _outputLock == o._outputLock &&
-				   *_addr == *o._addr &&
-				   _fixedIndex == o._fixedIndex &&
+				   _address == o._address &&
 				   _outputType == o._outputType &&
 				   *_payload == *o._payload;
 		}

@@ -38,12 +38,23 @@ namespace Elastos {
 
 			/**
 			 * Create a id transaction and return the content of transaction in json format, this is a special transaction to register id related information on id chain.
+			 * @param inputs UTXO which will be used. eg
+			 * [
+			 *   {
+			 *     "TxHash": "...", // string
+			 *     "Index": 123, // int
+			 *     "Address": "...", // string
+			 *     "Amount": "100000000" // bigint string in SELA
+			 *   },
+			 *   ...
+			 * ]
 			 * @param payloadJson is payload for register id related information in json format, the content of payload should have Id, Path, DataHash, Proof, and Sign.
 			 * @param memo input memo attribute for describing.
 			 * @param fee transaction fee set by user.
 			 * @return If success return the content of transaction in json format.
 			 */
 			virtual nlohmann::json CreateIDTransaction(
+			        const nlohmann::json &inputs,
 					const nlohmann::json &payloadJson,
 					const std::string &memo = "",
                     const std::string &fee = "10000") = 0;

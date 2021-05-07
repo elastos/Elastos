@@ -151,13 +151,10 @@ namespace Elastos {
 			virtual void RemoveCallback();
 
 			virtual nlohmann::json CreateTransaction(
-				const std::string &fromAddress,
-				const std::string &toAddress,
-				const std::string &amount,
-				const std::string &memo);
-
-			virtual nlohmann::json CreateConsolidateTransaction(
-				const std::string &memo);
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &outputs,
+                    const std::string &fee,
+                    const std::string &memo);
 
 			virtual nlohmann::json SignTransaction(
 				const nlohmann::json &tx,

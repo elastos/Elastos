@@ -96,8 +96,6 @@ namespace Elastos {
 
 			bool Deserialize(const ByteStream &stream, bool extend = false);
 
-			bool DeserializeOld(const ByteStream &stream, bool extend = false);
-
 			virtual bool DeserializeType(const ByteStream &istream);
 
 			uint64_t CalculateFee(uint64_t feePerKb);
@@ -117,10 +115,6 @@ namespace Elastos {
 			void SetVersion(uint8_t version);
 
 			const std::vector<OutputPtr> &GetOutputs() const;
-
-			void FixIndex();
-
-			OutputPtr OutputOfIndex(uint16_t fixedIndex) const;
 
 			void SetOutputs(const std::vector<OutputPtr> &outputs);
 

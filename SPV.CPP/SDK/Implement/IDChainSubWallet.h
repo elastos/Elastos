@@ -36,6 +36,7 @@ namespace Elastos {
 			virtual ~IDChainSubWallet();
 
 			virtual nlohmann::json CreateIDTransaction(
+			        const nlohmann::json &inputsJson,
 					const nlohmann::json &payloadJson,
 					const std::string &memo = "",
                     const std::string &fee = "10000");

@@ -75,12 +75,9 @@ namespace Elastos {
 			virtual nlohmann::json GetAllPublicKeys(uint32_t start, uint32_t count) const;
 
 			virtual nlohmann::json CreateTransaction(
-				const std::string &fromAddress,
-				const std::string &targetAddress,
-				const std::string &amount,
-				const std::string &memo);
-
-			virtual nlohmann::json CreateConsolidateTransaction(
+				const nlohmann::json &inputsJson,
+				const nlohmann::json &outputsJson,
+				const std::string &fee,
 				const std::string &memo);
 
 			virtual nlohmann::json SignTransaction(
@@ -91,9 +88,6 @@ namespace Elastos {
 				const nlohmann::json &rawTransaction) const;
 
 			virtual std::string ConvertToRawTransaction(const nlohmann::json &tx);
-
-			virtual nlohmann::json GetAssetInfo(
-				const std::string &assetID) const;
 
 		protected:
 			friend class MasterWallet;
@@ -108,10 +102,6 @@ namespace Elastos {
 					  const ChainConfigPtr &config,
 					  const CoinInfoPtr &info);
 
-			TransactionPtr CreateConsolidateTx(
-				const std::string &memo,
-				const uint256 &asset) const;
-
 			virtual void fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
 													  const nlohmann::json &desc, uint32_t confirms);
 
@@ -120,6 +110,10 @@ namespace Elastos {
 			void EncodeTx(nlohmann::json &result, const TransactionPtr &tx) const;
 
 			TransactionPtr DecodeTx(const nlohmann::json &encodedTx) const;
+
+			bool UTXOFromJson(UTXOSet &utxo, const nlohmann::json &j);
+
+			bool OutputsFromJson(OutputArray &outputs, const nlohmann::json &j);
 
 		protected:
 			WalletManagerPtr _walletManager;
