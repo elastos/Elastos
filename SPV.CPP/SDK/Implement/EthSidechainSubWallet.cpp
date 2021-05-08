@@ -862,7 +862,15 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			return j;
 		}
 
-		nlohmann::json EthSidechainSubWallet::GetAllPublicKeys(uint32_t start, uint32_t count) const {
+        std::vector<std::string> EthSidechainSubWallet::GetLastAddresses(bool internal) const {
+
+		}
+
+        void EthSidechainSubWallet::UpdateUsedAddress(const std::vector<std::string> &usedAddresses) const {
+
+		}
+
+        nlohmann::json EthSidechainSubWallet::GetAllPublicKeys(uint32_t start, uint32_t count) const {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("s: {}", start);
 			ArgInfo("c: {}", count);

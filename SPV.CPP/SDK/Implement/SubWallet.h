@@ -72,6 +72,10 @@ namespace Elastos {
 
 			virtual nlohmann::json GetAllAddress(uint32_t start, uint32_t count, bool internal = false) const;
 
+            virtual std::vector<std::string> GetLastAddresses(bool internal) const;
+
+            virtual void UpdateUsedAddress(const std::vector<std::string> &usedAddresses) const;
+
 			virtual nlohmann::json GetAllPublicKeys(uint32_t start, uint32_t count) const;
 
 			virtual nlohmann::json CreateTransaction(

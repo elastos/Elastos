@@ -121,7 +121,38 @@ namespace Elastos {
 			return j;
 		}
 
-		nlohmann::json SubWallet::GetAllPublicKeys(uint32_t start, uint32_t count) const {
+        std::vector<std::string> SubWallet::GetLastAddresses(bool internal) const {
+            WalletPtr wallet = _walletManager->GetWallet();
+            ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
+
+            AddressArray addresses = wallet->GetLastAddresses(internal);
+
+            std::vector<std::string> addr;
+            for (Address &a : addresses)
+                addr.push_back(a.String());
+
+            nlohmann::json j = addr;
+            ArgInfo("r => {}", j.dump());
+
+            return addr;
+		}
+
+        void SubWallet::UpdateUsedAddress(const std::vector<std::string> &usedAddresses) const {
+            nlohmann::json addressJson = usedAddresses;
+            WalletPtr wallet = _walletManager->GetWallet();
+
+		    ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
+		    ArgInfo("usedAddresses: {}", addressJson.dump());
+
+            AddressSet addressSet;
+		    for (const std::string &addr : usedAddresses)
+		        addressSet.insert(Address(addr));
+
+		    if (!addressSet.empty())
+                wallet->UpdateUsedAddresses(addressSet);
+		}
+
+        nlohmann::json SubWallet::GetAllPublicKeys(uint32_t start, uint32_t count) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("start: {}", start);
 			ArgInfo("count: {}", count);

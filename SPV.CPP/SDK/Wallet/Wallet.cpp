@@ -40,8 +40,7 @@ namespace Elastos {
 
 			std::vector<std::string> txHashDPoS, txHashCRC, txHashProposal, txHashDID;
 
-			AddressSet usedAddress = LoadUsedAddress();
-			_subAccount->SetUsedAddresses(usedAddress);
+			LoadUsedAddress();
 
 			_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
 			_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
@@ -51,7 +50,7 @@ namespace Elastos {
 		}
 
 		void Wallet::ClearData() {
-			_database.lock()->ClearData();
+			_database->ClearData();
 		}
 
 		TransactionPtr Wallet::CreateTransaction(uint8_t type,
@@ -121,6 +120,10 @@ namespace Elastos {
 		Address Wallet::GetReceiveAddress() const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return _subAccount->UnusedAddresses(1, 0)[0];
+		}
+
+        AddressArray Wallet::GetLastAddresses(bool internal) const {
+            return _subAccount->GetLastAddress(internal);
 		}
 
 		size_t Wallet::GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const {
@@ -230,29 +233,26 @@ namespace Elastos {
 			return _subAccount->UnusedAddresses(gapLimit, internal);
 		}
 
-		void Wallet::usedAddressSaved(const AddressSet &usedAddress, bool replace) {
-			if (!_database.expired()) {
-				std::vector<std::string> addresses;
-				for (const Address &a : usedAddress)
-					addresses.push_back(a.String());
-				_database.lock()->PutUsedAddresses(addresses, replace);
-			}
-		}
+        void Wallet::UpdateUsedAddresses(const AddressSet &usedAddress) {
+            std::vector<std::string> addresses;
+            for (const Address &a : usedAddress) {
+                if (_subAccount->AddUsedAddress(a))
+                    addresses.push_back(a.String());
+            }
 
-		AddressSet Wallet::LoadUsedAddress() const {
-			if (!_database.expired()) {
+            if (!addresses.empty()) {
+                _database->PutUsedAddresses(addresses, false);
 
-				AddressSet usedAddress;
-				std::vector<std::string> usedAddr = _database.lock()->GetUsedAddresses();
+                _subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
+                _subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
+            }
+        }
 
-				for (const std::string &addr : usedAddr)
-					usedAddress.insert(Address(addr));
-
-				return usedAddress;
-			}
-
-			return {};
-		}
+        void Wallet::LoadUsedAddress() {
+            std::vector<std::string> usedAddr = _database->GetUsedAddresses();
+            for (const std::string &addr : usedAddr)
+                _subAccount->AddUsedAddress(Address(addr));
+        }
 
 	}
 }

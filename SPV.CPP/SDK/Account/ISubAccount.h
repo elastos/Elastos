@@ -57,6 +57,8 @@ namespace Elastos {
 
 			virtual bool AddUsedAddress(const Address &address) = 0;
 
+			virtual AddressArray GetLastAddress(bool internal) const = 0;
+
 			virtual size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const = 0;
 
 			virtual size_t GetAllCID(AddressArray &did, uint32_t start, size_t count) const = 0;

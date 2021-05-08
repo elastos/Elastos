@@ -101,6 +101,19 @@ namespace Elastos {
 					bool internal = false) const = 0;
 
 			/**
+			 * Get last 10 external addresses or 5 internal addresses
+			 * @internal indicate if addresses are change(internal) address or not
+			 * @return
+			 */
+			virtual std::vector<std::string> GetLastAddresses(bool internal) const = 0;
+
+			/**
+			 * @param usedAddresses
+			 * @return none
+			 */
+			virtual void UpdateUsedAddress(const std::vector<std::string> &usedAddresses) const = 0;
+
+			/**
 			 * Get all created public key list in JSON format. The parameters of start and count are used for the purpose of paging.
 			 * @param start to specify start index of all public key list.
 			 * @param count specifies the count of public keys we need.

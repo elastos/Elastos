@@ -100,6 +100,21 @@ namespace Elastos {
 			return _usedAddrs.insert(address).second;
 		}
 
+        AddressArray SubAccount::GetLastAddress(bool internal) const {
+            AddressArray address;
+            if (internal) {
+                for (size_t i = _internalChain.size(); i > _internalChain.size() - SEQUENCE_GAP_LIMIT_INTERNAL; --i) {
+                    address.push_back(_internalChain[i - 1]);
+                }
+            } else {
+                for (size_t i = _externalChain.size(); i > _externalChain.size() - SEQUENCE_GAP_LIMIT_EXTERNAL; --i) {
+                    address.push_back(_externalChain[i - 1]);
+                }
+            }
+
+            return address;
+		}
+
 		size_t SubAccount::GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const {
 			addr.clear();
 			size_t maxCount = 0;

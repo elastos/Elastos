@@ -52,7 +52,6 @@ namespace Elastos {
 		typedef boost::shared_ptr<TransactionInput> InputPtr;
 		typedef boost::shared_ptr<IOutputPayload> OutputPayloadPtr;
 		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;
-		typedef boost::weak_ptr<DatabaseManager> DatabaseManagerWeakPtr;
 
 		class Wallet : public Lockable {
 		public:
@@ -73,6 +72,8 @@ namespace Elastos {
 
 			// returns the first unused external address
 			Address GetReceiveAddress() const;
+
+			AddressArray GetLastAddresses(bool internal) const;
 
 			size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const;
 
@@ -110,19 +111,17 @@ namespace Elastos {
 
 			AddressArray UnusedAddresses(uint32_t gapLimit, bool internal);
 
-		private:
-			void usedAddressSaved(const AddressSet &usedAddress, bool replace = false);
+            void UpdateUsedAddresses(const AddressSet &usedAddress);
 
-			AddressSet LoadUsedAddress() const;
+		private:
+			void LoadUsedAddress();
 
 		protected:
-			friend class GroupedAsset;
-
 			std::string _walletID, _chainID;
 
 			SubAccountPtr _subAccount;
 
-			DatabaseManagerWeakPtr _database;
+			DatabaseManagerPtr _database;
 		};
 
 		typedef boost::shared_ptr<Wallet> WalletPtr;
