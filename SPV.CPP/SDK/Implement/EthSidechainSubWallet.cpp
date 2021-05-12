@@ -863,7 +863,7 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 		}
 
         std::vector<std::string> EthSidechainSubWallet::GetLastAddresses(bool internal) const {
-
+            return {};
 		}
 
         void EthSidechainSubWallet::UpdateUsedAddress(const std::vector<std::string> &usedAddresses) const {

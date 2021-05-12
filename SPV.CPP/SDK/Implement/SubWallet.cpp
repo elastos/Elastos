@@ -336,17 +336,6 @@ namespace Elastos {
 			return rawtx;
 		}
 
-		void SubWallet::fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
-													 const nlohmann::json &desc, uint32_t confirms) {
-			boost::mutex::scoped_lock scoped_lock(lock);
-
-			if (_callback) {
-				_callback->OnTransactionStatusChanged(txid.GetHex(), status, desc, confirms);
-			} else {
-				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
-			}
-		}
-
 		const CoinInfoPtr &SubWallet::GetCoinInfo() const {
 			return _info;
 		}

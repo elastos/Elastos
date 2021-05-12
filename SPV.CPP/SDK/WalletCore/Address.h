@@ -109,7 +109,7 @@ namespace Elastos {
 		};
 
 		typedef boost::shared_ptr<Address> AddressPtr;
-		typedef struct {
+		typedef struct _AddressCompare {
 			bool operator() (const Address &x, const Address &y) const {
 				return x < y;
 			}

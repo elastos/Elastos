@@ -36,58 +36,6 @@ namespace Elastos {
 		public:
 			virtual ~ISubWalletCallback() noexcept {}
 
-			/**
-			 * Callback method fired when status of a transaction changed.
-			 * @param txid indicate hash of the transaction.
-			 * @param status can be "Added", "Deleted" or "Updated".
-			 * @param desc is an detail description of transaction status.
-			 * @param confirms is confirm count util this callback fired.
-			 */
-			virtual void OnTransactionStatusChanged(
-					const std::string &txid,
-					const std::string &status,
-					const nlohmann::json &desc,
-					uint32_t confirms) = 0;
-
-			/**
-			 * Callback method fired when best block chain height increased. This callback could be used to show progress.
-			 * @param progressInfo progress info contain detail as below:
-			 * {
-			 *     "Progress": 50,                    # 0% ~ 100%
-			 *     "BytesPerSecond": 12345678,        # 12.345678 MByte / s
-			 *     "LastBlockTime": 1573799697,       # timestamp of last block
-			 *     "DownloadPeer": "127.0.0.1"        # IP address of node
-			 * }
-			 */
-			virtual void OnBlockSyncProgress(const nlohmann::json &progressInfo) = 0;
-
-			/**
-			 * Callback method fired when balance changed.
-			 * @param asset ID.
-			 * @param balance after changed.
-			 */
-			virtual void OnBalanceChanged(const std::string &asset, const std::string &balance) = 0;
-
-			/**
-			 * Callback method fired when tx published.
-			 * @param hash of published tx.
-			 * @param result in json format.
-			 */
-			virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) = 0;
-
-			/**
-			 * Callback method fired when a new asset registered.
-			 * @param asset ID.
-			 * @param information of asset.
-			 */
-			virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info) = 0;
-
-			/**
-			 * Callback method fired when status of connection changed.
-			 * @param status value can be one of below: "Connecting", "Connected", "Disconnected"
-			 */
-			virtual void OnConnectStatusChanged(const std::string &status) = 0;
-
 			//////////////////////////////////////////////////
 			/*            eth sidechain callback            */
 			//////////////////////////////////////////////////

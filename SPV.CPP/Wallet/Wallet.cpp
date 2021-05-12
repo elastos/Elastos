@@ -155,57 +155,6 @@ public:
 		_walletID(masterWalletID),
 		_chainID(walletID) {}
 
-	virtual void OnTransactionStatusChanged(
-		const std::string &txid, const std::string &status,
-		const nlohmann::json &desc, uint32_t confirms) {
-		if (verboseMode)
-			std::cout << "*** Wallet " << _walletID << ":" << _chainID << " transaction: "
-					  << txid << " changed to " << status << ", confirms: "
-					  << confirms << std::endl;
-	}
-
-	virtual void OnBlockSyncStarted() {
-		if (verboseMode)
-			std::cout << "*** Wallet " << _walletID << ":" << _chainID << " sycn started." << std::endl;
-	}
-
-	virtual void OnBlockSyncProgress(const nlohmann::json &progressInfo) {
-		if (verboseMode)
-			std::cout << "*** Wallet " << _walletID << ":" << _chainID << " syncing:"
-					  << progressInfo.dump() << std::endl;
-
-		masterWalletData[_walletID][_chainID].SetSyncProgress(progressInfo["Progress"].get<int>());
-		masterWalletData[_walletID][_chainID].SetDownloadPeer(progressInfo["DownloadPeer"].get<std::string>());
-		masterWalletData[_walletID][_chainID].SetSpeed(progressInfo["BytesPerSecond"].get<int>());
-		masterWalletData[_walletID][_chainID].SetLastBlockTime(progressInfo["LastBlockTime"].get<time_t>());
-	}
-
-	virtual void OnBlockSyncStopped() {
-		if (verboseMode)
-			std::cout << "*** Wallet " << _chainID << " sync stopped." << std::endl;
-	}
-
-	virtual void OnBalanceChanged(const std::string &asset, const std::string &balance) {
-		if (verboseMode)
-			std::cout << "*** Wallet " << _chainID << " balance changed: "
-					  << balance << std::endl;
-	}
-
-	virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) {
-		if (verboseMode)
-			std::cout << "*** Wallet " << _chainID << " public a new transaction: "
-					  << hash << std::endl;
-	}
-
-	virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info) {
-	}
-
-	virtual void OnConnectStatusChanged(const std::string &status) {
-		if (verboseMode)
-			std::cout << "*** Wallet " << _chainID << " connection status: "
-					  << status << std::endl;
-	}
-
 	virtual void OnETHSCEventHandled(const nlohmann::json &event) {
 
 	}

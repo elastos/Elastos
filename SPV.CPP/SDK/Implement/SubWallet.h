@@ -106,9 +106,6 @@ namespace Elastos {
 					  const ChainConfigPtr &config,
 					  const CoinInfoPtr &info);
 
-			virtual void fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
-													  const nlohmann::json &desc, uint32_t confirms);
-
 			const CoinInfoPtr &GetCoinInfo() const;
 
 			void EncodeTx(nlohmann::json &result, const TransactionPtr &tx) const;
