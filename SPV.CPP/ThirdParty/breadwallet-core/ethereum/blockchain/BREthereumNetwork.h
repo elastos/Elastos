@@ -92,10 +92,16 @@ extern const BREthereumNetwork ethereumMainnet;
 extern const BREthereumNetwork ethereumTestnet;
 extern const BREthereumNetwork ethereumRinkeby;
 extern const BREthereumNetwork ethereumPrvnet;
+
 extern const BREthereumNetwork ethereumDIDMainnet;
 extern const BREthereumNetwork ethereumDIDTestnet;
 extern const BREthereumNetwork ethereumDIDRinkeby;
 extern const BREthereumNetwork ethereumDIDPrvnet;
+
+extern const BREthereumNetwork ethereumHecoMainnet;
+extern const BREthereumNetwork ethereumHecoTestnet;
+extern const BREthereumNetwork ethereumHecoRinkeby;
+extern const BREthereumNetwork ethereumHecoPrvnet;
 #ifdef __cplusplus
 }
 #endif

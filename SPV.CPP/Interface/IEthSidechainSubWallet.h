@@ -93,7 +93,13 @@ namespace Elastos {
 
             virtual std::string GetBalance() const = 0;
 
-		};
+            virtual void AddCallback(ISubWalletCallback *subCallback) = 0;
+
+            virtual void RemoveCallback() = 0;
+
+            virtual nlohmann::json PublishTransaction(const nlohmann::json &tx) = 0;
+
+        };
 
 	}
 }

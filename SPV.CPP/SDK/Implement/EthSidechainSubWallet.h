@@ -172,16 +172,9 @@ namespace Elastos {
 
 			virtual std::string ConvertToRawTransaction(const nlohmann::json &tx);
 
-			virtual nlohmann::json GetAssetInfo(
-				const std::string &assetID) const;
-
-			virtual nlohmann::json GetLastBlockInfo() const;
-
 			virtual void StartP2P();
 
 			virtual void StopP2P();
-
-			virtual void FlushData();
 
 		protected:
 			friend class MasterWallet;
@@ -200,7 +193,6 @@ namespace Elastos {
 			ClientPtr _client;
 			MasterWallet *_parent;
 			CoinInfoPtr _info;
-			ChainConfigPtr _config;
 			ISubWalletCallback *_callback;
 		};
 

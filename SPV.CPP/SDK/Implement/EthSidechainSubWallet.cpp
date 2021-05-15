@@ -176,7 +176,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 													 MasterWallet *parent,
 													 const std::string &netType) :
 													 _info(info),
-													 _config(config),
 													 _callback(nullptr),
 													 _parent(parent) {
 
@@ -207,6 +206,18 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
                     net = ethereumDIDRinkeby;
                 } else if (netType == "PrvNet") {
                     net = ethereumDIDPrvnet;
+                } else {
+                    net = NULL;
+                }
+            } else if (info->GetChainID() == "ETHHECO") {
+                if (netType == "MainNet") {
+                    net = ethereumHecoMainnet;
+                } else if (netType == "TestNet") {
+                    net = ethereumHecoTestnet;
+                } else if (netType == "RegTest") {
+                    net = ethereumHecoRinkeby;
+                } else if (netType == "PrvNet") {
+                    net = ethereumHecoPrvnet;
                 } else {
                     net = NULL;
                 }
@@ -985,36 +996,12 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			return "";
 		}
 
-		nlohmann::json EthSidechainSubWallet::GetAssetInfo(const std::string &assetID) const {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("asset: {}", assetID);
-
-			nlohmann::json j;
-
-			ArgInfo("r => {}", j.dump());
-			return j;
-		}
-
-		nlohmann::json EthSidechainSubWallet::GetLastBlockInfo() const {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			nlohmann::json j;
-
-			j["BlockNumber"] = _client->_ewm->getBlockHeight();
-
-			ArgInfo("r => {}", j.dump());
-			return j;
-		}
-
 		void EthSidechainSubWallet::StartP2P() {
 			_client->_ewm->connect();
 		}
 
 		void EthSidechainSubWallet::StopP2P() {
 			_client->_ewm->disconnect();
-		}
-
-		void EthSidechainSubWallet::FlushData() {
-
 		}
 
 	}
