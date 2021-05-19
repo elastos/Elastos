@@ -1,0 +1,532 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		11267029238CC7120086740D /* SPVWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 11267027238CC7120086740D /* SPVWrapper.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1126705C238CCBEE0086740D /* SPV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1126705B238CCBEE0086740D /* SPV.swift */; };
+		11267060238CCC930086740D /* libc++.1.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126705F238CCC890086740D /* libc++.1.tbd */; };
+		11267061238CCC930086740D /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126705D238CCC890086740D /* libc++.tbd */; };
+		11267062238CCC930086740D /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126705E238CCC890086740D /* libc++abi.tbd */; };
+		11267064238CCCA60086740D /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267063238CCC9C0086740D /* libz.tbd */; };
+		115A373424404D8F005549CC /* CSPVWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115A373224404D8F005549CC /* CSPVWrapper.swift */; };
+		115A373524404D8F005549CC /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 115A373324404D8F005549CC /* spvadapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		11601C9D2393712F008E407C /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11601C9C2393712F008E407C /* ExtensionInt.swift */; };
+		1170A7E6242DC1B7009904B7 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC92396AC0000AE3B42 /* libboost_filesystem.a */; };
+		1170A7E7242DC1B7009904B7 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC02396AC0000AE3B42 /* libboost_system.a */; };
+		1170A7E8242DC1B7009904B7 /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC42396AC0000AE3B42 /* libboost_thread.a */; };
+		1170A7E9242DC1B7009904B7 /* libcjson.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC22396AC0000AE3B42 /* libcjson.a */; };
+		1170A7EA242DC1B7009904B7 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC62396AC0000AE3B42 /* libcrypto.a */; };
+		1170A7EB242DC1B7009904B7 /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC52396AC0000AE3B42 /* libcrystal.a */; };
+		1170A7EC242DC1B7009904B7 /* libcunit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC82396AC0000AE3B42 /* libcunit.a */; };
+		1170A7ED242DC1B7009904B7 /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCD2396AC0000AE3B42 /* libcurl.a */; };
+		1170A7EE242DC1B7009904B7 /* libfruit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC32396AC0000AE3B42 /* libfruit.a */; };
+		1170A7EF242DC1B7009904B7 /* libspdlog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC72396AC0000AE3B42 /* libspdlog.a */; };
+		1170A7F0242DC1B7009904B7 /* libspvadapter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCA2396AC0000AE3B42 /* libspvadapter.a */; };
+		1170A7F1242DC1B8009904B7 /* libspvsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC12396AC0000AE3B42 /* libspvsdk.a */; };
+		1170A7F2242DC1B8009904B7 /* libsqlite3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CBF2396AC0000AE3B42 /* libsqlite3.a */; };
+		1170A7F3242DC1B8009904B7 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCB2396AC0000AE3B42 /* libssl.a */; };
+		1170A7F4242DC1B8009904B7 /* libtls.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCC2396AC0000AE3B42 /* libtls.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		11107CBF2396AC0000AE3B42 /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = "SPVWrapper/lib/-iphonesimulator/libsqlite3.a"; sourceTree = "<group>"; };
+		11107CC02396AC0000AE3B42 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = "SPVWrapper/lib/-iphonesimulator/libboost_system.a"; sourceTree = "<group>"; };
+		11107CC12396AC0000AE3B42 /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = "SPVWrapper/lib/-iphonesimulator/libspvsdk.a"; sourceTree = "<group>"; };
+		11107CC22396AC0000AE3B42 /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = "SPVWrapper/lib/-iphonesimulator/libcjson.a"; sourceTree = "<group>"; };
+		11107CC32396AC0000AE3B42 /* libfruit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfruit.a; path = "SPVWrapper/lib/-iphonesimulator/libfruit.a"; sourceTree = "<group>"; };
+		11107CC42396AC0000AE3B42 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = "SPVWrapper/lib/-iphonesimulator/libboost_thread.a"; sourceTree = "<group>"; };
+		11107CC52396AC0000AE3B42 /* libcrystal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrystal.a; path = "SPVWrapper/lib/-iphonesimulator/libcrystal.a"; sourceTree = "<group>"; };
+		11107CC62396AC0000AE3B42 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "SPVWrapper/lib/-iphonesimulator/libcrypto.a"; sourceTree = "<group>"; };
+		11107CC72396AC0000AE3B42 /* libspdlog.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspdlog.a; path = "SPVWrapper/lib/-iphonesimulator/libspdlog.a"; sourceTree = "<group>"; };
+		11107CC82396AC0000AE3B42 /* libcunit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcunit.a; path = "SPVWrapper/lib/-iphonesimulator/libcunit.a"; sourceTree = "<group>"; };
+		11107CC92396AC0000AE3B42 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = "SPVWrapper/lib/-iphonesimulator/libboost_filesystem.a"; sourceTree = "<group>"; };
+		11107CCA2396AC0000AE3B42 /* libspvadapter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvadapter.a; path = "SPVWrapper/lib/-iphonesimulator/libspvadapter.a"; sourceTree = "<group>"; };
+		11107CCB2396AC0000AE3B42 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "SPVWrapper/lib/-iphonesimulator/libssl.a"; sourceTree = "<group>"; };
+		11107CCC2396AC0000AE3B42 /* libtls.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtls.a; path = "SPVWrapper/lib/-iphonesimulator/libtls.a"; sourceTree = "<group>"; };
+		11107CCD2396AC0000AE3B42 /* libcurl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl.a; path = "SPVWrapper/lib/-iphonesimulator/libcurl.a"; sourceTree = "<group>"; };
+		11267024238CC7120086740D /* SPVWrapper.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SPVWrapper.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		11267027238CC7120086740D /* SPVWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPVWrapper.h; sourceTree = "<group>"; };
+		11267028238CC7120086740D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		11267039238CCAA70086740D /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = SPVWrapper/lib/libboost_filesystem.a; sourceTree = "<group>"; };
+		1126703A238CCAA70086740D /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhdkey.a; path = SPVWrapper/lib/libhdkey.a; sourceTree = "<group>"; };
+		1126703B238CCAA70086740D /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = SPVWrapper/lib/libspvsdk.a; sourceTree = "<group>"; };
+		1126703C238CCAA70086740D /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = SPVWrapper/lib/libboost_system.a; sourceTree = "<group>"; };
+		1126703D238CCAA70086740D /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = SPVWrapper/lib/libboost_thread.a; sourceTree = "<group>"; };
+		1126703E238CCAA70086740D /* libcrystal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrystal.a; path = SPVWrapper/lib/libcrystal.a; sourceTree = "<group>"; };
+		1126703F238CCAA70086740D /* libspvadapter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvadapter.a; path = SPVWrapper/lib/libspvadapter.a; sourceTree = "<group>"; };
+		11267040238CCAA70086740D /* libfruit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfruit.a; path = SPVWrapper/lib/libfruit.a; sourceTree = "<group>"; };
+		11267041238CCAA70086740D /* libcunit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcunit.a; path = SPVWrapper/lib/libcunit.a; sourceTree = "<group>"; };
+		11267042238CCAA80086740D /* libspdlog.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspdlog.a; path = SPVWrapper/lib/libspdlog.a; sourceTree = "<group>"; };
+		11267043238CCAA80086740D /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = SPVWrapper/lib/libssl.a; sourceTree = "<group>"; };
+		11267044238CCAA80086740D /* libtls.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtls.a; path = SPVWrapper/lib/libtls.a; sourceTree = "<group>"; };
+		11267045238CCAA80086740D /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = SPVWrapper/lib/libcrypto.a; sourceTree = "<group>"; };
+		11267046238CCAA80086740D /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = SPVWrapper/lib/libcjson.a; sourceTree = "<group>"; };
+		11267047238CCAA80086740D /* libcurl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl.a; path = SPVWrapper/lib/libcurl.a; sourceTree = "<group>"; };
+		11267048238CCAA80086740D /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = SPVWrapper/lib/libsqlite3.a; sourceTree = "<group>"; };
+		1126705B238CCBEE0086740D /* SPV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SPV.swift; sourceTree = "<group>"; };
+		1126705D238CCC890086740D /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
+		1126705E238CCC890086740D /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++abi.tbd"; sourceTree = DEVELOPER_DIR; };
+		1126705F238CCC890086740D /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
+		11267063238CCC9C0086740D /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
+		1139AF242394B20600C609B1 /* libtls.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtls.a; path = "SPVWrapper/lib/-iphoneosimulator/libtls.a"; sourceTree = "<group>"; };
+		1139AF252394B20600C609B1 /* libfruit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfruit.a; path = "SPVWrapper/lib/-iphoneosimulator/libfruit.a"; sourceTree = "<group>"; };
+		1139AF262394B20600C609B1 /* libcurl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl.a; path = "SPVWrapper/lib/-iphoneosimulator/libcurl.a"; sourceTree = "<group>"; };
+		1139AF272394B20600C609B1 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "SPVWrapper/lib/-iphoneosimulator/libcrypto.a"; sourceTree = "<group>"; };
+		1139AF282394B20700C609B1 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = "SPVWrapper/lib/-iphoneosimulator/libboost_system.a"; sourceTree = "<group>"; };
+		1139AF292394B20700C609B1 /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = "SPVWrapper/lib/-iphoneosimulator/libcjson.a"; sourceTree = "<group>"; };
+		1139AF2A2394B20700C609B1 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "SPVWrapper/lib/-iphoneosimulator/libssl.a"; sourceTree = "<group>"; };
+		1139AF2B2394B20700C609B1 /* libcunit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcunit.a; path = "SPVWrapper/lib/-iphoneosimulator/libcunit.a"; sourceTree = "<group>"; };
+		1139AF2C2394B20700C609B1 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = "SPVWrapper/lib/-iphoneosimulator/libboost_filesystem.a"; sourceTree = "<group>"; };
+		1139AF2D2394B20700C609B1 /* libspdlog.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspdlog.a; path = "SPVWrapper/lib/-iphoneosimulator/libspdlog.a"; sourceTree = "<group>"; };
+		1139AF2E2394B20700C609B1 /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = "SPVWrapper/lib/-iphoneosimulator/libsqlite3.a"; sourceTree = "<group>"; };
+		1139AF2F2394B20700C609B1 /* libcrystal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrystal.a; path = "SPVWrapper/lib/-iphoneosimulator/libcrystal.a"; sourceTree = "<group>"; };
+		1139AF302394B20700C609B1 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = "SPVWrapper/lib/-iphoneosimulator/libboost_thread.a"; sourceTree = "<group>"; };
+		1139AF312394B20700C609B1 /* libspvadapter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvadapter.a; path = "SPVWrapper/lib/-iphoneosimulator/libspvadapter.a"; sourceTree = "<group>"; };
+		1139AF322394B20700C609B1 /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = "SPVWrapper/lib/-iphoneosimulator/libspvsdk.a"; sourceTree = "<group>"; };
+		115A373224404D8F005549CC /* CSPVWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSPVWrapper.swift; sourceTree = "<group>"; };
+		115A373324404D8F005549CC /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spvadapter.h; sourceTree = "<group>"; };
+		11601C9C2393712F008E407C /* ExtensionInt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtensionInt.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		11267021238CC7120086740D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1170A7E7242DC1B7009904B7 /* libboost_system.a in Frameworks */,
+				11267062238CCC930086740D /* libc++abi.tbd in Frameworks */,
+				1170A7F4242DC1B8009904B7 /* libtls.a in Frameworks */,
+				1170A7F3242DC1B8009904B7 /* libssl.a in Frameworks */,
+				11267061238CCC930086740D /* libc++.tbd in Frameworks */,
+				1170A7F0242DC1B7009904B7 /* libspvadapter.a in Frameworks */,
+				1170A7EC242DC1B7009904B7 /* libcunit.a in Frameworks */,
+				1170A7E6242DC1B7009904B7 /* libboost_filesystem.a in Frameworks */,
+				1170A7ED242DC1B7009904B7 /* libcurl.a in Frameworks */,
+				1170A7EB242DC1B7009904B7 /* libcrystal.a in Frameworks */,
+				1170A7E8242DC1B7009904B7 /* libboost_thread.a in Frameworks */,
+				1170A7E9242DC1B7009904B7 /* libcjson.a in Frameworks */,
+				11267064238CCCA60086740D /* libz.tbd in Frameworks */,
+				11267060238CCC930086740D /* libc++.1.tbd in Frameworks */,
+				1170A7F1242DC1B8009904B7 /* libspvsdk.a in Frameworks */,
+				1170A7EE242DC1B7009904B7 /* libfruit.a in Frameworks */,
+				1170A7F2242DC1B8009904B7 /* libsqlite3.a in Frameworks */,
+				1170A7EF242DC1B7009904B7 /* libspdlog.a in Frameworks */,
+				1170A7EA242DC1B7009904B7 /* libcrypto.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1126701A238CC7120086740D = {
+			isa = PBXGroup;
+			children = (
+				11267026238CC7120086740D /* SPVWrapper */,
+				11267025238CC7120086740D /* Products */,
+				11267038238CCAA70086740D /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		11267025238CC7120086740D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				11267024238CC7120086740D /* SPVWrapper.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		11267026238CC7120086740D /* SPVWrapper */ = {
+			isa = PBXGroup;
+			children = (
+				115A373124404D8F005549CC /* include */,
+				11601C9C2393712F008E407C /* ExtensionInt.swift */,
+				1126705B238CCBEE0086740D /* SPV.swift */,
+				11267027238CC7120086740D /* SPVWrapper.h */,
+				11267028238CC7120086740D /* Info.plist */,
+			);
+			path = SPVWrapper;
+			sourceTree = "<group>";
+		};
+		11267038238CCAA70086740D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1139AF2C2394B20700C609B1 /* libboost_filesystem.a */,
+				11107CC92396AC0000AE3B42 /* libboost_filesystem.a */,
+				1139AF282394B20700C609B1 /* libboost_system.a */,
+				1139AF302394B20700C609B1 /* libboost_thread.a */,
+				11107CC42396AC0000AE3B42 /* libboost_thread.a */,
+				1139AF292394B20700C609B1 /* libcjson.a */,
+				1139AF272394B20600C609B1 /* libcrypto.a */,
+				11107CC62396AC0000AE3B42 /* libcrypto.a */,
+				1139AF2F2394B20700C609B1 /* libcrystal.a */,
+				1139AF2B2394B20700C609B1 /* libcunit.a */,
+				1139AF262394B20600C609B1 /* libcurl.a */,
+				11107CC52396AC0000AE3B42 /* libcrystal.a */,
+				11107CC82396AC0000AE3B42 /* libcunit.a */,
+				11107CCD2396AC0000AE3B42 /* libcurl.a */,
+				1139AF252394B20600C609B1 /* libfruit.a */,
+				1139AF2D2394B20700C609B1 /* libspdlog.a */,
+				1139AF312394B20700C609B1 /* libspvadapter.a */,
+				11107CC22396AC0000AE3B42 /* libcjson.a */,
+				11107CC32396AC0000AE3B42 /* libfruit.a */,
+				11107CC72396AC0000AE3B42 /* libspdlog.a */,
+				11107CCA2396AC0000AE3B42 /* libspvadapter.a */,
+				1139AF322394B20700C609B1 /* libspvsdk.a */,
+				11107CC02396AC0000AE3B42 /* libboost_system.a */,
+				11107CC12396AC0000AE3B42 /* libspvsdk.a */,
+				1139AF2E2394B20700C609B1 /* libsqlite3.a */,
+				1139AF2A2394B20700C609B1 /* libssl.a */,
+				1139AF242394B20600C609B1 /* libtls.a */,
+				11107CBF2396AC0000AE3B42 /* libsqlite3.a */,
+				11107CCB2396AC0000AE3B42 /* libssl.a */,
+				11107CCC2396AC0000AE3B42 /* libtls.a */,
+				11267063238CCC9C0086740D /* libz.tbd */,
+				1126705F238CCC890086740D /* libc++.1.tbd */,
+				1126705D238CCC890086740D /* libc++.tbd */,
+				1126705E238CCC890086740D /* libc++abi.tbd */,
+				11267039238CCAA70086740D /* libboost_filesystem.a */,
+				1126703C238CCAA70086740D /* libboost_system.a */,
+				1126703D238CCAA70086740D /* libboost_thread.a */,
+				11267046238CCAA80086740D /* libcjson.a */,
+				11267045238CCAA80086740D /* libcrypto.a */,
+				1126703E238CCAA70086740D /* libcrystal.a */,
+				11267041238CCAA70086740D /* libcunit.a */,
+				11267047238CCAA80086740D /* libcurl.a */,
+				11267040238CCAA70086740D /* libfruit.a */,
+				1126703A238CCAA70086740D /* libhdkey.a */,
+				11267042238CCAA80086740D /* libspdlog.a */,
+				1126703F238CCAA70086740D /* libspvadapter.a */,
+				1126703B238CCAA70086740D /* libspvsdk.a */,
+				11267048238CCAA80086740D /* libsqlite3.a */,
+				11267043238CCAA80086740D /* libssl.a */,
+				11267044238CCAA80086740D /* libtls.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		115A373124404D8F005549CC /* include */ = {
+			isa = PBXGroup;
+			children = (
+				115A373224404D8F005549CC /* CSPVWrapper.swift */,
+				115A373324404D8F005549CC /* spvadapter.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		1126701F238CC7120086740D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				115A373524404D8F005549CC /* spvadapter.h in Headers */,
+				11267029238CC7120086740D /* SPVWrapper.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		11267023238CC7120086740D /* SPVWrapper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1126702C238CC7120086740D /* Build configuration list for PBXNativeTarget "SPVWrapper" */;
+			buildPhases = (
+				1126701F238CC7120086740D /* Headers */,
+				11267020238CC7120086740D /* Sources */,
+				11267021238CC7120086740D /* Frameworks */,
+				11267022238CC7120086740D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SPVWrapper;
+			productName = SPVWrapper;
+			productReference = 11267024238CC7120086740D /* SPVWrapper.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1126701B238CC7120086740D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1120;
+				ORGANIZATIONNAME = "李爱红";
+				TargetAttributes = {
+					11267023238CC7120086740D = {
+						CreatedOnToolsVersion = 11.2.1;
+					};
+				};
+			};
+			buildConfigurationList = 1126701E238CC7120086740D /* Build configuration list for PBXProject "SPVWrapper" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 1126701A238CC7120086740D;
+			productRefGroup = 11267025238CC7120086740D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				11267023238CC7120086740D /* SPVWrapper */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		11267022238CC7120086740D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		11267020238CC7120086740D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1126705C238CCBEE0086740D /* SPV.swift in Sources */,
+				11601C9D2393712F008E407C /* ExtensionInt.swift in Sources */,
+				115A373424404D8F005549CC /* CSPVWrapper.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1126702A238CC7120086740D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = iphonesimulator;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VALID_ARCHS = "x86_64 arm64";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		1126702B238CC7120086740D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = iphonesimulator;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = "x86_64 arm64";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		1126702D238CC7120086740D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = LFU7T9UYL5;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SPVWrapper/header",
+				);
+				INFOPLIST_FILE = SPVWrapper/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SPVWrapper/lib",
+					"$(PROJECT_DIR)/SPVWrapper/lib/-iphonesimulator",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				PRODUCT_BUNDLE_IDENTIFIER = elastos.SPVWrapper;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = iphonesimulator;
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "x86_64 arm64";
+			};
+			name = Debug;
+		};
+		1126702E238CC7120086740D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = LFU7T9UYL5;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SPVWrapper/header",
+				);
+				INFOPLIST_FILE = SPVWrapper/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SPVWrapper/lib",
+					"$(PROJECT_DIR)/SPVWrapper/lib/-iphonesimulator",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				PRODUCT_BUNDLE_IDENTIFIER = elastos.SPVWrapper;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = iphonesimulator;
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "x86_64 arm64";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1126701E238CC7120086740D /* Build configuration list for PBXProject "SPVWrapper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1126702A238CC7120086740D /* Debug */,
+				1126702B238CC7120086740D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1126702C238CC7120086740D /* Build configuration list for PBXNativeTarget "SPVWrapper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1126702D238CC7120086740D /* Debug */,
+				1126702E238CC7120086740D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1126701B238CC7120086740D /* Project object */;
+}
