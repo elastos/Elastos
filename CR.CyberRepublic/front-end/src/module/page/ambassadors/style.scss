@@ -1,0 +1,543 @@
+@import "../../../style/variable";
+@import "../../../style/color";
+
+$mobile-padding: $gap_0 0px;
+$landingPageWidth: 1152px;
+
+.p_training {
+  background: #ffffff;
+  text-align: left;
+
+  %container {
+    max-width: $landingPageWidth;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media only screen and (max-width: $mobile-width) {
+    padding: 0 24px;
+  }
+
+  .ebp-wrap {
+    padding: 0;
+  }
+
+  .training-header {
+
+    background-color: #031E28;
+    min-height: 750px;
+    position: relative;
+
+    @media only screen and (max-width: $mobile-width) {
+      min-height: 550px;
+    }
+
+    .circle-container {
+      position: absolute;
+      bottom: 50%;
+      left: $gap_5;
+
+      @media only screen and (max-width: $mobile-width) {
+        bottom: 68%;
+        left: $gap_5;
+      }
+
+      .circle {
+        display: block;
+        width: 100px;
+        height: 100px;
+
+        @media only screen and (max-width: $mobile-width) {
+          width: 25px;
+          height: 25px;
+        }
+      }
+    }
+
+    .right-box-container {
+      position: absolute;
+      top: $gap_4;
+      right: $gap_3;
+
+      @media only screen and (max-width: $mobile-width) {
+        top: 120px;
+        right: $gap_5;
+      }
+
+      .small-box {
+
+      }
+      .box {
+        margin-left: 50px;
+      }
+      img {
+        position: absolute;
+        top: 62.5px;
+        left: 62.5px;
+        width: 75px;
+        height: 75px;
+        @media only screen and (max-width: $mobile-width) {
+          top: 32.5px;
+          left: 57.5px;
+          width: 35px;
+          height: 35px;
+        }
+      }
+    }
+
+    .bottom-box-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
+
+    .connector-container {
+      position: absolute;
+      bottom: -21.5px;
+      right: 20%;
+    }
+
+    .small-box {
+      width: 50px;
+      height: 50px;
+      background-color: #434D72;
+      opacity: 0.4;
+      @media only screen and (max-width: $mobile-width) {
+        width: 25px;
+        height: 25px;
+      }
+    }
+
+    .box {
+      width: 100px;
+      height: 100px;
+      background-color: #434D72;
+      opacity: 0.4;
+
+
+      @media only screen and (max-width: $mobile-width) {
+        width: 50px;
+        height: 50px;
+      }
+    }
+
+    .container {
+
+      padding-top: 95px;
+
+      position: relative;
+      text-align: center;
+
+      // this floats behind the text
+      .rect-container {
+        z-index: 1;
+
+        position: absolute;
+        width: 100%;
+
+        .rect {
+          position: static;
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          border: 38px solid #434D72;
+          width: 450px;
+          height: 450px;
+          opacity: 0.4;
+          @media only screen and (max-width: $mobile-width) {
+            border: 12px solid #434D72;
+            width: 75%;
+            height: 300px;
+          }
+        }
+      }
+
+      .title {
+        margin-top: 106px;
+
+        font-family: "komu-a",sans-serif;
+        font-size: 75px;
+        color: $cr100_green;
+        @media only screen and (max-width: $mobile-width) {
+          margin-top: 75px;
+          font-size: 40px;
+        }
+      }
+
+      .content {
+        margin-top: 240px;
+
+        font-family: "synthese",sans-serif;
+        font-size: 24px;
+        color: white;
+
+        @media only screen and (max-width: $mobile-width) {
+          margin-top: 155px;
+        }
+
+        > .center {
+          margin-left: auto;
+          margin-right: auto;
+          width: 875px;
+          @media only screen and (max-width: $mobile-width) {
+            font-size: 12px;
+            width: 80%;
+          }
+
+          > .button {
+            margin-top: $gap_5;
+            width: 85%;
+            height: 60px;
+            font-size: 22px;
+            border-radius: unset;
+
+            @media only screen and (max-width: $mobile-width) {
+              margin-top: $gap_3;
+              width: 50%;
+              height: 45px;
+              font-size: 16px;
+            }
+          }
+        }
+
+        /*
+        ************************************************************************
+        Strike Text Green
+        ************************************************************************
+        */
+        .strike-text {
+          position: relative;
+          display: inline-block;
+
+          .strike-line {
+            position: absolute;
+            left: 0;
+            top: 24px;
+            width: 100%;
+            height: 12px;
+            background-color: #434D72;
+            opacity: 0.4;
+            z-index: 0;
+          }
+          .strike-line:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -14px;
+            width: 14px;
+            height: 12px;
+            background-color: #434D72;
+            z-index: 0;
+
+            @media only screen and (max-width: $mobile-width) {
+              left: -2px;
+              width: 2px;
+            }
+          }
+          .strike-line:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: auto;
+            right: -14px;
+            width: 14px;
+            height: 12px;
+            background-color: #434D72;
+
+            @media only screen and (max-width: $mobile-width) {
+              left: -2px;
+              width: 2px;
+            }
+          }
+          p {
+            position: relative;
+            z-index: 1;
+            padding-bottom: 0;
+          }
+
+          &.filler {
+            width: 100%;
+            height: 0;
+          }
+
+          &.mob {
+            display: none;
+          }
+        }
+      }
+
+      .title,
+      .content {
+        width: 100%;
+        position: absolute;
+        z-index: 5;
+      }
+    }
+  }
+
+  .evangelist {
+    min-height: 750px;
+
+    background-color: $bg_blue;
+    padding-top: 100px;
+
+    .container {
+      position: relative;
+      margin-left: auto;
+      margin-right: auto;
+      padding-bottom: $gap_5;
+
+      max-width: 915px;
+      background-color: #fff;
+
+      .left-box-container {
+        position: absolute;
+        top: -50px;
+        left: -50px;
+      }
+
+      .evangelist_logo {
+        position: absolute;
+        top: -$gap_0;
+        left: -gap_0;
+        @media only screen and (max-width: $mobile-width) {
+          left: $gap_4;
+          width: 150px;
+        }
+      }
+
+      .right-box-container {
+        position: absolute;
+        bottom: $gap_1;
+        right: -29.5px;
+      }
+    }
+
+    .title {
+      font-family: "synthese",sans-serif;
+      font-size: 36px;
+      padding-top: 102px;
+      text-align: center;
+    }
+
+    .content {
+      font-family: "synthese",sans-serif;
+      font-weight: 200;
+      font-size: 24px;
+      padding: 38px 80px 74px;
+      text-align: center;
+
+      @media only screen and (max-width: $mobile-width) {
+        padding: 38px 40px 74px !important;
+      }
+    }
+  }
+
+  .itinerary {
+
+    min-height: 750px;
+    background-color: #fff;
+    padding-top: 100px;
+    padding-bottom: $gap_5;
+    position: relative;
+
+    .connector {
+      position: absolute;
+      top: -92.5px;
+      left: $gap_5;
+    }
+
+    .title {
+      font-family: "synthese",sans-serif;
+      font-size: 48px;
+      padding-top: 102px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .content {
+      padding: $gap_5 0;
+      font-family: "synthese",sans-serif;
+      font-weight: 200;
+      font-size: 24px;
+      text-align: right;
+
+      .left-col {
+        padding-right: $gap_1;
+
+        img {
+          width: 80%;
+        }
+      }
+
+      .right-col {
+        padding-left: $gap_1;
+        text-align: left;
+
+        > div {
+          padding: $gap_1 0;
+        }
+      }
+
+      .label {
+        font-weight: bold;
+      }
+
+      .d_Row {
+        padding: $gap_5 0;
+        text-align: center;
+
+        button {
+          margin-top: $gap_3;
+          margin-bottom: $gap_0;
+          width: 80%;
+          height: 50px;
+          max-width: 300px;
+        }
+
+        .apply-soon {
+          font-style: italic;
+          font-size: 18px;
+        }
+      }
+    }
+  }
+
+  .c_Footer {
+    margin-top: 0;
+  }
+
+  .welcomeBox {
+    max-width: 800px;
+    margin: $gap_5 auto;
+    padding: $gap_4;
+    font-size: 20px;
+    text-align: center;
+    background: $bg_blue;
+    position: relative;
+
+    .cr100_logo {
+      position: absolute;
+      top: -$gap_4;
+      left: -$gap_4;
+    }
+
+    .oomph_box {
+      position: absolute;
+      bottom: -$gap_2;
+      right: -$gap_3;
+    }
+
+    .title {
+      font-size: 36px;
+      font-weight: 400;
+      margin-bottom: 38px;
+      font-family: 'Synthese', sans-serif;
+    }
+
+    .content {
+
+      margin-bottom: $gap_1;
+
+      p {
+        font-family: "synthese", sans-serif;
+        font-weight: 200;
+        font-size: 18px;
+        margin: 38px 0;
+        text-align: center;
+      }
+    }
+  }
+
+  .disclaimer-box {
+    background: $bg_dark;
+    padding: $gap_2 0;
+    position: relative;
+  }
+
+  .form-wrap {
+
+    text-align: center;
+
+    #footer-form {
+      margin-left: auto;
+      margin-right: auto;
+
+      button.arrow-submit {
+        margin: 0;
+      }
+    }
+
+    .signup-form {
+      width: 380px;
+    }
+    .signup-form ::-webkit-input-placeholder {
+      color: #1de9b6;
+    }
+    .signup-form :-moz-placeholder {
+      color: #1de9b6;
+    }
+    .signup-form ::-moz-placeholder {
+      color: #1de9b6;
+    }
+    .signup-form :-ms-input-placeholder {
+      color: #1de9b6;
+    }
+    .signup-form .email-wrap {
+      width: 100%;
+      height: 53px;
+      position: relative;
+      background-color: #172c3b;
+      border: 1px solid transparent;
+      -webkit-transition: all 0.3s linear;
+      -moz-transition: all 0.3s linear;
+      -o-transition: all 0.3s linear;
+      transition: all 0.3s linear;
+    }
+    .signup-form .email-wrap input[type="email"] {
+      font: 300 17px/50px 'Synthese', sans-serif;
+      color: #1de9b6;
+      border: none;
+      background: none;
+      padding: 0 40px 0 17px;
+      width: 100%;
+    }
+    .signup-form .email-wrap button[type="submit"] {
+      background: none;
+      border: none;
+      text-align: center;
+      position: absolute;
+      right: 0px;
+      top: 0px;
+      width: 40px;
+      height: 53px;
+    }
+    .signup-form .email-wrap button[type="submit"] svg {
+      transform: scale(0.5);
+      margin-top: -3px;
+      margin-left: 1px;
+      width: 27px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin-top: -27px;
+      margin-left: -12px;
+    }
+    .signup-form .email-wrap .small-tri {
+      fill: #2a3c57;
+    }
+    .signup-form .email-wrap.error {
+      border: 1px solid #1de9b6;
+    }
+    .signup-form.sending .email-wrap {
+      opacity: .3;
+    }
+    .signup-form.sending .email-wrap button {
+      pointer-events: none;
+    }
+    .signup-form.thanks input,
+    .signup-form.thanks button {
+      pointer-events: none;
+    }
+  }
+}

@@ -1,0 +1,65 @@
+
+@import '../../style/variable';
+@import '../../style/color';
+
+.c_SubmissionDetail {
+
+  .ant-btn-primary {
+    margin-right: $gap_0;
+  }
+
+  .gridCol {
+    padding: 0 $gap_2;
+    margin: $gap_0 0;
+  }
+
+  .form-wrapper {
+    padding: $gap_2 0;
+  }
+
+  .public {
+
+    .label-col {
+      color: $text_light_gray;
+    }
+
+    .task-thumbnail {
+      width: 100%;
+      padding-left: $gap_0;
+    }
+
+    .ant-row {
+      margin: $gap_0 0;
+
+      p {
+        padding-bottom: $gap_0;
+      }
+    }
+
+    .ant-row.top-section {
+      margin: 0 auto;
+      margin-bottom: $gap_3;
+    }
+
+    .ant-divider-inner-text {
+      color: $text_light_gray;
+    }
+  }
+
+  .c_anniversaryAppFormContainer .ant-divider-inner-text {
+    color: $text_default_color;
+  }
+
+  .col-label {
+    color: $text_light_gray;
+    font-weight: 500;
+    padding: 0 $gap_1;
+    text-align: right;
+  }
+
+  .form-detail-desc {
+    color: $text_light_gray;
+    padding-top: $gap_1;
+    padding-bottom: $gap_0;
+  }
+}

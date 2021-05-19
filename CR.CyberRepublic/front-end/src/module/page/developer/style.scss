@@ -1,0 +1,148 @@
+
+@import "../../../style/variable";
+@import "../../../style/color";
+
+$mobile-padding: $gap_0 0px;
+
+.p_Developer {
+  color: white;
+  text-align: left;
+
+  h3.with-gizmo {
+    color: white;
+  }
+
+  .panel {
+    background: $primary_dark_color;
+    position: relative;
+  }
+
+  .navi-panel,
+  .member-panel {
+    background: $bg_navy;
+  }
+
+  .panel-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: $gap_4;
+
+    @media only screen and (max-width: $mobile-width) {
+      max-width: 928px;
+      min-height: 420px;
+      padding: $gap_4 $gap_3;
+    }
+
+    .pull-right {
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    .pull-left {
+      z-index: 99;
+      position: absolute;
+    }
+  }
+
+  .navi-panel-content {
+    padding-top: 148px;
+  }
+
+  $naviPanelItemHeight: 72px;
+  .navi-panel-item {
+    line-height: $naviPanelItemHeight;
+    padding: 0 $gap_2;
+
+    @media only screen and (max-width: $mobile-width) {
+      line-height: 26px;
+      padding: 21px 26px;
+    }
+
+    cursor: pointer;
+    background: $primary_dark_color;
+    color: $primary_color;
+
+    &:nth-child(even) {
+      background: $bg_obsidian;
+    }
+  }
+
+  .navi-panel-item-arrow {
+    text-align: right;
+  }
+
+  .c_Footer {
+    margin-top: 0;
+  }
+
+  .info-panel-link {
+    a {
+      font-size: 18px;
+    }
+  }
+
+  .video {
+    position: absolute;
+    line-height: 0px;
+    color: #43af92;
+    bottom: 35px;
+    cursor: pointer;
+
+    .video-title {
+      font-size: 18px;
+    }
+    .video-more {
+      font-size: 12px;
+    }
+    .video-img {
+      position: absolute;
+      right: -30px;
+      top: -5px;
+    }
+  }
+
+  .member-panel {
+    .ant-table-wrapper {
+      background: $modal_bg;
+      padding-bottom: $gap_0;
+
+      &::before,
+      &::after {
+        display: none;
+      }
+    }
+
+    .ant-spin-container {
+      &::before,
+      &::after {
+        display: none;
+      }
+    }
+
+    .ant-table table {
+      border-radius: 0;
+    }
+
+    .ant-table-thead {
+      background: $primary_dark_color;
+
+      th {
+        color: white;
+        border-top-left-radius: 0 !important;
+        border-top-right-radius: 0 !important;
+      }
+    }
+
+    .member-panel-search {
+      margin-bottom: $gap_2;
+    }
+  }
+}
+
+.video-popup-modal {
+  .ant-modal-body {
+    padding: 0px !important;
+  }
+}

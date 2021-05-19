@@ -1,0 +1,73 @@
+
+@import "../../../../style/variable";
+@import "../../../../style/color";
+
+.p_ProfileTeams {
+  text-align: left;
+  background: white;
+
+  .filter-group {
+    margin-bottom: $gap_2;
+
+    @media only screen and (max-width: $mobile-width) {
+      width: 100%;
+    }
+  }
+
+  .search-group {
+    margin-left: $gap_0;
+
+    @media only screen and (max-width: $mobile-width) {
+      margin-left: 0;
+    }
+  }
+
+  .loadmore {
+    margin: $gap_3 0;
+  }
+
+  .ant-select {
+    @media only screen and (max-width: $mobile-width) {
+      width: 100%;
+      margin-bottom: $gap_1;
+    }
+  }
+
+  .list-item {
+    margin: $gap_0 0;
+  }
+
+  .ant-list-item {
+    border: 1px solid $border_gray;
+    padding: 16px;
+    // border-radius: 8px;
+
+    &:not(:first-child) {
+      margin-top: 16px;
+    }
+  }
+
+  .ant-list-item-content {
+    max-height: 188px;
+
+    .ql-editor {
+      padding: 0;
+      font-size: 14px;
+    }
+  }
+
+  .carousel-wrapper {
+    width: 188px;
+    height: 188px;
+  }
+
+  .ant-list-item-extra-wrap {
+    flex-flow: row-reverse;
+  }
+
+  .ant-list-item-extra {
+    margin-left: 0;
+    margin-right: 58px;
+  }
+}
+

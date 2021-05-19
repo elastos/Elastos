@@ -1,0 +1,26 @@
+@import "../../../../style/variable";
+@import "../../../../style/color";
+
+.navigator {
+  @media only screen and (max-width: $mobile-width) {
+    margin-bottom: $gap_1;
+    .ant-menu {
+      display: flex;
+      overflow-x: auto;
+    }
+  }
+
+  .admin-label {
+    margin-left: $gap_2;
+    margin-bottom: $gap_1;
+    font-weight: 700;
+  }
+
+  .ant-menu-item {
+    padding-left: 0px !important;
+    text-overflow: inherit !important;
+    white-space: pre-wrap !important;
+    height: 100% !important;
+    line-height: 25px !important;
+  }
+}

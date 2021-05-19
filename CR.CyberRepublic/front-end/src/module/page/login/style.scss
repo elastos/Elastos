@@ -1,0 +1,58 @@
+@import '@/style/variable';
+@import '@/style/color';
+@import "@/style/typography";
+
+.p_login.ebp-wrap {
+  max-width: 100%;
+  padding: $gap_2 0;
+  text-align: center;
+
+  .d_box {
+    margin: 0 auto 0;
+    background: #ffffff;
+    display: flex;
+
+    .side-image {
+      display: flex;
+      flex-basis: 50%;
+    }
+    .side-form {
+      display: flex;
+      flex-basis: 50%;
+      margin: $gap_4 * 2 auto 0;
+    }
+    @media only screen and (max-width: $lg-width) {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+
+      .side-image {
+        display: none;
+      }
+      .c_LoginOrRegister {
+        width: 100%;
+        margin: 0;
+        .main-form {
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  .login-msg {
+
+    background-color: $bg_light_gray;
+    margin: $gap_4 $gap_4 * 2;
+    padding: $gap_2 $gap_4;
+    border-radius: 1px;
+
+    + .side-form {
+      display: block;
+      margin-top: 0;
+    }
+  }
+
+  @media only screen and (max-width: $lg-width) {
+    padding: 0;
+  }
+}

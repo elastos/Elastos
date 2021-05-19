@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Elastos - CR Regions</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="description" content="Description">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/vue.css">
+    <script src="https://kit.fontawesome.com/aad3bccd81.js" crossorigin="anonymous"></script>
+    <style>
+
+        section.cover.has-mask div.mask {
+            opacity: 0;
+        }
+
+        aside.sidebar {
+            background-color: #162f45;
+            color: #fefefe;
+        }
+
+        aside.sidebar ul li a,
+        aside.sidebar ul li.active > a{
+            color: #bde5f1;
+        }
+
+        h1.app-name img {
+            width: 90%;
+        }
+
+        nav.app-nav li ul {
+            min-width: 100px;
+        }
+
+        .sidebar li > p > a {
+            font-weight: 700;
+        }
+
+        h1,
+        h1 > a,
+        h1 > a > span {
+            color: #162f45 !important;
+            font-size: 36px;
+        }
+
+        article > h1:first-child {
+            margin-bottom: 0 !important;
+        }
+
+        h2,
+        h2 > a,
+        h2 > a > span {
+            color: #0072bc !important;
+        }
+
+        h3,
+        h3 > a,
+        h3 > a > span {
+            color: #6472b7!important;
+        }
+
+        h5,
+        h5 > a,
+        h5 > a > span {
+            color: #6472b7!important;
+            margin-top: 2px;
+        }
+
+        .markdown-section > * {
+            font-size: 16px;
+        }
+
+        .sidebar-toggle {
+            background-color: #162f45;
+        }
+
+        .sidebar-toggle-button > span {
+            background-color: #fefefe;
+        }
+    </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+  window.$docsify = {
+    coverpage: true,
+    bashPath: '/cr-regions/',
+    logo: 'https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/Cyber+Republic_Horizontal_KO.png',
+    name: 'Elastos - CR Regions',
+    repo: 'https://github.com/cyber-republic/CyberRepublic/tree/master/front-end/cr-regions',
+    loadSidebar: true,
+    subMaxLevel: 2,
+    loadNavbar: true,
+    themeColor: '#2A3C5A',
+    alias: {
+      '/.*/_navbar.md': '/_navbar.md',
+      '/zh/.*/_sidebar.md': '/zh/_sidebar.md',
+      '/zh/(.*)': 'https://gitcdn.xyz/cdn/cyber-republic/CyberRepublic/master/front-end/cr-regions/zh/$1'
+      //'/zh/(.*)': '/zh/$1' // this only works locally because of the "cr-region" subpath
+    },
+    ga: 'UA-123722031-1',
+    search: {
+      noData: {
+        '/zh/': '没有结果!',
+        '/': 'No results!'
+      },
+      paths: 'auto',
+      placeholder: {
+        '/zh/': '搜索',
+        '/': 'Search'
+      }
+    }
+  }
+</script>
+<script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
+</body>
+</html>

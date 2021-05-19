@@ -1,0 +1,50 @@
+create_param:
+  required: true
+  content:
+    application/x-www-form-urlencoded:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            required: true
+            example: test_task
+
+          description:
+            type: string
+            required: true
+            example: This is a test campaign, user must put their requirements and rewards here.
+
+          communityId:
+            type: string
+            example: ''
+
+          type:
+            type: string
+            description: task type
+            example: TASK
+
+          startTime:
+            type: string
+            format: date
+            example: ''
+
+          endTime:
+            type: string
+            format: date
+            example: ''
+
+          candidateLimit:
+            type: number
+            required: true
+            example: 1
+
+          reward_ela:
+            type: number
+            description: reward ela amount
+            example: 1000
+
+          reward_votePower:
+            type: number
+            description: reward votePower amount
+            example: 10

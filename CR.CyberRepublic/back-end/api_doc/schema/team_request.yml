@@ -1,0 +1,44 @@
+required: true
+content:
+  application/x-www-form-urlencoded:
+    schema:
+      type: object
+      properties:
+
+        name:
+          type: string
+          required: true
+          example: test_team
+
+        type:
+          type: string
+          description: "DEVELOP, MARKET, DESIGN, PROJECT, OTHER"
+          example: DEVELOP
+
+        metadata:
+          type: array
+          items:
+            type: string
+            description: foramt as "k1|v1"
+          example:
+            - meta_key|meta_value
+            - k1|v1
+
+        tags:
+          type: array
+          items:
+            type: string
+          example:
+            - French
+            - Paris
+
+
+        description:
+          type: string
+          example: my first team
+
+        logo:
+          type: string
+          format: uri
+          example: ""
+

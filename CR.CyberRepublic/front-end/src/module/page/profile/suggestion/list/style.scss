@@ -1,0 +1,16 @@
+@import '@/style/color.scss';
+
+.p_ProfileSuggestionList {
+  .title {
+    font-size: 50px;
+  }
+  .header-actions-container {
+    margin-bottom: 40px;
+  }
+  .ant-btn {
+    border: 0;
+  }
+  .ant-btn-group > .ant-btn:first-child:not(:last-child), .ant-btn-group > span:first-child:not(:last-child) > .ant-btn {
+    border-radius: 0;
+  }
+}

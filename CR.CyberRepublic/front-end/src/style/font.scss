@@ -1,0 +1,124 @@
+/*
+ * The Typekit service used to deliver this font or fonts for use on websites
+ * is provided by Adobe and is subject to these Terms of Use
+ * http://www.adobe.com/products/eulas/tou_typekit. For font license
+ * information, see the list below.
+ *
+ * komu-a:
+ *   - http://typekit.com/eulas/00000000000000003b9afa24
+ * montserrat:
+ *   - http://typekit.com/eulas/00000000000000003b9b1338
+ *   - http://typekit.com/eulas/00000000000000003b9b1333
+ *   - http://typekit.com/eulas/00000000000000003b9b1336
+ *   - http://typekit.com/eulas/00000000000000003b9b133b
+ *   - http://typekit.com/eulas/00000000000000003b9b133d
+ * synthese:
+ *   - http://typekit.com/eulas/00000000000000003b9b19dd
+ *   - http://typekit.com/eulas/00000000000000003b9b19e2
+ *   - http://typekit.com/eulas/00000000000000003b9b19e4
+ *
+ * © 2009-2019 Adobe Systems Incorporated. All Rights Reserved.
+ */
+/*{"last_published":"2018-08-28 16:47:47 UTC"}*/
+
+@import url('https://p.typekit.net/p.css?s=1&k=fqf7vne&ht=tk&f=15415.16353.37457.37460.37464.37466.38203.38208.38210&a=15298905&app=typekit&e=css');
+
+@font-face {
+  font-family: 'komu-a';
+  src: url('fonts/komu-a.woff2') format('woff2'),
+    url('fonts/komu-a.woff') format('woff'),
+    url('fonts/komu-a.ttf') format('opentype');
+  font-display: auto;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'montserrat';
+  src: url('fonts/montserrat-400.woff2') format('woff2'),
+    url('fonts/montserrat-400.woff2') format('woff'),
+    url('fonts/montserrat-400.ttf') format('opentype');
+  font-display: auto;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'montserrat';
+  src: url('fonts/montserrat-200.woff2') format('woff2'),
+    url('fonts/montserrat-200.woff') format('woff'),
+    url('fonts/montserrat-200.ttf') format('opentype');
+  font-display: auto;
+  font-style: normal;
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: 'montserrat';
+  src: url('fonts/montserrat-300.woff2') format('woff2'),
+    url('fonts/montserrat-300.woff') format('woff'),
+    url('fonts/montserrat-300.ttf') format('opentype');
+  font-display: auto;
+  font-style: normal;
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'montserrat';
+  src: url('fonts/montserrat-600.woff2') format('woff2'),
+    url('fonts/montserrat-600.woff') format('woff'),
+    url('fonts/montserrat-600.ttf') format('opentype');
+  font-display: auto;
+  font-style: normal;
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: 'montserrat';
+  src: url('fonts/montserrat-700.woff2') format('woff2'),
+    url('fonts/montserrat-700.woff') format('woff'),
+    url('fonts/montserrat-700.ttf') format('opentype');
+  font-display: auto;
+  font-style: normal;
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: 'synthese';
+  src: url('fonts/synthese-200.woff2') format('woff2'),
+    url('fonts/synthese-200.woff') format('woff'),
+    url('fonts/synthese-200.ttf') format('opentype');
+  font-display: auto;
+  font-style: normal;
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: 'synthese';
+  src: url('fonts/synthese-400.woff2') format('woff2'),
+    url('fonts/synthese-400.woff') format('woff'),
+    url('fonts/synthese-400.ttf') format('opentype');
+  font-display: auto;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'synthese';
+  src: url('fonts/synthese-700.woff2') format('woff2'),
+    url('fonts/synthese-700.woff') format('woff'),
+    url('fonts/synthese-700.ttf') format('opentype');
+  font-display: auto;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.tk-komu-a {
+  font-family: 'komu-a', sans-serif;
+}
+.tk-montserrat {
+  font-family: 'montserrat', sans-serif;
+}
+.tk-synthese {
+  font-family: 'synthese', sans-serif;
+}

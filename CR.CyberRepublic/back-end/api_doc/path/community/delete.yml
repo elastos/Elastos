@@ -1,0 +1,24 @@
+delete:
+  tags:
+  - community
+  description: delete community
+  operationId: community/delete
+  security:
+    - api-token: []
+
+  responses:
+    200:
+      $ref: '../../schema/success_response.yml'
+    401:
+      $ref: '../../schema/unauthorized_response.yml'
+
+  requestBody:
+    $ref: '../../schema/community.yml#create_param'
+
+  parameters:
+    - name: communityId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: 5b14aa147847fe3025986531

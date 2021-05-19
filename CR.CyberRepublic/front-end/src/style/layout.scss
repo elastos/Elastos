@@ -1,0 +1,278 @@
+.ant-layout{
+  background: none;
+}
+.ant-layout-content{
+  z-index: 1;
+}
+
+.ant-dropdown-menu {
+  padding: 16px 0;
+
+  > .ant-dropdown-menu-item {
+    padding: 8px 48px 8px 32px;
+  }
+}
+
+.help-menu {
+  margin-right: -$gap_2;
+}
+
+.c_Header.ant-layout-header {
+  background: #fbfbfb;
+  height: $header_height;
+  padding: 0;
+  text-align: center;
+  box-shadow: none;
+  border-bottom: 1px solid $bg_light_gray;
+
+  .c_Affix_Menu {
+    .c_Affix_Menu_Item {
+      width: 156px;
+      height: 74px;
+      position: absolute;
+      &.hidden {
+        display: none;
+      }
+    }
+  }
+
+  .c_Header_Menu.ant-menu {
+    padding-top: 0;
+    height: 110px;
+
+    @media only screen and (max-width: $mobile-width) {
+      height: 80px;
+    }
+  }
+
+  .c_Side_Menu {
+    border-right: 0;
+    .c_MenuItem.ant-menu-item-selected {
+      .ant-dropdown-link {
+        color: inherit;
+      }
+    }
+
+    .c_MenuItem.help {
+      padding-right: 48px;
+      padding-left: 8px;
+      height: 78px;
+    }
+
+    @media only screen and (max-width: $mobile-width) {
+      .c_MenuItem.help {
+        display: none;
+      }
+    }
+  }
+
+  .c_MenuItem {
+    font-size: 14px;
+    font-stretch: normal;
+    padding-top: 48px;
+    line-height: 20px;
+    margin: -1px 0 0 0;
+    font-weight: 200;
+
+    &.logo {
+      padding-top: 24px;
+
+      > img {
+        margin-top: 8px;
+        height: 60px;
+      }
+
+      @media only screen and (max-width: $mobile-width) {
+
+        padding-top: 12px;
+
+        > img {
+          height: 45px;
+        }
+      }
+    }
+
+    &.link {
+      padding-bottom: 8px;
+    }
+
+    &.overview {
+      padding-top: 0;
+      padding-right: 4px;
+
+      > .ant-dropdown-link {
+        height: 73px;
+        padding-top: 24px;
+      }
+    }
+
+    &.mobile {
+      height: auto;
+    }
+
+    &.right-side {
+      float: right;
+
+      // account dropdown
+      &.account {
+        padding-right: 32px;
+      }
+
+      .ant-menu-item {
+
+      }
+    }
+  }
+
+  .c_SubMenuItem {
+    &.link {
+      padding-bottom: 0;
+
+      .ant-menu-submenu-title {
+        padding-bottom: 8px;
+      }
+    }
+  }
+
+  .ant-menu {
+    background: none;
+    padding-top: 24px;
+    border-bottom: none;
+    margin: 0 auto;
+  }
+
+  .d_li{
+    float: right;
+    font-size: 1.2rem;
+  }
+
+  .d_avatar{
+    margin-right: 12px;
+
+    i{
+      margin-right: 0;
+    }
+  }
+
+  .c_MenuTopRight {
+    position: absolute;
+    top: 0;
+    right: 0;
+    line-height: 100%;
+
+    padding: 8px 16px;
+
+    margin-right: 100px;
+
+    > .ant-menu-item{
+      padding: 0 16px;
+      border-bottom: 0;
+
+      &.ant-menu-item-active:hover {
+        border-bottom: 0;
+      }
+    }
+  }
+}
+
+.c_Content.ant-layout-content {
+}
+
+.c_Header_Admin{
+  background: #F7F8FC;
+  height: 90px;
+  padding: 0;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+
+  .ant-menu{
+    background: none;
+    padding-top: 24px;
+    border-bottom: none;
+    margin: 0 auto;
+  }
+
+  .d_li{
+    float: right;
+    font-size: 1.2rem;
+  }
+}
+
+.l_banner {
+  background: $primary_color;
+  // border-radius: 4px;
+  padding: $gap_1;
+  font-weight: 200;
+
+  > :first-child {
+    color: #ffffff;
+    padding: 0;
+    font-size: 120%;
+  }
+
+  .status {
+    font-weight: 500;
+  }
+
+  .pull-right {
+    button:not(:last-child) {
+      margin-right: $gap_1;
+    }
+  }
+}
+
+@media only screen and (max-width: 1700px) {
+  .c_Header .c_MenuTopRight {
+    margin-right: 0;
+  }
+  .c_Header.ant-layout-header {
+    .c_Side_Menu {
+      // display: none;
+      display: unset;
+    }
+  }
+}
+
+.project-detail-nobar {
+  .login-register-modal {
+    width: calc(100% + 72px);
+    margin-left: -36px;
+    margin-bottom: -36px;
+    display: flex;
+
+    .side-image {
+      display: flex;
+      max-width: 50%;
+
+      img {
+        padding-top: $gap_2;
+        width: 100%;
+      }
+    }
+    .side-form {
+      display: flex;
+      margin: $gap_4 auto 0;
+    }
+
+    @media only screen and (max-width: $mobile-width) {
+      .side-image {
+        display: none;
+      }
+      .side-form {
+        width: 100%;
+      }
+    }
+  }
+}
+
+.profile-overview-popup-modal {
+  .ant-modal-body {
+    padding: 0;
+  }
+}
+
+.p_standardPage {
+  .headroom-wrapper {
+    z-index: 10;
+  }
+}

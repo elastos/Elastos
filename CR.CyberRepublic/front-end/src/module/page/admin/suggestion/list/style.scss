@@ -1,0 +1,35 @@
+@import '@/style/color.scss';
+
+.p_AdminSuggestionList {
+  .title {
+    font-size: 50px;
+  }
+  .header-actions-container {
+    margin-bottom: 40px;
+  }
+  .search-group {
+    margin-right: 30px;
+  }
+  .search-group input {
+    border: 1px solid black;
+    border-radius: 0;
+  }
+  .ant-btn-group .ant-btn {
+    border-radius: 0 !important;
+  }
+  .ant-btn-group .ant-btn.selected {
+    color: white;
+    background-color: $bg_obsidian;
+    border-color: $bg_obsidian;
+  }
+  .admin-actions {
+    display: flex;
+    svg {
+      margin-right: 8px;
+      cursor: pointer;
+      &:hover * {
+        fill: $cr_primary_highlight;
+      }
+    }
+  }
+}

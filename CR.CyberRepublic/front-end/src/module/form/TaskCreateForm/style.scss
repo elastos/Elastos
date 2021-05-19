@@ -1,0 +1,143 @@
+
+@import "../../../style/variable";
+@import "../../../style/color";
+
+.c_taskCreateFormContainer {
+
+  .mid-label {
+    white-space: nowrap;
+    padding: 0 $gap_1;
+    text-align: right;
+  }
+
+  .help-icon {
+    cursor: pointer;
+
+    &:hover {
+      color: $text_light_gray;
+    }
+  }
+
+  .ql-editor {
+    font-size: 14px;
+  }
+
+  .remove-attachment {
+    margin-left: $gap_0;
+    cursor: pointer;
+
+    &:hover {
+      color: $text_light_gray;
+    }
+  }
+
+  .attachmentUpload {
+    .ant-form-item-control {
+      width: 100%;
+
+      > .ant-form-item-children {
+        display: block;
+        width: 100%;
+
+        > span {
+          display: block;
+          width: 100%;
+        }
+      }
+
+      .ant-upload {
+        width: 100%;
+      }
+    }
+  }
+
+  .disclaimerLink {
+    color: $primary_color;
+    cursor: pointer;
+
+    &:hover {
+      color: $primary_light_color;
+    }
+  }
+
+  // this is similar to developer/style.scss
+  .feature-box {
+    margin: 5px;
+    border: 1px solid $border_gray;
+    min-height: 200px;
+    cursor: pointer;
+
+    &.selected {
+      border: 1px solid $primary_color;
+
+      .title > span {
+        color: $primary_color;
+      }
+
+      .feature-box-divider {
+        background-color: $primary_color;
+        border: 1px solid $primary_color;
+      }
+    }
+
+    &:hover {
+      box-shadow: 0 2px 8px $primary_color;
+      border-color: $primary_color;
+    }
+
+    .title {
+      display: flex;
+      align-items: flex-end;
+
+      span {
+        z-index: 1;
+        font-weight: bold;
+        font-size: 1.5rem;
+        color: $text_dark_gray;
+        @media only screen and (max-width: $mobile-width) {
+          font-size: 1.25rem;
+        }
+      }
+
+      img {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        opacity: 0.25;
+        min-width: 100px;
+        max-width: 35%;
+        max-height: 150px;
+        filter: alpha(opacity=25); // IE8 and earlier
+        @media only screen and (max-width: $mobile-width) {
+          top: unset;
+          margin: 0px $gap_1 $gap_1 $gap_1;
+          min-width: 25px;
+          max-width: 45px;
+          max-height: 45px;
+        }
+      }
+    }
+
+    .feature-box-divider {
+      display: block;
+      padding: 0 25px;
+      background-color: $border_gray;
+      border: 1px solid $border_gray;
+      margin: 5px 0;
+    }
+
+    .content {
+      padding: 5px 10px;
+      font-size: 14px;
+      @media only screen and (max-width: $mobile-width) {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+ol.paymentRulesModal {
+  > li {
+    margin-bottom: 12px;
+  }
+}

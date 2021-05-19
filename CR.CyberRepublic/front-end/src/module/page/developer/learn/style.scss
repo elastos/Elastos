@@ -1,0 +1,17 @@
+
+@import "../../../../style/variable";
+@import "../../../../style/color";
+
+.p_DeveloperLearn {
+  background: white;
+  text-align: left;
+  padding: 0 48px;
+
+  @media only screen and (max-width: $mobile-width) {
+    padding: 0;
+  }
+
+  .ebp-wrap {
+    max-width: 1200px;
+  }
+}

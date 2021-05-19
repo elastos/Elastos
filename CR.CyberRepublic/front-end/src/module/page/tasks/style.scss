@@ -1,0 +1,22 @@
+
+@import "../../../style/variable";
+
+.p_Tasks{
+
+  background: #ffffff;
+  text-align: left;
+
+  .d_box {
+    padding: 0 $gap_3;
+
+    .btnContainer {
+      padding-top: $gap_2;
+      text-align: right;
+    }
+  }
+
+  .d_rightContainer {
+    border-left: 1px solid #e0e0e0;
+  }
+}
+

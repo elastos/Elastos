@@ -1,0 +1,48 @@
+.p_council{
+
+    .ebp-wrap{
+        max-width: 78vw;
+    }
+    .p_content{
+        margin-top: 32px;
+    }
+
+    .f_box{
+        text-align: left;
+        font-size: 16px;
+        color: #333;
+        line-height: 24px;
+        margin-top: 20px;
+        
+        strong{
+            font-size: 20px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        center{
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 24px;
+            margin-bottom: 5px;
+        }
+
+        ol{
+            padding-left: 40px;
+
+            
+        }
+        ul{
+            list-style: none;
+        }
+
+        table{
+            margin: 8px 0 12px 40px;
+            td{
+                border: 1px solid #ccc;
+                padding: 8px 18px;
+            }
+        }
+    }
+}

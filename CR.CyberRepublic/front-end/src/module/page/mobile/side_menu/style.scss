@@ -1,0 +1,35 @@
+
+@import '../../../../style/variable';
+@import '../../../../style/color';
+
+.c_mobileMenu {
+
+  position: fixed;
+
+  top: 0;
+
+  width: 80vw;
+  height: 100vh;
+
+  background-color: white;
+  box-shadow: -10px 0px 10px 1px rgba(0, 0, 0, 0.3);
+
+  z-index: 10000;
+  overflow-y: scroll;
+
+  .closeMobileMenu {
+    color: $primary_color;
+    padding: $gap_2;
+    font-size: 150%;
+    font-weight: 600;
+  }
+
+  .menuContainer {
+    padding-top: $gap_3;
+    padding-left: $gap_3;
+
+    .ant-menu-item {
+      border-bottom: 1px solid $cr_light_color;
+    }
+  }
+}

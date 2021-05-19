@@ -1,0 +1,16 @@
+
+@import "../../../style/variable";
+@import "../../../style/color";
+
+$mobile-padding: $gap_0 0px;
+$landingPageWidth: 1152px;
+
+.p_council {
+
+  .ant-tabs-nav-container {
+    margin: 0 auto;
+    max-width: 78vw;
+    padding: 0 $gap_3;
+  }
+
+}

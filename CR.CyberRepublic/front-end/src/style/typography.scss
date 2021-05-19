@@ -1,0 +1,47 @@
+@import './color';
+
+.no-info {
+  color: $text_light_gray;
+}
+
+.grey-text {
+  color: $text_dark_gray;
+}
+
+.light-grey-text {
+  color: $text_light_gray;
+}
+
+.default-text {
+  color: $text_default_color;
+}
+
+.help-text {
+  font-size: 100%;
+}
+
+.strong-text {
+  font-weight: 500;
+}
+
+.important-text {
+  margin: 0;
+  padding: 0;
+  font-size: 95%;
+  text-transform: uppercase;
+  color: #fe6619;
+}
+
+.highlight-text {
+  color: $primary_color;
+}
+
+.komu-a {
+  font-family: "komu-a", sans-serif !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.synthese {
+  font-family: 'Synthese', sans-serif;
+}

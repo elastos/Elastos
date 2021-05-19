@@ -1,0 +1,88 @@
+
+@import '../../../../style/variable';
+
+.c_adminCommunity {
+
+  .organizerListItem {
+    table {
+      td {
+        padding: $gap_0;
+      }
+    }
+  }
+
+  .ant-card-body {
+    padding: $gap_1;
+  }
+
+  p {
+    padding-bottom: $gap_0;
+  }
+}
+
+.wrap-box-user {
+  h1 {
+    text-align: left;
+  }
+}
+
+.child-box-users .user-card .ant-card-cover img {
+  height: 75px;
+}
+
+.user-card {
+  padding: 10px;
+  text-align: center;
+
+  .ant-card-cover {
+    padding: 10px;
+
+    img {
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 50%;
+      height: 100px;
+      width: auto;
+    }
+  }
+
+  button {
+    width: 100%;
+  }
+
+  .organizerListTeam td.avatar {
+    height: 40px;
+  }
+}
+
+.user-card--organizer {
+  .ant-card {
+    margin-bottom: 20px;
+  }
+
+  .ant-btn-ebp.add-organizer {
+
+  }
+}
+
+.user-card.user-card--without-padding {
+  padding: unset;
+}
+
+.list-leaders-of-a-country {
+
+  .wrap-child-box-users {
+    padding-left: 20px;
+
+    .child-box-users {
+      border: 1px solid #e5e5e5;
+      padding: 20px;
+      margin-bottom: 20px;
+
+      .ant-btn-ebp.add-sub-community {
+        min-width: 165px;
+      }
+    }
+  }
+}
+

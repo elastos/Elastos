@@ -1,0 +1,65 @@
+post:
+  tags:
+  - team
+  description: update team api
+  operationId: team/update
+  security:
+    - api-token: []
+
+
+  responses:
+    200:
+      $ref: '../../schema/success_response.yml'
+    401:
+      $ref: '../../schema/unauthorized_response.yml'
+
+  requestBody:
+    required: true
+    content:
+      application/x-www-form-urlencoded:
+        schema:
+          type: object
+          properties:
+
+            id:
+              type: string
+              required: true
+              format: uuid
+              example: ""
+
+            name:
+              type: string
+              required: true
+              example: test_team
+
+            type:
+              type: string
+              description: "DEVELOP, MARKET, DESIGN, PROJECT, OTHER"
+              example: DEVELOP
+
+            metadata:
+              type: array
+              items:
+                type: string
+                description: foramt as "k1|v1"
+              example:
+                - meta_key|meta_value
+                - k2|v2
+
+            tags:
+              type: array
+              items:
+                type: string
+              example:
+                - French
+                - Paris
+
+
+            description:
+              type: string
+              example: my first team
+
+            logo:
+              type: string
+              format: uri
+              example: ""

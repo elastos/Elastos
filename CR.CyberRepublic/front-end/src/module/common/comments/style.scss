@@ -1,0 +1,53 @@
+@import '../../../style/variable';
+@import '../../../style/color';
+
+.c_Comments {
+  h3 {
+    margin: $gap_1 0 !important;
+    padding: 0;
+  }
+
+  .ant-list-item-meta-title {
+    padding-top: 0;
+    white-space: pre-line;
+  }
+
+  .ant-list-item-content {
+    h5 {
+      padding-top: 0;
+    }
+
+    .ant-list-item-meta-avatar {
+      margin-right: $gap_0;
+    }
+
+    h4 {
+      padding-top: 0;
+    }
+  }
+
+  .comment-avatar {
+    cursor: pointer;
+    min-width: 64px;
+  }
+
+  .comment-content {
+    margin-left: $gap_2;
+    white-space: pre-wrap;
+    width: 90%;
+    overflow-wrap: break-word;
+  }
+
+  .non-mention {
+    display: inline;
+  }
+
+  .gridCol {
+    padding: 0 $gap_2;
+    margin: $gap_0 0;
+  }
+
+  .form-wrapper {
+    padding: $gap_2 0;
+  }
+}

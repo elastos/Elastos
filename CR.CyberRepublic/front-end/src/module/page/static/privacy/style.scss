@@ -1,0 +1,45 @@
+
+@import "../../../../style/variable";
+
+.p_Privacy {
+
+  background: #ffffff;
+  text-align: left;
+
+  > .ebp-page {
+    max-width: 80%;
+
+    margin-left: auto;
+    margin-right: auto;
+
+    h3 {
+      text-transform: uppercase;
+    }
+  }
+
+  .typesOfData {
+
+    th, td {
+      padding: $gap_0;
+      border: 1px solid grey;
+    }
+
+    th {
+      background-color: lightgrey;
+      text-align: center;
+    }
+  }
+
+  ul {
+    margin-left: 20px;
+
+    > li {
+      margin: $gap_0 0;
+    }
+  }
+
+  .elastosAddress {
+    padding-left: $gap_3;
+  }
+}
+

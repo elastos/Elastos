@@ -1,0 +1,20 @@
+
+@import "../../../style/variable";
+
+.p_Member {
+
+  background: #ffffff;
+  text-align: left;
+
+  .back-btn-container {
+    text-align: left;
+    margin-left: $gap_2;
+  }
+
+  .d_leadersList {
+    h1 {
+      text-align: center;
+    }
+  }
+}
+

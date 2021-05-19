@@ -1,0 +1,136 @@
+
+@import '../../../style/variable';
+@import '../../../style/color';
+
+.c_ProfileModalPopup {
+  background-color: $bg_blue;
+
+  .header-image-container {
+    img {
+      width: 100%;
+    }
+  }
+  .profile-image {
+    width: 100%;
+    margin-top: -$gap_5;
+    text-align: center;
+
+    img {
+      max-width: 200px;
+    }
+  }
+  .profile-info {
+    text-align: center;
+
+    .name {
+      padding: $gap_2 0 0 0;
+      font-size: 39px;
+      line-height: 39px;
+      color: black;
+    }
+    .location-circle {
+      span {
+        &:first-child {
+          display: block;
+        }
+        margin: 0 $gap_1;
+
+        i {
+          margin-right: $gap_0;
+        }
+      }
+      .circle {
+        color: $primary_color;
+      }
+    }
+  }
+  .profile-interaction {
+    padding: $gap_2 0;
+    display: flex;
+    text-align: center;
+
+    div {
+      flex: 1;
+
+      a {
+        color: black;
+        text-decoration: underline;
+      }
+      span {
+        color: black;
+      }
+    }
+  }
+  .message-box {
+    .c_taskCreateFormContainer {
+      padding: 0 $gap_1;
+      .no-info {
+        display: none;
+      }
+      #subject {
+        display: none;
+      }
+      .ant-row.ant-form-item {
+        margin: 0;
+      }
+      textarea {
+        resize: none;
+        border-color: $text_light_gray;
+        border-radius: 0;
+      }
+      .ant-form-explain {
+        display: none;
+      }
+      .ant-form-item-control-wrapper {
+        width: 100%;
+        text-align: center;
+      }
+      .d_btn {
+        margin: $gap_1 0 0 -15px;
+        width: calc(100% + 30px);
+        height: 60px;
+        background-color: $primary_color;
+        border-color: $primary_color;
+        border-radius: 0;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .d_btn:hover {
+        background-color: #66bda3;
+        border-color: #66bda3;
+      }
+    }
+    @media only screen and (max-width: $mobile-width) {
+      .c_taskCreateFormContainer {
+        padding: 0;
+      }
+    }
+  }
+  .profile-view-button {
+    width: 100%;
+
+    button {
+      height: 60px;
+      width: 100%;
+      background-color: $primary_color;
+      border-color: $primary_color;
+      border-radius: 0;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #66bda3;
+      border-color: #66bda3;
+    }
+  }
+}
+
+.profile-overview-popup-modal {
+  .ant-modal-close-x {
+    color: white;
+  }
+
+}

@@ -1,0 +1,24 @@
+
+@import "../../../../style/variable";
+
+.p_ProfileSubmissionDetail {
+  background: white;
+  text-align: left;
+
+  .ant-btn-primary {
+    margin-right: $gap_0;
+  }
+
+  .gridCol {
+    padding: 0 $gap_2;
+    margin: $gap_0 0;
+  }
+
+  .ant-row > .label-col {
+    padding: 0 $gap_1;
+  }
+
+  .form-wrapper {
+    padding: $gap_2 0;
+  }
+}

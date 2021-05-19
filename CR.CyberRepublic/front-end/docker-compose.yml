@@ -1,0 +1,17 @@
+version: '3'
+services:
+  ebp-frontend:
+    container_name: ebp-frontend
+    image: nginx:alpine
+    ports:
+      - 80:80
+      - 3101:3101
+#    build: .
+
+    volumes:
+      - ./nginx/proxy.prod.conf:/etc/nginx/conf.d/default.conf
+      - ./dist:/www/dist
+      - ./docs:/www/dist/docs
+      - ./elastos:/www/dist/elastos
+      - ./experimental-docs:/www/dist/experimental-docs
+      - ./cr-regions:/www/dist/cr-regions

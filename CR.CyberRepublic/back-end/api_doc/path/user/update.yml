@@ -1,0 +1,51 @@
+put:
+  tags:
+  - user
+  description: update user
+  operationId: user/update
+
+
+  responses:
+    200:
+      $ref: '../../schema/success_response.yml'
+
+  requestBody:
+    required: true
+    content:
+      application/x-www-form-urlencoded:
+        schema:
+          type: object
+          properties:
+
+            firstName:
+              type: string
+              example: Jacky
+
+            lastName:
+              type: string
+              example: Li
+
+            country:
+              type: string
+              example: China
+            city:
+              type: string
+              example: Dalian
+            avatar:
+              type: string
+              example: avatar url from s3
+            gender:
+              type: string
+              example: constant MALE or FEMALE or OTHER
+            beOrganizer:
+              type: string
+              example: constant yes or no
+            isDeveloper:
+              type: string
+              example: constant yes or no
+            source:
+              type: string
+              example:
+            walletAddress:
+              type: string
+              example: 'EY9wTKyzpwBkJ7byWJQU7ZdYfyUKNcDU2B'
