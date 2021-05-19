@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package common;
+
+// The common service definition.
+service Common {
+  rpc GenerateAPIRequest (Request) returns (Response) {}
+  rpc GetAPIKey (Request) returns (Response) {}
+}
+
+// The request message.
+message Request {
+  string input = 1;
+}
+
+// The response message
+message Response {
+  string output = 1;
+  string status_message = 2;
+  bool status = 3;
+}

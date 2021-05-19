@@ -1,0 +1,14 @@
+grpcio==1.28.1
+grpcio-tools==1.28.1
+SQLAlchemy-Wrapper==1.9.1
+requests==2.23.0
+psycopg2-binary==2.8.5
+pytz==2020.1
+python-decouple==3.3
+web3==5.4.0
+py-solc==3.2.0
+cryptography==2.9.2
+pg8000==1.15.2
+pytest==5.4.1
+PyJWT==1.7.1
+solidity-parser==0.0.7
