@@ -1,0 +1,26 @@
+{
+  "name": "elastos-unity-cli",
+  "bin": "./index.js",
+  "version": "1.0.3",
+  "description": "Elastos Unity CLI",
+  "main": "index.js",
+  "files": [
+    "createDapp.sh"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cli",
+    "elastos",
+    "blockchain",
+    "dapp"
+  ],
+  "author": "Adem Bilican",
+  "license": "ISC",
+  "dependencies": {
+    "inquirer": "^6.3.1",
+    "react-native-elastos-unity-carrier": "^1.0.4",
+    "react-native-elastos-unity-wallet": "^1.0.7"
+  }
+}
