@@ -1,0 +1,50 @@
+{
+  "name": "react-native-elastos-unity-carrier",
+  "version": "1.0.4",
+  "description": "react native plugin for elastos carrier",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cyber-republic/react-native-elastos-carrier.git"
+  },
+  "keywords": [
+    "android",
+    "ios",
+    "react-native",
+    "react",
+    "plugin",
+    "carrier",
+    "elastos"
+  ],
+  "nativePackage": true,
+  "author": "Jacky.Li",
+  "maintainers": [
+    {
+      "name": "Jacky.Li",
+      "email": "liyangwood@gmail.com"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cyber-republic/react-native-elastos-carrier/issues"
+  },
+  "homepage": "https://github.com/cyber-republic/react-native-elastos-carrier#readme",
+  "scripts": {
+    "test": "cd example && npm test && cd ..",
+    "lint": "eslint ./src"
+  },
+  "dependencies": {
+    "lodash": "4.17.11"
+  },
+  "peerDependencies": {
+    "react-native": "0.56.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.17.2",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-react": "^7.12.4"
+  }
+}

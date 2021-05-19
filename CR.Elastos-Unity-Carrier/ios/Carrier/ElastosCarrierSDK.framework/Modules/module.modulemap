@@ -1,0 +1,11 @@
+framework module ElastosCarrierSDK {
+  umbrella header "ElastosCarrierSDK.h"
+
+  export *
+  module * { export * }
+}
+
+module ElastosCarrierSDK.Swift {
+    header "ElastosCarrierSDK-Swift.h"
+    requires objc
+}
