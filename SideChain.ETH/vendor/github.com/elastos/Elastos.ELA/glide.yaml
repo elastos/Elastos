@@ -1,0 +1,29 @@
+package: github.com/elastos/Elastos.ELA
+import:
+- package: golang.org/x/crypto
+  repo: https://github.com/golang/crypto.git
+  vcs: git
+- package: golang.org/x/sys
+  repo: https://github.com/golang/sys.git
+  vcs: git
+- package: github.com/gorilla/websocket
+- package: github.com/urfave/cli
+  version: v1.22.0
+- package: github.com/howeyc/gopass
+- package: github.com/itchyny/base58-go
+- package: github.com/stretchr/testify
+  subpackages:
+  - assert
+- package: github.com/syndtr/goleveldb
+  subpackages:
+  - leveldb
+  - leveldb/errors
+  - leveldb/filter
+  - leveldb/iterator
+  - leveldb/opt
+  - leveldb/util
+- package: github.com/yuin/gopher-lua
+- package: gopkg.in/cheggaaa/pb.v1
+- package: gopkg.in/yaml.v2
+ignore:
+  - github.com/russross/blackfriday/v2

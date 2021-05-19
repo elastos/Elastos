@@ -1,0 +1,8 @@
+{
+  "Network": "main",
+  "DebugLevel": "info",
+  "RPCPort": 20346,
+  "PermanentPeers": [
+    "127.0.0.1"
+  ]
+}
