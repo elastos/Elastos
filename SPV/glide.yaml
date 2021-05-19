@@ -1,0 +1,15 @@
+package: github.com/elastos/Elastos.ELA.SPV
+import:
+- package: golang.org/x/crypto
+  repo:  https://github.com/golang/crypto
+- package: golang.org/x/sys
+  repo:  https://github.com/golang/sys
+- package: github.com/howeyc/gopass
+- package: github.com/syndtr/goleveldb/leveldb
+- package: github.com/cevaris/ordered_map
+- package: github.com/elastos/Elastos.ELA
+  version: v0.3.2
+  subpackages:
+  - bloom
+  - core
+- package: github.com/urfave/cli
