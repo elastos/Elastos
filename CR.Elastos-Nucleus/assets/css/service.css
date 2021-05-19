@@ -1,0 +1,143 @@
+.service {
+  background-color: #181b22;
+  color: #ffffff;
+}
+
+.search-form {
+  width: 300px;
+  border-radius: 2px;
+}
+
+.search-form input {
+  font-size: 13px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-family: Roboto;
+  font-style: normal;
+  line-height: 1.64;
+  letter-spacing: normal;
+  color: #ffffff;
+  background-color: #242a37;
+}
+
+.sidebar-header {
+  font-weight: bold;
+  font-stretch: normal;
+  font-family: Overpass;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.service-content {
+  border-radius: 4px;
+  background-color: #242a37;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  padding: 10px;
+}
+
+.service-divider {
+    height: 1px;
+    opacity: 0.8;
+    background-color: white;
+    margin: 0px 30px 30px 30px;
+}
+
+/*----- Tabs -----*/
+.tabs {
+	width:100%;
+	display:inline-block;
+}
+
+/*----- Tab Links -----*/
+/* Clearfix */
+	.tab-links:after {
+	display:block;
+	clear:both;
+	content:'';
+}
+
+.tab-links li {
+	margin:0px 5px;
+	float:left;
+	list-style:none;
+}
+
+.tab-links a {
+	padding:9px 15px;
+	display:inline-block;
+	border-radius:3px 3px 0px 0px;
+	background: #242a37;
+	font-size:16px;
+	font-weight:600;
+	color:#6b7998;
+	transition:all linear 0.15s;
+}
+
+.tab-links a:hover {
+	color: #00dd62;
+	text-decoration:none;
+}
+
+li.active a, li.active a:hover {
+	color:#00dd62;
+}
+
+/*----- Content of Tabs -----*/
+
+.tab-content {
+    margin: 0px 30px;
+    border-radius: 4px;
+    background-color: #ffffff;
+}
+
+.tab {
+	display:none;
+    margin: 30px 15px;
+}
+
+.tab p {
+    padding: 15px 0px;
+    color: #ffffff;
+}
+
+.tab.active {
+	display:block;
+}
+
+pre.prettyprint {
+    border: none !important;
+}
+
+.submit-button {
+  width: 250px;
+  height: 44px;
+  border-radius: 1px;
+  background-color: #00dd62;
+}
+
+.form-header {
+  height: 74px;
+  font-size: 18px;
+  font-weight: 600;
+  font-stretch: normal;
+  font-family: 'Overpass', sans-serif;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.form-field-label {
+  width: 36px;
+  height: 22px;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #6b7998;
+}

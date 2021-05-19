@@ -1,0 +1,9 @@
+<div class="col-md-12" style="...">
+    {% autoescape off %}
+        Hi {{ user.name }},<br>
+        Please click on the following link to confirm your registration.<br>
+        Confirmation Link: http://{{ domain }}{% url 'login:activate' uidb64=uid token=token %}<br>
+        Thank you,<br>
+        Nucleus Console Team
+    {% endautoescape %}
+</div>

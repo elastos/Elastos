@@ -1,0 +1,67 @@
+{% extends "service.html" %} 
+{% load static %} 
+
+{% block title %}
+<title>Run Contract - Elastos Nucleus</title>
+{% endblock title %} 
+
+{% block scripts_services %}
+{% endblock scripts_services %}
+
+{% block related_services %}
+  <li>
+    <a href="#">
+      1st Service
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      2nd Service
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      3rd Service
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      4th Service
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      5th Service
+    </a>
+  </li>
+{% endblock related_services %}
+
+{% block documentation %}
+  <li>
+    <a href="#">One Example</a>
+  </li>
+  <li>
+    <a href="#">Two Example</a>
+  </li>
+  <li>
+    <a href="#">Red Example</a>
+  </li>
+  <li>
+    <a href="#">Blue Example</a>
+  </li>
+{% endblock documentation %}
+
+{% block serviceicon %}
+    <img src="{% static 'images/common/run-contract.svg' %}"/>
+{% endblock serviceicon %}
+{% block servicetitle %}
+    Run Ethereum Contract
+{% endblock servicetitle %}
+
+{% block description %}
+    The description of the Run Ethereum Contract service goes here.
+{% endblock description %}
+
+{% block service %}
+<p>The Run Ethereum Contract service goes here.</p>
+{% endblock service %}

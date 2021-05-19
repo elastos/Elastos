@@ -1,0 +1,95 @@
+{% extends 'elastos_trinity.html' %}
+{% load static%}
+{% load json_processing%}
+
+{%block title%} 
+ 
+{%endblock title%}
+
+
+{% block scripts_elastos_trinity %}
+
+{% endblock scripts_elastos_trinity %}
+
+{% block elastos_trinity_title %}
+    {{template|getval:'name'}}
+{% endblock elastos_trinity_title %}
+
+{% block elastos_trinity%}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <img class = "card-img" src="{{logo_url}}">
+                <div class="card-body" style="color: black">
+                    <p>Description : {{ template|getval:'description' }}</p>
+                </div>
+            </div>
+            <div class="card shadow mb-4">
+                <div class="card-body" style="color: black">
+                    {% autoescape off %}
+                        {{ readme }}
+                    {% endautoescape %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <a href="{{ download_link }}" class="btn btn-block btn-primary mb-3 py-3">Free Download</a>
+                    <a class="btn btn-block btn-outline-primary mb-3" style="color: black">Live preview</a>
+                    <a  href="{{ github_link }}" class="btn btn-block btn-outline-secondary" style="color:black;">View on Github</a>
+                </div>
+            </div>
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body" style="color: black">
+                    <div class="d-flex justify-content-between small">
+                        <span>License</span>
+                        <span>None</span>
+                    </div>
+                    <hr>
+                     <div class="d-flex justify-content-between small">
+                        <span>Version</span>
+                        <span>{{ version }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between small">
+                        <span>Released</span>
+                        <span>{{ created_at }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between small">
+                        <span>Updated</span>
+                        <span>{{ updated_at }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header" style="color: black">
+                    <p>Plugins</p>
+                </div>
+                <div class="card-body" style="color: black">
+                    <ul class="list-group list-group-flush small">
+                        {% for item in plugins %}
+                            <li class="list-group-item">{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header" style="color: black">
+                    <p>Whitelisted URLs</p>
+                </div>
+                <div class="card-body" style="color: black">
+                    <ul class="list-group list-group-flush small">
+                        {% for item in whitelisted_urls %}
+                            <li class="list-group-item">{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{%endblock elastos_trinity%}

@@ -1,0 +1,179 @@
+* {-webkit-font-smoothing: antialiased;}
+
+.elastos-trinity {
+  background-color: #181b22;
+  color: #ffffff;
+}
+
+.elastos-trinity-title{
+  border-radius: 4px;
+  background-color:  #181b22;
+  color: #FFFFFF;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  padding: 20px;
+  justify-content: center;
+}
+
+.elastos-trinity-content {
+  border-radius: 4px;
+  background-color: #181b22;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  padding: 10px;
+}
+
+.elastos-trinity-content h2 {
+  font-family: Overpass;
+  font-size: 44px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  color: #ffffff;
+  margin: 40px 85px 40px 95px; 
+  text-align: left;
+}
+
+.dashboard-section {
+  border-radius: 8px;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  background-color: #242a37;
+  padding: 15px;
+  margin: 30px;
+}
+
+.dashboard-header {
+  font-family: Overpass;
+  font-size: 15px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #8ea2cf;
+}
+
+.divider {
+  height: 1px;
+  opacity: 0.5;
+  background-color: #6b7998;
+  margin: 20px;
+}
+
+.dapp-title {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-family: Overpass;
+  font-size: 15px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.dapp-description {
+  height: 86px;
+  max-height: 86px;
+  font-family: Roboto;
+  font-size: 14px;
+  font-weight: 300;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.col-md-3 .container {
+  border-radius: 4px;
+  background-color: #181b22;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  height: 175px;
+}
+
+.modal-body .container {
+  margin-top: 35px;
+  margin-bottom: 25px;
+  border-radius: 4px;
+  background-color: #181b22;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  height: 175px;
+}
+
+.container img {
+  object-fit: contain;
+  width: 35%;
+  max-width: 35%;
+  margin-bottom: 15px; 
+  margin-top: 30px;
+}
+
+.modal-body .container img {
+  object-fit: contain;
+  width: 25%;
+  width: 25%;
+  margin-bottom: 15px; 
+  margin-top: 30px;
+}
+
+.btn.btn-secondary.download {
+  width: 40%;
+  max-width: 40%;
+  margin-left: 15px;
+  font-weight: 500;
+  background-color: #3a4255;
+  border: solid 1px #3a4255;
+  color: #a0a0a0;
+  font-family: Roboto;
+}
+
+.col .btn.btn-secondary.download {
+  width: 100%;
+  max-width: 100%;
+  margin-left: 15px;
+  font-weight: 500;
+  background-color: #3a4255;
+  border: solid 1px #3a4255;
+  color: #a0a0a0;
+  font-family: Roboto;
+}
+
+.btn.btn-secondary.more {
+  width: 40%;
+  max-width: 40%;
+  margin-left: 7.5px;
+  background-color: #242a37;
+  border: solid 1px #5d6a89;
+  color: #a0a0a0;
+  font-family: Roboto;
+}
+
+.dapp-information {
+  margin-bottom: 2px;
+  font-family: Roboto;
+  font-size: 13px;
+  font-stretch: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.dapp-top-name {
+  font-family: Overpass;
+  font-size: 16px;
+}
+
+.dapp-top-category {
+  font-family: Roboto;
+  font-size: 14px;
+}
+
+.dapp-content{
+  border-radius: 4px;
+  background-color: #242a37;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  padding: 10px;
+  margin: 0px 30px 40px 40px
+}

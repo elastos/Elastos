@@ -1,0 +1,110 @@
+{% extends "service.html" %}
+{% load static %}
+
+{% block title %}
+<title>Generate Key - Elastos Nucleus</title>
+{% endblock title %}
+
+{% block scripts_services %}
+{% endblock scripts_services %}
+
+{% block related_services %}
+  <li>
+    <a href="#">
+      1st Service
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      2nd Service
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      3rd Service
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      4th Service
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      5th Service
+    </a>
+  </li>
+{% endblock related_services %}
+
+{% block documentation %}
+  <li>
+    <a href="#">One Example</a>
+  </li>
+  <li>
+    <a href="#">Two Example</a>
+  </li>
+  <li>
+    <a href="#">Red Example</a>
+  </li>
+  <li>
+    <a href="#">Blue Example</a>
+  </li>
+{% endblock documentation %}
+
+{% block serviceicon %}
+    <img src="{% static 'images/common/key.svg' %}"/>
+{% endblock serviceicon %}
+{% block servicetitle %}
+    Generate API Key
+{% endblock servicetitle %}
+
+{% block description %}
+    The Generate API Key service is used to generate an API key to interact with other
+    <a href="https://github.com/cyber-republic/elastos-smartweb-service">Elastos Smartweb Service</a>
+    services. Here is how it currently works:
+    <ul style="margin-left: 15px;">
+        <li>
+            Takes two arguments:
+            <ul style="margin-left: 30px;">
+                <li>
+                    SHARED_SECRET_ADENINE: This is the same SHARED_SECRET_ADENINE that is used to run Elastos Smartweb Service
+                </li>
+                <li>
+                    DID: This is the DID to be used to generate an API Key for
+                </li>
+            </ul>
+        </li>
+        <li>
+            Elastos Smartweb Service generates an API Key and associates it with the DID that was passed in
+        </li>
+        <li>
+            Returns the API Key that can be used with other API services
+        </li>
+    </ul>
+{% endblock description %}
+{%  block grpc_server_url %}
+    https://github.com/cyber-republic/elastos-smartweb-service/blob/master/grpc_adenine/implementations/common.py
+{% endblock grpc_server_url %}
+{%  block grpc_client_url_python %}
+    https://github.com/cyber-republic/python-grpc-adenine/blob/master/elastos_adenine/common.py
+{% endblock grpc_client_url_python %}
+{%  block grpc_client_url_golang %}
+    https://github.com/cyber-republic/go-grpc-adenine/blob/master/elastosadenine/common.go
+{% endblock grpc_client_url_golang %}
+{%  block grpc_client_url_elastOS %}
+    #
+{% endblock grpc_client_url_elastOS %}
+
+{% block service %}
+    <form class="form-group" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.get_api_key.as_p }}
+        {% if output.get_api_key %}
+            <input id="api_key" type="text" class="form-control" value="{{ request.session.api_key }}" readonly>
+        {% elif output.generate_api_key %}
+            <input id="api_key" type="text" class="form-control" value="{{ api_key }}" readonly>
+        {% endif %}
+        <button class="btn btn-secondary" type="submit" name="submit_get_api_key" style="background-color: #5ac8fa;">Get API Key</button>
+        <button class="btn btn-secondary" type="submit" name="submit_generate_api_key" style="background-color: #00dd62;">Generate API Key</button>
+    </form>
+{% endblock service %}

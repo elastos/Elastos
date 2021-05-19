@@ -1,0 +1,248 @@
+{% load sass_tags %}{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WJ72STL0EZ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+
+        gtag('config', 'G-WJ72STL0EZ');
+    </script>
+
+    <!-- Use jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"  crossorigin="anonymous"/>
+
+    <!-- Sass files -->
+    <link href="{% sass_src 'scss/sidebar.scss' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% sass_src 'scss/modal.scss' %}" rel="stylesheet" type="text/css"/>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}"/>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Overpass&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles-new.css' %}"/>
+
+    <!-- Title -->
+    {% block title %}{% endblock %}
+
+    <!-- Custom Javascript files -->
+    {% block scripts %}{% endblock %}
+
+    <!-- Header -->
+    <header>
+        <nav class="navbar navbar-expand-lg flex-column flex-md-row">
+            <a href="{% url 'landing' %}">
+                <img src="{% static 'images/common/logo-converted.svg' %}" class="logo-converted"
+                     alt="Nucleus Logo"/>
+            </a>
+            {% if request.session.logged_in == True %}
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-oggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" style="padding-left: 1rem;">
+                    <div>
+                        <a href="{% url 'login:feed' %}">
+                            <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF">
+                                Feed
+                            </button>
+                        </a>
+                    </div>
+                    <div style="padding-left: 1rem;">
+                        <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF"
+                                    data-toggle="collapse" data-target="#menu_services"
+                                    aria-controls="navbarToggleExternalContent" aria-expanded="false"
+                                    aria-label="Toggle navigation">
+                            Services
+                        </button>
+                    </div>
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="accountDropdown"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Playground</a>
+                        <div class="dropdown-menu dropdown-menu-right others-submenu" aria-labelledby="accountDropdown">
+                            <a class="dropdown-item" href="https://goplaygroundapp.nucleusconsole.com">Golang</a>
+                            <a class="dropdown-item" href="#">Python[COMING SOON]</a>
+                            <a class="dropdown-item" href="#">elastOS[COMING SOON]</a>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button"
+                                    style="border-color:transparent; background-color:transparent"
+                                    id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">
+                                Applications
+                            </button>
+                            <ul class="dropdown-menu multi-level others-submenu" role="menu" aria-labelledby="dropdownMenu">
+                                <li class="dropdown-submenu others-submenu">
+                                    <a class="dropdown-item" href="#">Browser</a>
+                                    <ul class="dropdown-menu others-submenu">
+                                        <li class="dropdown-item "><a href="{% url 'browser:mainchain' %}">Mainchain Browser</a></li>
+                                        <li class="dropdown-item"><a href="{% url 'browser:sidechain_did' %}">DID Sidechain Browser</a></li>
+                                        <li class="dropdown-item"><a href="{% url 'browser:sidechain_token' %}">Token Sidechain Browser</a></li>
+                                        <li class="dropdown-item"><a href="{% url 'browser:sidechain_neo' %}">NEO Sidechain Browser[COMING SOON]</a></li>
+                                        <li class="dropdown-item"><a href="{% url 'browser:sidechain_eth' %}">ETH Sidechain Browser</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown-submenu others-submenu">
+                                    <a class="dropdown-item" href="#">ElastOS Tools</a>
+                                    <ul class="dropdown-menu others-submenu">
+                                        <li class="dropdown-item"><a href="{% url 'elastos_trinity:dapp_store_dashboard' %}">dApp Store Dashboard</a></li>
+                                        <li class="dropdown-item"><a href="#">View your deployed dApps[COMING SOON]</a></li>
+                                        <li class="dropdown-item"><a href="{% url 'elastos_trinity:dapp_templates'%}">dApp Templates</a></li>
+                                        <li class="dropdown-item"><a href="#">Deploy your dApp[COMING SOON]</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="accountDropdown"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Workspace</a>
+                        <div class="dropdown-menu dropdown-menu-right others-submenu" aria-labelledby="accountDropdown">
+                            <a class="dropdown-item" href="#">Deploy your private net[COMING SOON]</a>
+                            <a class="dropdown-item" href="#">Deploy your testnet nodes[COMING SOON]</a>
+                            <a class="dropdown-item" href="#">Deploy your mainnet nodes[COMING SOON]</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="accountDropdown"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Account</a>
+                    <div class="dropdown-menu dropdown-menu-right others-submenu" aria-labelledby="accountDropdown">
+                        <a class="dropdown-item" href="{% url 'login:edit_profile' %}">Edit Profile</a>
+                        <a class="dropdown-item" href="{% url 'login:sign_out' %}">Log Out</a>
+                    </div>
+                </div>
+            {% endif %}
+        </nav>
+        {% if request.session.logged_in == True %}
+            <div class="pos-f-t">
+                <div class="collapse mx-auto" id="menu_services">
+                    <div class="p-2 text-center" style="background-color: #242a37;">
+                        <div class="row">
+                            <li class="col-md-3" style="list-style-type:none">
+                                <ul>
+                                    <li class="dropdown-header services-menu-title">
+                                        Recently Opened
+                                    </li>
+                                    {% if recent_services.exists %}
+                                        {% for item in recent_services %}
+                                            <a class="services-menu-content" href="{% url  item.view %}">{{ item.name }}</a><br>
+                                        {% endfor %}
+                                    {% endif %}
+                                </ul>
+                            </li>
+                            <div class="divider-vertical"></div>
+
+                            <li class="col-md-3" style="list-style-type:none">
+                                <ul>
+                                    <li class="dropdown-header services-menu-title">
+                                        Common
+                                    </li>
+                                    <a class="services-menu-content" href="{% url 'service:generate_key' %}">Generate API Key</a><br><br><br>
+                                    <li class="dropdown-header services-menu-title">
+                                        Elastos Hive
+                                    </li>
+                                    <a class="services-menu-content" href="{% url 'service:upload_and_sign' %}">Upload and Sign</a><br>
+                                    <a class="services-menu-content" href="{% url 'service:verify_and_show' %}">Verify and Show</a>
+                                </ul>
+                            </li>
+                            <li class="col-md-3" style="list-style-type:none">
+                                <ul>
+                                    <li class="dropdown-header services-menu-title">
+                                        Wallet
+                                    </li>
+                                    <a class="services-menu-content" href="{% url 'service:create_wallet' %}">Create Wallet</a><br>
+                                    <a class="services-menu-content" href="{% url 'service:view_wallet' %}">View Wallet</a><br>
+                                    <a class="services-menu-content" href="{% url 'service:request_ela' %}">Request ELA</a><br>
+                                    <li class="dropdown-header services-menu-title">
+                                        ETH Sidechain
+                                    </li>
+                                    <a class="services-menu-content" href="{% url 'service:deploy_eth_contract' %}">Deploy ETH Contract</a><br>
+                                    <a class="services-menu-content" href="{% url 'service:watch_eth_contract' %}">Watch ETH Contract</a><br>
+                                    <a class="services-menu-content" href="{% url 'service:run_eth_contract' %}">Run ETH Contract</a><br>
+                                </ul>
+                            </li>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </header>
+</head>
+<body>
+
+<!-- Body Content -->
+<div class="django_messages">
+    {% if messages %}
+        {% for message in messages %}
+            <p class="alert alert-info">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<div class=container-fluid">
+    {% block content %}
+    {% endblock %}
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="text-center">
+        <p>
+            <a href="{% static 'images/common/logo-converted.svg' %}">
+                <img src="{% static 'images/common/logo-converted.svg' %}" class="logo-converted"
+                     alt="Nucleus Logo"/>
+            </a>
+        </p>
+        <p>
+            <a class="link" href="http://www.tuum.tech" target="_blank">Tuum.tech</a>
+            <span style="color: #242a37;">|</span>
+            <a class="link" href="https://github.com/tuum-tech/elastos-nucleus/issues" target="_blank">Report</a>
+        </p>
+        <p>
+            <span class="copyright">Copyright © 2020 Tuum Technologies. All Rights Reserved.</span>
+        </p>
+    </div>
+</footer>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script
+        src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+        crossorigin="anonymous"
+></script>
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"
+></script>
+<script
+        src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"
+></script>
+<!-- Google Prettify for code syntax highlighting -->
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js??lang=python&lang=go;skin=desert"></script>
+</body>
+</html>

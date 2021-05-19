@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block scripts %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/service.css' %}" />
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+            jQuery(".tabs .tab-links a").on("click", function(e) {
+                var currentAttrValue = jQuery(this).attr("href");
+
+                // Show/Hide Tabs
+                jQuery(".tabs " + currentAttrValue)
+                    .show()
+                    .siblings()
+                    .hide();
+
+                // Change/remove current tab to active
+                jQuery(this)
+                    .parent("li")
+                    .addClass("active")
+                    .siblings()
+                    .removeClass("active");
+
+                e.preventDefault();
+            });
+        });
+    </script>
+    <script src="{% static 'javascript/service_base.js' %}" type="text/javascript"></script>
+
+    {% block scripts_services %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div class="row flex-xl-nowrap service justify-content-center">
+
+        <!-- Center Utilities -->
+        <div class="col-md-9 col-xl-9" style="margin: 30px 0px 30px 30px;">
+            <!-- Service Card -->
+            <div class="service-content">
+                <p style="float: left; margin: 30px 15px 30px 30px;">
+                    {% block serviceicon %}{% endblock %}
+                </p>
+                <p style="font-family: 'Overpass';color: #8ea2cf; margin: 35px 30px 30px 0px;">
+                    {% block servicetitle %}{% endblock %}
+                </p>
+                <div class="service-divider"></div>
+                <div style="margin: 0px 30px 30px 30px">
+                    {% block service %}{% endblock %}
+                </div>
+            </div>
+            <br/>
+
+            <!-- Documentation Card -->
+            <div class="service-content">
+                <p style="font-family: 'Overpass';color: #8ea2cf; margin: 30px;">
+                    Description
+                </p>
+                <div class="service-divider"></div>
+                <div style="font-family: 'Roboto';margin: 30px;">
+                    {% block description %}{% endblock %}
+                    <div class="service-divider" style="background-color: grey; width: 50%;"></div>
+                    In order to use this API in your own program, you need to first do the
+                    following:
+                    <ol style="margin-left: 15px;">
+                        <li>
+                            Either connect to an existing Elastos Private Net or run your own.
+                            Follow the instructions
+                            <a href="https://github.com/cyber-republic/elastos-privnet">here</a>
+                        </li>
+                        <li>
+                            Either connect to an existing Elastos Smartweb Service or run your
+                            own. Follow the instructions
+                            <a href="https://github.com/cyber-republic/elastos-smartweb-service">here</a>
+                        </li>
+                        <li>
+                            Install a language specific client library that helps you connect to
+                            Elastos Smartweb Service. Follow the instructions at:
+                            <ul style="margin-left: 30px;">
+                                <li>
+                                    <a href="https://github.com/cyber-republic/python-grpc-adenine">Python Client Library</a>
+                                </li>
+                                <li><a href="https://github.com/cyber-republic/go-grpc-adenine">Golang Client Library</a></li>
+                                <li><a href="#">elastOS Client Library[COMING SOON]</a></li>
+                            </ul>
+                            NOTE: The sample code below uses this library
+                        </li>
+                    </ol>
+                    <div class="service-divider" style="background-color: grey; width: 50%;"></div>
+                    For server side implementation(Elastos Smartweb Service) of this method,
+                    check <a href="{% block grpc_server_url %}{% endblock %}">here</a>.<br />
+                    For client side implementation of this method, check:
+                    <ul style="margin-left: 15px;">
+                        <li>
+                            <a href="{% block grpc_client_url_python %}{% endblock %}">Python</a>
+                        </li>
+                        <li>
+                            <a href="{% block grpc_client_url_golang %}{% endblock %}">Golang</a>
+                        </li>
+                        <li>
+                            <a href="{% block grpc_client_url_elastOS %}{% endblock %}">elastOS[COMING SOON]</a>
+                        </li>
+                    </ul>
+                    For sample code of the client side implementation on how you can use it
+                    in your own program, check out the code snippets below.
+                </div>
+            </div>
+            <br/>
+
+            <!-- Code Snippet Card -->
+            <div class="service-content">
+                <div class="tabs">
+                    <ul class="tab-links" style="margin: 30px;">
+                        <li class="active"><a href="#python">Python</a></li>
+                        <li><a href="#golang">Golang</a></li>
+                        <li><a href="#elastOS">elastOS[COMING SOON]</a></li>
+                    </ul>
+
+                    <div class="service-divider" style="margin-bottom: 30px;"></div>
+
+                    <div class="tab-content">
+                        <div id="python" class="tab active">
+                            <pre class="prettyprint">
+                                <code class="language-py">
+{{ sample_code.python }}
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div id="golang" class="tab">
+                            <pre class="prettyprint">
+                                <code class="language-py">
+{{ sample_code.go }}
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div id="elastOS" class="tab">
+                            <pre class="prettyprint">
+                                <code class="language-py">
+elastOS placeholder
+                                </code>
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

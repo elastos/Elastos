@@ -1,0 +1,108 @@
+.jumbotron-header {
+  width: 389px;
+  height: 118px;
+  font-size: 44px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-family: 'Overpass', sans-serif;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.jumbotron-text {
+  width: 444px;
+  height: 85px;
+  font-size: 14px;
+  font-weight: 300;
+  font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.login-button {
+  width: 222px;
+  height: 44px;
+  border-radius: 1px;
+  background-color: #00dd62;
+}
+
+.login-text {
+  width: 162px;
+  height: 22px;
+  font-size: 14px;
+  font-weight: 600;
+  font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: 0.5px;
+  text-align: center;
+  color: #242a37;
+}
+
+.main-content {
+  width: 642px;
+  height: 64px;
+  font-size: 14px;
+  font-weight: 300;
+  font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.mission-box {
+  width: 368px;
+  height: 405px;
+  background-color: #181b22;
+  box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);
+}
+
+.mission-box h4 {
+  width: 253px;
+  height: 32px;
+  font-size: 24px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-family: 'Overpass', sans-serif;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  color: #ffffff;
+  margin: 0px 40px 30px 40px;
+}
+
+.mission-box p {
+  width: 256px;
+  height: 85px;
+  font-size: 14px;
+  font-weight: 300;
+  font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #ffffff;
+  margin: 0px 40px 40px 40px;
+}
+
+.mission-box img {
+  width: 42px;
+  height: 50px;
+  object-fit: contain;
+  margin: 40px;
+}
+
+.scan-qr-box {
+  width: 496px;
+  height: 700px;
+  border-radius: 8px;
+  box-shadow: 0 2px 120px 0 rgba(0, 0, 0, 0.5);
+}

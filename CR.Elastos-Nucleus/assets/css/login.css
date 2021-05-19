@@ -1,0 +1,242 @@
+.scan-qr-box {
+  width: 496px;
+  height: 700px;
+  border-radius: 8px;
+  box-shadow: 0 2px 120px 0 rgba(0, 0, 0, 0.5);
+}
+
+.login-header {
+  height: 74px;
+  font-size: 28px;
+  font-weight: 600;
+  font-stretch: normal;
+  font-family: 'Overpass', sans-serif;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.scan-qr-text {
+  height: 64px;
+  font-size: 14px;
+  font-weight: 300;
+  font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  text-align: center;
+  color: #ffffff;
+}
+
+.scan-qr-wait {
+  height: 21px;
+  opacity: 0.5;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  text-align: center;
+  color: #ffffff;
+}
+
+.form-field-label {
+  width: 36px;
+  height: 22px;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #6b7998;
+}
+
+.register-button {
+  width: 464px;
+  height: 44px;
+  border-radius: 1px;
+  background-color: #00dd62;
+}
+
+.feed-carousel {
+  background-color: #181b22;
+}
+
+.feed-carousel h2 {
+  font-size: 44px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-family: Overpass;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.feed-carousel p {
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-family: Roboto;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.console-services {
+  border-radius: 8px;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  background-color: #242a37;
+  padding: 15px;
+  margin: 30px;
+}
+
+.console-services-title {
+  font-family: 'Overpass';
+  color: #8ea2cf;
+}
+
+.console-services-name {
+  font-size: 14px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-family: Overpass;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #ffffff;
+  margin-left: 125px;
+}
+
+.console-services-image {
+  float: left;
+  margin: 20px 20px;
+}
+
+.container .console-services-image {
+  margin: 0px;
+}  
+
+.console-services-category {
+  opacity: 0.7;
+  font-size: 14px;
+  font-weight: 300;
+  font-stretch: normal;
+  font-family: Roboto;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.sidebar-content {
+  font-size: 14px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-family: Overpass;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.code-button {
+  border-radius: 2px;
+  background-color: #ECECEC;
+}
+
+.code-button.available {
+  background-color: #00dd62;
+}
+
+.divider {
+  height: 1px;
+  opacity: 0.5;
+  background-color: #6b7998;
+  margin: 20px;
+}
+
+.container {
+  padding-left: 25px !important; 
+  padding-right: 25px !important;
+}
+
+.col-md-3 .container {
+  border-radius: 4px;
+  background-color: #181b22;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  height: 135px;
+}
+
+.container img.rounded {
+  object-fit: contain;
+  width: 25%;
+  max-width: 25%;
+  margin-bottom: 15px; 
+  margin-top: 30px;
+}
+
+.btn.btn-secondary.download {
+  width: 115px;
+  margin-left: 15px;
+  background-color: #3a4255;
+  border: solid 1px #3a4255;
+  color: #a0a0a0;
+  font-family: Roboto;
+}
+
+.dapp-title {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-family: Overpass;
+  font-size: 15px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.dapp-description {
+  height: 86px;
+  max-height: 86px;
+  font-family: Roboto;
+  font-size: 14px;
+  font-weight: 300;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.wrapper {
+  width: 100% !important;
+}
+
+span button.btn.collapsed:before
+{
+    content:'+' ;
+    display:block;
+    font-size: 3vw;
+    font-weight: bold;
+    width:20px;
+    height:100%;
+}
+span button.btn:before
+{
+    content:'-' ;
+    display:block;
+    font-size: 3vw;
+    font-weight: bold;
+    width:20px;
+    height:100%;
+}
