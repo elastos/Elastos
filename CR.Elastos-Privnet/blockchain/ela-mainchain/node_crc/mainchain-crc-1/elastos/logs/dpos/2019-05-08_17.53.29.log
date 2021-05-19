@@ -1,0 +1,14 @@
+2019/05/08 17:53:29.845123 [1;35m[INF][m GID 1, [UpdatePeers] peers: 0  height:  0
+2019/05/08 17:53:29.845671 [1;35m[INF][m GID 44, Loaded 0 addresses from file 'elastos/data/dpos/peers.json'
+2019/05/08 17:53:29.846004 [1;35m[INF][m GID 53, Server listening on [::]:10016
+2019/05/08 17:53:29.847400 [1;35m[INF][m GID 52, Server listening on 0.0.0.0:10016
+2019/05/08 17:53:59.930676 [1;35m[INF][m GID 45, [OnBadNetwork] found network bad
+2019/05/08 17:54:29.931321 [1;35m[INF][m GID 45, [OnBadNetwork] found network bad
+2019/05/08 17:55:00.004691 [1;35m[INF][m GID 45, [OnBadNetwork] found network bad
+2019/05/08 17:55:30.007602 [1;35m[INF][m GID 45, [OnBadNetwork] found network bad
+2019/05/08 17:56:00.112727 [1;35m[INF][m GID 45, [OnBadNetwork] found network bad
+2019/05/08 17:56:30.119695 [1;35m[INF][m GID 45, [OnBadNetwork] found network bad
+2019/05/08 17:57:00.187596 [1;35m[INF][m GID 45, [OnBadNetwork] found network bad
+2019/05/08 17:57:30.211214 [1;35m[INF][m GID 45, [OnBadNetwork] found network bad
+2019/05/08 17:58:00.221198 [1;35m[INF][m GID 45, [OnBadNetwork] found network bad
+2019/05/08 17:58:30.221411 [1;35m[INF][m GID 45, [OnBadNetwork] found network bad

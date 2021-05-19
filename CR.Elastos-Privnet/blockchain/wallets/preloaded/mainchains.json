@@ -1,0 +1,19 @@
+{
+    "mainchain_1": {
+        "name": "Main chain Wallet 1",
+        "description": "Pre-loaded transferred ELA: 3,000,000 ELA",
+        "privateKey": "e31bc99355244d7285e6815914c17760bcd10db88508d8818eac3f389f04eae9",
+        "publicKey": "02eb61c4a2da9cc92852e932164fb235c037354345b462ca13e55c24f6beaca400",
+        "address": "EYSLC2mgk5KTLEATK6hRYJ77Umnt1Zv72N",
+        "passwordforkeystore": "elastos"
+    },
+    "mainchain_2": {
+        "name": "Main chain Wallet 2",
+        "description": "Pre-loaded transferred ELA: 3,000,000 ELA",
+        "privateKey": "e51d292f654445381c2dd7daf19fc7a50f28011a63d7e37db56aad5f5cde3fe0",
+        "publicKey": "02cc2d00e2a20bfaa04bc901c6d121edf08d35dbe1550ab96ad3299176423f3b17",
+        "address": "ELpKMgPAvvFnRR32AKgYhGkXM1s4wZ6ZjD",
+        "passwordforkeystore": "elastos"
+    }
+  }
+  

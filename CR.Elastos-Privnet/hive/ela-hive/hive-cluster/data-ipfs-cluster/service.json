@@ -1,0 +1,108 @@
+{
+  "cluster": {
+    "id": "QmQt7khnFb3CTnLCjrzKcmAcUWPVFTR68pXfUjmQMxzL7H",
+    "peername": "Elastos Hive Privnet",
+    "private_key": "CAASqAkwggSkAgEAAoIBAQDYONtiU6Pb5eIoqZAIQ/K5nLme7uzDppDEGtpGJG3WPnnIUf47+/k1T+lJJsCp9+7d6Pejny0A5xlBDrUt6xgy8TT40HCGyevZgCwWucVo66Ul1gdVoPa5PcAQUAd3ALeUnwCER6B7h8yzQfJK7oRCKXFfPaRbBCX5aZqVmoH6tlyX3aLBHMwuCyGlVy8Mp1UK24luQkT5AE7V01ctARiVn9OUwX0ePdIyOoVB6Ss4EgTHAo8DesCc7rr+Rlk8MwlxlhpT3Lyb2OtB8cGxIvSyzvpFGXmspVi1uY+Ehmrjp2gw6SyqASp1h249ZCIi0NWdI+QZjFI4ieUO5SIMbSG5AgMBAAECggEBAKATX9/ouiwHgirGdfqYi299JzMSAblLbGuy0ZwSRjrR4Ak9IrI39qTQd46PoR10j6Q8YHIDWycK8Hhoshu/rBey2ZvHfTdc8D4DFSDyAcOOiaJ8VMvBMker/rBU/2HL5x2hpZlJCffKbvLbRMzSzpnI4sU29qHnbVG8LBTL4aTA1wiCPWmdoLpaD+sK4F8UodXwx01Lg/96KN9080MHsJLDgd5pv6/WflWQouqJO47BGvvrtlobiDHekixG/IM+XFGAcwox+kM61uX9SMEwOnBntfu/RF47drdWe3skDCZFvNuhsVMMf+8nqOxji+ByTefwtW3V3SFzduteCcobUwECgYEA9nxVLc6ny7hR88E4dOumMIXmoNDJ3zHB3ms1QwwYXGhBeYnNVKzgmzkZvbaQWHNuX8oP/4IxhOnSWszawimUdgVOucdYkuQqSK4fGvWCnLgLn4sr8Z7EtIZQb/VpBOd/BONPH+JFKd+MVWEkI0KrMwGtkIf5h+lPE0rqzIAvetkCgYEA4JF47IIpZA4agRDdLtHGmPK171eMyfLV8h1lDdWEPWK/kFzP4LK3GGbtexx1teFq+Spvmg2ixSe/5ep9h9VnmBJ04zO8x8R6A5aMuzk3wlc+uO/rMuBkPMa/zZKnBf9FeFfO90vqsTS8XfFGA7K49+BBpWVJutEQvo4zxAQ/0eECgYAEgH7ZyFV+Pg6ZIiVS1V8Csd9lforBXdpJorGlWNo1Dd5sRt0ON94eV6ulsGjwhKM2cq1aIFmhMNgbunQgabwBb9VhRUfT3wD6tNtylZteG2py7orN7fVvyqg7c0MIyOWkBDbUwUA8JI4enRiY4EXaN6Sg6CrhlZxRIOQq+ghj+QKBgQC5mCCbPnucwHcxIdHaxu5eK4EnPHET2gjtX1PMGiF/ZiQx2DLJXoopta8hJwU1ewYgxOyVIh3a2R4kkyaJ41oJeX924qRraTr5yium9APcLqSczVPRqVfOTufnqwM01qMAcXmQMgLVz2K6NRQLLGLoIUO/wLUtm2k+Q2IO5wAjoQKBgF6ZU3HmcDxsnI5Rs4aa1y3jSIShnuY+mkhmBN14+t9TZQ5l1k+7lr2KhkEshwBqJho8ZAQL8MPlSKPcAHaOS89wt5I+fKvteGQPqOIfTzVuPe4BBRl0uJI3XqICoX5vzYP4rd7iwMFDzQk4PgRBibKQcgoLASFjLbjR3WoVBVZo",
+    "secret": "149d33912c11c5a01829f3c0bd1f48866f0eeabc2dd0d40e2c17e19ecede6352",
+    "leave_on_shutdown": false,
+    "listen_multiaddress": "/ip4/0.0.0.0/tcp/9096",
+    "state_sync_interval": "10m0s",
+    "ipfs_sync_interval": "2m10s",
+    "replication_factor_min": -1,
+    "replication_factor_max": -1,
+    "monitor_ping_interval": "15s",
+    "peer_watch_interval": "5s",
+    "disable_repinning": false
+  },
+  "consensus": {
+    "raft": {
+      "init_peerset": [],
+      "wait_for_leader_timeout": "15s",
+      "network_timeout": "10s",
+      "commit_retries": 1,
+      "commit_retry_delay": "200ms",
+      "backups_rotate": 6,
+      "heartbeat_timeout": "1s",
+      "election_timeout": "1s",
+      "commit_timeout": "50ms",
+      "max_append_entries": 64,
+      "trailing_logs": 10240,
+      "snapshot_interval": "2m0s",
+      "snapshot_threshold": 8192,
+      "leader_lease_timeout": "500ms"
+    }
+  },
+  "api": {
+    "ipfsproxy": {
+      "listen_multiaddress": "/ip4/0.0.0.0/tcp/9095",
+      "node_multiaddress": "/dns4/ela-hive-ipfs-peer/tcp/5001",
+      "read_timeout": "0s",
+      "read_header_timeout": "5s",
+      "write_timeout": "0s",
+      "idle_timeout": "1m0s",
+      "extract_headers_path": "/api/v0/version",
+      "extract_headers_ttl": "5m0s"
+    },
+    "restapi": {
+      "http_listen_multiaddress": "/ip4/0.0.0.0/tcp/9094",
+      "read_timeout": "0s",
+      "read_header_timeout": "5s",
+      "write_timeout": "0s",
+      "idle_timeout": "2m0s",
+      "basic_auth_credentials": null,
+      "headers": {},
+      "cors_allowed_origins": [
+        "*"
+      ],
+      "cors_allowed_methods": [
+        "GET"
+      ],
+      "cors_allowed_headers": [],
+      "cors_exposed_headers": [
+        "Content-Type",
+        "X-Stream-Output",
+        "X-Chunked-Output",
+        "X-Content-Length"
+      ],
+      "cors_allow_credentials": true,
+      "cors_max_age": "0s"
+    }
+  },
+  "ipfs_connector": {
+    "ipfshttp": {
+      "node_multiaddress": "/dns4/ela-hive-ipfs-peer/tcp/5001",
+      "connect_swarms_delay": "30s",
+      "pin_method": "refs",
+      "ipfs_request_timeout": "5m0s",
+      "pin_timeout": "24h0m0s",
+      "unpin_timeout": "3h0m0s"
+    }
+  },
+  "pin_tracker": {
+    "maptracker": {
+      "max_pin_queue_size": 50000,
+      "concurrent_pins": 10
+    },
+    "stateless": {
+      "max_pin_queue_size": 50000,
+      "concurrent_pins": 10
+    }
+  },
+  "monitor": {
+    "monbasic": {
+      "check_interval": "15s"
+    },
+    "pubsubmon": {
+      "check_interval": "15s"
+    }
+  },
+  "informer": {
+    "disk": {
+      "metric_ttl": "30s",
+      "metric_type": "freespace"
+    },
+    "numpin": {
+      "metric_ttl": "10s"
+    }
+  }
+}

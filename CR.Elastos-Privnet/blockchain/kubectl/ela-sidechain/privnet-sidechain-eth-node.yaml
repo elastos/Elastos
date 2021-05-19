@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-sidechain-eth-node
+  name: privnet-sidechain-eth-node
+spec:
+  ports:
+  - name: "20635"
+    port: 20635
+    targetPort: 20635
+  - name: "20636"
+    port: 20636
+    targetPort: 20636
+  - name: "20638"
+    port: 20638
+    targetPort: 20638
+  selector:
+    app: privnet-sidechain-eth-node
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-sidechain-eth-node
+  name: privnet-sidechain-eth-node
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: privnet-sidechain-eth-node
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: privnet-sidechain-eth-node
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - ./geth --mine --datadir elastos_eth --syncmode 'full' --gcmode 'archive'
+          --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcvhosts '*' --rpcport 20636
+          --rpcapi 'db,eth,net,web3,personal' --ws --wsaddr 0.0.0.0 --wsorigins '*'
+          --wsport 20635 --wsapi 'db,eth,net,web3,personal' --unlock 0x961386e437294f9171040e2d56d4522c4f55187d
+          --password ./eth-accounts-pass.txt
+        image: cyberrepublic/elastos-sidechain-eth-node:privnet-v0.6
+        livenessProbe:
+          exec:
+            command:
+            - curl
+            - -H
+            - '''Content-Type:application/json'''
+            - -H
+            - '''Accept:application/json'''
+            - --data
+            - '''{"jsonrpc":"2.0","method":"eth_blockNumber","params":[], "id":1}'''
+            - http://localhost:20636
+          failureThreshold: 5
+          periodSeconds: 30
+          timeoutSeconds: 120
+        name: privnet-sidechain-eth-node
+        ports:
+        - containerPort: 20635
+        - containerPort: 20636
+        - containerPort: 20638
+        resources: {}
+        tty: true
+        volumeMounts:
+        - mountPath: /eth/elastos_eth
+          name: privnet-sidechain-eth-node-hostpath0
+        - mountPath: /eth/eth-accounts-pass.txt
+          name: privnet-sidechain-eth-node-hostpath1
+      restartPolicy: Always
+      volumes:
+      - hostPath:
+          path: /home/kpachhai/.volumes/elastos-privnet/eth-node
+        name: privnet-sidechain-eth-node-hostpath0
+      - hostPath:
+          path: /home/kpachhai/dev/src/github.com/tuum-tech/elastos-privnet/blockchain/ela-sidechain/eth/eth-node/eth-accounts-pass.txt
+        name: privnet-sidechain-eth-node-hostpath1
+status: {}

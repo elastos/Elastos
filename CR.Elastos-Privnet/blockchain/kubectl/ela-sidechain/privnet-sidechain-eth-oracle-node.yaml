@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-sidechain-eth-oracle-node
+  name: privnet-sidechain-eth-oracle-node
+spec:
+  ports:
+  - name: "20632"
+    port: 20632
+    targetPort: 20632
+  selector:
+    app: privnet-sidechain-eth-oracle-node
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-sidechain-eth-oracle-node
+  name: privnet-sidechain-eth-oracle-node
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: privnet-sidechain-eth-oracle-node
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: privnet-sidechain-eth-oracle-node
+    spec:
+      containers:
+      - image: cyberrepublic/elastos-sidechain-eth-oracle:privnet-v0.6
+        name: privnet-sidechain-eth-oracle-node
+        ports:
+        - containerPort: 20632
+        resources: {}
+        tty: true
+      restartPolicy: Always
+status: {}

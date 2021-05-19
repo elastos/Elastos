@@ -1,0 +1,8 @@
+{
+    "name": "Example of a DID that is created on DID sidechain",
+    "description": "This is an already existing DID with its corresponding public and private key",
+    "privateKey": "78F3F61DE57C2058FAB709641EAB8880F2312702896F5599FB4A714EBCF3CFFC",
+    "publicKey": "02BDA7DBA5E4E1E24245566AF75E34CC9933FAA99FFFC61081156CC05AE65422E2",
+    "publicAddr": "EJrijXpAJmFmn6Xbjdh8TZgAYKS1KsK26N",
+    "did": "iXxFsEtpt8krhcNbVL7gzRfNqrJdRT4bSw"
+}

@@ -1,0 +1,145 @@
+2019/05/08 19:11:11.634833 [1;35m[INF][m GID 1, Init wallet.
+2019/05/08 19:11:11.772682 [1;35m[INF][m GID 1, Arbiter version:  
+2019/05/08 19:11:11.772991 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/05/08 19:11:11.860685 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/05/08 19:11:11.892629 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/05/08 19:11:11.918781 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/05/08 19:11:12.046976 [1;35m[INF][m GID 1, [arbitrator] Main chain height:  438
+2019/05/08 19:11:12.123001 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/05/08 19:11:12.766306 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG
+2019/05/08 19:11:12.766642 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/05/08 19:11:12.766821 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J
+2019/05/08 19:11:12.767010 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+2019/05/08 19:11:12.767240 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/05/08 19:11:12.767480 [1;35m[INF][m GID 1, 7. Start servers.
+2019/05/08 19:11:12.767619 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/05/08 19:11:12.767928 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/05/08 19:11:12.768358 [1;35m[INF][m GID 71, Check and remove cross chain transactions from dbcache finished
+2019/05/08 19:11:16.842392 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  439
+2019/05/08 19:11:28.068181 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  440
+2019/05/08 19:11:29.335686 [1;35m[INF][m GID 37, currentHeight: 270  chainHeight: 271
+2019/05/08 19:11:29.357776 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  271
+2019/05/08 19:11:34.238086 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  441
+2019/05/08 19:11:37.435460 [1;35m[INF][m GID 37, currentHeight: 271  chainHeight: 272
+2019/05/08 19:11:37.438551 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  272
+2019/05/08 19:11:42.607924 [1;35m[INF][m GID 37, currentHeight: 272  chainHeight: 273
+2019/05/08 19:11:42.624832 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  273
+2019/05/08 19:11:43.509691 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  442
+2019/05/08 19:11:45.807492 [1;35m[INF][m GID 38, currentHeight: 96  chainHeight: 97
+2019/05/08 19:11:45.820420 [1;35m[INF][m GID 38,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  97
+2019/05/08 19:11:49.668420 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  443
+2019/05/08 19:11:50.928699 [1;35m[INF][m GID 38, currentHeight: 97  chainHeight: 98
+2019/05/08 19:11:50.940161 [1;35m[INF][m GID 38,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  98
+2019/05/08 19:11:59.926294 [1;35m[INF][m GID 37, currentHeight: 273  chainHeight: 274
+2019/05/08 19:11:59.940869 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  274
+2019/05/08 19:12:03.923522 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  444
+2019/05/08 19:12:04.076622 [1;35m[INF][m GID 38, currentHeight: 98  chainHeight: 99
+2019/05/08 19:12:04.084282 [1;35m[INF][m GID 38,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  99
+2019/05/08 19:12:12.769200 [1;35m[INF][m GID 71, Check and remove cross chain transactions from dbcache finished
+2019/05/08 19:12:12.781956 [1;35m[INF][m GID 72, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 
+2019/05/08 19:12:14.036537 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  445
+2019/05/08 19:12:16.068444 [1;35m[INF][m GID 37, currentHeight: 274  chainHeight: 275
+2019/05/08 19:12:16.075742 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  275
+2019/05/08 19:12:21.116114 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  446
+2019/05/08 19:12:30.257741 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  447
+2019/05/08 19:12:33.339241 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  448
+2019/05/08 19:12:38.560985 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  449
+2019/05/08 19:12:45.706179 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  450
+2019/05/08 19:12:55.631537 [1;35m[INF][m GID 37, currentHeight: 275  chainHeight: 276
+2019/05/08 19:12:55.637079 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  276
+2019/05/08 19:13:02.992175 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  451
+2019/05/08 19:13:12.769768 [1;35m[INF][m GID 71, Check and remove cross chain transactions from dbcache finished
+2019/05/08 19:13:12.811910 [1;35m[INF][m GID 72, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 
+2019/05/08 19:13:13.104383 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  452
+2019/05/08 19:13:17.019401 [1;35m[INF][m GID 37, currentHeight: 276  chainHeight: 277
+2019/05/08 19:13:17.023997 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  277
+2019/05/08 19:13:21.109661 [1;35m[INF][m GID 37, currentHeight: 277  chainHeight: 278
+2019/05/08 19:13:21.117369 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  278
+2019/05/08 19:13:24.330321 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  453
+2019/05/08 19:13:32.634907 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  454
+2019/05/08 19:13:37.852400 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  455
+2019/05/08 19:13:42.935495 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  456
+2019/05/08 19:13:55.076982 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  457
+2019/05/08 19:14:02.216107 [1;35m[INF][m GID 38, currentHeight: 99  chainHeight: 100
+2019/05/08 19:14:02.231702 [1;35m[INF][m GID 38,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  100
+2019/05/08 19:14:10.281695 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  458
+2019/05/08 19:14:12.770222 [1;35m[INF][m GID 71, Check and remove cross chain transactions from dbcache finished
+2019/05/08 19:14:12.842784 [1;35m[INF][m GID 72, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 
+2019/05/08 19:14:13.827154 [1;35m[INF][m GID 37, currentHeight: 278  chainHeight: 279
+2019/05/08 19:14:13.833571 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  279
+2019/05/08 19:14:16.341987 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  459
+2019/05/08 19:14:21.467361 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  460
+2019/05/08 19:14:21.521574 [1;35m[INF][m GID 38, currentHeight: 100  chainHeight: 101
+2019/05/08 19:14:21.525029 [1;35m[INF][m GID 38,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  101
+2019/05/08 19:14:28.589858 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  461
+2019/05/08 19:14:35.116911 [1;35m[INF][m GID 37, currentHeight: 279  chainHeight: 280
+2019/05/08 19:14:35.175473 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  280
+2019/05/08 19:14:35.865353 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  462
+2019/05/08 19:14:39.943147 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  463
+2019/05/08 19:14:51.155829 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  464
+2019/05/08 19:14:51.492862 [1;35m[INF][m GID 37, currentHeight: 280  chainHeight: 281
+2019/05/08 19:14:51.495826 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  281
+2019/05/08 19:14:52.143840 [1;35m[INF][m GID 38, currentHeight: 101  chainHeight: 102
+2019/05/08 19:14:52.170998 [1;35m[INF][m GID 38,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  102
+2019/05/08 19:14:56.254018 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  465
+2019/05/08 19:15:00.714446 [1;35m[INF][m GID 37, currentHeight: 281  chainHeight: 282
+2019/05/08 19:15:00.730221 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  282
+2019/05/08 19:15:01.360685 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  466
+2019/05/08 19:15:01.750413 [1;35m[INF][m GID 37, currentHeight: 282  chainHeight: 283
+2019/05/08 19:15:01.753497 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  283
+2019/05/08 19:15:02.388737 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  467
+2019/05/08 19:15:02.755018 [1;35m[INF][m GID 37, currentHeight: 283  chainHeight: 284
+2019/05/08 19:15:02.766964 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  284
+2019/05/08 19:15:07.298330 [1;35m[INF][m GID 38, currentHeight: 102  chainHeight: 103
+2019/05/08 19:15:07.312494 [1;35m[INF][m GID 38,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  103
+2019/05/08 19:15:07.465754 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  468
+2019/05/08 19:15:08.479942 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  469
+2019/05/08 19:15:12.771283 [1;35m[INF][m GID 71, Check and remove cross chain transactions from dbcache finished
+2019/05/08 19:15:12.846554 [1;35m[INF][m GID 72, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 
+2019/05/08 19:15:23.118588 [1;35m[INF][m GID 37, currentHeight: 284  chainHeight: 285
+2019/05/08 19:15:23.124349 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  285
+2019/05/08 19:15:27.168360 [1;35m[INF][m GID 37, currentHeight: 285  chainHeight: 286
+2019/05/08 19:15:27.174004 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  286
+2019/05/08 19:15:41.292072 [1;35m[INF][m GID 37, currentHeight: 286  chainHeight: 287
+2019/05/08 19:15:41.306687 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  287
+2019/05/08 19:15:42.033433 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  470
+2019/05/08 19:15:43.068833 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  471
+2019/05/08 19:15:46.105408 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  472
+2019/05/08 19:16:01.263743 [1;35m[INF][m GID 38, currentHeight: 103  chainHeight: 104
+2019/05/08 19:16:01.266973 [1;35m[INF][m GID 38,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  104
+2019/05/08 19:16:01.357237 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  473
+2019/05/08 19:16:11.794514 [1;35m[INF][m GID 37, currentHeight: 287  chainHeight: 288
+2019/05/08 19:16:11.803360 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  288
+2019/05/08 19:16:12.591264 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  474
+2019/05/08 19:16:12.772195 [1;35m[INF][m GID 71, Check and remove cross chain transactions from dbcache finished
+2019/05/08 19:16:12.921527 [1;35m[INF][m GID 72, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 
+2019/05/08 19:16:24.042771 [1;35m[INF][m GID 37, currentHeight: 288  chainHeight: 289
+2019/05/08 19:16:24.050262 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  289
+2019/05/08 19:16:28.847027 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  475
+2019/05/08 19:16:41.186291 [1;35m[INF][m GID 37, currentHeight: 289  chainHeight: 290
+2019/05/08 19:16:41.190300 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  290
+2019/05/08 19:17:00.398023 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  476
+2019/05/08 19:17:12.502022 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  477
+2019/05/08 19:17:12.772704 [1;35m[INF][m GID 71, Check and remove cross chain transactions from dbcache finished
+2019/05/08 19:17:12.925360 [1;35m[INF][m GID 72, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 
+2019/05/08 19:17:31.015476 [1;35m[INF][m GID 37, currentHeight: 290  chainHeight: 291
+2019/05/08 19:17:31.035832 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  291
+2019/05/08 19:17:31.998110 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  478
+2019/05/08 19:17:35.099035 [1;35m[INF][m GID 37, currentHeight: 291  chainHeight: 292
+2019/05/08 19:17:35.109832 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  292
+2019/05/08 19:17:38.075683 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  479
+2019/05/08 19:17:42.170805 [1;35m[INF][m GID 37, currentHeight: 292  chainHeight: 293
+2019/05/08 19:17:42.179332 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  293
+2019/05/08 19:17:54.343493 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  480
+2019/05/08 19:17:59.662488 [1;35m[INF][m GID 38, currentHeight: 104  chainHeight: 105
+2019/05/08 19:17:59.665451 [1;35m[INF][m GID 38,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  105
+2019/05/08 19:18:00.454909 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  481
+2019/05/08 19:18:04.582631 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  482
+2019/05/08 19:18:08.757239 [1;35m[INF][m GID 38, currentHeight: 105  chainHeight: 107
+2019/05/08 19:18:08.765458 [1;35m[INF][m GID 38,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  107
+2019/05/08 19:18:12.773245 [1;35m[INF][m GID 71, Check and remove cross chain transactions from dbcache finished
+2019/05/08 19:18:12.958717 [1;35m[INF][m GID 72, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 
+2019/05/08 19:18:16.783601 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  483
+2019/05/08 19:18:22.804030 [1;35m[INF][m GID 37, currentHeight: 293  chainHeight: 294
+2019/05/08 19:18:22.820991 [1;35m[INF][m GID 37,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  294
+2019/05/08 19:18:28.973076 [1;35m[INF][m GID 98, [arbitrator] Main chain height:  484

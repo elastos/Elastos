@@ -1,0 +1,8 @@
+{
+  "name": "Foundation Wallet",
+  "description": "This is where the genesis block's 33 million ELA is created",
+  "privateKey": "79aaa0b2df79e82e687063ff7fd03579130095ec93aa2d1861ee669aabff69c3",
+  "publicKey": "02636f7493c0b0da5e2bffb12e8281f4da1b1082f752acc94a8de3bcc919e84eb9",
+  "address": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
+  "passwordforkeystore": "elastos"
+}
