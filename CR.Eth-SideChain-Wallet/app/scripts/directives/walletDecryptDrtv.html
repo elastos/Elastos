@@ -1,0 +1,548 @@
+<article class="block decrypt-drtv clearfix" ng-controller='decryptWalletCtrl as $crtl'>
+
+  <!-- Column 1 - Select Type of Key -->
+  <section class="col-md-4 col-sm-6">
+
+    <h4 translate="decrypt_Access">
+      How would you like to access your wallet?
+    </h4>
+
+    <!-- View Balance Only -->
+    <label aria-flowto="aria1"
+           class="radio"
+           ng-show="globalService.currentTab==globalService.tabs.sendTransaction.id || globalService.currentTab==globalService.tabs.viewWalletInfo.id">
+      <input aria-flowto="aria1"
+             aria-label="address"
+             type="radio"
+             ng-model="walletType"
+             value="addressOnly" />
+      <span translate="x_ViewAddress">
+        View w/ Address Only
+      </span>
+    </label>
+
+    <!-- MetaMask -->
+    <!-- <label aria-flowto="aria2"
+           class="radio">
+      <input aria-flowto="aria2"
+             type="radio"
+             aria-label="MetaMask / Mist"
+             ng-model="walletType"
+             value="metamask" />
+      <span translate="x_MetaMask">
+        MetaMask / Mist
+      </span>
+    </label> -->
+
+    <!-- Keystore / JSON File -->
+    <label aria-flowto="aria6"
+           class="radio">
+      <input aria-flowto="aria6"
+             aria-label="Keystore JSON file"
+             type="radio"
+             ng-model="walletType"
+             value="fileupload" />
+      <span translate="x_Keystore2">
+        Keystore / JSON File
+      </span>
+    </label>
+
+    <!-- Mnemonic Phrase -->
+    <label aria-flowto="aria7"
+           class="radio">
+      <input aria-flowto="aria7"
+             aria-label="mnemonic phrase"
+             type="radio"
+             ng-model="walletType"
+             value="pastemnemonic" />
+      <span translate="x_Mnemonic">
+        Mnemonic Phrase
+      </span>
+    </label>
+
+    <!-- Private -->
+    <label aria-flowto="aria8"
+           class="radio">
+      <input aria-flowto="aria8"
+             aria-label="private key"
+             type="radio"
+             ng-model="walletType"
+             value="pasteprivkey" />
+      <span translate="x_PrivKey2">
+        Private Key
+      </span>
+    </label>
+
+  </section>
+  <!-- / Column 1 - Select Type of Key -->
+
+
+  <!-- Column 2 - Unlock That Key -->
+  <section class="col-md-8 col-sm-6">
+
+    <!-- View Only -->
+    <div id="selectedTypeKey" ng-if="walletType=='addressOnly'">
+      <h4 translate="x_Address">
+        Your Address
+      </h4>
+      <div class="form-group">
+        <textarea rows="4"
+                  id="aria8"
+                  class="form-control"
+                  ng-change="onAddressChange()"
+                  ng-class="Validator.isValidAddress($parent.$parent.addressOnly) ? 'is-valid' : 'is-invalid'"
+                  ng-model="$parent.$parent.addressOnly"
+                  placeholder="{{ 'x_Address' | translate }}"
+        ></textarea>
+      </div>
+      <div class="form-group">
+        <a class="btn btn-primary"
+           ng-click="decryptAddressOnly()"
+           ng-show="showAOnly"
+           role="button"
+           tabindex="0">
+             View Balance
+        </a>
+      </div>
+    </div>
+    <!-- /View Only -->
+
+    <!-- Keystore -->
+    <div ng-if="walletType=='fileupload'">
+      <h4 translate="ADD_Radio_2_alt">Select your wallet file</h4>
+      <br />
+      <div class="form-group">
+        <input style="display:none;" type="file" on-read-file="showContent($fileContent)" id="fselector" />
+        <a class="btn-file marg-v-sm"
+           ng-click="openFileDialog()"
+           translate="ADD_Radio_2_short"
+           id="aria1"
+           tabindex="0"
+           role="button">SELECT WALLET FILE... </a>
+      </div>
+      <div class="form-group" ng-if="requireFPass">
+        <p translate="ADD_Label_3">
+          Your file is encrypted. Please enter the password:
+        </p>
+        <input class="form-control"
+               ng-change="onFilePassChange()"
+               ng-class="Validator.isPasswordLenValid($parent.$parent.filePassword,0) ? 'is-valid' : 'is-invalid'"
+               ng-model="$parent.$parent.filePassword"
+               placeholder="{{ 'x_Password' | translate }}"
+               type="password" />
+      </div>
+      <div class="form-group">
+        <a tabindex="0"
+           role="button"
+           class="btn btn-primary"
+           ng-show="showFDecrypt||showPDecrypt||showMDecrypt||showParityDecrypt"
+           ng-click="decryptWallet()"
+           translate="ADD_Label_6_short">
+             UNLOCK
+         </a>
+      </div>
+    </div>
+    <!-- / Keystore -->
+
+
+    <!--  Mnemonic -->
+    <div id="selectedTypeMnemonic" ng-if="walletType=='pastemnemonic'">
+      <h4 translate="ADD_Radio_5"> Paste your mnemonic: </h4>
+
+      <br />
+      <div class="form-group">
+        <textarea id="aria4"
+                  class="form-control"
+                  ng-change="onMnemonicChange()"
+                  ng-class="Validator.isValidMnemonic($parent.$parent.manualmnemonic) ? 'is-valid' : 'is-invalid'"
+                  ng-keyup="$event.keyCode == 13 && decryptWallet()"
+                  ng-model="$parent.$parent.manualmnemonic"
+                  placeholder="{{ 'x_Mnemonic' | translate}}"
+                  rows="4"></textarea>
+      </div>
+      <div class="form-group">
+        <p translate="ADD_Label_8">
+          Password (optional):
+        </p>
+        <div>
+          <input class="form-control"
+                 id="aria5"
+                 ng-keyup="$event.keyCode == 13 && decryptWallet()"
+                 ng-model="$parent.$parent.mnemonicPassword"
+                 placeholder="{{ 'x_Password' | translate }}"
+                 type="password" />
+        </div>
+      </div>
+      <div class="form-group">
+        <a tabindex="0"
+           role="button"
+           class="btn btn-primary"
+           ng-show="showFDecrypt||showPDecrypt||showMDecrypt||showParityDecrypt"
+           ng-click="decryptWallet()"
+           translate="ADD_Label_6_short">
+             UNLOCK
+         </a>
+      </div>
+    </div>
+    <!-- / Mnemonic -->
+
+
+    <!--  Private Key -->
+    <div id="selectedTypeKey" ng-if="walletType=='pasteprivkey'">
+      <h4 translate="ADD_Radio_3">
+        Paste your private key:
+      </h4>
+      <br />
+      <div class="form-group">
+        <textarea id="aria6"
+                  class="form-control"
+                  ng-change="onPrivKeyChange()"
+                  ng-class="Validator.isValidPrivKey($parent.$parent.manualprivkey.length) ? 'is-valid' : 'is-invalid'"
+                  ng-keyup="$event.keyCode == 13 && decryptWallet()"
+                  ng-model="$parent.$parent.manualprivkey"
+                  placeholder="{{ 'x_PrivKey2' | translate }}"
+                  rows="4"
+        ></textarea>
+      </div>
+      <div class="form-group" ng-if="requirePPass">
+        <p translate="ADD_Label_3">
+          Your file is encrypted. Please enter the password:
+        </p>
+        <input class="form-control"
+               ng-change="onPrivKeyPassChange()"
+               ng-class="Validator.isPasswordLenValid($parent.$parent.privPassword,0) ? 'is-valid' : 'is-invalid'"
+               ng-keyup="$event.keyCode == 13 && decryptWallet()"
+               ng-model="$parent.$parent.privPassword"
+               placeholder="{{ 'x_Password' | translate }}"
+               type="password" />
+      </div>
+      <div class="form-group">
+        <a tabindex="0"
+           role="button"
+           class="btn btn-primary"
+           ng-show="showFDecrypt||showPDecrypt||showMDecrypt||showParityDecrypt"
+           ng-click="decryptWallet()"
+           translate="ADD_Label_6_short">
+             UNLOCK
+         </a>
+      </div>
+    </div>
+    <!-- / Private Key -->
+
+
+    <!-- Parity Phrase -->
+    <div id="selectedTypeMnemonic" ng-if="walletType=='parityBWallet'">
+      <h4 translate="ADD_Radio_5"> Paste your mnemonic: </h4>
+      <div class="form-group">
+        <textarea rows="4"
+                  id="aria9"
+                  class="form-control"
+                  ng-change="onParityPhraseChange()"
+                  ng-class="$parent.$parent.parityPhrase != '' ? 'is-valid' : 'is-invalid'"
+                  ng-keyup="$event.keyCode == 13 && decryptWallet()"
+                  ng-model="$parent.$parent.parityPhrase"
+                  placeholder="{{ 'x_ParityPhrase' | translate}}"
+        ></textarea>
+      </div>
+      <div class="form-group">
+        <a tabindex="0"
+           role="button"
+           class="btn btn-primary"
+           ng-show="showFDecrypt||showPDecrypt||showMDecrypt||showParityDecrypt"
+           ng-click="decryptWallet()"
+           translate="ADD_Label_6_short">
+             UNLOCK
+         </a>
+      </div>
+    </div>
+    <!-- / Parity Phrase -->
+
+  </section>
+  <!-- / Column 2 - Unlock That Key -->
+
+
+  <!-- MODAL -->
+  <article class="modal fade" id="mnemonicModel" tabindex="-1" role="dialog" aria-labelledby="Mnemonic Phrase Modal">
+
+    <section class="modal-dialog">
+
+      <section class="modal-content">
+
+        <div class="modal-body" role="document">
+
+          <button aria-label="Close" type="button" class="close" data-dismiss="modal">&times;</button>
+
+          <!-- Select HD Path -->
+          <h4 id="modalTitle" class="modal-title" translate="ADD_Radio_5_Path" style="margin-bottom: .25rem">
+            Select HD derivation path:
+          </h4>
+
+          <p class="alert alert-danger"
+             ng-hide="ajaxReq.type=='ETH'||ajaxReq.type=='ETC'||ajaxReq.type=='ROPSTEN ETH'||ajaxReq.type=='RINKEBY ETH'||ajaxReq.type=='KOVAN ETH'||ajaxReq.type=='EXP'||ajaxReq.type=='UBQ'||ajaxReq.type=='ELLA'">
+                We do not know the correct path for this network.
+                <a href="https://github.com/cyber-republic/eth-sidechain-wallet/issues"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                      Please open a github issue
+                </a>
+                so we can discuss / be enlightened.
+          </p>
+
+          <section class="row">
+
+            <div class="col-sm-4">
+              <label class="radio small">
+                <input aria-describedby="Path: Jaxx, Metamask, Exodus, imToken - {{HDWallet.defaultDPath}}"
+                       ng-change="onHDDPathChange()"
+                       ng-model="HDWallet.dPath"
+                       type="radio"
+                      value="{{HDWallet.defaultDPath}}"/>
+                <span ng-bind="HDWallet.defaultDPath"></span>
+                <p class="small">
+                  Jaxx, Metamask, Exodus, imToken, TREZOR (ETH) &amp; Digital Bitbox
+                </p>
+              </label>
+            </div>
+
+            <div class="col-sm-4">
+              <label class="radio small">
+                <input aria-describedby="Path: Ledger (ETH) {{HDWallet.ledgerPath}}"
+                       ng-change="onHDDPathChange()"
+                       ng-model="HDWallet.dPath"
+                       type="radio"
+                      value="{{HDWallet.ledgerPath}}"/>
+                <span ng-bind="HDWallet.ledgerPath"></span>
+                <p class="small">
+                  Ledger (ETH)
+                </p>
+              </label>
+
+              <label class="radio small">
+                <input aria-describedby="Path: Ledger (ETC) {{HDWallet.ledgerClassicPath}}"
+                       ng-change="onHDDPathChange()"
+                       ng-model="HDWallet.dPath"
+                       type="radio"
+                      value="{{HDWallet.ledgerClassicPath}}"/>
+                <span ng-bind="HDWallet.ledgerClassicPath"></span>
+                <p class="small">
+                  Ledger (ETC)
+                </p>
+              </label>
+            </div>
+
+            <div class="col-sm-4">
+              <label class="radio small">
+                <input aria-describedby="Path: TREZOR (ETC) {{HDWallet.trezorClassicPath}}"
+                       ng-change="onHDDPathChange()"
+                       ng-model="HDWallet.dPath"
+                       type="radio"
+                      value="{{HDWallet.trezorClassicPath}}"/>
+                <span ng-bind="HDWallet.trezorClassicPath"></span>
+                <p class="small">
+                  TREZOR (ETC)
+                </p>
+              </label>
+            </div>
+
+            <div class="col-sm-4">
+              <label class="radio small">
+                <input aria-describedby="Path: SingularDTV {{HDWallet.singularDTVPath}}"
+                       ng-change="onHDDPathChange()"
+                       ng-model="HDWallet.dPath"
+                       type="radio"
+                      value="{{HDWallet.singularDTVPath}}"/>
+                <span ng-bind="HDWallet.singularDTVPath"></span>
+                <p class="small">
+                  SingularDTV
+                </p>
+              </label>
+            </div>
+
+          </section>
+
+          <section class="row">
+            <div class="col-sm-4">
+              <label class="radio small">
+                <input aria-describedby="Path: TREZOR - TESTNET - {{HDWallet.trezorTestnetPath}}"
+                       ng-change="onHDDPathChange()"
+                       ng-model="HDWallet.dPath"
+                       type="radio"
+                      value="{{HDWallet.trezorTestnetPath}}"/>
+                <span ng-bind="HDWallet.trezorTestnetPath"></span>
+                <p class="small">
+                  Network: Testnets
+                </p>
+              </label>
+            </div>
+
+            <div class="col-sm-4">
+              <label class="radio small">
+                <input aria-describedby="Path: TREZOR (ETC) {{HDWallet.hwExpansePath}}"
+                       ng-change="onHDDPathChange()"
+                       ng-model="HDWallet.dPath"
+                       type="radio"
+                      value="{{HDWallet.hwExpansePath}}"/>
+                <span ng-bind="HDWallet.hwExpansePath"></span>
+                <p class="small">
+                  Network: Expanse
+                </p>
+              </label>
+            </div>
+
+            <div class="col-sm-4">
+              <label class="radio small">
+                <input aria-describedby="Path: TREZOR (ETC) {{HDWallet.hwUbqPath}}"
+                       ng-change="onHDDPathChange()"
+                       ng-model="HDWallet.dPath"
+                       type="radio"
+                      value="{{HDWallet.hwUbqPath}}"/>
+                <span ng-bind="HDWallet.hwUbqPath"></span>
+                <p class="small">
+                  Network: Ubiq
+                </p>
+              </label>
+            </div>
+
+            <div class="col-sm-4">
+              <label class="radio small">
+                <input aria-describedby="Path: TREZOR (ELLA) {{HDWallet.hwEllaismPath}}"
+                       ng-change="onHDDPathChange()"
+                       ng-model="HDWallet.dPath"
+                       type="radio"
+                      value="{{HDWallet.hwEllaismPath}}"/>
+                <span ng-bind="HDWallet.hwEllaismPath"></span>
+                <p class="small">
+                  Network: Ellaism
+                </p>
+              </label>
+            </div>
+          </section>
+
+          <section class="row">
+            <div class="col-sm-4">
+              <label class="radio small">
+                <p class="small"><strong>
+                  Your Custom Path
+                </strong></p>
+                <input aria-describedby="Path: Enter your own - {{HDWallet.customDPath}}"
+                       ng-change="onHDDPathChange()"
+                       ng-model="HDWallet.dPath"
+                       type="radio"
+                      value="{{HDWallet.customDPath}}" />
+                <input aria-describedby="Path: Enter your own - {{HDWallet.customDPath}}"
+                      type="text" class="form-control input-sm"
+                      ng-model="HDWallet.customDPath"
+                      ng-change="onCustomHDDPathChange()"
+                      style="float: right;margin: 0 0 .5rem;" />
+              </label>
+            </div>
+          </section>
+
+
+
+          <h4 id="modalTitle2" class="modal-title" translate="MNEM_1" style="margin: .5rem 0">
+            Please select the address you would like to interact with.
+          </h4>
+
+          <table class="small table table-striped table-mnemonic">
+            <tr>
+              <th translate="x_Address">
+                Address
+              </th>
+              <th translate="MYWAL_Bal">
+                Balance
+              </th>
+              <th translate="sidebar_TokenBal" class="text-center">
+                Token<br>Balances
+              </th>
+            </tr>
+            <tr ng-repeat="wallet in HDWallet.wallets track by $index">
+              <td>
+                <label>
+                  <input aria-describedby="modalTitle2"
+                         aria-label="Unlock wallet with {{wallet.getBalance()}} {{ajaxReq.type}}. Address: {{wallet.getChecksumAddressString()}}"
+                         name="addressSelect"
+                         ng-model="HDWallet.id"
+                         type="radio"
+                         value="{{$index}}" />
+                    <span class="small">
+                      {{wallet.getChecksumAddressString()}}
+                    </span>
+                </label>
+              </td>
+
+              <td>
+                <a href="{{ajaxReq.blockExplorerAddr.replace('[[address]]', wallet.getAddressString())}}"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                  {{wallet.getBalance()}} {{ajaxReq.type}}
+                </a>
+              </td>
+
+              <td class="text-center">
+                <a href="https://ethplorer.io/address/{{wallet.getAddressString()}}"
+                   target="_blank"
+                   rel="noopener noreferrer" title="https://ethplorer.io/address/{{wallet.getAddressString()}}">
+                  <img src="images/icon-external-link.svg" title="https://ethplorer.io/address/{{wallet.getAddressString()}}" ng-click="removeTokenFromLocal(token.symbol)" ng-show="token.type!=='default'" />
+                </a>
+              </td>
+
+            </tr>
+
+            <tr class="m-addresses">
+
+              <td>
+                <a ng-click="AddRemoveHDAddresses(false)"
+                   ng-show="HDWallet.numWallets > 5"
+                   role="link"
+                   tabindex="0"
+                   translate="MNEM_prev">
+                Previous Addresses
+                </a>
+              </td>
+
+              <td></td>
+
+              <td>
+                <a ng-click="AddRemoveHDAddresses(true)"
+                   role="link"
+                   tabindex="0"
+                   translate="MNEM_more">
+                More Addresses
+                </a>
+              </td>
+
+            </tr>
+          </table>
+
+          <div class="clearfix button-group">
+            <button aria-label="Unlock this Wallet"
+                    class="btn btn-primary pull-right"
+                    style="margin: 0 .1rem"
+                    ng-click="setHDWallet()"
+                    role="button"
+                    tabindex="0"
+                    translate="ADD_Label_6">
+              Access Wallet
+            </button>
+
+            <button aria-label="Cancel - Will close dialog"
+                    class="btn btn-default pull-right"
+                    style="margin: 0 .1rem"
+                    data-dismiss="modal"
+                    role="button"
+                    tabindex="0"
+                    translate="x_Cancel">
+              Cancel
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </section>
+
+  </article>
+
+</article>

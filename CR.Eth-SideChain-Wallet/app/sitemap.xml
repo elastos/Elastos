@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<url>
+  <loc>https://wallet.elaeth.io/</loc>
+  <lastmod>2017-07-02T14:16:52+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://wallet.elaeth.io/#send-transaction</loc>
+  <lastmod>2017-07-02T14:16:52+00:00</lastmod>
+  <priority>0.9</priority>
+</url>
+<url>
+  <loc>https://wallet.elaeth.io/#swap</loc>
+  <lastmod>2017-07-02T14:16:52+00:00</lastmod>
+  <priority>0.9</priority>
+</url>
+<url>
+  <loc>https://wallet.elaeth.io/#offline-transaction</loc>
+  <lastmod>2017-07-02T14:16:52+00:00</lastmod>
+  <priority>0.9</priority>
+</url>
+<url>
+  <loc>https://wallet.elaeth.io/#contracts</loc>
+  <lastmod>2017-07-02T14:16:52+00:00</lastmod>
+  <priority>0.9</priority>
+</url>
+<url>
+  <loc>https://wallet.elaeth.io/#ens</loc>
+  <lastmod>2017-07-02T14:16:52+00:00</lastmod>
+  <priority>0.9</priority>
+</url>
+<url>
+  <loc>https://wallet.elaeth.io/#check-tx-status</loc>
+  <lastmod>2017-07-02T14:16:52+00:00</lastmod>
+  <priority>0.9</priority>
+</url>
+<url>
+  <loc>https://wallet.elaeth.io/#view-wallet-info</loc>
+  <lastmod>2017-07-02T14:16:52+00:00</lastmod>
+  <priority>0.9</priority>
+</url>
+<url>
+  <loc>https://wallet.elaeth.io/signmsg.html</loc>
+  <lastmod>2017-07-02T14:16:52+00:00</lastmod>
+  <priority>0.5</priority>
+</url>
+<url>
+  <loc>https://wallet.elaeth.io/helpers.html</loc>
+  <lastmod>2017-07-02T14:16:52+00:00</lastmod>
+  <priority>0.5</priority>
+</url>
+</urlset>

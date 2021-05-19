@@ -1,0 +1,239 @@
+// Header
+.header {
+  background: white;
+  box-shadow: 0px 6px 50px 0px rgba(0,0,0,.07);
+  .header__wrap {
+    border-bottom: 1px solid @gray-lighter;
+
+    > .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      &:before,
+      &:after {
+        content: none;
+      }
+
+      @media screen and (max-width: @screen-sm) {
+        padding: 0;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        > * {
+          width: 100%;
+        }
+      }
+    }
+  }
+  .header__dropdowns {
+    align-self: flex-end;
+    display: flex;
+    align-items: center;
+
+    @media screen and (max-width: @screen-sm) {
+      border-top: 1px solid @gray-lighter;
+    }
+
+    .dropdown {
+      text-align: center;
+      border-left: 1px solid @gray-lighter;
+      height: 100%;
+
+      @media screen and (max-width: @screen-sm) {
+        flex: 1;
+      }
+
+      &:last-child {
+        @media screen and (min-width: @screen-md) {
+          border-right: 1px solid @gray-lighter;
+        }
+        @media screen and (max-width: @screen-md) {
+          display: none;
+        }
+      }
+
+
+      & > a {
+        display: block;
+        font-size: .85rem;
+        color: @gray-dark;
+        position: relative;
+        white-space: nowrap;
+        &:after {
+          content:"";
+          width: 0;
+          height: 0;
+          border-left: 4px solid transparent;
+          border-right: 4px solid transparent;
+          border-top: 4px solid @gray-light;
+          position: absolute;
+          right: @space-sm;
+          top: 50%;
+        }
+      }
+      & > a p {
+        margin-bottom: 0.2rem;
+        color: @gray-light;
+        font-size: .65rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        font-weight: 900;
+      }
+    }
+    .dropdown-toggle {
+      padding: 0.4rem 1.4rem 0.4rem 0.9rem;
+    }
+  }
+
+  .dropdown.dropdown-alerts {
+    & > a p {
+      color: @brand-danger;
+    }
+    a:after {
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-left: 4px solid #9a9a9a;
+    }
+  }
+
+  .header__brand {
+    align-self: flex-start;
+    display: flex;
+    justify-content: center;
+
+    img {
+      padding: .25rem 0;
+      max-width: 166px;
+      height: 48px;
+    }
+  }
+}
+
+
+.header--gas {
+  max-width: 26rem;
+  color: @text-color;
+  padding: @space-xs;
+  p {
+    font-weight: 400;
+    margin: @space-xs 0 0;
+    padding: 0 @space-xs;
+  }
+  a, a:hover, a:focus, a:visited {
+    color: @brand-primary;
+  }
+}
+
+
+// Navigation
+@nav-height: 2.1rem;
+@nav-bg: #fbfbfb;
+.nav-container {
+  position: relative;
+  overflow: hidden;
+  height: @nav-height;
+  background: @nav-bg;
+  .nav-scroll {
+    overflow-x: auto;
+    margin-bottom: -20px;
+    font-size: 0;
+    white-space: nowrap;
+    @media screen and (max-width: @screen-sm) {
+      margin: 0 -5% -20px;
+    }
+    .nav-inner {
+      display: inline-block;
+      font-size: 0;
+      margin-bottom: @space;
+      min-width: 100%;
+      padding: 2px 1px 5px;
+      vertical-align: middle;
+      .nav-item {
+        display: inline-block;
+        font-size: 0;
+        &.NAV_Swap a:before {
+          content:"";
+          display: inline-block;
+          margin-top: -.1rem;
+          width: 1.1rem;
+          height: 1.1rem;
+          background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20viewBox%3D%220%200%2013.44%2020%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22a%22%20x1%3D%2211.25%22%20y1%3D%22412.23%22%20x2%3D%226.79%22%20y2%3D%22399.3%22%20gradientTransform%3D%22matrix(1%2C%200%2C%200%2C%20-1%2C%20-3.28%2C%20413.79)%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220.13%22%20stop-color%3D%22%232b415b%22%2F%3E%3Cstop%20offset%3D%220.38%22%20stop-color%3D%22%233b5676%22%2F%3E%3Cstop%20offset%3D%220.69%22%20stop-color%3D%22%2354769e%22%2F%3E%3Cstop%20offset%3D%220.79%22%20stop-color%3D%22%2352749b%22%2F%3E%3Cstop%20offset%3D%220.86%22%20stop-color%3D%22%234d6c92%22%2F%3E%3Cstop%20offset%3D%220.92%22%20stop-color%3D%22%23436082%22%2F%3E%3Cstop%20offset%3D%220.98%22%20stop-color%3D%22%23364f6c%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23314863%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22b%22%20x1%3D%2216.7%22%20y1%3D%22406.31%22%20x2%3D%225.26%22%20y2%3D%22412.92%22%20gradientTransform%3D%22matrix(1%2C%200%2C%200%2C%20-1%2C%20-3.28%2C%20413.79)%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2354769e%22%2F%3E%3Cstop%20offset%3D%220.48%22%20stop-color%3D%22%2353749c%22%2F%3E%3Cstop%20offset%3D%220.69%22%20stop-color%3D%22%234f6f95%22%2F%3E%3Cstop%20offset%3D%220.84%22%20stop-color%3D%22%23486588%22%2F%3E%3Cstop%20offset%3D%220.91%22%20stop-color%3D%22%23435f80%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22c%22%20x1%3D%2223.26%22%20y1%3D%22410.02%22%20x2%3D%2212.05%22%20y2%3D%22410.02%22%20gradientTransform%3D%22matrix(1%2C%200%2C%200%2C%20-1%2C%20-3.28%2C%20413.79)%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220.25%22%20stop-color%3D%22%2320344c%22%2F%3E%3Cstop%20offset%3D%220.41%22%20stop-color%3D%22%23273d57%22%2F%3E%3Cstop%20offset%3D%220.67%22%20stop-color%3D%22%23395373%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2354769e%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22d%22%20x1%3D%22-1.06%22%20y1%3D%22410.03%22%20x2%3D%2210.52%22%20y2%3D%22410.03%22%20gradientTransform%3D%22matrix(1%2C%200%2C%200%2C%20-1%2C%20-3.28%2C%20413.79)%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220.25%22%20stop-color%3D%22%2354769e%22%2F%3E%3Cstop%20offset%3D%220.41%22%20stop-color%3D%22%234d6e93%22%2F%3E%3Cstop%20offset%3D%220.69%22%20stop-color%3D%22%233c5777%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23233850%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22e%22%20x1%3D%2211.35%22%20y1%3D%22418.26%22%20x2%3D%2211.12%22%20y2%3D%22408.75%22%20gradientTransform%3D%22matrix(1%2C%200%2C%200%2C%20-1%2C%20-3.28%2C%20413.79)%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220.01%22%20stop-color%3D%22%2354769e%22%2F%3E%3Cstop%20offset%3D%220.2%22%20stop-color%3D%22%23507198%22%2F%3E%3Cstop%20offset%3D%220.45%22%20stop-color%3D%22%23466488%22%2F%3E%3Cstop%20offset%3D%220.73%22%20stop-color%3D%22%23354f6d%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2321354d%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22f%22%20x1%3D%2213.38%22%20y1%3D%22415.1%22%20x2%3D%224.02%22%20y2%3D%22406.01%22%20gradientTransform%3D%22matrix(1%2C%200%2C%200%2C%20-1%2C%20-3.28%2C%20413.79)%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220.25%22%20stop-color%3D%22%2354769e%22%2F%3E%3Cstop%20offset%3D%220.41%22%20stop-color%3D%22%234d6e93%22%2F%3E%3Cstop%20offset%3D%220.68%22%20stop-color%3D%22%233c5777%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2322364e%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%229.98%22%20y1%3D%22413.89%22%20x2%3D%2217.79%22%20y2%3D%22406.93%22%20xlink%3Ahref%3D%22%23f%22%2F%3E%3ClinearGradient%20id%3D%22h%22%20x1%3D%221.41%22%20y1%3D%22400.28%22%20x2%3D%2218.16%22%20y2%3D%22394.3%22%20gradientTransform%3D%22matrix(1%2C%200%2C%200%2C%20-1%2C%20-3.28%2C%20413.79)%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220.27%22%20stop-color%3D%22%2354769e%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23425e7f%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22i%22%20x1%3D%228.98%22%20y1%3D%22417.71%22%20x2%3D%2218.95%22%20y2%3D%22408.83%22%20gradientTransform%3D%22matrix(1%2C%200%2C%200%2C%20-1%2C%20-3.28%2C%20413.79)%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220.46%22%20stop-color%3D%22%2354769e%22%20stop-opacity%3D%220%22%2F%3E%3Cstop%20offset%3D%220.57%22%20stop-color%3D%22%2352739a%22%20stop-opacity%3D%220.22%22%2F%3E%3Cstop%20offset%3D%220.68%22%20stop-color%3D%22%234a698e%22%20stop-opacity%3D%220.43%22%2F%3E%3Cstop%20offset%3D%220.78%22%20stop-color%3D%22%233d597b%22%20stop-opacity%3D%220.64%22%2F%3E%3Cstop%20offset%3D%220.89%22%20stop-color%3D%22%232c435f%22%20stop-opacity%3D%220.84%22%2F%3E%3Cstop%20offset%3D%220.97%22%20stop-color%3D%22%231b2e45%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22j%22%20x1%3D%2211.25%22%20y1%3D%22393.45%22%20x2%3D%2211.25%22%20y2%3D%22419.36%22%20xlink%3Ahref%3D%22%23f%22%2F%3E%3C%2Fdefs%3E%3Ctitle%3Elogo-shapeshift--small%3C%2Ftitle%3E%3Cpolygon%20points%3D%2212.6%204.83%2013.44%200.01%209.91%201.48%206.03%201.48%202.49%200%203.34%204.83%202.54%207.53%203.29%208%200%2010.89%200%2013.61%203.77%2018.8%207.32%2019.99%207.33%2020%2010.1%2018.58%2010.11%2018.57%2010.11%2016.46%208.53%2015.6%208.53%2015.6%208.53%2015.6%2011.01%209.02%2010.99%209.02%2013.39%207.53%2012.6%204.83%22%20style%3D%22fill%3A%23273c51%22%2F%3E%3Cpolygon%20points%3D%225.7%205.9%200%2010.89%207.94%2015.46%207.97%206.05%205.7%205.9%22%20style%3D%22fill%3Aurl(%23a)%22%2F%3E%3Cpolygon%20points%3D%224.89%208.99%207.94%2017.16%207.97%209.44%204.89%208.99%22%20style%3D%22fill%3A%23466284%22%2F%3E%3Cpolygon%20points%3D%2211.01%209.02%207.94%2017.16%207.97%209.44%2011.01%209.02%22%20style%3D%22fill%3A%23354d6a%22%2F%3E%3Cpolygon%20points%3D%2213.44%200.01%2010.4%201.6%207.97%202.13%205.52%201.6%202.49%200%203.54%204.82%202.54%207.53%206.02%209.69%207.95%2011.79%207.95%2011.8%207.96%2011.79%207.97%2011.8%207.97%2011.79%209.9%209.69%2013.39%207.53%2012.4%204.83%2013.44%200.01%22%20style%3D%22fill%3Aurl(%23b)%22%2F%3E%3Cpolygon%20points%3D%2213.44%200.01%2012.6%204.83%2013.39%207.53%2012.4%204.83%2013.44%200.01%22%20style%3D%22fill%3Aurl(%23c)%22%2F%3E%3Cpolygon%20points%3D%222.49%200%203.34%204.83%202.54%207.53%203.54%204.82%202.49%200%22%20style%3D%22fill%3Aurl(%23d)%22%2F%3E%3Cpolygon%20points%3D%222.49%200%206.03%201.48%209.91%201.48%2013.44%200.01%2010.4%201.6%207.97%202.13%205.52%201.6%202.49%200%22%20style%3D%22fill%3Aurl(%23e)%22%2F%3E%3Cpolygon%20points%3D%223.54%204.82%203.36%205.31%207.03%201.93%203.54%204.82%22%20style%3D%22fill%3Aurl(%23f)%22%2F%3E%3Cpolygon%20points%3D%2212.4%204.83%208.92%201.93%2012.57%205.28%2012.4%204.83%22%20style%3D%22fill%3Aurl(%23g)%22%2F%3E%3Cpolygon%20points%3D%220%2010.89%208.53%2015.6%209.61%2018.3%207.33%2019.17%203.77%2018.8%200%2013.61%200%2010.89%22%20style%3D%22fill%3Aurl(%23h)%22%2F%3E%3Cpolygon%20points%3D%227.06%2014.79%203.78%2018.79%203.77%2018.8%207.32%2019.99%207.33%2020%2010.1%2018.58%2010.11%2018.57%2010.11%2016.46%207.06%2014.79%22%20style%3D%22fill%3A%23fff%22%2F%3E%3Cpolygon%20points%3D%2212.4%204.83%2013.44%200.01%2010.4%201.6%208.92%201.93%2012.4%204.83%22%20style%3D%22fill%3Aurl(%23i)%22%2F%3E%3Cpolygon%20points%3D%227.97%2011.8%207%2010.75%207.97%209.69%208.94%2010.75%207.97%2011.8%22%20style%3D%22fill%3A%23fff%22%2F%3E%3Cpolygon%20points%3D%227.87%202.11%207.97%202.13%208.06%202.12%207.97%208.27%207.87%202.11%22%20style%3D%22fill%3Aurl(%23j)%22%2F%3E%3Cpath%20d%3D%22M7.8%2C2.12%22%20transform%3D%22translate(-3.28)%22%20style%3D%22fill%3Anone%22%2F%3E%3Cpath%20d%3D%22M7.66%2C2.12%22%20transform%3D%22translate(-3.28)%22%20style%3D%22fill%3Anone%22%2F%3E%3C%2Fsvg%3E');
+          background-position: center;
+          background-repeat: no-repeat;
+          background-size: contain;
+          vertical-align: middle;
+          margin-right: @space-xs;
+        }
+        a {
+          color: darken(@link-color, 15%);
+          display: block;
+          font-size: 15px;
+          padding: .3rem .75em;
+          white-space: nowrap;
+          position: relative;
+        }
+        a:after {
+          content: "";
+          background: @brand-primary;
+          height: 2px;
+          width: 100%; left: 0px;
+          position: absolute;
+          bottom: -1px;
+          transition: all 250ms ease 0s;
+          transform: scale(0);
+        }
+        &.active a,
+        a:hover,
+        a:focus {
+          color: @brand-primary;
+          text-decoration: none;
+          transition: all 250ms ease 0s;
+          &:after {
+            transform: scale(1);
+            transition: all 250ms ease 0s;
+          }
+        }
+      }
+    }
+  }
+
+  .nav-arrow-right,
+  .nav-arrow-left {
+    background-color: white;
+    bottom: 12px;
+    color: #d6d6d6;
+    height: @nav-height;
+    line-height: @nav-height - @space-xs;
+    padding-bottom: @space-xs;
+    font-size: 33px;
+    min-width: 50px;
+    position: absolute;
+    top: 0;
+    vertical-align: middle;
+    width: 5%;
+    z-index: 999;
+    &:hover {
+      text-decoration: none;
+      opacity: 1 !important;
+    }
+  }
+  .nav-arrow-right {
+    right: 3%;
+    background: linear-gradient(to right, fade(@nav-bg, 0%) 0%, fade(@nav-bg, 100%) 47%, fade(@nav-bg, 100%) 100%);
+    padding-right: 5px;
+    text-align: right;
+    @media screen and (max-width: @screen-sm) {
+      right: 0;
+    }
+  }
+  .nav-arrow-left {
+    left: 3%;
+    background: linear-gradient(to left, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 47%,rgba(255,255,255,1) 100%);
+    padding-left: 5px;
+    text-align: left;
+    @media screen and (max-width: @screen-sm) {
+      left: 0;
+    }
+  }
+}

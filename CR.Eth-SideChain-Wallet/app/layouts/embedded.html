@@ -1,0 +1,21 @@
+@@include( '../includes/headerEmbedded.tpl', { "site": "web" } )
+
+  <section class="container" style="min-height: 70%" ng-controller='viewCtrl'>
+
+  <!-- tab panes -->
+
+    <div class="tab-content" >
+
+      @@include( '../includes/generateWallet.tpl', { "site": "web" } )
+
+    </div>
+
+    <!-- /tab panes -->
+
+  @@include('../includes/alerts.tpl')
+
+
+  </section>
+
+
+@@include( '../includes/footerEmbedded.tpl', { "site": "web" } )
