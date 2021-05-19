@@ -1,0 +1,132 @@
+
+
+.homeContainer {
+  background-color: $background_white;
+
+  .projectTitle {
+    > img {
+      padding-left: 25px;
+    }
+
+    > small {
+      color: $tertiary_color;
+    }
+  }
+}
+
+.mainContainer {
+  .productShowcaseSection {
+    padding-top: 5vh;
+    background-color: $secondary_color;
+    color: white;
+
+    &.elaBackground {
+      background-image: url('/img/footer_bg_3.png');
+      background-position-y: 25%;
+    }
+
+    div, p, h2 {
+      color: white;
+      margin: 0;
+    }
+  }
+
+  .explainer {
+
+    p {
+      line-height: 2;
+      font-weight: 400;
+      font-size: 1.2rem;
+    }
+
+    a {
+      display: block;
+      font-size: 1.4rem;
+      color: $tertiary_color;
+      padding-bottom: 1vh;
+    }
+  }
+
+  .elastosETH {
+
+    text-align: left;
+
+    &.elaBackground {
+      background-image: url('/img/footer_bg.png');
+    }
+
+    .blockContent {
+
+      p {
+        margin-bottom: 15px;
+        font-weight: 300;
+      }
+    }
+
+    a {
+      color: $primary_light_color;
+      font-weight: 400;
+
+      &.button {
+        color: #ffffff;
+        background-color: $primary_color;
+
+        &:hover {
+          background-color: $tertiary_color;
+        }
+      }
+    }
+
+    .blockImage img {
+      max-height: 400px;
+    }
+  }
+
+  .elastosBlockchain {
+
+    .blockContent {
+      text-align: left;
+    }
+
+    ul {
+
+      li {
+        margin-bottom: 12px;
+      }
+    }
+
+    a {
+      color: $tertiary_color;
+
+      &.button {
+        color: #ffffff;
+        background-color: $primary_color;
+
+        &:hover {
+          background-color: $tertiary_color;
+        }
+      }
+
+    }
+  }
+
+  .imageAlignTop .blockImage {
+    max-width: none;
+
+    > img {
+      max-height: 100px;
+    }
+  }
+}
+
+.promoRow {
+
+  .button {
+    color: $text_default_color;
+    border-color: $primary_color;
+
+    &:hover {
+      background-color: #efefef;
+    }
+  }
+}

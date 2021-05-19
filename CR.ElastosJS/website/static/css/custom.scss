@@ -1,0 +1,261 @@
+$text_default_color: #333;
+$text_light_gray: rgba(0, 0, 0, 0.45);
+$text_lighter_gray: rgba(3, 30, 40, 0.3);
+$text_dark_gray: #545454;
+$text_new_gray: #434D72;
+
+$primary_color: #0b687c;
+$secondary_color: #1c2f4a;
+$tertiary_color: #4f789c;
+
+$primary_light_color: #92b6cc;
+
+$background_white: #ffffff;
+
+$ela_red: #9b5f52;
+$ela_green: #5e8787;
+
+
+
+@import url("https://use.typekit.net/ild6syp.css");
+
+html,
+body,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+li {
+  font-family: "Bio Sans", sans-serif;
+}
+
+.normal {
+  font-weight: 400;
+}
+
+.text-white {
+  color: #ffffff;
+}
+
+
+
+
+
+
+.docMainWrapper {
+
+  a,
+  .toc .toggleNav ul > li.navListItemActive a {
+    color: $primary_color;
+    font-weight: 400;
+
+    &:hover {
+      color: $primary_light_color !important;
+    }
+  }
+
+  h3,
+  strong {
+    font-weight: 500;
+  }
+
+  p,
+  span {
+    font-weight: 300;
+  }
+
+}
+
+
+.nav-footer {
+
+  background-image: url('/img/industry_identity_bg.png');
+  background-size: cover;
+  background-position: center top;
+
+}
+
+
+
+header {
+
+  .navigationSlider .slidingNav > ul.nav-site {
+
+    background-color: $background_white;
+
+    > li > a {
+      color: $text_default_color;
+      font-weight: 500;
+    }
+  }
+
+}
+
+
+
+.homeContainer {
+  background-color: $background_white;
+
+  .projectTitle {
+    > img {
+      padding-left: 25px;
+    }
+
+    > small {
+      color: $tertiary_color;
+    }
+  }
+}
+
+.mainContainer {
+  .productShowcaseSection {
+    padding-top: 5vh;
+    background-color: $secondary_color;
+    color: white;
+
+    &.elaBackground {
+      background-image: url('/img/footer_bg_3.png');
+      background-position-y: 25%;
+    }
+
+    div, p, h2 {
+      color: white;
+      margin: 0;
+    }
+  }
+
+  .explainer {
+
+    p {
+      line-height: 2;
+      font-weight: 400;
+      font-size: 1.2rem;
+    }
+
+    a {
+      display: block;
+      font-size: 1.4rem;
+      color: $tertiary_color;
+      padding-bottom: 1vh;
+    }
+  }
+
+  .elastosETH {
+
+    text-align: left;
+
+    &.elaBackground {
+      background-image: url('/img/footer_bg.png');
+    }
+
+    .blockContent {
+
+      p {
+        margin-bottom: 15px;
+        font-weight: 300;
+      }
+    }
+
+    a {
+      color: $primary_light_color;
+      font-weight: 400;
+
+      &.button {
+        color: #ffffff;
+        background-color: $primary_color;
+
+        &:hover {
+          background-color: $tertiary_color;
+        }
+      }
+    }
+
+    .blockImage img {
+      max-height: 400px;
+    }
+  }
+
+  .elastosBlockchain {
+
+    .blockContent {
+      text-align: left;
+    }
+
+    ul {
+
+      li {
+        margin-bottom: 12px;
+      }
+    }
+
+    a {
+      color: $tertiary_color;
+
+      &.button {
+        color: #ffffff;
+        background-color: $primary_color;
+
+        &:hover {
+          background-color: $tertiary_color;
+        }
+      }
+
+    }
+  }
+
+  .imageAlignTop .blockImage {
+    max-width: none;
+
+    > img {
+      max-height: 100px;
+    }
+  }
+}
+
+.promoRow {
+
+  .button {
+    color: $text_default_color;
+    border-color: $primary_color;
+
+    &:hover {
+      background-color: #efefef;
+    }
+  }
+}
+
+
+@media only screen and (min-device-width: 360px) and (max-device-width: 736px) {
+
+}
+
+@media only screen and (max-width: 736px) {
+  .elastosFeatures.container {
+    border-top: 1px solid $primary_light_color;
+    padding-top: 5vh;
+    margin-top: 5vh;
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+}
+
+@media only screen and (max-width: 1023px) {
+
+  // hide the Metamask logo below with of 1024px
+  .mainContainer .elastosETH .blockImage {
+    display: none;
+  }
+
+}
+
+@media only screen and (min-width: 1400px) {
+
+}
+
+@media only screen and (min-width: 1500px) {
+}
