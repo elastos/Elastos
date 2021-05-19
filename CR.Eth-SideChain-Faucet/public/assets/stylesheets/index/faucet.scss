@@ -1,0 +1,37 @@
+%title {
+  color: #333;
+  text-transform: uppercase;
+  font-size: 16px;
+  font-weight: bold;
+}
+%description {
+  color: #8197a2;
+  line-height: 24px;
+  font-size: 14px;
+  font-weight: normal;
+}
+.request-tokens {
+  @extend %item;
+  padding: 30px;
+  display: inline-block;
+
+  h1 {
+    @extend %title;
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    @extend %description;
+    margin-bottom: 20px;
+  }
+
+  &-button {
+    @extend %btn;
+    display: inline-block;
+    background-color: #08b3f2;
+
+    &:hover {
+      background-color: #079dd4;
+    }
+  }
+}

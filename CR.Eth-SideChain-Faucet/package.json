@@ -1,0 +1,46 @@
+{
+  "name": "poa-network-sokol-faucet",
+  "version": "1.0.1",
+  "description": "Sokol tetnet POA Network faucet",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run sass && npm run coffee && node index.js",
+    "sass": "gulp sass",
+    "coffee": "gulp javascript",
+    "watch": "gulp watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.heroku.com/faucet-sokol.git"
+  },
+  "author": "poanetwork",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "1.18.3",
+    "ethereumjs-tx": "1.3.7",
+    "express": "4.16.4",
+    "moment": "2.24.0",
+    "node-sass": "^4.12.0",
+    "querystring": "0.2.0",
+    "web3": "^1.0.0-beta.34"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.0",
+    "gulp-add-src": "1.0.0",
+    "gulp-autoprefixer": "6.0.0",
+    "gulp-cli": "2.0.1",
+    "gulp-concat": "2.6.1",
+    "gulp-concat-css": "3.1.0",
+    "gulp-include": "2.3.1",
+    "gulp-order": "1.2.0",
+    "gulp-postcss": "8.0.0",
+    "gulp-sass": "4.0.2",
+    "gulp-sass-glob": "1.0.9",
+    "gulp-uglify": "3.0.1",
+    "gulp-uglifycss": "1.1.0",
+    "http-server": "0.11.1"
+  },
+  "engines": {
+    "node": "8.x"
+  }
+}

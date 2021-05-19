@@ -1,0 +1,60 @@
+.footer {
+  @extend %full-width;
+  position: absolute;
+  bottom: 0;
+  height: $footer-height;
+  background-image: url(../images/bg_footer.png);
+  background-size: cover;
+  background-position: center center;
+  color: #fff;
+
+  @media screen and (max-width: $tablet-width) {
+    height: $footer-height + 20px;
+  }
+
+  .container {
+    position: relative;
+  }
+
+  .logo,
+  .socials {
+    transform: translateY(-50%);
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+
+    @media screen and (max-width: $tablet-width) {
+      transform: translate(0);
+      top: 20px;
+    }
+  }
+
+  .logo {
+    @include image-2x('../images/FAUCET_footer@2x.png', 126px, 24px);
+    z-index: 2;
+    display: inline-block;
+    vertical-align: middle;
+    width: 126px;
+    height: 24px;
+    background-image: url(../images/FAUCET_footer.png);
+    background-position: -37px 0;
+    background-repeat: no-repeat;
+  }
+
+  .rights {
+    color: #fff;
+    line-height: $footer-height;
+    text-align: center;
+    font-size: 12px;
+
+    @media screen and (max-width: $tablet-width) {
+      padding-top: $footer-height;
+      line-height: 20px;
+    }
+  }
+
+  .socials {
+    right: 0;
+  }
+}
+

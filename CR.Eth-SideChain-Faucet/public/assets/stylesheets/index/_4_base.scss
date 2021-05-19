@@ -1,0 +1,53 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+p, h1, h2, h3, h4 {
+  margin: 0;
+  padding: 0;
+  font-family: 'Open Sans', sans-serif;
+}
+
+html {
+  height: 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center center;
+}
+
+body {
+  position: relative;
+  display: table;
+  width: 100%;
+  min-width: $container-width;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 80px 0 60px;
+
+  @media screen and (max-width: $container-width) {
+    min-width: 100%;
+  }
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.content {
+  display: table-cell;
+  vertical-align: middle;
+  background-color: #fbfbfb;
+  text-align: center;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
