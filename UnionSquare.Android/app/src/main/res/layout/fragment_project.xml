@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px80">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/px25"
+            android:gravity="center_vertical"
+            android:text="项目"
+            android:textColor="#2f2f2f"
+            android:textSize="18sp" />
+
+        <ImageView
+            android:id="@+id/homesearch"
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="@dimen/px18"
+            android:layout_marginRight="@dimen/px18"
+            android:background="@drawable/icon_search" />
+    </RelativeLayout>
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#dddddd" />
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/mTabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px60"
+        app:tabGravity="center"
+        app:tabIndicatorColor="@color/maincolor"
+        app:tabIndicatorHeight="@dimen/px3"
+        app:tabMode="scrollable"
+        app:tabTextColor="@color/maincolor">
+
+    </android.support.design.widget.TabLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/mViewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+</LinearLayout>

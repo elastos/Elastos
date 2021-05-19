@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/found_bg"
+    android:orientation="vertical">
+
+
+    <include layout="@layout/title_bar" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px240"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="@dimen/px33"
+        android:layout_marginRight="15dp"
+        android:background="@drawable/sc_stroke">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="27dp"
+                    android:layout_marginTop="24dp"
+                    android:layout_weight="1"
+                    android:textColor="#ffffffff"
+                    android:textSize="16sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tv_address"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="27dp"
+                    android:layout_marginTop="48dp"
+                    android:text="A6ESh9uaN...wnxzYKuKPjX"
+                    android:textColor="#ffffffff"
+                    android:textSize="11sp"
+                    android:visibility="gone"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tv_num_vote"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="27dp"
+                    android:layout_weight="1"
+                    android:drawableStart="@mipmap/my_vote_unlocked"
+                    android:drawablePadding="@dimen/px7"
+                    android:gravity="center"
+                    android:text="本次投票："
+                    android:textColor="#ffffffff"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+
+            <ImageView
+                android:src="@mipmap/found_vote_mine_go"
+                android:id="@+id/iv_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="18dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/iv_load"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:src="@mipmap/my_vote_waiting_sheet"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_weight="1"
+        android:background="@drawable/sc_26ffffff_3"
+        android:padding="15dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/last_voting_record"
+            android:textColor="#ffffffff" />
+
+        <TextView
+            android:id="@+id/tv_totle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:textColor="#ffffffff" />
+
+        <TextView
+            android:id="@+id/tv_blank"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/no_voting_records"
+            android:textColor="@color/hint_color"
+            android:textSize="18sp" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/tv_totle"
+            android:layout_marginTop="15dp"
+            android:visibility="gone" />
+
+
+    </RelativeLayout>
+
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/ll_bgtp"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@color/qmui_config_color_25_pure_black"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/qmui_config_color_white" />
+
+
+        <TextView
+            android:id="@+id/tv_goingtovote"
+            style="@style/button_margin"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="15dp"
+            android:height="50dp"
+            android:background="@drawable/setting_item_select"
+            android:text="@string/vote_again"
+            android:textSize="17sp" />
+
+
+    </LinearLayout>
+
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

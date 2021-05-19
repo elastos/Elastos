@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/qmuilinearlayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/found_bg"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/title_layout"
+        layout="@layout/title_bar" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:layout_below="@+id/title_layout"
+        android:orientation="vertical">
+        
+        <EditText
+            android:id="@+id/nickname"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:gravity="center_vertical"
+            android:textColor="@color/white"
+            android:background="@null"
+            android:hint="@string/plzinputnick"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:background="@color/white"
+            android:layout_height="0.5dp"/>
+
+        <TextView
+            android:id="@+id/area"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="@string/pleasechoosearea"
+            android:textSize="14sp"
+            android:textColor="@color/whiter50"
+            android:gravity="center_vertical"
+            android:drawableRight="@mipmap/cr_arrow_right"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:background="@color/white"
+            android:layout_height="0.5dp"/>
+
+        <EditText
+            android:id="@+id/website"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:gravity="center_vertical"
+            android:textColor="@color/white"
+            android:background="@null"
+            android:hint="@string/plzinputcrurl"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:background="@color/white"
+            android:layout_height="0.5dp"
+            android:layout_marginBottom="20dp"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/confirm"
+        android:layout_width="250dp"
+        android:layout_height="40dp"
+        android:background="@drawable/ct_btn_border"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:layout_alignParentBottom="true"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:text="@string/confirmed"/>
+</RelativeLayout>

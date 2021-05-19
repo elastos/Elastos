@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/px60"
+    android:layout_marginBottom="@dimen/px30"
+    android:layout_marginRight="@dimen/px60"
+    android:background="@drawable/ass_border"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/px30">
+
+
+    <com.qmuiteam.qmui.layout.QMUILinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px20"
+        android:orientation="horizontal">
+
+
+        <ImageView
+            android:id="@+id/iv_icon"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:src="@mipmap/asset_wallet_icon" />
+
+        <TextView
+            android:id="@+id/tv_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/px29"
+            android:textColor="@color/qmui_config_color_white"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tv_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/px30"
+            android:layout_weight="1"
+            android:drawableRight="@mipmap/asset_list_arrow"
+            android:gravity="right"
+            android:textColor="@color/qmui_config_color_white"
+            android:textSize="16sp" />
+    </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px25"
+        android:layout_marginBottom="@dimen/px20">
+
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="@string/connecting"
+            android:textColor="@color/qmui_config_color_white"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tv_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:layout_toRightOf="@id/tv_status"
+            android:textColor="@color/qmui_config_color_white"
+            android:textSize="11sp" />
+
+        <ImageView
+            android:visibility="gone"
+            android:id="@+id/iv_sync"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="8dp"
+            android:layout_toLeftOf="@id/tv_progress"
+            android:src="@mipmap/asset_transfer_sidelink_switch" />
+
+        <TextView
+            android:id="@+id/tv_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/px2"
+            android:layout_marginRight="@dimen/px30"
+            android:textColor="@color/qmui_config_color_white"
+            android:textSize="11sp" />
+    </RelativeLayout>
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue1"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <TextView
+        style="@style/settingItem_margin15"
+        android:gravity="center_vertical"
+        android:text="@string/didinfo"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/et_didname"
+        style="@style/settingItem_margin15"
+        android:background="@null"
+        android:hint="@string/plzinputnamemust"
+        android:maxLength="50" />
+
+
+    <View style="@style/line_margin15" />
+
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/tv_didpk"
+        style="@style/settingItem_margin15"
+        android:gravity="center_vertical" />
+
+
+    <View
+        android:visibility="gone"
+        style="@style/line_margin15" />
+
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/tv_did"
+        style="@style/settingItem_margin15"
+        android:gravity="center_vertical" />
+
+
+    <View
+        android:visibility="gone"
+        style="@style/line_margin15" />
+
+    <RelativeLayout
+        android:id="@+id/rl_outdate"
+        style="@style/settingItem_margin15">
+
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:hint="@string/plzselctoutdate"
+            android:textColor="#ffffffff"
+            android:textColorHint="@color/whiter"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/px10"
+            android:src="@mipmap/asset_list_arrow" />
+    </RelativeLayout>
+
+    <View style="@style/line_margin15" />
+
+    <TextView
+        android:id="@+id/tv_next"
+        style="@style/button_margin"
+        android:layout_marginTop="100dp"
+        android:text="@string/next" />
+</LinearLayout>

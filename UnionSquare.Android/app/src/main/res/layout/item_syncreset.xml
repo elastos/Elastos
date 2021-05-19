@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/settingItem_margin15"
+    android:layout_marginTop="10dp"
+    android:background="@drawable/sc_20ffffff_cr5"
+    android:gravity="center_vertical"
+    android:paddingLeft="13dp"
+    android:paddingRight="15dp">
+
+    <TextView
+        android:id="@+id/tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <CheckBox
+        android:id="@+id/cb"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:padding="2dp" />
+
+
+</LinearLayout>

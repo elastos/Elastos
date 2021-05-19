@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/sc_10ffffff_cr5"
+    android:paddingLeft="8dp"
+    android:paddingTop="15dp"
+    android:paddingRight="8dp"
+    android:paddingBottom="15dp">
+
+    <TextView
+        android:id="@+id/tv_didname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tv_did"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_didname"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="8dp"
+        android:drawableRight="@mipmap/mine_did_list_copy"
+        android:drawablePadding="4dp"
+        android:textColor="@color/whiter50"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_did"
+        android:layout_marginTop="16dp"
+        android:textColor="#ffffffff"
+        android:textSize="11sp" />
+
+    <ImageView
+        android:layout_width="@dimen/px44"
+        android:layout_height="@dimen/px44"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="@dimen/px40"
+        android:src="@mipmap/asset_list_arrow" />
+</RelativeLayout>

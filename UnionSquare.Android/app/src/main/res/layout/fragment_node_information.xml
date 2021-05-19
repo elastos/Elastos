@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/found_bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title_bar" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:background="@drawable/black_50_white"
+        android:gravity="center|top"
+        android:orientation="vertical">
+
+        <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/iv_icon"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="26dp"
+            android:src="@mipmap/found_vote_initial_circle" />
+
+        <TextView
+            android:id="@+id/tv_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="@dimen/px30"
+            android:layout_marginRight="15dp"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:id="@+id/ll_tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/px40"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:weightSum="2">
+
+            <LinearLayout
+                android:id="@+id/ll_info"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <View
+                    android:id="@+id/line_info"
+                    style="@style/line1"
+                    android:layout_width="77dp" />
+
+                <TextView
+                    android:id="@+id/tv_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/px30"
+                    android:text="@string/joininfo" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_intro"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <View
+                    android:id="@+id/line_intro"
+                    style="@style/line1"
+                    android:layout_width="77dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_intro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/px30"
+                    android:text="@string/nodeintro"
+                    android:textColor="@color/whiter50" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_intro_detail"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginTop="22dp"
+            android:padding="15dp"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/ll_infodetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="15dp"
+                    android:layout_weight="1"
+                    android:text="@string/ownerpublicKey"
+                    android:textColor="@color/qmui_config_color_50_white"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tv_node_publickey"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_weight="3"
+                    android:gravity="right"
+                    android:textColor="@color/qmui_config_color_white"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="15dp"
+                    android:layout_weight="1"
+                    android:text="@string/the_current_number"
+                    android:textColor="@color/qmui_config_color_50_white"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tv_num_vote"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="15dp"
+                    android:layout_weight="3"
+                    android:gravity="right"
+                    android:textColor="@color/qmui_config_color_white"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="15dp"
+                    android:layout_weight="1"
+                    android:text="@string/vote_of"
+                    android:textColor="@color/qmui_config_color_50_white"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tv_zl"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="15dp"
+                    android:layout_weight="3"
+                    android:gravity="right"
+                    android:textColor="@color/qmui_config_color_white"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="15dp"
+                    android:layout_weight="1"
+                    android:text="@string/country_region"
+                    android:textColor="@color/qmui_config_color_50_white"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tv_addrs"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="15dp"
+                    android:layout_weight="3"
+                    android:gravity="right"
+                    android:textColor="@color/qmui_config_color_white"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="@dimen/px25"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="15dp"
+                    android:layout_weight="1"
+                    android:text="URL"
+                    android:textColor="@color/qmui_config_color_50_white"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tv_url"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_weight="3"
+                    android:drawableRight="@mipmap/asset_transfer_copy"
+                    android:drawablePadding="10dp"
+                    android:ellipsize="end"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:text=""
+                    android:textColor="#ff2893e8"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <com.allen.library.SuperButton
+        android:id="@+id/sb_jrhxlb"
+        style="@style/PublicButton"
+        android:layout_height="@dimen/px80"
+        android:text="@string/candidate_list"
+        app:sCornersRadius="0dp" />
+
+    <com.allen.library.SuperButton
+        android:id="@+id/sb_ckhxlb"
+        style="@style/PublicButton"
+        android:layout_height="@dimen/px80"
+        android:layout_marginTop="@dimen/px30"
+        android:layout_marginBottom="30dp"
+        android:text="@string/view_candidate_list"
+        app:sCornersRadius="0dp" />
+
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

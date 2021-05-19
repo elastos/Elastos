@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/asset_bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/common_margin"
+        android:layout_marginRight="@dimen/common_margin"
+        android:background="@color/mainitembg"
+        android:orientation="vertical"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp">
+
+        <EditText
+            android:id="@+id/et_pwd_origin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+android:inputType="textPassword"
+            android:layout_marginTop="25dp"
+            android:background="@null"
+            android:hint="@string/pleaseinputoriginwalletpwd"
+            android:textSize="14sp" />
+
+        <View
+            style="@style/line1"
+            android:layout_marginTop="15dp" />
+
+        <EditText
+            android:id="@+id/et_pwd_new"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:layout_marginTop="25dp"
+            android:background="@null"
+            android:hint="@string/pleaseinputnewwalletpwd"
+            android:textSize="14sp" />
+
+        <View
+            style="@style/line1"
+            android:layout_marginTop="15dp" />
+
+        <EditText
+            android:inputType="textPassword"
+            android:id="@+id/et_pwd_agin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:background="@null"
+            android:hint="@string/pleaseinputnewwalletpwdagin"
+            android:textSize="14sp" />
+
+        <View
+            style="@style/line1"
+            android:layout_marginBottom="15dp"
+            android:layout_marginTop="15dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_modify"
+        style="@style/button_margin"
+        android:layout_marginTop="220dp"
+        android:text="@string/surechange"
+        android:textSize="16sp" />
+</LinearLayout>

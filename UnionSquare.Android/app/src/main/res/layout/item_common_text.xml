@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/settingItem_pading15"
+    >
+
+    <TextView
+        android:gravity="center_vertical"
+        android:id="@+id/tv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+       />
+
+
+    <View
+        style="@style/line1"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>

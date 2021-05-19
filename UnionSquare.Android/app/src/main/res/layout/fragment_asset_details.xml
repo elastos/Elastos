@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/asset_bg"
+    android:clickable="true"
+    android:orientation="vertical">
+
+
+    <include layout="@layout/title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/common_margin_asset"
+        android:layout_marginRight="@dimen/common_margin_asset"
+        android:background="@color/a26ffffff"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="#fffbfbfb"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/tv_balanceuse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textColor="#fffbfbfb"
+            android:textSize="20sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_synctime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="#ffffffff"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginLeft="@dimen/common_margin_asset"
+        android:layout_marginRight="@dimen/common_margin_asset"
+        android:background="@color/a26ffffff"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_chain"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingLeft="25dp"
+            android:paddingRight="25dp"
+            android:text="@string/main_chain_withdraw"
+            android:textColor="#ffffffff"
+            android:textSize="11sp" />
+
+        <View
+            android:id="@+id/view_line"
+            style="@style/linevertical"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_towhole"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingLeft="25dp"
+            android:paddingRight="25dp"
+            android:text="@string/towhole"
+            android:textSize="11sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+
+    <RadioGroup
+        android:id="@+id/rg_record"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginLeft="@dimen/common_margin_asset"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="@dimen/common_margin_asset"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_trans_recorder"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/radiobutton_state"
+            android:button="@null"
+            android:checked="true"
+            android:gravity="center"
+            android:text="@string/transaction_records"
+            android:textColor="@color/white" />
+
+        <RadioButton
+            android:id="@+id/rb_earn_recorder"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/radiobutton_state"
+            android:button="@null"
+            android:gravity="center"
+            android:text="@string/earn_records"
+            android:textColor="@color/white"
+            android:visibility="gone" />
+
+        <RadioButton
+            android:visibility="gone"
+            android:id="@+id/rb_vote_status"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/radiobutton_state"
+            android:button="@null"
+            android:gravity="center"
+            android:text="@string/votestatuis"
+            android:textColor="@color/white" />
+    </RadioGroup>
+
+
+    <com.scwang.smartrefresh.layout.SmartRefreshLayout
+        android:id="@+id/srl"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="@dimen/common_margin_asset"
+        android:layout_marginRight="@dimen/common_margin_asset"
+        android:layout_weight="1"
+        android:background="@color/a26ffffff"
+        app:srlAccentColor="@android:color/white"
+        app:srlDisableContentWhenLoading="true"
+        app:srlDisableContentWhenRefresh="true"
+        app:srlEnablePreviewInEditMode="false">
+
+        <com.scwang.smartrefresh.layout.header.ClassicsHeader
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:id="@+id/rl_record"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/tv_record_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/norecorder"
+                    android:textColor="@color/whiter50"
+                    android:textSize="17sp"
+                    android:visibility="gone" />
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_earn"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="58dp"
+                    android:orientation="horizontal"
+                    android:paddingLeft="@dimen/common_margin_asset"
+                    android:paddingRight="@dimen/common_margin_asset">
+
+                    <TextView
+                        android:id="@+id/tv_address"
+                        android:layout_width="140dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center" />
+
+
+                    <TextView
+                        android:id="@+id/tv_copyaddress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/bg_super_list"
+                        android:paddingLeft="15dp"
+                        android:paddingTop="5dp"
+                        android:paddingRight="15dp"
+                        android:paddingBottom="5dp"
+                        android:text="@string/copyearnaddress" />
+
+
+                    <View
+                        style="@style/line1"
+                        android:layout_alignParentBottom="true" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/tv_earn_bg"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="@string/norecorder"
+                        android:textColor="@color/whiter50"
+                        android:textSize="17sp"
+                        android:visibility="gone" />
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/rv1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/rl_vote"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tv_vote_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/no_voting_records"
+                    android:textColor="@color/whiter50"
+                    android:textSize="17sp"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/ll_vote"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:orientation="horizontal"
+                        android:paddingLeft="@dimen/common_margin_asset"
+                        android:paddingRight="@dimen/common_margin_asset">
+
+                        <TextView
+                            android:id="@+id/tv_vote_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_above="@id/middle"
+                            android:layout_marginBottom="3dp"
+                            android:text="@string/allcount"
+                            android:textColor="#ffffffff"
+                            android:textSize="14sp" />
+
+                        <View
+                            android:id="@+id/middle"
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_centerVertical="true" />
+
+                        <TextView
+                            android:id="@+id/tv_vote_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/middle"
+                            android:layout_marginTop="3dp"
+                            android:text="@string/lastvotetime"
+                            android:textColor="@color/whiter50"
+                            android:textSize="10sp" />
+
+                        <TextView
+                            android:id="@+id/tv_vote_detail"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:layout_centerVertical="true"
+                            android:background="@drawable/bg_super_list"
+                            android:paddingLeft="15dp"
+                            android:paddingTop="5dp"
+                            android:paddingRight="15dp"
+                            android:paddingBottom="5dp"
+                            android:text="@string/watchdetail" />
+
+
+                        <View
+                            style="@style/line1"
+                            android:layout_alignParentBottom="true" />
+
+                    </RelativeLayout>
+
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/rv_vote"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                </LinearLayout>
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+
+        <com.scwang.smartrefresh.layout.footer.ClassicsFooter
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:srlAccentColor="@color/whiter" />
+
+    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginLeft="@dimen/common_margin_asset"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="@dimen/common_margin_asset"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal">
+
+
+        <LinearLayout
+            android:id="@+id/ll_transfer"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:background="@color/a26ffffff"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_margin="2dp"
+                android:src="@mipmap/asset_trade_transfer" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/transfer"
+                android:textColor="#ffffffff"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/ll_recipe"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="2"
+            android:background="@color/a26ffffff"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_margin="2dp"
+                android:src="@mipmap/asset_code" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/collection"
+                android:textColor="#ffffffff"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>

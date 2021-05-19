@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="key_height">48dp</dimen>
+    <dimen name="key_height_land">40dp</dimen>
+    <dimen name="statusbar_view_height">0dp</dimen>
+    <dimen name="common_margin">30dp</dimen>
+    <dimen name="common_margin_30">30dp</dimen>
+    <dimen name="common_margin_button">63dp</dimen>
+    <dimen name="common_margin_button60">60dp</dimen>
+    <dimen name="common_margin_asset">15dp</dimen>
+    <dimen name="common_margin_15">15dp</dimen>
+    <dimen name="common_margin_45">45dp</dimen>
+</resources>

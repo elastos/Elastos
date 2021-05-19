@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue1"
+    android:orientation="vertical">
+    <!--android:background="#f6f6f6"-->
+
+    <include layout="@layout/title" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+
+            <ImageView
+                android:layout_width="123dp"
+                android:layout_height="123dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="50dp"
+                android:background="@mipmap/wallet_ela_logo" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:gravity="center"
+                android:text="ELA Wallet"
+                android:textColor="#ffffffff"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tv_version_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:text="@string/currentversionname"
+                android:textColor="#80ffffff"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="60dp"
+                android:layout_marginTop="38dp"
+                android:layout_marginRight="60dp"
+                android:lineSpacingMultiplier="1.2"
+                android:text="@string/tv_elaintroduce"
+                android:textColor="@color/whiter"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="60dp"
+                android:layout_marginTop="18dp"
+                android:layout_marginRight="60dp"
+                android:lineSpacingMultiplier="1.2"
+                android:text="@string/walletmainfunctions"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tv_updatalog"
+                style="@style/button_margin"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="60dp"
+                android:background="@drawable/setting_item_select"
+                android:gravity="center"
+                android:text="@string/showupdatalog"
+                android:textColor="@color/whiter"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_openresource"
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:text="@string/openresorceintrod"
+                android:textColor="#ff4a8aff"
+                android:textSize="12sp" />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_feedback"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/feedback" />
+
+                <View
+                    style="@style/linevertical"
+                    android:layout_marginLeft="25dp"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginRight="25dp"
+                    android:layout_marginBottom="3dp" />
+
+                <TextView
+                    android:id="@+id/tv_runlog"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/runlog" />
+            </LinearLayout>
+
+
+            <TextView
+                android:id="@+id/tv_version_sdk"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/curentsdkversion"
+                android:textColor="#80ffffff"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

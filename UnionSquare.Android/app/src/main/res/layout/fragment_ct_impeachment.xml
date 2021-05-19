@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/qmuilinearlayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/found_bg">
+
+
+    <RelativeLayout
+        android:id="@+id/next_step_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="260dp"
+        android:background="#262626"
+        android:layout_gravity="bottom">
+        <TextView
+            android:id="@+id/close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/next_title"
+            android:layout_marginLeft="15dp"
+            android:background="@mipmap/window_750_close"/>
+
+        <TextView
+            android:id="@+id/next_title"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:text="@string/impeachment"/>
+        <View
+            android:id="@+id/next_line1"
+            android:layout_below="@+id/next_title"
+            android:layout_width="match_parent"
+            android:background="@color/white"
+            android:layout_height="0.5dp"/>
+
+        <TextView
+            android:id="@+id/impeachvotes_title"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_marginLeft="15dp"
+            android:gravity="center_vertical"
+            android:layout_below="@+id/next_line1"
+            android:text="@string/impeachvotes"/>
+
+        <EditText
+            android:id="@+id/impeachvotes"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:background="@null"
+            android:layout_toLeftOf="@+id/next_vote_unit"
+            android:layout_toRightOf="@+id/impeachvotes_title"
+            android:layout_below="@+id/next_line1"
+            android:gravity="center_vertical|right"/>
+
+        <TextView
+            android:id="@+id/next_vote_unit"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:textSize="14sp"
+            android:layout_below="@+id/next_line1"
+            android:gravity="center_vertical"
+            android:textColor="@color/white"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="15dp"
+            android:layout_marginLeft="15dp"
+            android:text="ELA"/>
+
+        <View
+            android:id="@+id/next_line2"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_below="@+id/impeachvotes_title"
+            android:background="@color/white"/>
+
+        <TextView
+            android:id="@+id/fee_title"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:gravity="center_vertical"
+            android:layout_below="@+id/next_line2"
+            android:layout_marginLeft="15dp"
+            android:text="@string/charge"/>
+
+        <TextView
+            android:id="@+id/fee"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:textSize="14sp"
+            android:layout_gravity="right"
+            android:gravity="center_vertical"
+            android:textColor="@color/white"
+            android:layout_below="@+id/next_line2"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="15dp"
+            android:text="0.0001ELA"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_below="@+id/fee_title"
+            android:background="@color/white"/>
+
+        <TextView
+            android:id="@+id/next_step_btn"
+            android:layout_width="250dp"
+            android:layout_height="40dp"
+            android:background="@drawable/ct_btn_border"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="20dp"
+            android:layout_centerHorizontal="true"
+            android:text="@string/next"
+            android:gravity="center"
+            android:textColor="@color/white"/>
+    </RelativeLayout>
+
+    
+    <RelativeLayout
+        android:id="@+id/confirm_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="260dp"
+        android:visibility="gone"
+        android:background="#262626"
+        android:layout_gravity="bottom">
+
+        <TextView
+            android:id="@+id/input_pwd_title"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginLeft="15dp"
+            android:drawableLeft="@mipmap/back_arrow_black"
+            android:gravity="center"
+            android:text="@string/inputPwd"/>
+
+        <View
+            android:id="@+id/pwd_line1"
+            android:layout_below="@+id/input_pwd_title"
+            android:layout_width="match_parent"
+            android:background="@color/white"
+            android:layout_height="0.5dp"/>
+
+        <EditText
+            android:id="@+id/input_pwd_edt"
+            android:layout_width="match_parent"
+            android:hint="@string/inputyourwallletpwd"
+            android:background="@null"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_below="@+id/pwd_line1"
+            android:layout_height="44dp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_below="@+id/input_pwd_edt"
+            android:background="@color/white"/>
+
+        <TextView
+            android:id="@+id/confirm_btn"
+            android:layout_width="250dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="180dp"
+            android:background="@drawable/ct_btn_border"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="20dp"
+            android:layout_centerHorizontal="true"
+            android:text="@string/sure1"
+            android:gravity="center"
+            android:textColor="@color/white"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/success_layout"
+        android:layout_gravity="center"
+        android:layout_width="270dp"
+        android:layout_height="170dp"
+        android:visibility="gone"
+        android:background="#2f3f40">
+
+        <TextView
+            android:id="@+id/wait_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:background="@mipmap/impeachment_waiting"/>
+
+        <TextView
+            android:layout_width="151dp"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:layout_marginTop="20dp"
+            android:layout_below="@+id/wait_icon"
+            android:layout_centerHorizontal="true"
+            android:text="@string/impeachrequestsuccess"/>
+
+
+    </RelativeLayout>
+
+</FrameLayout>

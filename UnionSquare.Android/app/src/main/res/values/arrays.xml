@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="personalinfo_chose">
+        <item>@string/nick</item>
+        <item>@string/sex</item>
+        <item>@string/birthday</item>
+        <item>@string/headurl</item>
+        <item>@string/email</item>
+        <item>@string/phonenumber</item>
+        <item>@string/country_region</item>
+        <item>@string/personalintro</item>
+        <item>@string/pagehome</item>
+        <item>@string/wechataccount</item>
+        <item>@string/twitteraccount</item>
+        <item>@string/weboaccount</item>
+        <item>@string/facebookaccount</item>
+        <item>@string/googleaccount</item>
+    </string-array>
+    <string-array name="personalinfo_show">
+        <item>@string/plzinputnick</item>
+        <item>@string/plzselcetsex</item>
+        <item>@string/plzselectbirthday</item>
+        <item>@string/plzinputheadurl</item>
+        <item>@string/pleaseinputemail</item>
+        <item>@string/plzinputcode</item>
+        <item>@string/pleasechoosearea</item>
+        <item>@string/personalintro</item>
+        <item>@string/plzinputpersonalurl</item>
+        <item>@string/plzinputwechat</item>
+        <item>@string/plzinputtwitter</item>
+        <item>@string/plzinpurwebo</item>
+        <item>@string/plzinputfacebook</item>
+        <item>@string/plzinputgoogle</item>
+    </string-array>
+</resources>

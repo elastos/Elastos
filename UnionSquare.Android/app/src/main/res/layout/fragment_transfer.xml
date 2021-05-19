@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/asset_bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/common_margin_30"
+        android:layout_marginRight="@dimen/common_margin_30"
+        android:background="@color/a26ffffff"
+        android:orientation="vertical"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="53dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+
+            <EditText
+                android:id="@+id/et_payeeaddr"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:ellipsize="end"
+                android:hint="@string/inputpayeeaddress"
+                android:inputType="text"
+                android:maxLines="1" />
+
+            <ImageView
+                android:id="@+id/iv_paste"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="5dp"
+                android:src="@mipmap/asset_transfer_stick" />
+
+            <View
+                android:layout_width="0.5dp"
+                android:layout_height="12dp"
+                android:background="@color/line1" />
+
+            <ImageView
+                android:id="@+id/iv_contact"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="5dp"
+                android:src="@mipmap/asset_transfer_linkman" />
+        </LinearLayout>
+
+        <View style="@style/line1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="53dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+
+            <EditText
+                android:id="@+id/et_balance"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="@string/inputbalancedefault"
+                android:inputType="numberDecimal" />
+
+            <TextView
+                android:id="@+id/tv_max"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/setting_item"
+                android:gravity="center"
+                android:paddingLeft="4dp"
+                android:paddingTop="2dp"
+                android:paddingRight="4dp"
+                android:paddingBottom="2dp"
+                android:text="MAX" />
+        </LinearLayout>
+
+        <View style="@style/line1" />
+
+
+        <EditText
+            android:id="@+id/et_remark"
+            android:layout_width="match_parent"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@null"
+            android:ellipsize="end"
+            android:hint="@string/pleaseinputremark"
+            android:maxLines="1" />
+
+        <View
+            style="@style/line1"
+            android:layout_marginBottom="14dp" />
+
+        <com.allen.library.SuperTextView
+            android:id="@+id/st_utxo"
+            android:layout_width="match_parent"
+            android:layout_height="53dp"
+            android:visibility="gone"
+            app:sBackgroundDrawableRes="@drawable/selector_transparent"
+            app:sDividerLineType="none"
+            app:sLeftTextColor="@color/qmui_config_color_white"
+            app:sLeftTextSize="13sp"
+            app:sLeftTextString="@string/useutxo"
+            app:sLeftViewMarginLeft="0dp"
+            app:sRightViewType="switchBtn"
+            app:sSwitchIsChecked="false"
+            app:sSwitchMinWidth="@dimen/px60"
+            app:sThumbResource="@drawable/thumb"
+            app:sTrackResource="@drawable/track" />
+
+        <View
+            style="@style/line1"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_next"
+        style="@style/button_margin"
+        android:layout_marginTop="200dp"
+        android:text="@string/next" />
+</LinearLayout>
