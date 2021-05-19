@@ -1,0 +1,42 @@
+
+import os ;
+local CMAKE_CXX_COMPILER = [ os.environ CMAKE_CXX_COMPILER ] ;
+local CMAKE_OSX_SYSROOT = [ os.environ CMAKE_OSX_SYSROOT ] ;
+local IOS_AR = [ os.environ IOS_AR ] ;
+local IOS_RANLIB = [ os.environ IOS_RANLIB ] ;
+
+# --------------------------------------------------------------------
+
+using clang : iphoneos
+:
+$(CMAKE_CXX_COMPILER)
+:
+<compileflags>-arch
+<compileflags>arm64
+<compileflags>-fexceptions
+<compileflags>-pedantic
+<compileflags>-std=c++14
+<compileflags>-fembed-bitcode
+<compileflags>-isysroot
+<compileflags>$(CMAKE_OSX_SYSROOT)
+<ranlib>$(IOS_RANLIB)
+<archiver>$(IOS_AR)
+;
+
+# --------------------------------------------------------------------
+
+using clang : iphonesimulator
+:
+$(CMAKE_CXX_COMPILER)
+:
+<compileflags>-arch
+<compileflags>x86_64
+<compileflags>-fexceptions
+<compileflags>-pedantic
+<compileflags>-std=c++14
+<compileflags>-fembed-bitcode
+<compileflags>-isysroot
+<compileflags>$(CMAKE_OSX_SYSROOT)
+<ranlib>$(IOS_RANLIB)
+<archiver>$(IOS_AR)
+;

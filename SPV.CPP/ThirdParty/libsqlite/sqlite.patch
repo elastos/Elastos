@@ -1,0 +1,74 @@
+diff --git a/shell.c b/shell.c
+index 053180cc..01548ec1 100644
+--- a/shell.c
++++ b/shell.c
+@@ -220,6 +220,27 @@ static void setTextMode(FILE *file, int isOutput){
+ # define setTextMode(X,Y)
+ #endif
+ 
++#ifdef TARGET_PLATFORM_IOS
++#include <spawn.h>
++
++extern char **environ;
++
++int run_cmd(char *cmd)
++{
++	pid_t pid;
++	char *argv[] = {"sh", "-c", cmd, NULL};
++	int status;
++
++	status = posix_spawn(&pid, "/bin/sh", NULL, NULL, argv, environ);
++	if (status == 0) {
++		if (waitpid(pid, &status, 0) == -1) {
++			perror("waitpid");
++		}
++	}
++
++	return status;
++}
++#endif
+ 
+ /* True if the timer is enabled */
+ static int enableTimer = 0;
+@@ -9819,7 +9840,11 @@ static void editFunc(
+     sqlite3_result_error_nomem(context);
+     goto edit_func_end;
+   }
+-  rc = system(zCmd);
++#ifdef TARGET_PLATFORM_IOS
++    rc = run_cmd(zCmd);
++#else
++	rc = system(zCmd);
++#endif
+   sqlite3_free(zCmd);
+   if( rc ){
+     sqlite3_result_error(context, "EDITOR returned non-zero", -1);
+@@ -13423,9 +13448,15 @@ static void output_reset(ShellState *p){
+ #endif
+       char *zCmd;
+       zCmd = sqlite3_mprintf("%s %s", zXdgOpenCmd, p->zTempFile);
++#ifdef TARGET_PLATFORM_IOS
++      if( run_cmd(zCmd) ){
++        utf8_printf(stderr, "Failed: [%s]\n", zCmd);
++      }
++#else
+       if( system(zCmd) ){
+         utf8_printf(stderr, "Failed: [%s]\n", zCmd);
+       }
++#endif
+       sqlite3_free(zCmd);
+       outputModePop(p);
+       p->doXdgOpen = 0;
+@@ -17544,7 +17575,12 @@ static int do_meta_command(char *zLine, ShellState *p){
+       zCmd = sqlite3_mprintf(strchr(azArg[i],' ')==0?"%z %s":"%z \"%s\"",
+                              zCmd, azArg[i]);
+     }
++
++#ifdef TARGET_PLATFORM_IOS
++    x = run_cmd(zCmd);
++#else
+     x = system(zCmd);
++#endif
+     sqlite3_free(zCmd);
+     if( x ) raw_printf(stderr, "System command returns %d\n", x);
+   }else
