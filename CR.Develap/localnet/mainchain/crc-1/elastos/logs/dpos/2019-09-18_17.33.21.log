@@ -1,0 +1,25 @@
+2019/09/18 17:33:21.133394 [1;35m[INF][m GID 1, [UpdatePeers] peers: 0  height:  69
+2019/09/18 17:33:21.133471 [1;35m[INF][m GID 1, [UpdatePeers] i am not in peers
+2019/09/18 17:33:21.133499 [1;35m[INF][m GID 45, Loaded 0 addresses from file 'elastos/data/dpos/peers.json'
+2019/09/18 17:33:21.133600 [1;35m[INF][m GID 79, Server listening on [::]:20339
+2019/09/18 17:33:21.133893 [1;35m[INF][m GID 78, Server listening on 0.0.0.0:20339
+2019/09/18 17:33:51.133723 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:34:21.135087 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:34:51.143517 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:35:21.144013 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:35:51.153805 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:36:21.161936 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:36:51.162059 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:37:21.171158 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:37:51.171399 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:38:21.171559 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:38:51.175776 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:39:21.178003 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:39:51.191075 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:40:21.191383 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:40:51.202744 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:41:21.206152 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:41:51.208657 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:42:21.208268 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:42:51.208428 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad
+2019/09/18 17:43:21.221906 [1;35m[INF][m GID 46, [OnBadNetwork] found network bad

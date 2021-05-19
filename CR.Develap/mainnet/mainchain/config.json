@@ -1,0 +1,18 @@
+{
+  "Configuration": {
+    "ActiveNet": "mainnet",
+    "DPoSConfiguration": {
+      "EnableArbiter": false,
+      "IPAddress": "mainnet-mainchain-node"
+    },
+    "HttpRestStart": true,
+    "EnableRPC": true,
+    "RpcConfiguration": {
+      "User": "",
+      "Pass": "",
+      "WhiteIPList": [
+        "0.0.0.0"
+      ]
+    }
+  }
+}

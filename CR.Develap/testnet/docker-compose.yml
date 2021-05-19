@@ -1,0 +1,136 @@
+version : "3"
+
+services:
+  testnet-mainchain-node:
+    container_name: testnet-mainchain-node
+    image: cyberrepublic/elastos-mainchain-node:v0.5.0
+    user: "${UID}:${GID}"
+    volumes:
+      - /data/docker/volumes/development-services/testnet/ela/config.json:/ela/config.json
+      - /data/docker/volumes/development-services/testnet/ela/keystore.dat:/ela/keystore.dat
+      - /data/docker/volumes/development-services/testnet/ela/elastos:/ela/elastos
+    ports:
+      - 21333-21339:21333-21339
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:21336"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true
+
+  testnet-sidechain-did-node:
+    container_name: testnet-sidechain-did-node
+    image: cyberrepublic/elastos-sidechain-did-node:v0.1.5
+    user: "${UID}:${GID}"
+    volumes:
+      - /data/docker/volumes/development-services/testnet/did/elastos_did/data/peers.json:/did/elastos_did/data/peers.json
+      - /data/docker/volumes/development-services/testnet/did/elastos_did:/did/elastos_did
+      - /data/docker/volumes/development-services/testnet/did/config.json:/did/config.json
+    ports:
+      - 21604-21608:21604-21608
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:21606"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true
+
+  testnet-sidechain-token-node:
+    container_name: testnet-sidechain-token-node
+    image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
+    user: "${UID}:${GID}"
+    volumes:
+      - /data/docker/volumes/development-services/testnet/token/elastos_token/data/peers.json:/token/elastos_token/data/peers.json
+      - /data/docker/volumes/development-services/testnet/token/elastos_token:/token/elastos_token
+      - /data/docker/volumes/development-services/testnet/token/config.json:/token/config.json
+    ports:
+      - 21614-21618:21614-21618
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:21616"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true
+
+  testnet-sidechain-eth-node:
+    container_name: testnet-sidechain-eth-node
+    image: cyberrepublic/elastos-sidechain-eth-node:v0.0.2
+    user: "${UID}:${GID}"
+    entrypoint: /bin/sh -c "./geth --testnet --datadir elastos_eth --syncmode 'full' --gcmode 'archive' --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcvhosts '*' --rpcport 20636 --rpcapi 'db,eth,net,web3,personal' --ws --wsaddr 0.0.0.0 --wsorigins '*' --wsport 20635 --wsapi 'db,eth,net,web3,personal'"
+    volumes:
+      - /data/docker/volumes/development-services/testnet/eth/elastos_eth:/eth/elastos_eth
+    ports:
+      - 21634:8080
+      - 21635-21638:20635-20638   
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[], \"id\":1}'", "http://localhost:21636"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true
+
+  testnet-wallet-service:
+    container_name: testnet-wallet-service
+    image: cyberrepublic/elastos-wallet-service:latest
+    user: "${UID}:${GID}"
+    volumes:
+      - ${PWD}/restful-services/wallet/application-mainchain-did.properties:/home/elauser/application.properties
+    depends_on:
+      - testnet-mainchain-node
+    ports:
+      - 21801:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:21801/api/1/currHeight"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true 
+
+  testnet-wallet-service-tokensidechain:
+    container_name: testnet-wallet-service-tokensidechain
+    image: cyberrepublic/elastos-wallet-service:latest
+    user: "${UID}:${GID}"
+    volumes:
+      - ${PWD}/restful-services/wallet/application-mainchain-token.properties:/home/elauser/application.properties
+    depends_on:
+      - testnet-mainchain-node
+    ports:
+      - 21803:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:21803/api/1/currHeight"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true 
+
+  testnet-sidechain-service:
+    container_name: testnet-sidechain-service
+    image: cyberrepublic/elastos-sidechain-service:latest
+    user: "${UID}:${GID}"
+    depends_on:
+      - testnet-sidechain-did-node
+    ports:
+      - 21802:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:21802/api/1/currHeight"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true 
+
+networks:
+  blockchain:

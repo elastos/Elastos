@@ -1,0 +1,11 @@
+{
+  "ActiveNet": "mainnet",
+  "SPVDisableDNS": false,
+  "EnableREST": true,
+  "EnableRPC": true,
+  "RPCUser": "",
+  "RPCPass": "",
+  "RPCWhiteList": [
+    "0.0.0.0"
+  ]
+}

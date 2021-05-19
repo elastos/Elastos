@@ -1,0 +1,33 @@
+{
+        "Magic": 7630405,
+        "DisableDNS": true,
+        "SPVMagic": 7630401,
+        "SPVDisableDNS": true,
+        "PermanentPeers": [
+            "develap-localnet-token-node:20618"
+        ],
+        "SPVPermanentPeers": [
+            "develap-localnet-mainchain-crc-1:20338",
+            "develap-localnet-mainchain-crc-2:20338",
+            "develap-localnet-mainchain-origin-1:20338",
+            "develap-localnet-mainchain-origin-2:20338"
+        ],
+        "ExchangeRate": 1.0,
+        "MinCrossChainTxFee": 10000,
+        "EnableREST": true,
+        "EnableRPC": true,
+        "RPCUser": "",
+        "RPCPass": "",
+        "RPCWhiteList": [
+            "0.0.0.0"
+        ],
+        "Loglevel": 1,
+        "LogsFolderSize": 0,
+        "PerLogFileSize": 0,
+        "FoundationAddress": "Ee2LLZCw3JV4pH12LSkbQJZY5DNqevyQTa",
+        "DisableTxFilters": false,
+        "EnableMining": true,
+        "InstantBlock": false,
+        "PayToAddr": "ETCkrXyyK4Gq3CePy5xdtVDJWkFJr3mMqJ",
+        "MinerInfo": "ELA"
+}

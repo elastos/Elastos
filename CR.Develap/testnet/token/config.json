@@ -1,0 +1,16 @@
+{
+  "ActiveNet": "testnet",
+  "Magic": 2019114,
+  "DisableDNS": false,
+  "SPVMagic": 2018111,
+  "SPVDisableDNS": false,
+  "EnableREST": true,
+  "EnableWS": true,
+  "EnableRPC": true,
+  "RPCUser": "",
+  "RPCPass": "",
+  "RPCWhiteList": [
+    "0.0.0.0"
+  ],
+  "DisableTxFilters": false
+}

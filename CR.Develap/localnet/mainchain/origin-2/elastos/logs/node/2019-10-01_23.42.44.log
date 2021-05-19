@@ -1,0 +1,503 @@
+2019/10/01 23:42:44.619786 [1;35m[INF][m GID 1, Node version: 
+2019/10/01 23:42:44.619940 [1;35m[INF][m GID 1, go version go1.12.9 linux/amd64
+2019/10/01 23:42:44.851480 [1;35m[INF][m GID 1, current block height -> 500
+2019/10/01 23:42:44.851601 [1;33m[WRN][m GID 81, recover form check points fail:  can't find dpos store object
+2019/10/01 23:42:44.851659 [1;35m[INF][m GID 81, [RecoverFromCheckPoints] recover start height:  100
+[ ========== BLOCKCHAIN INITIALIZE STARTED ========== ]
+ 0 / 400    0.00%2019/10/01 23:42:44.997707 [1;33m[WRN][m GID 81, found error:  producers count less than min arbitrators count , degrade to CRC only state
+ 401 / 400  100.25% 0s
+[ ========== BLOCKCHAIN INITIALIZE FINISHED ========== ]
+2019/10/01 23:42:45.001830 [1;35m[INF][m GID 1, Start the P2P networks
+2019/10/01 23:42:45.001868 [1;35m[INF][m GID 1, Start services
+2019/10/01 23:42:45.016043 [1;35m[INF][m GID 39, New valid peer 192.168.32.11:34340 (inbound)
+2019/10/01 23:42:45.016069 [1;35m[INF][m GID 39, New valid peer 192.168.32.10:20338 (outbound)
+2019/10/01 23:42:45.016385 [1;35m[INF][m GID 39, New valid peer 192.168.32.4:20338 (outbound)
+2019/10/01 23:42:45.016522 [1;35m[INF][m GID 39, New valid peer 192.168.32.6:20338 (outbound)
+2019/10/01 23:42:45.031170 [1;35m[INF][m GID 39, New valid peer 192.168.32.3:20338 (outbound)
+2019/10/01 23:42:45.280038 [1;35m[INF][m GID 39, New valid peer 192.168.32.3:49838 (inbound)
+2019/10/01 23:42:48.446942 [1;35m[INF][m GID 39, New valid peer 192.168.32.4:56386 (inbound)
+2019/10/01 23:42:48.992398 [1;35m[INF][m GID 39, New valid peer 192.168.32.9:34082 (inbound)
+2019/10/01 23:42:49.197859 [1;35m[INF][m GID 39, New valid peer 192.168.32.6:60174 (inbound)
+2019/10/01 23:42:49.745703 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 6e32e00b7afd9d82f2d36bb1cedeb9167df71b1f6ef532755575adf45561de6d
+2019/10/01 23:42:49.788590 [1;35m[INF][m GID 39, New valid peer 192.168.32.10:39496 (inbound)
+2019/10/01 23:42:49.839323 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 6e32e00b7afd9d82f2d36bb1cedeb9167df71b1f6ef532755575adf45561de6d
+2019/10/01 23:42:49.839404 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 501
+2019/10/01 23:42:50.013491 [1;35m[INF][m GID 1, Start consensus
+2019/10/01 23:42:50.013565 [1;35m[INF][m GID 1, Start POW Services
+2019/10/01 23:42:50.013634 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:42:50.873248 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:42596 (inbound)
+2019/10/01 23:42:53.952328 [1;35m[INF][m GID 39, New valid peer 192.168.32.2:49620 (inbound)
+2019/10/01 23:43:03.312787 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 40dc1800c9a2bd8dcc4aa357ea4d50d6285d1bfb1c3fbf7e28e39d56c2562c23
+2019/10/01 23:43:03.379170 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 40dc1800c9a2bd8dcc4aa357ea4d50d6285d1bfb1c3fbf7e28e39d56c2562c23
+2019/10/01 23:43:03.380141 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 502
+2019/10/01 23:43:03.380488 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:43:03.482241 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:42596 (inbound)
+2019/10/01 23:43:03.806295 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:43:03.811405 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:43:08.107138 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:43:08.107489 [1;35m[INF][m GID 340, [ConfirmBlock] block hash: 89cb0f0bcf51f9d580902be38f4c2945f833cd6f77386b954fd79b456df386d6
+2019/10/01 23:43:08.107697 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:43:08.183475 [1;35m[INF][m GID 208, 192.168.32.3:49838 (inbound) sent a reject message Code: REJECT_INVALID, Hash 89cb0f0bcf51f9d580902be38f4c2945f833cd6f77386b954fd79b456df386d6, Reason: Rejected block 89cb0f0bcf51f9d580902be38f4c2945f833cd6f77386b954fd79b456df386d6 from 192.168.32.7:20338 (outbound): duplicate block in pool
+2019/10/01 23:43:08.400862 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 89cb0f0bcf51f9d580902be38f4c2945f833cd6f77386b954fd79b456df386d6
+2019/10/01 23:43:08.400945 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 503
+2019/10/01 23:43:08.491193 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:42760 (inbound)
+2019/10/01 23:43:13.337180 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:43:13.337313 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:43:18.189425 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: afe9287abcafd5f61510222cabc1c1032fdfe2809e13bb132a580161fd72aea4
+2019/10/01 23:43:18.217307 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: afe9287abcafd5f61510222cabc1c1032fdfe2809e13bb132a580161fd72aea4
+2019/10/01 23:43:18.217390 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 504
+2019/10/01 23:43:18.217859 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:43:18.289532 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:42760 (inbound)
+2019/10/01 23:43:20.789343 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 928428cdddf51560da8afba6da58349c083ad30f584890e61db14514195dd29b
+2019/10/01 23:43:20.846597 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 928428cdddf51560da8afba6da58349c083ad30f584890e61db14514195dd29b
+2019/10/01 23:43:20.847372 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 505
+2019/10/01 23:43:23.288403 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:42808 (inbound)
+2019/10/01 23:43:29.705795 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 1e02f706286ce63731354ba7d11850e4036786d90c00d5988566f4f55f426cc3
+2019/10/01 23:43:29.809869 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 1e02f706286ce63731354ba7d11850e4036786d90c00d5988566f4f55f426cc3
+2019/10/01 23:43:29.810071 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 506
+2019/10/01 23:43:29.810465 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:43:29.905251 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:42808 (inbound)
+2019/10/01 23:43:34.902382 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:42832 (inbound)
+2019/10/01 23:43:40.733610 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:43:40.740959 [1;35m[INF][m GID 340, difficulty:  520095999
+2019-10-01 23:43:45.016 [INF] STAT: -> 506 [505 192.168.32.2:49620 (inbound), 506 192.168.32.11:34340 (inbound), 503 192.168.32.3:49838 (inbound), 504 192.168.32.4:56386 (inbound), 504 192.168.32.9:34082 (inbound), 504 192.168.32.6:60174 (inbound), 504 192.168.32.10:39496 (inbound), 586 192.168.32.20:42832 (inbound), 503 192.168.32.6:20338 (outbound), 503 192.168.32.3:20338 (outbound), 506 192.168.32.10:20338 (outbound), 503 192.168.32.4:20338 (outbound)]
+2019/10/01 23:43:50.250076 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:43:50.250325 [1;35m[INF][m GID 340, [ConfirmBlock] block hash: b026a777ccb7b8e411c3de5544af4fc3940ff2411205a10238c80723245e64fc
+2019/10/01 23:43:50.250486 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:43:50.370541 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: b026a777ccb7b8e411c3de5544af4fc3940ff2411205a10238c80723245e64fc
+2019/10/01 23:43:50.370662 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 507
+2019/10/01 23:43:50.386544 [1;35m[INF][m GID 233, 192.168.32.4:56386 (inbound) sent a reject message Code: REJECT_INVALID, Hash b026a777ccb7b8e411c3de5544af4fc3940ff2411205a10238c80723245e64fc, Reason: Rejected block b026a777ccb7b8e411c3de5544af4fc3940ff2411205a10238c80723245e64fc from 192.168.32.7:20338 (outbound): duplicate block in pool
+2019/10/01 23:43:50.464568 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:42832 (inbound)
+2019/10/01 23:43:55.459683 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:42868 (inbound)
+2019/10/01 23:43:55.823825 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 768706137b58fe9f012024d3bff9c65ca6a0cfd0eb54c36e39cbd097fc93b103
+2019/10/01 23:43:55.866583 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 768706137b58fe9f012024d3bff9c65ca6a0cfd0eb54c36e39cbd097fc93b103
+2019/10/01 23:43:55.866658 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 508
+2019/10/01 23:43:55.867103 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:43:55.983227 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:42868 (inbound)
+2019/10/01 23:43:59.057427 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 6f2051f883d1424df5d2cb0637be0e60970705e432fea56c1a0727bd24235d60
+2019/10/01 23:43:59.071877 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:43:59.071985 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:43:59.096248 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 6f2051f883d1424df5d2cb0637be0e60970705e432fea56c1a0727bd24235d60
+2019/10/01 23:43:59.096504 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 509
+2019/10/01 23:44:00.973580 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:42882 (inbound)
+2019/10/01 23:44:10.280715 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:44:10.281048 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:44:15.205750 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 509608c17a338fb82bbe571f302b5624c28fbfebb2318072427e585da0e312fc
+2019/10/01 23:44:15.279446 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 509608c17a338fb82bbe571f302b5624c28fbfebb2318072427e585da0e312fc
+2019/10/01 23:44:15.279893 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 510
+2019/10/01 23:44:15.280912 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:44:15.368659 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:42882 (inbound)
+2019/10/01 23:44:20.344897 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:42904 (inbound)
+2019/10/01 23:44:22.493667 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:44:22.493844 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:44:27.453246 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 0ca44811349fb70d9fd23c0bb99b2759fb18f775df1c3ee1547b1d4f6d8fa049
+2019/10/01 23:44:27.545260 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 0ca44811349fb70d9fd23c0bb99b2759fb18f775df1c3ee1547b1d4f6d8fa049
+2019/10/01 23:44:27.545419 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 511
+2019/10/01 23:44:27.555690 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:44:27.559561 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:44:27.670768 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:42904 (inbound)
+2019/10/01 23:44:30.502404 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:44:30.502575 [1;35m[INF][m GID 340, [ConfirmBlock] block hash: 54f7222bc548cee5607b1eed2ad905b8a566b1f52aa4583364b8d6bed0010b25
+2019/10/01 23:44:30.502721 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:44:30.600500 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 54f7222bc548cee5607b1eed2ad905b8a566b1f52aa4583364b8d6bed0010b25
+2019/10/01 23:44:30.600688 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 512
+2019/10/01 23:44:30.601175 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:44:32.636344 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:42920 (inbound)
+2019-10-01 23:44:45.017 [INF] STAT: -> 512 [510 192.168.32.10:39496 (inbound), 586 192.168.32.20:42920 (inbound), 510 192.168.32.2:49620 (inbound), 509 192.168.32.11:34340 (inbound), 510 192.168.32.3:49838 (inbound), 510 192.168.32.4:56386 (inbound), 510 192.168.32.9:34082 (inbound), 510 192.168.32.6:60174 (inbound), 509 192.168.32.10:20338 (outbound), 509 192.168.32.4:20338 (outbound), 509 192.168.32.6:20338 (outbound), 509 192.168.32.3:20338 (outbound)]
+2019/10/01 23:44:46.976050 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: b1cafb72fd7190653d6d26336a8df751fadcb72d99f4795ee9371e6fd9d9e07f
+2019/10/01 23:44:47.067402 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: b1cafb72fd7190653d6d26336a8df751fadcb72d99f4795ee9371e6fd9d9e07f
+2019/10/01 23:44:47.067462 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 513
+2019/10/01 23:44:47.179243 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:42920 (inbound)
+2019/10/01 23:44:52.176692 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:42968 (inbound)
+2019/10/01 23:44:54.517697 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 55d717a127fd4eaae1e45ee7286be5ff38565c1576b5fb1bcccfe762787b1290
+2019/10/01 23:44:54.583938 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 55d717a127fd4eaae1e45ee7286be5ff38565c1576b5fb1bcccfe762787b1290
+2019/10/01 23:44:54.584065 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 514
+2019/10/01 23:44:54.598807 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:44:54.717444 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:42968 (inbound)
+2019/10/01 23:44:55.421636 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 43860430889f53821546fb9db33c15acd4563b9156569d8a2388dbcfe8727db9
+2019/10/01 23:44:55.601772 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 43860430889f53821546fb9db33c15acd4563b9156569d8a2388dbcfe8727db9
+2019/10/01 23:44:55.602084 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 515
+2019/10/01 23:44:59.783075 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:42988 (inbound)
+2019/10/01 23:45:00.503067 [1;35m[INF][m GID 340, five second countdown ends. Re-generate block.
+2019/10/01 23:45:00.516827 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:45:13.765032 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:45:13.765224 [1;35m[INF][m GID 340, [ConfirmBlock] block hash: 1f5fea120cc176f284696f5b0bb6e0f259d4fb75b416dcc6bb8febd9f440d175
+2019/10/01 23:45:13.765331 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:45:13.821243 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 1f5fea120cc176f284696f5b0bb6e0f259d4fb75b416dcc6bb8febd9f440d175
+2019/10/01 23:45:13.821362 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 516
+2019/10/01 23:45:13.821832 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:45:13.948844 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:42988 (inbound)
+2019/10/01 23:45:16.977479 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: d4dc2e413d0ed3d14dc3da6df6e2c6da3ac2c12fbe9acd4c51088b5bc041ade2
+2019/10/01 23:45:17.035607 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: d4dc2e413d0ed3d14dc3da6df6e2c6da3ac2c12fbe9acd4c51088b5bc041ade2
+2019/10/01 23:45:17.035761 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 517
+2019/10/01 23:45:18.550406 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:45:18.567411 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:45:18.956489 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:42998 (inbound)
+2019/10/01 23:45:21.337575 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:45:21.342911 [1;35m[INF][m GID 340, [ConfirmBlock] block hash: 2273978d67bbea007e9373b3e5a1259c9168f88fb9a886bd6f16dc22c245d5c7
+2019/10/01 23:45:21.343291 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:45:21.411206 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 2273978d67bbea007e9373b3e5a1259c9168f88fb9a886bd6f16dc22c245d5c7
+2019/10/01 23:45:21.411247 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 518
+2019/10/01 23:45:21.411875 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:45:21.501932 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:42998 (inbound)
+2019/10/01 23:45:26.494788 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:43014 (inbound)
+2019/10/01 23:45:29.054633 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 2d05f186d80474feb9644c13c684d2d9b0bcb4ac9c967f4d7f8c5de87607e50c
+2019/10/01 23:45:29.091149 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 2d05f186d80474feb9644c13c684d2d9b0bcb4ac9c967f4d7f8c5de87607e50c
+2019/10/01 23:45:29.091209 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 519
+2019/10/01 23:45:29.196972 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:43014 (inbound)
+2019/10/01 23:45:30.291613 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:45:30.291706 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:45:34.021863 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 0085fca1d541c95351cb501cb663845589d6528f9ed946fc6fe1d0a7e99d7a05
+2019/10/01 23:45:34.111925 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 0085fca1d541c95351cb501cb663845589d6528f9ed946fc6fe1d0a7e99d7a05
+2019/10/01 23:45:34.112038 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 520
+2019/10/01 23:45:34.112463 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:45:34.200001 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:43030 (inbound)
+2019/10/01 23:45:42.157643 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: c24c0bc4d1143babeda962c488755eef367edcbffe836ee24d6914da709568b1
+2019/10/01 23:45:42.184135 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: c24c0bc4d1143babeda962c488755eef367edcbffe836ee24d6914da709568b1
+2019/10/01 23:45:42.185841 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 521
+2019/10/01 23:45:42.258053 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:43030 (inbound)
+2019-10-01 23:45:45.035 [INF] STAT: -> 521 [516 192.168.32.3:49838 (inbound), 517 192.168.32.4:56386 (inbound), 517 192.168.32.9:34082 (inbound), 517 192.168.32.6:60174 (inbound), 517 192.168.32.10:39496 (inbound), 518 192.168.32.2:49620 (inbound), 521 192.168.32.11:34340 (inbound), 521 192.168.32.10:20338 (outbound), 521 192.168.32.4:20338 (outbound), 521 192.168.32.6:20338 (outbound), 516 192.168.32.3:20338 (outbound)]
+2019/10/01 23:45:47.264586 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:43054 (inbound)
+2019/10/01 23:45:47.751641 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 3da1f1ec65e3b0a5bc4795d8fa29f737cda9a2b06186dd670cbe5ca52eb909f9
+2019/10/01 23:45:47.787710 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 3da1f1ec65e3b0a5bc4795d8fa29f737cda9a2b06186dd670cbe5ca52eb909f9
+2019/10/01 23:45:47.789622 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 522
+2019/10/01 23:45:47.795665 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:45:47.938085 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:43054 (inbound)
+2019/10/01 23:45:52.969651 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:43068 (inbound)
+2019/10/01 23:45:53.887765 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:45:53.888044 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:46:00.733427 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: ce87c224b233e0bda2b0e39571b92c6721e5bdd0f465e114ccb78abdbbe78695
+2019/10/01 23:46:00.781179 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: ce87c224b233e0bda2b0e39571b92c6721e5bdd0f465e114ccb78abdbbe78695
+2019/10/01 23:46:00.781297 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 523
+2019/10/01 23:46:00.926268 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:43068 (inbound)
+2019/10/01 23:46:03.714921 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 6196e028beac2f32c3be42eba0e8df89660fb5890b38cf6c744fdc2e67fc15e8
+2019/10/01 23:46:03.804370 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 6196e028beac2f32c3be42eba0e8df89660fb5890b38cf6c744fdc2e67fc15e8
+2019/10/01 23:46:03.804652 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 524
+2019/10/01 23:46:03.807517 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:46:04.974244 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 4aa03d0960ce2bb3d3f7c3ab74dbeb71e25e3fefe0355ab8b62f0df2b46966e5
+2019/10/01 23:46:05.063193 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 4aa03d0960ce2bb3d3f7c3ab74dbeb71e25e3fefe0355ab8b62f0df2b46966e5
+2019/10/01 23:46:05.063282 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 525
+2019/10/01 23:46:05.926138 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:43090 (inbound)
+2019/10/01 23:46:22.882523 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: f245525bec9a9f1a827ca37b54db92c6acb7260984d854b2743749f0b1588d7a
+2019/10/01 23:46:23.017430 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: f245525bec9a9f1a827ca37b54db92c6acb7260984d854b2743749f0b1588d7a
+2019/10/01 23:46:23.017604 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 526
+2019/10/01 23:46:23.018481 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:46:23.088135 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:43090 (inbound)
+2019/10/01 23:46:23.895402 [1;35m[INF][m GID 340, five second countdown ends. Re-generate block.
+2019/10/01 23:46:23.896220 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:46:28.085062 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:43112 (inbound)
+2019/10/01 23:46:32.445896 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:46:32.454788 [1;35m[INF][m GID 340, [ConfirmBlock] block hash: 053bce8ad0aba02cbc0a8d32af35ea5945b968c1bf3598b23c9bd321353b1b4e
+2019/10/01 23:46:32.464207 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:46:32.576350 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: 053bce8ad0aba02cbc0a8d32af35ea5945b968c1bf3598b23c9bd321353b1b4e
+2019/10/01 23:46:32.576402 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 527
+2019/10/01 23:46:32.628253 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:43112 (inbound)
+2019/10/01 23:46:37.627299 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:43136 (inbound)
+2019/10/01 23:46:41.368803 [1;35m[INF][m GID 340, <================Solved Block==============>
+2019/10/01 23:46:41.370063 [1;35m[INF][m GID 340, difficulty:  520095999
+2019/10/01 23:46:42.137726 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: ed9a8e220665049bd05ff4543feda1baf1d9375eb6ef7e863e4352c8d8da7e4d
+2019/10/01 23:46:42.207714 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: ed9a8e220665049bd05ff4543feda1baf1d9375eb6ef7e863e4352c8d8da7e4d
+2019/10/01 23:46:42.208092 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 528
+2019/10/01 23:46:42.208744 [1;35m[INF][m GID 39, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/10/01 23:46:42.292784 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:43136 (inbound)
+2019-10-01 23:46:45.018 [INF] STAT: -> 528 [528 192.168.32.11:34340 (inbound), 525 192.168.32.3:49838 (inbound), 525 192.168.32.4:56386 (inbound), 525 192.168.32.9:34082 (inbound), 525 192.168.32.6:60174 (inbound), 525 192.168.32.10:39496 (inbound), 526 192.168.32.2:49620 (inbound), 525 192.168.32.10:20338 (outbound), 528 192.168.32.4:20338 (outbound), 528 192.168.32.6:20338 (outbound), 525 192.168.32.3:20338 (outbound)]
+2019/10/01 23:46:47.292154 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:43148 (inbound)
+2019/10/01 23:46:55.226362 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: c8f945f5870f594b0273c838a9b3b243650ebbf25cb5b7f85d203ab1b88e9432
+2019/10/01 23:46:55.294626 [1;35m[INF][m GID 39, [ConfirmBlock] block hash: c8f945f5870f594b0273c838a9b3b243650ebbf25cb5b7f85d203ab1b88e9432
+2019/10/01 23:46:55.299216 [1;35m[INF][m GID 39, [ConfirmBlock] block height: 529
+2019/10/01 23:46:55.440823 [1;35m[INF][m GID 39, Lost peer 192.168.32.20:43148 (inbound)
+2019/10/01 23:47:00.452643 [1;35m[INF][m GID 39, New valid peer 192.168.32.20:43174 (inbound)
