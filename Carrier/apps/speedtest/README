@@ -1,0 +1,12 @@
+Arguments to the following two options are mandatory in order to use the program:
+
+-c configuration file
+
+-f file to transfer or be saved as
+
+Additionally, if you want to friend someone, just provide his address through the -a option.
+
+If the -a option is not used, the argument to the -f option is the file to tranfer.
+Otherwise, it's the file to be saved as.
+
+speedtest.sh is an incomplete shell script template to start the program, give it the argument to the -f option and it will run smoothly.

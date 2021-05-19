@@ -1,0 +1,8 @@
+#ifndef __CARRIER_VERSION_H__
+#define __CARRIER_VERSION_H__
+
+static const char *carrier_version = "@CARRIER_VERSION_MAJOR@"
+                                     "@CARRIER_VERSION_MINOR@"
+                                     "@CARRIER_VERSION_PATCH@";
+
+#endif
