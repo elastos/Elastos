@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="118px" height="35px" viewBox="0 0 118 35" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.1 (72631) - https://sketchapp.com -->
+    <title>Logo</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Elastos" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Elastos-Wallet.-Main" transform="translate(-57.000000, -88.000000)">
+            <g id="Logo" transform="translate(57.000000, 83.000000)">
+                <g>
+                    <g id="Symbol-new" opacity="0.792875744" transform="translate(0.000000, 10.028571)" stroke="#9799A6" stroke-width="0.557142857">
+                        <polygon id="Fill-1" points="16.8390365 13.5970679 24.4166029 9.21998723 16.8390365 4.8168985"></polygon>
+                        <polygon id="Fill-2" points="15.9970847 13.5970679 8.41951826 9.21998723 15.9970847 4.8168985"></polygon>
+                        <polygon id="Fill-3" points="24.4166029 -6.39488462e-14 16.8390365 4.3770807 24.4166029 8.78016942"></polygon>
+                        <polygon id="Fill-4" points="25.2585548 -6.39488462e-14 32.8361212 4.3770807 25.2585548 8.78016942"></polygon>
+                        <polygon id="Fill-5" points="7.57756643 -6.39488462e-14 0 4.3770807 7.57756643 8.78016942"></polygon>
+                        <polygon id="Fill-6" points="8.41951826 -6.39488462e-14 15.9970847 4.3770807 8.41951826 8.78016942"></polygon>
+                        <polygon id="Fill-7" points="16.8390365 26.0966147 24.4166029 21.719534 16.8390365 17.3164453"></polygon>
+                        <polygon id="Fill-8" points="15.9970847 26.0966147 8.41951826 21.719534 15.9970847 17.3164453"></polygon>
+                        <polygon id="Fill-9" points="24.4166029 12.4995467 16.8390365 16.8766274 24.4166029 21.2797162"></polygon>
+                        <polygon id="Fill-10" points="25.2585548 12.4995467 32.8361212 16.8766274 25.2585548 21.2797162"></polygon>
+                        <polygon id="Fill-11" points="7.57756643 12.4995467 0 16.8766274 7.57756643 21.2797162"></polygon>
+                        <polygon id="Fill-12" points="8.41951826 12.4995467 15.9970847 16.8766274 8.41951826 21.2797162"></polygon>
+                    </g>
+                    <text id="elastos" font-family="BioSans-Light, Bio Sans" font-size="22.2857143" font-weight="300" letter-spacing="-0.514267751" fill="#FFFFFF">
+                        <tspan x="50.7" y="22">elastos</tspan>
+                    </text>
+                    <text id="light-wallet" font-family="BioSans-Light, Bio Sans" font-size="10.0285714" font-weight="300" letter-spacing="-0.111428573" fill="#9799A6">
+                        <tspan x="51.8142857" y="37.3">light wallet</tspan>
+                    </text>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

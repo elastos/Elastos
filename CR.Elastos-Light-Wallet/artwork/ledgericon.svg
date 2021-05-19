@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="68px" height="43px" viewBox="0 0 68 43" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.1 (72631) - https://sketchapp.com -->
+    <title>Ledger</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="68" height="43" rx="10"></rect>
+        <filter x="-16.2%" y="-16.3%" width="132.4%" height="151.2%" filterUnits="objectBoundingBox" id="filter-2">
+            <feMorphology radius="1" operator="erode" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="4" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="4" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.309803922   0 0 0 0 0.282352941   0 0 0 0 0.552941176  0 0 0 0.148137019 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Ledger" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-8">
+            <g id="Rectangle">
+                <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                <use fill="#4D5358" fill-rule="evenodd" xlink:href="#path-1"></use>
+            </g>
+            <g id="Group-2" transform="translate(17.933636, 9.455063)">
+                <g id="Group-5" transform="translate(-0.000000, 0.641016)">
+                    <g id="Group-6" transform="translate(0.223143, 0.688700)">
+                        <path d="M2.62537091,7.85900284 L25.6253709,7.85900284 C28.3867947,7.85900284 30.6253709,10.0975791 30.6253709,12.8590028 L30.6253709,12.8590028 C30.6253709,15.6204266 28.3867947,17.8590028 25.6253709,17.8590028 L2.62537091,17.8590028 C1.52080141,17.8590028 0.625370912,16.9635723 0.625370912,15.8590028 L0.625370912,9.85900284 C0.625370912,8.75443334 1.52080141,7.85900284 2.62537091,7.85900284 Z" id="Rectangle" stroke="#FFFFFF" stroke-width="1.5"></path>
+                        <path d="M4.15724735,4.63843313 L23.9957179,4.36537631 C24.0431804,4.36472304 24.0821859,4.40266941 24.0828392,4.45013192 C24.0834265,4.49279975 24.0526196,4.5294372 24.010484,4.53618121 L23.0505475,4.68982384 C22.9115873,4.7120651 22.7753627,4.74891091 22.6441374,4.79974897 L2.16760103,12.7325731 L2.18478068,6.63261102 C2.18785512,5.54097311 3.0657085,4.65345707 4.15724735,4.63843313 Z" id="Rectangle-Copy-9" fill="#FFFFFF" transform="translate(13.673522, 8.540828) rotate(20.000000) translate(-13.673522, -8.540828) "></path>
+                    </g>
+                    <circle id="Oval" stroke="#FFFFFF" stroke-width="1.5" cx="25.9370381" cy="13.4712803" r="2"></circle>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

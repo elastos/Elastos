@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="7px" height="7px" viewBox="0 0 7 7" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.1 (72631) - https://sketchapp.com -->
+    <title>greenstatus</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#8FDA82" offset="0%"></stop>
+            <stop stop-color="#56B44B" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="greenstatus" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Status-Icon" transform="translate(-0.000000, 0.000000)" fill="url(#linearGradient-1)">
+            <path d="M3.34285714,0 C1.49958914,0 0,1.49958914 0,3.34285714 C0,5.18612515 1.49958914,6.68571429 3.34285714,6.68571429 C5.18612515,6.68571429 6.68571429,5.18612515 6.68571429,3.34285714 C6.68571429,1.49958914 5.18612515,0 3.34285714,0 Z" id="Shape"></path>
+        </g>
+    </g>
+</svg>
