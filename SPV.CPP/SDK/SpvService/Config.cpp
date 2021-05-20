@@ -79,22 +79,24 @@ namespace Elastos {
 					return false;
 				}
 
-				for (const std::string &chainID : supportChainIDList) {
-					if (j.find(chainID) == j.end())
-						continue;
+				for (nlohmann::json::const_iterator it = j.cbegin(); it != j.cend(); ++it) {
+				    if (it.key() == "NetType")
+				        continue;
 
-					ChainConfigPtr chainConfig(new ChainConfig());
-					nlohmann::json chainConfigJson = j[chainID];
-					if (chainConfigJson.find("Index") != chainConfigJson.end())
-						chainConfig->_index = chainConfigJson["Index"].get<uint32_t>();
+				    std::string chainID = it.key();
 
-					if (chainConfigJson.find("MinFee") != chainConfigJson.end())
-						chainConfig->_minFee = chainConfigJson["MinFee"].get<uint64_t>();
+                    ChainConfigPtr chainConfig(new ChainConfig());
+                    nlohmann::json chainConfigJson = j[chainID];
+                    if (chainConfigJson.find("Index") != chainConfigJson.end())
+                        chainConfig->_index = chainConfigJson["Index"].get<uint32_t>();
 
-					if (chainConfigJson.find("FeePerKB") != chainConfigJson.end())
-						chainConfig->_feePerKB = chainConfigJson["FeePerKB"].get<uint64_t>();
+                    if (chainConfigJson.find("MinFee") != chainConfigJson.end())
+                        chainConfig->_minFee = chainConfigJson["MinFee"].get<uint64_t>();
 
-					_chains[chainID] = chainConfig;
+                    if (chainConfigJson.find("FeePerKB") != chainConfigJson.end())
+                        chainConfig->_feePerKB = chainConfigJson["FeePerKB"].get<uint64_t>();
+
+                    _chains[chainID] = chainConfig;
 				}
 
 				return true;
@@ -180,13 +182,13 @@ namespace Elastos {
 			}
 
 			if (!newConfig.is_null()) {
-				for (const std::string &chainID : supportChainIDList) {
-					if (newConfig.find(chainID) != newConfig.end()) {
-						if (ChangeConfig(currentConfig[chainID], newConfig[chainID])) {
-							changed = true;
-						}
-					}
-				}
+			    for (nlohmann::json::const_iterator it = newConfig.cbegin(); it != newConfig.cend(); ++it) {
+			        if (it.key() == "NetType")
+			            continue;
+
+			        if (ChangeConfig(currentConfig[it.key()], it.value()))
+			            changed = true;
+			    }
 			}
 
 			if (changed) {

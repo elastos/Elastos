@@ -171,6 +171,14 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			return j;
 		}
 
+        void EthSidechainSubWallet::SyncStart() {
+            StartP2P();
+		}
+
+        void EthSidechainSubWallet::SyncStop() {
+            StopP2P();
+		}
+
 		EthSidechainSubWallet::EthSidechainSubWallet(const CoinInfoPtr &info,
 													 const ChainConfigPtr &config,
 													 MasterWallet *parent,

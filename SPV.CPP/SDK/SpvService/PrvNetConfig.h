@@ -34,6 +34,11 @@ namespace Elastos {
 		"Index": 4,
 		"MinFee": 0,
 		"FeePerKB": 0
+	},
+	"ETHHECO": {
+		"Index": 5,
+		"MinFee": 0,
+		"FeePerKB": 0
 	}
 }
 		)"_json;

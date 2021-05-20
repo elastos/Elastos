@@ -36,7 +36,7 @@ namespace Elastos {
 			_hash(hash),
 			_n(n),
 			_address(address),
-			_amount() {
+			_amount(amount) {
 		}
 
 		UTXO::~UTXO() {

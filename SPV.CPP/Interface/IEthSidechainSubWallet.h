@@ -99,6 +99,17 @@ namespace Elastos {
 
             virtual nlohmann::json PublishTransaction(const nlohmann::json &tx) = 0;
 
+            /**
+             * Start sync of P2P network
+             */
+            virtual void SyncStart() = 0;
+
+            /**
+             * Stop sync of P2P network
+             */
+            virtual void SyncStop() = 0;
+
+
         };
 
 	}

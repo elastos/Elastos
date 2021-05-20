@@ -70,6 +70,10 @@ namespace Elastos {
 			virtual nlohmann::json GetTokenTransactions(uint32_t start, uint32_t count, const std::string &txid,
 														const std::string &tokenSymbol) const;
 
+            virtual void SyncStart();
+
+            virtual void SyncStop();
+
 		public:
 			// implement callback of Client
 			virtual void getGasPrice(BREthereumWallet wid, int rid);
