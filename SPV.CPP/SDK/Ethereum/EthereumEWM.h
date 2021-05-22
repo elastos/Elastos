@@ -261,6 +261,8 @@ namespace Elastos {
 						uint64_t blockHeight,
 						uint64_t confirmationsUntilFinal);
 
+			~EthereumEWM();
+
 		private:
 			EthereumEWM(BREthereumEWM identifier, Client *client, const EthereumNetworkPtr &network);
 

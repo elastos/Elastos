@@ -34,6 +34,8 @@ namespace Elastos {
 						   const EthereumNetworkPtr &network,
 						   const std::string &storagePath,
 						   const bytes_t &pubkey);
+
+			~EthereumClient();
 		public:
 			virtual void getGasPrice(BREthereumWallet wid, int rid);
 

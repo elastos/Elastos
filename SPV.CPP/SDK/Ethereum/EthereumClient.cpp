@@ -23,7 +23,6 @@
 #include "EthereumClient.h"
 #include "Common/Log.h"
 #include "Common/ErrorChecker.h"
-#include "WalletCore/WordLists/English.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -43,8 +42,13 @@ namespace Elastos {
 				new EthereumEWM(this, CRYPTO_SYNC_MODE_P2P_WITH_API_SYNC, _network, _storagePath, pubkey, 0, 6));
 		}
 
+        EthereumClient::~EthereumClient() {
+		    _client = nullptr;
+		}
+
 		void EthereumClient::getGasPrice(BREthereumWallet wid, int rid) {
-			_client->getGasPrice(wid, rid);
+            if (_client)
+                _client->getGasPrice(wid, rid);
 		}
 
 		void EthereumClient::getGasEstimate(BREthereumWallet wid,
@@ -55,25 +59,29 @@ namespace Elastos {
 											const std::string &gasPrice,
 											const std::string &data,
 											int rid) {
-			_client->getGasEstimate(wid, cookie, from, to, amount, gasPrice, data, rid);
+            if (_client)
+                _client->getGasEstimate(wid, cookie, from, to, amount, gasPrice, data, rid);
 		}
 
 		void EthereumClient::getBalance(BREthereumWallet wid, const std::string &address, int rid) {
-			_client->getBalance(wid, address, rid);
+            if (_client)
+                _client->getBalance(wid, address, rid);
 		}
 
 		void EthereumClient::submitTransaction(BREthereumWallet wid,
 											   BREthereumTransfer tid,
 											   const std::string &rawTransaction,
 											   int rid) {
-			_client->submitTransaction(wid, tid, rawTransaction, rid);
+            if (_client)
+                _client->submitTransaction(wid, tid, rawTransaction, rid);
 		}
 
 		void EthereumClient::getTransactions(const std::string &address,
 											 uint64_t begBlockNumber,
 											 uint64_t endBlockNumber,
 											 int rid) {
-			_client->getTransactions(address, begBlockNumber, endBlockNumber, rid);
+            if (_client)
+                _client->getTransactions(address, begBlockNumber, endBlockNumber, rid);
 		}
 
 		void EthereumClient::getLogs(const std::string &contract,
@@ -82,7 +90,8 @@ namespace Elastos {
 									 uint64_t begBlockNumber,
 									 uint64_t endBlockNumber,
 									 int rid) {
-			_client->getLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
+            if (_client)
+                _client->getLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
 		}
 
 		void EthereumClient::getBlocks(const std::string &address,
@@ -90,42 +99,51 @@ namespace Elastos {
 									   uint64_t blockNumberStart,
 									   uint64_t blockNumberStop,
 									   int rid) {
-			_client->getBlocks(address, interests, blockNumberStart, blockNumberStop, rid);
+            if (_client)
+                _client->getBlocks(address, interests, blockNumberStart, blockNumberStop, rid);
 		}
 
 		void EthereumClient::getTokens(int rid) {
-			_client->getTokens(rid);
+            if (_client)
+                _client->getTokens(rid);
 		}
 
 		void EthereumClient::getBlockNumber(int rid) {
-			_client->getBlockNumber(rid);
+            if (_client)
+                _client->getBlockNumber(rid);
 		}
 
 		void EthereumClient::getNonce(const std::string &address, int rid) {
-			_client->getNonce(address, rid);
+            if (_client)
+                _client->getNonce(address, rid);
 		}
 
 		void EthereumClient::handleEWMEvent(const BREthereumEWMEvent &event) {
-			_client->handleEWMEvent(event);
+            if (_client)
+                _client->handleEWMEvent(event);
 		}
 
 		void EthereumClient::handlePeerEvent(const BREthereumPeerEvent &event) {
-			_client->handlePeerEvent(event);
+            if (_client)
+                _client->handlePeerEvent(event);
 		}
 
 		void EthereumClient::handleWalletEvent(const EthereumWalletPtr &wallet,
 											   const BREthereumWalletEvent &event) {
-			_client->handleWalletEvent(wallet, event);
+            if (_client)
+                _client->handleWalletEvent(wallet, event);
 		}
 
 		void EthereumClient::handleTokenEvent(const EthereumTokenPtr &token, const BREthereumTokenEvent &event) {
-			_client->handleTokenEvent(token, event);
+            if (_client)
+                _client->handleTokenEvent(token, event);
 		}
 
 		void EthereumClient::handleTransferEvent(const EthereumWalletPtr &wallet,
 												 const EthereumTransferPtr &transaction,
 												 const BREthereumTransferEvent &event) {
-			_client->handleTransferEvent(wallet, transaction, event);
+            if (_client)
+                _client->handleTransferEvent(wallet, transaction, event);
 		}
 
 	}

@@ -48,8 +48,7 @@ namespace Elastos {
 		typedef boost::shared_ptr<EthereumClient> ClientPtr;
 
 		class EthSidechainSubWallet : public virtual IEthSidechainSubWallet,
-									  public EthereumEWM::Client,
-									  public Lockable {
+									  public EthereumEWM::Client {
 		public: // implement IEthSidechainSubWallet
 			virtual ~EthSidechainSubWallet();
 

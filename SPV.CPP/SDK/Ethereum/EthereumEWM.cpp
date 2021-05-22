@@ -700,6 +700,10 @@ namespace Elastos {
 											  confirmationsUntilFinal), client, network) {
 		}
 
+        EthereumEWM::~EthereumEWM() {
+		    _client = nullptr;
+		}
+
 		EthereumEWM::EthereumEWM(BREthereumEWM ewm, EthereumEWM::Client *client, const EthereumNetworkPtr &network) :
 			_ewm(ewm),
 			_client(client),
@@ -832,80 +836,98 @@ namespace Elastos {
 		}
 
 		void EthereumEWM::trampolineGetGasPrice(BREthereumEWM eid, BREthereumWallet wid, int rid) {
-            _client->getGasPrice(wid, rid);
+		    if (_client)
+                _client->getGasPrice(wid, rid);
 		}
 
 		void EthereumEWM::trampolineGetGasEstimate(BREthereumEWM ewm, BREthereumWallet wid, BREthereumCookie cookie,
 												   const std::string &from, const std::string &to,
 												   const std::string &amount, const std::string &gasPrice,
 												   const std::string &data, int rid) {
-            _client->getGasEstimate(wid, cookie, from, to, amount, gasPrice, data, rid);
+		    if (_client)
+                _client->getGasEstimate(wid, cookie, from, to, amount, gasPrice, data, rid);
 		}
 
 		void EthereumEWM::trampolineGetBalance(BREthereumEWM eid, BREthereumWallet wid, const std::string &address,
 											   int rid) {
-            _client->getBalance(wid, address, rid);
+            if (_client)
+                _client->getBalance(wid, address, rid);
 		}
 
 		void EthereumEWM::trampolineSubmitTransaction(BREthereumEWM eid, BREthereumWallet wid, BREthereumTransfer tid,
 													  const std::string &rawTransaction, int rid) {
-            _client->submitTransaction(wid, tid, rawTransaction, rid);
+            if (_client)
+                _client->submitTransaction(wid, tid, rawTransaction, rid);
 		}
 
 		void
 		EthereumEWM::trampolineGetTransactions(BREthereumEWM eid, const std::string &address, uint64_t begBlockNumber,
 											   uint64_t endBlockNumber, int rid) {
-            _client->getTransactions(address, begBlockNumber, endBlockNumber, rid);
+            if (_client)
+                _client->getTransactions(address, begBlockNumber, endBlockNumber, rid);
 		}
 
 		void EthereumEWM::trampolineGetLogs(BREthereumEWM eid, const std::string &contract, const std::string &address,
 											const std::string &event, uint64_t begBlockNumber, uint64_t endBlockNumber,
 											int rid) {
-            _client->getLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
+            if (_client)
+                _client->getLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
 		}
 
 		void EthereumEWM::trampolineGetBlocks(BREthereumEWM eid, const std::string &address, int interests,
 											  uint64_t blockNumberStart, uint64_t blockNumberStop, int rid) {
-            _client->getBlocks(address, interests, blockNumberStart, blockNumberStop, rid);
+            if (_client)
+                _client->getBlocks(address, interests, blockNumberStart, blockNumberStop, rid);
 		}
 
 		void EthereumEWM::trampolineGetTokens(BREthereumEWM eid, int rid) {
-            _client->getTokens(rid);
+            if (_client)
+                _client->getTokens(rid);
 		}
 
 		void EthereumEWM::trampolineGetBlockNumber(BREthereumEWM eid, int rid) {
-            _client->getBlockNumber(rid);
+            if (_client)
+                _client->getBlockNumber(rid);
 		}
 
 		void EthereumEWM::trampolineGetNonce(BREthereumEWM ewm, const std::string &address, int rid) {
-            _client->getNonce(address, rid);
+            if (_client)
+                _client->getNonce(address, rid);
 		}
 
 		void EthereumEWM::trampolineEWMEvent(BREthereumEWM ewm, const BREthereumEWMEvent &event) {
-            _client->handleEWMEvent(event);
+            if (_client)
+                _client->handleEWMEvent(event);
 		}
 
 		void EthereumEWM::trampolinePeerEvent(BREthereumEWM ewm, const BREthereumPeerEvent &event) {
-            _client->handlePeerEvent(event);
+            if (_client)
+                _client->handlePeerEvent(event);
 		}
 
 		void EthereumEWM::trampolineWalletEvent(BREthereumEWM eid, BREthereumWallet wid,
 												const BREthereumWalletEvent &event) {
-			EthereumWalletPtr wallet = walletLookupOrCreate(wid, nullptr);
-            _client->handleWalletEvent(wallet, event);
+		    if (_client) {
+                EthereumWalletPtr wallet = walletLookupOrCreate(wid, nullptr);
+                _client->handleWalletEvent(wallet, event);
+            }
 		}
 
 		void EthereumEWM::trampolineTokenEvent(BREthereumEWM eid, BREthereumToken tokenId,
 											   const BREthereumTokenEvent &event) {
-			EthereumTokenPtr token = addTokenByReference(tokenId);
-            _client->handleTokenEvent(token, event);
+		    if (_client) {
+                EthereumTokenPtr token = addTokenByReference(tokenId);
+                _client->handleTokenEvent(token, event);
+            }
 		}
 
 		void EthereumEWM::trampolineTransferEvent(BREthereumEWM eid, BREthereumWallet wid, BREthereumTransfer tid,
 												  const BREthereumTransferEvent &event) {
-			EthereumWalletPtr wallet = walletLookupOrCreate(wid, nullptr);
-			EthereumTransferPtr transaction = transactionLookupOrCreate(tid);
-            _client->handleTransferEvent(wallet, transaction, event);
+		    if (_client) {
+                EthereumWalletPtr wallet = walletLookupOrCreate(wid, nullptr);
+                EthereumTransferPtr transaction = transactionLookupOrCreate(tid);
+                _client->handleTransferEvent(wallet, transaction, event);
+            }
 		}
 
 		BREthereumEWM EthereumEWM::getRaw() const {

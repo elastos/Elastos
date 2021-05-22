@@ -269,7 +269,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback) {
 				nlohmann::json r = _callback->GasPrice(rid);
 				ArgInfo("r => {}", r.dump(4));
@@ -307,7 +306,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback) {
 				nlohmann::json r = _callback->EstimateGas(from, to, amount, gasPrice, data, rid);
 				ArgInfo("r => {}", r.dump(4));
@@ -336,7 +334,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback) {
 				nlohmann::json r = _callback->GetBalance(address, rid);
 				ArgInfo("r => {}", r.dump(4));
@@ -365,7 +362,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback) {
 				nlohmann::json r = _callback->SubmitTransaction(tx, rid);
 				ArgInfo("r => {}", r.dump(4));
@@ -399,7 +395,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback) {
 				nlohmann::json r = _callback->GetTransactions(address, begBlockNumber, endBlockNumber, rid);
 				ArgInfo("r => {}", r.dump(4));
@@ -462,7 +457,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback) {
 				nlohmann::json r = _callback->GetLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
 				ArgInfo("r => {}", r.dump(4));
@@ -514,7 +508,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback) {
 				int id = rid;
 				std::set<uint64_t> numberSet;
@@ -614,7 +607,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback) {
 				nlohmann::json r = _callback->GetTokens(rid);
 				ArgInfo("r => {}", r.dump(4));
@@ -666,7 +658,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback) {
 				nlohmann::json r = _callback->GetBlockNumber(rid);
 				ArgInfo("r => {}", r.dump(4));
@@ -692,7 +683,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			j["rid"] = rid;
 			ArgInfo("{} {}", GetFunName(), j.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback) {
 				nlohmann::json r = _callback->GetNonce(address, rid);
 				ArgInfo("r => {}", r.dump(4));
@@ -716,7 +706,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			nlohmann::json eJson = EthereumEWM::EWMEvent2Json(event);
 			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
 				_callback->OnETHSCEventHandled(eJson);
 			} else {
@@ -728,7 +717,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			nlohmann::json eJson = EthereumEWM::PeerEvent2Json(event);;
 			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
 				_callback->OnETHSCEventHandled(eJson);
 			} else {
@@ -742,7 +730,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			eJson["WalletSymbol"] = wallet->getSymbol();
 			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
 				_callback->OnETHSCEventHandled(eJson);
 			} else {
@@ -755,7 +742,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			eJson["WalletSymbol"] = token->getSymbol();
 			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
 				_callback->OnETHSCEventHandled(eJson);
 			} else {
@@ -816,7 +802,6 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			}
 
 			ArgInfo("{} {}", GetFunName(), eJson.dump(4));
-			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_callback != nullptr) {
 				_callback->OnETHSCEventHandled(eJson);
 			} else {
@@ -908,14 +893,12 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("callback: *");
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			_callback = subCallback;
 		}
 
 		void EthSidechainSubWallet::RemoveCallback() {
 			ArgInfo("{} {}", _walletID, GetFunName());
 
-			boost::mutex::scoped_lock scoped_lock(lock);
 			_callback = nullptr;
 		}
 
