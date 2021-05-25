@@ -179,6 +179,25 @@ namespace Elastos {
 				[0, "6940d4ee80218d11098c99db11e997686e587ec482c7281e015c12f1152e71b5", 1, 1]
 			]
 		}
+	},
+	"ETHHECO": {
+		"Index": 5,
+		"MinFee": 0,
+		"FeePerKB": 0,
+		"DisconnectionTime": 0,
+		"ChainParameters": {
+			"Services": 0,
+			"MagicNumber": 0,
+			"StandardPort": 0,
+			"TargetTimeSpan": 0,
+			"TargetTimePerBlock": 0,
+			"DNSSeeds": [
+				"127.0.0.1"
+			],
+			"CheckPoints": [
+				[0, "5751d1772ebc82d52d19d96157bb3f13ca8417217e3c0913adf15f04eb4cb144", 1, 1]
+			]
+		}
 	}
 }
 		)"_json;

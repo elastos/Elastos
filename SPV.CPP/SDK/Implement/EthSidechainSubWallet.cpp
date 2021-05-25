@@ -210,6 +210,18 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
                 } else {
                     net = NULL;
                 }
+            } else if (info->GetChainID() == CHAINID_ETHHECO) {
+                if (netType == "MainNet") {
+                    net = ethereumHecoMainnet;
+                } else if (netType == "TestNet") {
+                    net = ethereumHecoTestnet;
+                } else if (netType == "RegTest") {
+                    net = ethereumHecoRinkeby;
+                } else if (netType == "PrvNet") {
+                    net = ethereumHecoPrvnet;
+                } else {
+                    net = NULL;
+                }
             } else {
                 if (netType == "MainNet") {
                     net = ethereumMainnet;
