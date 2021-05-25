@@ -978,6 +978,41 @@ const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 			return j;
 		}
 
+       nlohmann::json EthSidechainSubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &txid) const {
+               ArgInfo("{} {}", _walletID, GetFunName());
+               ArgInfo("start: {}, cnt: {}, txid: {}", start, count, txid);
+
+               nlohmann::json j, jtx;
+               std::vector<nlohmann::json> txList;
+
+               std::vector<EthereumTransferPtr> transfers = _client->_ewm->getWallet()->getTransfers();
+               if (!txid.empty()) {
+                       start = 0;
+                       count = transfers.size();
+               }
+
+               std::reverse(transfers.begin(), transfers.end());
+
+               for (size_t i = start; i < transfers.size() && i - start < count; ++i) {
+                       std::string transferID = GetTransferID(transfers[i]);
+                       if (txid.empty() || txid == transferID || txid == transfers[i]->getIdentifier()) {
+                               jtx = transfers[i]->ToJson();
+                               jtx ["ID"] = transferID;
+                               txList.push_back(jtx);
+
+                               if (!txid.empty())
+                                       break;
+                       }
+               }
+
+               j["MaxCount"] = transfers.size();
+               j["Transactions"] = txList;
+
+               ArgInfo("r => {}", j.dump());
+
+               return j;
+       }
+
 		std::string EthSidechainSubWallet::ConvertToRawTransaction(const nlohmann::json &tx) {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("tx: {}", tx.dump());

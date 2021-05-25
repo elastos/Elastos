@@ -173,6 +173,11 @@ namespace Elastos {
 			virtual nlohmann::json PublishTransaction(
 				const nlohmann::json &tx);
 
+            virtual nlohmann::json GetAllTransaction(
+                    uint32_t start,
+                    uint32_t count,
+                    const std::string &txid) const;
+
 			virtual std::string ConvertToRawTransaction(const nlohmann::json &tx);
 
 			virtual void StartP2P();

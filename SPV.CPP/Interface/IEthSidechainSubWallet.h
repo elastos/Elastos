@@ -99,6 +99,11 @@ namespace Elastos {
 
             virtual nlohmann::json PublishTransaction(const nlohmann::json &tx) = 0;
 
+            virtual nlohmann::json GetAllTransaction(
+                    uint32_t start,
+                    uint32_t count,
+                    const std::string &txid) const = 0;
+
             /**
              * Start sync of P2P network
              */
