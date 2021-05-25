@@ -39,7 +39,7 @@ namespace Elastos {
 									 "pubkey should be 65 bytes and begin with 0x04");
 
 			_ewm = EthereumEWMPtr(
-				new EthereumEWM(this, CRYPTO_SYNC_MODE_P2P_WITH_API_SYNC, _network, _storagePath, pubkey, 0, 6));
+				new EthereumEWM(this, CRYPTO_SYNC_MODE_API_ONLY, _network, _storagePath, pubkey, 0, 6));
 		}
 
         EthereumClient::~EthereumClient() {
