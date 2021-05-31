@@ -481,8 +481,10 @@ namespace Elastos {
             VoteContentArray voteContents;
             VoteContentFromJson(voteContents, outputAmount, voteContentsJson);
 
+            OutputPayloadPtr outputPayload(new PayloadVote(voteContents, VOTE_PRODUCER_CR_VERSION));
+
             OutputArray outputs;
-            OutputPtr output(new TransactionOutput(TransactionOutput(outputAmount, (*utxos.begin())->GetAddress())));
+            OutputPtr output(new TransactionOutput(TransactionOutput(outputAmount, (*utxos.begin())->GetAddress(), Asset::GetELAAssetID(), TransactionOutput::VoteOutput, outputPayload)));
             outputs.push_back(output);
 
             BigInt feeAmount;
