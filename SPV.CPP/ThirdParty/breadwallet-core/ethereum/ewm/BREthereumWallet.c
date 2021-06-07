@@ -25,11 +25,7 @@ static BREthereumGasPrice
 walletCreateDefaultGasPrice (BREthereumWallet wallet);
 
 static BREthereumGas
-walletCreateDefaultGasLimit (BREthereumWallet wallet);
-
-static void
-walletInsertTransferSorted (BREthereumWallet wallet,
-                            BREthereumTransfer transfer);
+walletCreateDefaultGasLimit (BREthereumWallet wallet, BREthereumAmount amount);
 
 static int // -1 if not found
 walletLookupTransferIndex (BREthereumWallet wallet,
@@ -75,48 +71,11 @@ struct BREthereumWalletRecord {
      * thus consuming unexpectedly large amounts of Ether.
      */
     BREthereumGas defaultGasLimit;
-    
-    /**
-     * The wallet's balance, either ETHER or a TOKEN.
-     */
-    BREthereumAmount balance;
-    
+
     /**
      * An optional ERC20 token specification.  Will be NULL (and unused) for holding ETHER.
      */
     BREthereumToken token; // optional
-    
-    /*
-     * Transfers - these are sorted from oldest [index 0] to newest.  As transfers are added
-     * we'll maintain the ordering using an 'insertion sort' - while starting at the end and
-     * working backwards.
-     *
-     * We are often faced with looking up a transfer based on a hash.  For example, BCS found
-     * a transaction for our address and we need to find the corresponding transfer.  Or, instead
-     * of BCS, the BRD endpoint reports a transaction/log of interest.  How do we lookup based
-     * on a hash?
-     *
-     * Further complicating the lookup are:
-     *  a) a transfer is only guaranteed to have a hash if we originated the transfer.  In this
-     *     case we have an 'originating transaction' and can compare its hash.
-     *  b) a log doesn't have a transaction hash until it has been included.
-     *  c) one hash can produce multiple logs.  The logs will have a unique identifier, as
-     *     {hash,indexInBlock} when included, but the hash itself need not be unique.  Note: this
-     *     does not apply to ERC20 transfers, which have one hash and one log.
-     *
-     * FOR NOW, WE'LL ASSUME: ONE HASH <==> ONE TRANSFER (transaction or log)
-     *
-     * Given a hash, to find a corresponding transfers we'll iterate through `transfers` and
-     * compare: a) the hash for the originating transaction, if it exists, b) the hash for the
-     * basis, if it exists.  If the basis is a log, we'll extranct the transaction hash and compare
-     * that.
-     *
-     * We might consider:
-     *   BRSetOf (BRArrayOf ({hash, transfer}) transfersByHashPairs;
-     * which would speed lookup of a transfer.
-     *
-     */
-    BRArrayOf (BREthereumTransfer) transfers;
 };
 
 //
@@ -140,19 +99,18 @@ walletCreateDetailed (BREthereumAccount account,
     wallet->network = network;
     
     wallet->token = optionalToken;
-    wallet->balance = (AMOUNT_ETHER == type
+    BREthereumAmount balance = (AMOUNT_ETHER == type
                        ? amountCreateEther(etherCreate(UINT256_ZERO))
                        : amountCreateToken(createTokenQuantity (wallet->token, UINT256_ZERO)));
     
     wallet->defaultGasLimit = AMOUNT_ETHER == type
-    ? walletCreateDefaultGasLimit(wallet)
+    ? walletCreateDefaultGasLimit(wallet, balance)
     : tokenGetGasLimit (optionalToken);
     
     wallet->defaultGasPrice = AMOUNT_ETHER == type
     ? walletCreateDefaultGasPrice(wallet)
     : tokenGetGasPrice (optionalToken);
     
-    array_new(wallet->transfers, DEFAULT_TRANSFER_CAPACITY);
     return wallet;
 }
 
@@ -180,10 +138,6 @@ walletCreateHoldingToken(BREthereumAccount account,
 
 extern void
 walletRelease (BREthereumWallet wallet) {
-    // TODO: Announce to EWM listener/client?
-    for (size_t index = 0; index < array_count(wallet->transfers); index++)
-        transferRelease (wallet->transfers[index]);
-    array_free(wallet->transfers);
     free (wallet);
 }
 
@@ -232,19 +186,20 @@ extern BREthereumTransfer
 walletCreateTransferWithFeeBasis (BREthereumWallet wallet,
                                   BREthereumAddress *recvAddress,
                                   BREthereumAmount amount,
-                                  BREthereumFeeBasis feeBasis) {
+                                  BREthereumFeeBasis feeBasis,
+                                  uint64_t nonce) {
     BREthereumTransfer transfer = transferCreate (wallet->address, recvAddress, amount, feeBasis,
                                                   (NULL == wallet->token
                                                    ? TRANSFER_BASIS_TRANSACTION
-                                                   : TRANSFER_BASIS_LOG));
-    walletHandleTransfer(wallet, transfer);
+                                                   : TRANSFER_BASIS_LOG), nonce);
     return transfer;
 }
 
 extern BREthereumTransfer
 walletCreateTransfer(BREthereumWallet wallet,
                      BREthereumAddress *recvAddress,
-                     BREthereumAmount amount) {
+                     BREthereumAmount amount,
+                     uint64_t nonce) {
     
     return walletCreateTransferWithFeeBasis (wallet, recvAddress, amount,
                                              (BREthereumFeeBasis) {
@@ -252,7 +207,8 @@ walletCreateTransfer(BREthereumWallet wallet,
                                                  { .gas = {
                                                      wallet->defaultGasLimit,
                                                      wallet->defaultGasPrice
-                                                 }}});
+                                                 }}},
+                                                 nonce);
 }
 
 extern BREthereumTransfer
@@ -261,7 +217,8 @@ walletCreateTransferGeneric (BREthereumWallet wallet,
                              BREthereumEther amount,
                              BREthereumGasPrice gasPrice,
                              BREthereumGas gasLimit,
-                             const char *data) {
+                             const char *data,
+                             uint64_t nonce) {
 
     BREthereumTransaction originatingTransaction = transactionCreate (walletGetAddress(wallet),
                                                                       recvAddress,
@@ -269,7 +226,7 @@ walletCreateTransferGeneric (BREthereumWallet wallet,
                                                                       gasPrice,
                                                                       gasLimit,
                                                                       data,
-                                                                      TRANSACTION_NONCE_IS_NOT_ASSIGNED);
+                                                                      nonce);
 
     BREthereumTransfer transfer =
     transferCreateWithTransactionOriginating (originatingTransaction,
@@ -277,28 +234,7 @@ walletCreateTransferGeneric (BREthereumWallet wallet,
                                                ? TRANSFER_BASIS_TRANSACTION
                                                : TRANSFER_BASIS_LOG));
 
-    walletHandleTransfer(wallet, transfer);
     return transfer;
-}
-
-private_extern void
-walletHandleTransfer(BREthereumWallet wallet,
-                     BREthereumTransfer transfer) {
-    walletInsertTransferSorted (wallet, transfer);
-}
-
-private_extern void
-walletUnhandleTransfer (BREthereumWallet wallet,
-                        BREthereumTransfer transfer) {
-    int index = walletLookupTransferIndex (wallet, transfer);
-    assert (-1 != index);
-    array_rm(wallet->transfers, index);
-}
-
-private_extern int
-walletHasTransfer (BREthereumWallet wallet,
-                   BREthereumTransfer transfer) {
-    return -1 != walletLookupTransferIndex (wallet, transfer);
 }
 
 //
@@ -350,69 +286,9 @@ walletGetAddress(BREthereumWallet wallet) {
     return wallet->address;
 }
 
-extern BREthereumAmountType
-walletGetAmountType (BREthereumWallet wallet) {
-    return wallet->balance.type;
-}
-
 extern BREthereumToken
 walletGetToken (BREthereumWallet wallet) {
     return wallet->token;
-}
-
-// Balance
-
-extern BREthereumAmount
-walletGetBalance (BREthereumWallet wallet) {
-    return wallet->balance;
-}
-
-private_extern void
-walletSetBalance (BREthereumWallet wallet,
-                  BREthereumAmount balance) {
-    wallet->balance = balance;
-}
-
-private_extern void
-walletUpdateBalance (BREthereumWallet wallet) {
-    int overflow = 0, negative = 0, fee_overflow = 0;
-
-    UInt256 recv = UINT256_ZERO;
-    UInt256 sent = UINT256_ZERO;
-    UInt256 fees = UINT256_ZERO;
-
-    for (size_t index = 0; index < array_count (wallet->transfers); index++) {
-        BREthereumTransfer transfer = wallet->transfers[index];
-        BREthereumAmount   amount = transferGetAmount(transfer);
-        assert (amountGetType(wallet->balance) == amountGetType(amount));
-        UInt256 value = (AMOUNT_ETHER == amountGetType(amount)
-                         ? amountGetEther(amount).valueInWEI
-                         : amountGetTokenQuantity(amount).valueAsInteger);
-
-        if (ETHEREUM_BOOLEAN_IS_TRUE(addressEqual(wallet->address, transferGetSourceAddress(transfer)))) {
-            sent = addUInt256_Overflow(sent, value, &overflow);
-
-            BREthereumEther fee = transferGetFee(transfer, &fee_overflow);
-            fees = addUInt256_Overflow(fees, fee.valueInWEI, &fee_overflow);
-        }
-        else
-            recv = addUInt256_Overflow(recv, value, &overflow);
-
-        assert (!overflow);
-    }
-
-    UInt256 balance = subUInt256_Negative(recv, sent, &negative);
-
-    // If we are going to be changing the balance here then 1) shouldn't we call walletSetBalance()
-    // and shouldn't we also ensure that an event is generated (like all calls to
-    // walletSetBalance() ensure)?
-
-    if (AMOUNT_ETHER == amountGetType(wallet->balance)) {
-        balance = subUInt256_Negative(balance, fees, &negative);
-        wallet->balance = amountCreateEther (etherCreate(balance));
-    }
-    else
-        wallet->balance = amountCreateToken (createTokenQuantity(amountGetToken (wallet->balance), balance));
 }
 // Gas Limit
 
@@ -428,8 +304,8 @@ walletSetDefaultGasLimit(BREthereumWallet wallet,
 }
 
 static BREthereumGas
-walletCreateDefaultGasLimit (BREthereumWallet wallet) {
-    return amountGetGasEstimate(wallet->balance);
+walletCreateDefaultGasLimit (BREthereumWallet wallet, BREthereumAmount amount) {
+    return amountGetGasEstimate(amount);
 }
 
 // Gas Price
@@ -447,13 +323,12 @@ walletSetDefaultGasPrice(BREthereumWallet wallet,
 
 static BREthereumGasPrice
 walletCreateDefaultGasPrice (BREthereumWallet wallet) {
-    switch (amountGetType(wallet->balance)) {
-        case AMOUNT_ETHER:
-            return gasPriceCreate(etherCreateNumber
-                                  (DEFAULT_ETHER_GAS_PRICE_NUMBER,
-                                   DEFAULT_ETHER_GAS_PRICE_UNIT));
-        case AMOUNT_TOKEN:
-            return tokenGetGasPrice (wallet->token);
+    if (NULL == walletGetToken(wallet)) {
+        return gasPriceCreate(etherCreateNumber
+                                      (DEFAULT_ETHER_GAS_PRICE_NUMBER,
+                                       DEFAULT_ETHER_GAS_PRICE_UNIT));
+    } else {
+        return tokenGetGasPrice (wallet->token);
     }
 }
 
@@ -475,99 +350,6 @@ transferPredicateStatus (BREthereumTransferStatus status,
     return transferHasStatus(transfer, status);
 }
 
-extern void
-walletWalkTransfers (BREthereumWallet wallet,
-                     void *context,
-                     BREthereumTransferPredicate predicate,
-                     BREthereumTransferWalker walker) {
-    for (int i = 0; i < array_count(wallet->transfers); i++)
-        if (predicate (context, wallet->transfers[i], i))
-            walker (context, wallet->transfers[i], i);
-}
-
-extern BREthereumTransfer
-walletGetTransferByIdentifier (BREthereumWallet wallet,
-                               BREthereumHash hash) {
-    if (ETHEREUM_BOOLEAN_IS_TRUE (hashEqual (hash, EMPTY_HASH_INIT))) return NULL;
-
-    for (int i = 0; i < array_count(wallet->transfers); i++) {
-        BREthereumHash identifier = transferGetIdentifier (wallet->transfers[i]);
-        if (ETHEREUM_BOOLEAN_IS_TRUE (hashEqual (hash, identifier)))
-            return wallet->transfers[i];
-    }
-    return NULL;
-}
-
-extern BREthereumTransfer
-walletGetTransferByOriginatingHash (BREthereumWallet wallet,
-                                    BREthereumHash hash) {
-    for (int i = 0; i < array_count(wallet->transfers); i++) {
-        BREthereumTransaction transaction = transferGetOriginatingTransaction (wallet->transfers[i]);
-        if (NULL != transaction && ETHEREUM_BOOLEAN_IS_TRUE (hashEqual (hash, transactionGetHash (transaction))))
-            return wallet->transfers[i];
-    }
-    return NULL;
-}
-
-extern BREthereumTransfer
-walletGetTransferByNonce(BREthereumWallet wallet,
-                         BREthereumAddress sourceAddress,
-                         uint64_t nonce) {
-    for (int i = 0; i < array_count(wallet->transfers); i++)
-        if (nonce == transferGetNonce (wallet->transfers[i])
-            && ETHEREUM_BOOLEAN_IS_TRUE(addressEqual(sourceAddress, transferGetSourceAddress(wallet->transfers[i]))))
-            return wallet->transfers [i];
-    return NULL;
-}
-
-extern BREthereumTransfer
-walletGetTransferByIndex(BREthereumWallet wallet,
-                         uint64_t index) {
-    return (index < array_count(wallet->transfers)
-            ? wallet->transfers[index]
-            : NULL);
-}
-
-static int // -1 if not found
-walletLookupTransferIndex (BREthereumWallet wallet,
-                           BREthereumTransfer transfer) {
-    for (int i = 0; i < array_count(wallet->transfers); i++)
-        if (transfer == wallet->transfers[i])
-            return i;
-    return -1;
-}
-
-static void
-walletInsertTransferSorted (BREthereumWallet wallet,
-                            BREthereumTransfer transfer) {
-    size_t index = array_count(wallet->transfers);
-    for (; index > 0; index--)
-        // quit if transfer is not-less-than the next in wallet
-        if (ETHEREUM_COMPARISON_LT != transferCompare (transfer, wallet->transfers[index - 1]))
-            break;
-    array_insert(wallet->transfers, index, transfer);
-}
-
-#pragma clang diagnostic push
-#pragma GCC diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
-#pragma GCC diagnostic ignored "-Wunused-function"
-static void
-walletUpdateTransferSorted (BREthereumWallet wallet,
-                            BREthereumTransfer transfer) {
-    // transfer might have moved - move it if needed - but for now, remove then insert.
-    int index = walletLookupTransferIndex(wallet, transfer);
-    assert (-1 != index);
-    array_rm(wallet->transfers, index);
-    walletInsertTransferSorted(wallet, transfer);
-}
-#pragma clang diagnostic pop
-#pragma GCC diagnostic pop
-
-extern unsigned long
-walletGetTransferCount (BREthereumWallet wallet) {
-    return array_count(wallet->transfers);
-}
 
 //
 // Transfer State
@@ -629,27 +411,6 @@ struct BREthereumWalletStateRecord {
 0xff, 0xff, 0xff, 0xff,   \
 0xff, 0xff, 0xff, 0xff \
 })
-
-extern BREthereumWalletState
-walletStateCreate (const BREthereumWallet wallet) {
-    BREthereumWalletState state = malloc (sizeof (struct BREthereumWalletStateRecord));
-
-    state->nonce = 0;
-    
-    BREthereumAmount balance = walletGetBalance(wallet);
-    BREthereumToken  token   = walletGetToken (wallet);
-
-    if (NULL == token) {
-        state->address = FAKE_ETHER_ADDRESS_INIT;
-        state->amount  = etherGetValue (amountGetEther(balance), WEI);
-    }
-    else {
-        state->address = tokenGetAddressRaw(token);
-        state->amount  = amountGetTokenQuantity(balance).valueAsInteger;
-    }
-
-    return state;
-}
 
 extern void
 walletStateRelease (BREthereumWalletState state) {

@@ -550,6 +550,32 @@ transactionGetRlpHexEncoded (BREthereumTransaction transaction,
     return result;
 }
 
+extern BREthereumTransaction
+transactionRlpHexDecode (BREthereumNetwork network,
+                         BREthereumRlpType type,
+                         const char *hexString) {
+    if (NULL == hexString)
+        return NULL;
+
+    if (!strncmp(hexString, "0x", 2))
+        hexString += 2;
+
+    size_t targetLen = 0;
+    uint8_t *target = decodeHexCreate (&targetLen, hexString, strlen(hexString));
+
+    BRRlpCoder coder = rlpCoderCreate();
+    BRRlpData data = { targetLen, target };
+    BRRlpItem item = rlpGetItem (coder, data);
+
+    BREthereumTransaction tx = transactionRlpDecode (item, network, type, coder);
+
+    rlpReleaseItem(coder, item);
+    rlpDataRelease(data);
+    rlpCoderRelease(coder);
+
+    return tx;
+}
+
 extern BREthereumTransactionStatus
 transactionGetStatus (BREthereumTransaction transaction) {
     return transaction->status;

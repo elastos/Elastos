@@ -48,11 +48,13 @@ namespace Elastos {
 			 * a single decimal point with at least one preceeding characters.  Thus: 0.001, 1.0000, 12
 			 * and 12.100 are all valid.  But .1 is invalid (required 0.1).
 			 * @param amountUnit
+			 * @param nonce
 			 * @return
 			 */
 			virtual nlohmann::json CreateTransfer(const std::string &targetAddress,
 												  const std::string &amount,
-												  EthereumAmountUnit amountUnit) const = 0;
+												  EthereumAmountUnit amountUnit,
+												  uint64_t nonce) const = 0;
 
 			/**
 			 *
@@ -68,6 +70,7 @@ namespace Elastos {
 			 * @param gasPriceUnit
 			 * @param gasLimit
 			 * @param data
+			 * @param nonce
 			 * @return
 			 */
 			virtual nlohmann::json CreateTransferGeneric(const std::string &targetAddress,
@@ -76,44 +79,8 @@ namespace Elastos {
 														 const std::string &gasPrice,
 														 EthereumAmountUnit gasPriceUnit,
 														 const std::string &gasLimit,
-														 const std::string &data) const = 0;
-
-			/**
-			 *
-			 * @param tx
-			 */
-			virtual void DeleteTransfer(const nlohmann::json &tx) = 0;
-
-			/**
-			 * @param tokenSymbol
-			 * @return
-			 */
-			virtual nlohmann::json GetTokenTransactions(uint32_t start, uint32_t count, const std::string &txid,
-														const std::string &tokenSymbol) const = 0;
-
-            virtual std::string GetBalance() const = 0;
-
-            virtual void AddCallback(ISubWalletCallback *subCallback) = 0;
-
-            virtual void RemoveCallback() = 0;
-
-            virtual nlohmann::json PublishTransaction(const nlohmann::json &tx) = 0;
-
-            virtual nlohmann::json GetAllTransaction(
-                    uint32_t start,
-                    uint32_t count,
-                    const std::string &txid) const = 0;
-
-            /**
-             * Start sync of P2P network
-             */
-            virtual void SyncStart() = 0;
-
-            /**
-             * Stop sync of P2P network
-             */
-            virtual void SyncStop() = 0;
-
+														 const std::string &data,
+														 uint64_t nonce) const = 0;
 
         };
 

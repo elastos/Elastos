@@ -50,8 +50,7 @@ namespace Elastos {
 							 const std::string &netType) :
 			_parent(parent),
 			_info(info),
-			_config(config),
-			_callback(nullptr) {
+			_config(config) {
 
 			fs::path subWalletDBPath = _parent->GetDataPath();
 			subWalletDBPath /= _info->GetChainID() + DB_FILE_EXTENSION;
@@ -70,8 +69,7 @@ namespace Elastos {
 							 const CoinInfoPtr &info) :
 			_parent(parent),
 			_info(info),
-			_config(config),
-			_callback(nullptr) {
+			_config(config) {
 
 		}
 

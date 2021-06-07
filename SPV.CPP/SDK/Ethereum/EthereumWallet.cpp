@@ -107,26 +107,6 @@ namespace Elastos {
 			ewmWalletSetDefaultGasLimit(_ewm->getRaw(), getRaw(), limit);
 		}
 
-		// Balance
-		std::string EthereumWallet::getBalance() const {
-			return getBalance(_defaultUnit);
-		}
-
-		std::string EthereumWallet::getBalance(EthereumAmount::Unit unit) const {
-			validUnitOrException(unit);
-			BREthereumAmount balance = ewmWalletGetBalance(_ewm->getRaw(), getRaw());
-			char *number = (AMOUNT_ETHER == amountGetType(balance)
-							? etherGetValueString(balance.u.ether, (BREthereumEtherUnit) unit)
-							: tokenQuantityGetValueString(balance.u.tokenQuantity, (BREthereumTokenQuantityUnit) unit));
-
-			return GetCString(number);
-		}
-
-		// Estimate GasPrice and Gas
-		void EthereumWallet::estimateGasPrice() {
-			ewmUpdateGasPrice(_ewm->getRaw(), getRaw());
-		}
-
 		void EthereumWallet::estimateGas(const EthereumTransferPtr &transaction) {
 //			ewmUpdateGasEstimate(_ewm->getRaw(), getRaw(), transaction->getRaw());
 		}
@@ -165,9 +145,11 @@ namespace Elastos {
 			return transferEstimatedFee(amount, _defaultUnit, _defaultUnit);
 		}
 
-		EthereumTransferPtr EthereumWallet::createTransfer(const std::string &targetAddress, const std::string &amount,
-														   EthereumAmount::Unit amountUnit) const {
-			BREthereumTransfer transfer = createRawTransaction(targetAddress, amount, amountUnit);
+        EthereumTransferPtr EthereumWallet::createTransfer(const std::string &targetAddress,
+                                                           const std::string &amount,
+														   EthereumAmount::Unit amountUnit,
+														   uint64_t nonce) const {
+			BREthereumTransfer transfer = createRawTransaction(targetAddress, amount, amountUnit, nonce);
 			return EthereumTransferPtr(new EthereumTransfer(_ewm, transfer, amountUnit));
 		}
 
@@ -177,13 +159,14 @@ namespace Elastos {
 																  const std::string &gasPrice,
 																  EthereumAmount::Unit gasPriceUnit,
 																  const std::string &gasLimit,
-																  const std::string &data) const {
+																  const std::string &data,
+																  uint64_t nonce) const {
 			_ewm->ensureValidAddress(targetAddress);
 
 			BREthereumTransfer transfer = createRawTransactionGeneric(targetAddress, amount,
 																	  amountUnit, gasPrice,
 																	  gasPriceUnit, gasLimit,
-																	  data);
+																	  data, nonce);
 
 			return EthereumTransferPtr(new EthereumTransfer(_ewm, transfer, amountUnit));
 		}
@@ -196,17 +179,10 @@ namespace Elastos {
 			signRawTransactionWithPrivateKey(transaction->getRaw(), key);
 		}
 
-		void EthereumWallet::submit(const EthereumTransferPtr &transaction) {
-			submitRawTransaction(transaction->getRaw());
-		}
-
-		std::vector<EthereumTransferPtr> EthereumWallet::getTransfers() const {
-			return getRawTransactions();
-		}
-
 		BREthereumTransfer EthereumWallet::createRawTransaction(const std::string &targetAddress,
 																const std::string &amount,
-																EthereumAmount::Unit unit) const {
+																EthereumAmount::Unit unit,
+																uint64_t nonce) const {
 			BREthereumEWM node = _ewm->getRaw();
 			BREthereumWallet wallet = getRaw();
 			BREthereumToken token = ewmWalletGetToken(node, wallet);
@@ -218,7 +194,7 @@ namespace Elastos {
 								 : amountCreateTokenQuantityString(token, amount.data(),
 																   (BREthereumTokenQuantityUnit) unit, &status);
 			ErrorChecker::CheckParam(status != CORE_PARSE_OK, Error::InvalidArgument, "invalid amount");
-			return ewmWalletCreateTransfer(node, wallet, targetAddress.data(), a);
+			return ewmWalletCreateTransfer(node, wallet, targetAddress.data(), a, nonce);
 		}
 
 		BREthereumTransfer EthereumWallet::createRawTransactionGeneric(const std::string &to,
@@ -227,7 +203,8 @@ namespace Elastos {
 																	   const std::string &gasPrice,
 																	   EthereumAmount::Unit gasPriceUnit,
 																	   const std::string &gasLimit,
-																	   const std::string &data) const {
+																	   const std::string &data,
+																	   uint64_t nonce) const {
 			BREthereumEWM node = _ewm->getRaw();
 			BRCoreParseStatus status = CORE_PARSE_OK;
 
@@ -243,7 +220,7 @@ namespace Elastos {
 			BREthereumGas brGasLimit = gasCreate(strtoull(gasLimit.data(), NULL, 0));
 
 			return ewmWalletCreateTransferGeneric(node, getRaw(), to.data(), brAmount,
-												  brGasPrice, brGasLimit, data.data());
+												  brGasPrice, brGasLimit, data.data(), nonce);
 		}
 
 		void EthereumWallet::signRawTransaction(BREthereumTransfer transaction, const std::string &paperKey) const {
@@ -257,25 +234,6 @@ namespace Elastos {
 			BREthereumEWM node = _ewm->getRaw();
 
 			ewmWalletSignTransfer(node, getRaw(), (BREthereumTransfer) transaction, key);
-		}
-
-		void EthereumWallet::submitRawTransaction(BREthereumTransfer transaction) const {
-			ewmWalletSubmitTransfer(_ewm->getRaw(), getRaw(), transaction);
-		}
-
-		std::vector<EthereumTransferPtr> EthereumWallet::getRawTransactions() const {
-			std::vector<EthereumTransferPtr> transactions;
-			int count = ewmWalletGetTransferCount(_ewm->getRaw(), getRaw());
-			assert (-1 != count);
-			// uint32_t array - need a long
-			BREthereumTransfer *transactionIds = ewmWalletGetTransfers(_ewm->getRaw(), getRaw());
-			for (int i = 0; i < count; i++) {
-				EthereumTransferPtr t(new EthereumTransfer(_ewm, transactionIds[i], _defaultUnit));
-				transactions.push_back(t);
-			}
-			free(transactionIds);
-
-			return transactions;
 		}
 
 	}

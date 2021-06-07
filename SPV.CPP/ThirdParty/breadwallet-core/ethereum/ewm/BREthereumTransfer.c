@@ -15,7 +15,7 @@
 #include "BREthereumTransfer.h"
 
 static void
-transferProvideOriginatingTransaction (BREthereumTransfer transfer);
+transferProvideOriginatingTransaction (BREthereumTransfer transfer, uint64_t nonce);
 
 /// MARK: - Status
 
@@ -211,7 +211,8 @@ transferCreate (BREthereumAddress sourceAddress,
                 BREthereumAddress *targetAddress,
                 BREthereumAmount amount,
                 BREthereumFeeBasis feeBasis,
-                BREthereumTransferBasisType transferBasisType) {
+                BREthereumTransferBasisType transferBasisType,
+                uint64_t nonce) {
     BREthereumTransfer transfer = transferCreateDetailed (sourceAddress,
                                                           targetAddress,
                                                           amount,
@@ -219,7 +220,7 @@ transferCreate (BREthereumAddress sourceAddress,
                                                           NULL);
 
     // Assigns originatingTransaction
-    transferProvideOriginatingTransaction(transfer);
+    transferProvideOriginatingTransaction(transfer, nonce);
 
     // Basis.  Note: if the transferBasisType is BASIS_TRANSACTION,  then we *could* fill in the
     // .transaction field; however, for 'reasons of symmetry' we won't fill in the .transaction
@@ -734,7 +735,7 @@ transferProvideOriginatingTransactionAmount (BREthereumTransfer transfer) {
 }
 
 static void
-transferProvideOriginatingTransaction (BREthereumTransfer transfer) {
+transferProvideOriginatingTransaction (BREthereumTransfer transfer, uint64_t nonce) {
     if (NULL != transfer->originatingTransaction)
         transactionRelease (transfer->originatingTransaction);
     
@@ -747,7 +748,7 @@ transferProvideOriginatingTransaction (BREthereumTransfer transfer) {
                        feeBasisGetGasPrice(transfer->feeBasis),
                        feeBasisGetGasLimit(transfer->feeBasis),
                        data,
-                       TRANSACTION_NONCE_IS_NOT_ASSIGNED);
+                       nonce);
     free (data);
 }
 

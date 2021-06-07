@@ -30,7 +30,9 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class Config;
+#define SPV_API_PUBLIC  __attribute__((__visibility__("default")))
+
+        class Config;
 		class Lockable;
 
 		class SPV_API_PUBLIC MasterWalletManager : public IMasterWalletManager {

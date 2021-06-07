@@ -47,14 +47,14 @@ namespace Elastos {
 		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
 		typedef boost::shared_ptr<EthereumClient> ClientPtr;
 
-		class EthSidechainSubWallet : public virtual IEthSidechainSubWallet,
-									  public EthereumEWM::Client {
+		class EthSidechainSubWallet : public virtual IEthSidechainSubWallet {
 		public: // implement IEthSidechainSubWallet
 			virtual ~EthSidechainSubWallet();
 
 			virtual nlohmann::json CreateTransfer(const std::string &targetAddress,
 												  const std::string &amount,
-												  EthereumAmountUnit amountUnit) const;
+												  EthereumAmountUnit amountUnit,
+												  uint64_t nonce) const;
 
 			virtual nlohmann::json CreateTransferGeneric(const std::string &targetAddress,
 														 const std::string &amount,
@@ -62,81 +62,14 @@ namespace Elastos {
 														 const std::string &gasPrice,
 														 EthereumAmountUnit gasPriceUnit,
 														 const std::string &gasLimit,
-														 const std::string &data) const;
+														 const std::string &data,
+														 uint64_t nonce) const;
 
-			virtual void DeleteTransfer(const nlohmann::json &tx);
-
-			virtual nlohmann::json GetTokenTransactions(uint32_t start, uint32_t count, const std::string &txid,
-														const std::string &tokenSymbol) const;
-
-            virtual void SyncStart();
-
-            virtual void SyncStop();
-
-		public:
-			// implement callback of Client
-			virtual void getGasPrice(BREthereumWallet wid, int rid);
-
-			virtual void getGasEstimate(BREthereumWallet wid,
-										BREthereumCookie cookie,
-										const std::string &from,
-										const std::string &to,
-										const std::string &amount,
-										const std::string &gasPrice,
-										const std::string &data,
-										int rid);
-
-			virtual void getBalance(BREthereumWallet wid, const std::string &address, int rid);
-
-			virtual void
-			submitTransaction(BREthereumWallet wid, BREthereumTransfer tid, const std::string &rawTransaction,
-							  int rid);
-
-			// announce one-by-one
-			virtual void
-			getTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber,
-							int rid);
-
-			// announce one-by-one
-			virtual void getLogs(const std::string &contract,
-								 const std::string &address,
-								 const std::string &event,
-								 uint64_t begBlockNumber,
-								 uint64_t endBlockNumber,
-								 int rid);
-
-			virtual void getBlocks(const std::string &address,
-								   int interests,
-								   uint64_t blockNumberStart,
-								   uint64_t blockNumberStop,
-								   int rid);
-
-			// announce one-by-one
-			virtual void getTokens(int rid);
-
-			virtual void getBlockNumber(int rid);
-
-			virtual void getNonce(const std::string &address, int rid);
-
-			virtual void handleEWMEvent(const BREthereumEWMEvent &event);
-
-			virtual void handlePeerEvent(const BREthereumPeerEvent &event);
-
-			virtual void handleWalletEvent(const EthereumWalletPtr &wallet,
-										   const BREthereumWalletEvent &event);
-
-			virtual void handleTokenEvent(const EthereumTokenPtr &token, const BREthereumTokenEvent &event);
-
-			virtual void handleTransferEvent(const EthereumWalletPtr &wallet,
-											 const EthereumTransferPtr &transaction,
-											 const BREthereumTransferEvent &event);
 			// implement ISubWallet
 		public:
 			virtual std::string GetChainID() const;
 
 			virtual nlohmann::json GetBasicInfo() const;
-
-			virtual std::string GetBalance() const;
 
 			virtual std::string CreateAddress();
 
@@ -153,10 +86,6 @@ namespace Elastos {
 				uint32_t start,
 				uint32_t count) const;
 
-			virtual void AddCallback(ISubWalletCallback *subCallback);
-
-			virtual void RemoveCallback();
-
 			virtual nlohmann::json CreateTransaction(
                     const nlohmann::json &inputs,
                     const nlohmann::json &outputs,
@@ -170,19 +99,7 @@ namespace Elastos {
 			virtual nlohmann::json GetTransactionSignedInfo(
 				const nlohmann::json &tx) const;
 
-			virtual nlohmann::json PublishTransaction(
-				const nlohmann::json &tx);
-
-            virtual nlohmann::json GetAllTransaction(
-                    uint32_t start,
-                    uint32_t count,
-                    const std::string &txid) const;
-
 			virtual std::string ConvertToRawTransaction(const nlohmann::json &tx);
-
-			virtual void StartP2P();
-
-			virtual void StopP2P();
 
 		protected:
 			friend class MasterWallet;
@@ -192,16 +109,11 @@ namespace Elastos {
 								  MasterWallet *parent,
 								  const std::string &netType);
 
-			std::string GetTransferID(const EthereumTransferPtr &tx) const;
-
-			EthereumTransferPtr LookupTransfer(const std::string &tid) const;
-
 		protected:
 			std::string _walletID;
 			ClientPtr _client;
 			MasterWallet *_parent;
 			CoinInfoPtr _info;
-			ISubWalletCallback *_callback;
 		};
 
 	}

@@ -62,19 +62,6 @@ logTopicCreateAddress (BREthereumAddress raw) {
     return topic;
 }
 
-extern BREthereumBloomFilter
-logTopicGetBloomFilter (BREthereumLogTopic topic) {
-    BRRlpData data;
-    data.bytes = topic.bytes;
-    data.bytesCount = sizeof (topic.bytes);
-    return bloomFilterCreateData(data);
-}
-
-extern BREthereumBloomFilter
-logTopicGetBloomFilterAddress (BREthereumAddress address) {
-    return logTopicGetBloomFilter (logTopicCreateAddress(address));
-}
-
 static int
 logTopicMatchesAddressBool (BREthereumLogTopic topic,
                         BREthereumAddress address) {

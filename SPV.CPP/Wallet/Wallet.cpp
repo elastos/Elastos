@@ -66,312 +66,6 @@ static const char *SplitLine = "------------------------------------------------
 static std::string ETHSC_TESTNET_API_URL = "http://api-testnet.elastos.io:21634/api/1/eth/history";
 static std::string ETHSC_MAINNET_API_URL = "http://api.elastos.io:20634/api/1/eth/history";
 
-class WalletData {
-public:
-	WalletData() :
-		_callback(nullptr),
-		_syncProgress(0),
-		_speed(0),
-		_lastBlockTime(0)
-		{}
-
-	void SetCallback(ISubWalletCallback *callback) {
-		_callback = callback;
-	}
-
-	ISubWalletCallback *GetCallback() const {
-		return _callback;
-	}
-
-	void SetSyncProgress(int progress) {
-		_syncProgress = progress;
-	}
-
-	int GetSyncProgress() const {
-		return _syncProgress;
-	}
-
-	void SetDownloadPeer(const std::string &peer) {
-		_downloadPeer = peer;
-	}
-
-	const std::string &GetDownloadPeer() const {
-		return _downloadPeer;
-	}
-
-	void SetSpeed(int speed) {
-		_speed = speed;
-	}
-
-	int GetSpeed() const {
-		return _speed;
-	}
-
-	void SetLastBlockTime(time_t t) {
-		_lastBlockTime = t;
-	}
-
-	time_t GetLastBlockTime() const {
-		return _lastBlockTime;
-	}
-
-	void SetLastPublishedTx(const std::string &txHash) {
-		_lastPublishedTx = txHash;
-	}
-
-	const std::string &GetLastPublishedTx() const  {
-		return _lastPublishedTx;
-	}
-
-	void SetLastPublishedTxResult(const std::string &result) {
-		_lastPublishedTxResult = result;
-	}
-
-	const std::string &GetLastPublishedTxResult() const {
-		return _lastPublishedTxResult;
-	}
-
-private:
-	ISubWalletCallback *_callback;
-	int _syncProgress;
-	std::string _downloadPeer;
-	int _speed;
-	time_t _lastBlockTime;
-
-	std::string _lastPublishedTx;
-	std::string _lastPublishedTxResult;
-};
-
-typedef std::map<std::string, WalletData> SubWalletData;
-typedef std::map<std::string, SubWalletData> MasterWalletData;
-
-static MasterWalletData masterWalletData;
-
-class SubWalletCallback : public ISubWalletCallback {
-public:
-	~SubWalletCallback() {}
-
-	SubWalletCallback(const std::string &masterWalletID, const std::string &walletID) :
-		_walletID(masterWalletID),
-		_chainID(walletID) {}
-
-	virtual void OnETHSCEventHandled(const nlohmann::json &event) {
-
-	}
-
-	/**
-	 * @param id request id
-	 * @return If successful, return below. Otherwise {} or null will be returned to indicate the error.
-	 * {
-	 *   "id": 0,
-	 *   "result": "0x1dfd14000" // 8049999872 Wei
-	 * }
-	 */
-	virtual nlohmann::json GasPrice(int id) {
-		nlohmann::json j;
-		// rpc request
-		// ...
-		j["id"] = id;
-		j["result"] = "0x1dfd14000";
-		return j;
-	}
-
-	/**
-	 * @param from
-	 * @param to
-	 * @param amount
-	 * @param gasPrice
-	 * @param data
-	 * @param id request id
-	 * @return If successful, return below. Otherwise {} or null will be returned to indicate the error.
-	 * {
-	 *   "id": 0,
-	 *   "result": "0x5208" // 21000
-	 * }
-	 */
-	virtual nlohmann::json EstimateGas(const std::string &from,
-									   const std::string &to,
-									   const std::string &amount,
-									   const std::string &gasPrice,
-									   const std::string &data,
-									   int id) {
-		nlohmann::json j;
-		// rpc request
-		// ...
-		j["id"] = id;
-		j["result"] = "0x5208";
-		return j;
-	}
-
-	/**
-	 * @param address
-	 * @param id
-	 * @return
-	 * {
-	 *   "id": 0,
-	 *   "result": "0x0234c8a3397aab58" // 158972490234375000
-	 * }
-	 */
-	virtual nlohmann::json GetBalance(const std::string &address, int id) {
-		nlohmann::json j;
-		// rpc request
-		j["id"] = id;
-		j["result"] = "0x0234c8a3397aab58";
-		return j;
-	}
-
-	virtual nlohmann::json SubmitTransaction(const std::string &tx, int id) {
-		nlohmann::json j;
-		// rpc request
-		j["id"] = id;
-		j["result"] = "0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331";
-		return j;
-	}
-
-	virtual nlohmann::json GetTransactions(const std::string &address,
-										   uint64_t begBlockNumber,
-										   uint64_t endBlockNumber,
-										   int id) {
-		nlohmann::json j, txns = nlohmann::json::array(), tx;
-		RPCHelper rpcHelper;
-
-		std::string url;
-		if (network == "MainNet") {
-			url = ETHSC_MAINNET_API_URL + "?address=" + address +
-				  "&begBlockNumber=" + std::to_string(begBlockNumber) +
-				  "&endBlockNumber=" + std::to_string(endBlockNumber) +
-				  "&sort=desc";
-		} else if (network == "TestNet") {
-			url = ETHSC_TESTNET_API_URL + "?address=" + address +
-				  "&begBlockNumber=" + std::to_string(begBlockNumber) +
-				  "&endBlockNumber=" + std::to_string(endBlockNumber) +
-				  "&sort=desc";
-		} else if (network == "RegTest") {
-			// TODO fix here later
-		} else if (network == "PrvNet") {
-			// TODO fix here later
-		}
-
-		nlohmann::json respond = rpcHelper.Get(url);
-
-		nlohmann::json result = respond["result"];
-		if (result.is_array()) {
-			for (nlohmann::json::iterator it = result.begin(); it != result.end(); ++it) {
-				nlohmann::json r = *it;
-				tx["hash"] = r["hash"];
-				tx["from"] = r["from"];
-				tx["to"] = r["to"];
-				tx["contract"] = r["contractAddress"]; // or "", if none was created
-				tx["amount"] = r["value"];
-				tx["gasLimit"] = "5012644";
-				tx["gasPrice"] = r["gasPrice"];
-				tx["data"] = r["input"]; // input
-				tx["nonce"] = r["nonce"];
-				tx["gasUsed"] = r["gasUsed"];
-				tx["blockNumber"] = r["blockNumber"];
-				tx["blockHash"] = r["blockHash"];
-				tx["blockConfirmations"] = r["confirmations"];
-				tx["blockTransactionIndex"] = r["transactionIndex"];
-				tx["blockTimestamp"] = r["timeStamp"];
-				tx["isError"] = r["isError"];
-				tx["transferType"] = r["transferType"];
-
-				txns.push_back(tx);
-			}
-		}
-
-		j["id"] = id;
-		j["result"] = txns;
-		return j;
-	}
-
-	virtual nlohmann::json GetLogs(const std::string &contract,
-								   const std::string &address,
-								   const std::string &event,
-								   uint64_t begBlockNumber,
-								   uint64_t endBlockNumber,
-								   int id) {
-		nlohmann::json j, log, logs = nlohmann::json::array();
-
-		if (contract.empty()) {
-			RPCHelper rpcHelper;
-			char hex[20];
-			nlohmann::json rawJson, param, params = nlohmann::json::array(), topics = nlohmann::json::array();
-
-			rawJson["jsonrpc"] = "2.0";
-			rawJson["method"] = "eth_getLogs";
-
-			topics.push_back(event);
-			topics.push_back(nlohmann::json());
-			topics.push_back(address);
-			param["topics"] = topics;
-
-			sprintf(hex, "0x%" PRIu64, begBlockNumber);
-			param["fromBlock"] = hex;
-			sprintf(hex, "0x%" PRIu64, endBlockNumber);
-			param["toBlock"] = hex;
-			params.push_back(param);
-			rawJson["params"] = params;
-
-			rawJson["id"] = id;
-			std::string url = "http://api.elastos.io:21636";
-			std::string rawData = rawJson.dump();
-			nlohmann::json respond = rpcHelper.Post(url, rawData);
-
-			nlohmann::json result = respond["result"];
-			if (result.is_array()) {
-				logs = result;
-			}
-		} else {
-			// TODO: ...
-		}
-
-		j["id"] = id;
-		j["result"] = logs;
-		return j;
-	}
-
-	virtual nlohmann::json GetTokens(int id) {
-		nlohmann::json j, tokens = nlohmann::json::array(), token;
-		// rpc request
-#if 1
-		token["address"] = "0xfdce7fb4050cd43c654c6cecead950343990ce75";
-		token["symbol"] = "TTECH";
-		token["name"] = "Trinity TECH";
-		token["description"] = "";
-		token["decimals"] = 0;
-		token["defaultGasLimit"] = "";
-		token["defaultGasPrice"] = "";
-		tokens.push_back(token);
-#endif
-		j["id"] = id;
-		j["result"] = tokens;
-		return j;
-	}
-
-	virtual nlohmann::json GetBlockNumber(int id) {
-		nlohmann::json j;
-		// rpc request
-		// ...
-		j["id"] = id;
-		j["result"] = "0x4b7";
-		return j;
-	}
-
-	virtual nlohmann::json GetNonce(const std::string &address, int id) {
-		nlohmann::json j;
-		// rpc request
-		// ...
-		j["id"] = id;
-		j["result"] = "0x1";
-		return j;
-	}
-
-private:
-	std::string _walletID;
-	std::string _chainID;
-};
-
 #define checkCurrentWallet() do { \
 	if (!currentWallet) { \
 		std::cerr << "No wallet actived" << std::endl; \
@@ -453,20 +147,15 @@ static int createPassphrase(std::string &passphrase) {
 	return createPassword("passphrase", passphrase, true);
 }
 
-static void signAndShowOrPublishTx(ISubWallet *subWallet, const nlohmann::json &tx, const std::string &payPasswd = "") {
+static void signAndShowTx(ISubWallet *subWallet, const nlohmann::json &tx, const std::string &payPasswd = "") {
 	std::string password = payPasswd;
 
 	std::cout << "Fee: " << tx["Fee"] << std::endl;
-	if (payPasswd.empty()) {
+	if (payPasswd.empty())
 		password = getpass("Enter payment password: ");
-	}
+
 	nlohmann::json signedTx = subWallet->SignTransaction(tx, password);
-	IEthSidechainSubWallet *ethSidechainSubWallet = dynamic_cast<IEthSidechainSubWallet *>(subWallet);
-	if (ethSidechainSubWallet != nullptr) {
-        ethSidechainSubWallet->PublishTransaction(signedTx);
-	} else {
-	    std::cout << signedTx.dump() << std::endl;
-	}
+    std::cout << signedTx.dump() << std::endl;
 }
 
 static std::string convertAmount(const std::string &amount) {
@@ -477,54 +166,12 @@ static std::string convertETHAmount(const std::string &amount) {
 	return std::to_string((uint64_t) (std::stod(amount) * 1000000000000000000llU));
 }
 
-static void subWalletOpen(IMasterWallet *masterWallet, ISubWallet *subWallet) {
-	WalletData walletData;
-
-	IEthSidechainSubWallet *ethSidechainSubWallet = dynamic_cast<IEthSidechainSubWallet *>(subWallet);
-	if (ethSidechainSubWallet != nullptr) {
-        ISubWalletCallback *callback = new SubWalletCallback(masterWallet->GetID(), subWallet->GetChainID());
-        walletData.SetCallback(callback);
-        ethSidechainSubWallet->AddCallback(callback);
-
-        if (masterWalletData.find(masterWallet->GetID()) != masterWalletData.end()) {
-            masterWalletData[masterWallet->GetID()][subWallet->GetChainID()] = walletData;
-        } else {
-            SubWalletData subWalletData;
-            subWalletData[subWallet->GetChainID()] = walletData;
-            masterWalletData[masterWallet->GetID()] = subWalletData;
-        }
-
-        ethSidechainSubWallet->SyncStart();
-    }
-}
-
-static void subWalletClose(IMasterWallet *masterWallet, ISubWallet *subWallet) {
-	std::string walletName = masterWallet->GetID();
-	std::string chainID = subWallet->GetChainID();
-
-    IEthSidechainSubWallet *ethSidechainSubWallet = dynamic_cast<IEthSidechainSubWallet *>(subWallet);
-    if (ethSidechainSubWallet != nullptr) {
-        ethSidechainSubWallet->SyncStop();
-        ethSidechainSubWallet->RemoveCallback();
-        auto callback = static_cast<SubWalletCallback *>(masterWalletData[walletName][chainID].GetCallback());
-        delete callback;
-        callback = nullptr;
-
-        masterWalletData[walletName].erase(chainID);
-        if (masterWalletData[walletName].empty())
-            masterWalletData.erase(walletName);
-    }
-}
-
 static void walletInit(void) {
 	auto masterWalletIDs = manager->GetAllMasterWalletID();
 	if (!currentWallet && !masterWalletIDs.empty()) {
 		currentWallet = manager->GetMasterWallet(masterWalletIDs[0]);
 
-		auto subWallets = currentWallet->GetAllSubWallets();
-		for (ISubWallet *subWallet : subWallets) {
-			subWalletOpen(currentWallet, subWallet);
-		}
+		currentWallet->GetAllSubWallets();
 	}
 }
 
@@ -533,10 +180,7 @@ static void walletCleanup(void) {
 	for (const std::string &masterWalletID : masterWalletIDs) {
 		if (manager->WalletLoaded(masterWalletID)) {
 			IMasterWallet *masterWallet = manager->GetMasterWallet(masterWalletID);
-			auto subWallets = masterWallet->GetAllSubWallets();
-			for (ISubWallet *subWallet : subWallets) {
-				subWalletClose(masterWallet, subWallet);
-			}
+			masterWallet->GetAllSubWallets();
 		}
 	}
 
@@ -622,7 +266,6 @@ static int create(int argc, char *argv[]) {
 			return ERRNO_APP;
 		}
 
-		subWalletOpen(masterWallet, subWallet);
 		std::cout << "Wallet create success." << std::endl;
 
 		currentWallet = masterWallet;
@@ -719,9 +362,6 @@ static int import(int argc, char *argv[]) {
 		currentWallet = masterWallet;
 
 		auto subWallets = masterWallet->GetAllSubWallets();
-		for (ISubWallet *subWallet : subWallets) {
-			subWalletOpen(masterWallet, subWallet);
-		}
 
 		std::cout << "Wallet import success." << std::endl;
 	} catch (const std::exception &e) {
@@ -755,12 +395,6 @@ static int remove(int argc, char *argv[]) {
 			return ERRNO_APP;
 		}
 
-		auto subWallets = masterWallet->GetAllSubWallets();
-
-		for (ISubWallet *subWallet : subWallets) {
-			subWalletClose(masterWallet, subWallet);
-		}
-
 		manager->DestroyWallet(walletName);
 		std::cout << "Wallet '" << walletName << "' removed." << std::endl;
 
@@ -776,66 +410,6 @@ static int remove(int argc, char *argv[]) {
 		exceptionError(e);
 		return ERRNO_APP;
 	}
-	return 0;
-}
-
-// list [all]
-static int list(int argc, char *argv[]) {
-	std::vector<std::string> subWalletIDList = {CHAINID_ELA, CHAINID_ID};
-	if (argc == 1) {
-		checkCurrentWallet();
-	} else if (argc >= 2) {
-		if (std::string(argv[1]) != "all") {
-			invalidCmdError();
-			return ERRNO_CMD;
-		}
-	}
-
-	try {
-		if (argc >= 2) {
-			auto masterWalletIDs = manager->GetAllMasterWalletID();
-			for (const std::string &masterWalletID : masterWalletIDs) {
-				printf(" %c %-17s\n", currentWallet != nullptr && currentWallet->GetID() == masterWalletID ? '*' : ' ', masterWalletID.c_str());
-			}
-		} else {
-			struct tm tm;
-			time_t lastBlockTime;
-			int progress;
-			char balance[50];
-			char info[256];
-			char buf[100] = {0};
-
-			auto subWallets = currentWallet->GetAllSubWallets();
-			for (const ISubWallet *subWallet : subWallets) {
-			    const IEthSidechainSubWallet *ethSidechainSubWallet = dynamic_cast<const IEthSidechainSubWallet *>(subWallet);
-			    if (ethSidechainSubWallet == nullptr)
-			        continue;
-
-				std::string chainID = subWallet->GetChainID();
-				if (subWallet) {
-					if (chainID.find("ETH") != std::string::npos)
-						snprintf(balance, sizeof(balance), "%25s", ethSidechainSubWallet->GetBalance().c_str());
-
-					lastBlockTime = masterWalletData[currentWallet->GetID()][chainID].GetLastBlockTime();
-					progress = masterWalletData[currentWallet->GetID()][chainID].GetSyncProgress();
-					if (lastBlockTime != 0) {
-						localtime_r(&lastBlockTime, &tm);
-						strftime(buf, sizeof(buf), "%F %T", &tm);
-					} else {
-						sprintf(buf, "-");
-					}
-
-					snprintf(info, sizeof(info), "%s  %3d%%  %19s", balance, progress, buf);
-				}
-
-				printf("%s:%-10s %s\n", currentWallet->GetID().c_str(), chainID.c_str(), info);
-			}
-		}
-	} catch (const std::exception &e) {
-		exceptionError(e);
-		return ERRNO_APP;
-	}
-
 	return 0;
 }
 
@@ -855,9 +429,6 @@ static int _switch(int argc, char *argv[]) {
 		currentWallet = masterWallet;
 		if (!loaded) {
 			auto subWallets = currentWallet->GetAllSubWallets();
-			for (ISubWallet *subWallet : subWallets) {
-				subWalletOpen(currentWallet, subWallet);
-			}
 		}
 	} catch (const std::exception &e) {
 		exceptionError(e);
@@ -945,9 +516,7 @@ static int _open(int argc, char *argv[]) {
 
 	std::string chainID = argv[1];
 	try {
-		auto subWallet = currentWallet->CreateSubWallet(chainID);
-
-		subWalletOpen(currentWallet, subWallet);
+		currentWallet->CreateSubWallet(chainID);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -962,9 +531,6 @@ static int _close(int argc, char *argv[]) {
 
 	std::string chainID = argv[1];
 	try {
-		ISubWallet *subWallet;
-		getSubWallet(subWallet, currentWallet, chainID);
-		subWalletClose(currentWallet, subWallet);
 		currentWallet->DestroyWallet(chainID);
 	} catch (const std::exception &e) {
 		exceptionError(e);
@@ -998,7 +564,7 @@ static int deposit(int argc, char *argv[]) {
 
 		std::cout << "Top up " << sideChainAddress << ":" << amount << " to " << chainID << std::endl;
 
-		signAndShowOrPublishTx(subWallet, tx);
+		signAndShowTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1046,7 +612,7 @@ static int withdraw(int argc, char *argv[]) {
 
 		std::cout << "Withdraw " << mainChainAddress << ":" << amount << " from " << chainID << std::endl;
 
-		signAndShowOrPublishTx(subWallet, tx);
+		signAndShowTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1080,7 +646,7 @@ static int didtx(int argc, char *argv[]) {
 		}
 
 		nlohmann::json tx = subWallet->CreateIDTransaction(nlohmann::json(), payload, "", "0");
-		signAndShowOrPublishTx(subWallet, tx);
+		signAndShowTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1239,7 +805,7 @@ static int _register(int argc, char *argv[]) {
 			return ERRNO_APP;
 		}
 
-		signAndShowOrPublishTx(subWallet, tx, password);
+		signAndShowTx(subWallet, tx, password);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1286,7 +852,7 @@ static int unregister(int argc, char *argv[]) {
 			return ERRNO_APP;
 		}
 
-		signAndShowOrPublishTx(subWallet, tx, password);
+		signAndShowTx(subWallet, tx, password);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1357,7 +923,7 @@ static int retrieve(int argc, char *argv[]) {
 			return ERRNO_APP;
 		}
 
-		signAndShowOrPublishTx(subWallet, tx);
+		signAndShowTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1504,7 +1070,7 @@ static int proposal(int argc, char *argv[]) {
 		std::cout << "Payload preview: " << std::endl << payload.dump(4) << std::endl;
 		nlohmann::json tx = subWallet->CreateProposalTransaction(nlohmann::json(), payload, "10000", "memo");
 
-		signAndShowOrPublishTx(subWallet, tx);
+		signAndShowTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1616,7 +1182,7 @@ static int tracking(int argc, char *argv[]) {
 
 		nlohmann::json tx = subWallet->CreateProposalTrackingTransaction(nlohmann::json(), payload, "10000", "memo");
 
-		signAndShowOrPublishTx(subWallet, tx);
+		signAndShowTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1655,7 +1221,7 @@ static int vote(int argc, char *argv[]) {
 		nlohmann::json tx;
         tx = subWallet->CreateVoteTransaction(nlohmann::json(), nlohmann::json(), "10000", "memo");
 
-		signAndShowOrPublishTx(subWallet, tx);
+		signAndShowTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1815,8 +1381,12 @@ static int transfer(int argc, char *argv[]) {
 			std::cout << "data: " << std::endl;
 			std::getline(std::cin, data);
 
-			tx = subWallet->CreateTransferGeneric(addr, amount, ETHER_WEI, gasPrice, ETHER_WEI, gasLimit, data);
-			signAndShowOrPublishTx(subWallet, tx);
+			std::string nonce;
+			std::cout << "nonce: " << std::endl;
+			std::getline(std::cin, nonce);
+
+			tx = subWallet->CreateTransferGeneric(addr, amount, ETHER_WEI, gasPrice, ETHER_WEI, gasLimit, data, std::atoll(nonce.c_str()));
+			signAndShowTx(subWallet, tx);
 		} else {
 			std::cout << "address: " << std::endl;
 			std::getline(std::cin, addr);
@@ -1829,7 +1399,7 @@ static int transfer(int argc, char *argv[]) {
 			getSubWallet(subWallet, currentWallet, chainID);
 
 			tx = subWallet->CreateTransaction(nlohmann::json(), nlohmann::json(), "10000", "memo");
-			signAndShowOrPublishTx(subWallet, tx);
+			signAndShowTx(subWallet, tx);
 		}
 	} catch (const std::exception &e) {
 		exceptionError(e);
@@ -1849,123 +1419,6 @@ static int _receive(int argc, char *argv[]) {
 		getSubWallet(subWallet, currentWallet, chainID);
 
 		std::cout << subWallet->CreateAddress() << std::endl;
-	} catch (const std::exception &e) {
-		exceptionError(e);
-		return ERRNO_APP;
-	}
-	return 0;
-}
-
-// sync chainID (start | stop)
-static int _sync(int argc, char *argv[]) {
-	checkParam(3);
-	checkCurrentWallet();
-
-	std::string chainID = argv[1];
-	std::string op = argv[2];
-
-	try {
-		ISubWallet *subWallet;
-		getSubWallet(subWallet, currentWallet, chainID);
-		if (op == "start") {
-		    IEthSidechainSubWallet *ethSidechainSubWallet = dynamic_cast<IEthSidechainSubWallet *>(subWallet);
-		    if (ethSidechainSubWallet != nullptr)
-                ethSidechainSubWallet->SyncStart();
-		} else if (op == "stop") {
-		    IEthSidechainSubWallet *ethSidechainSubWallet = dynamic_cast<IEthSidechainSubWallet *>(subWallet);
-		    if (ethSidechainSubWallet != nullptr)
-                ethSidechainSubWallet->SyncStop();
-		} else {
-			invalidCmdError();
-			return ERRNO_APP;
-		}
-	} catch (const std::exception &e) {
-		exceptionError(e);
-		return ERRNO_APP;
-	}
-	return 0;
-}
-
-// tokentx chainID tokenSymbol
-static int _tokentx(int argc, char *argv[]) {
-	if (argc != 3) {
-		invalidCmdError();
-		return ERRNO_CMD;
-	}
-	checkCurrentWallet();
-
-	std::string chainID = argv[1];
-	std::string tokenSymbol = argv[2];
-
-	try {
-		IEthSidechainSubWallet *subWallet;
-		getSubWallet(subWallet, currentWallet, chainID);
-
-		int cntPerPage = 20;
-		int curPage = 1;
-		int start, max;
-		std::string cmd;
-		bool show = true;
-		std::string txHash;
-
-		do {
-			if (show) {
-				start = cntPerPage * (curPage - 1);
-				nlohmann::json txJosn;
-				txJosn = subWallet->GetTokenTransactions(start, cntPerPage, txHash, tokenSymbol);
-
-				nlohmann::json tx = txJosn["Transactions"];
-				max = txJosn["MaxCount"];
-
-				printf("%d / %d\n", curPage, (max + cntPerPage) / cntPerPage);
-				char buf[100];
-				struct tm tm;
-				for (nlohmann::json::iterator it = tx.begin(); it != tx.end(); ++it) {
-					if (txHash.empty()) {
-						std::string Hash = (*it)["Hash"];
-						time_t t = (*it)["Timestamp"];
-						uint64_t confirm = (*it)["Confirmations"];
-						std::string amount = (*it)["Amount"];
-
-						localtime_r(&t, &tm);
-						strftime(buf, sizeof(buf), "%F %T", &tm);
-
-						printf("%s %8" PRIu64 " %s %s\n", Hash.c_str(), confirm, buf, amount.c_str());
-					} else {
-						std::cout << (*it).dump(4) << std::endl;
-					}
-				}
-			}
-
-			std::cout << "'txid' Detail, 'n' Next Page, 'b' Previous Page, 'q' Exit: ";
-			std::getline(std::cin, cmd);
-
-			if (cmd == "n") {
-				if (curPage < (max + cntPerPage) / cntPerPage) {
-					curPage++;
-					show = true;
-				} else {
-					std::cout << "already last page" << std::endl;
-					show = true;
-				}
-			} else if (cmd == "b") {
-				if (curPage > 1) {
-					curPage--;
-					show = true;
-				} else {
-					std::cout << "already first page" << std::endl;
-					show = true;
-				}
-			} else if (cmd == "q") {
-				break;
-			} else if (cmd.size() == 64 || cmd.size() == 66) {
-				txHash = cmd;
-				show = true;
-			} else {
-				std::cout << "invalid input" << std::endl;
-				show = false;
-			}
-		} while (cmd != "q");
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -2017,37 +1470,6 @@ static int signtx(int argc, char *argv[]) {
 		std::string password = getpass("Enter payment password: ");
 		nlohmann::json signedTx = subWallet->SignTransaction(nlohmann::json::parse(tx), password);
 		std::cout << signedTx.dump() << std::endl;
-	} catch (const std::exception &e) {
-		exceptionError(e);
-		return ERRNO_APP;
-	}
-
-	return 0;
-}
-
-// publishtx chainID
-static int publishtx(int argc, char *argv[]) {
-	checkParam(2);
-	checkCurrentWallet();
-
-	std::string chainID = argv[1];
-
-	try {
-		std::cout << "Enter tx to be published: ";
-		std::string tx;
-		struct termios told = enableLongInput();
-		std::getline(std::cin, tx);
-		recoveryTTYSetting(&told);
-		ISubWallet *subWallet;
-		getSubWallet(subWallet, currentWallet, chainID);
-
-		IEthSidechainSubWallet *ethSidechainSubWallet = dynamic_cast<IEthSidechainSubWallet *>(subWallet);
-
-        nlohmann::json result;
-		if (ethSidechainSubWallet != nullptr) {
-            result = ethSidechainSubWallet->PublishTransaction(nlohmann::json::parse(tx));
-		}
-		std::cout << result.dump() << std::endl;
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -2140,7 +1562,6 @@ struct command {
 	{"import",     import,         "walletName (m[nemonic] | k[eystore]) [filePath]  Import wallet with given name and mnemonic or keystore."},
 	{"remove",     remove,         "walletName                                       Remove specified wallet."},
 	{"switch",     _switch,        "walletName                                       Switch current wallet."},
-	{"list",       list,           "[all]                                            List all wallets or current wallet."},
 	{"passwd",     passwd,         "                                                 Change password of wallet."},
 	{"verify",     verify,         "(passphrase | paypasswd)                         Verify payment passwd or passphrase."},
 	{"didtx",      didtx,          "[didDocFilepath]                                 Create DID transaction."},
@@ -2148,13 +1569,10 @@ struct command {
 	{"did",        did,            "                                                 List did of IDChain"},
 	{"cid",        _cid,           "                                                 List cid of IDChain"},
 	{"publickeys", publickeys,     "                                                 List public keys of IDChain"},
-	{"sync",       _sync,          "chainID (start | stop)                           Start or stop sync of wallet"},
 	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},
 	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},
-	{"tokentx",    _tokentx,       "chainID tokenSymbol                              List all token tx records."},
 	{"rawtx",      _rawtx,         "chainID                                          Convert spv tx to rawtx"},
 	{"signtx",     signtx,         "chainID                                          Sign tx"},
-	{"publishtx",  publishtx,      "chainID                                          Publish tx"},
 	{"transfer",   transfer,       "chainID                                          Transfer asset from `chainID`."},
 	{"receive",    _receive,       "chainID                                          Get receive address of `chainID`."},
 	{"address",    address,        "chainID [internal]                               Get the revceive addresses or change addresses of chainID."},

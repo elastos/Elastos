@@ -26,7 +26,6 @@
 #include <Account/SubAccount.h>
 
 #include <ISubWallet.h>
-#include <ISubWalletCallback.h>
 
 #include <map>
 #include <boost/shared_ptr.hpp>
@@ -118,7 +117,6 @@ namespace Elastos {
 
 		protected:
 			WalletManagerPtr _walletManager;
-			ISubWalletCallback *_callback;
 			MasterWallet *_parent;
 			CoinInfoPtr _info;
 			ChainConfigPtr _config;

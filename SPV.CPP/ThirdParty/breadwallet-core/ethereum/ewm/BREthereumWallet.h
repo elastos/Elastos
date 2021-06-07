@@ -11,7 +11,6 @@
 #ifndef BR_Ethereum_Wallet_H
 #define BR_Ethereum_Wallet_H
 
-#include "ethereum/blockchain/BREthereumBlockChain.h"
 #include "BREthereumBase.h"
 #include "BREthereumAccount.h"
 #include "BREthereumTransfer.h"
@@ -77,13 +76,15 @@ walletEstimateTransferFeeDetailed (BREthereumWallet wallet,
 extern BREthereumTransfer
 walletCreateTransfer(BREthereumWallet wallet,
                         BREthereumAddress *recvAddress,
-                        BREthereumAmount amount);
+                        BREthereumAmount amount,
+                        uint64_t nonce);
 
 extern BREthereumTransfer
 walletCreateTransferWithFeeBasis (BREthereumWallet wallet,
                                   BREthereumAddress *recvAddress,
                                   BREthereumAmount amount,
-                                  BREthereumFeeBasis feeBasis);
+                                  BREthereumFeeBasis feeBasis,
+                                  uint64_t nonce);
 
 extern BREthereumTransfer
 walletCreateTransferGeneric(BREthereumWallet wallet,
@@ -91,7 +92,8 @@ walletCreateTransferGeneric(BREthereumWallet wallet,
                             BREthereumEther amount,
                             BREthereumGasPrice gasPrice,
                             BREthereumGas gasLimit,
-                            const char *data);
+                            const char *data,
+                            uint64_t nonce);
 
 extern void
 walletSignTransfer(BREthereumWallet wallet,
@@ -133,22 +135,10 @@ extern BREthereumAddress
 walletGetAddress(BREthereumWallet wallet);
 
 /**
- * The wallet's amount type: ETHER or TOKEN
- */
-extern BREthereumAmountType
-walletGetAmountType (BREthereumWallet wallet);
-
-/**
  * The wallet's token or NULL if the wallet holds ETHER.
  */
 extern BREthereumToken
 walletGetToken (BREthereumWallet wallet);
-
-/**
- * The wallet's balance
- */
-extern BREthereumAmount
-walletGetBalance (BREthereumWallet wallet);
 
 /**
  * Get the wallet's default Gas Limit.
@@ -204,43 +194,10 @@ transferPredicateStatus (BREthereumTransferStatus status,
                          BREthereumTransfer transfer,
                          unsigned int index);
 
-extern void
-walletWalkTransfers (BREthereumWallet wallet,
-                     void *context,
-                     BREthereumTransferPredicate predicate,
-                     BREthereumTransferWalker walker);
-
-extern BREthereumTransfer
-walletGetTransferByIdentifier (BREthereumWallet wallet,
-                               BREthereumHash hash);
-
-extern BREthereumTransfer
-walletGetTransferByOriginatingHash (BREthereumWallet wallet,
-                                    BREthereumHash hash);
-
-extern BREthereumTransfer
-walletGetTransferByNonce(BREthereumWallet wallet,
-                         BREthereumAddress sourceAddress,
-                         uint64_t nonce);
-
-extern BREthereumTransfer
-walletGetTransferByIndex(BREthereumWallet wallet,
-                         uint64_t index);
-
-extern unsigned long
-walletGetTransferCount (BREthereumWallet wallet);
-
 //
 // Private
 // TODO: Make 'static'
 //
-
-private_extern void
-walletSetBalance (BREthereumWallet wallet,
-                  BREthereumAmount balance);
-
-private_extern void
-walletUpdateBalance (BREthereumWallet wallet);
 
 private_extern void
 walletTransferSubmitted (BREthereumWallet wallet,
@@ -260,24 +217,9 @@ walletTransferErrored (BREthereumWallet wallet,
                        BREthereumTransfer transaction,
                        const char *reason);
 
-private_extern void
-walletHandleTransfer (BREthereumWallet wallet,
-                      BREthereumTransfer transfer);
-
-private_extern void
-walletUnhandleTransfer (BREthereumWallet wallet,
-                        BREthereumTransfer transaction);
-
-private_extern int
-walletHasTransfer (BREthereumWallet wallet,
-                   BREthereumTransfer transaction);
-
 /// MARK: - Persisted Wallet State;
 
 typedef struct BREthereumWalletStateRecord *BREthereumWalletState;
-
-extern BREthereumWalletState
-walletStateCreate (const BREthereumWallet wallet);
 
 extern void
 walletStateRelease (BREthereumWalletState state);

@@ -12,7 +12,6 @@
 #define BR_Ethereum_Transaction_Receipt_h
 
 #include "ethereum/base/BREthereumBase.h"
-#include "BREthereumBloomFilter.h"
 #include "BREthereumLog.h"
 
 #ifdef __cplusplus
@@ -38,29 +37,6 @@ transactionReceiptGetLogsCount (BREthereumTransactionReceipt receipt);
 
 extern BREthereumLog
 transactionReceiptGetLog (BREthereumTransactionReceipt receipt, size_t index);
-
-extern BREthereumBloomFilter
-transactionReceiptGetBloomFilter (BREthereumTransactionReceipt receipt);
-
-extern BREthereumBoolean
-transactionReceiptMatch (BREthereumTransactionReceipt receipt,
-                         BREthereumBloomFilter filter);
-
-extern BREthereumBoolean
-transactionReceiptMatchAddress (BREthereumTransactionReceipt receipt,
-                                BREthereumAddress address);
-
-extern BREthereumTransactionReceipt
-transactionReceiptRlpDecode (BRRlpItem item,
-                             BRRlpCoder coder);
-    
-extern BRRlpItem
-transactionReceiptRlpEncode(BREthereumTransactionReceipt receipt,
-                            BRRlpCoder coder);
-
-extern BRArrayOf (BREthereumTransactionReceipt)
-transactionReceiptDecodeList (BRRlpItem item,
-                              BRRlpCoder coder);
 
 extern void
 transactionReceiptRelease (BREthereumTransactionReceipt receipt);

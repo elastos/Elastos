@@ -28,7 +28,6 @@ ewmCreate (BREthereumNetwork network,
            BREthereumAccount account,
            BREthereumTimestamp accountTimestamp,
            BRCryptoSyncMode mode,
-           BREthereumClient client,
            const char *storagePath,
            uint64_t blockHeight,
            uint64_t confirmationsUntilFinal);
@@ -38,7 +37,6 @@ ewmCreateWithPaperKey (BREthereumNetwork network,
                        const char *paperKey,
                        BREthereumTimestamp accountTimestamp,
                        BRCryptoSyncMode mode,
-                       BREthereumClient client,
                        const char *storagePath,
                        uint64_t blockHeight,
                        uint64_t confirmationsUntilFinal);
@@ -48,7 +46,6 @@ ewmCreateWithPublicKey (BREthereumNetwork network,
                         BRKey publicKey,
                         BREthereumTimestamp accountTimestamp,
                         BRCryptoSyncMode mode,
-                        BREthereumClient client,
                         const char *storagePath,
                         uint64_t blockHeight,
                         uint64_t confirmationsUntilFinal);
@@ -103,31 +100,6 @@ ewmGetAccountPrimaryAddressPrivateKey(BREthereumEWM ewm,
 
 /// MARK: - Connect
 
-extern BREthereumBoolean
-ewmConnect(BREthereumEWM ewm);
-
-extern BREthereumBoolean
-ewmDisconnect (BREthereumEWM ewm);
-
-extern BREthereumBoolean
-ewmIsConnected (BREthereumEWM ewm);
-
-extern BREthereumBoolean
-ewmSync (BREthereumEWM ewm,
-         BREthereumBoolean pendExistingTransfers);
-
-extern BREthereumBoolean
-ewmSyncToDepth (BREthereumEWM ewm,
-                BREthereumBoolean pendExistingTransfers,
-                BRCryptoSyncDepth depth);
-
-extern BRCryptoSyncMode
-ewmGetMode (BREthereumEWM ewm);
-
-extern void
-ewmUpdateMode (BREthereumEWM ewm,
-               BRCryptoSyncMode mode);
-
 extern uint64_t
 ewmGetBlockHeight (BREthereumEWM ewm);
 
@@ -165,10 +137,6 @@ extern BREthereumToken
 ewmWalletGetToken (BREthereumEWM ewm,
                    BREthereumWallet wallet);
 
-extern BREthereumAmount
-ewmWalletGetBalance(BREthereumEWM ewm,
-                    BREthereumWallet wallet);
-
 extern BREthereumGas
 ewmWalletGetGasEstimate(BREthereumEWM ewm,
                         BREthereumWallet wallet,
@@ -193,29 +161,13 @@ ewmWalletSetDefaultGasPrice(BREthereumEWM ewm,
                             BREthereumGasPrice gasPrice);
 
 
-/**
- * Return a newly allocated array of transfers in wallet.  (You own the array and  must call free
- * on it - but not on its elements).
- *
- * @param ewm
- * @param wallet
- *
- * @return array of transfers, will be NULL terminated.
- */
-extern BREthereumTransfer *
-ewmWalletGetTransfers(BREthereumEWM ewm,
-                      BREthereumWallet wallet);
-
-extern int
-ewmWalletGetTransferCount(BREthereumEWM ewm,
-                          BREthereumWallet wallet);
-
 
 extern BREthereumTransfer
 ewmWalletCreateTransfer(BREthereumEWM ewm,
                         BREthereumWallet wallet,
                         const char *recvAddress,
-                        BREthereumAmount amount);
+                        BREthereumAmount amount,
+                        uint64_t nonce);
 
 extern BREthereumTransfer
 ewmWalletCreateTransferGeneric(BREthereumEWM ewm,
@@ -224,14 +176,16 @@ ewmWalletCreateTransferGeneric(BREthereumEWM ewm,
                                BREthereumEther amount,
                                BREthereumGasPrice gasPrice,
                                BREthereumGas gasLimit,
-                               const char *data);
+                               const char *data,
+                               uint64_t nonce);
 
 extern BREthereumTransfer
 ewmWalletCreateTransferWithFeeBasis (BREthereumEWM ewm,
                                      BREthereumWallet wallet,
                                      const char *recvAddress,
                                      BREthereumAmount amount,
-                                     BREthereumFeeBasis feeBasis);
+                                     BREthereumFeeBasis feeBasis,
+                                     uint64_t nonce);
 extern BREthereumEther
 ewmWalletEstimateTransferFee (BREthereumEWM ewm,
                               BREthereumWallet wallet,
@@ -254,7 +208,8 @@ ewmWalletEstimateTransferFeeForTransfer (BREthereumEWM ewm,
                                          BREthereumAddress *target,
                                          BREthereumAmount amount,
                                          BREthereumGasPrice gasPrice,
-                                         BREthereumGas gasLimit);
+                                         BREthereumGas gasLimit,
+                                         uint64_t nonce);
 
 extern void // status, error
 ewmWalletSignTransfer(BREthereumEWM ewm,
@@ -268,40 +223,7 @@ ewmWalletSignTransferWithPaperKey(BREthereumEWM ewm,
                                   BREthereumTransfer transfer,
                                   const char *paperKey);
 
-extern void // status, error
-ewmWalletSubmitTransfer(BREthereumEWM ewm,
-                        BREthereumWallet wid,
-                        BREthereumTransfer tid);
-
-extern BREthereumBoolean
-ewmWalletCanCancelTransfer (BREthereumEWM ewm,
-                            BREthereumWallet wid,
-                            BREthereumTransfer tid);
-
-extern BREthereumTransfer // status, error
-ewmWalletCreateTransferToCancel(BREthereumEWM ewm,
-                                BREthereumWallet wid,
-                                BREthereumTransfer tid);
-
-extern BREthereumBoolean
-ewmWalletCanReplaceTransfer (BREthereumEWM ewm,
-                             BREthereumWallet wid,
-                             BREthereumTransfer tid);
-
-extern BREthereumTransfer // status, error
-ewmWalletCreateTransferToReplace(BREthereumEWM ewm,
-                                 BREthereumWallet wid,
-                                 BREthereumTransfer tid,
-                                 // ...
-                                 BREthereumBoolean updateGasPrice,
-                                 BREthereumBoolean updateGasLimit,
-                                 BREthereumBoolean updateNonce);
-
 /// MARK: - Transfer
-
-extern void
-ewmTransferDelete (BREthereumEWM ewm,
-                   BREthereumTransfer transfer);
 
 extern BREthereumAddress*
 ewmTransferGetTarget (BREthereumEWM ewm,

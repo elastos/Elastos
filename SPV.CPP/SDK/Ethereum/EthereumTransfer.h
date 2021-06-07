@@ -89,6 +89,8 @@ namespace Elastos {
 
 			std::string getErrorDescription() const;
 
+			std::string RlpEncode(BREthereumNetwork network, BREthereumRlpType type) const;
+
 			nlohmann::json ToJson() const;
 
 		};
