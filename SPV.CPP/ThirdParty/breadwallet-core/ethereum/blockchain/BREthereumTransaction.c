@@ -488,7 +488,6 @@ transactionRlpDecode (BRRlpItem item,
         assert (32 >= sData.bytesCount);
         memcpy (&transaction->signature.sig.vrs.s[32 - sData.bytesCount],
                 sData.bytes, sData.bytesCount);
-        
     }
     
     switch (type) {

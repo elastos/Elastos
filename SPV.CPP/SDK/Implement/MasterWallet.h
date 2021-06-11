@@ -214,6 +214,9 @@ namespace Elastos {
 
 			virtual void CloseAllSubWallets();
 
+        private:
+		    void SetupNetworkParameters();
+
 		protected:
 			mutable WalletMap _createdWallets;
 

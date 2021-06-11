@@ -56,6 +56,7 @@ namespace Elastos {
 				_config(config) {
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id));
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -76,6 +77,7 @@ namespace Elastos {
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, mnemonic, passphrase, payPasswd, singleAddress));
 			_account->Save();
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -97,6 +99,7 @@ namespace Elastos {
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, keystore, payPasswd));
 			_account->Save();
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -113,6 +116,7 @@ namespace Elastos {
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, readonlyWalletJson));
 			_account->Save();
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -134,6 +138,7 @@ namespace Elastos {
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, pubKeyRings, m, singleAddress, compatible));
 			_account->Save();
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -158,6 +163,7 @@ namespace Elastos {
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, xprv, payPassword, cosigners, m, singleAddress, compatible));
 			_account->Save();
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -183,6 +189,7 @@ namespace Elastos {
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, mnemonic, passphrase, payPasswd, cosigners, m, singleAddress, compatible));
 			_account->Save();
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::~MasterWallet() {
@@ -301,6 +308,13 @@ namespace Elastos {
 				Log::info("{} closed", id);
 			}
 		}
+
+        void MasterWallet::SetupNetworkParameters() {
+            const std::map<std::string, ChainConfigPtr> configs = _config->GetConfigs();
+
+            for (std::map<std::string, ChainConfigPtr>::const_iterator it = configs.begin(); it != configs.end(); ++it)
+                InsertEthereumNetwork(it->second->Name().c_str(), it->second->ChainID(), it->second->NetworkID());
+        }
 
 		void MasterWallet::DestroyWallet(const std::string &chainID) {
 			ArgInfo("{} {}", _id, GetFunName());

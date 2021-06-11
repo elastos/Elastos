@@ -63,7 +63,7 @@ namespace Elastos {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid NetType");
 			}
 
-			_config = new Config(_dataPath, netType, config);
+			_config = new Config(netType, config);
 			if (_config->GetNetType() != CONFIG_MAINNET) {
 				_dataPath = _dataPath + "/" + _config->GetNetType();
 				if (!boost::filesystem::exists(_dataPath))

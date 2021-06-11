@@ -35,9 +35,8 @@ namespace Elastos {
 	namespace ElaWallet {
 
 
-		SubAccount::SubAccount(const AccountPtr &parent, uint32_t coinIndex) :
-			_parent(parent),
-			_coinIndex(coinIndex) {
+		SubAccount::SubAccount(const AccountPtr &parent) :
+			_parent(parent) {
 
 			if (_parent->GetSignType() != Account::MultiSign) {
 				bytes_t ownerPubKey = _parent->OwnerPubKey();
@@ -56,7 +55,6 @@ namespace Elastos {
 		nlohmann::json SubAccount::GetBasicInfo() const {
 			nlohmann::json j;
 			j["Account"] = _parent->GetBasicInfo();
-			j["CoinIndex"] = _coinIndex;
 			return j;
 		}
 

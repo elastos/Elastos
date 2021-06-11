@@ -55,7 +55,7 @@ namespace Elastos {
 			fs::path subWalletDBPath = _parent->GetDataPath();
 			subWalletDBPath /= _info->GetChainID() + DB_FILE_EXTENSION;
 
-			SubAccountPtr subAccount = SubAccountPtr(new SubAccount(_parent->_account, _config->Index()));
+			SubAccountPtr subAccount = SubAccountPtr(new SubAccount(_parent->_account));
 			_walletManager = WalletManagerPtr(
 				new SpvService(_parent->GetID(), _info->GetChainID(), subAccount, subWalletDBPath,
 							   _config, netType));

@@ -63,6 +63,29 @@ networkCopyNameAsLowercase (BREthereumNetwork network) {
 
 /// MARK: - Static Network Definitions
 
+static struct BREthereumNetworkRecord *ethereumNetworks = NULL;
+
+extern void InsertEthereumNetwork(const char *name, int chainId, int networkId) {
+    if (ethereumNetworks == NULL)
+        array_new(ethereumNetworks, 10);
+
+    struct BREthereumNetworkRecord network;
+    network.name = strdup(name);
+    network.chainId = chainId;
+    network.networkId = networkId;
+
+    array_add(ethereumNetworks, network);
+}
+
+extern BREthereumNetwork FindEthereumNetwork(const char *name) {
+    for (int i = 0; i < array_count(ethereumNetworks); ++i)
+        if (0 == strcmp(name, ethereumNetworks[i].name))
+            return &ethereumNetworks[i];
+
+    return NULL;
+}
+
+#if 0
 //
 // Mainnet
 //
@@ -182,3 +205,5 @@ static struct BREthereumNetworkRecord ethereumHecoPrvnetRecord = {
         255
 };
 const BREthereumNetwork ethereumHecoPrvnet = &ethereumHecoPrvnetRecord;
+
+#endif

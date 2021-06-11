@@ -44,30 +44,13 @@ namespace Elastos {
 			 * @param dataPath The path contains data of wallet created. If empty, data of wallet will store in rootPath.
 			 * @param config If netType is "MainNet" or "TestNet" or "RegTest", config will be ignore.
 			 *
-			 * If netType is "PrvNet", config must be provided as below:
+			 * Config eg: netType: "MainNet"
 			 * {
-			 * 	"ELA": {
-			 * 		"GenesisAddress": "",
-			 * 		"ChainParameters": {
-			 * 			"MagicNumber": 20190808,
-			 * 			"StandardPort": 30018,
-			 * 			"DNSSeeds": [ "172.26.0.165" ],
-			 * 			"CheckPoints": [
-			 * 				[0, "8df798783097be3a8f382f6537e47c7168d4bf4d741fa3fa8c48c607a06352cf", 1513936800, 486801407]
-			 * 			]
-			 * 		}
-			 * 	},
-			 * 	"IDChain": {
-			 * 		"GenesisAddress": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
-			 * 		"ChainParameters": {
-			 * 			"MagicNumber": 20190816,
-			 * 			"StandardPort": 30138,
-			 * 			"DNSSeeds": [ "172.26.0.165" ],
-			 * 			"CheckPoints": [
-			 * 				[0,     "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3", 1513936800, 486801407]
-			 * 			]
-			 * 		}
-			 * 	}
+			 * 	"ELA": { },
+			 * 	"IDChain": { },
+			 * 	"ETHSC": { "ChainID": 20, "NetworkID": 20 },
+			 * 	"ETHDID": { "ChainID": 20, "NetworkID": 20 },
+			 * 	"ETHHECO": { "ChainID": 128, "NetworkID": 128 }
 			 * }
 			 */
 			explicit MasterWalletManager(const std::string &rootPath, const std::string &netType = "MainNet",

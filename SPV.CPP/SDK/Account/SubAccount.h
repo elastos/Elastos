@@ -37,7 +37,7 @@ namespace Elastos {
 
 		class SubAccount : public ISubAccount {
 		public:
-			SubAccount(const AccountPtr &parent, uint32_t coinIndex);
+			SubAccount(const AccountPtr &parent);
 
 			~SubAccount();
 

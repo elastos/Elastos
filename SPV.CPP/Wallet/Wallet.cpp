@@ -55,7 +55,14 @@ static const std::string CHAINID_ID = "IDChain";
 static const std::string CHAINID_ETHSC = "ETHSC";
 static const std::string CHAINID_ETHDID = "ETHDID";
 static std::string walletRoot;
-static std::string network;
+static std::string network = "MainNet";
+static nlohmann::json config = R"({
+             	"ELA": { },
+             	"IDChain": { },
+             	"ETHSC": { "ChainID": 20, "NetworkID": 20 },
+             	"ETHDID": { "ChainID": 20, "NetworkID": 20 },
+             	"ETHHECO": { "ChainID": 128, "NetworkID": 128 }
+             })"_json;
 
 static MasterWalletManager *manager = nullptr;
 static IMasterWallet *currentWallet = nullptr;
@@ -1478,41 +1485,25 @@ static int signtx(int argc, char *argv[]) {
 	return 0;
 }
 
-// network [netType]
+// network [netType] [configJson]
 static int _network(int argc, char *argv[]) {
 
 	if (argc == 1) {
 		std::cout << "Network: " << network << std::endl;
+		std::cout << "Config: " << config.dump(4) << std::endl;
 	} else {
-		checkParam(2);
-		nlohmann::json netConfig;
+		checkParam(3);
 		std::string netType = argv[1];
-		if (netType == "PrvNet") {
-			std::string filepath;
-			std::cout << "Enter config file for private network (empty for default): ";
-			std::getline(std::cin, filepath);
-			std::cout << "filepath: " << filepath << std::endl;
-			if (!filepath.empty()) {
-				try {
-					std::ifstream in(filepath);
-					netConfig = nlohmann::json::parse(in);
-				} catch (const std::exception &e) {
-					std::cerr << "Load network config '" << filepath << "' failed: " << e.what() << std::endl;
-					return ERRNO_APP;
-				}
-			}
-		} else if (netType != "MainNet" && netType != "TestNet" && netType != "RegTest") {
-			invalidCmdError();
-			return ERRNO_CMD;
-		}
+		std::string netConfig = argv[2];
 
 		network = netType;
+		config = nlohmann::json::parse(netConfig);
 
 		walletCleanup();
 		delete manager;
 
 		try {
-			manager = new MasterWalletManager(walletRoot, network, netConfig);
+			manager = new MasterWalletManager(walletRoot, network, config);
 		} catch (const std::exception &e) {
 			std::cout << e.what() << std::endl;
 			exit(-1);
@@ -1757,13 +1748,14 @@ int main(int argc, char *argv[]) {
 	char *cmdArgs[512];
 	int numArgs;
 	int waitForAttach = 0;
-	nlohmann::json netConfig;
+    std::string tmp;
 
 	int opt;
 	int idx;
 	struct option options[] = {
 		{"data",            required_argument, NULL, 'd'},
 		{"network",         required_argument, NULL, 'n' },
+        {"config",          required_argument, NULL, 'c'},
 		{"verbose",         no_argument,       NULL, 'v'},
 		{"debug",           no_argument,       NULL, 1},
 		{"help",            no_argument,       NULL, 'h'},
@@ -1774,7 +1766,7 @@ int main(int argc, char *argv[]) {
 	sys_coredump_set(true);
 #endif
 
-	while ((opt = getopt_long(argc, argv, "d:n:vh?", options, &idx)) != -1) {
+	while ((opt = getopt_long(argc, argv, "d:n:c:vh?", options, &idx)) != -1) {
 		switch (opt) {
 			case 'd':
 				walletRoot = optarg;
@@ -1783,6 +1775,11 @@ int main(int argc, char *argv[]) {
 			case 'n':
 				network = optarg;
 				break;
+
+		    case 'c':
+		        tmp = optarg;
+                config = nlohmann::json::parse(tmp);
+		        break;
 
 			case 'v':
 				verboseMode = true;
@@ -1823,40 +1820,8 @@ int main(int argc, char *argv[]) {
 		std::cout << "Wallet data directory: " << walletRoot << std::endl;
 	}
 
-	if (!network.empty()) {
-		// user config
-		if (network == "MainNet" || network == "TestNet" || network == "RegTest") {
-			netConfig = nlohmann::json();
-		} else {
-			try {
-				std::ifstream in(network);
-				netConfig = nlohmann::json::parse(in);
-				network = "PrvNet";
-			} catch (const std::exception &e) {
-				std::cerr << "Load network config '" << network << "' failed: " << e.what() << std::endl;
-				return -1;
-			}
-		}
-	} else {
-		// load from local Config.json
-		try {
-			std::ifstream in(walletRoot + "/Config.json");
-			netConfig = nlohmann::json::parse(in);
-			network = netConfig["NetType"];
-		} catch (...) {
-			// ignore exception, use default "MainNet" as config
-			netConfig = nlohmann::json();
-			network.clear();
-		}
-	}
-
-	if (network.empty()) {
-		network = "MainNet";
-		netConfig = nlohmann::json();
-	}
-
 	try {
-		manager = new MasterWalletManager(walletRoot, network, netConfig);
+		manager = new MasterWalletManager(walletRoot, network, config);
 	} catch (const std::exception &e) {
 		std::cout << e.what() << std::endl;
 		return -1;
