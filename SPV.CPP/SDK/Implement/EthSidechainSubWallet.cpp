@@ -27,12 +27,9 @@
 #include <WalletCore/CoinInfo.h>
 #include <Common/ErrorChecker.h>
 #include <Common/hash.h>
-#include <ethereum/ewm/BREthereumClient.h>
 
 namespace Elastos {
 	namespace ElaWallet {
-
-const std::string CALLBACK_IS_NULL_PROMPT = "callback is null";
 
 		EthSidechainSubWallet::~EthSidechainSubWallet() {
 		}

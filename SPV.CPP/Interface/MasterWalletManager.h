@@ -136,9 +136,6 @@ namespace Elastos {
 		protected:
 			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;
 
-			MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath,
-								const std::string &dataPath);
-
 			void LoadMasterWalletID();
 
 			IMasterWallet *LoadMasterWallet(const std::string &masterWalletID) const;

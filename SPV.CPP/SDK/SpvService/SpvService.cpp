@@ -6,14 +6,10 @@
 #include "SpvService.h"
 
 #include <Common/Utils.h>
-#include <Plugin/Transaction/Asset.h>
-#include <Plugin/Transaction/TransactionOutput.h>
 #include <Plugin/Transaction/Transaction.h>
 #include <Database/DatabaseManager.h>
 #include <Wallet/WalletCommon.h>
 #include <Common/ErrorChecker.h>
-
-#define BACKGROUND_THREAD_COUNT 1
 
 namespace Elastos {
 	namespace ElaWallet {

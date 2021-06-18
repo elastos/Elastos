@@ -81,6 +81,7 @@ namespace Elastos {
 
 		void Address::SetProgramHash(const uint168 &programHash) {
 			_programHash = programHash;
+            CheckValid();
 		}
 
 		SignType Address::PrefixToSignType(Prefix prefix) const {

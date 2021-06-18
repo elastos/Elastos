@@ -40,7 +40,6 @@
 #include <cstring>
 #include <utility>
 
-#define STANDARD_FEE_PER_KB 10000
 #define DEFAULT_PAYLOAD_TYPE  transferAsset
 #define TX_LOCKTIME          0x00000000
 

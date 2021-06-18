@@ -167,6 +167,7 @@ TEST_CASE("VerifiableCredential test", "[VerifiableCredential]") {
 	}
 }
 
+#if 0
 TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 	SECTION("ToJson FromJson test") {
 		DIDPayloadInfo didPayloadInfo;
@@ -342,3 +343,4 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 		}
 	}
 }
+#endif

@@ -73,33 +73,6 @@ namespace Elastos {
 			LoadMasterWalletID();
 		}
 
-		MasterWalletManager::MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath,
-												 const std::string &dataPath) :
-			_masterWalletMap(walletMap),
-			_rootPath(rootPath),
-			_dataPath(dataPath),
-			_p2pEnable(false),
-			_lock(new Lockable()) {
-
-			if (_dataPath.empty())
-				_dataPath = _rootPath;
-
-			ErrorChecker::CheckPathExists(_rootPath);
-			ErrorChecker::CheckPathExists(_dataPath);
-
-			Log::registerMultiLogger(_dataPath);
-
-			Log::setLevel(spdlog::level::level_enum(SPVLOG_LEVEL));
-			Log::info("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
-
-			_config = new Config(_dataPath, CONFIG_MAINNET);
-
-			if (_config->GetNetType() != CONFIG_MAINNET)
-				_dataPath = _dataPath + "/" + _config->GetNetType();
-
-			LoadMasterWalletID();
-		}
-
 		MasterWalletManager::~MasterWalletManager() {
 			for (MasterWalletMap::iterator it = _masterWalletMap.begin(); it != _masterWalletMap.end();) {
 				MasterWallet *masterWallet = static_cast<MasterWallet *>(it->second);
