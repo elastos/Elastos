@@ -374,6 +374,18 @@ namespace Elastos {
 			return address;
 		}
 
+        std::string MainchainSubWallet::GetOwnerDepositAddress() const {
+		    WalletPtr wallet = _walletManager->GetWallet();
+            ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
+
+            AddressPtr addrPtr = wallet->GetOwnerDepositAddress();
+            std::string addr = addrPtr->String();
+
+            ArgInfo("r => {}", addr);
+
+            return addr;
+		}
+
         bool MainchainSubWallet::VoteAmountFromJson(BigInt &voteAmount, const nlohmann::json &j) {
             ErrorChecker::CheckParam(!j.is_string(), Error::InvalidArgument, "stake value should be big int string");
             std::string voteAmountString = j.get<std::string>();
@@ -499,6 +511,18 @@ namespace Elastos {
 
 			ArgInfo("r => {}", result.dump());
 			return result;
+		}
+
+        std::string MainchainSubWallet::GetCRDepositAddress() const {
+            WalletPtr wallet = _walletManager->GetWallet();
+            ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
+
+            AddressPtr addrPtr = wallet->GetCROwnerDepositAddress();
+            std::string addr = addrPtr->String();
+
+            ArgInfo("r => {}", addr);
+
+            return addr;
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateCRInfoPayload(

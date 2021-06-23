@@ -96,10 +96,14 @@ namespace Elastos {
 
 			std::string GetOwnerAddress() const override;
 
+            std::string GetOwnerDepositAddress() const override;
+
 		public:
 			//////////////////////////////////////////////////
 			/*                      CRC                     */
 			//////////////////////////////////////////////////
+            std::string GetCRDepositAddress() const override;
+
 			nlohmann::json GenerateCRInfoPayload(const std::string &crPublicKey,
 												 const std::string &did,
 												 const std::string &nickName,

@@ -282,10 +282,21 @@ namespace Elastos {
 			 */
 			virtual std::string GetOwnerAddress() const = 0;
 
+			/**
+			 * Get deposit address of owner.
+			 */
+			 virtual std::string GetOwnerDepositAddress() const = 0;
+
 		public:
 			//////////////////////////////////////////////////
 			/*                      CRC                     */
 			//////////////////////////////////////////////////
+
+			/**
+			 * Get CR deposit
+			 * @return
+			 */
+			virtual std::string GetCRDepositAddress() const = 0;
 
 			/**
 			 * Generate cr info payload digest for signature.
