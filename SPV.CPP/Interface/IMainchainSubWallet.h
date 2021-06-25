@@ -259,6 +259,7 @@ namespace Elastos {
 			 *   },
 			 *   ...
 			 * ]
+			 * @param amount Retrieve amount including fee
 			 * @param fee Fee amount. Bigint string in SELA
 			 * @param memo Remarks string. Can be empty string.
 			 *
@@ -266,6 +267,7 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json CreateRetrieveDepositTransaction(
                     const nlohmann::json &inputs,
+                    const std::string &amount,
                     const std::string &fee,
                     const std::string &memo) = 0;
 
@@ -426,12 +428,14 @@ namespace Elastos {
 			 *   },
 			 *   ...
 			 * ]
+			 * @param amount Retrieve amount including fee
 			 * @param fee Fee amount. Bigint string in SELA
 			 * @param memo Remarks string. Can be empty string.
 			 * @return The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateRetrieveCRDepositTransaction(
 					const nlohmann::json &inputs,
+					const std::string &amount,
 					const std::string &fee,
 					const std::string &memo) = 0;
 

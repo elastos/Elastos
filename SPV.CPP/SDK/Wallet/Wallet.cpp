@@ -59,7 +59,7 @@ namespace Elastos {
 												 const OutputArray &outputs,
 												 const std::string &memo,
 												 const BigInt &fee,
-												 bool isVote) {
+												 bool changeBack2FirstInput) {
 
 			std::string memoFixed;
             BigInt totalOutputAmount, totalInputAmount;
@@ -99,7 +99,7 @@ namespace Elastos {
                 // change
                 BigInt changeAmount = totalInputAmount - totalOutputAmount - fee;
                 Address changeAddress;
-                if (isVote) {
+                if (changeBack2FirstInput) {
                     changeAddress = (*utxo.begin())->GetAddress();
                 } else {
                     AddressArray addresses = _subAccount->UnusedAddresses(1, 1);

@@ -89,6 +89,7 @@ namespace Elastos {
 														   const std::string &emmo) override;
 
 			nlohmann::json CreateRetrieveDepositTransaction(const nlohmann::json &inputsJson,
+                                                            const std::string &amount,
                                                             const std::string &fee,
 															const std::string &memo) override;
 
@@ -129,6 +130,7 @@ namespace Elastos {
 														 const std::string &memo) override;
 
 			nlohmann::json CreateRetrieveCRDepositTransaction(const nlohmann::json &inputsJson,
+															  const std::string &amount,
 															  const std::string &fee,
 															  const std::string &memo) override;
 

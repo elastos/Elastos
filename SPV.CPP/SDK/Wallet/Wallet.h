@@ -98,7 +98,7 @@ namespace Elastos {
 
 			TransactionPtr CreateTransaction(uint8_t type, const PayloadPtr &payload, const UTXOSet &utxo,
                                              const OutputArray &outputs, const std::string &memo, const BigInt &fee,
-                                             bool isVote = false);
+                                             bool changeBack2FirstInput = false);
 
 			void SignTransaction(const TransactionPtr &tx, const std::string &payPassword) const;
 

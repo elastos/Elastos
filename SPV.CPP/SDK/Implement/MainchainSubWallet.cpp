@@ -332,23 +332,30 @@ namespace Elastos {
 		}
 
         nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(const nlohmann::json &inputsJson,
+                                                                            const std::string &amount,
                                                                             const std::string &fee,
                                                                             const std::string &memo) {
             WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
+            ArgInfo("amount: {}", amount);
 			ArgInfo("fee: {}", fee);
 			ArgInfo("memo: {}", memo);
 
 			UTXOSet utxo;
 			UTXOFromJson(utxo, inputsJson);
 
-			BigInt feeAmount;
+			BigInt feeAmount, bgAmount;
 			feeAmount.setDec(fee);
+			bgAmount.setDec(amount);
+
+            OutputArray outputs;
+            Address receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+            outputs.push_back(OutputPtr(new TransactionOutput(bgAmount - feeAmount, receiveAddr)));
 
 			PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());
 			TransactionPtr tx = _walletManager->GetWallet()->CreateTransaction(
-				Transaction::returnDepositCoin, payload, utxo, {}, memo, feeAmount);
+				Transaction::returnDepositCoin, payload, utxo, outputs, memo, feeAmount, true);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -727,22 +734,29 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::CreateRetrieveCRDepositTransaction(
 				const nlohmann::json &inputsJson,
+				const std::string &amount,
 				const std::string &fee,
 				const std::string &memo) {
             WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
+            ArgInfo("amount: {}", amount);
 			ArgInfo("fee: {}", fee);
 			ArgInfo("memo: {}", memo);
 
 			UTXOSet utxo;
 			UTXOFromJson(utxo, inputsJson);
 
-			BigInt feeAmount;
+			BigInt feeAmount, bgAmount;
 			feeAmount.setDec(fee);
+			bgAmount.setDec(amount);
+
+            OutputArray outputs;
+            Address receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+            outputs.push_back(OutputPtr(new TransactionOutput(bgAmount - feeAmount, receiveAddr)));
 
 			PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());
-			TransactionPtr tx = wallet->CreateTransaction(Transaction::returnCRDepositCoin, payload, utxo, {}, memo, feeAmount);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::returnCRDepositCoin, payload, utxo, outputs, memo, feeAmount, true);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

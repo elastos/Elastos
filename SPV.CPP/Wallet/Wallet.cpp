@@ -916,7 +916,7 @@ static int retrieve(int argc, char *argv[]) {
 			std::string amount;
 			std::cin >> amount;
 
-			tx = subWallet->CreateRetrieveCRDepositTransaction(nlohmann::json(), "10000", "memo");
+			tx = subWallet->CreateRetrieveCRDepositTransaction(nlohmann::json(), "500000000000", "10000", "memo");
 
 		} else if (registerWhat == "dpos") {
 
@@ -924,7 +924,7 @@ static int retrieve(int argc, char *argv[]) {
 			std::string amount;
 			std::cin >> amount;
 
-			tx = subWallet->CreateRetrieveDepositTransaction(nlohmann::json(), "10000", "memo");
+			tx = subWallet->CreateRetrieveDepositTransaction(nlohmann::json(), "500000000000", "10000", "memo");
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;
