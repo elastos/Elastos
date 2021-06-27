@@ -1,9 +1,11 @@
 project(Test)
 set(CMAKE_CXX_STANDARD 11)
 
-add_custom_target(
-	auto_run_test ALL
-)
+if (NOT SPV_ENABLE_STATIC)
+    message(FATAL_ERROR "Unable to support testcase if SPV_ENABLE_STATIC is not ON")
+endif()
+
+add_custom_target(RunTestCase)
 
 include(ProjectDefaults)
 include(CheckFunctionExists)
@@ -42,11 +44,7 @@ foreach(src ${TEST_SOURCE_FILES})
 	string(REGEX REPLACE ".*/\(.*\).cpp$" "\\1" TEST_TARGET_NAME ${src})
 	add_executable(${TEST_TARGET_NAME} ${src})
 
-	if(SPV_ENABLE_STATIC)
-		target_link_libraries(${TEST_TARGET_NAME} spvsdk-static dl boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3 resolv)
-	else()
-		target_link_libraries(${TEST_TARGET_NAME} spvsdk dl resolv)
-	endif()
+	target_link_libraries(${TEST_TARGET_NAME} spvsdk-static curl.a sqlite3.a ssl.a crypto.a boost_system.a boost_filesystem.a boost_thread.a fruit.a resolv z pthread dl)
 	add_dependencies(${TEST_TARGET_NAME} libspvsdk catch2)
 
 	if("${AUTO_TEST_COMMAND}" STREQUAL "")
@@ -54,12 +52,12 @@ foreach(src ${TEST_SOURCE_FILES})
 	else()
 		set(AUTO_TEST_COMMAND ${AUTO_TEST_COMMAND} && ./${TEST_TARGET_NAME})
 	endif()
-	add_dependencies(auto_run_test ${TEST_TARGET_NAME})
+	add_dependencies(RunTestCase ${TEST_TARGET_NAME})
 endforeach()
 
 if(NOT ANDROID AND NOT IOS)
 	add_custom_command(
-		TARGET auto_run_test
+		TARGET RunTestCase
 		POST_BUILD
 		COMMAND ${AUTO_TEST_COMMAND}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

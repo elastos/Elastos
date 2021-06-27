@@ -31,7 +31,7 @@ namespace Elastos {
 		template<class T>
 		class ElementSet {
 		public:
-			typedef struct {
+			typedef struct _TCompare {
 				bool operator() (const T &x, const T &y) const {
 					return x->GetHash() < y->GetHash();
 				}

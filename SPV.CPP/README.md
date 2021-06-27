@@ -1,5 +1,9 @@
 # Elastos SPV C++
 
+[![Ubuntu & macOS](https://github.com/elastos/Elastos.ELA.SPV.Cpp/actions/workflows/ubuntu-and-macos.yml/badge.svg)](https://github.com/elastos/Elastos.ELA.SPV.Cpp/actions/workflows/ubuntu-and-macos.yml)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/elastos/Elastos.ELA.SPV.Cpp/master/LICENSE)
+[![GitHub Releases](https://img.shields.io/github/release/elastos/Elastos.ELA.SPV.Cpp.svg)](https://github.com/elastos/Elastos.ELA.SPV.Cpp/releases)
+
 - [Summary](#summary)
 - [Build Guide](#build-guide)
 	- [Build on Ubuntu/MacOS](#build-on-ubuntumacos)

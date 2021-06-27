@@ -74,7 +74,8 @@ ExternalProject_Add(
 	boost
 
 	PREFIX ${PROJECT_DEPS_BUILD_PREFIX}
-	URL "https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.bz2"
+	URL "https://boostorg.jfrog.io/artifactory/main/release/1.72.0/source/boost_1_72_0.tar.bz2"
+#	URL "https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.bz2"
 	URL_HASH SHA256=59c9b274bc451cf91a9ba1dd2c7fdcaf5d60b1b3aa83f2c9fa143417cc660722
 	DOWNLOAD_DIR ${PROJECT_DEPS_TARBALL_DIR}
 	DOWNLOAD_NO_PROGRESS 1

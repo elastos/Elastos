@@ -69,7 +69,7 @@ namespace Elastos {
 		typedef boost::shared_ptr<UTXO> UTXOPtr;
 		typedef std::vector<UTXOPtr> UTXOArray;
 
-		typedef struct {
+		typedef struct _UTXOCompare {
 			bool operator() (const UTXOPtr &x, const UTXOPtr &y) const {
 				if (x->Hash() == y->Hash()) {
 					return x->Index() < y->Index();
