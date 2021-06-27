@@ -1,0 +1,30 @@
+name: Ubuntu & macOS
+on:
+  push:
+  pull_request:
+
+jobs:
+  Build:
+    name: Build and Test
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+    - run: echo "Build branch ${{ github.ref }} on ${{ runner.os }}"
+    - uses: actions/checkout@v1
+
+    - name: cmake
+      run: |
+        mkdir ${{ github.workspace }}/Build/install
+        cd ${{ github.workspace }}/Build
+        cmake -DSPV_BUILD_TEST_CASES=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/Build/install ..
+
+    - name: build
+      run: cmake --build ${{ github.workspace }}/Build --target all -- -j 4
+
+    - name: run testcase
+      run: cmake --build ${{ github.workspace }}/Build --target RunTestCase -- -j 4
+

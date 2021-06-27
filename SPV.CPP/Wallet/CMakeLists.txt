@@ -43,21 +43,33 @@ link_directories(
 )
 
 if (SPV_ENABLE_SHARED)
-    set(LIBS spvsdk curl crypto ssl resolv z)
-	set(ELAWALLET_DEPENDS libcurl libspvsdk)
-elseif(SPV_ENABLE_STATIC)
-    set(LIBS spvsdk-static curl.a sqlite3.a ssl.a crypto.a boost_system.a boost_filesystem.a boost_thread.a resolv z)
-    set(ELAWALLET_DEPENDS libspvsdk boost libressl json libsqlite libcurl)
-else()
-	message(FATAL_ERROR "libspvsdk should enable static or shared")
+    set(LIBS spvsdk-shared curl ssl crypto resolv z)
+	set(ELAWALLET_DEPENDS libcurl libressl libspvsdk)
+    set(TARGET_NAME wallet)
+
+    add_executable(wallet ${WALLET_SOURCE_FILES})
+    add_dependencies(wallet ${ELAWALLET_DEPENDS})
+
+    target_link_libraries(wallet ${LIBS} ${SYSTEM_LIBS})
+
+    install(TARGETS wallet
+            RUNTIME DESTINATION "bin"
+            ARCHIVE DESTINATION "lib"
+            LIBRARY DESTINATION "lib")
 endif()
 
-add_executable(wallet ${WALLET_SOURCE_FILES})
-add_dependencies(wallet ${ELAWALLET_DEPENDS})
+if(SPV_ENABLE_STATIC)
+    set(LIBS spvsdk-static curl.a sqlite3.a ssl.a crypto.a boost_system.a boost_filesystem.a boost_thread.a resolv z)
+    set(ELAWALLET_DEPENDS libspvsdk boost libressl json libsqlite libcurl)
+    set(TARGET_NAME wallet.static)
 
-target_link_libraries(wallet ${LIBS} ${SYSTEM_LIBS})
+    add_executable(wallet.static ${WALLET_SOURCE_FILES})
+    add_dependencies(wallet.static ${ELAWALLET_DEPENDS})
 
-install(TARGETS wallet
-    RUNTIME DESTINATION "bin"
-    ARCHIVE DESTINATION "lib"
-    LIBRARY DESTINATION "lib")
+    target_link_libraries(wallet.static ${LIBS} ${SYSTEM_LIBS})
+
+    install(TARGETS wallet.static
+            RUNTIME DESTINATION "bin"
+            ARCHIVE DESTINATION "lib"
+            LIBRARY DESTINATION "lib")
+endif()
