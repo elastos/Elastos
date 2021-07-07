@@ -82,6 +82,8 @@ namespace Elastos {
 														 const std::string &data,
 														 uint64_t nonce) const = 0;
 
+			virtual std::string ExportPrivateKey(const std::string &payPassword) const = 0;
+
         };
 
 	}

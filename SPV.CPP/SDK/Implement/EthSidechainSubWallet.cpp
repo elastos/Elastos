@@ -116,7 +116,22 @@ namespace Elastos {
 			return j;
 		}
 
-		EthSidechainSubWallet::EthSidechainSubWallet(const CoinInfoPtr &info,
+        std::string EthSidechainSubWallet::ExportPrivateKey(const std::string &payPassword) const {
+            ArgInfo("{} {}", _walletID, GetFunName());
+            ArgInfo("payPasswd: *");
+
+            uint512 seed = _parent->GetAccount()->GetSeed(payPassword);
+            BRKey prvkey = derivePrivateKeyFromSeed(*(UInt512 *)seed.begin(), 0);
+
+            uint256 s;
+            memcpy(s.begin(), &prvkey.secret, sizeof(prvkey.secret));
+            std::string prvkeystring = s.GetHex();
+
+            ArgInfo("r => *");
+            return prvkeystring;
+        }
+
+        EthSidechainSubWallet::EthSidechainSubWallet(const CoinInfoPtr &info,
 													 const ChainConfigPtr &config,
 													 MasterWallet *parent,
 													 const std::string &netType) :

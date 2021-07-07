@@ -65,6 +65,8 @@ namespace Elastos {
 														 const std::string &data,
 														 uint64_t nonce) const;
 
+            virtual std::string ExportPrivateKey(const std::string &payPassword) const;
+
 			// implement ISubWallet
 		public:
 			virtual std::string GetChainID() const;
