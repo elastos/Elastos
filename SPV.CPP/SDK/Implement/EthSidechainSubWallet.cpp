@@ -125,7 +125,8 @@ namespace Elastos {
 
             uint256 s;
             memcpy(s.begin(), &prvkey.secret, sizeof(prvkey.secret));
-            std::string prvkeystring = s.GetHex();
+            bytes_t prvkeyBytes = s.bytes();
+            std::string prvkeystring = prvkeyBytes.getHex();
 
             ArgInfo("r => *");
             return prvkeystring;
