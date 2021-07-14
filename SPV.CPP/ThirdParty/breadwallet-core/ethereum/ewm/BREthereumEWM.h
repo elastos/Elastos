@@ -103,10 +103,6 @@ ewmGetAccountPrimaryAddressPrivateKey(BREthereumEWM ewm,
 extern uint64_t
 ewmGetBlockHeight (BREthereumEWM ewm);
 
-extern void
-ewmWipe (BREthereumNetwork network,
-         const char *storagePath);
-
 /// MARK: - Wallets
 
 extern BREthereumWallet *
