@@ -13,7 +13,6 @@
 
 #include <stdint.h>
 #include <pthread.h>
-#include "ethereum/event/BREvent.h"
 #include "BREthereumTransfer.h"
 #include "BREthereumWallet.h"
 #include "BREthereumEWM.h"

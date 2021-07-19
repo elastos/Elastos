@@ -21,8 +21,6 @@
 #include "support/BRArray.h"
 #include "support/BRBIP39Mnemonic.h"
 #include "support/BRAssert.h"
-#include "ethereum/event/BREvent.h"
-#include "ethereum/event/BREventAlarm.h"
 #include "BREthereumEWMPrivate.h"
 
 #define EWM_SLEEP_SECONDS (10)
@@ -32,13 +30,6 @@
 
 
 #define EWM_INITIAL_SET_SIZE_DEFAULT         (25)
-
-/* Forward Declaration */
-static void
-ewmPeriodicDispatcher (BREventHandler handler,
-                       BREventTimeout *event);
-
-/* Forward Implementation */
 
 /// MARK: - Ethereum Wallet Manager
 
@@ -94,9 +85,6 @@ ewmCreate (BREthereumNetwork network,
     // Save the recovered tokens
     // TODO: hero
 //    ewm->tokens = tokens;
-
-    // Create the alarm clock, but don't start it.
-    alarmClockCreateIfNecessary(0);
 
     array_new (ewm->wallets, DEFAULT_WALLET_CAPACITY);
 
@@ -178,8 +166,6 @@ extern void
 ewmStart (BREthereumEWM ewm) {
     // TODO: Check on a current state before starting.
 
-    // Start the alarm clock.
-    alarmClockStart(alarmClock);
 }
 
 extern void
@@ -188,8 +174,6 @@ ewmStop (BREthereumEWM ewm) {
 
     // TODO: Are their disconnect events that we need to process before stopping the handler?
 
-    // Stop the alarm clock
-    alarmClockStop (alarmClock);
 }
 
 /// MARK: - Connect / Disconnect
