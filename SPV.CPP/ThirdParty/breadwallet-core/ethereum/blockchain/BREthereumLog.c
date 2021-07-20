@@ -11,6 +11,12 @@
 #include "support/BRArray.h"
 #include "BREthereumLog.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#else
+#include <stdlib.h>
+#endif
+
 /**
  * A Log *cannot* be identified by its associated transaction (hash) - because one transaction
  * can result in multiple Logs (even identical Logs: address, topics, etc).
@@ -406,7 +412,7 @@ static BRRlpItem
 logTopicsRlpEncode (BREthereumLog log,
                     BRRlpCoder coder) {
     size_t itemsCount = array_count(log->topics);
-    BRRlpItem items[itemsCount];
+    BRRlpItem *items = (BRRlpItem *)alloca(itemsCount * sizeof(BRRlpItem));
 
     for (int i = 0; i < itemsCount; i++)
         items[i] = logTopicRlpEncode(log->topics[i], coder);

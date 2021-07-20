@@ -54,8 +54,13 @@ extern "C" {
  * (__BRFail is effectively internal) Fail Core and provide some log output with the location.
  * This function is annotated to 'never return'
  */
+#if defined(_WIN32) || defined(_WIN64)
+extern void
+__BRFail (const char *file, int line, const char *exp);
+#else
 extern void
 __BRFail (const char *file, int line, const char *exp) __attribute__((__noreturn__));
+#endif
 
 typedef void *BRAssertInfo;
 typedef void (*BRAssertHandler) (BRAssertInfo info);

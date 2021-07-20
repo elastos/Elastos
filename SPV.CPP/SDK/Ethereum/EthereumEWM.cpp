@@ -230,12 +230,9 @@ namespace Elastos {
 														 uint64_t confirmationsUntilFinal) {
 			assert (65 == pubkey.size());
 
-			BRKey key = {
-				UINT256_ZERO,
-				{0},
-				0
-			};
+			BRKey key;
 
+			memset(&key, 0, sizeof(key));
 			memcpy(key.pubKey, pubkey.data(), 65);
 
 			// TODO: set to correct time to replace ETHEREUM_TIMESTAMP_UNKNOWN

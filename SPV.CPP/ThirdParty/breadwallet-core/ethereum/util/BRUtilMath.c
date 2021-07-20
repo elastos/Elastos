@@ -14,6 +14,10 @@
 #include <math.h>
 #include "BRUtil.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#endif
+
 #define AS_UINT64(x)  ((uint64_t) (x))
 
 extern UInt256
@@ -203,7 +207,7 @@ mulUInt256_Double (UInt256 x, double y, int *overflow, int *negative, double *re
     UInt256 z = UINT256_ZERO;
 
     long double underflow = 0;
-    uint64_t overflows[count];  // overflow can be huge... not large enough...
+    uint64_t *overflows = (uint64_t *)alloca(count * sizeof(uint64_t));  // overflow can be huge... not large enough...
 
     // From high to low, account for underflow along the way...
     for (int i = count -1; i >= 0; i--) {
@@ -302,7 +306,7 @@ extern long double
 coerceLongDouble (UInt256 value, int *overflow) {
     long double scale = powl ((long double) 2.0, (long double) 64.0);
     long double result = 0;
-    for (ssize_t index = 3; index >= 0; index--)
+    for (int index = 3; index >= 0; index--)
         result = ((long double) value.u64[index] + scale * result);
 
     *overflow = !isfinite(result);

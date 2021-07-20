@@ -26,6 +26,11 @@
 #include "BRCrypto.h"
 #include <string.h>
 #include <assert.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#else
+#include <stdlib.h>
+#endif
 
 #define BIP32_SEED_KEY "Bitcoin seed"
 #define BIP32_XPRV     "\x04\x88\xAD\xE4"
@@ -52,20 +57,19 @@ static void _CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
 {
     uint8_t buf[sizeof(BRECPoint) + sizeof(i)];
     UInt512 I;
-    
+
     if (i & BIP32_HARD) {
         buf[0] = 0;
         UInt256Set(&buf[1], *k);
-    }
-    else BRSecp256k1PointGen((BRECPoint *)buf, k);
-    
+    } else BRSecp256k1PointGen((BRECPoint *)buf, k);
+
     UInt32SetBE(&buf[sizeof(BRECPoint)], i);
-    
+
     BRHMAC(&I, BRSHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
-    
+
     BRSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
     *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
-    
+
     var_clean(&I);
     mem_clean(buf, sizeof(buf));
 }
@@ -90,12 +94,12 @@ static void _CKDpub(BRECPoint *K, UInt256 *c, uint32_t i)
     UInt512 I;
 
     if ((i & BIP32_HARD) != BIP32_HARD) { // can't derive private child key from public parent key
-        *(BRECPoint *)buf = *K;
+        *(BRECPoint *) buf = *K;
         UInt32SetBE(&buf[sizeof(*K)], i);
-    
+
         BRHMAC(&I, BRSHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
-        
-        *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
+
+        *c = *(UInt256 *) &I.u8[sizeof(UInt256)]; // c = IR
         BRSecp256k1PointAdd(K, (UInt256 *)&I); // K = P(IL) + K
 
         var_clean(&I);
@@ -112,25 +116,25 @@ BRMasterPubKey BRBIP32MasterPubKey(const void *seed, size_t seedLen)
     BRKey key;
 
     assert(seed != NULL || seedLen == 0);
-    
+
     if (seed || seedLen == 0) {
         BRHMAC(&I, BRSHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed, seedLen);
-        secret = *(UInt256 *)&I;
-        chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
+        secret = *(UInt256 *) &I;
+        chain = *(UInt256 *) &I.u8[sizeof(UInt256)];
         var_clean(&I);
-    
+
         BRKeySetSecret(&key, &secret, 1);
         mpk.fingerPrint = BRKeyHash160(&key).u32[0];
-        
+
         _CKDpriv(&secret, &chain, 0 | BIP32_HARD); // path m/0H
-    
+
         mpk.chainCode = chain;
         BRKeySetSecret(&key, &secret, 1);
         var_clean(&secret, &chain);
         BRKeyPubKey(&key, &mpk.pubKey, sizeof(mpk.pubKey)); // path N(m/0H)
         BRKeyClean(&key);
     }
-    
+
     return mpk;
 }
 
@@ -139,18 +143,18 @@ BRMasterPubKey BRBIP32MasterPubKey(const void *seed, size_t seedLen)
 size_t BRBIP32PubKey(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk, uint32_t chain, uint32_t index)
 {
     UInt256 chainCode = mpk.chainCode;
-    
-    assert(memcmp(&mpk, &BR_MASTER_PUBKEY_NONE, sizeof(mpk)) != 0);
-    
-    if (pubKey && sizeof(BRECPoint) <= pubKeyLen) {
-        *(BRECPoint *)pubKey = *(BRECPoint *)mpk.pubKey;
 
-        _CKDpub((BRECPoint *)pubKey, &chainCode, chain); // path N(m/0H/chain)
-        _CKDpub((BRECPoint *)pubKey, &chainCode, index); // index'th key in chain
+    assert(memcmp(&mpk, &BR_MASTER_PUBKEY_NONE, sizeof(mpk)) != 0);
+
+    if (pubKey && sizeof(BRECPoint) <= pubKeyLen) {
+        *(BRECPoint *) pubKey = *(BRECPoint *) mpk.pubKey;
+
+        _CKDpub((BRECPoint *) pubKey, &chainCode, chain); // path N(m/0H/chain)
+        _CKDpub((BRECPoint *) pubKey, &chainCode, index); // index'th key in chain
         var_clean(&chainCode);
     }
-    
-    return (! pubKey || sizeof(BRECPoint) <= pubKeyLen) ? sizeof(BRECPoint) : 0;
+
+    return (!pubKey || sizeof(BRECPoint) <= pubKeyLen) ? sizeof(BRECPoint) : 0;
 }
 
 // sets the private key for path m/0H/chain/index to key
@@ -165,27 +169,27 @@ void BRBIP32PrivKeyList(BRKey keys[], size_t keysCount, const void *seed, size_t
 {
     UInt512 I;
     UInt256 secret, chainCode, s, c;
-    
+
     assert(keys != NULL || keysCount == 0);
     assert(seed != NULL || seedLen == 0);
     assert(indexes != NULL || keysCount == 0);
-    
+
     if (keys && keysCount > 0 && (seed || seedLen == 0) && indexes) {
         BRHMAC(&I, BRSHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed, seedLen);
-        secret = *(UInt256 *)&I;
-        chainCode = *(UInt256 *)&I.u8[sizeof(UInt256)];
+        secret = *(UInt256 *) &I;
+        chainCode = *(UInt256 *) &I.u8[sizeof(UInt256)];
         var_clean(&I);
 
         _CKDpriv(&secret, &chainCode, 0 | BIP32_HARD); // path m/0H
         _CKDpriv(&secret, &chainCode, chain); // path m/0H/chain
-    
+
         for (size_t i = 0; i < keysCount; i++) {
             s = secret;
             c = chainCode;
             _CKDpriv(&s, &c, indexes[i]); // index'th key in chain
             BRKeySetSecret(&keys[i], &s, 1);
         }
-        
+
         var_clean(&secret, &chainCode, &c, &s);
     }
 }
@@ -207,21 +211,21 @@ void BRBIP32vPrivKeyPath(BRKey *key, const void *seed, size_t seedLen, int depth
 {
     UInt512 I;
     UInt256 secret, chainCode;
-    
+
     assert(key != NULL);
     assert(seed != NULL || seedLen == 0);
     assert(depth >= 0);
-    
+
     if (key && (seed || seedLen == 0)) {
         BRHMAC(&I, BRSHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed, seedLen);
         secret = *(UInt256 *)&I;
         chainCode = *(UInt256 *)&I.u8[sizeof(UInt256)];
         var_clean(&I);
-     
+
         for (int i = 0; i < depth; i++) {
             _CKDpriv(&secret, &chainCode, va_arg(vlist, uint32_t));
         }
-        
+
         BRKeySetSecret(key, &secret, 1);
         var_clean(&secret, &chainCode);
     }
@@ -270,15 +274,16 @@ void BRBIP32BitIDKey(BRKey *key, const void *seed, size_t seedLen, uint32_t inde
     assert(key != NULL);
     assert(seed != NULL || seedLen == 0);
     assert(uri != NULL);
-    
+
     if (key && (seed || seedLen == 0) && uri) {
         UInt256 hash;
         size_t uriLen = strlen(uri);
-        uint8_t data[sizeof(index) + uriLen];
+        size_t datacount = sizeof(index) + uriLen;
+        uint8_t *data = (uint8_t *)alloca(datacount);
 
         UInt32SetLE(data, index);
         memcpy(&data[sizeof(index)], uri, uriLen);
-        BRSHA256(&hash, data, sizeof(data));
+        BRSHA256(&hash, data, datacount);
         BRBIP32PrivKeyPath(key, seed, seedLen, 5, 13 | BIP32_HARD, UInt32GetLE(&hash.u32[0]) | BIP32_HARD,
                            UInt32GetLE(&hash.u32[1]) | BIP32_HARD, UInt32GetLE(&hash.u32[2]) | BIP32_HARD,
                            UInt32GetLE(&hash.u32[3]) | BIP32_HARD); // path m/13H/aH/bH/cH/dH

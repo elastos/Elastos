@@ -8,6 +8,12 @@
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#else
+#include <stdlib.h>
+#endif
+
 #include <assert.h>
 #include "support/BRCrypto.h"
 #include "BREthereumSignature.h"
@@ -37,7 +43,7 @@ signatureCreate(BREthereumSignatureType type,
                                                     messageDigest);
 
             // Fill the signature
-            uint8_t signatureBytes[signatureLen];
+            uint8_t *signatureBytes = (uint8_t *)alloca(signatureLen);
             signatureLen = BRKeyCompactSign (&privateKeyUncompressed,
                                              signatureBytes, signatureLen,
                                              messageDigest);
@@ -65,7 +71,7 @@ signatureCreate(BREthereumSignatureType type,
                                                             messageDigest);
 
             // Fill the signature
-            uint8_t signatureBytes[signatureLen];
+            uint8_t *signatureBytes = (uint8_t *)alloca(signatureLen);
             signatureLen = BRKeyCompactSignEthereum (&privateKeyUncompressed,
                                                      signatureBytes, signatureLen,
                                                      messageDigest);
@@ -122,7 +128,7 @@ signatureExtractAddress(const BREthereumSignature signature,
     }
 
     return (0 == *success
-            ? (BREthereumAddress) EMPTY_ADDRESS_INIT
+            ? EMPTY_ADDRESS_INIT
             : addressCreateKey(&key));
 }
 

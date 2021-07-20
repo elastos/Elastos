@@ -6,12 +6,25 @@ include(ProjectDefaults)
 include(ExternalProject)
 include(ExternalConfigureArgs)
 
-set(CONFIGURE_CMD
-	./configure
-	--disable-shared
-	--enable-tempstore=always
-	--prefix=${PROJECT_INT_DIST_DIR}
-	${CONFIGURE_ARGS_INIT})
+if (WIN32)
+	set(CONFIGURE_CMD "echo")
+	set(BUILD_CMD nmake /f Makefile.msc)
+	set(INSTALL_CMD
+			copy ".\\sqlite3.h"    "${PROJECT_INT_DIST_DIR}\\include" /y &&
+			copy ".\\sqlite3ext.h" "${PROJECT_INT_DIST_DIR}\\include" /y &&
+			copy ".\\sqlite3.lib"  "${PROJECT_INT_DIST_DIR}\\lib" /y &&
+			copy ".\\sqlite3.dll"  "${PROJECT_INT_DIST_DIR}\\lib" /y &&
+			copy ".\\sqlite3.def"  "${PROJECT_INT_DIST_DIR}\\lib" /y)
+else()
+	set(CONFIGURE_CMD
+			./configure
+			--disable-shared
+			--enable-tempstore=always
+			--prefix=${PROJECT_INT_DIST_DIR}
+			${CONFIGURE_ARGS_INIT})
+	set(BUILD_CMD make)
+	set(INSTALL_CMD make install)
+endif()
 
 ExternalProject_Add(
 	libsqlite
@@ -27,8 +40,8 @@ ExternalProject_Add(
 	PATCH_COMMAND ${PATCH_EXE} -s -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/sqlite.patch
 
 	CONFIGURE_COMMAND ${CONFIGURE_CMD}
-	BUILD_COMMAND make
-	INSTALL_COMMAND make install
+	BUILD_COMMAND ${BUILD_CMD}
+	INSTALL_COMMAND ${INSTALL_CMD}
 )
 
 if(SPV_ENABLE_STATIC)

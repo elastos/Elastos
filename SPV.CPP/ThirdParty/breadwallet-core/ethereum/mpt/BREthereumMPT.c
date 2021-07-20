@@ -11,6 +11,12 @@
 #include "support/BRAssert.h"
 #include "BREthereumMPT.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#else
+#include <stdlib.h>
+#endif
+
 #undef MPT_SHOW_PROOF_NODES
 
 /// MARK: - MPT Node
@@ -80,6 +86,8 @@ mptNodeGetValue (BREthereumMPTNode node,
             *found = ETHEREUM_BOOLEAN_TRUE;
             return node->u.branch.value;
     }
+
+    return (BRRlpData) { 0, NULL };
 }
 
 static BREthereumData
@@ -89,6 +97,8 @@ mptNodeGetPath (BREthereumMPTNode node) {
         case MPT_NODE_EXTENSION: return node->u.extension.path;
         case MPT_NODE_BRANCH:    BRFail();
     }
+
+    return (BREthereumData){0, NULL};
 }
 
 static size_t
@@ -111,6 +121,7 @@ mptNodeConsume (BREthereumMPTNode node, uint8_t *key) {
                     : 1);
         }
     }
+    return 0;
 }
 
 #define NIBBLE_UPPER(x)     (0x0f & ((x) >> 4))
@@ -275,7 +286,7 @@ extern BREthereumMPTNode
 mptNodePathGetNode (BREthereumMPTNodePath path,
                     BREthereumData key) {
     size_t  keyEncodedCount = 2 * key.count;
-    uint8_t keyEncoded [keyEncodedCount];
+    uint8_t *keyEncoded = (uint8_t *)alloca(keyEncodedCount);
 
     // Fill the key
     for (size_t index = 0; index < key.count; index++) {

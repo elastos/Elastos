@@ -67,6 +67,7 @@ amountCompare (BREthereumAmount a1, BREthereumAmount a2, int *typeMismatch) {
         case AMOUNT_TOKEN:
             return tokenQuantityCompare(a1.u.tokenQuantity, a2.u.tokenQuantity, typeMismatch);
     }
+    return ETHEREUM_COMPARISON_GT;
 }
 
 extern BREthereumGas
@@ -77,6 +78,8 @@ amountGetGasEstimate (BREthereumAmount amount) {
         case AMOUNT_TOKEN:
             return tokenGetGasLimit (amount.u.tokenQuantity.token);
     }
+
+    return gasCreate (0);
 }
 
 extern BRRlpItem
@@ -89,6 +92,7 @@ amountRlpEncode(BREthereumAmount amount, BRRlpCoder coder) {
             // We do not encode a 'number 0', we encode an empty string - it seems from ethereumio
             return rlpEncodeUInt64(coder, 0, 1);
     }
+    return NULL;
 }
 
 extern BREthereumAmount

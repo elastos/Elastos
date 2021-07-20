@@ -102,6 +102,7 @@ transferBasisGetHash (BREthereumTransferBasis *basis) {
             return hash;
         }
     }
+    return EMPTY_HASH_INIT;
 }
 
 //
@@ -523,6 +524,7 @@ transferGetIdentifier (BREthereumTransfer transfer) {
         case TRANSFER_BASIS_LOG:
             return (NULL == transfer->basis.u.log ? EMPTY_HASH_INIT : logGetHash(transfer->basis.u.log));
     }
+    return EMPTY_HASH_INIT;
 }
 
 extern const BREthereumHash
@@ -616,6 +618,8 @@ transferGetStatusForBasis (BREthereumTransfer transfer) {
                     ? logGetStatus (transfer->basis.u.log)
                     : transactionGetStatus (transfer->originatingTransaction));
     }
+
+    return transactionStatusCreateErrored (TRANSACTION_ERROR_UNKNOWN, "unknown");
 }
 
 extern void
@@ -712,6 +716,7 @@ transferProvideOriginatingTransactionData (BREthereumTransfer transfer) {
                                             NULL);
         }
     }
+    return strdup ("");
 }
 
 static BREthereumAddress*
@@ -722,6 +727,7 @@ transferProvideOriginatingTransactionTargetAddress (BREthereumTransfer transfer)
         case AMOUNT_TOKEN:
             return tokenGetAddressPtrRaw(amountGetToken(transfer->amount));
     }
+    return NULL;
 }
 
 static BREthereumEther
@@ -732,6 +738,7 @@ transferProvideOriginatingTransactionAmount (BREthereumTransfer transfer) {
         case AMOUNT_TOKEN:
             return etherCreateZero();
     }
+    return etherCreateZero();
 }
 
 static void
@@ -763,6 +770,8 @@ transferGetEffectiveAmountInEther(BREthereumTransfer transfer) {
                                         ? transfer->basis.u.transaction
                                         : transfer->originatingTransaction);
     }
+
+    return etherCreateZero();
 }
 
 private_extern BREthereumAddress*
@@ -785,6 +794,7 @@ transferCompare (BREthereumTransfer t1,
         case TRANSFER_BASIS_LOG:
             return logCompare (t1->basis.u.log, t2->basis.u.log);
     }
+    return ETHEREUM_COMPARISON_LT;
 }
 
 extern void

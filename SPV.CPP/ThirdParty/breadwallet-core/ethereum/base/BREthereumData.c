@@ -8,6 +8,12 @@
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#else
+#include <stdlib.h>
+#endif
+
 #include "ethereum/util/BRUtil.h" // encodeHexCreate()
 #include "BREthereumData.h"
 
@@ -159,7 +165,7 @@ hashDataPairSetCreate (BRArrayOf(BREthereumHashDataPair) pairs) {
 extern void
 hashDataPairSetRelease (BRSetOf (BREthereumHashDataPair) set) {
     size_t itemsCount = BRSetCount (set);
-    void  *itemsAll [itemsCount];
+    void  **itemsAll = alloca(itemsCount * sizeof(void *));
 
     BRSetAll (set, itemsAll,  itemsCount);
     for (size_t index = 0; index < itemsCount; index++)

@@ -28,19 +28,25 @@
 #include <string.h>
 #include <assert.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#else
+#include <stdlib.h>
+#endif
 // returns number of bytes written to phrase including NULL terminator, or phraseLen needed if phrase is NULL
 size_t BRBIP39Encode(char *phrase, size_t phraseLen, const char *wordList[], const uint8_t *data, size_t dataLen)
 {
     uint32_t x;
-    uint8_t buf[dataLen + 32];
+    uint8_t *buf;
     const char *word;
     size_t i, len = 0;
 
     assert(wordList != NULL);
     assert(data != NULL || dataLen == 0);
     assert(dataLen > 0 && (dataLen % 4) == 0);
-    if (! data || (dataLen % 4) != 0) return 0; // data length must be a multiple of 32 bits
-    
+    if (!data || (dataLen % 4) != 0) return 0; // data length must be a multiple of 32 bits
+
+    buf = (uint8_t*)alloca(dataLen + 32);
     memcpy(buf, data, dataLen);
     BRSHA256(&buf[dataLen], data, dataLen); // append SHA256 checksum
 
@@ -55,8 +61,8 @@ size_t BRBIP39Encode(char *phrase, size_t phraseLen, const char *wordList[], con
 
     var_clean(&word);
     var_clean(&x);
-    mem_clean(buf, sizeof(buf));
-    return (! phrase || len + 1 <= phraseLen) ? len + 1 : 0;
+    mem_clean(buf, dataLen + 32);
+    return (!phrase || len + 1 <= phraseLen) ? len + 1 : 0;
 }
 
 // returns number of bytes written to data, or dataLen needed if data is NULL
@@ -69,7 +75,7 @@ size_t BRBIP39Decode(uint8_t *data, size_t dataLen, const char *wordList[], cons
 
     assert(wordList != NULL);
     assert(phrase != NULL);
-    
+
     while (word && *word && count < 24) {
         for (i = 0, idx[count] = INT32_MAX; i < BIP39_WORDLIST_COUNT; i++) { // not fast, but simple and correct
             if (strncmp(word, wordList[i], strlen(wordList[i])) != 0 ||
@@ -77,7 +83,7 @@ size_t BRBIP39Decode(uint8_t *data, size_t dataLen, const char *wordList[], cons
             idx[count] = i;
             break;
         }
-        
+
         if (idx[count] == INT32_MAX) break; // phrase contains unknown word
         count++;
         word = strchr(word, ' ');
@@ -85,7 +91,8 @@ size_t BRBIP39Decode(uint8_t *data, size_t dataLen, const char *wordList[], cons
     }
 
     if ((count % 3) == 0 && (! word || *word == '\0')) { // check that phrase has correct number of words
-        uint8_t buf[(count*11 + 7)/8];
+        size_t buflen = (count*11 + 7)/8;
+        uint8_t *buf = (uint8_t*)alloca(buflen);
 
         for (i = 0; i < (count*11 + 7)/8; i++) {
             x = idx[i*8/11];
@@ -93,15 +100,15 @@ size_t BRBIP39Decode(uint8_t *data, size_t dataLen, const char *wordList[], cons
             b = ((x*BIP39_WORDLIST_COUNT + y) >> ((i*8/11 + 2)*11 - (i + 1)*8)) & 0xff;
             buf[i] = b;
         }
-    
+
         BRSHA256(hash, buf, count*4/3);
 
         if (b >> (8 - count/3) == (hash[0] >> (8 - count/3))) { // verify checksum
             r = count*4/3;
             if (data && r <= dataLen) memcpy(data, buf, r);
         }
-        
-        mem_clean(buf, sizeof(buf));
+
+        mem_clean(buf, buflen);
     }
 
     var_clean(&b);
@@ -123,15 +130,17 @@ int BRBIP39PhraseIsValid(const char *wordList[], const char *phrase)
 // BUG: does not currently support passphrases containing NULL characters
 void BRBIP39DeriveKey(void *key64, const char *phrase, const char *passphrase)
 {
-    char salt[strlen("mnemonic") + (passphrase ? strlen(passphrase) : 0) + 1];
+    size_t saltcount = strlen("mnemonic") + (passphrase ? strlen(passphrase) : 0) + 1;
+    char *salt;
 
     assert(key64 != NULL);
     assert(phrase != NULL);
-    
+
+    salt = (char*)alloca(saltcount);
     if (phrase) {
         strcpy(salt, "mnemonic");
         if (passphrase) strcpy(salt + strlen("mnemonic"), passphrase);
         BRPBKDF2(key64, 64, BRSHA512, 512/8, phrase, strlen(phrase), salt, strlen(salt), 2048);
-        mem_clean(salt, sizeof(salt));
+        mem_clean(salt, saltcount);
     }
 }

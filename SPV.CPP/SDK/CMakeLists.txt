@@ -1,4 +1,16 @@
 include(ProjectDefaults)
+include(CheckIncludeFile)
+include(CheckFunctionExists)
+
+check_include_file(unistd.h HAVE_UNISTD_H)
+if(HAVE_UNISTD_H)
+	add_definitions(-DHAVE_UNISTD_H=1)
+endif()
+
+check_function_exists(pthread_setname_np HAVE_PTHREAD_SETNAME_NP)
+if(HAVE_PTHREAD_SETNAME_NP)
+	add_definitions(-DHAVE_PTHREAD_SETNAME_NP=1)
+endif()
 
 file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp" "*.c")
 file(GLOB_RECURSE BRETH_SOURCE_FILES
@@ -16,9 +28,21 @@ set(SPVSDK_SOURCE_FILES ${BRETH_SOURCE_FILES_REMOVE_TEST} ${SPVSDK_SOURCE_FILES}
 
 set(SPVSDK_DEPENDS boost libressl libsqlite json libspdlog secp256k1)
 set(LIBS boost_filesystem boost_system boost_thread crypto ssl sqlite3 spdlog)
-if(ANDROID)
+
+if(WIN32)
+	add_definitions(
+			-DWIN32_LEAN_AND_MEAN
+			-D_CRT_SECURE_NO_WARNINGS
+			-D_CRT_NONSTDC_NO_WARNINGS)
+
+	# Force source code encoding to utf-8
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /utf-8")
+
+	set(SPVSDK_DEPENDS pthreads-w32 ${SPVSDK_DEPENDS})
+	set(LIBS ${LIBS} pthread Ws2_32)
+elseif(ANDROID)
 	set(LIBS ${LIBS} log)
-else()
+elseif(DARWIN OR IOS)
 	set(LIBS ${LIBS} resolv)
 endif()
 

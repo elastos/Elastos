@@ -306,6 +306,8 @@ transactionIsSigned (BREthereumTransaction transaction) {
         case SIGNATURE_TYPE_RECOVERABLE_RSV:
             return AS_ETHEREUM_BOOLEAN (transaction->signature.sig.rsv.v != 0);
     }
+
+    return ETHEREUM_BOOLEAN_FALSE;
 }
 
 extern const BREthereumHash

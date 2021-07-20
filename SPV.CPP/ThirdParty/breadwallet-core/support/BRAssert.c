@@ -26,13 +26,17 @@
 
 #include <stdlib.h>
 #include <pthread.h>
-#include <unistd.h>         // sleep
-#include <limits.h>         // UINT_MAX
+//#include <unistd.h>         // sleep
+//#include <limits.h>         // UINT_MAX
 #include <assert.h>
 #include "BRAssert.h"
 #include "BRArray.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#define PTHREAD_NULL {NULL, 0}
+#else
 #define PTHREAD_NULL            ((pthread_t) NULL)
+#endif
 
 #if defined(TARGET_OS_MAC)
 #include <Foundation/Foundation.h>
@@ -132,10 +136,12 @@ typedef void* (*ThreadRoutine) (void*);         // pthread_create
 
 static void *
 BRAssertThread (BRAssertContext *context) {
+#if defined (HAVE_PTHREAD_SETNAME_NP)
 #if defined (__DARWIN__)
     pthread_setname_np (ASSERT_THREAD_NAME);
 #else
     pthread_setname_np (context->thread, ASSERT_THREAD_NAME);
+#endif
 #endif
 
     pthread_mutex_lock(&context->lock);
@@ -170,12 +176,13 @@ BRAssertThread (BRAssertContext *context) {
 
     // done
     pthread_exit(0);
+    return NULL;
 }
 
 extern void
 BRAssertInstall (BRAssertInfo info, BRAssertHandler handler) {
     pthread_mutex_lock (&context.lock);
-    if (PTHREAD_NULL != context.thread) { pthread_mutex_unlock(&context.lock); return; }
+    if (!pthread_equal((pthread_t)PTHREAD_NULL, context.thread)) { pthread_mutex_unlock(&context.lock); return; }
 
     context.info = info;
     context.handler = handler;
@@ -214,8 +221,8 @@ BRAssertInstall (BRAssertInfo info, BRAssertHandler handler) {
 extern void
 BRAssertUninstall (void) {
     pthread_mutex_lock (&context.lock);
-    if (PTHREAD_NULL == context.thread) { pthread_mutex_unlock (&context.lock); return; }
-    if (pthread_self() == context.thread) {
+    if (pthread_equal((pthread_t)PTHREAD_NULL, context.thread)) { pthread_mutex_unlock (&context.lock); return; }
+    if (pthread_equal(pthread_self(), context.thread)) {
         assert_log ("%s:%u: BRAssertUninstall called within assert handler or assert recovery: exiting.\n",
                     __FILE__, __LINE__);
         exit (0);
@@ -238,7 +245,7 @@ BRAssertUninstall (void) {
     // Only now are these safe to destroy and, for context.thread, safe to clear.
     pthread_mutex_destroy(&context.lock);
     pthread_cond_destroy (&context.cond);
-    context.thread = PTHREAD_NULL;
+    context.thread = (pthread_t)PTHREAD_NULL;
 }
 
 extern int
@@ -246,7 +253,7 @@ BRAssertIsInstalled (void) {
     int isConnected = 0;
 
     pthread_mutex_lock (&context.lock);
-    isConnected = PTHREAD_NULL != context.thread;
+    isConnected = !pthread_equal((pthread_t)PTHREAD_NULL, context.thread);
     pthread_mutex_unlock (&context.lock);
 
     return isConnected;

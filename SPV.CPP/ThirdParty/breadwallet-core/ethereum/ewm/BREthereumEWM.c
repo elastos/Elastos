@@ -11,13 +11,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <pthread.h>
-#include <unistd.h>
-#include <errno.h>
-#include <dirent.h>
-#include <sys/stat.h>
 #include "support/BRArray.h"
 #include "support/BRBIP39Mnemonic.h"
 #include "support/BRAssert.h"
