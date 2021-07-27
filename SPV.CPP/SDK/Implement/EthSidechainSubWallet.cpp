@@ -157,6 +157,11 @@ namespace Elastos {
 
             std::string netName = info->GetChainID() + "-" + netType;
             BREthereumNetwork net = FindEthereumNetwork(netName.c_str());
+            if (net == NULL) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid config: network(" + netName + ") not found");
+            } else {
+                Log::info("Name: {}, NetworkId: {}, ChainId: {}", networkGetName(net), networkGetNetworkId(net), networkGetChainId(net));
+            }
             EthereumNetworkPtr network(new EthereumNetwork(net));
 			_client = ClientPtr(new EthereumClient(network, parent->GetDataPath(), pubkey));
 			_client->_ewm->getWallet()->setDefaultGasPrice(5000000000);

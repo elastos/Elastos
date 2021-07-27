@@ -377,8 +377,10 @@ transactionRlpEncode(BREthereumTransaction transaction,
     // scheme using v = 27 and v = 28 remains valid and continues to operate under the same rules
     // as it does now.
 
-    if (ETHEREUM_BOOLEAN_IS_FALSE(transactionIsSigned(transaction)))
-		transaction->chainId = networkGetChainId(network);
+    if (ETHEREUM_BOOLEAN_IS_FALSE(transactionIsSigned(transaction))) {
+        transaction->chainId = networkGetChainId(network);
+        eth_log("ETH", "tx is not signed, tx->chainid = %d", transaction->chainId);
+    }
 
     switch (type) {
         case RLP_TYPE_TRANSACTION_UNSIGNED:

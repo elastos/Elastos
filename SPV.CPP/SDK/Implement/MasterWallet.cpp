@@ -254,6 +254,7 @@ namespace Elastos {
 			}
 
 			ChainConfigPtr chainConfig = _config->GetChainConfig(chainID);
+			Log::info("Name: {}, NetworkId: {}, ChainId: {}", chainConfig->Name(), chainConfig->NetworkID(), chainConfig->ChainID());
 			ErrorChecker::CheckLogic(chainConfig == nullptr, Error::InvalidArgument, "Unsupport chain ID: " + chainID);
 
 			CoinInfoPtr info(new CoinInfo());
