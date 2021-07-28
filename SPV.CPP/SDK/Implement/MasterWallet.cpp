@@ -314,7 +314,8 @@ namespace Elastos {
             const std::map<std::string, ChainConfigPtr> configs = _config->GetConfigs();
 
             for (std::map<std::string, ChainConfigPtr>::const_iterator it = configs.begin(); it != configs.end(); ++it)
-                InsertEthereumNetwork(it->second->Name().c_str(), it->second->ChainID(), it->second->NetworkID());
+                if (!it->second->Name().empty())
+                    InsertEthereumNetwork(it->second->Name().c_str(), it->second->ChainID(), it->second->NetworkID());
         }
 
 		void MasterWallet::DestroyWallet(const std::string &chainID) {

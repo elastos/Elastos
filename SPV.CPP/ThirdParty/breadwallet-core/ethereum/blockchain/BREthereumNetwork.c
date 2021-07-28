@@ -63,12 +63,14 @@ networkCopyNameAsLowercase (BREthereumNetwork network) {
 }
 
 /// MARK: - Static Network Definitions
-
-static struct BREthereumNetworkRecord *ethereumNetworks = NULL;
+static BRArrayOf(struct BREthereumNetworkRecord) ethereumNetworks = NULL;
 
 extern void InsertEthereumNetwork(const char *name, int chainId, int networkId) {
     if (ethereumNetworks == NULL)
         array_new(ethereumNetworks, 10);
+
+    if (name == NULL || strlen(name) == 0 || NULL != FindEthereumNetwork(name))
+        return ;
 
     struct BREthereumNetworkRecord network;
     network.name = strdup(name);
