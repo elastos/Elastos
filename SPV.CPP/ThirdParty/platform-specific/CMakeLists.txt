@@ -42,8 +42,7 @@ if(ANDROID)
         COMMENT "Build platform-specific: Android Standalone Toolchain"
         COMMAND echo Done)
     add_dependencies(platform-specific
-        android-toolchain
-        flatcc-parser)
+        android-toolchain)
 elseif(WIN32)
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "AMD64")
         set(CYGWIN_ARCH "x86_64")
