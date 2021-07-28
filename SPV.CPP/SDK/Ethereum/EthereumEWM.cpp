@@ -31,6 +31,7 @@
 #include <support/BRBIP39Mnemonic.h>
 #include <vector>
 #include <ethereum/ewm/BREthereumClient.h>
+#include <Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -194,6 +195,7 @@ namespace Elastos {
 			_ewm(ewm),
 			_network(network),
 			_account(EthereumAccountPtr(new EthereumAccount(this, ewmGetAccount(ewm)))) {
+		    Log::info("EthereumEWM, network p = {:x}", (size_t)_network->getRaw());
 		}
 
 		BREthereumEWM

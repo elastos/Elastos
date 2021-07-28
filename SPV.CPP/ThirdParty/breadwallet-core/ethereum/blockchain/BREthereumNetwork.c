@@ -11,6 +11,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "BREthereumNetwork.h"
+#include "BREthereumLog.h"
 
 #define NUMBER_OF_SEEDS_LIMIT       (5)
 #define NUMBER_OF_ENODES_LIMIT      (10)
@@ -75,12 +76,16 @@ extern void InsertEthereumNetwork(const char *name, int chainId, int networkId) 
     network.networkId = networkId;
 
     array_add(ethereumNetworks, network);
+    BREthereumNetwork pnetwork = &ethereumNetworks[array_count(ethereumNetworks) - 1];
+    eth_log("ETH-NET", "insert network: name = %s, chainid = %d, networkid = %d, p = %lx",
+            pnetwork->name, pnetwork->chainId, pnetwork->networkId, (size_t)pnetwork);
 }
 
 extern BREthereumNetwork FindEthereumNetwork(const char *name) {
     for (int i = 0; i < array_count(ethereumNetworks); ++i)
-        if (0 == strcmp(name, ethereumNetworks[i].name))
+        if (0 == strcmp(name, ethereumNetworks[i].name)) {
             return &ethereumNetworks[i];
+        }
 
     return NULL;
 }

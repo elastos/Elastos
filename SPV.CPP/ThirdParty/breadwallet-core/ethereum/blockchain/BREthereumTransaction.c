@@ -379,7 +379,8 @@ transactionRlpEncode(BREthereumTransaction transaction,
 
     if (ETHEREUM_BOOLEAN_IS_FALSE(transactionIsSigned(transaction))) {
         transaction->chainId = networkGetChainId(network);
-        eth_log("ETH", "tx is not signed, tx->chainid = %d", transaction->chainId);
+        eth_log("ETH", "tx is not signed, network: name = %s, chainid = %d, networkid = %d, tx->chainId = %d, p = %lx",
+                networkGetName(network), networkGetChainId(network), networkGetNetworkId(network), transaction->chainId, (size_t)network);
     }
 
     switch (type) {
