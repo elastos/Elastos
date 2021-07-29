@@ -58,7 +58,6 @@ namespace Elastos {
 			Log::setLevel(spdlog::level::level_enum(SPVLOG_LEVEL));
 			Log::info("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
 
-			Log::info("config: {}", config.dump(4));
 			if (netType != CONFIG_MAINNET && netType != CONFIG_TESTNET &&
 				netType != CONFIG_REGTEST && netType != CONFIG_PRVNET) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid NetType");
