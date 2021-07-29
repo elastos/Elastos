@@ -105,10 +105,7 @@ namespace Elastos {
 																					   data,
 																					   nonce);
 
-			BREthereumNetwork network = _client->_ewm->getNetwork()->getRaw();
-			Log::info("{} {}, network: name = {}, chainid = {}, networkid = {}, p = {:x}", _walletID, GetFunName(),
-             networkGetName(network), networkGetChainId(network), networkGetNetworkId(network), (size_t)network);
-            std::string rawtx = tx->RlpEncode(network, RLP_TYPE_TRANSACTION_UNSIGNED);
+            std::string rawtx = tx->RlpEncode(_client->_ewm->getNetwork()->getRaw(), RLP_TYPE_TRANSACTION_UNSIGNED);
 
 			j["TxUnsigned"] = rawtx;
 			j["Fee"] = tx->getFee(unit);
@@ -163,7 +160,7 @@ namespace Elastos {
             if (net == NULL) {
                 ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid config: network(" + netName + ") not found");
             } else {
-                Log::info("Name: {}, NetworkId: {}, ChainId: {}, p: {:x}", networkGetName(net), networkGetNetworkId(net), networkGetChainId(net), (size_t)net);
+                Log::info("Name: {}, NetworkId: {}, ChainId: {}", networkGetName(net), networkGetNetworkId(net), networkGetChainId(net));
             }
             EthereumNetworkPtr network(new EthereumNetwork(net));
 			_client = ClientPtr(new EthereumClient(network, parent->GetDataPath(), pubkey));

@@ -58,8 +58,6 @@ ewmCreate (BREthereumNetwork network,
     ewm->blockHeight = blockHeight;
     ewm->confirmationsUntilFinal = confirmationsUntilFinal;
 
-    eth_log("EWM", "ewm->network = %lx, name = %s, chainid = %d, networkid = %d",
-            (size_t)ewm->network, networkGetName(network), networkGetChainId(network), networkGetNetworkId(network));
     {
         char address [ADDRESS_ENCODED_CHARS];
         addressFillEncodedString (accountGetPrimaryAddress(account), 1, address);
