@@ -15,11 +15,11 @@
 
 ## Summary
 
-This repository is a basic library aimed to provide a serials of wallet related interfaces.
+This repository is a basic library aimed to provide serials of wallet-related interfaces.
 
 ## Build Guide
 
-Make sure your computer have installed the required packages below:
+Make sure your computer has installed the required packages below:
 
 - [git](https://www.git-scm.com/downloads)
 - [cmake](https://cmake.org/download)
@@ -95,7 +95,7 @@ $ make -j NCPU && make install
 $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
 $ ./doxygen.sh
 ```
-The documents will generate in the **doc/** directory
+The documents will generate in the **doc/** directory.
 
 ## Development
 Patches are welcome. Please submit pull requests against the **dev** branch.
