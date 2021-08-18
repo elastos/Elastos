@@ -495,7 +495,7 @@ namespace Elastos {
 			bool valid = false;
 			if (chainID == CHAINID_MAINCHAIN || chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
 				valid = Address(address).Valid();
-			} else if (chainID == CHAINID_ESC) {
+			} else if (chainID.find("ETH") != std::string::npos) {
 				valid = addressValidateString(address.c_str()) == ETHEREUM_BOOLEAN_TRUE;
 			}
 
