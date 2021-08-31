@@ -100,8 +100,10 @@ namespace Elastos {
 			if (sideChainID == CHAINID_IDCHAIN || sideChainID == CHAINID_TOKENCHAIN) {
 				Address addressValidate(sideChainAddress);
 				ErrorChecker::CheckParam(!addressValidate.Valid(), Error::Address, "invalid standard address");
-			} else if (sideChainID == CHAINID_ESC) {
+			} else if (sideChainID.find("ETH") != std::string::npos) {
 				ErrorChecker::CheckParam(addressValidateString(sideChainAddress.c_str()) != ETHEREUM_BOOLEAN_TRUE, Error::Address, "invalid ethsc address");
+			} else {
+			    ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid chain id");
 			}
 
 			PayloadPtr payload;

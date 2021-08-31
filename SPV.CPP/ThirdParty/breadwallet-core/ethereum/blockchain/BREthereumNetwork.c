@@ -66,7 +66,7 @@ static BRArrayOf(struct BREthereumNetworkRecord) ethereumNetworks = NULL;
 
 extern void InsertEthereumNetwork(const char *name, int chainId, int networkId) {
     if (ethereumNetworks == NULL)
-        array_new(ethereumNetworks, 10);
+        array_new(ethereumNetworks, 20);
 
     if (name == NULL || strlen(name) == 0 || NULL != FindEthereumNetwork(name))
         return ;

@@ -52,8 +52,6 @@ using namespace Elastos::ElaWallet;
 #define SELA_PER_ELA 100000000UL
 static const std::string CHAINID_ELA = "ELA";
 static const std::string CHAINID_ID = "IDChain";
-static const std::string CHAINID_ETHSC = "ETHSC";
-static const std::string CHAINID_ETHDID = "ETHDID";
 static std::string walletRoot;
 static std::string network = "MainNet";
 static nlohmann::json config = R"({
