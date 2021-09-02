@@ -342,6 +342,8 @@ ewmWalletCreateTransfer(BREthereumEWM ewm,
                         BREthereumWallet wallet,
                         const char *recvAddress,
                         BREthereumAmount amount,
+                        BREthereumGasPrice gasPrice,
+                        BREthereumGas gasLimit,
                         uint64_t nonce) {
     BREthereumTransfer transfer = NULL;
 	BREthereumAddress *addressPtr = NULL, brAddress;
@@ -351,7 +353,7 @@ ewmWalletCreateTransfer(BREthereumEWM ewm,
 	}
 
     pthread_mutex_lock(&ewm->lock);
-    transfer = walletCreateTransfer(wallet, addressPtr, amount, nonce);
+    transfer = walletCreateTransfer(wallet, addressPtr, amount, gasPrice, gasLimit, nonce);
     pthread_mutex_unlock(&ewm->lock);
 
     return transfer;

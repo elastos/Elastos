@@ -199,14 +199,16 @@ extern BREthereumTransfer
 walletCreateTransfer(BREthereumWallet wallet,
                      BREthereumAddress *recvAddress,
                      BREthereumAmount amount,
+                     BREthereumGasPrice gasPrice,
+                     BREthereumGas gasLimit,
                      uint64_t nonce) {
     
     return walletCreateTransferWithFeeBasis (wallet, recvAddress, amount,
                                              (BREthereumFeeBasis) {
                                                  FEE_BASIS_GAS,
                                                  { .gas = {
-                                                     wallet->defaultGasLimit,
-                                                     wallet->defaultGasPrice
+                                                     gasLimit,
+                                                     gasPrice
                                                  }}},
                                                  nonce);
 }

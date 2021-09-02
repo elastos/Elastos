@@ -54,6 +54,9 @@ namespace Elastos {
 			virtual nlohmann::json CreateTransfer(const std::string &targetAddress,
 												  const std::string &amount,
 												  EthereumAmountUnit amountUnit,
+                                                  const std::string &gasPrice,
+                                                  EthereumAmountUnit gasPriceUnit,
+                                                  const std::string &gasLimit,
 												  uint64_t nonce) const = 0;
 
 			/**

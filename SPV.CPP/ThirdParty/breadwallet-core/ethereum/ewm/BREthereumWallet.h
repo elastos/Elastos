@@ -77,6 +77,8 @@ extern BREthereumTransfer
 walletCreateTransfer(BREthereumWallet wallet,
                         BREthereumAddress *recvAddress,
                         BREthereumAmount amount,
+                        BREthereumGasPrice gasPrice,
+                        BREthereumGas gasLimit,
                         uint64_t nonce);
 
 extern BREthereumTransfer

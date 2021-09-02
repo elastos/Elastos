@@ -163,6 +163,8 @@ ewmWalletCreateTransfer(BREthereumEWM ewm,
                         BREthereumWallet wallet,
                         const char *recvAddress,
                         BREthereumAmount amount,
+                        BREthereumGasPrice gasPrice,
+                        BREthereumGas gasLimit,
                         uint64_t nonce);
 
 extern BREthereumTransfer

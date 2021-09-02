@@ -37,6 +37,9 @@ namespace Elastos {
 		nlohmann::json EthSidechainSubWallet::CreateTransfer(const std::string &targetAddress,
 															 const std::string &amount,
 															 EthereumAmountUnit amountUnit,
+															 const std::string &gasPrice,
+															 EthereumAmountUnit gasPriceUnit,
+															 const std::string &gasLimit,
 															 uint64_t nonce) const {
 			ArgInfo("{} {}", _walletID, GetFunName());
 			ArgInfo("target: {}", targetAddress);
@@ -49,17 +52,18 @@ namespace Elastos {
 				amountUnit != ETHER_WEI &&
 				amountUnit != ETHER_GWEI &&
 				amountUnit != ETHER_ETHER) {
-				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid amount unit");
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid amount amtUnit");
 			}
 
-			EthereumAmount::Unit unit = EthereumAmount::Unit(amountUnit);
+			EthereumAmount::Unit amtUnit = EthereumAmount::Unit(amountUnit);
+			EthereumAmount::Unit gasUnit = EthereumAmount::Unit(gasPriceUnit);
 			nlohmann::json j;
-			EthereumTransferPtr tx = _client->_ewm->getWallet()->createTransfer(targetAddress, amount, unit, nonce);
+			EthereumTransferPtr tx = _client->_ewm->getWallet()->createTransfer(targetAddress, amount, amtUnit, gasPrice, gasUnit, gasLimit, nonce);
 
             std::string rawtx = tx->RlpEncode(_client->_ewm->getNetwork()->getRaw(), RLP_TYPE_TRANSACTION_UNSIGNED);
 
 			j["TxUnsigned"] = rawtx;
-			j["Fee"] = tx->getFee(unit);
+			j["Fee"] = tx->getFee(amtUnit);
 			j["Unit"] = tx->getDefaultUnit();
 
 			ArgInfo("r => {}", j.dump());

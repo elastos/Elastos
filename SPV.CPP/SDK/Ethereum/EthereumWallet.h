@@ -95,6 +95,9 @@ namespace Elastos {
             EthereumTransferPtr createTransfer(const std::string &targetAddress,
                                                const std::string &amount,
 											   EthereumAmount::Unit amountUnit,
+                                               const std::string &gasPrice,
+                                               EthereumAmount::Unit gasPriceUnit,
+                                               const std::string &gasLimit,
 											   uint64_t nonce) const;
 
 			EthereumTransferPtr createTransferGeneric(const std::string &targetAddress,
@@ -111,8 +114,13 @@ namespace Elastos {
 			void signWithPrivateKey(EthereumTransferPtr &transaction, const BRKey &key) const;
 
 		private:
-			BREthereumTransfer createRawTransaction(const std::string &targetAddress, const std::string &amount,
-													EthereumAmount::Unit unit, uint64_t nonce) const;
+			BREthereumTransfer createRawTransaction(const std::string &targetAddress,
+                                                    const std::string &amount,
+                                                    EthereumAmount::Unit amountUnit,
+                                                    const std::string &gasPrice,
+                                                    EthereumAmount::Unit gasPriceUnit,
+                                                    const std::string &gasLimit,
+                                                    uint64_t nonce) const;
 
 			BREthereumTransfer createRawTransactionGeneric(const std::string &to,
 														   const std::string &amount,
