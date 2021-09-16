@@ -418,6 +418,30 @@ static int remove(int argc, char *argv[]) {
 	return 0;
 }
 
+// list [masterWalletID]
+static int list(int argc, char *argv[]) {
+    if (argc == 1) {
+        std::vector<std::string> walletIDs = manager->GetAllMasterWalletID();
+        for (const std::string &walletName : walletIDs)
+            std::cout << walletName << std::endl;
+    } else if (argc == 2) {
+        std::string walletName = argv[1];
+        IMasterWallet *masterWallet = manager->GetMasterWallet(walletName);
+        if (masterWallet == nullptr) {
+            std::cerr << walletName << " not found" << std::endl;
+            return ERRNO_APP;
+        }
+
+        std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
+        for (ISubWallet *subWallet : subWallets)
+            std::cout << subWallet->GetChainID() << std::endl;
+    } else {
+        return ERRNO_APP;
+    }
+
+    return 0;
+}
+
 // switch walletName
 static int _switch(int argc, char *argv[]) {
 	checkParam(2);
@@ -1551,6 +1575,7 @@ struct command {
 	{"import",     import,         "walletName (m[nemonic] | k[eystore]) [filePath]  Import wallet with given name and mnemonic or keystore."},
 	{"remove",     remove,         "walletName                                       Remove specified wallet."},
 	{"switch",     _switch,        "walletName                                       Switch current wallet."},
+	{"list",       list,           "[masterWalletID]                                 List wallets."},
 	{"passwd",     passwd,         "                                                 Change password of wallet."},
 	{"verify",     verify,         "(passphrase | paypasswd)                         Verify payment passwd or passphrase."},
 	{"didtx",      didtx,          "[didDocFilepath]                                 Create DID transaction."},
