@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Elastos Foundation
+ * Copyright (c) 2019 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,38 +20,19 @@
  * SOFTWARE.
  */
 
-#ifndef __ELASTOS_SPVSDK_Settings_H__
-#define __ELASTOS_SPVSDK_Settings_H__
+#ifndef __ELASTOS_SDK_IBTCSUBWALLET_H__
+#define __ELASTOS_SDK_IBTCSUBWALLET_H__
 
-#include "Sqlite.h"
-#include "TableBase.h"
+#include "ISubWallet.h"
 
 namespace Elastos {
-	namespace ElaWallet {
+    namespace ElaWallet {
 
-		class Settings : public TableBase {
-		public:
-			Settings(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
+        class IBTCSubWallet : public virtual ISubWallet {
+        public:
+        };
 
-			~Settings();
-
-			bool PutSettingInner(const std::string &name, int value);
-
-			bool PutSetting(const std::string &name, int value);
-
-			int GetSetting(const std::string &name) const;
-
-		private:
-			const std::string _tableName = "Settings";
-			const std::string _name = "name";
-			const std::string _value = "value";
-			const std::string _tableCreation = "CREATE TABLE IF NOT EXISTS " +
-											   _tableName + "(" +
-											   _name + " TEXT PRIMARY KEY NOT NULL," +
-											   _value + " INTEGER DEFAULT 0);";
-		};
-
-	}
+    }
 }
 
 #endif

@@ -43,10 +43,6 @@ namespace Elastos {
 
 			nlohmann::json GetBasicInfo() const;
 
-			void Init();
-
-			void InitCID();
-
 			bool IsSingleAddress() const;
 
 			bool IsProducerDepositAddress(const Address &address) const;
@@ -55,22 +51,11 @@ namespace Elastos {
 
 			bool IsCRDepositAddress(const Address &address) const;
 
-			void SetUsedAddresses(const AddressSet &addresses);
+			void GetCID(AddressArray &cids, uint32_t index, size_t count, bool internal) const;
 
-			bool AddUsedAddress(const Address &address);
+            void GetPublickeys(nlohmann::json &pubkeys, uint32_t index, size_t count, bool internal) const;
 
-            AddressArray GetLastAddress(bool internal) const;
-
-			size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const;
-
-			size_t GetAllCID(AddressArray &did, uint32_t start, size_t count) const;
-
-			AddressArray UnusedAddresses(uint32_t gapLimit, bool internal);
-
-			bool ContainsAddress(const Address &address) const;
-
-			size_t GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
-			                        bool containInternal) const;
+            void GetAddresses(AddressArray &addresses, uint32_t index, uint32_t count, bool internal) const;
 
 			bytes_t OwnerPubKey() const;
 
@@ -84,17 +69,15 @@ namespace Elastos {
 
 			Key DeriveDIDKey(const std::string &payPasswd);
 
-			bool GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const;
-
-			size_t InternalChainIndex(const TransactionPtr &tx) const;
-
-			size_t ExternalChainIndex(const TransactionPtr &tx) const;
+			bool GetCode(const Address &addr, bytes_t &code) const;
 
 			AccountPtr Parent() const;
+
+        private:
+            bool FindPrivateKey(Key &key, SignType type, const std::vector<bytes_t> &pubkeys, const std::string &payPasswd) const;
+
 		private:
-			uint32_t _coinIndex;
-			AddressArray _internalChain, _externalChain, _cid;
-			AddressSet _usedAddrs, _allAddrs, _allCID;
+			mutable std::map<uint32_t, AddressArray> _chainAddressCached;
 			mutable Address _depositAddress, _ownerAddress, _crDepositAddress;
 
 			AccountPtr _parent;

@@ -19,17 +19,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef __ELASTOS_SDK_SIDECHAINSUBWALLET_H__
 #define __ELASTOS_SDK_SIDECHAINSUBWALLET_H__
 
-#include "SubWallet.h"
+#include "ElastosBaseSubWallet.h"
 
 #include <ISidechainSubWallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class SidechainSubWallet : public virtual ISidechainSubWallet, public SubWallet {
+		class SidechainSubWallet : public virtual ISidechainSubWallet, public ElastosBaseSubWallet {
 		public:
 			virtual ~SidechainSubWallet();
 

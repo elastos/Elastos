@@ -39,7 +39,7 @@ namespace Elastos {
 											   const ChainConfigPtr &config,
 											   MasterWallet *parent,
 											   const std::string &netType) :
-				SubWallet(info, config, parent, netType) {
+				ElastosBaseSubWallet(info, config, parent, netType) {
 
 		}
 

@@ -63,7 +63,7 @@ namespace Elastos {
 											   const ChainConfigPtr &config,
 											   MasterWallet *parent,
 											   const std::string &netType) :
-				SubWallet(info, config, parent, netType) {
+                ElastosBaseSubWallet(info, config, parent, netType) {
 		}
 
 		MainchainSubWallet::~MainchainSubWallet() {
@@ -352,7 +352,7 @@ namespace Elastos {
 			bgAmount.setDec(amount);
 
             OutputArray outputs;
-            Address receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+            Address receiveAddr = (*utxo.begin())->GetAddress();
             outputs.push_back(OutputPtr(new TransactionOutput(bgAmount - feeAmount, receiveAddr)));
 
 			PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());
@@ -754,7 +754,7 @@ namespace Elastos {
 			bgAmount.setDec(amount);
 
             OutputArray outputs;
-            Address receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+            Address receiveAddr = (*utxo.begin())->GetAddress();
             outputs.push_back(OutputPtr(new TransactionOutput(bgAmount - feeAmount, receiveAddr)));
 
 			PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());

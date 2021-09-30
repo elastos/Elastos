@@ -41,9 +41,6 @@ namespace Elastos {
 			std::vector<std::string> txHashDPoS, txHashCRC, txHashProposal, txHashDID;
 
 			LoadUsedAddress();
-
-			_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
-			_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 		}
 
 		Wallet::~Wallet() {
@@ -81,13 +78,12 @@ namespace Elastos {
             GetLock().lock();
             for (UTXOSet::iterator u = utxo.begin(); u != utxo.end(); ++u) {
                 bytes_t code;
-                std::string path;
                 tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-                if (!_subAccount->GetCodeAndPath((*u)->GetAddress(), code, path)) {
+                if (!_subAccount->GetCode((*u)->GetAddress(), code)) {
                     GetLock().unlock();
                     ErrorChecker::ThrowParamException(Error::Address, "Can't found code and path for input");
                 }
-                tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
+                tx->AddUniqueProgram(ProgramPtr(new Program(code, bytes_t())));
 
                 totalInputAmount += (*u)->GetAmount();
             }
@@ -102,9 +98,11 @@ namespace Elastos {
                 if (changeBack2FirstInput) {
                     changeAddress = (*utxo.begin())->GetAddress();
                 } else {
-                    AddressArray addresses = _subAccount->UnusedAddresses(1, 1);
+                    AddressArray addresses;
+                    _subAccount->GetAddresses(addresses, 0, 1, false);
                     changeAddress = addresses[0];
                 }
+                ErrorChecker::CheckParam(!changeAddress.Valid(), Error::Address, "invalid change address");
                 tx->AddOutput(OutputPtr(new TransactionOutput(changeAmount, changeAddress)));
             }
 
@@ -117,29 +115,19 @@ namespace Elastos {
 			return tx;
 		}
 
-		Address Wallet::GetReceiveAddress() const {
-			boost::mutex::scoped_lock scopedLock(lock);
-			return _subAccount->UnusedAddresses(1, 0)[0];
+        void Wallet::GetPublickeys(nlohmann::json &pubkeys, uint32_t index, size_t count, bool internal) const {
+            boost::mutex::scoped_lock scopedLock(lock);
+            _subAccount->GetPublickeys(pubkeys, index, count, internal);
+        }
+
+        void Wallet::GetAddresses(AddressArray &addresses, uint32_t index, uint32_t count, bool internal) const {
+            boost::mutex::scoped_lock scopedLock(lock);
+            _subAccount->GetAddresses(addresses, index, count, internal);
 		}
 
-        AddressArray Wallet::GetLastAddresses(bool internal) const {
-            return _subAccount->GetLastAddress(internal);
-		}
-
-		size_t Wallet::GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const {
+		void Wallet::GetCID(AddressArray &cid, uint32_t index, size_t count, bool internal) const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			return _subAccount->GetAllAddresses(addr, start, count, internal);
-		}
-
-		size_t Wallet::GetAllCID(AddressArray &cid, uint32_t start, size_t count) const {
-			boost::mutex::scoped_lock scopedLock(lock);
-			return _subAccount->GetAllCID(cid, start, count);
-		}
-
-		size_t Wallet::GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
-										bool containInternal) {
-			boost::mutex::scoped_lock scopedLock(lock);
-			return _subAccount->GetAllPublickeys(pubkeys, start, count, containInternal);
+            _subAccount->GetCID(cid, index, count, false);
 		}
 
 		AddressPtr Wallet::GetOwnerDepositAddress() const {
@@ -185,15 +173,6 @@ namespace Elastos {
 			return _subAccount->IsCRDepositAddress(addr);
 		}
 
-		bool Wallet::ContainsAddress(const Address &address) {
-			boost::mutex::scoped_lock scoped_lock(lock);
-			return _subAccount->ContainsAddress(address);
-		}
-
-		void Wallet::GenerateCID() {
-			_subAccount->InitCID();
-		}
-
 		nlohmann::json Wallet::GetBasicInfo() const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return _subAccount->GetBasicInfo();
@@ -228,30 +207,7 @@ namespace Elastos {
 			return key.Sign(msg);
 		}
 
-		AddressArray Wallet::UnusedAddresses(uint32_t gapLimit, bool internal) {
-			boost::mutex::scoped_lock scopedLock(lock);
-			return _subAccount->UnusedAddresses(gapLimit, internal);
-		}
-
-        void Wallet::UpdateUsedAddresses(const AddressSet &usedAddress) {
-            std::vector<std::string> addresses;
-            for (const Address &a : usedAddress) {
-                if (_subAccount->AddUsedAddress(a))
-                    addresses.push_back(a.String());
-            }
-
-            if (!addresses.empty()) {
-                _database->PutUsedAddresses(addresses, false);
-
-                _subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
-                _subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
-            }
-        }
-
         void Wallet::LoadUsedAddress() {
-            std::vector<std::string> usedAddr = _database->GetUsedAddresses();
-            for (const std::string &addr : usedAddr)
-                _subAccount->AddUsedAddress(Address(addr));
         }
 
 	}

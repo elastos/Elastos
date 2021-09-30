@@ -52,71 +52,31 @@ namespace Elastos {
 		class SubWallet : public virtual ISubWallet,
 						  public Lockable {
 		public:
-			typedef boost::shared_ptr<SpvService> WalletManagerPtr;
-
 			virtual ~SubWallet();
-
-			const WalletManagerPtr &GetWalletManager() const;
 
 			virtual void FlushData();
 
-			virtual const std::string &GetInfoChainID() const;
-
-		public: //implement ISubWallet
+		public: //default implement ISubWallet
 			virtual std::string GetChainID() const;
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual std::string CreateAddress();
+            virtual nlohmann::json GetAddresses(uint32_t index, uint32_t count, bool internal = false) const;
 
-			virtual nlohmann::json GetAllAddress(uint32_t start, uint32_t count, bool internal = false) const;
+			virtual nlohmann::json GetPublicKeys(uint32_t index, uint32_t count, bool internal = false) const;
 
-            virtual std::vector<std::string> GetLastAddresses(bool internal) const;
-
-            virtual void UpdateUsedAddress(const std::vector<std::string> &usedAddresses) const;
-
-			virtual nlohmann::json GetAllPublicKeys(uint32_t start, uint32_t count) const;
-
-			virtual nlohmann::json CreateTransaction(
-				const nlohmann::json &inputsJson,
-				const nlohmann::json &outputsJson,
-				const std::string &fee,
-				const std::string &memo);
-
-			virtual nlohmann::json SignTransaction(
-				const nlohmann::json &tx,
-				const std::string &payPassword) const;
-
-			virtual nlohmann::json GetTransactionSignedInfo(
-				const nlohmann::json &rawTransaction) const;
-
-			virtual std::string ConvertToRawTransaction(const nlohmann::json &tx);
+			virtual nlohmann::json SignTransaction(const nlohmann::json &tx, const std::string &payPassword) const;
 
 		protected:
 			friend class MasterWallet;
 
-			SubWallet(const CoinInfoPtr &info,
-					  const ChainConfigPtr &config,
-					  MasterWallet *parent,
-					  const std::string &netType);
+			SubWallet(const CoinInfoPtr &info, const ChainConfigPtr &config, MasterWallet *parent);
 
-			SubWallet(const std::string &netType,
-					  MasterWallet *parent,
-					  const ChainConfigPtr &config,
-					  const CoinInfoPtr &info);
+            std::string GetSubWalletID() const;
 
 			const CoinInfoPtr &GetCoinInfo() const;
 
-			void EncodeTx(nlohmann::json &result, const TransactionPtr &tx) const;
-
-			TransactionPtr DecodeTx(const nlohmann::json &encodedTx) const;
-
-			bool UTXOFromJson(UTXOSet &utxo, const nlohmann::json &j);
-
-			bool OutputsFromJson(OutputArray &outputs, const nlohmann::json &j);
-
 		protected:
-			WalletManagerPtr _walletManager;
 			MasterWallet *_parent;
 			CoinInfoPtr _info;
 			ChainConfigPtr _config;

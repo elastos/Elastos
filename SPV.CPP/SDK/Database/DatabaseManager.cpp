@@ -29,8 +29,7 @@ namespace Elastos {
 		DatabaseManager::DatabaseManager(const boost::filesystem::path &path) :
 			_path(path),
 			_sqlite(path),
-			_addressUsed(&_sqlite),
-			_settings(&_sqlite)
+			_addressUsed(&_sqlite)
 		{
 		}
 
@@ -40,14 +39,6 @@ namespace Elastos {
 
 		void DatabaseManager::ClearData() {
 			_addressUsed.DeleteAll();
-		}
-
-		int DatabaseManager::GetSyncMode() const {
-			return _settings.GetSetting("syncMode");
-		}
-
-		bool DatabaseManager::SetSyncMode(int mode) {
-			return _settings.PutSetting("syncMode", mode);
 		}
 
 		const boost::filesystem::path &DatabaseManager::GetPath() const {
@@ -68,7 +59,6 @@ namespace Elastos {
 
 		void DatabaseManager::flush() {
 			_addressUsed.flush();
-			_settings.flush();
 		}
 
 	} // namespace ElaWallet

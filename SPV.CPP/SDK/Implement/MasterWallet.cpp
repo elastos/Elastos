@@ -24,6 +24,7 @@
 #include "MainchainSubWallet.h"
 #include "SubWallet.h"
 #include "MasterWallet.h"
+#include "BTCSubWallet.h"
 
 #include <Plugin/Transaction/Asset.h>
 #include <Common/Utils.h>
@@ -456,7 +457,9 @@ namespace Elastos {
 			if (info->GetChainID() == "ELA") {
 				return new MainchainSubWallet(info, config, parent, netType);
 			} else if (info->GetChainID() == "IDChain") {
-				return new IDChainSubWallet(info, config, parent, netType);
+                return new IDChainSubWallet(info, config, parent, netType);
+            } else if (info->GetChainID() == "BTC") {
+			    return new BTCSubWallet(info, config, parent, netType);
 			} else if (info->GetChainID().find("ETH") !=  std::string::npos) {
                 return new EthSidechainSubWallet(info, config, parent, netType);
 			} else {

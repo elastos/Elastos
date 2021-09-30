@@ -24,7 +24,6 @@
 #define __ELASTOS_SDK_DATABASEMANAGER_H__
 
 #include "AddressUsed.h"
-#include "Settings.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -38,11 +37,6 @@ namespace Elastos {
 			~DatabaseManager();
 
 			void ClearData();
-
-			// settings
-			int GetSyncMode() const;
-
-			bool SetSyncMode(int mode);
 
 			// Used Address
 			bool PutUsedAddresses(const std::vector<std::string> &addresses, bool replace);
@@ -60,7 +54,6 @@ namespace Elastos {
 			boost::filesystem::path _path;
 			Sqlite _sqlite;
 			AddressUsed _addressUsed;
-			Settings _settings;
 		};
 
 		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;

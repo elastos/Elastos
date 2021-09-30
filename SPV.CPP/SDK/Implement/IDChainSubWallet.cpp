@@ -43,8 +43,6 @@ namespace Elastos {
 		                                   MasterWallet *parent,
 		                                   const std::string &netType) :
 				SidechainSubWallet(info, config, parent, netType) {
-
-			_walletManager->GetWallet()->GenerateCID();
 		}
 
 		IDChainSubWallet::~IDChainSubWallet() {
@@ -115,14 +113,15 @@ namespace Elastos {
 			return result;
 		}
 
-		nlohmann::json IDChainSubWallet::GetAllDID(uint32_t start, uint32_t count) const {
+		nlohmann::json IDChainSubWallet::GetDID(uint32_t index, uint32_t count, bool internal) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("start: {}", start);
+			ArgInfo("index: {}", index);
 			ArgInfo("count: {}", count);
+			ArgInfo("internal: {}", internal);
 
 			nlohmann::json j;
 			AddressArray cid;
-			size_t maxCount = _walletManager->GetWallet()->GetAllCID(cid, start, count);
+            _walletManager->GetWallet()->GetCID(cid, index, count, internal);
 
 			nlohmann::json didJson;
 			for (size_t i = 0; i < cid.size(); ++i) {
@@ -132,20 +131,20 @@ namespace Elastos {
 			}
 
 			j["DID"] = didJson;
-			j["MaxCount"] = maxCount;
 
 			ArgInfo("r => {}", j.dump());
 			return j;
 		}
 
-		nlohmann::json IDChainSubWallet::GetAllCID(uint32_t start, uint32_t count) const {
+		nlohmann::json IDChainSubWallet::GetCID(uint32_t index, uint32_t count, bool internal) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("start: {}", start);
+			ArgInfo("index: {}", index);
 			ArgInfo("count: {}", count);
+			ArgInfo("internal: {}", internal);
 
 			nlohmann::json j;
 			AddressArray cid;
-			size_t maxCount = _walletManager->GetWallet()->GetAllCID(cid, start, count);
+            _walletManager->GetWallet()->GetCID(cid, index, count, internal);
 
 			nlohmann::json cidJosn;
 			for (Address &a : cid) {
@@ -153,7 +152,6 @@ namespace Elastos {
 			}
 
 			j["CID"] = cidJosn;
-			j["MaxCount"] = maxCount;
 
 			ArgInfo("r => {}", j.dump());
 

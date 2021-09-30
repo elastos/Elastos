@@ -20,9 +20,9 @@ namespace Elastos {
 
 			virtual size_t EstimateSize() const = 0;
 
-			virtual void Serialize(ByteStream &stream, bool extend = false) const = 0;
+			virtual void Serialize(ByteStream &stream) const = 0;
 
-			virtual bool Deserialize(const ByteStream &stream, bool extend = false) = 0;
+			virtual bool Deserialize(const ByteStream &stream) = 0;
 
 		};
 

@@ -41,7 +41,7 @@ namespace Elastos {
 															 EthereumAmountUnit gasPriceUnit,
 															 const std::string &gasLimit,
 															 uint64_t nonce) const {
-			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("{} {}", GetSubWalletID(), GetFunName());
 			ArgInfo("target: {}", targetAddress);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("amountUnit: {}", amountUnit);
@@ -79,7 +79,7 @@ namespace Elastos {
 																	const std::string &gasLimit,
 																	const std::string &data,
 																	uint64_t nonce) const {
-			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("{} {}", GetSubWalletID(), GetFunName());
 			ArgInfo("target: {}", targetAddress);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("amountUnit: {}", amountUnit);
@@ -121,7 +121,7 @@ namespace Elastos {
 		}
 
         std::string EthSidechainSubWallet::ExportPrivateKey(const std::string &payPassword) const {
-            ArgInfo("{} {}", _walletID, GetFunName());
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
             ArgInfo("payPasswd: *");
 
             uint512 seed = _parent->GetAccount()->GetSeed(payPassword);
@@ -140,11 +140,7 @@ namespace Elastos {
 													 const ChainConfigPtr &config,
 													 MasterWallet *parent,
 													 const std::string &netType) :
-													 _info(info),
-													 _parent(parent) {
-
-			_walletID = _parent->GetID() + ":" + info->GetChainID();
-
+													 SubWallet(info, config, parent) {
 			AccountPtr account = _parent->GetAccount();
 			bytes_t pubkey = account->GetETHSCPubKey();
 			if (pubkey.empty()) {
@@ -167,12 +163,8 @@ namespace Elastos {
 			_client->_ewm->getWallet()->setDefaultGasPrice(5000000000);
 		}
 
-		std::string EthSidechainSubWallet::GetChainID() const {
-			return _info->GetChainID();
-		}
-
 		nlohmann::json EthSidechainSubWallet::GetBasicInfo() const {
-			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("{} {}", GetSubWalletID(), GetFunName());
 
 			EthereumWalletPtr wallet = _client->_ewm->getWallet();
 			nlohmann::json j, jinfo;
@@ -190,65 +182,36 @@ namespace Elastos {
 			return j;
 		}
 
-		std::string EthSidechainSubWallet::CreateAddress() {
-			ArgInfo("{} {}", _walletID, GetFunName());
+        nlohmann::json EthSidechainSubWallet::GetAddresses(uint32_t index, uint32_t count, bool internal) const {
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
 
-			std::string addr = _client->_ewm->getWallet()->getAccount()->getPrimaryAddress();
+            std::string addr = _client->_ewm->getWallet()->getAccount()->getPrimaryAddress();
+            nlohmann::json j;
+            j.push_back(addr);
 
-			ArgInfo("r => {}", addr);
-			return addr;
+            ArgInfo("r => {}", j.dump());
+
+            return j;
 		}
 
-		nlohmann::json EthSidechainSubWallet::GetAllAddress(uint32_t start, uint32_t count, bool internal) const {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("start: {}", start);
+        nlohmann::json EthSidechainSubWallet::GetPublicKeys(uint32_t index, uint32_t count, bool internal) const {
+			ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+			ArgInfo("index: {}", index);
 			ArgInfo("count: {}", count);
 			ArgInfo("internal: {}", internal);
 
-			std::vector<std::string> addresses;
-			addresses.push_back(_client->_ewm->getWallet()->getAccount()->getPrimaryAddress());
+			std::string pubkey = _client->_ewm->getWallet()->getAccount()->getPrimaryAddressPublicKey().getHex();
 			nlohmann::json j;
-			j["Addresses"] = addresses;
-			j["MaxCount"] = 1;
+			j.push_back(pubkey);
 
 			ArgInfo("r => {}", j.dump());
+
 			return j;
-		}
-
-        std::vector<std::string> EthSidechainSubWallet::GetLastAddresses(bool internal) const {
-            return {};
-		}
-
-        void EthSidechainSubWallet::UpdateUsedAddress(const std::vector<std::string> &usedAddresses) const {
-
-		}
-
-        nlohmann::json EthSidechainSubWallet::GetAllPublicKeys(uint32_t start, uint32_t count) const {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("s: {}", start);
-			ArgInfo("c: {}", count);
-
-			std::vector<std::string> pubkey;
-			pubkey.push_back(_client->_ewm->getWallet()->getAccount()->getPrimaryAddressPublicKey().getHex());
-			nlohmann::json j;
-			j["PublicKeys"] = pubkey;
-			j["MaxCount"] = 1;
-
-			ArgInfo("r => {}", j.dump());
-			return j;
-		}
-
-		nlohmann::json EthSidechainSubWallet::CreateTransaction(const nlohmann::json &inputs,
-                                                                const nlohmann::json &outputs,
-                                                                const std::string &fee,
-                                                                const std::string &memo) {
-			ErrorChecker::ThrowParamException(Error::UnsupportOperation, "use IEthSidechainSubWallet::CreateTransfer() instead");
-			return nlohmann::json();
 		}
 
 		nlohmann::json EthSidechainSubWallet::SignTransaction(const nlohmann::json &tx,
 															  const std::string &payPassword) const {
-			ArgInfo("{} {}", _walletID, GetFunName());
+			ArgInfo("{} {}", GetSubWalletID(), GetFunName());
 			ArgInfo("tx: {}", tx.dump());
 			ArgInfo("passwd: *");
 
@@ -284,26 +247,6 @@ namespace Elastos {
 
 			ArgInfo("r => {}", j.dump());
 			return j;
-		}
-
-		nlohmann::json EthSidechainSubWallet::GetTransactionSignedInfo(const nlohmann::json &tx) const {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("tx: {}", tx.dump());
-
-			nlohmann::json j;
-
-			ArgInfo("r => {}", j.dump());
-
-			return j;
-		}
-
-		std::string EthSidechainSubWallet::ConvertToRawTransaction(const nlohmann::json &tx) {
-			ArgInfo("{} {}", _walletID, GetFunName());
-			ArgInfo("tx: {}", tx.dump());
-
-			ArgInfo("r => ");
-
-			return "";
 		}
 
 	}

@@ -92,9 +92,9 @@ namespace Elastos {
 
 			virtual ~Transaction();
 
-			void Serialize(ByteStream &stream, bool extend = false) const;
+			void Serialize(ByteStream &stream) const;
 
-			bool Deserialize(const ByteStream &stream, bool extend = false);
+			bool Deserialize(const ByteStream &stream);
 
 			virtual bool DeserializeType(const ByteStream &istream);
 
@@ -198,7 +198,7 @@ namespace Elastos {
 
 			void SetFee(uint64_t fee);
 
-			void SerializeUnsigned(ByteStream &ostream, bool extend = false) const;
+			void SerializeUnsigned(ByteStream &ostream) const;
 
 			uint256 GetShaData() const;
 

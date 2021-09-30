@@ -27,6 +27,7 @@
 #include "ISubWallet.h"
 #include "Ethereum/EthereumEWM.h"
 #include "Common/Lockable.h"
+#include "SubWallet.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem/path.hpp>
@@ -47,7 +48,7 @@ namespace Elastos {
 		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
 		typedef boost::shared_ptr<EthereumClient> ClientPtr;
 
-		class EthSidechainSubWallet : public virtual IEthSidechainSubWallet {
+		class EthSidechainSubWallet : public virtual IEthSidechainSubWallet, public SubWallet {
 		public: // implement IEthSidechainSubWallet
 			virtual ~EthSidechainSubWallet();
 
@@ -72,39 +73,13 @@ namespace Elastos {
 
 			// implement ISubWallet
 		public:
-			virtual std::string GetChainID() const;
-
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual std::string CreateAddress();
+            virtual nlohmann::json GetAddresses(uint32_t index, uint32_t count, bool internal = false) const;
 
-			virtual nlohmann::json GetAllAddress(
-				uint32_t start,
-				uint32_t count,
-				bool internal = false) const;
+			virtual nlohmann::json GetPublicKeys(uint32_t index, uint32_t count, bool internal = false) const;
 
-            virtual std::vector<std::string> GetLastAddresses(bool internal) const;
-
-            virtual void UpdateUsedAddress(const std::vector<std::string> &usedAddresses) const;
-
-			virtual nlohmann::json GetAllPublicKeys(
-				uint32_t start,
-				uint32_t count) const;
-
-			virtual nlohmann::json CreateTransaction(
-                    const nlohmann::json &inputs,
-                    const nlohmann::json &outputs,
-                    const std::string &fee,
-                    const std::string &memo);
-
-			virtual nlohmann::json SignTransaction(
-				const nlohmann::json &tx,
-				const std::string &payPassword) const;
-
-			virtual nlohmann::json GetTransactionSignedInfo(
-				const nlohmann::json &tx) const;
-
-			virtual std::string ConvertToRawTransaction(const nlohmann::json &tx);
+			virtual nlohmann::json SignTransaction(const nlohmann::json &tx, const std::string &payPassword) const;
 
 		protected:
 			friend class MasterWallet;
@@ -115,10 +90,7 @@ namespace Elastos {
 								  const std::string &netType);
 
 		protected:
-			std::string _walletID;
 			ClientPtr _client;
-			MasterWallet *_parent;
-			CoinInfoPtr _info;
 		};
 
 	}

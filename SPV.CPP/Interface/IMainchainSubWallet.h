@@ -28,7 +28,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IMainchainSubWallet : public virtual ISubWallet {
+		class IMainchainSubWallet : public virtual IElastosBaseSubWallet {
 		public:
 			/**
 			 * Virtual destructor.

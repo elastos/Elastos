@@ -66,7 +66,7 @@ namespace Elastos {
 			  * @param cosigners JSON array of signer's extend public key. Such as: ["xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg", "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc"]
 			  * @param m specify minimum count of signature to accomplish related transaction.
 			  * @param singleAddress if true, the created wallet will only contain one address, otherwise wallet will manager a chain of addresses.
-			  * @param compatible if true, will compatible with web multi-sign wallet.
+			  * @param compatible if true, will compatible with web multi-sign wallet. false: BIP45, true: BIP44
 			  * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
 			  * @return If success will return a pointer of master wallet interface.
 			  */
@@ -86,7 +86,7 @@ namespace Elastos {
 			  * @param cosigners JSON array of signer's extend public key. Such as: ["xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg", "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc"]
 			  * @param m specify minimum count of signature to accomplish related transaction.
 			  * @param singleAddress if true, the created wallet will only contain one address, otherwise wallet will manager a chain of addresses.
-			  * @param compatible if true, will compatible with web multi-sign wallet.
+			  * @param compatible if true, will compatible with web multi-sign wallet. false: BIP45, true: BIP44
 			  * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
 			  * @return If success will return a pointer of master wallet interface.
 			  */
@@ -109,7 +109,7 @@ namespace Elastos {
 			 * @param cosigners JSON array of signer's extend public key. Such as: ["xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg", "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc"]
 			 * @param m specify minimum count of signature to accomplish related transactions.
 			 * @param singleAddress if true, the created wallet will only contain one address, otherwise wallet will manager a chain of addresses.
-			 * @param compatible if true, will compatible with web multi-sign wallet.
+			 * @param compatible if true, will compatible with web multi-sign wallet. false: BIP45, true: BIP44
 			 * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
 			 * @return If success will return a pointer of master wallet interface.
 			 */

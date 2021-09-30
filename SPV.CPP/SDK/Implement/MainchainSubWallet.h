@@ -33,7 +33,7 @@ namespace Elastos {
 		class IOutputPayload;
 		typedef boost::shared_ptr<IOutputPayload> OutputPayloadPtr;
 
-		class MainchainSubWallet : public IMainchainSubWallet, public SubWallet {
+		class MainchainSubWallet : public IMainchainSubWallet, public ElastosBaseSubWallet {
 		public:
 			~MainchainSubWallet();
 

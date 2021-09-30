@@ -61,12 +61,12 @@ namespace Elastos {
 			return size;
 		}
 
-		void Attribute::Serialize(ByteStream &stream, bool extend) const {
+		void Attribute::Serialize(ByteStream &stream) const {
 			stream.WriteUint8(_usage);
 			stream.WriteVarBytes(_data);
 		}
 
-		bool Attribute::Deserialize(const ByteStream &stream, bool extend) {
+		bool Attribute::Deserialize(const ByteStream &stream) {
 			if (!stream.ReadBytes(&_usage, 1)) {
 				Log::error("Attribute deserialize usage fail");
 				return false;

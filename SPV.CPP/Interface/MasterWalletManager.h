@@ -50,7 +50,8 @@ namespace Elastos {
 			 * 	"IDChain": { },
 			 * 	"ETHSC": { "ChainID": 20, "NetworkID": 20 },
 			 * 	"ETHDID": { "ChainID": 20, "NetworkID": 20 },
-			 * 	"ETHHECO": { "ChainID": 128, "NetworkID": 128 }
+			 * 	"ETHHECO": { "ChainID": 128, "NetworkID": 128 },
+			 * 	"BTC": {}
 			 * }
 			 */
 			explicit MasterWalletManager(const std::string &rootPath, const std::string &netType = "MainNet",

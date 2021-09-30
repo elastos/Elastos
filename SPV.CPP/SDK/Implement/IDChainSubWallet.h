@@ -41,9 +41,9 @@ namespace Elastos {
 					const std::string &memo = "",
                     const std::string &fee = "10000");
 
-			virtual nlohmann::json GetAllDID(uint32_t start, uint32_t count) const;
+			virtual nlohmann::json GetDID(uint32_t index, uint32_t count, bool internal = false) const;
 
-			virtual nlohmann::json GetAllCID(uint32_t start, uint32_t count) const;
+			virtual nlohmann::json GetCID(uint32_t index, uint32_t count, bool internal = false) const;
 
 			virtual std::string Sign(const std::string &DIDOrCID, const std::string &message, const std::string &payPassword) const;
 

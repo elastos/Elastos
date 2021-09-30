@@ -38,6 +38,9 @@ namespace Elastos {
 		SubAccount::SubAccount(const AccountPtr &parent) :
 			_parent(parent) {
 
+            _chainAddressCached[SEQUENCE_EXTERNAL_CHAIN] = {};
+            _chainAddressCached[SEQUENCE_INTERNAL_CHAIN] = {};
+
 			if (_parent->GetSignType() != Account::MultiSign) {
 				bytes_t ownerPubKey = _parent->OwnerPubKey();
 				_depositAddress = Address(PrefixDeposit, ownerPubKey);
@@ -58,22 +61,6 @@ namespace Elastos {
 			return j;
 		}
 
-		void SubAccount::Init() {
-			UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
-			UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
-		}
-
-		void SubAccount::InitCID() {
-			if (_parent->GetSignType() != IAccount::MultiSign) {
-				for (AddressArray::iterator it = _externalChain.begin(); it != _externalChain.end(); ++it) {
-					Address cid(*it);
-					cid.ChangePrefix(PrefixIDChain);
-					_cid.push_back(cid);
-					_allCID.insert(cid);
-				}
-			}
-		}
-
 		bool SubAccount::IsSingleAddress() const {
 			return _parent->SingleAddress();
 		}
@@ -90,133 +77,114 @@ namespace Elastos {
 			return _crDepositAddress.Valid() && _crDepositAddress == address;
 		}
 
-		void SubAccount::SetUsedAddresses(const AddressSet &addresses) {
-			_usedAddrs = addresses;
+		void SubAccount::GetCID(AddressArray &cids, uint32_t index, size_t count, bool internal) const {
+			if (_parent->GetSignType() != IAccount::MultiSign) {
+			    AddressArray addresses;
+			    GetAddresses(addresses, index, count, internal);
+
+                for (Address addr : addresses) {
+                    Address cid(addr);
+                    cid.ChangePrefix(PrefixIDChain);
+                    cids.push_back(cid);
+                }
+			}
 		}
 
-		bool SubAccount::AddUsedAddress(const Address &address) {
-			return _usedAddrs.insert(address).second;
-		}
-
-        AddressArray SubAccount::GetLastAddress(bool internal) const {
-            AddressArray address;
-            if (internal) {
-                for (size_t i = _internalChain.size(); i > _internalChain.size() - SEQUENCE_GAP_LIMIT_INTERNAL; --i) {
-                    address.push_back(_internalChain[i - 1]);
-                }
-            } else {
-                for (size_t i = _externalChain.size(); i > _externalChain.size() - SEQUENCE_GAP_LIMIT_EXTERNAL; --i) {
-                    address.push_back(_externalChain[i - 1]);
-                }
+        void SubAccount::GetPublickeys(nlohmann::json &jout, uint32_t index, size_t count, bool internal) const {
+            if (_parent->SingleAddress()) {
+                index = 0;
+                count = 1;
+                internal = false;
             }
 
-            return address;
-		}
+            uint32_t chain = internal ? SEQUENCE_INTERNAL_CHAIN : SEQUENCE_EXTERNAL_CHAIN;
+            if (_parent->GetSignType() == Account::MultiSign) {
+                std::vector<HDKeychain> allKeychains;
+                HDKeychain mineKeychain;
 
-		size_t SubAccount::GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const {
-			addr.clear();
-			size_t maxCount = 0;
+                if (count > 0) {
+                    for (const HDKeychainPtr &keychain : _parent->MultiSignCosigner())
+                        allKeychains.push_back(keychain->getChild(chain));
+                    mineKeychain = _parent->MultiSignSigner()->getChild(chain);
+                }
 
-			if (internal) {
-				maxCount = _internalChain.size();
+                if (allKeychains.empty()) {
+                    count = 0;
+                    Log::error("keychains is empty when derivate address");
+                }
 
-				for (size_t i = start, cnt = 0; i < _internalChain.size() && cnt < count; ++i, ++cnt)
-					addr.push_back(_internalChain[i]);
-			} else {
-				maxCount = _externalChain.size();
+                jout["m"] = _parent->GetM();
+                nlohmann::json jpubkeys;
+                while (count--) {
+                    std::vector<std::string> pubkeys;
+                    nlohmann::json j;
+                    for (const HDKeychain &signer : allKeychains)
+                        pubkeys.push_back(signer.getChild(index).pubkey().getHex());
 
-				for (size_t i = start, cnt = 0; i < _externalChain.size() && cnt < count; ++i, ++cnt)
-					addr.push_back(_externalChain[i]);
+                    j["me"] = mineKeychain.getChild(index).pubkey().getHex();
+                    j["all"] = pubkeys;
+                    jpubkeys.push_back(j);
+                    index++;
+                }
+                jout["pubkeys"] = jpubkeys;
+            } else {
+                HDKeychain keychain = _parent->MasterPubKey()->getChild(chain);
 
-			}
+                while (count--)
+                    jout.push_back(keychain.getChild(index++).pubkey().getHex());
+            }
+        }
 
-			return maxCount;
-		}
+        void SubAccount::GetAddresses(AddressArray &addresses, uint32_t index, uint32_t count, bool internal) const {
+            AddressArray addrs;
 
-		size_t SubAccount::GetAllCID(AddressArray &did, uint32_t start, size_t count) const {
-			size_t maxCount = 0;
+            if (_parent->SingleAddress()) {
+                index = 0;
+                count = 1;
+                internal = false;
+            }
 
-			if (_parent->GetSignType() != IAccount::MultiSign) {
-				maxCount = _cid.size();
-				for (size_t i = start, cnt = 0; i < maxCount && cnt < count; ++i, ++cnt) {
-					did.push_back(_cid[i]);
-				}
-			}
+            uint32_t chain = internal ? SEQUENCE_INTERNAL_CHAIN : SEQUENCE_EXTERNAL_CHAIN;
+            AddressArray &addrChain = _chainAddressCached[chain];
+            uint32_t derivateCount = (index + count > addrChain.size()) ? (index + count - addrChain.size()) : 0;
 
-			return maxCount;
-		}
+            if (_parent->GetSignType() == Account::MultiSign) {
+                std::vector<HDKeychain> keychains;
 
-		AddressArray SubAccount::UnusedAddresses(uint32_t gapLimit, bool internal) {
-			AddressArray addrs;
-			std::vector<bytes_t> pubkeys;
-			bytes_t pubkey;
+                if (derivateCount > 0)
+                    for (const HDKeychainPtr &keychain : _parent->MultiSignCosigner())
+                        keychains.push_back(keychain->getChild(chain));
 
-			if (_parent->SingleAddress()) {
-				if (_externalChain.empty()) {
-					if (_parent->GetSignType() == Account::MultiSign) {
-						for (size_t i = 0; i < _parent->MultiSignCosigner().size(); ++i)
-							pubkeys.push_back(_parent->MultiSignCosigner()[i]->getChild("0/0").pubkey());
-						_externalChain.push_back(Address(PrefixMultiSign, pubkeys, _parent->GetM()));
-						_allAddrs.insert(_externalChain[0]);
-					} else {
-						pubkey = _parent->MasterPubKey()->getChild("0/0").pubkey();
-						_externalChain.push_back(Address(PrefixStandard, pubkey));
-						_allAddrs.insert(_externalChain[0]);
-					}
-				}
-				addrs = _externalChain;
-				return addrs;
-			}
+                if (keychains.empty()) {
+                    derivateCount = 0;
+                    Log::error("keychains is empty when derivate address");
+                }
 
-			size_t i, j = 0, count, startCount;
-			uint32_t chain = (internal) ? SEQUENCE_INTERNAL_CHAIN : SEQUENCE_EXTERNAL_CHAIN;
+                while (derivateCount--) {
+                    std::vector<bytes_t> pubkeys;
+                    for (const HDKeychain &signer : keychains)
+                        pubkeys.push_back(signer.getChild(addrChain.size()).pubkey());
 
-			assert(gapLimit > 0);
+                    Address addr(PrefixMultiSign, pubkeys, _parent->GetM());
+                    if (!addr.Valid()) {
+                        Log::error("derivate invalid multi-sig address");
+                        break;
+                    }
+                    addrChain.push_back(addr);
+                }
+            } else {
+                HDKeychain keychain = _parent->MasterPubKey()->getChild(chain);
 
-			AddressArray &addrChain = internal ? _internalChain : _externalChain;
-			std::vector<HDKeychain> keychains;
-			if (_parent->GetSignType() == Account::MultiSign) {
-				for (const HDKeychainPtr &keychain : _parent->MultiSignCosigner())
-					keychains.push_back(keychain->getChild(chain));
-			} else {
-				keychains.push_back(_parent->MasterPubKey()->getChild(chain));
-			}
-
-			i = count = startCount = addrChain.size();
-
-			// keep only the trailing contiguous block of addresses with no transactions
-			while (i > 0 && _usedAddrs.find(addrChain[i - 1]) == _usedAddrs.end()) i--;
-
-			while (i + gapLimit > count) { // generate new addresses up to gapLimit
-				Address address;
-				if (_parent->GetSignType() == Account::MultiSign) {
-					pubkeys.clear();
-					for (const HDKeychain &signer : keychains) {
-						pubkeys.push_back(signer.getChild(count).pubkey());
-					}
-					address = Address(PrefixMultiSign, pubkeys, _parent->GetM());
-				} else {
-					pubkey = keychains[0].getChild(count).pubkey();
-					address = Address(PrefixStandard, pubkey);
-				}
-
-				if (!address.Valid()) break;
-				addrChain.push_back(address);
-				count++;
-				if (_usedAddrs.find(address) != _usedAddrs.end()) i = count;
-			}
-
-			if (i + gapLimit <= count) {
-				for (j = 0; j < gapLimit; j++) {
-					addrs.push_back(addrChain[i + j]);
-				}
-			}
-
-			for (i = startCount; i < count; i++) {
-				_allAddrs.insert(addrChain[i]);
-			}
-
-			return addrs;
+                while (derivateCount--) {
+                    Address addr(PrefixStandard, keychain.getChild(addrChain.size()).pubkey());
+                    if (!addr.Valid()) {
+                        Log::error("derivate invalid address");
+                        break;
+                    }
+                    addrChain.push_back(addr);
+                }
+            }
+            addresses.assign(addrChain.begin() + index, addrChain.begin() + index + count);
 		}
 
 		bytes_t SubAccount::OwnerPubKey() const {
@@ -225,6 +193,47 @@ namespace Elastos {
 
 		bytes_t SubAccount::DIDPubKey() const {
 			return _parent->MasterPubKey()->getChild(0).getChild(0).pubkey();
+		}
+
+        bool SubAccount::FindPrivateKey(Key &key, SignType type, const std::vector<bytes_t> &pubkeys, const std::string &payPasswd) const {
+            HDKeychainPtr root = _parent->RootKey(payPasswd);
+            // for special path
+		    for (const bytes_t &pubkey : pubkeys) {
+                if (pubkey == _parent->OwnerPubKey()) {
+                    key = root->getChild("44'/0'/1'/0/0");
+                    return true;
+                }
+		    }
+
+		    std::vector<HDKeychain> bipkeys;
+		    bipkeys.push_back(root->getChild("44'/0'/0'"));
+		    if (type == SignTypeMultiSign) {
+                HDKeychain bip45 = root->getChild("45'");
+		        if (_parent->GetSignType() == Account::MultiSign) {
+                    bipkeys.push_back(bip45.getChild(_parent->CosignerIndex()));
+		        } else {
+                    for (uint32_t index = 0; index < MAX_MULTISIGN_COSIGNERS; ++index)
+                        bipkeys.push_back(bip45.getChild(index));
+		        }
+		    }
+
+		    for (HDKeychain &bipkey : bipkeys) {
+                for (auto & it : _chainAddressCached) {
+                    uint32_t chain = it.first;
+                    HDKeychain bipkeyChain = bipkey.getChild(chain);
+                    for (uint32_t index = it.second.size(); index > 0; index--) {
+                        HDKeychain bipkeyIndex = bipkeyChain.getChild(index - 1);
+                        for (const bytes_t &p : pubkeys) {
+                            if (bipkeyIndex.pubkey() == p) {
+                                key = bipkeyIndex;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+		    return false;
 		}
 
 		void SubAccount::SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) const {
@@ -241,52 +250,14 @@ namespace Elastos {
 			uint256 md = tx->GetShaData();
 
 			HDKeychainPtr rootKey = _parent->RootKey(payPasswd);
-			std::vector<bytes_t> publicKeys;
 			const std::vector<ProgramPtr> &programs = tx->GetPrograms();
 			for (size_t i = 0; i < programs.size(); ++i) {
-				publicKeys.clear();
+                std::vector<bytes_t> publicKeys;
 				SignType type = programs[i]->DecodePublicKey(publicKeys);
 				ErrorChecker::CheckLogic(type != SignTypeMultiSign && type != SignTypeStandard, Error::InvalidArgument,
 										 "Invalid redeem script");
-				ErrorChecker::CheckLogic(programs[i]->GetPath().empty(), Error::UnSupportOldTx, "Unsupport old tx");
 
-				bool found = false;
-				if (type == SignTypeStandard) {
-					key = rootKey->getChild(programs[i]->GetPath());
-					for (size_t k = 0; !found && k < publicKeys.size(); ++k) {
-						if (publicKeys[k] == key.PubKey()) {
-							found = true;
-						}
-					}
-				} else if (type == SignTypeMultiSign) {
-					if (_parent->GetSignType() == Account::MultiSign) {
-						if (_parent->DerivationStrategy() == "BIP44")
-							key = rootKey->getChild("44'/0'/0'").getChild(programs[i]->GetPath());
-						else
-							key = rootKey->getChild("45'").getChild((uint32_t) _parent->CosignerIndex()).getChild(programs[i]->GetPath());
-						for (size_t k = 0; !found && k < publicKeys.size(); ++k) {
-							if (publicKeys[k] == key.PubKey()) {
-								found = true;
-							}
-						}
-					} else {
-						key = rootKey->getChild("44'/0'/0'").getChild(programs[i]->GetPath());
-						for (size_t k = 0; !found && k < publicKeys.size(); ++k) {
-							if (publicKeys[k] == key.PubKey()) {
-								found = true;
-							}
-						}
-						for (uint32_t idx = 0; !found && idx < MAX_MULTISIGN_COSIGNERS; ++idx) {
-							key = rootKey->getChild("45'").getChild(idx).getChild(programs[i]->GetPath());
-							for (size_t k = 0; !found && k < publicKeys.size(); ++k) {
-								if (publicKeys[k] == key.PubKey()) {
-									found = true;
-								}
-							}
-						}
-					}
-				}
-
+				bool found = FindPrivateKey(key, type, publicKeys, payPasswd);
 				ErrorChecker::CheckLogic(!found, Error::PrivateKeyNotFound, "Private key not found");
 
 				stream.Reset();
@@ -306,17 +277,19 @@ namespace Elastos {
 
 		Key SubAccount::GetKeyWithDID(const Address &DIDOrCID, const std::string &payPasswd) const {
 			if (_parent->GetSignType() != IAccount::MultiSign) {
-				for (size_t i = 0; i < _cid.size(); ++i) {
-					if (DIDOrCID == _cid[i]) {
-						return _parent->RootKey(payPasswd)->getChild("44'/0'/0'/0").getChild(i);
-					} else {
-						Address did(_cid[i]);
-						did.ConvertToDID();
-						if (did == DIDOrCID) {
-							return _parent->RootKey(payPasswd)->getChild("44'/0'/0'/0").getChild(i);
-						}
-					}
-				}
+			    for (auto it = _chainAddressCached.begin(); it != _chainAddressCached.end(); ++it) {
+			        uint32_t chain = it->first;
+			        AddressArray &chainAddr = it->second;
+                    for (uint32_t i = 0; i < chainAddr.size(); ++i) {
+                        Address cid(chainAddr[i]);
+                        cid.ChangePrefix(PrefixIDChain);
+                        Address did(cid);
+                        did.ConvertToDID();
+                        if (DIDOrCID == cid || DIDOrCID == did) {
+                            return _parent->RootKey(payPasswd)->getChild("44'/0'/0'").getChild(chain).getChild(i);
+                        }
+                    }
+                }
 			}
 
 			ErrorChecker::ThrowLogicException(Error::PrivateKeyNotFound, "private key not found");
@@ -332,132 +305,57 @@ namespace Elastos {
 			return _parent->RootKey(payPasswd)->getChild("44'/0'/0'/0/0");
 		}
 
-		bool SubAccount::ContainsAddress(const Address &address) const {
-			if (IsProducerDepositAddress(address) || IsCRDepositAddress(address)) {
-				return true;
-			}
-
-			if (IsOwnerAddress(address)) {
-				return true;
-			}
-
-			if (_parent->GetSignType() != IAccount::MultiSign) {
-				if (_allCID.find(address) != _allCID.end())
-					return true;
-			}
-
-			return _allAddrs.find(address) != _allAddrs.end();
-		}
-
-		size_t SubAccount::GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
-		                                    bool containInternal) const {
-
-			pubkeys.clear();
-			if (_parent->GetSignType() == Account::MultiSign)
-				return 0;
-
-			AddressArray allAddress;
-			allAddress = _externalChain;
-			if (containInternal)
-				allAddress.insert(allAddress.end(), _internalChain.begin(), _internalChain.end());
-
-			size_t maxCount = allAddress.size();
-			bytes_t pubkey;
-
-			for (size_t i = start, cnt = 0; i < maxCount && cnt < count; ++i, ++cnt) {
-				ByteStream stream(allAddress[i].RedeemScript());
-				stream.ReadVarBytes(pubkey);
-				pubkeys.push_back(pubkey);
-			}
-
-			return maxCount;
-		}
-
-		bool SubAccount::GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const {
+		bool SubAccount::GetCode(const Address &addr, bytes_t &code) const {
 			uint32_t index;
 			bytes_t pubKey;
 
 			if (IsProducerDepositAddress(addr)) {
+                // "44'/0'/1'/0/0";
 				code = _depositAddress.RedeemScript();
-				path = "44'/0'/1'/0/0";
 				return true;
 			}
 
 			if (IsOwnerAddress(addr)) {
+                // "44'/0'/1'/0/0";
 				code = _ownerAddress.RedeemScript();
-				path = "44'/0'/1'/0/0";
 				return true;
 			}
 
 			if (IsCRDepositAddress(addr)) {
+                // "44'/0'/0'/0/0";
 				code = _crDepositAddress.RedeemScript();
-				path = "44'/0'/0'/0/0";
 				return true;
 			}
 
-			if (_parent->GetSignType() != IAccount::MultiSign) {
-				for (index = _cid.size(); index > 0; index--) {
-					if (_cid[index - 1] == addr) {
-						code = _cid[index - 1].RedeemScript();
-						path = "44'/0'/0'/0/" + std::to_string(index - 1);
-						return true;
-					}
-				}
-			}
+			for (auto it = _chainAddressCached.begin(); it != _chainAddressCached.end(); ++it) {
+			    AddressArray &chainAddr = it->second;
+                for (index = chainAddr.size(); index > 0; index--) {
+                    if (chainAddr[index - 1] == addr) {
+                        code = chainAddr[index - 1].RedeemScript();
+                        return true;
+                    }
 
-			for (index = _internalChain.size(); index > 0; index--) {
-				if (_internalChain[index - 1] == addr) {
-					code = _internalChain[index - 1].RedeemScript();
-					if (_parent->GetSignType() == Account::MultiSign) {
-						path = "1/" + std::to_string(index - 1);
-					} else {
-						path = "44'/0'/0'/1/" + std::to_string(index - 1);
-					}
-					return true;
-				}
-			}
+                    if (_parent->GetSignType() != IAccount::MultiSign) {
+                        Address cid(chainAddr[index - 1]);
+                        cid.ChangePrefix(PrefixIDChain);
+                        if (addr == cid) {
+                            code = cid.RedeemScript();
+                            return true;
+                        }
 
-			for (index = _externalChain.size(); index > 0; index--) {
-				if (_externalChain[index - 1] == addr) {
-					code = _externalChain[index - 1].RedeemScript();
-					if (_parent->GetSignType() == Account::MultiSign) {
-						path = "0/" + std::to_string(index - 1);
-					} else {
-						path = "44'/0'/0'/0/" + std::to_string(index - 1);
-					}
-					return true;
-				}
-			}
+                        Address did(cid);
+                        did.ConvertToDID();
+                        if (addr == did) {
+                            code = did.RedeemScript();
+                            return true;
+                        }
+                    }
+                }
+            }
 
 			Log::error("Can't found code and path for address {}", addr.String());
 
 			return false;
-		}
-
-		size_t SubAccount::InternalChainIndex(const TransactionPtr &tx) const {
-			const OutputArray &outputs = tx->GetOutputs();
-
-			for (size_t i = _internalChain.size(); i > 0; i--) {
-				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
-					if ((*o)->GetAddress() == _internalChain[i - 1])
-						return i - 1;
-				}
-			}
-
-			return -1;
-		}
-
-		size_t SubAccount::ExternalChainIndex(const TransactionPtr &tx) const {
-			const OutputArray &outputs = tx->GetOutputs();
-
-			for (size_t i = _externalChain.size(); i > 0; i--) {
-				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
-					if ((*o)->GetAddress() == _externalChain[i - 1])
-						return i - 1;
-				}
-			}
-
-			return -1;
 		}
 
 		AccountPtr SubAccount::Parent() const {

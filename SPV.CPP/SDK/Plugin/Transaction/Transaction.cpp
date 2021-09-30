@@ -457,16 +457,16 @@ namespace Elastos {
 			_programs.clear();
 		}
 
-		void Transaction::Serialize(ByteStream &ostream, bool extend) const {
-			SerializeUnsigned(ostream, extend);
+		void Transaction::Serialize(ByteStream &ostream) const {
+			SerializeUnsigned(ostream);
 
 			ostream.WriteVarUint(_programs.size());
 			for (size_t i = 0; i < _programs.size(); i++) {
-				_programs[i]->Serialize(ostream, extend);
+				_programs[i]->Serialize(ostream);
 			}
 		}
 
-		void Transaction::SerializeUnsigned(ByteStream &ostream, bool extend) const {
+		void Transaction::SerializeUnsigned(ByteStream &ostream) const {
 			if (_version >= TxVersion::V09) {
 				ostream.WriteByte(_version);
 			}
@@ -486,7 +486,7 @@ namespace Elastos {
 
 			ostream.WriteVarUint(_inputs.size());
 			for (size_t i = 0; i < _inputs.size(); i++) {
-				_inputs[i]->Serialize(ostream, extend);
+				_inputs[i]->Serialize(ostream);
 			}
 
 			ostream.WriteVarUint(_outputs.size());
@@ -517,7 +517,7 @@ namespace Elastos {
 			return true;
 		}
 
-		bool Transaction::Deserialize(const ByteStream &istream, bool extend) {
+		bool Transaction::Deserialize(const ByteStream &istream) {
 			Reinit();
 
 			if (!DeserializeType(istream)) {
@@ -558,7 +558,7 @@ namespace Elastos {
 			_inputs.reserve(inCount);
 			for (size_t i = 0; i < inCount; i++) {
 				InputPtr input(new TransactionInput());
-				if (!input->Deserialize(istream, extend)) {
+				if (!input->Deserialize(istream)) {
 					Log::error("deserialize tx input [{}] error", i);
 					return false;
 				}
@@ -600,7 +600,7 @@ namespace Elastos {
 
 			for (size_t i = 0; i < programLength; i++) {
 				ProgramPtr program(new Program());
-				if (!program->Deserialize(istream, extend)) {
+				if (!program->Deserialize(istream)) {
 					Log::error("deserialize program[{}] error", i);
 					return false;
 				}
