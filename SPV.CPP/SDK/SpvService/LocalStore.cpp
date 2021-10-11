@@ -119,7 +119,7 @@ namespace Elastos {
 							stream.ReadBytes(chainCode, 32);
 							stream.ReadBytes(pubKey, 33);
 
-							bytes = HDKeychain(pubKey, chainCode).extkey();
+							bytes = HDKeychain(CTElastos, pubKey, chainCode).extkey();
 							_xPubKey = Base58::CheckEncode(bytes);
 						}
 					}

@@ -120,7 +120,7 @@ namespace Elastos {
 			for (size_t i = 0; i < 20; ++i) {
 				uint168 programHash = getRandUInt168();
 				*programHash.begin() = Prefix::PrefixStandard;
-				InputPtr input(new TransactionInput(getRanduint256(), getRandUInt16(), getRandBigInt(), Address(programHash)));
+				InputPtr input(new TransactionInput(getRanduint256(), getRandUInt16()));
 				tx.AddInput(input);
 			}
 
@@ -154,7 +154,7 @@ namespace Elastos {
 			for (size_t i = 0; i < 20; ++i) {
 				bytes_t code = getRandBytes(25);
 				bytes_t parameter = getRandBytes(25);
-				tx.AddProgram(ProgramPtr(new Program("", code, parameter)));
+				tx.AddProgram(ProgramPtr(new Program(code, parameter)));
 			}
 		}
 

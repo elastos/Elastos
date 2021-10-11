@@ -32,12 +32,12 @@ TEST_CASE("Key sign pressure test", "[KeySign]") {
 
 	uint512 seed = BIP39::DeriveSeed(phrase, phrasePasswd);
 
-	HDKeychain child = HDKeychain(HDSeed(seed.bytes()).getExtendedKey(true)).getChild("44'/0'/0'/0/0");
+	HDKeychain child = HDKeychain(CTElastos, HDSeed(seed.bytes()).getExtendedKey(CTElastos, true)).getChild("44'/0'/0'/0/0");
 
 	Key key1, key2;
 
-	key1.SetPrvKey(child.privkey());
-	key2.SetPubKey(child.pubkey());
+	key1.SetPrvKey(CTElastos, child.privkey());
+	key2.SetPubKey(CTElastos, child.pubkey());
 
 	for (int i = 0; i < LOOP_COUNT; ++i) {
 		std::string message = getRandString(120);

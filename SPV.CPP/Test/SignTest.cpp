@@ -88,7 +88,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		uint512 seed = BIP39::DeriveSeed(mnemonic, "");
 
 		HDSeed hdseed(seed.bytes());
-		HDKeychain rootprv(hdseed.getExtendedKey(true));
+		HDKeychain rootprv(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 
 		Key key1 = rootprv.getChild("1'/0");
 		Key key2 = rootprv.getChild("2'/0");
@@ -117,40 +117,45 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 			AccountPtr account1(new Account(rootpath + "/1", mnemonic1, passphrase, payPasswd, false));
 			SubAccountPtr subAccount1(new SubAccount(account1));
-			subAccount1->Init();
+			AddressArray addrtmp;
+			subAccount1->GetAddresses(addrtmp, 0, 110, false);
+            subAccount1->GetAddresses(addrtmp, 0, 110, true);
 			std::string multiSignPubKey1 = account1->MasterPubKeyHDPMString();
 			bytes_t ownerPubKey1 = account1->OwnerPubKey();
 
 			AccountPtr account2(new Account(rootpath + "/2", mnemonic2, passphrase, payPasswd, false));
 			SubAccountPtr subAccount2(new SubAccount(account2));
-			subAccount2->Init();
+            subAccount2->GetAddresses(addrtmp, 0, 110, false);
+            subAccount2->GetAddresses(addrtmp, 0, 110, true);
 			std::string multiSignPubKey2 = account2->MasterPubKeyHDPMString();
 			bytes_t ownerPubKey2 = account2->OwnerPubKey();
 
 			AccountPtr account3(new Account(rootpath + "/3", mnemonic3, passphrase, payPasswd, false));
 			SubAccountPtr subAccount3(new SubAccount(account3));
-			subAccount3->Init();
+            subAccount3->GetAddresses(addrtmp, 0, 110, false);
+            subAccount3->GetAddresses(addrtmp, 0, 110, true);
 			std::string multiSignPubKey3 = account3->MasterPubKeyHDPMString();
 			bytes_t ownerPubKey3 = account3->OwnerPubKey();
 
 			AccountPtr account4(new Account(rootpath + "/4", mnemonic4, passphrase, payPasswd, false));
 			SubAccountPtr subAccount4(new SubAccount(account4));
-			subAccount4->Init();
+            subAccount4->GetAddresses(addrtmp, 0, 110, false);
+            subAccount4->GetAddresses(addrtmp, 0, 110, true);
 			std::string multiSignPubKey4 = account4->MasterPubKeyHDPMString();
 			bytes_t votePubKey4 = account4->OwnerPubKey();
 
 			SECTION("Standard address sign test") {
 				AddressArray addresses;
-				subAccount1->GetAllAddresses(addresses, 0, 100, false);
+				subAccount1->GetAddresses(addresses, 0, 100, false);
 
 				REQUIRE(!addresses.empty());
 				bytes_t redeemScript;
 				std::string path;
-				REQUIRE(subAccount1->GetCodeAndPath(addresses.back(), redeemScript, path));
+				REQUIRE(subAccount1->GetCode(addresses.back(), redeemScript));
 
 				TransactionPtr tx(new Transaction);
 				tx->FromJson(content);
-				tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
+				tx->AddProgram(ProgramPtr(new Program(redeemScript, bytes_t())));
 
 
 				REQUIRE_THROWS(subAccount3->SignTransaction(tx, payPasswd));
@@ -158,11 +163,11 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				REQUIRE(tx->IsSigned());
 
 
-				subAccount2->GetAllAddresses(addresses, 0, 100, false);
+				subAccount2->GetAddresses(addresses, 0, 100, false);
 
 				tx->ClearPrograms();
-				REQUIRE(subAccount2->GetCodeAndPath(addresses.front(), redeemScript, path));
-				tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
+				REQUIRE(subAccount2->GetCode(addresses.front(), redeemScript));
+				tx->AddProgram(ProgramPtr(new Program(redeemScript, bytes_t())));
 				REQUIRE_THROWS(subAccount1->SignTransaction(tx, payPasswd));
 				REQUIRE_THROWS(subAccount3->SignTransaction(tx, payPasswd));
 
@@ -177,12 +182,12 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
                 Address addr(PrefixStandard, ownerPubKey1);
 				bytes_t redeemScript;
 				std::string path;
-				REQUIRE(subAccount1->GetCodeAndPath(addr, redeemScript, path));
+				REQUIRE(subAccount1->GetCode(addr, redeemScript));
 
 				TransactionPtr tx(new Transaction());
 				tx->FromJson(content);
 
-				tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
+				tx->AddProgram(ProgramPtr(new Program(redeemScript, bytes_t())));
 
 				REQUIRE_THROWS(subAccount2->SignTransaction(tx, payPasswd));
 				REQUIRE(!tx->IsSigned());
@@ -195,12 +200,12 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				Address addr(PrefixDeposit, ownerPubKey1);
 				bytes_t redeemScript;
 				std::string path;
-				REQUIRE(subAccount1->GetCodeAndPath(addr, redeemScript, path));
+				REQUIRE(subAccount1->GetCode(addr, redeemScript));
 
 				TransactionPtr tx(new Transaction);
 				tx->FromJson(content);
 
-				tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
+				tx->AddProgram(ProgramPtr(new Program(redeemScript, bytes_t())));
 
 
 				REQUIRE_THROWS(subAccount2->SignTransaction(tx, payPasswd));
@@ -222,14 +227,13 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 				AccountPtr multiSignAccount(new Account(rootpath + "/multisign", cosigners, requiredSignCount, false, false));
 				SubAccountPtr multiSignSubAccount(new SubAccount(multiSignAccount));
-				multiSignSubAccount->Init();
 				AddressArray addresses;
-				multiSignSubAccount->GetAllAddresses(addresses, 0, 1, false);
+				multiSignSubAccount->GetAddresses(addresses, 0, 1, false);
 				REQUIRE(!addresses.empty());
 				bytes_t redeemScript;
 				std::string path;
-				REQUIRE(multiSignSubAccount->GetCodeAndPath(addresses.front(), redeemScript, path));
-				tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
+				REQUIRE(multiSignSubAccount->GetCode(addresses.front(), redeemScript));
+				tx->AddProgram(ProgramPtr(new Program(redeemScript, bytes_t())));
 
 				REQUIRE_NOTHROW(subAccount1->SignTransaction(tx, payPasswd));
 				REQUIRE(!tx->IsSigned());
@@ -257,9 +261,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 					new Account(rootpath + "/m1", mnemonic1, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms1(new SubAccount(multiSignAccount1));
-				ms1->Init();
 				AddressArray addresses1;
-				ms1->GetAllAddresses(addresses1, 0, 10, false);
+                ms1->GetAddresses(addresses1, 0, 100, true);
+                ms1->GetAddresses(addresses1, 0, 110, false);
 
 				cosigners.clear();
 				cosigners.push_back(PublicKeyRing(account1->RequestPubKey().getHex(), multiSignPubKey1));
@@ -270,9 +274,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 					new Account(rootpath + "/m2", mnemonic2, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms2(new SubAccount(multiSignAccount2));
-				ms2->Init();
 				AddressArray addresses2;
-				ms2->GetAllAddresses(addresses2, 0, 10, false);
+				ms2->GetAddresses(addresses2, 0, 100, true);
+                ms2->GetAddresses(addresses2, 0, 110, false);
 
 				cosigners.clear();
 				cosigners.push_back(PublicKeyRing(account1->RequestPubKey().getHex(), multiSignPubKey1));
@@ -283,9 +287,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 					new Account(rootpath + "/m3", mnemonic3, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms3(new SubAccount(multiSignAccount3));
-				ms3->Init();
 				AddressArray addresses3;
-				ms3->GetAllAddresses(addresses3, 0, 10, false);
+				ms3->GetAddresses(addresses3, 0, 100, true);
+                ms3->GetAddresses(addresses3, 0, 110, false);
 
 				cosigners.clear();
 				cosigners.push_back(PublicKeyRing(account1->RequestPubKey().getHex(), multiSignPubKey1));
@@ -296,9 +300,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 					new Account(rootpath + "/m4", mnemonic4, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms4(new SubAccount(multiSignAccount4));
-				ms4->Init();
 				AddressArray addresses4;
-				ms4->GetAllAddresses(addresses4, 0, 10, false);
+				ms4->GetAddresses(addresses4, 0, 100, true);
+                ms4->GetAddresses(addresses4, 0, 110, false);
 
 				cosigners.clear();
 				cosigners.push_back(PublicKeyRing(account1->RequestPubKey().getHex(), multiSignPubKey1));
@@ -310,9 +314,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 					new Account(rootpath + "/multisign-readonly", cosigners, requiredSignCount, false, false));
 
 				SubAccountPtr ms5(new SubAccount(multiSignAccount5));
-				ms5->Init();
 				AddressArray addresses5;
-				ms5->GetAllAddresses(addresses5, 0, 10, false);
+				ms5->GetAddresses(addresses5, 0, 100, true);
+                ms5->GetAddresses(addresses5, 0, 110, false);
 
 				REQUIRE(!addresses1.empty());
 				REQUIRE(addresses1.size() == addresses2.size());
@@ -321,9 +325,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				REQUIRE(addresses1.size() == addresses5.size());
 				bytes_t redeemScript;
 				std::string path;
-				REQUIRE(ms1->GetCodeAndPath(addresses1[0], redeemScript, path));
+				REQUIRE(ms1->GetCode(addresses1[0], redeemScript));
 
-				tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
+				tx->AddProgram(ProgramPtr(new Program(redeemScript, bytes_t())));
 
 
 				REQUIRE(!tx->IsSigned());
@@ -356,11 +360,10 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		REQUIRE_NOTHROW(ks.Import(keystoreJson, backupPasswd));
 		AccountPtr account1(new Account(rootpath + "/AccountTestMultiSignFromWeb", ks, payPasswd));
 		SubAccountPtr ms1(new SubAccount(account1));
-		ms1->Init();
 
 		AddressArray addr1;
-		size_t count1 = ms1->GetAllAddresses(addr1, 0, 1, false);
-		REQUIRE(count1 >= 1);
+		ms1->GetAddresses(addr1, 0, 110, false);
+		REQUIRE(addr1.size() == 110);
 		REQUIRE(addr1[0].String() == "8W6TRf4ZxyTaDZdJs4Gd8dwFkvb62dVN1r");
 
 		std::vector<PublicKeyRing> cosigners = account1->MasterPubKeyRing();
@@ -368,19 +371,18 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 		AccountPtr account2(new Account(rootpath + "/MultiSignRO", cosigners, account1->GetM(), false, true));
 		SubAccountPtr ms2(new SubAccount(account2));
-		ms2->Init();
 		AddressArray addr2;
-		size_t count2 = ms2->GetAllAddresses(addr2, 0, 1, false);
+		ms2->GetAddresses(addr2, 0, 110, false);
 		REQUIRE_THROWS(account2->MasterPubKey() == nullptr);
 		REQUIRE_THROWS(account2->MultiSignSigner() == nullptr);
-		REQUIRE(count2 >= 1);
+		REQUIRE(addr2.size() == 110);
 		REQUIRE(addr2[0].String() == "8W6TRf4ZxyTaDZdJs4Gd8dwFkvb62dVN1r");
 
 		bytes_t redeemScript;
 		std::string path;
-		REQUIRE(ms2->GetCodeAndPath(addr2[0], redeemScript, path));
+		REQUIRE(ms2->GetCode(addr2[0], redeemScript));
 
-		tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
+		tx->AddProgram(ProgramPtr(new Program(redeemScript, bytes_t())));
 
 		REQUIRE(!tx->IsSigned());
 		REQUIRE_NOTHROW(ms1->SignTransaction(tx, payPasswd));
@@ -390,9 +392,10 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 		AccountPtr account3;
 		SubAccountPtr ms3;
+        AddressArray addr3;
 		REQUIRE_NOTHROW(account3 = AccountPtr(new Account(rootpath + "/ReadOnly", readonlyJSON)));
 		REQUIRE_NOTHROW(ms3 = SubAccountPtr(new SubAccount(account3)));
-		ms3->Init();
+        ms3->GetAddresses(addr3, 0, 110, false);
 		REQUIRE(account3->GetM() == account1->GetM());
 		REQUIRE(account3->GetN() == account1->GetN());
 		REQUIRE(account3->GetSignType() == account1->GetSignType());
@@ -407,9 +410,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		REQUIRE_THROWS(account3->MultiSignSigner());
 		REQUIRE(account3->CosignerIndex() == -1);
 		REQUIRE(account3->Readonly() == true);
-		AddressArray addr3;
-		size_t count3 = ms3->GetAllAddresses(addr3, 0, 1, false);
-		REQUIRE(count3 == count2);
+		REQUIRE(addr3.size() == 110);
 		REQUIRE(addr3[0].String() == "8W6TRf4ZxyTaDZdJs4Gd8dwFkvb62dVN1r");
 	}
 }

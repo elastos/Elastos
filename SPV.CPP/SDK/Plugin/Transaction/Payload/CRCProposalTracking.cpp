@@ -410,7 +410,7 @@ namespace Elastos {
 			}
 
 			try {
-				Key key(_ownerPubKey);
+				Key key(CTElastos, _ownerPubKey);
 			} catch (const std::exception &e) {
 				SPVLOG_ERROR("invalid owner pubkey");
 				return false;
@@ -418,7 +418,7 @@ namespace Elastos {
 
 			if (!_newOwnerPubKey.empty()) {
 				try {
-					Key key(_newOwnerPubKey);
+					Key key(CTElastos, _newOwnerPubKey);
 				} catch (const std::exception &e) {
 					SPVLOG_ERROR("invalid new owner pubkey");
 					return false;
@@ -434,7 +434,7 @@ namespace Elastos {
 
 			// verify signature of owner
 			try {
-				if (!Key(_ownerPubKey).Verify(DigestOwnerUnsigned(version), _ownerSign)) {
+				if (!Key(CTElastos, _ownerPubKey).Verify(DigestOwnerUnsigned(version), _ownerSign)) {
 					SPVLOG_ERROR("verify owner sign fail");
 					return false;
 				}
@@ -453,7 +453,7 @@ namespace Elastos {
 			// verify signature of new owner
 			if (!_newOwnerPubKey.empty()) {
 				try {
-					if (!Key(_newOwnerPubKey).Verify(DigestNewOwnerUnsigned(version), _newOwnerSign)) {
+					if (!Key(CTElastos, _newOwnerPubKey).Verify(DigestNewOwnerUnsigned(version), _newOwnerSign)) {
 						SPVLOG_ERROR("verify new owner sign fail");
 						return false;
 					}

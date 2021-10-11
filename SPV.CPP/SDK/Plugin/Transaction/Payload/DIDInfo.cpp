@@ -738,7 +738,7 @@ namespace Elastos {
 					bytes_t signature = Base64::DecodeURL(_proof.GetSignature());
 					bytes_t pubkey = Base58::Decode((*it).PublicKeyBase58());
 					Key key;
-					key.SetPubKey(pubkey);
+					key.SetPubKey(CTElastos, pubkey);
 					if (key.Verify(ToOrderedJson(), signature)) {
 						verifiedSign = true;
 					}

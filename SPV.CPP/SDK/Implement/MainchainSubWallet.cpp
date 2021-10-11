@@ -159,10 +159,10 @@ namespace Elastos {
 
 			Key verifyPubKey;
 			bytes_t ownerPubKey = bytes_t(ownerPublicKey);
-			verifyPubKey.SetPubKey(ownerPubKey);
+			verifyPubKey.SetPubKey(CTElastos, ownerPubKey);
 
 			bytes_t nodePubKey = bytes_t(nodePublicKey);
-			verifyPubKey.SetPubKey(nodePubKey);
+			verifyPubKey.SetPubKey(CTElastos, nodePubKey);
 
 			ProducerInfo pr;
 			pr.SetPublicKey(ownerPubKey);

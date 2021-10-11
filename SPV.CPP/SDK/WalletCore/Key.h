@@ -21,7 +21,7 @@ namespace Elastos {
 		public:
 			Key();
 
-			Key(const bytes_t &key);
+			Key(CoinType type, const bytes_t &key);
 
 			Key(const HDKeychain &keychain);
 
@@ -33,13 +33,13 @@ namespace Elastos {
 
 			Key &operator=(const Key &key);
 
-			bool SetPubKey(const bytes_t &pub);
+			bool SetPubKey(CoinType type, const bytes_t &pub);
 
 			bytes_t PubKey(bool compress = true) const;
 
 			bytes_t PrvKey() const;
 
-			bool SetPrvKey(const bytes_t &prv);
+			bool SetPrvKey(CoinType type, const bytes_t &prv);
 
 			bytes_t Sign(const std::string &message) const;
 

@@ -94,8 +94,6 @@ namespace Elastos {
 
 		private:
 
-			bool Compare(const bytes_t &a, const bytes_t &b) const;
-
 			void GenerateCode(Prefix prefix, const std::vector<bytes_t> &pubkeys, uint8_t m, bool did = false);
 
 			void GenerateProgramHash(Prefix prefix);

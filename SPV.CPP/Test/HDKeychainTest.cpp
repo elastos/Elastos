@@ -69,7 +69,7 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 		uint512 seed = BIP39::DeriveSeed(phrase, phrasePassword);
 
 		HDSeed hdseed(seed.bytes());
-		HDKeychain rootprv(hdseed.getExtendedKey(true));
+		HDKeychain rootprv(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 
 		REQUIRE(Base58::CheckEncode(rootprv.extkey()) == xPrivKey);
 
@@ -86,13 +86,13 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 
 		bytes_t extprv;
 		REQUIRE(Base58::CheckDecode(xPrivKey, extprv));
-		HDKeychain xprv(extprv);
+		HDKeychain xprv(CTElastos, extprv);
 		REQUIRE(requestPrivKey == xprv.getChild("1'/0").privkey().getHex());
 		REQUIRE(requestPubKey == xprv.getChild("1'/0").pubkey().getHex());
 
 		bytes_t extpub;
 		REQUIRE(Base58::CheckDecode(xPubKey, extpub));
-		HDKeychain xpub(extpub);
+		HDKeychain xpub(CTElastos, extpub);
 		REQUIRE("Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ" == Address(PrefixStandard, xpub.getChild("0/0").pubkey()).String());
 		REQUIRE("EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv" == Address(PrefixStandard, xpub.getChild("0/1").pubkey()).String());
 	}
@@ -175,13 +175,13 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 		uint512 seed = BIP39::DeriveSeed(mnemonic, phrasePasswd);
 
 		HDSeed hdseed(seed.bytes());
-		HDKeychain rootprv(hdseed.getExtendedKey(true));
+		HDKeychain rootprv(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 
 		REQUIRE("0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280" == rootprv.getChild("1'/0").pubkey().getHex());
 
 		bytes_t pubkeyBytes(pubKey), chainCodeBytes(chainCode);
 
-		HDKeychain mpk(pubkeyBytes, chainCodeBytes);
+		HDKeychain mpk(CTElastos, pubkeyBytes, chainCodeBytes);
 		REQUIRE("Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ" == Address(PrefixStandard, mpk.getChild("0/0").pubkey()).String());
 	}
 
@@ -273,7 +273,7 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 		REQUIRE(stream.ReadBytes(chainCode, 32));
 		REQUIRE(stream.ReadBytes(pubKey, 33));
 
-		HDKeychain mpk(pubKey, chainCode);
+		HDKeychain mpk(CTElastos, pubKey, chainCode);
 		REQUIRE("Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ" == Address(PrefixStandard, mpk.getChild("0/0").pubkey()).String());
 
 
@@ -286,7 +286,7 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 		uint512 seed = BIP39::DeriveSeed(phrase, phrasepass);
 
 		HDSeed hdseed(seed.bytes());
-		HDKeychain rootprv(hdseed.getExtendedKey(true));
+		HDKeychain rootprv(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 
 		REQUIRE("0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280" == rootprv.getChild("1'/0").pubkey().getHex());
 	}

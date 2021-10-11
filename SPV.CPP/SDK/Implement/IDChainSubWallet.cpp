@@ -198,7 +198,7 @@ namespace Elastos {
 			ArgInfo("signature: {}", signature);
 
 			bytes_t pubkey(publicKey), sign(signature);
-			Key key(pubkey);
+			Key key(CTElastos, pubkey);
 			bool r = key.Verify(message, sign);
 
 			ArgInfo("r => {}", r);

@@ -167,25 +167,6 @@ namespace Elastos {
 			return this->String() != address;
 		}
 
-		bool Address::Compare(const bytes_t &a, const bytes_t &b) const {
-			secp256k1_point pnt;
-			BIGNUM *bn;
-
-			pnt.bytes(a);
-			bn = pnt.getCoordX();
-			assert(bn != nullptr);
-			BigInt bigIntA;
-			bigIntA.setRaw(bn);
-
-			pnt.bytes(b);
-			bn = pnt.getCoordX();
-			assert(bn != nullptr);
-			BigInt bigIntB;
-			bigIntB.setRaw(bn);
-
-			return bigIntA <= bigIntB;
-		}
-
 		void Address::GenerateCode(Prefix prefix, const std::vector<bytes_t> &pubkeys, uint8_t m, bool did) {
 			ErrorChecker::CheckLogic(m > pubkeys.size() || m == 0, Error::MultiSignersCount, "Invalid m");
 

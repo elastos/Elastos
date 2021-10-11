@@ -51,7 +51,7 @@ static void initCRCouncilMemberClaimNodePayload(CRCouncilMemberClaimNode &payloa
 	std::string mnemonic = Mnemonic(boost::filesystem::path("Data")).Create("English", Mnemonic::WORDS_12);
 	uint512 seed = BIP39::DeriveSeed(mnemonic, "");
 	HDSeed hdseed(seed.bytes());
-	HDKeychain rootkey(hdseed.getExtendedKey(true));
+	HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 	HDKeychain masterKey = rootkey.getChild("44'/0'/0'");
 	HDKeychain nodePublicKey = masterKey.getChild("0/0");
 	HDKeychain councilMemberKey = masterKey.getChild("0/1");
@@ -92,7 +92,7 @@ static void initCRCProposalPayload(CRCProposal &crcProposal, CRCProposal::Type t
 	std::string mnemonic = Mnemonic(boost::filesystem::path("Data")).Create("English", Mnemonic::WORDS_12);
 	uint512 seed = BIP39::DeriveSeed(mnemonic, "");
 	HDSeed hdseed(seed.bytes());
-	HDKeychain rootkey(hdseed.getExtendedKey(true));
+	HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 	HDKeychain masterKey = rootkey.getChild("44'/0'/0'");
 	HDKeychain ownerKey = masterKey.getChild("0/0");
 	HDKeychain newOwnerKey = masterKey.getChild("0/1");

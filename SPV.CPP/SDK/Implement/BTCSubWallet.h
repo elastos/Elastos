@@ -57,6 +57,9 @@ namespace Elastos {
                          const ChainConfigPtr &config,
                          MasterWallet *parent,
                          const std::string &netType);
+
+        private:
+            SubAccountPtr _subAccount;
         };
 
     }

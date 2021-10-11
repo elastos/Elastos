@@ -185,7 +185,7 @@ namespace Elastos {
 
 		bool CRCProposalWithdraw::IsValidUnsigned(uint8_t version) const {
 			try {
-				Key key(_ownerPubkey);
+				Key key(CTElastos, _ownerPubkey);
 			} catch (const std::exception &e) {
 				SPVLOG_ERROR("invalid owner pubkey");
 				return false;
@@ -211,7 +211,7 @@ namespace Elastos {
 				return false;
 
 			try {
-				if (!Key(_ownerPubkey).Verify(DigestUnsigned(version), _signature)) {
+				if (!Key(CTElastos, _ownerPubkey).Verify(DigestUnsigned(version), _signature)) {
 					SPVLOG_ERROR("verify signature fail");
 					return false;
 				}

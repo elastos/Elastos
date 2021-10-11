@@ -168,7 +168,7 @@ namespace Elastos {
 
 		bool CRCouncilMemberClaimNode::IsValidUnsigned(uint8_t version) const {
 			try {
-				Key key(_nodePublicKey);
+				Key key(CTElastos, _nodePublicKey);
 			} catch (const std::exception &e) {
 				SPVLOG_ERROR("invalid node pubkey");
 				return false;

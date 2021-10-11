@@ -155,7 +155,7 @@ namespace Elastos {
 			if (_xPrivKey.empty() && !_mnemonic.empty()) {
 				Log::info("Regerate xprv from old keystore");
 				HDSeed seed(BIP39::DeriveSeed(_mnemonic, passphrase).bytes());
-				HDKeychain rootkey(seed.getExtendedKey(true));
+				HDKeychain rootkey(CTElastos, seed.getExtendedKey(CTElastos, true));
 
 				_ownerPubKey = rootkey.getChild("44'/0'/1'/0/0").pubkey().getHex();
 
@@ -176,7 +176,7 @@ namespace Elastos {
 			if ((_xPubKeyHDPM.empty() || _ownerPubKey.empty()) && !_xPrivKey.empty()) {
 				bytes_t bytes;
 				Base58::CheckDecode(_xPrivKey, bytes);
-				HDKeychain rootkey(bytes);
+				HDKeychain rootkey(CTElastos, bytes);
 
 				if (_ownerPubKey.empty())
 					_ownerPubKey = rootkey.getChild("44'/0'/1'/0/0").pubkey().getHex();

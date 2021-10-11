@@ -198,12 +198,14 @@ namespace Elastos {
         bool SubAccount::FindPrivateKey(Key &key, SignType type, const std::vector<bytes_t> &pubkeys, const std::string &payPasswd) const {
             HDKeychainPtr root = _parent->RootKey(payPasswd);
             // for special path
-		    for (const bytes_t &pubkey : pubkeys) {
-                if (pubkey == _parent->OwnerPubKey()) {
-                    key = root->getChild("44'/0'/1'/0/0");
-                    return true;
+            if (_parent->GetSignType() != Account::MultiSign) {
+                for (const bytes_t &pubkey : pubkeys) {
+                    if (pubkey == _parent->OwnerPubKey()) {
+                        key = root->getChild("44'/0'/1'/0/0");
+                        return true;
+                    }
                 }
-		    }
+            }
 
 		    std::vector<HDKeychain> bipkeys;
 		    bipkeys.push_back(root->getChild("44'/0'/0'"));
@@ -249,7 +251,6 @@ namespace Elastos {
 
 			uint256 md = tx->GetShaData();
 
-			HDKeychainPtr rootKey = _parent->RootKey(payPasswd);
 			const std::vector<ProgramPtr> &programs = tx->GetPrograms();
 			for (size_t i = 0; i < programs.size(); ++i) {
                 std::vector<bytes_t> publicKeys;

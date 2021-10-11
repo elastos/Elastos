@@ -27,41 +27,48 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+	    typedef enum {
+            CTElastos,
+            CTBitcoin,
+            CTUnknown
+	    } CoinType;
+
 		class secp256k1_key {
 			public:
 				secp256k1_key();
 
 				secp256k1_key& operator=(const secp256k1_key &from);
 
-				~secp256k1_key() { if (_key) EC_KEY_free(_key); }
+				~secp256k1_key();
 
-				EC_KEY *getKey() const { return _key; }
+				EC_KEY *getKey() const;
 
-				EC_KEY *newKey();
+				EC_KEY *newKey(CoinType type);
 
 				bytes_t getPrivKey() const;
 
-				EC_KEY *setPrivKey(const bytes_t &privkey);
+				EC_KEY *setPrivKey(CoinType type, const bytes_t &privkey);
 
 				bytes_t getPubKey(bool bCompressed = true) const;
 
-				EC_KEY *setPubKey(const bytes_t &pubkey);
+				EC_KEY *setPubKey(CoinType type, const bytes_t &pubkey);
 
 			private:
 				void init();
 
 			private:
 				EC_KEY *_key;
+				int _nid;
 		};
 
 
 		class secp256k1_point {
 			public:
-				secp256k1_point() { init(); }
+				secp256k1_point(CoinType type);
 
 				secp256k1_point(const secp256k1_point &source);
 
-				secp256k1_point(const bytes_t &bytes);
+				secp256k1_point(CoinType type, const bytes_t &bytes);
 
 				~secp256k1_point();
 
@@ -102,6 +109,7 @@ namespace Elastos {
 				EC_GROUP *group;
 				EC_POINT *point;
 				BN_CTX *ctx;
+				int _nid;
 		};
 
 	}

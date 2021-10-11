@@ -49,26 +49,57 @@ finish:
 			return rval;
 		}
 
+		static int CoinType2NID(CoinType type) {
+		    int nid;
+            switch (type) {
+                case CTBitcoin:
+                    nid = NID_secp256k1;
+                    break;
+                case CTElastos:
+                    nid = NID_X9_62_prime256v1;
+                    break;
+                case CTUnknown:
+                    nid = NID_undef;
+                    break;
+                default:
+                    nid = NID_undef;
+            }
+
+            return nid;
+		}
+
+        // nid is NID_X9_62_prime256v1 or NID_secp256k1
 		void secp256k1_key::init() {
-			_key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+			_key = EC_KEY_new_by_curve_name(_nid);
 			ErrorChecker::CheckLogic(!_key, Error::Key, "EC_KEY_new_by_curve_name failed");
 			EC_KEY_set_conv_form(_key, POINT_CONVERSION_COMPRESSED);
 		}
 
-		secp256k1_key::secp256k1_key() :
-			_key(nullptr) {
-
-			}
+		secp256k1_key::secp256k1_key() : _key(nullptr) {
+            _nid = CoinType2NID(CTUnknown);
+        }
 
 		secp256k1_key &secp256k1_key::operator=(const secp256k1_key &from) {
-			if (_key) EC_KEY_dup(from._key);
+		    _nid = from._nid;
+			if (_key) EC_KEY_free(from._key);
 			_key = EC_KEY_dup(from._key);
 			return *this;
 		}
 
-		EC_KEY *secp256k1_key::newKey() {
-			if (!_key)
-				init();
+		secp256k1_key::~secp256k1_key() {
+            if (_key) EC_KEY_free(_key);
+            _key = nullptr;
+		}
+
+        EC_KEY *secp256k1_key::getKey() const {
+		    return _key;
+		}
+
+		EC_KEY *secp256k1_key::newKey(CoinType type) {
+			if (_key) EC_KEY_free(_key);
+
+			_nid = CoinType2NID(type);
+            init();
 
 			if (!EC_KEY_generate_key(_key)) {
 				Log::error("EC_KEY_generate_key failed");
@@ -91,9 +122,11 @@ finish:
 			return privKey;
 		}
 
-		EC_KEY *secp256k1_key::setPrivKey(const bytes_t &privkey) {
-			if (!_key)
-				init();
+		EC_KEY *secp256k1_key::setPrivKey(CoinType type, const bytes_t &privkey) {
+			if (_key) EC_KEY_free(_key);
+
+			_nid = CoinType2NID(type);
+            init();
 
 			BIGNUM *bn = BN_bin2bn(&privkey[0], privkey.size(), NULL);
 			ErrorChecker::CheckLogic(!bn, Error::Key, "invalid prv key: 2bn fail");
@@ -131,10 +164,12 @@ finish:
 			return pubKey;
 		}
 
-		EC_KEY *secp256k1_key::setPubKey(const bytes_t &pubkey) {
+		EC_KEY *secp256k1_key::setPubKey(CoinType type, const bytes_t &pubkey) {
 			ErrorChecker::CheckLogic(pubkey.empty(), Error::Key, "pubkey is empty");
-			if (!_key)
-				init();
+			if (_key) EC_KEY_free(_key);
+
+			_nid = CoinType2NID(type);
+            init();
 
 			const unsigned char *pBegin = (unsigned char *) &pubkey[0];
 			if (!o2i_ECPublicKey(&_key, &pBegin, pubkey.size())) {
@@ -149,7 +184,13 @@ finish:
 
 
 
+        secp256k1_point::secp256k1_point(CoinType type) {
+		    _nid = CoinType2NID(type);
+		    init();
+		}
+
 		secp256k1_point::secp256k1_point(const secp256k1_point &source) {
+		    _nid = source._nid;
 			init();
 			if (!EC_GROUP_copy(group, source.group))
 				ErrorChecker::ThrowLogicException(Error::Key,
@@ -159,7 +200,8 @@ finish:
 						"EC_POINT_copy failed.");
 		}
 
-		secp256k1_point::secp256k1_point(const bytes_t &bytes) {
+		secp256k1_point::secp256k1_point(CoinType type, const bytes_t &bytes) {
+		    _nid = CoinType2NID(type);
 			init();
 			this->bytes(bytes);
 		}
@@ -172,7 +214,9 @@ finish:
 		}
 
 		secp256k1_point &secp256k1_point::operator=(const secp256k1_point &rhs) {
-			if (!EC_GROUP_copy(group, rhs.group))
+		    _nid = rhs._nid;
+
+            if (!EC_GROUP_copy(group, rhs.group))
 				ErrorChecker::ThrowLogicException(Error::Key, "EC_GROUP_copy failed.");
 			if (!EC_POINT_copy(point, rhs.point))
 				ErrorChecker::ThrowLogicException(Error::Key, "EC_POINT_copy failed.");
@@ -293,7 +337,7 @@ finish:
 			point = NULL;
 			ctx = NULL;
 
-			group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+			group = EC_GROUP_new_by_curve_name(_nid);
 			if (!group) {
 				err = "EC_KEY_new_by_curve_name failed.";
 				goto finish;

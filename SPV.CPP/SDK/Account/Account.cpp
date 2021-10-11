@@ -58,14 +58,14 @@ namespace Elastos {
 										 "xpub should not be empty");
 				ErrorChecker::CheckParam(!Base58::CheckDecode(_localstore->GetxPubKey(), bytes),
 										 Error::PubKeyFormat, "xpub decode error");
-				_xpub = HDKeychainPtr(new HDKeychain(bytes));
+				_xpub = HDKeychainPtr(new HDKeychain(CTElastos, bytes));
 
 				if (_localstore->GetxPubKeyHDPM().empty())
 					Log::warn("xpubHDPM is empty");
 				else
 					ErrorChecker::CheckParam(!Base58::CheckDecode(_localstore->GetxPubKeyHDPM(), bytes),
 											 Error::PubKeyFormat, "xpubHDPM decode error");
-				_curMultiSigner = HDKeychainPtr(new HDKeychain(bytes));
+				_curMultiSigner = HDKeychainPtr(new HDKeychain(CTElastos, bytes));
 			}
 
 			if (_localstore->GetN() > 1) {
@@ -75,7 +75,7 @@ namespace Elastos {
 						bytes_t xpubBytes;
 						ErrorChecker::CheckParam(!Base58::CheckDecode(_localstore->GetPublicKeyRing()[i].GetxPubKey(), xpubBytes),
 												 Error::PubKeyFormat, "xpub decode error");
-						HDKeychainPtr xpub(new HDKeychain(xpubBytes));
+						HDKeychainPtr xpub(new HDKeychain(CTElastos, xpubBytes));
 						_allMultiSigners.push_back(xpub);
 					}
 				} else if (_localstore->DerivationStrategy() == "BIP45") {
@@ -84,7 +84,7 @@ namespace Elastos {
 						ErrorChecker::CheckLogic(
 							!Base58::CheckDecode(_localstore->GetPublicKeyRing()[i].GetxPubKey(), bytes),
 							Error::PubKeyFormat, "xpub HDPM decode error");
-						HDKeychainPtr xpub(new HDKeychain(bytes));
+						HDKeychainPtr xpub(new HDKeychain(CTElastos, bytes));
 						sortedSigners.push_back(xpub);
 					}
 
@@ -171,7 +171,7 @@ namespace Elastos {
 			bytes_t bytes;
 			ErrorChecker::CheckLogic(!Base58::CheckDecode(xprv, bytes), Error::InvalidArgument, "Invalid xprv");
 
-			HDKeychain rootkey(bytes);
+			HDKeychain rootkey(CTElastos, bytes);
 
 			std::string encryptedxPrvKey = AES::EncryptCCM(bytes, payPasswd);
 			std::string xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
@@ -224,7 +224,7 @@ namespace Elastos {
 			accountFree(account);
 
 			HDSeed hdseed(seed.bytes());
-			HDKeychain rootkey(hdseed.getExtendedKey(true));
+			HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 
 			std::string encryptedSeed = AES::EncryptCCM(bytes_t(seed.begin(), seed.size()), payPasswd);
 			std::string ethscPubKey = bytes_t(pubkey.pubKey, pubkey.pubKey + sizeof(pubkey.pubKey)).getHex();
@@ -275,7 +275,7 @@ namespace Elastos {
 			accountFree(account);
 
 			HDSeed hdseed(seed.bytes());
-			HDKeychain rootkey(hdseed.getExtendedKey(true));
+			HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 
 			std::string encryptedSeed = AES::EncryptCCM(bytes_t(seed.begin(), seed.size()), payPasswd);
 			std::string ethscPubKey = bytes_t(pubkey.pubKey, pubkey.pubKey + sizeof(pubkey.pubKey)).getHex();
@@ -329,7 +329,7 @@ namespace Elastos {
 			_localstore->SetReadonly(true);
 			if (!json.xPrivKey().empty()) {
 				Base58::CheckDecode(json.xPrivKey(), bytes);
-				HDKeychain rootkey(bytes);
+				HDKeychain rootkey(CTElastos, bytes);
 				std::string encrypedPrivKey = AES::EncryptCCM(bytes, payPasswd);
 				_localstore->SetxPrivKey(encrypedPrivKey);
 				_localstore->SetReadonly(false);
@@ -389,7 +389,7 @@ namespace Elastos {
 
 			bytes_t extkey = AES::DecryptCCM(_localstore->GetxPrivKey(), payPasswd);
 
-			HDKeychainPtr key(new HDKeychain(extkey));
+			HDKeychainPtr key(new HDKeychain(CTElastos, extkey));
 
 			extkey.clean();
 
@@ -409,7 +409,7 @@ namespace Elastos {
 			bytes_t bytes = AES::DecryptCCM(_localstore->GetRequestPrivKey(), payPassword);
 
 			Key key;
-			key.SetPrvKey(bytes);
+			key.SetPrvKey(CTElastos, bytes);
 
 			bytes.clean();
 
@@ -474,7 +474,7 @@ namespace Elastos {
 
 				uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
 				HDSeed hdseed(seed.bytes());
-				HDKeychain rootkey(hdseed.getExtendedKey(true));
+				HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 				std::string xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
 				if (xPubKey != _localstore->GetxPubKey())
 					ErrorChecker::ThrowParamException(Error::InvalidArgument, "xpub not match");
@@ -909,7 +909,7 @@ namespace Elastos {
 				_localstore->SetHasPassPhrase(!passphrase.empty());
 
 				HDSeed seed(BIP39::DeriveSeed(mnemonic, passphrase).bytes());
-				rootkey = HDKeychain(seed.getExtendedKey(true));
+				rootkey = HDKeychain(CTElastos, seed.getExtendedKey(CTElastos, true));
 
 				_localstore->SetPassPhrase("");
 
@@ -917,7 +917,7 @@ namespace Elastos {
 				_localstore->SetxPrivKey(AES::EncryptCCM(rootkey.extkey(), payPasswd));
 			} else {
 				bytes = AES::DecryptCCM(_localstore->GetxPrivKey(), payPasswd);
-				rootkey = HDKeychain(bytes);
+				rootkey = HDKeychain(CTElastos, bytes);
 			}
 
 			HDKeychain requestKey = rootkey.getChild("1'/0");
@@ -934,7 +934,7 @@ namespace Elastos {
 
 			for (std::vector<PublicKeyRing>::iterator it = pubkeyRing.begin(); it != pubkeyRing.end(); ++it) {
 				Base58::CheckDecode((*it).GetxPubKey(), bytes);
-				HDKeychain tmp(bytes);
+				HDKeychain tmp(CTElastos, bytes);
 				if (xpub.pubkey() == tmp.pubkey() || xpubHDPM == tmp) {
 					pubkeyRing.erase(it);
 					break;
@@ -990,7 +990,7 @@ namespace Elastos {
 		bool Account::VerifyPrivateKey(const std::string &mnemonic, const std::string &passphrase) const {
 			if (!_localstore->Readonly()) {
 				HDSeed seed(BIP39::DeriveSeed(mnemonic, passphrase).bytes());
-				HDKeychain rootkey = HDKeychain(seed.getExtendedKey(true));
+				HDKeychain rootkey = HDKeychain(CTElastos, seed.getExtendedKey(CTElastos, true));
 
 				HDKeychain xpub = rootkey.getChild("44'/0'/0'").getPublic();
 				if (xpub.pubkey() == _xpub->pubkey())
@@ -1011,7 +1011,7 @@ namespace Elastos {
 
 				uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
 				HDSeed hdseed(seed.bytes());
-				HDKeychain rootkey = HDKeychain(hdseed.getExtendedKey(true));
+				HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 
 				HDKeychain xpub = rootkey.getChild("44'/0'/0'").getPublic();
 				if (xpub.pubkey() != _xpub->pubkey())

@@ -38,7 +38,7 @@ namespace Elastos {
                                    MasterWallet *parent,
                                    const std::string &netType) :
                                    SubWallet(info, config, parent) {
-
+            _subAccount = SubAccountPtr(new SubAccount(_parent->GetAccount()));
         }
 
         std::string BTCSubWallet::GetChainID() const {

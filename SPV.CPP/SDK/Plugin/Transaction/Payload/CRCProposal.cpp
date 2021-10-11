@@ -634,8 +634,8 @@ namespace Elastos {
 			}
 
 			try {
-				Key key(_ownerPublicKey);
-				Key key1(_newOwnerPublicKey);
+				Key key(CTElastos, _ownerPublicKey);
+				Key key1(CTElastos, _newOwnerPublicKey);
 			} catch (const std::exception &e) {
 				SPVLOG_ERROR("invalid pubkey");
 				return false;
@@ -660,12 +660,12 @@ namespace Elastos {
 			}
 
 			try {
-				if (!Key(_ownerPublicKey).Verify(DigestChangeOwnerUnsigned(version), _signature)) {
+				if (!Key(CTElastos, _ownerPublicKey).Verify(DigestChangeOwnerUnsigned(version), _signature)) {
 					SPVLOG_ERROR("verify signature fail");
 					return false;
 				}
 
-				if (!Key(_newOwnerPublicKey).Verify(DigestChangeOwnerUnsigned(version), _newOwnerSignature)) {
+				if (!Key(CTElastos, _newOwnerPublicKey).Verify(DigestChangeOwnerUnsigned(version), _newOwnerSignature)) {
 					SPVLOG_ERROR("verify new owner signature fail");
 					return false;
 				}
@@ -850,7 +850,7 @@ namespace Elastos {
 			}
 
 			try {
-				Key key(_ownerPublicKey);
+				Key key(CTElastos, _ownerPublicKey);
 			} catch (const std::exception &e) {
 				SPVLOG_ERROR("invalid pubkey");
 				return false;
@@ -871,7 +871,7 @@ namespace Elastos {
 			}
 
 			try {
-				if (!Key(_ownerPublicKey).Verify(DigestTerminateProposalOwnerUnsigned(version), _signature)) {
+				if (!Key(CTElastos, _ownerPublicKey).Verify(DigestTerminateProposalOwnerUnsigned(version), _signature)) {
 					SPVLOG_ERROR("verify signature fail");
 					return false;
 				}
@@ -1073,8 +1073,8 @@ namespace Elastos {
 			}
 
 			try {
-				Key key(_ownerPublicKey);
-				Key key1(_secretaryPublicKey);
+				Key key(CTElastos, _ownerPublicKey);
+				Key key1(CTElastos, _secretaryPublicKey);
 			} catch (const std::exception &e) {
 				SPVLOG_ERROR("invalid ...");
 				return false;
@@ -1095,11 +1095,11 @@ namespace Elastos {
 			}
 
 			try {
-				if (!Key(_ownerPublicKey).Verify(DigestSecretaryElectionUnsigned(version), _signature)) {
+				if (!Key(CTElastos, _ownerPublicKey).Verify(DigestSecretaryElectionUnsigned(version), _signature)) {
 					SPVLOG_ERROR("verify owner signature fail");
 					return false;
 				}
-				if (!Key(_secretaryPublicKey).Verify(DigestSecretaryElectionUnsigned(version), _secretarySignature)) {
+				if (!Key(CTElastos, _secretaryPublicKey).Verify(DigestSecretaryElectionUnsigned(version), _secretarySignature)) {
 					SPVLOG_ERROR("verify secretary signature fail");
 					return false;
 				}
@@ -1287,7 +1287,7 @@ namespace Elastos {
             }
 
             try {
-                Key key(_ownerPublicKey);
+                Key key(CTElastos, _ownerPublicKey);
             } catch (const std::exception &e) {
                 SPVLOG_ERROR("invalid reserve custom id pubkey");
                 return false;
@@ -1301,7 +1301,7 @@ namespace Elastos {
                 return false;
 
             try {
-                if (!Key(_ownerPublicKey).Verify(DigestReserveCustomIDOwnerUnsigned(version), _signature)) {
+                if (!Key(CTElastos, _ownerPublicKey).Verify(DigestReserveCustomIDOwnerUnsigned(version), _signature)) {
                     SPVLOG_ERROR("reserve custom id verify owner signature fail");
                     return false;
                 }
@@ -1500,7 +1500,7 @@ namespace Elastos {
             }
 
             try {
-                Key key(_ownerPublicKey);
+                Key key(CTElastos, _ownerPublicKey);
             } catch (const std::exception &e) {
                 SPVLOG_ERROR("invalid reserve custom id pubkey");
                 return false;
@@ -1514,7 +1514,7 @@ namespace Elastos {
 		        return false;
 
             try {
-                if (!Key(_ownerPublicKey).Verify(DigestReceiveCustomIDOwnerUnsigned(version), _signature)) {
+                if (!Key(CTElastos, _ownerPublicKey).Verify(DigestReceiveCustomIDOwnerUnsigned(version), _signature)) {
                     SPVLOG_ERROR("receive custom id verify owner signature fail");
                     return false;
                 }
@@ -1692,7 +1692,7 @@ namespace Elastos {
             }
 
             try {
-                Key key(_ownerPublicKey);
+                Key key(CTElastos, _ownerPublicKey);
             } catch (const std::exception &e) {
                 SPVLOG_ERROR("invalid reserve custom id pubkey");
                 return false;
@@ -1706,7 +1706,7 @@ namespace Elastos {
                 return false;
 
             try {
-                if (!Key(_ownerPublicKey).Verify(DigestChangeCustomIDFeeOwnerUnsigned(version), _signature)) {
+                if (!Key(CTElastos, _ownerPublicKey).Verify(DigestChangeCustomIDFeeOwnerUnsigned(version), _signature)) {
                     SPVLOG_ERROR("change custom id fee verify owner signature fail");
                     return false;
                 }
@@ -1976,7 +1976,7 @@ namespace Elastos {
 			}
 
 			try {
-				Key key(_ownerPublicKey);
+				Key key(CTElastos, _ownerPublicKey);
 			} catch (const std::exception &e) {
 				SPVLOG_ERROR("invalid proposal owner pubkey");
 				return false;
@@ -2002,7 +2002,7 @@ namespace Elastos {
 				return false;
 
 			try {
-				if (!Key(_ownerPublicKey).Verify(DigestNormalOwnerUnsigned(version), _signature)) {
+				if (!Key(CTElastos, _ownerPublicKey).Verify(DigestNormalOwnerUnsigned(version), _signature)) {
 					SPVLOG_ERROR("verify owner signature fail");
 					return false;
 				}

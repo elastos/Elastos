@@ -14,6 +14,8 @@
 
 #include <Common/hash.h>
 #include <Common/typedefs.h>
+#include <Common/BigInt.h>
+#include "secp256k1_openssl.h"
 
 #include <stdexcept>
 
@@ -48,7 +50,7 @@ namespace Elastos {
 				const bytes_t& getSeed() const { return seed_; }
 				const bytes_t& getMasterKey() const { return master_key_; }
 				const bytes_t& getMasterChainCode() const { return master_chain_code_; }
-				bytes_t getExtendedKey(bool bPrivate = false) const;
+				bytes_t getExtendedKey(CoinType type, bool bPrivate = false) const;
 
 			private:
 				bytes_t seed_;
@@ -59,9 +61,9 @@ namespace Elastos {
 		class HDKeychain
 		{
 			public:
-				HDKeychain() { _valid = false; }
-				HDKeychain(const bytes_t& key, const bytes_t& chain_code, uint32_t child_num = 0, uint32_t parent_fp = 0, uint32_t depth = 0);
-				HDKeychain(const bytes_t& extkey);
+				HDKeychain();
+				HDKeychain(CoinType type, const bytes_t& key, const bytes_t& chain_code, uint32_t child_num = 0, uint32_t parent_fp = 0, uint32_t depth = 0);
+				HDKeychain(CoinType type, const bytes_t& extkey);
 				HDKeychain(const HDKeychain& source);
 
 				~HDKeychain() { _key.clean(); _chain_code.clean(); }
@@ -77,6 +79,7 @@ namespace Elastos {
 				// Serialization
 				bytes_t extkey() const;
 
+				CoinType coinType() const { return _type; }
 				// Accessor Methods
 				uint32_t version() const { return _version; }
 				int depth() const { return _depth; }
@@ -122,6 +125,9 @@ namespace Elastos {
 
 				std::string toString() const;
 
+        private:
+		    void FixCurveOrder();
+
 			private:
 				static uint32_t _priv_version;
 				static uint32_t _pub_version;
@@ -136,6 +142,10 @@ namespace Elastos {
 				bytes_t _pubkey;
 
 				bool _valid;
+
+            BigInt _CURVE_ORDER;
+
+            CoinType _type;
 
 				void updatePubkey();
 		};
