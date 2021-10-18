@@ -25,6 +25,7 @@
 
 #include "IBTCSubWallet.h"
 #include "SubWallet.h"
+#include "support/BRAddress.h"
 
 namespace Elastos {
     namespace ElaWallet {
@@ -59,7 +60,8 @@ namespace Elastos {
                          const std::string &netType);
 
         private:
-            SubAccountPtr _subAccount;
+            BRAddressParams _addrParams;
+            std::map<uint32_t, std::vector<uint160>> _chainAddressCached;
         };
 
     }

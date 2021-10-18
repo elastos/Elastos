@@ -147,11 +147,7 @@ namespace Elastos {
 				if (!account->HasMnemonic() || account->Readonly()) {
 					ErrorChecker::ThrowParamException(Error::UnsupportOperation, "unsupport operation: ethsc pubkey is empty");
 				} else {
-					if (account->HasPassphrase()) {
-						ErrorChecker::ThrowParamException(Error::Other, "need to call IMasterWallet::VerifyPassPhrase() first");
-					} else {
-						ErrorChecker::ThrowParamException(Error::Other, "need to call IMasterWallet::VerifyPayPassword() first");
-					}
+                    ErrorChecker::ThrowParamException(Error::Other, "need to call IMasterWallet::VerifyPayPassword() or re-import wallet first");
 				}
 			}
 

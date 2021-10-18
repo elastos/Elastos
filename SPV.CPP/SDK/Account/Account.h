@@ -76,6 +76,8 @@ namespace Elastos {
 
 			HDKeychainPtr MasterPubKey() const;
 
+			HDKeychainPtr BitcoinMasterPubKey() const;
+
 			std::string GetxPrvKeyString(const std::string &payPasswd) const;
 
 			std::string MasterPubKeyString() const;
@@ -154,11 +156,9 @@ namespace Elastos {
 		private:
 			void Init() const;
 
-			void SupportETHSC(const uint512 &seed, const std::string &payPasswd) const;
-
 		private:
 			LocalStorePtr _localstore;
-			mutable HDKeychainPtr _xpub;
+			mutable HDKeychainPtr _xpub, _btcMasterPubKey;
 			mutable int _cosignerIndex;
 			mutable HDKeychainPtr _curMultiSigner; // multi sign current wallet signer
 			mutable HDKeychainArray _allMultiSigners; // including _multiSigner and sorted

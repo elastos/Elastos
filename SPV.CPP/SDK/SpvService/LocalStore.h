@@ -123,6 +123,10 @@ namespace Elastos {
 
 			const std::string &GetETHSCPrimaryPubKey() const;
 
+            void SetxPubKeyBitcoin(const std::string &xpub);
+
+            const std::string &GetxPubKeyBitcoin() const;
+
 		private:
 			virtual nlohmann::json ToJson() const;
 
@@ -161,6 +165,9 @@ namespace Elastos {
 			// for ethsc
 			std::string _seed;
 			std::string _ethscPrimaryPubKey;
+
+			// for btc
+			std::string _xPubKeyBitcoin;
 
 			std::vector<CoinInfoPtr> _subWalletsInfoList;
 		private:

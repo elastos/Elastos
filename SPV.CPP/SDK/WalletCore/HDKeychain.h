@@ -36,6 +36,7 @@ namespace Elastos {
 			public:
 				HDSeed(const bytes_t& seed, const bytes_t& coin_seed = BITCOIN_SEED)
 				{
+				    seed_ = seed;
 					bytes_t hmac = hmac_sha512(coin_seed, seed);
 					master_key_.assign(hmac.begin(), hmac.begin() + 32);
 					master_chain_code_.assign(hmac.begin() + 32, hmac.end());

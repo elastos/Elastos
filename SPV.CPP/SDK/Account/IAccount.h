@@ -59,6 +59,8 @@ namespace Elastos {
 
 			virtual HDKeychainPtr MasterPubKey() const = 0;
 
+			virtual HDKeychainPtr BitcoinMasterPubKey() const = 0;
+
 			virtual std::string GetxPrvKeyString(const std::string &payPasswd) const = 0;
 
 			virtual std::string MasterPubKeyString() const = 0;

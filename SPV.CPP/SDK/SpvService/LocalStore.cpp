@@ -43,6 +43,7 @@ namespace Elastos {
 			j["coinInfo"] = _subWalletsInfoList;
 			j["seed"] = _seed;
 			j["ethscPrimaryPubKey"] = _ethscPrimaryPubKey;
+            j["xPubKeyBitcoin"] = _xPubKeyBitcoin;
 			return j;
 		}
 
@@ -92,6 +93,13 @@ namespace Elastos {
 					} else {
 						_ethscPrimaryPubKey.clear();
 					}
+
+                    // support btc
+                    if (j.find("xPubKeyBitcoin") != j.end()) {
+                        _xPubKeyBitcoin = j["xPubKeyBitcoin"].get<std::string>();
+                    } else {
+                        _xPubKeyBitcoin.clear();
+                    }
 
 					_subWalletsInfoList = j["coinInfo"].get<std::vector<CoinInfoPtr>>();
 				} else {
@@ -421,6 +429,14 @@ namespace Elastos {
 		const std::string &LocalStore::GetETHSCPrimaryPubKey() const {
 			return _ethscPrimaryPubKey;
 		}
+
+        void LocalStore::SetxPubKeyBitcoin(const std::string &xpub) {
+            _xPubKeyBitcoin = xpub;
+        }
+
+        const std::string &LocalStore::GetxPubKeyBitcoin() const {
+            return _xPubKeyBitcoin;
+        }
 
 	}
 }

@@ -65,7 +65,7 @@ public:
         return ret;
     }
 
-    base_uint& operator=(uint64_t b)
+    virtual base_uint& operator=(uint64_t b)
     {
         pn[0] = (unsigned int)b;
         pn[1] = (unsigned int)(b >> 32);
@@ -444,7 +444,7 @@ public:
 
     explicit uint128(const std::string &str);
 
-    explicit uint128(const std::vector<unsigned char> &vch);
+    explicit uint128(const bytes_t &vch);
 };
 
 inline bool operator==(const uint128& a, uint64_t b)                           { return (base_uint128)a == b; }
@@ -521,7 +521,7 @@ public:
 
     explicit uint160(const std::string &str);
 
-    explicit uint160(const std::vector<unsigned char> &vch);
+    explicit uint160(const bytes_t &vch);
 };
 
 inline bool operator==(const uint160& a, uint64_t b)                           { return (base_uint160)a == b; }
@@ -724,13 +724,15 @@ public:
 
     uint512 &operator=(const basetype &b);
 
+    uint512 &operator=(const bytes_t &vch);
+
     uint512(uint64_t b);
 
     uint512 &operator=(uint64_t b);
 
     explicit uint512(const std::string &str);
 
-    explicit uint512(const std::vector<unsigned char> &vch);
+    explicit uint512(const bytes_t &vch);
 
     uint256 trim256() const;
 };

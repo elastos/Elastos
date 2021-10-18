@@ -60,6 +60,14 @@ namespace Elastos {
 										 Error::PubKeyFormat, "xpub decode error");
 				_xpub = HDKeychainPtr(new HDKeychain(CTElastos, bytes));
 
+                if (!_localstore->GetxPubKeyBitcoin().empty()) {
+                    ErrorChecker::CheckParam(!Base58::CheckDecode(_localstore->GetxPubKeyBitcoin(), bytes),
+                                             Error::PubKeyFormat, "xpubkeyBitcoin decode error");
+                    _btcMasterPubKey = HDKeychainPtr(new HDKeychain(CTBitcoin, bytes));
+                } else {
+                    _btcMasterPubKey = nullptr;
+                }
+
 				if (_localstore->GetxPubKeyHDPM().empty())
 					Log::warn("xpubHDPM is empty");
 				else
@@ -105,19 +113,6 @@ namespace Elastos {
 			}
 		}
 
-		void Account::SupportETHSC(const uint512 &seed, const std::string &payPasswd) const {
-			UInt512 ethseed = *(UInt512 *) seed.begin();
-			BREthereumAccount account = createAccountWithBIP32Seed(ethseed);
-			BRKey pubkey = accountGetPrimaryAddressPublicKey(account);
-			bytes_t bytes(pubkey.pubKey, pubkey.pubKey + sizeof(pubkey.pubKey));
-
-			_localstore->SetSeed(AES::EncryptCCM(seed.bytes(), payPasswd));
-			_localstore->SetETHSCPrimaryPubKey(bytes.getHex());
-			_localstore->Save();
-
-			accountFree(account);
-		}
-
 		Account::~Account() {
 
 		}
@@ -153,6 +148,7 @@ namespace Elastos {
 			_localstore->SetOwnerPubKey("");
 			_localstore->SetSeed("");
 			_localstore->SetETHSCPrimaryPubKey("");
+            _localstore->SetxPubKeyBitcoin("");
 
 			if (compatible) {
 				_localstore->SetDerivationStrategy("BIP44");
@@ -195,6 +191,7 @@ namespace Elastos {
 			_localstore->SetOwnerPubKey("");
 			_localstore->SetSeed("");
 			_localstore->SetETHSCPrimaryPubKey("");
+            _localstore->SetxPubKeyBitcoin("");
 
 			if (compatible) {
 				_localstore->SetDerivationStrategy("BIP44");
@@ -218,19 +215,16 @@ namespace Elastos {
 
 			bytes_t xprv;
 			uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
-			UInt512 ethseed = *(UInt512 *) seed.begin();
-			BREthereumAccount account = createAccountWithBIP32Seed(ethseed);
-			BRKey pubkey = accountGetPrimaryAddressPublicKey(account);
-			accountFree(account);
-
 			HDSeed hdseed(seed.bytes());
 			HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
+            HDKeychain stdrootkey(CTBitcoin, hdseed.getExtendedKey(CTBitcoin, true));
 
 			std::string encryptedSeed = AES::EncryptCCM(bytes_t(seed.begin(), seed.size()), payPasswd);
-			std::string ethscPubKey = bytes_t(pubkey.pubKey, pubkey.pubKey + sizeof(pubkey.pubKey)).getHex();
+            std::string ethscPubKey = stdrootkey.getChild("44'/60'/0'/0/0").uncompressed_pubkey().getHex();
 			std::string encryptedMnemonic = AES::EncryptCCM(bytes_t(mnemonic.data(), mnemonic.size()), payPasswd);
 			std::string encryptedxPrvKey = AES::EncryptCCM(rootkey.extkey(), payPasswd);
 			std::string xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
+            std::string xpubBitcoin = Base58::CheckEncode(stdrootkey.getChild("44'/0'/0'").getPublic().extkey());
 
 			HDKeychain requestKey = rootkey.getChild("1'/0");
 			std::string encryptedRequestPrvKey = AES::EncryptCCM(requestKey.privkey(), payPasswd);
@@ -251,6 +245,7 @@ namespace Elastos {
 			_localstore->SetOwnerPubKey("");
 			_localstore->SetSeed(encryptedSeed);
 			_localstore->SetETHSCPrimaryPubKey(ethscPubKey);
+            _localstore->SetxPubKeyBitcoin(xpubBitcoin);
 
 			if (compatible) {
 				_localstore->SetDerivationStrategy("BIP44");
@@ -269,19 +264,16 @@ namespace Elastos {
 		Account::Account(const std::string &path, const std::string &mnemonic, const std::string &passphrase,
 						 const std::string &payPasswd, bool singleAddress) {
 			uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
-			UInt512 ethseed = *(UInt512 *) seed.begin();
-			BREthereumAccount account = createAccountWithBIP32Seed(ethseed);
-			BRKey pubkey = accountGetPrimaryAddressPublicKey(account);
-			accountFree(account);
-
-			HDSeed hdseed(seed.bytes());
+            HDSeed hdseed(seed.bytes());
 			HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
+            HDKeychain stdrootkey(CTBitcoin, hdseed.getExtendedKey(CTBitcoin, true));
 
 			std::string encryptedSeed = AES::EncryptCCM(bytes_t(seed.begin(), seed.size()), payPasswd);
-			std::string ethscPubKey = bytes_t(pubkey.pubKey, pubkey.pubKey + sizeof(pubkey.pubKey)).getHex();
+            std::string ethscPubKey = stdrootkey.getChild("44'/60'/0'/0/0").uncompressed_pubkey().getHex();
 			std::string encryptedMnemonic = AES::EncryptCCM(bytes_t(mnemonic.data(), mnemonic.size()), payPasswd);
 			std::string encryptedxPrvKey = AES::EncryptCCM(rootkey.extkey(), payPasswd);
 
+            std::string xpubBitcoin = Base58::CheckEncode(stdrootkey.getChild("44'/0'/0'").getPublic().extkey());
 			std::string xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
 			std::string xpubHDPM = Base58::CheckEncode(rootkey.getChild("45'").getPublic().extkey());
 
@@ -308,6 +300,7 @@ namespace Elastos {
 			_localstore->SetOwnerPubKey(ownerPubKey);
 			_localstore->SetSeed(encryptedSeed);
 			_localstore->SetETHSCPrimaryPubKey(ethscPubKey);
+            _localstore->SetxPubKeyBitcoin(xpubBitcoin);
 
 			Init();
 		}
@@ -344,13 +337,16 @@ namespace Elastos {
 			if (!json.RequestPrivKey().empty()) {
 				bytes.setHex(json.RequestPrivKey());
 				_localstore->SetRequestPrivKey(AES::EncryptCCM(bytes, payPasswd));
+                _localstore->SetReadonly(false);
 			}
 
 			if (!json.GetSeed().empty()) {
 				bytes.setHex(json.GetSeed());
 				_localstore->SetSeed(AES::EncryptCCM(bytes, payPasswd));
+                _localstore->SetReadonly(false);
 			}
 
+            _localstore->SetxPubKeyBitcoin(json.GetxPubKeyBitcoin());
 			_localstore->SetxPubKey(json.xPubKey());
 			_localstore->SetRequestPubKey(json.RequestPubKey());
 			_localstore->SetPublicKeyRing(json.GetPublicKeyRing());
@@ -365,12 +361,6 @@ namespace Elastos {
 			_localstore->SetETHSCPrimaryPubKey(json.GetETHSCPrimaryPubKey());
 
 			Init();
-
-			if (!json.HasPassPhrase() && !json.Mnemonic().empty() &&
-				(json.GetSeed().empty() || json.GetETHSCPrimaryPubKey().empty())) {
-				uint512 seed = BIP39::DeriveSeed(json.Mnemonic(), "");
-				SupportETHSC(seed, payPasswd);
-			}
 		}
 
 		bytes_t Account::RequestPubKey() const {
@@ -382,10 +372,10 @@ namespace Elastos {
 				ErrorChecker::ThrowLogicException(Error::Key, "Readonly wallet without prv key");
 			}
 
-			if (_localstore->GetSeed().empty() || _localstore->GetETHSCPrimaryPubKey().empty()) {
-				RegenerateKey(payPasswd);
-				Init();
-			}
+            if (_localstore->GetxPubKeyBitcoin().empty()) {
+                RegenerateKey(payPasswd);
+                Init();
+            }
 
 			bytes_t extkey = AES::DecryptCCM(_localstore->GetxPrivKey(), payPasswd);
 
@@ -401,10 +391,10 @@ namespace Elastos {
 				ErrorChecker::ThrowLogicException(Error::Key, "Readonly wallet without prv key");
 			}
 
-			if (_localstore->GetSeed().empty() || _localstore->GetETHSCPrimaryPubKey().empty()) {
-				RegenerateKey(payPassword);
-				Init();
-			}
+            if (_localstore->GetxPubKeyBitcoin().empty()) {
+                RegenerateKey(payPassword);
+                Init();
+            }
 
 			bytes_t bytes = AES::DecryptCCM(_localstore->GetRequestPrivKey(), payPassword);
 
@@ -417,19 +407,23 @@ namespace Elastos {
 		}
 
 		HDKeychainPtr Account::MasterPubKey() const {
-			ErrorChecker::CheckLogic(!_xpub, Error::Key, "Read-only wallet do not contain master public key");
+            ErrorChecker::CheckLogic(!_xpub, Error::Key, "master pubkey is null");
 			return _xpub;
 		}
+
+        HDKeychainPtr Account::BitcoinMasterPubKey() const {
+            return _btcMasterPubKey;
+        }
 
 		std::string Account::GetxPrvKeyString(const std::string &payPasswd) const {
 			if (_localstore->Readonly()) {
 				ErrorChecker::ThrowLogicException(Error::UnsupportOperation, "Readonly wallet can not export private key");
 			}
 
-			if (_localstore->GetSeed().empty() || _localstore->GetETHSCPrimaryPubKey().empty()) {
-				RegenerateKey(payPasswd);
-				Init();
-			}
+            if (_localstore->GetxPubKeyBitcoin().empty()) {
+                RegenerateKey(payPasswd);
+                Init();
+            }
 
 			bytes_t bytes = AES::DecryptCCM(_localstore->GetxPrivKey(), payPasswd);
 			return Base58::CheckEncode(bytes);
@@ -457,10 +451,10 @@ namespace Elastos {
 			if (!_localstore->Readonly()) {
 				ErrorChecker::CheckPassword(newPasswd, "New");
 
-				if (_localstore->GetSeed().empty() || _localstore->GetETHSCPrimaryPubKey().empty()) {
-					RegenerateKey(oldPasswd);
-					Init();
-				}
+                if (_localstore->GetxPubKeyBitcoin().empty()) {
+                    RegenerateKey(oldPasswd);
+                    Init();
+                }
 
 				_localstore->ChangePasswd(oldPasswd, newPasswd);
 
@@ -608,10 +602,10 @@ namespace Elastos {
 		}
 
 		KeyStore Account::ExportKeystore(const std::string &payPasswd) const {
-			if (!_localstore->Readonly() && (_localstore->GetSeed().empty() || _localstore->GetETHSCPrimaryPubKey().empty())) {
-				RegenerateKey(payPasswd);
-				Init();
-			}
+            if (!_localstore->Readonly() && _localstore->GetxPubKeyBitcoin().empty()) {
+                RegenerateKey(payPasswd);
+                Init();
+            }
 
 			bytes_t bytes;
 			ElaNewWalletJson json;
@@ -647,6 +641,7 @@ namespace Elastos {
 			json.SetSingleAddress(_localstore->SingleAddress());
 			json.SetCoinInfoList(_localstore->GetSubWalletInfoList());
 			json.SetETHSCPrimaryPubKey(_localstore->GetETHSCPrimaryPubKey());
+            json.SetxPubKeyBitcoin(_localstore->GetxPubKeyBitcoin());
 
 			return KeyStore(json);
 		}
@@ -675,6 +670,8 @@ namespace Elastos {
 				// owner pubkey
 				stream.WriteVarBytes(tmp);
 				// xpub
+                stream.WriteVarBytes(tmp);
+                // btc xpub
 				stream.WriteVarBytes(tmp);
 				// xpub HDPM
 				stream.WriteVarBytes(tmp);
@@ -690,6 +687,12 @@ namespace Elastos {
 					return j;
 				}
 				stream.WriteVarBytes(tmp);
+
+                if (!Base58::CheckDecode(_localstore->GetxPubKeyBitcoin(), tmp)) {
+                    Log::error("Decode btc xpub fail when exoprt read-only wallet");
+                    return j;
+                }
+                stream.WriteVarBytes(tmp);
 
 				if (!Base58::CheckDecode(_localstore->GetxPubKeyHDPM(), tmp)) {
 					Log::error("Decode xpubHDPM fail when export read-only wallet");
@@ -800,6 +803,7 @@ namespace Elastos {
 			}
 			_localstore->SetOwnerPubKey(bytes.getHex());
 
+            // xpub
 			if (!stream.ReadVarBytes(bytes)) {
 				Log::error("Import read-only wallet: xpub");
 				return false;
@@ -809,12 +813,23 @@ namespace Elastos {
 			else
 				_localstore->SetxPubKey(Base58::CheckEncode(bytes));
 
+            // btc xpub
+            if (!stream.ReadVarBytes(bytes)) {
+                Log::error("Import read-only wallet: btc xpub");
+                return false;
+            }
+            if (bytes.empty())
+                _localstore->SetxPubKeyBitcoin("");
+            else
+                _localstore->SetxPubKeyBitcoin(Base58::CheckEncode(bytes));
+
+            // xpub HDPM
 			if (!stream.ReadVarBytes(bytes)) {
 				Log::error("Import read-only wallet: xpubHDPM");
 				return false;
 			}
 			if (bytes.empty())
-				_localstore->SetxPubKey("");
+                _localstore->SetxPubKeyHDPM("");
 			else
 				_localstore->SetxPubKeyHDPM(Base58::CheckEncode(bytes));
 
@@ -882,89 +897,113 @@ namespace Elastos {
 				ErrorChecker::ThrowLogicException(Error::UnsupportOperation, "Readonly wallet can not export mnemonic");
 			}
 
-			if (_localstore->GetSeed().empty() || _localstore->GetETHSCPrimaryPubKey().empty()) {
-				RegenerateKey(payPasswd);
-				Init();
-			}
+            if (_localstore->GetxPubKeyBitcoin().empty()) {
+                RegenerateKey(payPasswd);
+                Init();
+            }
 
 			std::string encryptedMnemonic = _localstore->GetMnemonic();
 			bytes_t bytes = AES::DecryptCCM(encryptedMnemonic, payPasswd);
 			return std::string((char *)bytes.data(), bytes.size());
 		}
 
-		void Account::RegenerateKey(const std::string &payPasswd) const {
-			Log::info("Doing regenerate pubkey...");
-			std::vector<PublicKeyRing> pubkeyRing = _localstore->GetPublicKeyRing();
+        void Account::RegenerateKey(const std::string &payPasswd) const {
+            Log::info("Doing regenerate pubkey...");
+            std::vector<PublicKeyRing> pubkeyRing = _localstore->GetPublicKeyRing();
 
-			HDKeychain rootkey;
-			bytes_t bytes;
-			std::string mnemonic;
-			if (_localstore->GetxPrivKey().empty()) {
-				bytes = AES::DecryptCCM(_localstore->GetMnemonic(), payPasswd);
-				mnemonic = std::string((char *) &bytes[0], bytes.size());
+            HDKeychain rootkey, stdrootkey;
+            bytes_t bytes;
+            uint512 seed;
+            std::string tmpstr;
+            bool haveSeed = false, haveRootkey = false, havestdrootkey = false;
 
-				bytes = AES::DecryptCCM(_localstore->GetPassPhrase(), payPasswd);
-				std::string passphrase((char *) &bytes[0], bytes.size());
+            if (_localstore->GetSeed().empty() && !_localstore->GetMnemonic().empty() &&
+                (!_localstore->HasPassPhrase() || (_localstore->HasPassPhrase() && !_localstore->GetPassPhrase().empty()))) {
 
-				_localstore->SetHasPassPhrase(!passphrase.empty());
+                bytes = AES::DecryptCCM(_localstore->GetMnemonic(), payPasswd);
+                std::string mnemonic = std::string((char *) &bytes[0], bytes.size());
+                seed = BIP39::DeriveSeed(mnemonic, _localstore->GetPassPhrase());
+                _localstore->SetSeed(AES::EncryptCCM(seed.bytes(), payPasswd));
+                haveSeed = true;
 
-				HDSeed seed(BIP39::DeriveSeed(mnemonic, passphrase).bytes());
-				rootkey = HDKeychain(CTElastos, seed.getExtendedKey(CTElastos, true));
+                if (!_localstore->GetPassPhrase().empty())
+                    _localstore->SetHasPassPhrase(true);
+                _localstore->SetPassPhrase("");
+            } else if (!_localstore->GetSeed().empty()) {
+                bytes = AES::DecryptCCM(_localstore->GetSeed(), payPasswd);
+                seed = bytes;
+                haveSeed = true;
+            }
 
-				_localstore->SetPassPhrase("");
+            if (_localstore->GetxPrivKey().empty() && haveSeed) {
+                HDSeed hdseed(seed.bytes());
+                rootkey = HDKeychain(CTElastos, hdseed.getExtendedKey(CTElastos, true));
+                // encrypt private key
+                _localstore->SetxPrivKey(AES::EncryptCCM(rootkey.extkey(), payPasswd));
+                haveRootkey = true;
+            } else if (!_localstore->GetxPrivKey().empty()) {
+                bytes = AES::DecryptCCM(_localstore->GetxPrivKey(), payPasswd);
+                rootkey = HDKeychain(CTElastos, bytes);
+                haveRootkey = true;
+            }
 
-				// encrypt private key
-				_localstore->SetxPrivKey(AES::EncryptCCM(rootkey.extkey(), payPasswd));
-			} else {
-				bytes = AES::DecryptCCM(_localstore->GetxPrivKey(), payPasswd);
-				rootkey = HDKeychain(CTElastos, bytes);
-			}
+            if (_localstore->GetRequestPrivKey().empty() && haveRootkey) {
+                HDKeychain requestKey = rootkey.getChild("1'/0");
+                bytes = requestKey.privkey();
+                _localstore->SetRequestPrivKey(AES::EncryptCCM(bytes, payPasswd));
+                _localstore->SetRequestPubKey(requestKey.pubkey().getHex());
+            }
 
-			HDKeychain requestKey = rootkey.getChild("1'/0");
-			bytes = requestKey.privkey();
-			_localstore->SetRequestPrivKey(AES::EncryptCCM(bytes, payPasswd));
-			_localstore->SetRequestPubKey(requestKey.pubkey().getHex());
+            // master public key
+            if (_localstore->GetxPubKey().empty() && haveRootkey) {
+                HDKeychain xpub = rootkey.getChild("44'/0'/0'").getPublic();
+                _localstore->SetxPubKey(Base58::CheckEncode(xpub.extkey()));
+            }
 
-			// master public key
-			HDKeychain xpub = rootkey.getChild("44'/0'/0'").getPublic();
-			_localstore->SetxPubKey(Base58::CheckEncode(xpub.extkey()));
+            if (!havestdrootkey && haveSeed) {
+                HDSeed hdseed(seed.bytes());
+                stdrootkey = HDKeychain(CTBitcoin, hdseed.getExtendedKey(CTBitcoin, true));
+                havestdrootkey = true;
+            }
+            // bitcoin master public key
+            if (_localstore->GetxPubKeyBitcoin().empty() && havestdrootkey) {
+                tmpstr = Base58::CheckEncode(stdrootkey.getChild("44'/0'/0'").getPublic().extkey());
+                _localstore->SetxPubKeyBitcoin(tmpstr);
+            }
+            // eth primary public key
+            if (_localstore->GetETHSCPrimaryPubKey().empty() && havestdrootkey) {
+                tmpstr = stdrootkey.getChild("44'/60'/0'/0/0").uncompressed_pubkey().getHex();
+                _localstore->SetETHSCPrimaryPubKey(tmpstr);
+            }
 
-			HDKeychain xpubHDPM = rootkey.getChild("45'").getPublic();
-			_localstore->SetxPubKeyHDPM(Base58::CheckEncode(xpubHDPM.extkey()));
+            if (_localstore->GetxPubKeyHDPM().empty() && haveRootkey) {
+                HDKeychain xpubHDPM = rootkey.getChild("45'").getPublic();
+                _localstore->SetxPubKeyHDPM(Base58::CheckEncode(xpubHDPM.extkey()));
+            }
 
-			for (std::vector<PublicKeyRing>::iterator it = pubkeyRing.begin(); it != pubkeyRing.end(); ++it) {
-				Base58::CheckDecode((*it).GetxPubKey(), bytes);
-				HDKeychain tmp(CTElastos, bytes);
-				if (xpub.pubkey() == tmp.pubkey() || xpubHDPM == tmp) {
-					pubkeyRing.erase(it);
-					break;
-				}
-			}
+            // 44'/coinIndex'/account'/change/index
+            if (_localstore->GetOwnerPubKey().empty() && haveRootkey) {
+                bytes = rootkey.getChild("44'/0'/1'/0/0").pubkey();
+                _localstore->SetOwnerPubKey(bytes.getHex());
+            }
 
-			if (_localstore->GetN() > 1 && _localstore->DerivationStrategy() == "BIP44") {
-				pubkeyRing.emplace_back(_localstore->GetRequestPubKey(), _localstore->GetxPubKey());
-			} else {
-				pubkeyRing.emplace_back(_localstore->GetRequestPubKey(), _localstore->GetxPubKeyHDPM());
-			}
-			_localstore->SetPublicKeyRing(pubkeyRing);
+            for (auto it = pubkeyRing.begin(); it != pubkeyRing.end(); ++it) {
+                if (_localstore->GetxPubKey() == (*it).GetxPubKey() ||
+                    _localstore->GetxPubKeyHDPM() == (*it).GetxPubKey()) {
+                    pubkeyRing.erase(it);
+                    break;
+                }
+            }
 
-			// 44'/coinIndex'/account'/change/index
-			bytes = rootkey.getChild("44'/0'/1'/0/0").pubkey();
-			_localstore->SetOwnerPubKey(bytes.getHex());
+            if (_localstore->GetN() > 1 && _localstore->DerivationStrategy() == "BIP44") {
+                pubkeyRing.emplace_back(_localstore->GetRequestPubKey(), _localstore->GetxPubKey());
+            } else {
+                pubkeyRing.emplace_back(_localstore->GetRequestPubKey(), _localstore->GetxPubKeyHDPM());
+            }
+            _localstore->SetPublicKeyRing(pubkeyRing);
 
-			if ((_localstore->GetSeed().empty() || _localstore->GetETHSCPrimaryPubKey().empty()) &&
-				!_localstore->HasPassPhrase() && !_localstore->GetMnemonic().empty()) {
-				if (mnemonic.empty()) {
-					bytes = AES::DecryptCCM(_localstore->GetMnemonic(), payPasswd);
-					mnemonic = std::string((char *) &bytes[0], bytes.size());
-				}
-				uint512 seed = BIP39::DeriveSeed(mnemonic, "");
-				// save in GenerateSeed()
-				SupportETHSC(seed, payPasswd);
-			} else {
-				_localstore->Save();
-			}
-		}
+            _localstore->Save();
+        }
 
 		uint512 Account::GetSeed(const std::string &payPasswd) const {
 			uint512 seed;
@@ -1002,10 +1041,10 @@ namespace Elastos {
 
 		bool Account::VerifyPassPhrase(const std::string &passphrase, const std::string &payPasswd) const {
 			if (!_localstore->Readonly()) {
-				if (_localstore->GetxPrivKey().empty() || _localstore->GetxPubKeyHDPM().empty()) {
-					RegenerateKey(payPasswd);
-					Init();
-				}
+                if (_localstore->GetxPubKeyBitcoin().empty()) {
+                    RegenerateKey(payPasswd);
+                    Init();
+                }
 				bytes_t bytes = AES::DecryptCCM(_localstore->GetMnemonic(), payPasswd);
 				std::string mnemonic((char *) &bytes[0], bytes.size());
 
@@ -1017,10 +1056,6 @@ namespace Elastos {
 				if (xpub.pubkey() != _xpub->pubkey())
 					return false;
 
-				if (_localstore->GetSeed().empty() || _localstore->GetETHSCPrimaryPubKey().empty()) {
-					SupportETHSC(seed, payPasswd);
-				}
-
 				return true;
 			}
 
@@ -1029,10 +1064,10 @@ namespace Elastos {
 
 		bool Account::VerifyPayPassword(const std::string &payPasswd) const {
 			if (!_localstore->Readonly()) {
-				if (_localstore->GetSeed().empty() || _localstore->GetETHSCPrimaryPubKey().empty()) {
-					RegenerateKey(payPasswd);
-					Init();
-				}
+                if (_localstore->GetxPubKeyBitcoin().empty()) {
+                    RegenerateKey(payPasswd);
+                    Init();
+                }
 
 				AES::DecryptCCM(_localstore->GetRequestPrivKey(), payPasswd);
 

@@ -27,6 +27,7 @@
 
 #include "support/BRKey.h"
 #include "support/BRInt.h"
+#include "support/BRAddress.h"
 #include <stddef.h>
 #include <inttypes.h>
 
@@ -38,7 +39,7 @@ extern "C" {
 #define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output
 #define TX_INPUT_SIZE        148         // estimated size for a typical compact pubkey transaction input
 #define TX_MIN_OUTPUT_AMOUNT (TX_FEE_PER_KB*3*(TX_OUTPUT_SIZE + TX_INPUT_SIZE)/1000) //no txout can be below this amount
-#define TX_MAX_SIZE          (1024 * 1024) // no tx can be larger than this size in bytes
+#define TX_MAX_SIZE          100000      // no tx can be larger than this size in bytes
 #define TX_UNCONFIRMED       INT32_MAX   // block height indicating transaction is unconfirmed
 #define TX_MAX_LOCK_HEIGHT   500000000   // a lockTime below this value is a block height, otherwise a timestamp
 
@@ -50,7 +51,6 @@ extern "C" {
 typedef struct {
     UInt256 txHash;
     uint32_t index;
-    char address[75];
     uint64_t amount;
     uint8_t *script;
     size_t scriptLen;
@@ -61,22 +61,23 @@ typedef struct {
     uint32_t sequence;
 } BRTxInput;
 
-void BRTxInputSetAddress(BRTxInput *input, const char *address);
+size_t BRTxInputAddress(const BRTxInput *input, char *address, size_t addrLen, BRAddressParams params);
+void BRTxInputSetAddress(BRTxInput *input, BRAddressParams params, const char *address);
 void BRTxInputSetScript(BRTxInput *input, const uint8_t *script, size_t scriptLen);
 void BRTxInputSetSignature(BRTxInput *input, const uint8_t *signature, size_t sigLen);
 void BRTxInputSetWitness(BRTxInput *input, const uint8_t *witness, size_t witLen);
 
 typedef struct {
-    char address[75];
     uint64_t amount;
     uint8_t *script;
     size_t scriptLen;
 } BRTxOutput;
 
-#define BR_TX_OUTPUT_NONE ((const BRTxOutput) { "", 0, NULL, 0 })
+#define BR_TX_OUTPUT_NONE ((const BRTxOutput) { 0, NULL, 0 })
 
 // when creating a BRTxOutput struct outside of a BRTransaction, set address or script to NULL when done to free memory
-void BRTxOutputSetAddress(BRTxOutput *output, const char *address);
+size_t BRTxOutputAddress(const BRTxOutput *output, char *address, size_t addrLen, BRAddressParams params);
+void BRTxOutputSetAddress(BRTxOutput *output, BRAddressParams params, const char *address);
 void BRTxOutputSetScript(BRTxOutput *output, const uint8_t *script, size_t scriptLen);
 
 typedef struct {

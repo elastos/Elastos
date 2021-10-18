@@ -24,6 +24,7 @@
 #include "MasterWallet.h"
 #include <WalletCore/CoinInfo.h>
 #include <Common/Log.h>
+#include <Common/ErrorChecker.h>
 
 
 namespace Elastos {
@@ -38,7 +39,16 @@ namespace Elastos {
                                    MasterWallet *parent,
                                    const std::string &netType) :
                                    SubWallet(info, config, parent) {
-            _subAccount = SubAccountPtr(new SubAccount(_parent->GetAccount()));
+            AccountPtr account = _parent->GetAccount();
+
+            if (account->BitcoinMasterPubKey() == nullptr)
+                ErrorChecker::ThrowParamException(Error::CreateSubWalletError, "need to call IMasterWallet::VerifyPayPassword() or re-import wallet first");
+
+            if (netType == CONFIG_MAINNET) {
+                _addrParams = BITCOIN_ADDRESS_PARAMS;
+            } else {
+                _addrParams = BITCOIN_TEST_ADDRESS_PARAMS;
+            }
         }
 
         std::string BTCSubWallet::GetChainID() const {

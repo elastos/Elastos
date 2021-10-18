@@ -11,6 +11,8 @@
 #include <Common/Log.h>
 #include <WalletCore/Base58.h>
 #include <support/BRKey.h>
+#include <Ethereum/EthereumAccount.h>
+#include <ethereum/ewm/BREthereumAccount.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -28,6 +30,40 @@ TEST_CASE("Address test", "[Address]") {
 
 		REQUIRE("Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ" == Address(PrefixStandard, child.pubkey()).String());
 	}
+
+	SECTION("eth sidechain address test") {
+        std::string m = "flat universe quantum uniform emerge blame lemon detail april sting aerobic disease";
+        std::string addr = "0x2BE115732F2d3B0e4e5F32d0ec81FE6D959D01A9";
+        uint512 seed = BIP39::DeriveSeed(m, "");
+        UInt512 ethseed = *(UInt512 *) seed.begin();
+        BREthereumAccount account = createAccountWithBIP32Seed(ethseed);
+
+        // test private key
+        BRKey prvkey1 = derivePrivateKeyFromSeed(ethseed, 0);
+        HDKeychain root = HDKeychain(CTBitcoin, HDSeed(seed.bytes()).getExtendedKey(CTBitcoin, true));
+        HDKeychain prvkey2 = root.getChild("44'/60'/0'/0/0");
+        REQUIRE(prvkey2.privkey().getHex() == bytes_t(prvkey1.secret.u8, prvkey1.secret.u8 + sizeof(UInt256)).getHex());
+
+        // test pub key
+        BRKey k1 = accountGetPrimaryAddressPublicKey(account);
+        bytes_t puk1(k1.pubKey, k1.pubKey + sizeof(k1.pubKey));
+        bytes_t puk2 = prvkey2.uncompressed_pubkey();
+        REQUIRE(puk1.getHex() == puk2.getHex());
+
+        // test address
+        char *paddr = accountGetPrimaryAddressString (account);
+        std::string address1(paddr);
+        free(paddr);
+        REQUIRE(address1 == addr);
+        accountFree(account);
+
+        // test address
+        BREthereumAddress raw = addressCreateKey(&k1);
+        char *s = addressGetEncodedString(&raw, 1);
+        std::string address2(s);
+        REQUIRE(address2 == addr);
+        free(s);
+    }
 
 	SECTION("btc address test") {
 	    //test data from https://iancoleman.io/bip39/
@@ -64,7 +100,7 @@ TEST_CASE("Address test", "[Address]") {
         key.secret = *(UInt256*) hdkey1.privkey().data();
         memcpy(key.pubKey, hdkey1.pubkey().data(), hdkey1.pubkey().size());
         key.compressed = 1;
-        BRKeyLegacyAddr(&key, addr, sizeof(addr));
+        BRKeyLegacyAddr(&key, addr, sizeof(addr), BITCOIN_ADDRESS_PARAMS);
         REQUIRE(std::string(addr) == addr1);
         REQUIRE(hdkey1.pubkey().getHex() == pubkey1);
 
@@ -76,7 +112,7 @@ TEST_CASE("Address test", "[Address]") {
         key.secret = *(UInt256*) hdkey2.privkey().data();
         memcpy(key.pubKey, hdkey2.pubkey().data(), hdkey2.pubkey().size());
         key.compressed = 1;
-        BRKeyLegacyAddr(&key, addr, sizeof(addr));
+        BRKeyLegacyAddr(&key, addr, sizeof(addr), BITCOIN_ADDRESS_PARAMS);
         REQUIRE(std::string(addr) == addr2);
         REQUIRE(hdkey2.pubkey().getHex() == pubkey2);
 

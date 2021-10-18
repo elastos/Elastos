@@ -51,10 +51,10 @@ static UInt256 _BRBIP38DerivePassfactor(uint8_t flag, const uint8_t *entropy, co
 {
     size_t len = strlen(passphrase);
     UInt256 prefactor, passfactor;
-    
+
     BRScrypt(&prefactor, sizeof(prefactor), passphrase, len, entropy, (flag & BIP38_LOTSEQUENCE_FLAG) ? 4 : 8,
              BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P);
-    
+
     if (flag & BIP38_LOTSEQUENCE_FLAG) { // passfactor = SHA256(SHA256(prefactor + entropy))
         uint8_t d[sizeof(prefactor) + sizeof(uint64_t)];
 
@@ -64,7 +64,7 @@ static UInt256 _BRBIP38DerivePassfactor(uint8_t flag, const uint8_t *entropy, co
         mem_clean(d, sizeof(d));
     }
     else passfactor = prefactor;
-    
+
     var_clean(&len);
     var_clean(&prefactor);
     return passfactor;
@@ -74,7 +74,7 @@ static UInt512 _BRBIP38DeriveKey(BRECPoint passpoint, const uint8_t *addresshash
 {
     UInt512 dk;
     uint8_t salt[sizeof(uint32_t) + sizeof(uint64_t)];
-    
+
     memcpy(salt, addresshash, sizeof(uint32_t));
     memcpy(&salt[sizeof(uint32_t)], entropy, sizeof(uint64_t)); // salt = addresshash + entropy
     BRScrypt(&dk, sizeof(dk), &passpoint, sizeof(passpoint), salt, sizeof(salt), BIP38_SCRYPT_EC_N, BIP38_SCRYPT_EC_R,
@@ -86,14 +86,14 @@ static UInt512 _BRBIP38DeriveKey(BRECPoint passpoint, const uint8_t *addresshash
 int BRBIP38KeyIsValid(const char *bip38Key)
 {
     uint8_t data[39];
-    
+
     assert(bip38Key != NULL);
-    
+
     if (BRBase58CheckDecode(data, sizeof(data), bip38Key) != 39) return 0; // invalid length
-    
+
     uint16_t prefix = UInt16GetBE(data);
     uint8_t flag = data[2];
-    
+
     if (prefix == BIP38_NOEC_PREFIX) { // non EC multiplied key
         return ((flag & BIP38_NOEC_FLAG) == BIP38_NOEC_FLAG && (flag & BIP38_LOTSEQUENCE_FLAG) == 0 &&
                 (flag & BIP38_INVALID_FLAG) == 0);
@@ -106,17 +106,17 @@ int BRBIP38KeyIsValid(const char *bip38Key)
 
 // decrypts a BIP38 key using the given passphrase and returns false if passphrase is incorrect
 // passphrase must be unicode NFC normalized: http://www.unicode.org/reports/tr15/#Norm_Forms
-int BRKeySetBIP38Key(BRKey *key, const char *bip38Key, const char *passphrase)
+int BRKeySetBIP38Key(BRKey *key, const char *bip38Key, const char *passphrase, BRAddressParams params)
 {
     int r = 1;
     uint8_t data[39];
-    
+
     assert(key != NULL);
     assert(bip38Key != NULL);
     assert(passphrase != NULL);
-    
+
     if (BRBase58CheckDecode(data, sizeof(data), bip38Key) != 39) return 0; // invalid length
-    
+
     uint16_t prefix = UInt16GetBE(data);
     uint8_t flag = data[2];
     const uint8_t *addresshash = &data[3];
@@ -133,11 +133,11 @@ int BRKeySetBIP38Key(BRKey *key, const char *bip38Key, const char *passphrase)
                  BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P);
         derived1 = *(UInt256 *)&derived, derived2 = *(UInt256 *)&derived.u8[sizeof(UInt256)];
         var_clean(&derived);
-        
+
         BRAESECBDecrypt(&encrypted1, &derived2, sizeof(derived2));
         secret.u64[0] = encrypted1.u64[0] ^ derived1.u64[0];
         secret.u64[1] = encrypted1.u64[1] ^ derived1.u64[1];
-        
+
         BRAESECBDecrypt(&encrypted2, &derived2, sizeof(derived2));
         secret.u64[2] = encrypted2.u64[0] ^ derived1.u64[2];
         secret.u64[3] = encrypted2.u64[1] ^ derived1.u64[3];
@@ -151,7 +151,7 @@ int BRKeySetBIP38Key(BRKey *key, const char *bip38Key, const char *passphrase)
         UInt256 passfactor = _BRBIP38DerivePassfactor(flag, entropy, passphrase), factorb;
         BRECPoint passpoint;
         uint64_t seedb[3];
-        
+
         BRSecp256k1PointGen(&passpoint, &passfactor); // passpoint = G*passfactor
         derived = _BRBIP38DeriveKey(passpoint, addresshash, entropy);
         var_clean(&passpoint);
@@ -170,17 +170,17 @@ int BRKeySetBIP38Key(BRKey *key, const char *bip38Key, const char *passphrase)
         seedb[1] = encrypted1.u64[1] ^ derived1.u64[1];
         var_clean(&derived1, &derived2);
         var_clean(&encrypted1, &encrypted2);
-        
+
         BRSHA256_2(&factorb, seedb, sizeof(seedb)); // factorb = SHA256(SHA256(seedb))
         mem_clean(seedb, sizeof(seedb));
         secret = passfactor;
         BRSecp256k1ModMul(&secret, &factorb); // secret = passfactor*factorb mod N
         var_clean(&passfactor, &factorb);
     }
-    
+
     BRKeySetSecret(key, &secret, flag & BIP38_COMPRESSED_FLAG);
     var_clean(&secret);
-    BRKeyLegacyAddr(key, address.s, sizeof(address));
+    BRKeyLegacyAddr(key, address.s, sizeof(address), params);
     BRSHA256_2(&hash, address.s, strlen(address.s));
     if (! address.s[0] || memcmp(&hash, addresshash, sizeof(uint32_t)) != 0) r = 0;
     return r;
@@ -217,7 +217,7 @@ void BRKeySetBIP38ItermediateCode(BRKey *key, const char *code, const uint8_t *s
 // encrypts key with passphrase
 // passphrase must be unicode NFC normalized
 // returns number of bytes written to bip38Key including NULL terminator or total bip38KeyLen needed if bip38Key is NULL
-size_t BRKeyBIP38Key(BRKey *key, char *bip38Key, size_t bip38KeyLen, const char *passphrase)
+size_t BRKeyBIP38Key(BRKey *key, char *bip38Key, size_t bip38KeyLen, const char *passphrase, BRAddressParams params)
 {
     uint16_t prefix = BIP38_NOEC_PREFIX;
     uint8_t buf[39], flag = BIP38_NOEC_FLAG;
@@ -227,14 +227,14 @@ size_t BRKeyBIP38Key(BRKey *key, char *bip38Key, size_t bip38KeyLen, const char 
     UInt512 derived;
     UInt256 hash, derived1, derived2;
     UInt128 encrypted1, encrypted2;
-    
+
     if (! bip38Key) return 43*138/100 + 2; // 43bytes*log(256)/log(58), rounded up, plus NULL terminator
 
-    assert(key != NULL && BRKeyPrivKey(key, NULL, 0) > 0);
+    assert(key != NULL && BRKeyIsPrivKey(key));
     assert(passphrase != NULL);
-   
+
     if (key->compressed) flag |= BIP38_COMPRESSED_FLAG;
-    BRKeyLegacyAddr(key, address.s, sizeof(address));
+    BRKeyLegacyAddr(key, address.s, sizeof(address), params);
     BRSHA256_2(&hash, address.s, strlen(address.s));
     salt = hash.u32[0];
 
@@ -242,7 +242,7 @@ size_t BRKeyBIP38Key(BRKey *key, char *bip38Key, size_t bip38KeyLen, const char 
              BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P);
     derived1 = *(UInt256 *)&derived, derived2 = *(UInt256 *)&derived.u8[sizeof(UInt256)];
     var_clean(&derived);
-    
+
     // enctryped1 = AES256Encrypt(privkey[0...15] xor derived1[0...15], derived2)
     encrypted1.u64[0] = key->secret.u64[0] ^ derived1.u64[0];
     encrypted1.u64[1] = key->secret.u64[1] ^ derived1.u64[1];
@@ -252,7 +252,7 @@ size_t BRKeyBIP38Key(BRKey *key, char *bip38Key, size_t bip38KeyLen, const char 
     encrypted2.u64[0] = key->secret.u64[2] ^ derived1.u64[2];
     encrypted2.u64[1] = key->secret.u64[3] ^ derived1.u64[3];
     BRAESECBEncrypt(&encrypted2, &derived2, sizeof(derived2));
-    
+
     UInt16SetBE(&buf[off], prefix);
     off += sizeof(prefix);
     buf[off] = flag;
