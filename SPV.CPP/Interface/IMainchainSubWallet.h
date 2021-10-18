@@ -38,6 +38,7 @@ namespace Elastos {
 			/**
 			 * Deposit token from the main chain to side chains, such as ID chain or token chain, etc
 			 *
+			 * @version 0x00 means old deposit tx, 0x01 means new deposit tx, other value will throw exception.
 			 * @param inputs UTXO which will be used. eg
 			 * [
 			 *   {
@@ -58,6 +59,7 @@ namespace Elastos {
 			 * @return The transaction in JSON format to be signed and published
 			 */
 			virtual nlohmann::json CreateDepositTransaction(
+			        uint8_t version,
 					const nlohmann::json &inputs,
 					const std::string &sideChainID,
 					const std::string &amount,

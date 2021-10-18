@@ -38,6 +38,7 @@ namespace Elastos {
 			~MainchainSubWallet();
 
 			nlohmann::json CreateDepositTransaction(
+			        uint8_t version,
 					const nlohmann::json &inputsJson,
 					const std::string &sideChainID,
 					const std::string &amount,
