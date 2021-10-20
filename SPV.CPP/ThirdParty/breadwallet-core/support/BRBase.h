@@ -27,6 +27,7 @@
 #define BRBase_h
 
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,6 +46,11 @@ typedef uint64_t BRBlockHeight;
 #define BLOCK_HEIGHT_MINIMUM       (0)
 #define BLOCK_HEIGHT_MAXIMUM       (UINT64_MAX - 5)  // Leave room for special values
 
+#ifndef HAVE_STRLCPY
+static inline size_t strlcpy(char *dst, const char *src, size_t dstsize) {
+    return snprintf(dst, dstsize, "%s", src);
+}
+#endif
 /**
  * Check if `height` is between the MINIMUM and MAXIMUM values.
  */

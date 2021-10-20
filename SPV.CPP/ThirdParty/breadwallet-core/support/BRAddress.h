@@ -25,6 +25,7 @@
 #ifndef BRAddress_h
 #define BRAddress_h
 
+#include "BRBase.h"
 #include "BRCrypto.h"
 #include <string.h>
 #include <stddef.h>

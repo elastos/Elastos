@@ -1,16 +1,4 @@
 include(ProjectDefaults)
-include(CheckIncludeFile)
-include(CheckFunctionExists)
-
-check_include_file(unistd.h HAVE_UNISTD_H)
-if(HAVE_UNISTD_H)
-	add_definitions(-DHAVE_UNISTD_H=1)
-endif()
-
-check_function_exists(pthread_setname_np HAVE_PTHREAD_SETNAME_NP)
-if(HAVE_PTHREAD_SETNAME_NP)
-	add_definitions(-DHAVE_PTHREAD_SETNAME_NP=1)
-endif()
 
 file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp" "*.c")
 file(GLOB_RECURSE BRETH_SOURCE_FILES
