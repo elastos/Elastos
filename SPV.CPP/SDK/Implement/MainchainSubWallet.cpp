@@ -69,7 +69,8 @@ namespace Elastos {
 		MainchainSubWallet::~MainchainSubWallet() {
 		}
 
-		nlohmann::json MainchainSubWallet::CreateDepositTransaction(const nlohmann::json &inputsJson,
+		nlohmann::json MainchainSubWallet::CreateDepositTransaction(uint8_t version,
+                                                                    const nlohmann::json &inputsJson,
 																	const std::string &sideChainID,
 																	const std::string &amount,
 																	const std::string &sideChainAddress,
@@ -78,6 +79,7 @@ namespace Elastos {
 																	const std::string &memo) {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
+			ArgInfo("version: {}", version);
 			ArgInfo("inputs: {}", inputsJson.dump());
 			ArgInfo("sideChainID: {}", sideChainID);
 			ArgInfo("amount: {}", amount);
@@ -89,7 +91,9 @@ namespace Elastos {
             UTXOSet utxos;
             UTXOFromJson(utxos, inputsJson);
 
-			uint8_t payloadVersion = TransferCrossChainVersion;
+            if (version != TransferCrossChainVersion && version != TransferCrossChainVersionV1)
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid version");
+			uint8_t payloadVersion = version;
 			ErrorChecker::CheckBigIntAmount(amount);
 			ErrorChecker::CheckParam(sideChainID == CHAINID_MAINCHAIN, Error::InvalidArgument, "can not be mainChain");
 

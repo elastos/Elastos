@@ -559,7 +559,7 @@ static int deposit(int argc, char *argv[]) {
 			return ERRNO_APP;
 		}
 
-		nlohmann::json tx = subWallet->CreateDepositTransaction(
+		nlohmann::json tx = subWallet->CreateDepositTransaction(0,
 			nlohmann::json(), chainID, amount, sideChainAddress, "", "10000", "");
 
 		std::cout << "Top up " << sideChainAddress << ":" << amount << " to " << chainID << std::endl;
