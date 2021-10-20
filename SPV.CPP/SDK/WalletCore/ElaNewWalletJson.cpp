@@ -194,11 +194,6 @@ namespace Elastos {
                 HDKeychain requestKey = rootkey.getChild("1'/0");
                 _requestPrivKey = requestKey.privkey().getHex();
                 _requestPubKey = requestKey.pubkey().getHex();
-                _publicKeyRing.emplace_back(_requestPubKey, _xPubKeyHDPM);
-                if (_m == 0)
-                    _m = 1;
-                _n = _publicKeyRing.size();
-                ErrorChecker::CheckParam(_n != 1, Error::KeyStore, "Import keystore should be n == 1");
             }
 
             if (_ethscPrimaryPubKey.empty() && !_seed.empty()) {

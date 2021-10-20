@@ -16,8 +16,6 @@
 #include <Common/BigInt.h>
 #include <Common/uchar_vector.h>
 #include <Common/typedefs.h>
-#include <Common/Log.h>
-#include <Common/Utils.h>
 #include <Common/ErrorChecker.h>
 
 #include <sstream>
@@ -26,6 +24,18 @@
 
 namespace Elastos {
 	namespace ElaWallet {
+
+        std::map<std::string, std::map<std::string, std::map<std::string, uint32_t>>> ExtKeyVersionMap = {
+                {"bip32", {{"mainnet", { {"pub", 0x0488B21E}, {"prv", 0x0488ADE4}}},
+                                  {"testnet", { {"pub", 0x043587CF}, {"prv", 0x04358394}}}
+                          }},
+                {"bip84", {{"mainnet", { {"pub", 0x04b24746}, {"prv", 0x04b2430c}}},
+                                  {"testnet", { {"pub", 0x045f1cf6}, {"prv", 0x045f18bc}}}
+                          }},
+                {"bip49", {{"mainnet", { {"pub", 0x049d7cb2}, {"prv", 0x049d7878}}},
+                                  {"testnet", { {"pub", 0x044a5262}, {"prv", 0x044a4e28}}}
+                          }}
+        };
 
         const uchar_vector Bitcoin_CURVE_ORDER_BYTES("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141");
 		const uchar_vector Elastos_CURVE_ORDER_BYTES("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551");
@@ -355,8 +365,8 @@ namespace Elastos {
 			}
 		}
 
-		uint32_t HDKeychain::_priv_version = BITCOIN_HD_PRIVATE_VERSION;
-		uint32_t HDKeychain::_pub_version = BITCOIN_HD_PUBLIC_VERSION;
+		uint32_t HDKeychain::_priv_version = ExtKeyVersionMap["bip32"]["mainnet"]["prv"];//BITCOIN_HD_PRIVATE_VERSION;
+		uint32_t HDKeychain::_pub_version = ExtKeyVersionMap["bip32"]["mainnet"]["pub"];//BITCOIN_HD_PUBLIC_VERSION;
 
 	}
 

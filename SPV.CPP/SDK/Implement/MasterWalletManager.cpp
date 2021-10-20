@@ -29,6 +29,7 @@
 #include <MasterWalletManager.h>
 #include <CMakeConfig.h>
 #include <Common/Lockable.h>
+#include <WalletCore/HDKeychain.h>
 
 #include <boost/filesystem.hpp>
 
@@ -64,10 +65,14 @@ namespace Elastos {
 			}
 
 			_config = new Config(netType, config);
-			if (_config->GetNetType() != CONFIG_MAINNET) {
-				_dataPath = _dataPath + "/" + _config->GetNetType();
-				if (!boost::filesystem::exists(_dataPath))
-					boost::filesystem::create_directory(_dataPath);
+			if (_config->GetNetType() == CONFIG_MAINNET) {
+                HDKeychain::setVersions(ExtKeyVersionMap["bip32"]["mainnet"]["prv"], ExtKeyVersionMap["bip32"]["mainnet"]["pub"]);
+			} else {
+                HDKeychain::setVersions(ExtKeyVersionMap["bip32"]["testnet"]["prv"], ExtKeyVersionMap["bip32"]["testnet"]["pub"]);
+
+                _dataPath = _dataPath + "/" + _config->GetNetType();
+                if (!boost::filesystem::exists(_dataPath))
+                    boost::filesystem::create_directory(_dataPath);
 			}
 
 			LoadMasterWalletID();

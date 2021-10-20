@@ -44,6 +44,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <IBTCSubWallet.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -56,6 +57,7 @@ static const std::string CHAINID_ID = "IDChain";
 static std::string walletRoot;
 static std::string network = "MainNet";
 static nlohmann::json config = R"({
+                "BTC": { },
              	"ELA": { },
              	"IDChain": { },
              	"ETHSC": { "ChainID": 20, "NetworkID": 20 },
@@ -491,6 +493,14 @@ static int address(int argc, char *argv[]) {
 
         nlohmann::json jtmp = subWallet->GetAddresses(index, count, internal);
         std::cout << jtmp.dump(4) << std::endl;
+
+        if (chainID == "BTC") {
+            IBTCSubWallet *btcSubWallet;
+            getSubWallet(btcSubWallet, currentWallet, chainID);
+            jtmp = btcSubWallet->GetLegacyAddresses(index, count, internal);
+            std::cout << "Legacy addresses: " << std::endl;
+            std::cout << jtmp.dump(4) << std::endl;
+        }
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1233,7 +1243,7 @@ static int vote(int argc, char *argv[]) {
 	return 0;
 }
 
-// export (mnemonic | keystore)
+// export (m[nemonic] | k[eystore] | xpub | xprv)
 static int _export(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -1246,15 +1256,22 @@ static int _export(int argc, char *argv[]) {
 			std::string mnemonic = currentWallet->ExportMnemonic(password);
 			std::cout << mnemonic << std::endl;
 		} else if (exportWhat == "keystore" || exportWhat == "k") {
-			std::string backupPassword;
-			if (0 > createBackupPassword(backupPassword)) {
-				std::cerr << "Export keystore failed!" << std::endl;
-				return ERRNO_APP;
-			}
+            std::string backupPassword;
+            if (0 > createBackupPassword(backupPassword)) {
+                std::cerr << "Export keystore failed!" << std::endl;
+                return ERRNO_APP;
+            }
 
-			std::string password = getpass("Enter payment password: ");
-			nlohmann::json keystore = currentWallet->ExportKeystore(backupPassword, password);
-			std::cout << keystore.dump() << std::endl;
+            std::string password = getpass("Enter payment password: ");
+            nlohmann::json keystore = currentWallet->ExportKeystore(backupPassword, password);
+            std::cout << keystore.dump() << std::endl;
+        } else if (exportWhat == "xprv") {
+            std::string password = getpass("Enter payment password: ");
+		    std::string xprv = currentWallet->ExportPrivateKey(password);
+		    std::cout << xprv << std::endl;
+        } else if (exportWhat == "xpub") {
+		    std::string xpub = currentWallet->ExportMasterPublicKey();
+		    std::cout << xpub << std::endl;
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;
@@ -1555,7 +1572,7 @@ struct command {
 	{"proposal",   proposal,       "                                                 Create proposal tx."},
 	{"deposit",    deposit,        "chainID amount address                           Deposit to sidechain from mainchain."},
 	{"withdraw",   withdraw,       "amount address                                   Withdraw from sidechain to mainchain."},
-	{"export",     _export,        "(m[nemonic] | k[eystore])                        Export mnemonic or keystore."},
+	{"export",     _export,        "(m[nemonic] | k[eystore] | xpub | xprv)          Export mnemonic or keystore."},
 	{"register",   _register,      "(cr | dpos)                                      Register CR or DPoS with specified wallet."},
 	{"unregister", unregister,     "(cr | dpos)                                      Unregister CR or DPoS with specified wallet."},
 	{"basicinfo",  basic_info,     "[chainID]                                        Get basic info of master/sub Wallet"},

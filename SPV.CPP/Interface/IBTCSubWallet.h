@@ -30,6 +30,7 @@ namespace Elastos {
 
         class IBTCSubWallet : public virtual ISubWallet {
         public:
+            virtual nlohmann::json GetLegacyAddresses(uint32_t index, uint32_t count, bool internal) const = 0;
         };
 
     }

@@ -18,6 +18,7 @@
 #include "secp256k1_openssl.h"
 
 #include <stdexcept>
+#include <map>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -30,6 +31,7 @@ namespace Elastos {
 #define SEQUENCE_GAP_LIMIT_INTERNAL 5
 #define SEQUENCE_EXTERNAL_CHAIN     0
 #define SEQUENCE_INTERNAL_CHAIN     1
+        extern std::map<std::string, std::map<std::string, std::map<std::string, uint32_t>>> ExtKeyVersionMap;
 
 		class HDSeed
 		{

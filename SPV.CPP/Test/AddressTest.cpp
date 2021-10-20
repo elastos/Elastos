@@ -11,7 +11,6 @@
 #include <Common/Log.h>
 #include <WalletCore/Base58.h>
 #include <support/BRKey.h>
-#include <Ethereum/EthereumAccount.h>
 #include <ethereum/ewm/BREthereumAccount.h>
 
 using namespace Elastos::ElaWallet;
@@ -115,6 +114,10 @@ TEST_CASE("Address test", "[Address]") {
         BRKeyLegacyAddr(&key, addr, sizeof(addr), BITCOIN_ADDRESS_PARAMS);
         REQUIRE(std::string(addr) == addr2);
         REQUIRE(hdkey2.pubkey().getHex() == pubkey2);
+
+        bytes_t bytes = hash160(hdkey2.pubkey());
+        bytes.insert(bytes.begin(), BITCOIN_PUBKEY_PREFIX);
+        REQUIRE(Base58::CheckEncode(bytes) == addr2);
 
         prvbytes = hdkey2.privkey();
         prvbytes.insert(prvbytes.begin(), 0x80);

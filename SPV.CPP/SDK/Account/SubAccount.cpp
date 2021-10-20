@@ -136,8 +136,6 @@ namespace Elastos {
         }
 
         void SubAccount::GetAddresses(AddressArray &addresses, uint32_t index, uint32_t count, bool internal) const {
-            AddressArray addrs;
-
             if (_parent->SingleAddress()) {
                 index = 0;
                 count = 1;

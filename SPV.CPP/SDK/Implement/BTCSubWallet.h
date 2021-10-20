@@ -51,6 +51,14 @@ namespace Elastos {
 
             virtual nlohmann::json SignTransaction(const nlohmann::json &tx, const std::string &payPassword) const;
 
+            virtual void FlushData();
+
+        public: // implement IBTCSubWallet
+            virtual nlohmann::json GetLegacyAddresses(uint32_t index, uint32_t count, bool internal) const;
+
+        private:
+            void GetAddressInternal(std::vector<uint160> &chainAddresses, uint32_t index, uint32_t count, bool internal) const;
+
         protected:
             friend class MasterWallet;
 
@@ -61,7 +69,7 @@ namespace Elastos {
 
         private:
             BRAddressParams _addrParams;
-            std::map<uint32_t, std::vector<uint160>> _chainAddressCached;
+            mutable std::map<uint32_t, std::vector<uint160>> _chainAddressCached;
         };
 
     }

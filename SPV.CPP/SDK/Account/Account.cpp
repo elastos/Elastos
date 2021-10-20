@@ -922,7 +922,9 @@ namespace Elastos {
 
                 bytes = AES::DecryptCCM(_localstore->GetMnemonic(), payPasswd);
                 std::string mnemonic = std::string((char *) &bytes[0], bytes.size());
-                seed = BIP39::DeriveSeed(mnemonic, _localstore->GetPassPhrase());
+                bytes = AES::DecryptCCM(_localstore->GetPassPhrase(), payPasswd);
+                std::string passphrase = std::string((char *)&bytes[0], bytes.size());
+                seed = BIP39::DeriveSeed(mnemonic, passphrase);
                 _localstore->SetSeed(AES::EncryptCCM(seed.bytes(), payPasswd));
                 haveSeed = true;
 

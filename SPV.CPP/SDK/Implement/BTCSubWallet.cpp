@@ -25,6 +25,7 @@
 #include <WalletCore/CoinInfo.h>
 #include <Common/Log.h>
 #include <Common/ErrorChecker.h>
+#include <WalletCore/Base58.h>
 
 
 namespace Elastos {
@@ -67,13 +68,56 @@ namespace Elastos {
         }
 
         nlohmann::json BTCSubWallet::GetAddresses(uint32_t index, uint32_t count, bool internal) const {
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("index: {}", index);
+            ArgInfo("count: {}", count);
+            ArgInfo("internal: {}", internal);
 
-            return nlohmann::json();
+            ErrorChecker::CheckParam(index + count <= index, Error::InvalidArgument, "index + count overflow");
+            nlohmann::json addrJson;
+
+            std::vector<uint160> addresses;
+            GetAddressInternal(addresses, index, count, internal);
+
+            for (uint160 &addr : addresses) {
+                bytes_t bytes = addr.bytes();
+                BRAddress braddr;
+                memset(braddr.s, 0, sizeof(braddr));
+                BRAddressFromHash160(braddr.s, sizeof(braddr), _addrParams, bytes.data());
+                addrJson.push_back(std::string(braddr.s));
+            }
+
+            ArgInfo("r => {}", addrJson.dump(4));
+            return addrJson;
         }
 
         nlohmann::json BTCSubWallet::GetPublicKeys(uint32_t index, uint32_t count, bool internal) const {
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("index: {}", index);
+            ArgInfo("count: {}", count);
+            ArgInfo("internal: {}", internal);
+            nlohmann::json pubkeyJson;
+            AccountPtr account = _parent->GetAccount();
 
-            return nlohmann::json();
+            ErrorChecker::CheckParam(index + count <= index, Error::InvalidArgument, "index + count overflow");
+            if (account->SingleAddress()) {
+                index = 0;
+                count = 1;
+                internal = false;
+            }
+
+            uint32_t chain = internal ? SEQUENCE_INTERNAL_CHAIN : SEQUENCE_EXTERNAL_CHAIN;
+
+            if (account->GetSignType() == Account::MultiSign) {
+                Log::error("unsupport btc multi-sign wallet");
+            } else {
+                HDKeychain keychain = account->BitcoinMasterPubKey()->getChild(chain);
+                for (uint32_t i = index; i < index + count; ++i)
+                    pubkeyJson.push_back(keychain.getChild(i).pubkey().getHex());
+            }
+
+            ArgInfo("r => {}", pubkeyJson.dump(4));
+            return pubkeyJson;
         }
 
         nlohmann::json BTCSubWallet::CreateTransaction(
@@ -81,13 +125,72 @@ namespace Elastos {
                 const nlohmann::json &outputs,
                 const std::string &fee,
                 const std::string &memo) {
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
 
             return nlohmann::json();
         }
 
         nlohmann::json BTCSubWallet::SignTransaction(const nlohmann::json &tx, const std::string &payPassword) const {
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("tx: {}", tx.dump(4));
+            ArgInfo("payPassword: *");
+            nlohmann::json txSigned;
 
-            return nlohmann::json();
+            ArgInfo("r => {}", txSigned.dump(4));
+            return txSigned;
+        }
+
+        void BTCSubWallet::FlushData() {
+
+        }
+
+        nlohmann::json BTCSubWallet::GetLegacyAddresses(uint32_t index, uint32_t count, bool internal) const {
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("index: {}", index);
+            ArgInfo("count: {}", count);
+            ArgInfo("internal: {}", internal);
+            nlohmann::json addrJson;
+
+            ErrorChecker::CheckParam(index + count <= index, Error::InvalidArgument, "index + count overflow");
+            std::vector<uint160> addresses;
+            GetAddressInternal(addresses, index, count, internal);
+
+            for (uint160 &addr : addresses) {
+                bytes_t bytes = addr.bytes();
+                bytes.insert(bytes.begin(), _addrParams.pubKeyPrefix);
+
+                addrJson.push_back(Base58::CheckEncode(bytes));
+            }
+
+            ArgInfo("r => {}", addrJson.dump(4));
+            return addrJson;
+        }
+
+        void BTCSubWallet::GetAddressInternal(std::vector<uint160> &chainAddresses, uint32_t index, uint32_t count, bool internal) const {
+            AccountPtr account = _parent->GetAccount();
+
+            if (account->SingleAddress()) {
+                index = 0;
+                count = 1;
+                internal = false;
+            }
+
+            uint32_t chain = internal ? SEQUENCE_INTERNAL_CHAIN : SEQUENCE_EXTERNAL_CHAIN;
+            std::vector<uint160> &addrChain = _chainAddressCached[chain];
+            uint32_t derivateCount = (index + count > addrChain.size()) ? (index + count - addrChain.size()) : 0;
+
+            if (account->GetSignType() == Account::MultiSign) {
+                Log::error("unsupport btc multi-sign wallet");
+            } else {
+                HDKeychain keychain = account->BitcoinMasterPubKey()->getChild(chain);
+
+                while (derivateCount--) {
+                    addrChain.emplace_back(hash160(keychain.getChild(addrChain.size()).pubkey()));
+                }
+
+                if (index + count <= addrChain.size())
+                    chainAddresses.assign(addrChain.begin() + index, addrChain.begin() + index + count);
+            }
         }
 
     }
