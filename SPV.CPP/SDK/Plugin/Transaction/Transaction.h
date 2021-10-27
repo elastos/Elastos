@@ -168,8 +168,6 @@ namespace Elastos {
 
 			virtual void FromJson(const nlohmann::json &j);
 
-			static uint64_t GetMinOutputAmount();
-
 			const IPayload *GetPayload() const;
 
 			IPayload *GetPayload();

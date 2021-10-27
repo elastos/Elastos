@@ -30,7 +30,47 @@ namespace Elastos {
 
         class IBTCSubWallet : public virtual ISubWallet {
         public:
+            /**
+             * get legay addresses of btc
+             * @index start from where.
+             * @count how many address we need.
+             * @internal change address for true or normal receive address for false.
+             * @return as required
+             */
             virtual nlohmann::json GetLegacyAddresses(uint32_t index, uint32_t count, bool internal) const = 0;
+
+            /**
+             * create btc transaction
+             * @inputs in json array format. eg:
+             * [
+             * {
+             *   "TxHash": "...", // uint256 string
+             *   "Index": 0, // uint16_t
+             *   "Address": "...", // btc address
+             *   "Amount": "100000000" // bigint string in satoshi
+             * },
+             * {
+             *   ...
+             * }
+             * ]
+             * @outputs in json array format. eg:
+             * [
+             * {
+             *   "Address": "...", // btc address
+             *   "Amount": "100000000" // bigint string in satoshi
+             * },
+             * {
+             *   ...
+             * }
+             * ]
+             * @changeAddress change address in string format.
+             * @feePerKB how much fee (satoshi) per kb of tx size.
+             * @return unsigned serialized transaction in json format.
+             */
+            virtual nlohmann::json CreateTransaction(const nlohmann::json &inputs, const nlohmann::json &outputs,
+                                                     const std::string &changeAddress,
+                                                     const std::string &feePerKB) const = 0;
+
         };
 
     }

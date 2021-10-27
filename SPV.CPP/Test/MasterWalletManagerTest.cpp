@@ -23,6 +23,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <Plugin/Transaction/Payload/CoinBase.h>
+#include <IBTCSubWallet.h>
 
 #include "TestHelper.h"
 
@@ -31,6 +32,7 @@ using namespace Elastos::ElaWallet;
 static const std::string __rootPath = "./";
 static const std::string _netType = "MainNet";
 static nlohmann::json _config = R"({
+            "BTC": { },
 			"ELA": { },
 			"IDChain": { },
 			"ETHSC": { "ChainID": 20, "NetworkID": 20 },
@@ -185,4 +187,60 @@ TEST_CASE("Wallet Import/Export method", "[Import]") {
 	REQUIRE(!boost::filesystem::exists(std::string(__rootPath) + masterWalletId));
 }
 
+TEST_CASE("create & sign transaction", "BTC SubWallet") {
+    boost::scoped_ptr<MasterWalletManager> manager(new MasterWalletManager(__rootPath, _netType, _config));
+    std::string phrasePassword = "phrasePassword";
+    std::string payPassword = "payPassword";
+    std::string backupPassword = "backupPassword";
+    bool singleAddress = false;
+
+    std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+
+    IMasterWallet *masterWallet = manager->ImportWalletWithMnemonic(
+            masterWalletId, mnemonic, "", payPassword, singleAddress);
+
+    IBTCSubWallet *subWallet = dynamic_cast<IBTCSubWallet *>(masterWallet->CreateSubWallet("BTC"));
+    REQUIRE(nullptr != subWallet);
+
+    for (int t = 0; t < 2; ++t) {
+        nlohmann::json addresses;
+        nlohmann::json changeAddress;
+
+        if (t == 0) {
+            addresses = subWallet->GetAddresses(0, 110, false);
+            changeAddress = subWallet->GetAddresses(0, 105, true);
+        } else {
+            addresses = subWallet->GetLegacyAddresses(0, 110, false);
+            changeAddress = subWallet->GetLegacyAddresses(0, 105, true);
+        }
+
+        nlohmann::json inputs;
+        for (int i = 0; i < 10; i++) {
+            nlohmann::json input;
+            input["TxHash"] = getRanduint256().GetHex();
+            input["Index"] = i;
+            input["Address"] = addresses[i].get<std::string>();
+            input["Amount"] = "100000";
+            inputs.push_back(input);
+        }
+
+        nlohmann::json outputs;
+        for (int i = 10; i < 20; ++i) {
+            nlohmann::json output;
+            output["Address"] = addresses[i].get<std::string>();
+            output["Amount"] = "10000";
+            outputs.push_back(output);
+        }
+
+        std::string feePerKB = "10000";
+
+        nlohmann::json tx;
+        REQUIRE_NOTHROW((tx = subWallet->CreateTransaction(inputs, outputs, changeAddress[0], feePerKB)));
+
+        nlohmann::json txSigned;
+        REQUIRE_NOTHROW((txSigned = subWallet->SignTransaction(tx, payPassword)));
+    }
+
+    REQUIRE_NOTHROW(manager->DestroyWallet(masterWalletId));
+}
 

@@ -42,6 +42,7 @@
 
 #define DEFAULT_PAYLOAD_TYPE  transferAsset
 #define TX_LOCKTIME          0x00000000
+#define TX_UNCONFIRMED       INT32_MAX   // block height indicating transaction is unconfirmed
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -402,11 +403,6 @@ namespace Elastos {
 			}
 
 			return true;
-		}
-
-		uint64_t Transaction::GetMinOutputAmount() {
-
-			return TX_MIN_OUTPUT_AMOUNT;
 		}
 
 		const IPayload *Transaction::GetPayload() const {

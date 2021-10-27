@@ -30,6 +30,10 @@
 namespace Elastos {
     namespace ElaWallet {
 
+#define DEFAULT_FEE_PER_KB (TX_FEE_PER_KB*10)                  // 10 satoshis-per-byte
+#define MIN_FEE_PER_KB     TX_FEE_PER_KB                       // bitcoind 0.12 default min-relay fee
+#define MAX_FEE_PER_KB     ((TX_FEE_PER_KB*1000100 + 190)/191) // slightly higher than a 10,000bit fee on a 191byte tx
+
         class BTCSubWallet : public virtual IBTCSubWallet, public SubWallet {
         public: // implement IBTCSubWallet
             ~BTCSubWallet();
@@ -43,13 +47,11 @@ namespace Elastos {
 
             virtual nlohmann::json GetPublicKeys(uint32_t index, uint32_t count, bool internal = false) const;
 
-            virtual nlohmann::json CreateTransaction(
-                    const nlohmann::json &inputs,
-                    const nlohmann::json &outputs,
-                    const std::string &fee,
-                    const std::string &memo);
+            virtual nlohmann::json CreateTransaction(const nlohmann::json &inputs, const nlohmann::json &outputs,
+                                                     const std::string &changeAddress,
+                                                     const std::string &feePerKB) const;
 
-            virtual nlohmann::json SignTransaction(const nlohmann::json &tx, const std::string &payPassword) const;
+            virtual nlohmann::json SignTransaction(const nlohmann::json &txJson, const std::string &payPassword) const;
 
             virtual void FlushData();
 
@@ -58,6 +60,10 @@ namespace Elastos {
 
         private:
             void GetAddressInternal(std::vector<uint160> &chainAddresses, uint32_t index, uint32_t count, bool internal) const;
+
+            uint64_t MinOutputAmountWithFeePerKb(uint64_t feePerKb) const;
+
+            uint64_t TxFee(uint64_t feePerKb, size_t size) const;
 
         protected:
             friend class MasterWallet;

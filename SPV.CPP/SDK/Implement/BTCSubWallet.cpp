@@ -26,6 +26,8 @@
 #include <Common/Log.h>
 #include <Common/ErrorChecker.h>
 #include <WalletCore/Base58.h>
+#include <bitcoin/BRTransaction.h>
+#include <ethereum/util/BRUtil.h>
 
 
 namespace Elastos {
@@ -123,18 +125,162 @@ namespace Elastos {
         nlohmann::json BTCSubWallet::CreateTransaction(
                 const nlohmann::json &inputs,
                 const nlohmann::json &outputs,
-                const std::string &fee,
-                const std::string &memo) {
+                const std::string &changeAddress,
+                const std::string &feePerKB) const {
             ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("inputs: {}", inputs.dump());
+            ArgInfo("outputs: {}", outputs.dump());
+            ArgInfo("changeAddress: {}", changeAddress);
+            ArgInfo("feePerKB: {}", feePerKB);
 
-            return nlohmann::json();
+            ErrorChecker::CheckParam(!inputs.is_array(), Error::InvalidArgument, "inputs it not array");
+            ErrorChecker::CheckParam(!outputs.is_array(), Error::InvalidArgument, "outputs it not array");
+
+            BRTransaction *tx = BRTransactionNew();
+            try {
+                uint64_t outputAmount = 0, inputAmount = 0, feeAmount = 0, feeRate = 0, minAmount = 0;
+                size_t outCount = 0;
+                feeRate = strtoll(feePerKB.c_str(), NULL, 10);
+
+                for (nlohmann::json::const_iterator it = inputs.cbegin(); it != inputs.cend(); ++it) {
+                    BRTxOutput o = BR_TX_OUTPUT_NONE;
+                    uint256 h((*it)["TxHash"].get<std::string>());
+                    UInt256 txHash = UInt256Get(h.begin());
+                    uint16_t index = (*it)["Index"].get<uint16_t>();
+                    std::string addr = (*it)["Address"].get<std::string>();
+                    ErrorChecker::CheckParam(!BRAddressIsValid(_addrParams, addr.c_str()),
+                                             Error::InvalidArgument, "invalid input address");
+                    o.amount = strtoll((*it)["Amount"].get<std::string>().c_str(), NULL, 10);
+
+                    inputAmount += o.amount;
+                    BRTxOutputSetAddress(&o, _addrParams, addr.c_str());
+                    BRTransactionAddInput(tx, txHash, index, o.amount, o.script, o.scriptLen, NULL, 0, NULL, 0, TXIN_SEQUENCE);
+                    BRTxOutputSetAddress(&o, _addrParams, NULL);
+
+                    ErrorChecker::CheckParam((BRTransactionVSize(tx) + TX_OUTPUT_SIZE > TX_MAX_SIZE),
+                                             Error::InvalidArgument, "tx too large");
+                }
+
+                for (nlohmann::json::const_iterator it = outputs.cbegin(); it != outputs.cend(); ++it) {
+                    BRTxOutput o = BR_TX_OUTPUT_NONE;
+                    std::string addr = (*it)["Address"].get<std::string>();
+                    o.amount = strtoll((*it)["Amount"].get<std::string>().c_str(), NULL, 10);
+                    ErrorChecker::CheckParam(!BRAddressIsValid(_addrParams, addr.c_str()),
+                                             Error::InvalidArgument, "invalid output address");
+                    outputAmount += o.amount;
+                    BRTxOutputSetAddress(&o, _addrParams, addr.c_str());
+                    BRTransactionAddOutput(tx, o.amount, o.script, o.scriptLen);
+                    BRTxOutputSetAddress(&o, _addrParams, NULL);
+                    outCount++;
+                }
+                ErrorChecker::CheckParam(outCount < 1, Error::InvalidArgument, "no outputs");
+
+                minAmount = MinOutputAmountWithFeePerKb(feeRate);
+                feeAmount = TxFee(feeRate, BRTransactionVSize(tx) + TX_OUTPUT_SIZE);
+                if (inputAmount < outputAmount + feeAmount) {
+                    ErrorChecker::ThrowParamException(Error::InvalidArgument, "insufficient funds");
+                } else if (inputAmount - (outputAmount + feeAmount) > minAmount) {
+                    BRTxOutput o = BR_TX_OUTPUT_NONE;
+                    ErrorChecker::CheckParam(!BRAddressIsValid(_addrParams, changeAddress.c_str()),
+                                             Error::InvalidArgument, "invalid change address");
+                    o.amount = inputAmount - (outputAmount + feeAmount);
+                    BRTxOutputSetAddress(&o, _addrParams, changeAddress.c_str());
+                    BRTransactionAddOutput(tx, o.amount, o.script, o.scriptLen);
+                    BRTxOutputSetAddress(&o, _addrParams, NULL);
+                    BRTransactionShuffleOutputs(tx);
+                }
+            } catch (const std::exception &e) {
+                BRTransactionFree(tx);
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "create tx failed: " + std::string(e.what()));
+            }
+
+            size_t txSize = BRTransactionSerialize(tx, NULL, 0);
+            bytes_t txbuf(txSize);
+            BRTransactionSerialize(tx, txbuf.data(), txbuf.size());
+
+            uint256 txHash;
+            memcpy(txHash.begin(), tx->txHash.u8, txHash.size());
+
+            nlohmann::json txJson;
+            txJson["Data"] = txbuf.getHex();
+            txJson["TxHash"] = txHash.GetHex();
+
+            ArgInfo("r => {}", txJson.dump(4));
+            return txJson;
         }
 
-        nlohmann::json BTCSubWallet::SignTransaction(const nlohmann::json &tx, const std::string &payPassword) const {
+        nlohmann::json BTCSubWallet::SignTransaction(const nlohmann::json &txJson, const std::string &payPassword) const {
             ArgInfo("{} {}", GetSubWalletID(), GetFunName());
-            ArgInfo("tx: {}", tx.dump(4));
+            ArgInfo("tx: {}", txJson.dump(4));
             ArgInfo("payPassword: *");
+
             nlohmann::json txSigned;
+            try {
+                bytes_t txData;
+                txData.setHex(txJson["Data"].get<std::string>());
+                BRTransaction *tx = BRTransactionParse(txData.data(), txData.size());
+                ErrorChecker::CheckParam(tx == NULL, Error::InvalidArgument, "deserialize tx from json failed");
+
+                // find the keys
+                std::vector<uint32_t> internalIdx, externalIdx;
+                for (size_t i = 0; i < tx->inCount; ++i) {
+                    bool found = false;
+                    const uint8_t *pkh = BRScriptPKH(tx->inputs[i].script, tx->inputs[i].scriptLen);
+
+                    for (uint32_t idx = (uint32_t)_chainAddressCached[SEQUENCE_INTERNAL_CHAIN].size(); pkh && idx > 0 && !found; idx--) {
+                        if (UInt160Eq(UInt160Get(pkh), UInt160Get(_chainAddressCached[SEQUENCE_INTERNAL_CHAIN][idx - 1].begin()))) {
+                            internalIdx.push_back(idx - 1);
+                            found = true;
+                        }
+                    }
+
+                    for (uint32_t idx = (uint32_t)_chainAddressCached[SEQUENCE_EXTERNAL_CHAIN].size(); pkh && idx > 0 && !found; idx--) {
+                        if (UInt160Eq(UInt160Get(pkh), UInt160Get(_chainAddressCached[SEQUENCE_EXTERNAL_CHAIN][idx - 1].begin()))) {
+                            externalIdx.push_back(idx - 1);
+                            found = true;
+                        }
+                    }
+
+                    ErrorChecker::CheckLogic(!found, Error::PrivateKeyNotFound, "private key not found for index");
+                }
+
+                uint512 seed = _parent->GetAccount()->GetSeed(payPassword);
+                HDKeychain masterKey = HDKeychain(CTBitcoin, HDSeed(seed.bytes()).getExtendedKey(CTBitcoin, true)).getChild("44'/0'/0'");
+                seed = 0;
+
+                BRKey *keys = (BRKey *)alloca((internalIdx.size() + externalIdx.size()) * sizeof(BRKey));
+                // sign the tx with keys
+                for (size_t i = 0; i < internalIdx.size(); ++i) {
+                    HDKeychain k = masterKey.getChild(SEQUENCE_INTERNAL_CHAIN).getChild(internalIdx[i]);
+                    bytes_t pubkey = k.pubkey();
+                    keys[i].secret = *(UInt256*) k.privkey().data();
+                    keys[i].compressed = 1;
+                    memcpy(keys[i].pubKey, pubkey.data(), pubkey.size());
+                }
+                for (size_t i = 0; i < externalIdx.size(); ++i) {
+                    HDKeychain k = masterKey.getChild(SEQUENCE_EXTERNAL_CHAIN).getChild(externalIdx[i]);
+                    bytes_t pubkey = k.pubkey();
+                    BRKeySetSecret(&keys[internalIdx.size() + i], (UInt256*) k.privkey().data(), 1);
+                    BRKeySetPubKey(&keys[internalIdx.size() + i], pubkey.data(), pubkey.size());
+                }
+
+                int r = BRTransactionSign(tx, 0, keys, internalIdx.size() + externalIdx.size());
+                ErrorChecker::CheckLogic(r == 0, Error::Sign, "sign btc tx failed");
+
+                for (size_t i = 0; i < internalIdx.size() + externalIdx.size(); i++) BRKeyClean(&keys[i]);
+
+                size_t txSize = BRTransactionSerialize(tx, NULL, 0);
+                bytes_t txbuf(txSize);
+                BRTransactionSerialize(tx, txbuf.data(), txbuf.size());
+
+                uint256 txHash;
+                memcpy(txHash.begin(), tx->txHash.u8, txHash.size());
+
+                txSigned["Data"] = txbuf.getHex();
+                txSigned["TxHash"] = txHash.GetHex();
+            } catch (const nlohmann::detail::exception &e) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "parse tx json failed");
+            }
 
             ArgInfo("r => {}", txSigned.dump(4));
             return txSigned;
@@ -191,6 +337,18 @@ namespace Elastos {
                 if (index + count <= addrChain.size())
                     chainAddresses.assign(addrChain.begin() + index, addrChain.begin() + index + count);
             }
+        }
+
+        uint64_t BTCSubWallet::MinOutputAmountWithFeePerKb(uint64_t feePerKb) const {
+            uint64_t amount = (TX_MIN_OUTPUT_AMOUNT*feePerKb + MIN_FEE_PER_KB - 1)/MIN_FEE_PER_KB;
+            return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
+        }
+
+        uint64_t BTCSubWallet::TxFee(uint64_t feePerKb, size_t size) const {
+            uint64_t standardFee = size*TX_FEE_PER_KB/1000,       // standard fee based on tx size
+            fee = (((size*feePerKb/1000) + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
+
+            return (fee > standardFee) ? fee : standardFee;
         }
 
     }
