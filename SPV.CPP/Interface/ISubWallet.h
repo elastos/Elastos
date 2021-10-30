@@ -24,7 +24,6 @@
 #define __ELASTOS_SDK_ISUBWALLET_H__
 
 #include <string>
-
 #include "nlohmann/json.hpp"
 
 namespace Elastos {
@@ -103,10 +102,32 @@ namespace Elastos {
 			/**
 			 * Sign a transaction or append sign to a multi-sign transaction and return the content of transaction in json format.
 			 * @param tx transaction created by Create*Transaction().
-			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @param passwd use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @return If success return the content of transaction in json format.
 			 */
-			virtual nlohmann::json SignTransaction(const nlohmann::json &tx, const std::string &payPassword) const = 0;
+			virtual nlohmann::json SignTransaction(const nlohmann::json &tx, const std::string &passwd) const = 0;
+
+            /**
+             * Sign message with private key of did.
+             * @address will sign the digest with private key of this address.
+             * @digest hex string of sha256
+             * @passwd pay password.
+             * @return If success, signature will be returned.
+             */
+            virtual std::string SignDigest(const std::string &address,
+                                           const std::string &digest,
+                                           const std::string &passwd) const = 0;
+
+            /**
+             * Verify signature with specify public key
+             * @pubkey public key hex string.
+             * @digest hex string of sha256.
+             * @signature signature to be verified.
+             * @return true or false.
+             */
+            virtual bool VerifyDigest(const std::string &pubkey,
+                                      const std::string &digest,
+                                      const std::string &signature) const = 0;
 
 		};
 

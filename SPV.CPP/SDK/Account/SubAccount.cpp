@@ -274,7 +274,7 @@ namespace Elastos {
 			}
 		}
 
-		Key SubAccount::GetKeyWithDID(const Address &DIDOrCID, const std::string &payPasswd) const {
+		Key SubAccount::GetKeyWithAddress(const Address &addr, const std::string &payPasswd) const {
 			if (_parent->GetSignType() != IAccount::MultiSign) {
 			    for (auto it = _chainAddressCached.begin(); it != _chainAddressCached.end(); ++it) {
 			        uint32_t chain = it->first;
@@ -282,9 +282,11 @@ namespace Elastos {
                     for (uint32_t i = 0; i < chainAddr.size(); ++i) {
                         Address cid(chainAddr[i]);
                         cid.ChangePrefix(PrefixIDChain);
+
                         Address did(cid);
                         did.ConvertToDID();
-                        if (DIDOrCID == cid || DIDOrCID == did) {
+
+                        if (addr == chainAddr[i] || addr == cid || addr == did) {
                             return _parent->RootKey(payPasswd)->getChild("44'/0'/0'").getChild(chain).getChild(i);
                         }
                     }

@@ -166,33 +166,16 @@ namespace Elastos {
 			ArgInfo("payPasswd: *");
 
 			Address didAddress(DIDOrCID);
-			std::string signature = _walletManager->GetWallet()->SignWithDID(didAddress, message, payPassword);
+			std::string signature = _walletManager->GetWallet()->SignWithAddress(didAddress, message, payPassword);
 
 			ArgInfo("r => {}", signature);
 
 			return signature;
 		}
 
-		std::string IDChainSubWallet::SignDigest(const std::string &DIDOrCID, const std::string &digest,
-		                                         const std::string &payPassword) const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("DIDOrCID: {}", DIDOrCID);
-			ArgInfo("digest: {}", digest);
-			ArgInfo("payPasswd: *");
-
-			ErrorChecker::CheckParam(digest.size() != 64, Error::InvalidArgument, "invalid digest");
-			Address didAddress(DIDOrCID);
-			std::string signature = _walletManager->GetWallet()->SignDigestWithDID(didAddress, uint256(digest), payPassword);
-
-			ArgInfo("r => {}", signature);
-
-			return signature;
-		}
-
-
-		bool IDChainSubWallet::VerifySignature(const std::string &publicKey, const std::string &message,
+        bool IDChainSubWallet::VerifySignature(const std::string &publicKey, const std::string &message,
 											   const std::string &signature) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", GetSubWalletID(), GetFunName());
 			ArgInfo("pubkey: {}", publicKey);
 			ArgInfo("message: {}", message);
 			ArgInfo("signature: {}", signature);
@@ -206,7 +189,7 @@ namespace Elastos {
 		}
 
 		std::string IDChainSubWallet::GetPublicKeyDID(const std::string &pubkey) const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", GetSubWalletID(), GetFunName());
 			ArgInfo("pubkey:{}", pubkey);
 
 			ErrorChecker::CheckParamNotEmpty(pubkey, "public key");

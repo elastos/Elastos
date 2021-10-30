@@ -154,6 +154,34 @@ namespace Elastos {
             return result;
         }
 
+        std::string ElastosBaseSubWallet::SignDigest(const std::string &address, const std::string &digest, const std::string &payPassword) const {
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("address: {}", address);
+            ArgInfo("digest: {}", digest);
+            ArgInfo("payPasswd: *");
+
+            ErrorChecker::CheckParam(digest.size() != 64, Error::InvalidArgument, "invalid digest");
+            Address didAddress(address);
+            std::string signature = _walletManager->GetWallet()->SignDigestWithAddress(didAddress, uint256(digest), payPassword);
+
+            ArgInfo("r => {}", signature);
+
+            return signature;
+        }
+
+        bool ElastosBaseSubWallet::VerifyDigest(const std::string &publicKey, const std::string &digest, const std::string &signature) const {
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("publicKey: {}", publicKey);
+            ArgInfo("digest: {}", digest);
+            ArgInfo("signature: {}", signature);
+
+            Key k(CTElastos, bytes_t(publicKey));
+            bool r = k.Verify(uint256(digest), bytes_t(signature));
+
+            ArgInfo("r => {}", r);
+            return r;
+        }
+
         nlohmann::json ElastosBaseSubWallet::GetTransactionSignedInfo(const nlohmann::json &encodedTx) const {
             ArgInfo("{} {}", GetSubWalletID(), GetFunName());
             ArgInfo("tx: {}", encodedTx.dump());

@@ -23,6 +23,7 @@
 #ifndef __ELASTOS_SDK_BTCSUBWALLET_H__
 #define __ELASTOS_SDK_BTCSUBWALLET_H__
 
+#include <support/BRKey.h>
 #include "IBTCSubWallet.h"
 #include "SubWallet.h"
 #include "support/BRAddress.h"
@@ -51,7 +52,11 @@ namespace Elastos {
                                                      const std::string &changeAddress,
                                                      const std::string &feePerKB) const;
 
-            virtual nlohmann::json SignTransaction(const nlohmann::json &txJson, const std::string &payPassword) const;
+            virtual nlohmann::json SignTransaction(const nlohmann::json &txJson, const std::string &passwd) const;
+
+            virtual std::string SignDigest(const std::string &address, const std::string &digest, const std::string &passwd) const;
+
+            virtual bool VerifyDigest(const std::string &pubkey, const std::string &digest, const std::string &signature) const;
 
             virtual void FlushData();
 
@@ -64,6 +69,10 @@ namespace Elastos {
             uint64_t MinOutputAmountWithFeePerKb(uint64_t feePerKb) const;
 
             uint64_t TxFee(uint64_t feePerKb, size_t size) const;
+
+            std::vector<HDKeychain> FindKeys(const std::vector<uint160> &pkhs, const std::string &passwd) const;
+
+            std::vector<BRKey> FindBRKeys(const std::vector<uint160> &pkhs, const std::string &passwd) const;
 
         protected:
             friend class MasterWallet;

@@ -205,8 +205,7 @@ namespace Elastos {
 			return j;
 		}
 
-		nlohmann::json EthSidechainSubWallet::SignTransaction(const nlohmann::json &tx,
-															  const std::string &payPassword) const {
+		nlohmann::json EthSidechainSubWallet::SignTransaction(const nlohmann::json &tx, const std::string &passwd) const {
 			ArgInfo("{} {}", GetSubWalletID(), GetFunName());
 			ArgInfo("tx: {}", tx.dump());
 			ArgInfo("passwd: *");
@@ -230,7 +229,7 @@ namespace Elastos {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "get 'ID' of json failed");
 			}
 
-			uint512 seed = _parent->GetAccount()->GetSeed(payPassword);
+			uint512 seed = _parent->GetAccount()->GetSeed(passwd);
 			BRKey prvkey = derivePrivateKeyFromSeed(*(UInt512 *)seed.begin(), 0);
 			_client->_ewm->getWallet()->signWithPrivateKey(transfer, prvkey);
 
@@ -243,6 +242,39 @@ namespace Elastos {
 
 			ArgInfo("r => {}", j.dump());
 			return j;
+		}
+
+        std::string EthSidechainSubWallet::SignDigest(const std::string &address, const std::string &digest, const std::string &passwd) const {
+		    ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+		    ArgInfo("address: {}", address);
+		    ArgInfo("digest: {}", digest);
+		    ArgInfo("passwd: *");
+
+            std::string addr = _client->_ewm->getWallet()->getAccount()->getPrimaryAddress();
+            ErrorChecker::CheckParam(addr != address, Error::InvalidArgument, "Invalid address");
+            uint512 seed = _parent->GetAccount()->GetSeed(passwd);
+            HDKeychain masterKey = HDKeychain(CTBitcoin, HDSeed(seed.bytes()).getExtendedKey(CTBitcoin, true)).getChild("44'/60'/0'/0/0");
+
+            Key k = masterKey;
+            std::string sig = k.SignDER(uint256(digest)).getHex();
+
+            ArgInfo("r => {}", sig);
+
+            return sig;
+		}
+
+        bool EthSidechainSubWallet::VerifyDigest(const std::string &pubkey, const std::string &digest, const std::string &signature) const {
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("pubkey: {}", pubkey);
+            ArgInfo("digest: {}", digest);
+            ArgInfo("signature: {}", signature);
+
+            Key k(CTBitcoin, pubkey);
+            bool r = k.VerifyDER(uint256(digest), signature);
+
+            ArgInfo("r => {}", r);
+
+            return r;
 		}
 
 	}

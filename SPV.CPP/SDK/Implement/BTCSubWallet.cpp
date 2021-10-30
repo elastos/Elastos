@@ -209,10 +209,10 @@ namespace Elastos {
             return txJson;
         }
 
-        nlohmann::json BTCSubWallet::SignTransaction(const nlohmann::json &txJson, const std::string &payPassword) const {
+        nlohmann::json BTCSubWallet::SignTransaction(const nlohmann::json &txJson, const std::string &passwd) const {
             ArgInfo("{} {}", GetSubWalletID(), GetFunName());
             ArgInfo("tx: {}", txJson.dump(4));
-            ArgInfo("payPassword: *");
+            ArgInfo("passwd: *");
 
             nlohmann::json txSigned;
             try {
@@ -222,52 +222,19 @@ namespace Elastos {
                 ErrorChecker::CheckParam(tx == NULL, Error::InvalidArgument, "deserialize tx from json failed");
 
                 // find the keys
-                std::vector<uint32_t> internalIdx, externalIdx;
+                std::vector<uint160> pkhs;
                 for (size_t i = 0; i < tx->inCount; ++i) {
-                    bool found = false;
                     const uint8_t *pkh = BRScriptPKH(tx->inputs[i].script, tx->inputs[i].scriptLen);
-
-                    for (uint32_t idx = (uint32_t)_chainAddressCached[SEQUENCE_INTERNAL_CHAIN].size(); pkh && idx > 0 && !found; idx--) {
-                        if (UInt160Eq(UInt160Get(pkh), UInt160Get(_chainAddressCached[SEQUENCE_INTERNAL_CHAIN][idx - 1].begin()))) {
-                            internalIdx.push_back(idx - 1);
-                            found = true;
-                        }
-                    }
-
-                    for (uint32_t idx = (uint32_t)_chainAddressCached[SEQUENCE_EXTERNAL_CHAIN].size(); pkh && idx > 0 && !found; idx--) {
-                        if (UInt160Eq(UInt160Get(pkh), UInt160Get(_chainAddressCached[SEQUENCE_EXTERNAL_CHAIN][idx - 1].begin()))) {
-                            externalIdx.push_back(idx - 1);
-                            found = true;
-                        }
-                    }
-
-                    ErrorChecker::CheckLogic(!found, Error::PrivateKeyNotFound, "private key not found for index");
+                    pkhs.push_back(uint160(bytes_t(pkh, 20)));
                 }
 
-                uint512 seed = _parent->GetAccount()->GetSeed(payPassword);
-                HDKeychain masterKey = HDKeychain(CTBitcoin, HDSeed(seed.bytes()).getExtendedKey(CTBitcoin, true)).getChild("44'/0'/0'");
-                seed = 0;
+                std::vector<BRKey> brkeys = FindBRKeys(pkhs, passwd);
 
-                BRKey *keys = (BRKey *)alloca((internalIdx.size() + externalIdx.size()) * sizeof(BRKey));
-                // sign the tx with keys
-                for (size_t i = 0; i < internalIdx.size(); ++i) {
-                    HDKeychain k = masterKey.getChild(SEQUENCE_INTERNAL_CHAIN).getChild(internalIdx[i]);
-                    bytes_t pubkey = k.pubkey();
-                    keys[i].secret = *(UInt256*) k.privkey().data();
-                    keys[i].compressed = 1;
-                    memcpy(keys[i].pubKey, pubkey.data(), pubkey.size());
-                }
-                for (size_t i = 0; i < externalIdx.size(); ++i) {
-                    HDKeychain k = masterKey.getChild(SEQUENCE_EXTERNAL_CHAIN).getChild(externalIdx[i]);
-                    bytes_t pubkey = k.pubkey();
-                    BRKeySetSecret(&keys[internalIdx.size() + i], (UInt256*) k.privkey().data(), 1);
-                    BRKeySetPubKey(&keys[internalIdx.size() + i], pubkey.data(), pubkey.size());
-                }
-
-                int r = BRTransactionSign(tx, 0, keys, internalIdx.size() + externalIdx.size());
+                int r = BRTransactionSign(tx, 0, brkeys.data(), brkeys.size());
                 ErrorChecker::CheckLogic(r == 0, Error::Sign, "sign btc tx failed");
 
-                for (size_t i = 0; i < internalIdx.size() + externalIdx.size(); i++) BRKeyClean(&keys[i]);
+                for (size_t i = 0; i < brkeys.size(); i++)
+                    BRKeyClean(&brkeys[i]);
 
                 size_t txSize = BRTransactionSerialize(tx, NULL, 0);
                 bytes_t txbuf(txSize);
@@ -284,6 +251,43 @@ namespace Elastos {
 
             ArgInfo("r => {}", txSigned.dump(4));
             return txSigned;
+        }
+
+        std::string BTCSubWallet::SignDigest(const std::string &address, const std::string &digest, const std::string &passwd) const {
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("address: {}", address);
+            ArgInfo("digest: {}", digest);
+            ArgInfo("passwd: *");
+
+            std::vector<uint160> pkhs;
+            BRTxOutput o = BR_TX_OUTPUT_NONE;
+            BRTxOutputSetAddress(&o, _addrParams, address.c_str());
+            const uint8_t *pkh = BRScriptPKH(o.script, o.scriptLen);
+            pkhs.push_back(uint160(bytes_t(pkh, 20)));
+
+            std::vector<HDKeychain> keys = FindKeys(pkhs, passwd);
+            ErrorChecker::CheckParam(keys.empty(), Error::InvalidArgument, "key not found");
+
+            Key k = keys[0];
+            std::string sig = k.SignDER(uint256(digest)).getHex();
+
+            ArgInfo("r => {}", sig);
+
+            return sig;
+        }
+
+        bool BTCSubWallet::VerifyDigest(const std::string &pubkey, const std::string &digest, const std::string &signature) const {
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("pubkey: {}", pubkey);
+            ArgInfo("digest: {}", digest);
+            ArgInfo("signature: {}", signature);
+
+            Key k(CTBitcoin, pubkey);
+            bool r = k.VerifyDER(uint256(digest), signature);
+
+            ArgInfo("r => {}", r);
+
+            return r;
         }
 
         void BTCSubWallet::FlushData() {
@@ -349,6 +353,59 @@ namespace Elastos {
             fee = (((size*feePerKb/1000) + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
 
             return (fee > standardFee) ? fee : standardFee;
+        }
+
+        std::vector<HDKeychain> BTCSubWallet::FindKeys(const std::vector<uint160> &pkhs, const std::string &passwd) const {
+            // find the keys
+            std::vector<uint32_t> internalIdx, externalIdx;
+            for (size_t i = 0; i < pkhs.size(); ++i) {
+                bool found = false;
+
+                for (uint32_t idx = (uint32_t)_chainAddressCached[SEQUENCE_INTERNAL_CHAIN].size(); idx > 0 && !found; idx--) {
+                    if (pkhs[i] == _chainAddressCached[SEQUENCE_INTERNAL_CHAIN][idx - 1]) {
+                        internalIdx.push_back(idx - 1);
+                        found = true;
+                    }
+                }
+
+                for (uint32_t idx = (uint32_t)_chainAddressCached[SEQUENCE_EXTERNAL_CHAIN].size(); idx > 0 && !found; idx--) {
+                    if (pkhs[i] == _chainAddressCached[SEQUENCE_EXTERNAL_CHAIN][idx - 1]) {
+                        externalIdx.push_back(idx - 1);
+                        found = true;
+                    }
+                }
+
+                ErrorChecker::CheckLogic(!found, Error::PrivateKeyNotFound, "private key not found for index");
+            }
+
+            uint512 seed = _parent->GetAccount()->GetSeed(passwd);
+            HDKeychain masterKey = HDKeychain(CTBitcoin, HDSeed(seed.bytes()).getExtendedKey(CTBitcoin, true)).getChild("44'/0'/0'");
+            seed = 0;
+
+            std::vector<HDKeychain> keys;
+            // sign the tx with keys
+            for (size_t i = 0; i < internalIdx.size(); ++i) {
+                HDKeychain k = masterKey.getChild(SEQUENCE_INTERNAL_CHAIN).getChild(internalIdx[i]);
+                keys.push_back(k);
+            }
+            for (size_t i = 0; i < externalIdx.size(); ++i) {
+                HDKeychain k = masterKey.getChild(SEQUENCE_EXTERNAL_CHAIN).getChild(externalIdx[i]);
+                keys.push_back(k);
+            }
+
+            return keys;
+        }
+
+        std::vector<BRKey> BTCSubWallet::FindBRKeys(const std::vector<uint160> &pkhs, const std::string &passwd) const {
+            std::vector<HDKeychain> keys = FindKeys(pkhs, passwd);
+            std::vector<BRKey> brkeys;
+            for (size_t i = 0; i < keys.size(); ++i) {
+                BRKey brkey;
+                BRKeySetSecret(&brkey, (UInt256*) keys[i].privkey().data(), 1);
+                BRKeyPubKey(&brkey, NULL, 0);
+                brkeys.push_back(brkey);
+            }
+            return brkeys;
         }
 
     }

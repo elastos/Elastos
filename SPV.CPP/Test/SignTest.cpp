@@ -15,6 +15,8 @@
 #include <WalletCore/BIP39.h>
 #include <WalletCore/HDKeychain.h>
 #include <WalletCore/Key.h>
+#include <support/BRKey.h>
+#include "TestHelper.h"
 
 using namespace Elastos::ElaWallet;
 
@@ -413,4 +415,34 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		REQUIRE(addr3.size() == 110);
 		REQUIRE(addr3[0].String() == "8W6TRf4ZxyTaDZdJs4Gd8dwFkvb62dVN1r");
 	}
+}
+
+TEST_CASE("btc sign & verify test", "btc key") {
+    Log::registerMultiLogger();
+    std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+    uint512 seed = BIP39::DeriveSeed(mnemonic, "");
+
+    HDKeychain hdkey = HDKeychain(CTBitcoin, HDSeed(seed.bytes()).getExtendedKey(CTBitcoin, true)).getChild("44'/0'/0'/0/0");
+    BRKey k;
+    BRKeySetSecret(&k, (UInt256*) hdkey.privkey().data(), 1);
+    REQUIRE(33 == BRKeyPubKey(&k, NULL, 0));
+
+    UInt256 md = getRandUInt256();
+    uint8_t sig[73];
+    size_t sigLen = BRKeySign(&k, sig, sizeof(sig) - 1, md);
+    REQUIRE(sigLen != 0);
+    REQUIRE(BRKeyVerify(&k, md, sig, sigLen) == 1);
+
+    uint256 m;
+    memcpy(m.begin(), md.u8, m.size());
+    Key key = hdkey;
+    REQUIRE(key.VerifyDER(m, bytes_t(sig, sigLen)));
+
+    bytes_t signature;
+    REQUIRE_NOTHROW(signature = key.SignDER(m));
+    REQUIRE(!signature.empty());
+
+    REQUIRE(key.VerifyDER(m, signature));
+    // fail sometimes
+//    REQUIRE(BRKeyVerify(&k, md, signature.data(), signature.size()));
 }

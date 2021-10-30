@@ -93,25 +93,13 @@ namespace Elastos {
 			 * Sign message with private key of did.
 			 * @param DIDOrCID will sign the message with public key of this did/cid.
 			 * @param message to be signed.
-			 * @param payPassword pay password.
+			 * @param passwd pay password.
 			 * @return If success, signature will be returned.
 			 */
 			virtual std::string Sign(
 				const std::string &DIDOrCID,
 				const std::string &message,
-				const std::string &payPassword) const = 0;
-
-			/**
-			 * Sign message with private key of did.
-			 * @param DIDOrCID will sign the message with public key of this did/cid.
-			 * @param digest hex string of sha256
-			 * @param payPassword pay password.
-			 * @return If success, signature will be returned.
-			 */
-			virtual std::string SignDigest(
-					const std::string &DIDOrCID,
-					const std::string &digest,
-					const std::string &payPassword) const = 0;
+				const std::string &passwd) const = 0;
 
 			/**
 			 * Verify signature with specify public key

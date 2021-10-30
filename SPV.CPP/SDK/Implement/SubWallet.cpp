@@ -69,9 +69,19 @@ namespace Elastos {
 			return nlohmann::json();
 		}
 
-		nlohmann::json SubWallet::SignTransaction(const nlohmann::json &tx, const std::string &payPassword) const {
+		nlohmann::json SubWallet::SignTransaction(const nlohmann::json &tx, const std::string &passwd) const {
 		    WarnLog();
 			return nlohmann::json();
+		}
+
+        std::string SubWallet::SignDigest(const std::string &address, const std::string &digest, const std::string &passwd) const {
+            WarnLog();
+            return "";
+		}
+
+        bool SubWallet::VerifyDigest(const std::string &publicKey, const std::string &digest, const std::string &signature) const {
+            WarnLog();
+		    return false;
 		}
 
         std::string SubWallet::GetSubWalletID() const {

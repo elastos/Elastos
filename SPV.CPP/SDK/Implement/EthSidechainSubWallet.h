@@ -79,7 +79,11 @@ namespace Elastos {
 
 			virtual nlohmann::json GetPublicKeys(uint32_t index, uint32_t count, bool internal = false) const;
 
-			virtual nlohmann::json SignTransaction(const nlohmann::json &tx, const std::string &payPassword) const;
+			virtual nlohmann::json SignTransaction(const nlohmann::json &tx, const std::string &passwd) const;
+
+            virtual std::string SignDigest(const std::string &address, const std::string &digest, const std::string &passwd) const;
+
+            virtual bool VerifyDigest(const std::string &pubkey, const std::string &digest, const std::string &signature) const;
 
 		protected:
 			friend class MasterWallet;

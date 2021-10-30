@@ -52,6 +52,10 @@ namespace Elastos {
 
             virtual nlohmann::json SignTransaction(const nlohmann::json &tx, const std::string &payPassword) const;
 
+            virtual std::string SignDigest(const std::string &address, const std::string &digest, const std::string &passwd) const;
+
+            virtual bool VerifyDigest(const std::string &publicKey, const std::string &digest, const std::string &signature) const;
+
             virtual nlohmann::json GetTransactionSignedInfo(
                     const nlohmann::json &rawTransaction) const;
 

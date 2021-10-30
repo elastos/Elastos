@@ -92,10 +92,9 @@ namespace Elastos {
 
 			void SignTransaction(const TransactionPtr &tx, const std::string &payPassword) const;
 
-			std::string SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const;
+			std::string SignWithAddress(const Address &addr, const std::string &msg, const std::string &payPasswd) const;
 
-			std::string SignDigestWithDID(const Address &did, const uint256 &digest,
-			                              const std::string &payPasswd) const;
+			std::string SignDigestWithAddress(const Address &addr, const uint256 &digest, const std::string &payPasswd) const;
 
 			bytes_t SignWithOwnerKey(const bytes_t &msg, const std::string &payPasswd);
 

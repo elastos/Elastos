@@ -53,6 +53,10 @@ namespace Elastos {
 
 			bool Verify(const uint256 &digest, const bytes_t &signature) const;
 
+			bytes_t SignDER(const uint256 &md) const;
+
+			bool VerifyDER(const uint256 &md, const bytes_t &sig) const;
+
 		private:
 			secp256k1_key _key;
 		};

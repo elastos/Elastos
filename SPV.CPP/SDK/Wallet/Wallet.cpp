@@ -187,17 +187,15 @@ namespace Elastos {
 			_subAccount->SignTransaction(tx, payPassword);
 		}
 
-		std::string
-		Wallet::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const {
+		std::string Wallet::SignWithAddress(const Address &addr, const std::string &msg, const std::string &payPasswd) const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			Key key = _subAccount->GetKeyWithDID(did, payPasswd);
+			Key key = _subAccount->GetKeyWithAddress(addr, payPasswd);
 			return key.Sign(msg).getHex();
 		}
 
-		std::string Wallet::SignDigestWithDID(const Address &did, const uint256 &digest,
-											  const std::string &payPasswd) const {
+		std::string Wallet::SignDigestWithAddress(const Address &addr, const uint256 &digest, const std::string &payPasswd) const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			Key key = _subAccount->GetKeyWithDID(did, payPasswd);
+			Key key = _subAccount->GetKeyWithAddress(addr, payPasswd);
 			return key.Sign(digest).getHex();
 		}
 
