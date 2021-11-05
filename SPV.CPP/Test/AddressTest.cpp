@@ -12,6 +12,7 @@
 #include <WalletCore/Base58.h>
 #include <support/BRKey.h>
 #include <ethereum/ewm/BREthereumAccount.h>
+#include <WalletCore/Key.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -31,8 +32,8 @@ TEST_CASE("Address test", "[Address]") {
 	}
 
 	SECTION("eth sidechain address test") {
-        std::string m = "flat universe quantum uniform emerge blame lemon detail april sting aerobic disease";
-        std::string addr = "0x2BE115732F2d3B0e4e5F32d0ec81FE6D959D01A9";
+        std::string m = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+        std::string addr = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94";
         uint512 seed = BIP39::DeriveSeed(m, "");
         UInt512 ethseed = *(UInt512 *) seed.begin();
         BREthereumAccount account = createAccountWithBIP32Seed(ethseed);
@@ -66,17 +67,17 @@ TEST_CASE("Address test", "[Address]") {
 
 	SECTION("btc address test") {
 	    //test data from https://iancoleman.io/bip39/
-	    std::string m = "flat universe quantum uniform emerge blame lemon detail april sting aerobic disease";
-	    std::string s = "091454fb8f3cb75b0769de91ec854b6da6485f4adf32c0aef57a31d5268b5765def0e6e99ca0f29652796f73176d322f5800b8e3031fa06cc9ae58bc55c42e37";
-	    std::string xprvroot = "xprv9s21ZrQH143K2jaN5BgmoMDgRz8L8MCgG3gLJcFZ73iaWXUh7uQJ3ZeEAFDVayUU6vV8E2mDWBfnTcdYqEECCoKEcCo9g6WzCuJY8q7Pxin";
-	    std::string bip32xprv = "xprvA2HgDDozXrCzsgVcZQ4Dkwy8kJzKp2hM8ZtkYUNo8bDyahXKozLsm66n15DPmeGBDBBgWoewdWw1pu4tFCSS2nbzPSbvE6a74xHULAzJFgQ";
-	    std::string bip32xpub = "xpub6FH2cjLtNDmJ6Aa5fRbE85usJLppDVRCVnpMLrnQgvkxTVrUMXf8JtRFrKQc3F65HCikCm9aXBTpXYwhNvCJSixZrrtFYQmr8Hr8hd3UnVb";
-	    std::string addr1 = "1BzBrj4gdLfiw4sVwZaH2ftSmH8pcBDuUX";
-        std::string addr2 = "1MtF6uf4ppre9iNm9SoFdVkhNy5oUuF79P";
-        std::string pubkey1 = "03d7bdaee7a232534bc4fb2f19c40b46fe0d8a621846006aaf7b672373f40952b7";
-        std::string pubkey2 = "02a8f87e78c10407eda01983c84b74e9a71c75749aec3d23620bbdf9e10a1a9556";
-        std::string prvkey1 = "L568vL3Dfs47rursz5rv1PUX9RyY6C2KnhHybTDxf88cH14k2TYR";
-        std::string prvkey2 = "KzFPvp8pGg8y9A24RvzHjkidZfjwsUPtFVXfLi2FnQjXwY1H8VF7";
+	    std::string m = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+	    std::string s = "5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4";
+	    std::string xprvroot = "xprv9s21ZrQH143K3GJpoapnV8SFfukcVBSfeCficPSGfubmSFDxo1kuHnLisriDvSnRRuL2Qrg5ggqHKNVpxR86QEC8w35uxmGoggxtQTPvfUu";
+	    std::string bip32xprv = "xprvA1Lvv1qpvx3f8iuRHfaEG45fyvDc3h7Ur5afz5SyRfkAsZ2765KfFfmg6Q9oEJDgf4UdYHphzzJybLykZfznUMKL2KNUU8pLRQgstN5kmFe";
+	    std::string bip32xpub = "xpub6ELHKXNimKbxMCytPh7EdC2QXx46T9qLDJWGnTraz1H9kMMFdcduoU69wh9cxP12wDxqAAfbaESWGYt5rREsX1J8iR2TEunvzvddduAPYcY";
+	    std::string addr1 = "1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA";
+        std::string addr2 = "1Ak8PffB2meyfYnbXZR9EGfLfFZVpzJvQP";
+        std::string pubkey1 = "03aaeb52dd7494c361049de67cc680e83ebcbbbdbeb13637d92cd845f70308af5e";
+        std::string pubkey2 = "02dfcaec532010d704860e20ad6aff8cf3477164ffb02f93d45c552dadc70ed24f";
+        std::string prvkey1 = "L4p2b9VAf8k5aUahF1JCJUzZkgNEAqLfq8DDdQiyAprQAKSbu8hf";
+        std::string prvkey2 = "KzJgGiEeGUVWmPR97pVWDnCVraZvM2fnrCVrg2irV4353HciE6Un";
 
 	    uint512 seed = BIP39::DeriveSeed(m, "");
 	    bytes_t seedBytes = seed.bytes();
@@ -123,5 +124,20 @@ TEST_CASE("Address test", "[Address]") {
         prvbytes.insert(prvbytes.begin(), 0x80);
         prvbytes.push_back(1);
         REQUIRE(Base58::CheckEncode(prvbytes) == prvkey2);
+	}
+
+	SECTION("eth private key to asddress") {
+        bytes_t prvkey = bytes_t("1ab42cc412b618bdea3a599e3c9bae199ebf030895b039e9db1e30dafb12b727");
+        Key k(CTBitcoin, prvkey);
+        bytes_t ethpubkey = k.PubKey(false);
+        REQUIRE(ethpubkey.size() == 65);
+
+        BRKey kk;
+        memset(&kk, 0, sizeof(kk));
+
+        memcpy(kk.pubKey, ethpubkey.data(), ethpubkey.size());
+        BREthereumAddress raw = addressCreateKey(&kk);
+        char *s = addressGetEncodedString(&raw, 1);
+        REQUIRE(std::string(s) == "0x9858EfFD232B4033E47d90003D41EC34EcaEda94");
 	}
 }

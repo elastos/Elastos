@@ -88,9 +88,5 @@ namespace Elastos {
             return _parent->GetWalletID() + ":" + _info->GetChainID();
         }
 
-		const CoinInfoPtr &SubWallet::GetCoinInfo() const {
-			return _info;
-		}
-
 	}
 }

@@ -16,6 +16,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem/path.hpp>
+#include <ethereum/base/BREthereumAddress.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -45,5 +46,14 @@ TEST_CASE("Key sign pressure test", "[KeySign]") {
 		bytes_t signedData = key1.Sign(message);
 		REQUIRE(key2.Verify(message, signedData));
 	}
+
+	bytes_t prvkey = child.privkey();
+	HDKeychain hdkey(CTElastos, prvkey, bytes_t(32));
+	REQUIRE(child.pubkey() == hdkey.pubkey());
+	REQUIRE(child.uncompressed_pubkey() == hdkey.uncompressed_pubkey());
+
+	Key k(CTElastos, prvkey);
+	REQUIRE(child.pubkey() == k.PubKey());
+	REQUIRE(child.uncompressed_pubkey() == k.PubKey(false));
 }
 

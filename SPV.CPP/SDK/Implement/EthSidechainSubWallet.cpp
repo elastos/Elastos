@@ -124,13 +124,8 @@ namespace Elastos {
             ArgInfo("{} {}", GetSubWalletID(), GetFunName());
             ArgInfo("payPasswd: *");
 
-            uint512 seed = _parent->GetAccount()->GetSeed(payPassword);
-            BRKey prvkey = derivePrivateKeyFromSeed(*(UInt512 *)seed.begin(), 0);
-
-            uint256 s;
-            memcpy(s.begin(), &prvkey.secret, sizeof(prvkey.secret));
-            bytes_t prvkeyBytes = s.bytes();
-            std::string prvkeystring = prvkeyBytes.getHex();
+            Key k = GetPrivateKey(payPassword);
+            std::string prvkeystring = k.PrvKey().getHex();
 
             ArgInfo("r => *");
             return prvkeystring;
@@ -229,8 +224,7 @@ namespace Elastos {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "get 'ID' of json failed");
 			}
 
-			uint512 seed = _parent->GetAccount()->GetSeed(passwd);
-			BRKey prvkey = derivePrivateKeyFromSeed(*(UInt512 *)seed.begin(), 0);
+            BRKey prvkey = GetBRPrivateKey(passwd);
 			_client->_ewm->getWallet()->signWithPrivateKey(transfer, prvkey);
 
             std::string rawtx = transfer->RlpEncode(_client->_ewm->getNetwork()->getRaw(), RLP_TYPE_TRANSACTION_SIGNED);
@@ -252,10 +246,8 @@ namespace Elastos {
 
             std::string addr = _client->_ewm->getWallet()->getAccount()->getPrimaryAddress();
             ErrorChecker::CheckParam(addr != address, Error::InvalidArgument, "Invalid address");
-            uint512 seed = _parent->GetAccount()->GetSeed(passwd);
-            HDKeychain masterKey = HDKeychain(CTBitcoin, HDSeed(seed.bytes()).getExtendedKey(CTBitcoin, true)).getChild("44'/60'/0'/0/0");
 
-            Key k = masterKey;
+            Key k = GetPrivateKey(passwd);
             std::string sig = k.SignDER(uint256(digest)).getHex();
 
             ArgInfo("r => {}", sig);
@@ -275,6 +267,31 @@ namespace Elastos {
             ArgInfo("r => {}", r);
 
             return r;
+		}
+
+        BRKey EthSidechainSubWallet::GetBRPrivateKey(const std::string &passwd) const {
+		    Key k = GetPrivateKey(passwd);
+            BRKey prvkey;
+
+            BRKeySetSecret(&prvkey, (UInt256 *) k.PrvKey().data(), 0);
+            BRKeyPubKey(&prvkey, NULL, 0);
+
+            return prvkey;
+		}
+
+        Key EthSidechainSubWallet::GetPrivateKey(const std::string &passwd) const {
+		    Key k;
+            uint512 seed = _parent->GetAccount()->GetSeed(passwd);
+            if (seed != 0) {
+                uint512 seed = _parent->GetAccount()->GetSeed(passwd);
+                HDKeychain masterKey = HDKeychain(CTBitcoin, HDSeed(seed.bytes()).getExtendedKey(CTBitcoin, true)).getChild("44'/60'/0'/0/0");
+                k = masterKey;
+            } else {
+                bytes_t ethprvkey = _parent->GetAccount()->GetSinglePrivateKey(passwd);
+                ErrorChecker::CheckParam(ethprvkey.size() != 32, Error::Sign, "private key not found");
+                k = Key(CTBitcoin, ethprvkey);
+            }
+            return k;
 		}
 
 	}

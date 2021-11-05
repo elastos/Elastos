@@ -44,6 +44,7 @@ namespace Elastos {
 			j["seed"] = _seed;
 			j["ethscPrimaryPubKey"] = _ethscPrimaryPubKey;
             j["xPubKeyBitcoin"] = _xPubKeyBitcoin;
+            j["SinglePrivateKey"] = _singlePrivateKey;
 			return j;
 		}
 
@@ -67,16 +68,22 @@ namespace Elastos {
 					_singleAddress = j["singleAddress"].get<bool>();
 					_readonly = j["readonly"].get<bool>();
 
-					if (j.find("xPubKeyHDPM") != j.end()) {
+					if (j.contains("xPubKeyHDPM")) {
 						_xPubKeyHDPM = j["xPubKeyHDPM"].get<std::string>();
 					} else {
 						_xPubKeyHDPM.clear();
 					}
 
-					if (j.find("seed") != j.end()) {
+					if (j.contains("seed")) {
 						_seed = j["seed"].get<std::string>();
 					} else {
 						_seed.clear();
+					}
+
+					if (j.contains("SinglePrivateKey")) {
+					    _singlePrivateKey = j["SinglePrivateKey"].get<std::string>();
+					} else {
+					    _singlePrivateKey.clear();
 					}
 
 					if (j.find("ethscPrimaryPubKey") != j.end()) {
@@ -437,6 +444,14 @@ namespace Elastos {
         const std::string &LocalStore::GetxPubKeyBitcoin() const {
             return _xPubKeyBitcoin;
         }
+
+        void LocalStore::SetSinglePrivateKey(const std::string &prvkey) {
+            _singlePrivateKey = prvkey;
+		}
+
+        const std::string &LocalStore::GetSinglePrivateKey() const {
+            return _singlePrivateKey;
+		}
 
 	}
 }

@@ -81,7 +81,7 @@ finish:
 
 		secp256k1_key &secp256k1_key::operator=(const secp256k1_key &from) {
 		    _nid = from._nid;
-			if (_key) EC_KEY_free(from._key);
+			if (_key) EC_KEY_free(_key);
 			_key = EC_KEY_dup(from._key);
 			return *this;
 		}

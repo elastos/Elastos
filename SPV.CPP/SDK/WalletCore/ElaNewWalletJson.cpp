@@ -87,6 +87,14 @@ namespace Elastos {
             _xPubKeyBitcoin = xpub;
         }
 
+        const std::string &ElaNewWalletJson::GetSinglePrivateKey() const {
+            return _singlePrivateKey;
+		}
+
+        void ElaNewWalletJson::SetSinglePrivateKey(const std::string &prvkey) {
+            _singlePrivateKey = prvkey;
+		}
+
 		nlohmann::json ElaNewWalletJson::ToJson(bool withPrivKey) const {
 			nlohmann::json j = ElaWebWalletJson::ToJson(withPrivKey);
 			ToJsonCommon(j);
@@ -110,10 +118,11 @@ namespace Elastos {
 			j["seed"] = _seed;
 			j["ethscPrimaryPubKey"] = _ethscPrimaryPubKey;
             j["xPubKeyBitcoin"] = _xPubKeyBitcoin;
+            j["singlePrivateKey"] = _singlePrivateKey;
 		}
 
 		void ElaNewWalletJson::FromJsonCommon(const nlohmann::json &j) {
-			if (j.find("CoinInfoList") != j.end()) {
+			if (j.contains("CoinInfoList")) {
 				_coinInfoList.clear();
 				nlohmann::json coinInfoList = j["CoinInfoList"];
 				for (nlohmann::json::iterator it = coinInfoList.begin(); it != coinInfoList.end(); ++it) {
@@ -123,47 +132,51 @@ namespace Elastos {
 				}
 			}
 
-			if (j.find("SingleAddress") != j.end()) {
+			if (j.contains("SingleAddress")) {
 				_singleAddress = j["SingleAddress"].get<bool>();
 			}
 
-			if (j.find("OwnerPubKey") != j.end()) {
+			if (j.contains("OwnerPubKey")) {
 				_ownerPubKey = j["OwnerPubKey"].get<std::string>();
 			}
 
-			if (j.find("xPubKeyHDPM") != j.end()) {
+			if (j.contains("xPubKeyHDPM")) {
 				_xPubKeyHDPM = j["xPubKeyHDPM"].get<std::string>();
 			}
 
-			if (j.find("ethscPrimaryPubKey") != j.end()) {
+			if (j.contains("ethscPrimaryPubKey")) {
 				_ethscPrimaryPubKey = j["ethscPrimaryPubKey"].get<std::string>();
 			}
 
-            if (j.find("xPubKeyBitcoin") != j.end()) {
+            if (j.contains("xPubKeyBitcoin")) {
                 _xPubKeyBitcoin = j["xPubKeyBitcoin"].get<std::string>();
             }
 
-			if (j.find("CoSigners") != j.end() && j["Type"] == "MultiSign") {
+			if (j.contains("CoSigners") && j["Type"] == "MultiSign") {
 				ErrorChecker::ThrowParamException(Error::KeyStore, "Unsupport old version multi-sign keystore");
 			}
 
-			if (j.find("RequiredSignCount") != j.end()) {
+			if (j.contains("RequiredSignCount")) {
 				ErrorChecker::ThrowParamException(Error::KeyStore, "Unsupport old version multi-sign keystore");
 			}
 
 			std::string passphrase;
-			if (j.find("PhrasePassword") != j.end()) {
+			if (j.contains("PhrasePassword")) {
 				passphrase = j["PhrasePassword"].get<std::string>();
 				if (!passphrase.empty())
 					_mnemonicHasPassphrase = true;
 			}
 
-			if (j.find("IsSingleAddress") != j.end()) {
+			if (j.contains("IsSingleAddress")) {
 				_singleAddress = j["IsSingleAddress"];
 			}
 
-            if (j.find("seed") != j.end()) {
+            if (j.contains("seed")) {
                 _seed = j["seed"].get<std::string>();
+            }
+
+            if (j.contains("singlePrivateKey")) {
+                _singlePrivateKey = j["singlePrivateKey"].get<std::string>();
             }
 
             if (_seed.empty() && !_mnemonic.empty() &&

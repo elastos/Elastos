@@ -23,28 +23,12 @@ namespace Elastos {
 
 			void SetChainID(const std::string &id);
 
-			time_t GetEarliestPeerTime() const;
-
-			void SetEaliestPeerTime(time_t time);
-
-			const std::vector<uint256> &GetVisibleAssets() const;
-
-			void SetVisibleAssets(const std::vector<uint256> &assets);
-
-			nlohmann::json VisibleAssetsToJson() const;
-
-			void VisibleAssetsFromJson(const nlohmann::json &j);
-
-			void SetVisibleAsset(const uint256 &assetID);
-
 			nlohmann::json ToJson() const;
 
 			void FromJson(const nlohmann::json &j);
 
 		private:
 			std::string _chainID;
-			time_t _earliestPeerTime;
-			std::vector<uint256> _visibleAssets;
 		};
 
 		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;

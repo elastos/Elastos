@@ -47,14 +47,6 @@ namespace Elastos {
 		typedef boost::shared_ptr<Config> ConfigPtr;
 		typedef boost::shared_ptr<ChainConfig> ChainConfigPtr;
 
-		typedef enum {
-			CreateNormal,          // Select newest check point
-			CreateMultiSign,       // Select oldest check point
-			ImportFromMnemonic,    // Select oldest check point
-			ImportFromLocalStore,  // Select check point from local store
-			ImportFromKeyStore,    // Select check point from key store
-		} MasterWalletInitFrom;
-
 		class MasterWallet : public IMasterWallet {
 		public:
 			virtual ~MasterWallet();
@@ -85,7 +77,7 @@ namespace Elastos {
 
 			std::string ExportMnemonic(const std::string &payPassword) const;
 
-			nlohmann::json ExportReadonlyWallet() const;
+//			nlohmann::json ExportReadonlyWallet() const;
 
 			std::string ExportPrivateKey(const std::string &payPasswd) const;
 
@@ -132,9 +124,7 @@ namespace Elastos {
 			MasterWallet(
 					const std::string &id,
 					const ConfigPtr &config,
-					const std::string &dataPath,
-					bool p2pEnable,
-					MasterWalletInitFrom from);
+					const std::string &dataPath);
 
 			MasterWallet(
 					const std::string &id,
@@ -142,11 +132,15 @@ namespace Elastos {
 					const std::string &phrasePassword,
 					const std::string &payPasswd,
 					bool singleAddress,
-					bool p2pEnable,
 					const ConfigPtr &config,
-					const std::string &dataPath,
-					time_t earliestPeerTime,
-					MasterWalletInitFrom from);
+					const std::string &dataPath);
+
+            MasterWallet(
+                    const std::string &id,
+                    const std::string &singlePrivateKey,
+                    const std::string &passwd,
+                    const ConfigPtr &config,
+                    const std::string &dataPath);
 
 			MasterWallet(
 					const std::string &id,
@@ -154,17 +148,13 @@ namespace Elastos {
 					const std::string &backupPassword,
 					const std::string &payPassword,
 					const ConfigPtr &config,
-					const std::string &dataPath,
-					bool p2pEnable,
-					MasterWalletInitFrom from);
+					const std::string &dataPath);
 
-			MasterWallet(
-					const std::string &id,
-					const nlohmann::json &readonlyWalletJson,
-					const ConfigPtr &config,
-					const std::string &dataPath,
-					bool p2pEnable,
-					MasterWalletInitFrom from);
+//			MasterWallet(
+//					const std::string &id,
+//					const nlohmann::json &readonlyWalletJson,
+//					const ConfigPtr &config,
+//					const std::string &dataPath);
 
 			MasterWallet(
 					const std::string &id,
@@ -172,11 +162,8 @@ namespace Elastos {
 					uint32_t m,
 					const ConfigPtr &config,
 					const std::string &dataPath,
-					bool p2pEnable,
 					bool singleAddress,
-					bool compatible,
-					time_t earliestPeerTime,
-					MasterWalletInitFrom from);
+					bool compatible);
 
 			MasterWallet(
 					const std::string &id,
@@ -186,11 +173,8 @@ namespace Elastos {
 					uint32_t m,
 					const ConfigPtr &config,
 					const std::string &dataPath,
-					bool p2pEnable,
 					bool singleAddress,
-					bool compatible,
-					time_t earliestPeerTime,
-					MasterWalletInitFrom from);
+					bool compatible);
 
 			MasterWallet(
 					const std::string &id,
@@ -201,11 +185,8 @@ namespace Elastos {
 					uint32_t m,
 					const ConfigPtr &config,
 					const std::string &dataPath,
-					bool p2pEnable,
 					bool singleAddress,
-					bool compatible,
-					time_t earliestPeerTime,
-					MasterWalletInitFrom from);
+					bool compatible);
 
 			ISubWallet *SubWalletFactoryMethod(const CoinInfoPtr &info,
 											  const ChainConfigPtr &config,
@@ -220,16 +201,11 @@ namespace Elastos {
 		protected:
 			mutable WalletMap _createdWallets;
 
-			MasterWalletInitFrom _initFrom;
-
 			AccountPtr _account;
 
 			std::string _id;
 
-			time_t _earliestPeerTime;
-
 			ConfigPtr _config;
-			bool _p2pEnable;
 
 		};
 

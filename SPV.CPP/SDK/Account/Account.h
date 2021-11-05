@@ -62,8 +62,11 @@ namespace Elastos {
 			Account(const std::string &path, const std::string &mnemonic, const std::string &passphrase,
 					const std::string &payPasswd, bool singleAddress);
 
+			// only eth subwallet with single private key
+			Account(const std::string &path, const std::string singlePrivateKey, const std::string &passwd);
+
 			// Read-Only wallet JSON
-			Account(const std::string &path, const nlohmann::json &walletJSON);
+//			Account(const std::string &path, const nlohmann::json &walletJSON);
 
 			// keystore
 			Account(const std::string &path, const KeyStore &ks, const std::string &payPasswd);
@@ -126,9 +129,9 @@ namespace Elastos {
 
 			KeyStore ExportKeystore(const std::string &payPasswd) const;
 
-			nlohmann::json ExportReadonlyWallet() const;
+//			nlohmann::json ExportReadonlyWallet() const;
 
-			bool ImportReadonlyWallet(const nlohmann::json &walletJSON);
+//			bool ImportReadonlyWallet(const nlohmann::json &walletJSON);
 
 			std::string ExportMnemonic(const std::string &payPasswd) const;
 
@@ -149,6 +152,8 @@ namespace Elastos {
 			uint512 GetSeed(const std::string &payPasswd) const;
 
 			bytes_t GetETHSCPubKey() const;
+
+            bytes_t GetSinglePrivateKey(const std::string &passwd) const;
 
 			bool HasMnemonic() const;
 

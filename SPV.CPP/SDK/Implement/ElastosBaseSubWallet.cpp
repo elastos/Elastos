@@ -40,6 +40,7 @@ namespace Elastos {
                 const std::string &netType) :
                 SubWallet(info, config, parent) {
 
+            ErrorChecker::CheckParam(_parent->GetAccount()->MasterPubKeyHDPMString().empty(), Error::UnsupportOperation, "unsupport to create elastos based wallet");
             boost::filesystem::path subWalletDBPath = _parent->GetDataPath();
             subWalletDBPath /= _info->GetChainID() + ".db";
 

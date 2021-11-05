@@ -78,8 +78,6 @@ namespace Elastos {
 
             std::string GetSubWalletID() const;
 
-			const CoinInfoPtr &GetCoinInfo() const;
-
 		protected:
 			MasterWallet *_parent;
 			CoinInfoPtr _info;

@@ -85,6 +85,11 @@ namespace Elastos {
 
             virtual bool VerifyDigest(const std::string &pubkey, const std::string &digest, const std::string &signature) const;
 
+		private:
+		    BRKey GetBRPrivateKey(const std::string &passwd) const;
+
+		    Key GetPrivateKey(const std::string &passwd) const;
+
 		protected:
 			friend class MasterWallet;
 

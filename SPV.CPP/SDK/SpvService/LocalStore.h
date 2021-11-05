@@ -127,6 +127,10 @@ namespace Elastos {
 
             const std::string &GetxPubKeyBitcoin() const;
 
+            void SetSinglePrivateKey(const std::string &prvkey);
+
+            const std::string &GetSinglePrivateKey() const;
+
 		private:
 			virtual nlohmann::json ToJson() const;
 
@@ -140,6 +144,8 @@ namespace Elastos {
 			// only old version keystore and localstore of spvsdk contain this. will remove later
 //			std::string _passphrase __attribute__((deprecated));
 			std::string _passphrase;
+			std::string _singlePrivateKey;
+            std::string _seed;
 
 			// plain text
 			std::string _xPubKey;
@@ -163,7 +169,6 @@ namespace Elastos {
 			bool _readonly;
 
 			// for ethsc
-			std::string _seed;
 			std::string _ethscPrimaryPubKey;
 
 			// for btc

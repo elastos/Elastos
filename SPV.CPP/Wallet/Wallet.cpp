@@ -285,7 +285,7 @@ static int create(int argc, char *argv[]) {
 	return 0;
 }
 
-// import walletName (m[nemonic] | k[eystore]) [keystoreFilePath]
+// import walletName (m[nemonic] | k[eystore] | p[rivatekey]) [keystoreFilePath]
 static int import(int argc, char *argv[]) {
 	if (argc != 3 && argc != 4) {
 		invalidCmdError();
@@ -330,38 +330,54 @@ static int import(int argc, char *argv[]) {
 				return ERRNO_APP;
 			}
 		} else if (importWhat == "keystore" || importWhat == "k") {
-			std::string keystore;
-			if (argc == 4) {
-				std::string filepath = argv[3];
-				std::ifstream is(filepath);
+            std::string keystore;
+            if (argc == 4) {
+                std::string filepath = argv[3];
+                std::ifstream is(filepath);
 
-				std::string line;
-				while (!is.eof()) {
-					is >> line;
-					keystore += line;
-					line.clear();
-				}
-			} else {
-				struct termios told = enableLongInput();
-				std::cout << "Enter keystore: ";
-				std::getline(std::cin, keystore);
-				recoveryTTYSetting(&told);
-			}
+                std::string line;
+                while (!is.eof()) {
+                    is >> line;
+                    keystore += line;
+                    line.clear();
+                }
+            } else {
+                struct termios told = enableLongInput();
+                std::cout << "Enter keystore: ";
+                std::getline(std::cin, keystore);
+                recoveryTTYSetting(&told);
+            }
 
-			std::string backupPassword = getpass("Enter backup password: ");
+            std::string backupPassword = getpass("Enter backup password: ");
 
-			std::string password;
-			if (0 > createPaymentPassword(password)) {
-				std::cerr << "Import wallet failed!" << std::endl;
-				return ERRNO_APP;
-			}
+            std::string password;
+            if (0 > createPaymentPassword(password)) {
+                std::cerr << "Import wallet failed!" << std::endl;
+                return ERRNO_APP;
+            }
 
-			masterWallet = manager->ImportWalletWithKeystore(walletName, nlohmann::json::parse(keystore),
-															 backupPassword, password);
-			if (!masterWallet) {
-				std::cerr << "Import wallet failed!" << std::endl;
-				return ERRNO_APP;
-			}
+            masterWallet = manager->ImportWalletWithKeystore(walletName, nlohmann::json::parse(keystore),
+                                                             backupPassword, password);
+            if (!masterWallet) {
+                std::cerr << "Import wallet failed!" << std::endl;
+                return ERRNO_APP;
+            }
+        } else if (importWhat == "privatekey" || importWhat == "p") {
+		    std::string prvkey;
+            std::cout << "Enter prvkey: ";
+            std::getline(std::cin, prvkey);
+
+            std::string password;
+            if (0 > createPaymentPassword(password)) {
+                std::cerr << "Create failed!" << std::endl;
+                return ERRNO_APP;
+            }
+
+            masterWallet = manager->CreateMasterWallet(walletName, prvkey, password);
+            if (!masterWallet) {
+                std::cerr << "Import wallet failed!" << std::endl;
+                return ERRNO_APP;
+            }
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;
@@ -1243,7 +1259,7 @@ static int vote(int argc, char *argv[]) {
 	return 0;
 }
 
-// export (m[nemonic] | k[eystore] | xpub | xprv)
+// export (m[nemonic] | k[eystore] | p[rivatekey] | xpub | xprv)
 static int _export(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -1270,8 +1286,17 @@ static int _export(int argc, char *argv[]) {
 		    std::string xprv = currentWallet->ExportPrivateKey(password);
 		    std::cout << xprv << std::endl;
         } else if (exportWhat == "xpub") {
-		    std::string xpub = currentWallet->ExportMasterPublicKey();
-		    std::cout << xpub << std::endl;
+            std::string xpub = currentWallet->ExportMasterPublicKey();
+            std::cout << xpub << std::endl;
+        } else if (exportWhat == "privatekey" || exportWhat == "p") {
+		    IEthSidechainSubWallet *ethSubWallet = dynamic_cast<IEthSidechainSubWallet*>(currentWallet->GetSubWallet("ETHSC"));
+		    if (ethSubWallet == NULL) {
+                std::cout << "this command only support eth based side-chain" << std::endl;
+            } else {
+                std::string password = getpass("Enter payment password: ");
+                std::string prvkey = ethSubWallet->ExportPrivateKey(password);
+                std::cout << prvkey << std::endl;
+            }
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;
@@ -1552,7 +1577,7 @@ struct command {
 } commands[] = {
 	{"help",       help,           "[command]                                        Display available command list, or usage description for specific command."},
 	{"create",     create,         "walletName                                       Create a new wallet with given name."},
-	{"import",     import,         "walletName (m[nemonic] | k[eystore]) [filePath]  Import wallet with given name and mnemonic or keystore."},
+	{"import",     import,         "walletName (m[nemonic] | k[eystore] | p[rivatekey]) [filePath]  Import wallet with given name and mnemonic or keystore."},
 	{"remove",     remove,         "walletName                                       Remove specified wallet."},
 	{"switch",     _switch,        "walletName                                       Switch current wallet."},
 	{"list",       list,           "[masterWalletID]                                 List wallets."},

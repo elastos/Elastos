@@ -41,11 +41,8 @@ public:
 					 "phrasePassword",
 					 "payPassword",
 					 false,
-					 false,
 					 config,
-					 rootPath,
-					 0,
-					 ImportFromMnemonic) {
+					 rootPath) {
 	}
 
 	explicit TestMasterWallet(const std::string &passphrase,
@@ -56,19 +53,15 @@ public:
 					 passphrase,
 					 payPasswd,
 					 false,
-					 false,
 					 config,
-					 rootPath,
-					 0,
-					 ImportFromMnemonic) {
+					 rootPath) {
 	}
 
 	TestMasterWallet(const std::string &mnemonic,
 					 const std::string &passphrase,
 					 const std::string &payPasswd,
 					 const ConfigPtr &config) :
-		MasterWallet(MasterWalletTestID, mnemonic, passphrase, payPasswd, false, false, config, rootPath, 0,
-					 ImportFromMnemonic) {
+		MasterWallet(MasterWalletTestID, mnemonic, passphrase, payPasswd, false, config, rootPath) {
 	}
 
 	TestMasterWallet(const std::string &mnemonic,
@@ -76,18 +69,16 @@ public:
 					 const std::string &payPasswd,
 					 bool singleAddress,
 					 const ConfigPtr &config) :
-		MasterWallet(MasterWalletTestID, mnemonic, passphrase, payPasswd, singleAddress, false, config, rootPath, 0,
-					 ImportFromMnemonic) {
+		MasterWallet(MasterWalletTestID, mnemonic, passphrase, payPasswd, singleAddress, config, rootPath) {
 	}
 
 	TestMasterWallet(const std::string &id, const ConfigPtr &config) :
-		MasterWallet(id, config, rootPath, false, ImportFromMnemonic) {
+		MasterWallet(id, config, rootPath) {
 	}
 
 	TestMasterWallet(const nlohmann::json &keystore, const std::string &backupPassword, const std::string &payPasswd,
 					 const ConfigPtr &config) :
-		MasterWallet(MasterWalletTestID, keystore, backupPassword, payPasswd, config, rootPath, false,
-					 ImportFromKeyStore) {
+		MasterWallet(MasterWalletTestID, keystore, backupPassword, payPasswd, config, rootPath) {
 	}
 
 	std::string GetxPubKey() {
