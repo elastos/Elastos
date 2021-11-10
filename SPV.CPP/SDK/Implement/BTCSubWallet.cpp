@@ -54,21 +54,6 @@ namespace Elastos {
             }
         }
 
-        std::string BTCSubWallet::GetChainID() const {
-            return _info->GetChainID();
-        }
-
-        nlohmann::json BTCSubWallet::GetBasicInfo() const {
-            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
-
-            nlohmann::json j;
-            j["Info"] = {};
-            j["ChainID"] = _info->GetChainID();
-
-            ArgInfo("r => {}", j.dump());
-            return j;
-        }
-
         nlohmann::json BTCSubWallet::GetAddresses(uint32_t index, uint32_t count, bool internal) const {
             ArgInfo("{} {}", GetSubWalletID(), GetFunName());
             ArgInfo("index: {}", index);

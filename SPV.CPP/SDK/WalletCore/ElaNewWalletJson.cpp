@@ -95,6 +95,14 @@ namespace Elastos {
             _singlePrivateKey = prvkey;
 		}
 
+        const std::string &ElaNewWalletJson::GetRipplePrimaryPubKey() const {
+		    return _ripplePrimaryPubKey;
+		}
+
+        void ElaNewWalletJson::SetRipplePrimaryPubKey(const std::string &pubkey) {
+            _ripplePrimaryPubKey = pubkey;
+		}
+
 		nlohmann::json ElaNewWalletJson::ToJson(bool withPrivKey) const {
 			nlohmann::json j = ElaWebWalletJson::ToJson(withPrivKey);
 			ToJsonCommon(j);
@@ -119,6 +127,7 @@ namespace Elastos {
 			j["ethscPrimaryPubKey"] = _ethscPrimaryPubKey;
             j["xPubKeyBitcoin"] = _xPubKeyBitcoin;
             j["singlePrivateKey"] = _singlePrivateKey;
+            j["ripplePrimaryPubKey"] = _ripplePrimaryPubKey;
 		}
 
 		void ElaNewWalletJson::FromJsonCommon(const nlohmann::json &j) {
@@ -146,6 +155,10 @@ namespace Elastos {
 
 			if (j.contains("ethscPrimaryPubKey")) {
 				_ethscPrimaryPubKey = j["ethscPrimaryPubKey"].get<std::string>();
+			}
+
+			if (j.contains("ripplePrimaryPubKey")) {
+			    _ripplePrimaryPubKey = j["ripplePrimaryPubKey"].get<std::string>();
 			}
 
             if (j.contains("xPubKeyBitcoin")) {
@@ -214,6 +227,13 @@ namespace Elastos {
                 HDSeed hdseed(seedBytes);
                 HDKeychain rootkey(CTBitcoin, hdseed.getExtendedKey(CTBitcoin, true));
                 _ethscPrimaryPubKey = rootkey.getChild("44'/60'/0'/0/0").uncompressed_pubkey().getHex();
+            }
+
+            if (_ripplePrimaryPubKey.empty() && !_seed.empty()) {
+                bytes_t seedBytes(_seed);
+                HDSeed hdseed(seedBytes);
+                HDKeychain rootkey(CTBitcoin, hdseed.getExtendedKey(CTBitcoin, true));
+                _ripplePrimaryPubKey = rootkey.getChild("44'/144'/0'/0/0").pubkey().getHex();
             }
 
             if (_xPubKeyBitcoin.empty() && !_seed.empty()) {

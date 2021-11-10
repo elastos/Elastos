@@ -157,6 +157,7 @@ namespace Elastos {
 			_localstore->SetETHSCPrimaryPubKey("");
             _localstore->SetxPubKeyBitcoin("");
             _localstore->SetSinglePrivateKey("");
+            _localstore->SetRipplePrimaryPubKey("");
 
 			if (compatible) {
 				_localstore->SetDerivationStrategy("BIP44");
@@ -199,6 +200,7 @@ namespace Elastos {
 			_localstore->SetOwnerPubKey("");
 			_localstore->SetSeed("");
 			_localstore->SetETHSCPrimaryPubKey("");
+			_localstore->SetRipplePrimaryPubKey("");
             _localstore->SetxPubKeyBitcoin("");
             _localstore->SetSinglePrivateKey("");
 
@@ -232,6 +234,7 @@ namespace Elastos {
 			std::string encryptedSeed = AES::EncryptCCM(bytes_t(seed.begin(), seed.size()), payPasswd);
             std::string encryptedethPrvKey = AES::EncryptCCM(ethkey.privkey(), payPasswd);
             std::string ethscPubKey = ethkey.uncompressed_pubkey().getHex();
+            std::string ripplePubKey = stdrootkey.getChild("44'/144'/0'/0/0").pubkey().getHex();
 			std::string encryptedMnemonic = AES::EncryptCCM(bytes_t(mnemonic.data(), mnemonic.size()), payPasswd);
 			std::string encryptedxPrvKey = AES::EncryptCCM(rootkey.extkey(), payPasswd);
 			std::string xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
@@ -258,6 +261,7 @@ namespace Elastos {
 			_localstore->SetETHSCPrimaryPubKey(ethscPubKey);
             _localstore->SetxPubKeyBitcoin(xpubBitcoin);
             _localstore->SetSinglePrivateKey(encryptedethPrvKey);
+            _localstore->SetRipplePrimaryPubKey(ripplePubKey);
 
 			if (compatible) {
 				_localstore->SetDerivationStrategy("BIP44");
@@ -284,6 +288,7 @@ namespace Elastos {
 			std::string encryptedSeed = AES::EncryptCCM(bytes_t(seed.begin(), seed.size()), payPasswd);
 			std::string encryptedethPrvKey = AES::EncryptCCM(ethkey.privkey(), payPasswd);
             std::string ethscPubKey = ethkey.uncompressed_pubkey().getHex();
+            std::string ripplePubKey = stdrootkey.getChild("44'/144'/0'/0/0").pubkey().getHex();
 			std::string encryptedMnemonic = AES::EncryptCCM(bytes_t(mnemonic.data(), mnemonic.size()), payPasswd);
 			std::string encryptedxPrvKey = AES::EncryptCCM(rootkey.extkey(), payPasswd);
 
@@ -316,6 +321,7 @@ namespace Elastos {
 			_localstore->SetETHSCPrimaryPubKey(ethscPubKey);
             _localstore->SetxPubKeyBitcoin(xpubBitcoin);
             _localstore->SetSinglePrivateKey(encryptedethPrvKey);
+            _localstore->SetRipplePrimaryPubKey(ripplePubKey);
 
 			Init();
 		}
@@ -347,6 +353,7 @@ namespace Elastos {
             _localstore->SetETHSCPrimaryPubKey(ethscPubKey);
             _localstore->SetxPubKeyBitcoin("");
             _localstore->SetSinglePrivateKey(encryptedSinglePrvKey);
+            _localstore->SetRipplePrimaryPubKey("");
 
             Init();
 		}
@@ -395,7 +402,8 @@ namespace Elastos {
 			}
 
 			if (!json.GetSinglePrivateKey().empty()) {
-			    bytes.setHex(AES::EncryptCCM(json.GetSinglePrivateKey(), payPasswd));
+			    bytes.setHex(json.GetSinglePrivateKey());
+			    _localstore->SetSinglePrivateKey(AES::EncryptCCM(bytes, payPasswd));
 			    _localstore->SetReadonly(false);
 			}
 
@@ -412,6 +420,7 @@ namespace Elastos {
 			_localstore->SetOwnerPubKey(json.OwnerPubKey());
 			_localstore->SetSubWalletInfoList(json.GetCoinInfoList());
 			_localstore->SetETHSCPrimaryPubKey(json.GetETHSCPrimaryPubKey());
+			_localstore->SetRipplePrimaryPubKey(json.GetRipplePrimaryPubKey());
 
 			Init();
 		}
@@ -708,6 +717,7 @@ namespace Elastos {
 			json.SetCoinInfoList(_localstore->GetSubWalletInfoList());
 			json.SetETHSCPrimaryPubKey(_localstore->GetETHSCPrimaryPubKey());
             json.SetxPubKeyBitcoin(_localstore->GetxPubKeyBitcoin());
+            json.SetRipplePrimaryPubKey(_localstore->GetRipplePrimaryPubKey());
 
 			return KeyStore(json);
 		}
@@ -1044,6 +1054,11 @@ namespace Elastos {
                 _localstore->SetETHSCPrimaryPubKey(tmpstr);
                 _localstore->SetSinglePrivateKey(AES::EncryptCCM(ethkey.privkey(), payPasswd));
             }
+            // ripple primary public key
+            if (_localstore->GetRipplePrimaryPubKey().empty() && havestdrootkey) {
+                HDKeychain ripplekey = stdrootkey.getChild("44'/144'/0'/0/0");
+                _localstore->SetRipplePrimaryPubKey(ripplekey.pubkey().getHex());
+            }
 
             if (_localstore->GetxPubKeyHDPM().empty() && haveRootkey) {
                 HDKeychain xpubHDPM = rootkey.getChild("45'").getPublic();
@@ -1087,6 +1102,12 @@ namespace Elastos {
 			bytes_t pubkey;
 			pubkey.setHex(_localstore->GetETHSCPrimaryPubKey());
 			return pubkey;
+		}
+
+        bytes_t Account::GetRipplePubKey() const {
+            bytes_t pubkey;
+            pubkey.setHex(_localstore->GetRipplePrimaryPubKey());
+            return pubkey;
 		}
 
         bytes_t Account::GetSinglePrivateKey(const std::string &passwd) const {

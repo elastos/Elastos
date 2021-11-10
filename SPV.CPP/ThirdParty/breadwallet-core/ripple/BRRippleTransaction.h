@@ -13,7 +13,7 @@
 
 #include "BRRippleBase.h"
 #include "BRRippleFeeBasis.h"
-#include "BRKey.h"
+#include "support/BRKey.h"
 #include "support/BRSet.h"
 #include "BRRippleAddress.h"
 

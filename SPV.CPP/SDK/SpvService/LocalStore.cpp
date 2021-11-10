@@ -43,6 +43,7 @@ namespace Elastos {
 			j["coinInfo"] = _subWalletsInfoList;
 			j["seed"] = _seed;
 			j["ethscPrimaryPubKey"] = _ethscPrimaryPubKey;
+			j["ripplePrimaryPubKey"] = _ripplePrimaryPubKey;
             j["xPubKeyBitcoin"] = _xPubKeyBitcoin;
             j["SinglePrivateKey"] = _singlePrivateKey;
 			return j;
@@ -86,7 +87,7 @@ namespace Elastos {
 					    _singlePrivateKey.clear();
 					}
 
-					if (j.find("ethscPrimaryPubKey") != j.end()) {
+					if (j.contains("ethscPrimaryPubKey")) {
 						_ethscPrimaryPubKey = j["ethscPrimaryPubKey"].get<std::string>();
 						bool isEmpty = true;
 						for (size_t i = 2; i < _ethscPrimaryPubKey.length(); ++i) {
@@ -99,6 +100,12 @@ namespace Elastos {
 							_ethscPrimaryPubKey.clear();
 					} else {
 						_ethscPrimaryPubKey.clear();
+					}
+
+					if (j.contains("ripplePrimaryPubKey")) {
+                        _ripplePrimaryPubKey = j["ripplePrimaryPubKey"].get<std::string>();
+					} else {
+					    _ripplePrimaryPubKey.clear();
 					}
 
                     // support btc
@@ -124,6 +131,7 @@ namespace Elastos {
 					_xPubKeyHDPM.clear();
 					_seed.clear();
 					_ethscPrimaryPubKey.clear();
+					_ripplePrimaryPubKey.clear();
 
 					if (mpk.is_object()) {
 						bytes.setHex(mpk["ELA"]);
@@ -206,6 +214,9 @@ namespace Elastos {
 
 			bytes = AES::DecryptCCM(_seed, oldPasswd);
 			_seed = AES::EncryptCCM(bytes, newPasswd);
+
+			bytes = AES::DecryptCCM(_singlePrivateKey, oldPasswd);
+			_singlePrivateKey = AES::EncryptCCM(bytes, newPasswd);
 
 			bytes.clean();
 		}
@@ -451,6 +462,14 @@ namespace Elastos {
 
         const std::string &LocalStore::GetSinglePrivateKey() const {
             return _singlePrivateKey;
+		}
+
+        void LocalStore::SetRipplePrimaryPubKey(const std::string &pubkey) {
+            _ripplePrimaryPubKey = pubkey;
+		}
+
+        const std::string &LocalStore::GetRipplePrimaryPubKey() const {
+            return _ripplePrimaryPubKey;
 		}
 
 	}

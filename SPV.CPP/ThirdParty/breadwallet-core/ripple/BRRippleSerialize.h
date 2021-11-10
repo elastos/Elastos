@@ -13,7 +13,7 @@
 
 #include "BRRippleBase.h"
 #include "BRRipplePrivateStructs.h"
-#include "BRArray.h"
+#include "support/BRArray.h"
 
 /**
  * Serialize an unsorted array of fields

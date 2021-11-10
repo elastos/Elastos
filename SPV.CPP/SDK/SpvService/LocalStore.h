@@ -131,6 +131,10 @@ namespace Elastos {
 
             const std::string &GetSinglePrivateKey() const;
 
+            void SetRipplePrimaryPubKey(const std::string &pubkey);
+
+            const std::string &GetRipplePrimaryPubKey() const;
+
 		private:
 			virtual nlohmann::json ToJson() const;
 
@@ -170,6 +174,9 @@ namespace Elastos {
 
 			// for ethsc
 			std::string _ethscPrimaryPubKey;
+
+			// for ripple
+			std::string _ripplePrimaryPubKey;
 
 			// for btc
 			std::string _xPubKeyBitcoin;

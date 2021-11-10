@@ -4,7 +4,8 @@ file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp" "*.c")
 file(GLOB_RECURSE BRETH_SOURCE_FILES
 	"../ThirdParty/breadwallet-core/bitcoin/*.c"
 	"../ThirdParty/breadwallet-core/ethereum/*.c"
-	"../ThirdParty/breadwallet-core/support/*.c")
+	"../ThirdParty/breadwallet-core/support/*.c"
+	"../ThirdParty/breadwallet-core/ripple/*.c")
 unset(BRETH_SOURCE_FILES_REMOVE_TEST)
 foreach(src ${BRETH_SOURCE_FILES})
 	if (NOT src MATCHES ".*test.*.c")

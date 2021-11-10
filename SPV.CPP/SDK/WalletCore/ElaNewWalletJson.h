@@ -59,6 +59,10 @@ namespace Elastos {
 
 			void SetSinglePrivateKey(const std::string &prvkey);
 
+			const std::string &GetRipplePrimaryPubKey() const;
+
+			void SetRipplePrimaryPubKey(const std::string &pubkey);
+
 			virtual nlohmann::json ToJson(bool withPrivKey) const;
 
 			virtual void FromJson(const nlohmann::json &j);
@@ -74,6 +78,7 @@ namespace Elastos {
 			std::string _xPubKeyHDPM;
 			std::string _seed;
 			std::string _ethscPrimaryPubKey;
+			std::string _ripplePrimaryPubKey;
 			std::string _xPubKeyBitcoin;
 			std::string _singlePrivateKey; // just for eth side chain now
 			bool _singleAddress;

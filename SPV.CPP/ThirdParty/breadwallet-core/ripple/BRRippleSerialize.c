@@ -19,7 +19,7 @@
 #include "BRRippleBase.h"
 #include "BRRipplePrivateStructs.h"
 #include "BRRippleAddress.h"
-#include "BRArray.h"
+#include "support/BRArray.h"
 
 // Forward declarations
 static int get_content(uint8_t *buffer, BRRippleField *field);

@@ -133,6 +133,8 @@ namespace Elastos {
 
 			virtual bytes_t GetETHSCPubKey() const = 0;
 
+            virtual bytes_t GetRipplePubKey() const = 0;
+
 			virtual bytes_t GetSinglePrivateKey(const std::string &passwd) const = 0;
 
 			virtual bool HasMnemonic() const = 0;

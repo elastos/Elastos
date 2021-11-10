@@ -12,7 +12,7 @@
 #define BRRipple_private_structs_h
 
 #include <stdbool.h>
-#include "BRKey.h"
+#include "support/BRKey.h"
 #include "BRRippleBase.h"
 #include "BRRippleTransaction.h"
 

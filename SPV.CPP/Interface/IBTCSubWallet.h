@@ -67,7 +67,8 @@ namespace Elastos {
              * @feePerKB how much fee (satoshi) per kb of tx size.
              * @return unsigned serialized transaction in json format.
              */
-            virtual nlohmann::json CreateTransaction(const nlohmann::json &inputs, const nlohmann::json &outputs,
+            virtual nlohmann::json CreateTransaction(const nlohmann::json &inputs,
+                                                     const nlohmann::json &outputs,
                                                      const std::string &changeAddress,
                                                      const std::string &feePerKB) const = 0;
 

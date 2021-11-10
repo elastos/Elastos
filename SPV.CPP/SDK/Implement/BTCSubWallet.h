@@ -39,18 +39,16 @@ namespace Elastos {
         public: // implement IBTCSubWallet
             ~BTCSubWallet();
 
-        public: // implement ISubWallet
-            virtual std::string GetChainID() const;
-
-            virtual nlohmann::json GetBasicInfo() const;
-
-            virtual nlohmann::json GetAddresses(uint32_t index, uint32_t count, bool internal = false) const;
-
-            virtual nlohmann::json GetPublicKeys(uint32_t index, uint32_t count, bool internal = false) const;
+            virtual nlohmann::json GetLegacyAddresses(uint32_t index, uint32_t count, bool internal) const;
 
             virtual nlohmann::json CreateTransaction(const nlohmann::json &inputs, const nlohmann::json &outputs,
                                                      const std::string &changeAddress,
                                                      const std::string &feePerKB) const;
+
+        public: // implement ISubWallet
+            virtual nlohmann::json GetAddresses(uint32_t index, uint32_t count, bool internal = false) const;
+
+            virtual nlohmann::json GetPublicKeys(uint32_t index, uint32_t count, bool internal = false) const;
 
             virtual nlohmann::json SignTransaction(const nlohmann::json &txJson, const std::string &passwd) const;
 
@@ -59,9 +57,6 @@ namespace Elastos {
             virtual bool VerifyDigest(const std::string &pubkey, const std::string &digest, const std::string &signature) const;
 
             virtual void FlushData();
-
-        public: // implement IBTCSubWallet
-            virtual nlohmann::json GetLegacyAddresses(uint32_t index, uint32_t count, bool internal) const;
 
         private:
             void GetAddressInternal(std::vector<uint160> &chainAddresses, uint32_t index, uint32_t count, bool internal) const;

@@ -12,7 +12,7 @@
 #define BRRipple_account_h
 
 #include "BRRippleTransaction.h"
-#include "BRKey.h"
+#include "support/BRKey.h"
 
 typedef struct BRRippleAccountRecord *BRRippleAccount;
 

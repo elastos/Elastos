@@ -15,7 +15,7 @@
 #include "BRRipple.h"
 #include "BRRippleBase.h"
 #include "BRRipplePrivateStructs.h"
-#include "BRCrypto.h"
+#include "support/BRCrypto.h"
 
 extern BRRippleSignature
 signBytes (BRKey *key, uint8_t *bytes, size_t bytesCount)

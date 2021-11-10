@@ -55,8 +55,13 @@ namespace Elastos {
 		}
 
         nlohmann::json SubWallet::GetBasicInfo() const {
-            WarnLog();
-            return nlohmann::json();
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+
+            nlohmann::json j;
+            j["Info"] = {};
+            j["ChainID"] = _info->GetChainID();
+
+            ArgInfo("r => {}", j.dump());
         }
 
         nlohmann::json SubWallet::GetAddresses(uint32_t index, uint32_t count, bool internal) const {

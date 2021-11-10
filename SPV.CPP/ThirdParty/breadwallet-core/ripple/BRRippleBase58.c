@@ -12,8 +12,8 @@
 #include <assert.h>
 #include <string.h>
 #include "BRRippleBase58.h"
-#include "BRBase58.h"
-#include "BRCrypto.h"
+#include "support/BRBase58.h"
+#include "support/BRCrypto.h"
 
 //------------------------------------------------------------------------------
 /*

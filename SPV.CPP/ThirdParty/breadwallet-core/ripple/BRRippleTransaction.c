@@ -18,9 +18,9 @@
 #include "BRRippleSerialize.h"
 #include "BRRippleSignature.h"
 #include "BRRippleAccount.h"
-#include "BRCrypto.h"
-#include "BRArray.h"
-#include "BRInt.h"
+#include "support/BRCrypto.h"
+#include "support/BRArray.h"
+#include "support/BRInt.h"
 
 static VLBytes *
 rippleVLBytesClone (VLBytes *bytes) {
