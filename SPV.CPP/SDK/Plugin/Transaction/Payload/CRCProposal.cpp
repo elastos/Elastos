@@ -119,6 +119,102 @@ namespace Elastos {
 			return _type == budget._type && _stage == budget._stage && _amount == budget._amount;
 		}
 
+        UpgradeCodeInfo::UpgradeCodeInfo() {
+
+        }
+
+        UpgradeCodeInfo::~UpgradeCodeInfo() {
+
+        }
+
+        void UpgradeCodeInfo::Serialize(ByteStream &stream, uint8_t version) const {
+            stream.WriteUint32(_workingHeight);
+            stream.WriteVarString(_nodeVersion);
+            stream.WriteVarString(_nodeDownloadUrl);
+            stream.WriteBytes(_nodeBinHash);
+            stream.WriteUint8(_force ? 0x01 : 0x00);
+        }
+
+        bool UpgradeCodeInfo::Deserialize(const ByteStream &stream, uint8_t version) {
+            if (!stream.ReadUint32(_workingHeight)) {
+                Log::info("deserialize workingHeight failed");
+                return false;
+            }
+
+            if (!stream.ReadVarString(_nodeVersion)) {
+                Log::info("deserialize nodeVersion failed");
+                return false;
+            }
+
+            if (!stream.ReadVarString(_nodeDownloadUrl)) {
+                Log::info("deserialize nodeDownloadUrl failed");
+                return false;
+            }
+
+            if (!stream.ReadBytes(_nodeBinHash)) {
+                Log::info("deserialize nodeBinHash failed");
+                return false;
+            }
+
+            uint8_t force = 0;
+            if (!stream.ReadUint8(force)) {
+                Log::info("deserialize force failed");
+                return false;
+            }
+            _force = force == 0 ? false : true;
+
+            return true;
+        }
+
+        CustomIDFeeRateInfo::CustomIDFeeRateInfo() {
+
+        }
+
+        CustomIDFeeRateInfo::~CustomIDFeeRateInfo() {
+
+        }
+
+        void CustomIDFeeRateInfo::Serialize(ByteStream &stream, uint8_t version) const {
+            stream.WriteUint64(_rateOfCustomIDFee);
+            stream.WriteUint32(_eIDEffectiveHeight);
+        }
+
+        bool CustomIDFeeRateInfo::Deserialize(const ByteStream &stream, uint8_t version) {
+            if (!stream.ReadUint64(_rateOfCustomIDFee)) {
+                Log::error("deserialize rateOfCustomIDFee failed");
+                return false;
+            }
+
+            if (!stream.ReadUint32(_eIDEffectiveHeight)) {
+                Log::error("deserialize eIDEffectiveHeight failed");
+                return false;
+            }
+
+            return true;
+        }
+
+        nlohmann::json CustomIDFeeRateInfo::ToJson(uint8_t version) const {
+            nlohmann::json j;
+            j["RateOfCustomIDFee"] = _rateOfCustomIDFee;
+            j["EIDEffectiveHeight"] = _eIDEffectiveHeight;
+            return j;
+        }
+
+        void CustomIDFeeRateInfo::FromJson(const nlohmann::json &j, uint8_t version) {
+            _rateOfCustomIDFee = j["RateOfCustomIDFee"].get<uint64_t>();
+            _eIDEffectiveHeight = j["EIDEffectiveHeight"].get<uint32_t>();
+        }
+
+        bool CustomIDFeeRateInfo::operator==(const CustomIDFeeRateInfo &info) const {
+            return this->_rateOfCustomIDFee == info._rateOfCustomIDFee && this->_eIDEffectiveHeight == info._eIDEffectiveHeight;
+        }
+
+        CustomIDFeeRateInfo &CustomIDFeeRateInfo::operator=(const CustomIDFeeRateInfo &info) {
+            this->_rateOfCustomIDFee = info._rateOfCustomIDFee;
+            this->_eIDEffectiveHeight = info._eIDEffectiveHeight;
+            return *this;
+        }
+
 		CRCProposal::CRCProposal() {
 
 		}
@@ -1560,7 +1656,7 @@ namespace Elastos {
             stream.WriteBytes(_draftHash);
             if (version >= CRCProposalVersion01)
                 stream.WriteVarBytes(_draftData);
-            stream.WriteUint64(_rateOfCustomIDFee);
+            _customIDFeeRateInfo.Serialize(stream, version);
 		}
 
         bool CRCProposal::DeserializeChangeCustomIDFeeUnsigned(const ByteStream &stream, uint8_t version) {
@@ -1586,7 +1682,7 @@ namespace Elastos {
                 }
             }
 
-            if (!stream.ReadUint64(_rateOfCustomIDFee)) {
+            if (!_customIDFeeRateInfo.Deserialize(stream, version)) {
                 SPVLOG_ERROR("deserialize change custom id fee");
                 return false;
             }
@@ -1647,7 +1743,7 @@ namespace Elastos {
             j[JsonKeyDraftHash] = _draftHash.GetHex();
             if (version >= CRCProposalVersion01)
                 j[JsonKeyDraftData] = Base64::Encode(_draftData);
-            j[JsonKeyRateOfCustomIDFee] = _rateOfCustomIDFee;
+            j[JsonKeyCustomIDFeeRateInfo] = _customIDFeeRateInfo.ToJson(version);
 
             return j;
 		}
@@ -1664,7 +1760,7 @@ namespace Elastos {
                 uint256 draftHash(sha256_2(_draftData));
                 ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
             }
-            _rateOfCustomIDFee = j[JsonKeyRateOfCustomIDFee];
+            _customIDFeeRateInfo.FromJson(j[JsonKeyCustomIDFeeRateInfo], version);
 		}
 
         nlohmann::json CRCProposal::ToJsonChangeCustomIDFeeCRCouncilMemberUnsigned(uint8_t version) const {
@@ -2075,7 +2171,7 @@ namespace Elastos {
             _reservedCustomIDList = payload._reservedCustomIDList;
             _receivedCustomIDList = payload._receivedCustomIDList;
             _receiverDID = payload._receiverDID;
-            _rateOfCustomIDFee = payload._rateOfCustomIDFee;
+            _customIDFeeRateInfo = payload._customIDFeeRateInfo;
 			_newRecipient = payload._newRecipient;
 			_newOwnerPublicKey = payload._newOwnerPublicKey;
 			_secretaryPublicKey = payload._secretaryPublicKey;
@@ -2188,7 +2284,7 @@ namespace Elastos {
                                 _categoryData == realPayload._categoryData &&
                                 _ownerPublicKey == realPayload._ownerPublicKey &&
                                 _draftHash == realPayload._draftHash &&
-                                _rateOfCustomIDFee == realPayload._rateOfCustomIDFee &&
+                                _customIDFeeRateInfo == realPayload._customIDFeeRateInfo &&
                                 _signature == realPayload._signature &&
                                 _crCouncilMemberDID == realPayload._crCouncilMemberDID &&
                                 _crCouncilMemberSignature == realPayload._crCouncilMemberSignature;

@@ -1093,7 +1093,10 @@ namespace Elastos {
              *    "OwnerPublicKey": "...",
              *    "DraftHash": "...",
              *    "DraftData": "", // Optional, string format, limit 1 Mbytes
-             *    "RateOfCustomIDFee": 10000,
+             *    "CustomIDFeeRateInfo": {
+             *      "RateOfCustomIDFee": 10000,
+             *      "EIDEffectiveHeight": 10000
+             *    }
              * }
              * @return
              */
@@ -1106,7 +1109,10 @@ namespace Elastos {
              *    "OwnerPublicKey": "...",
              *    "DraftHash": "...",
              *    "DraftData": "", // Optional, string format, limit 1 Mbytes
-             *    "RateOfCustomIDFee": 10000,
+             *    "CustomIDFeeRateInfo": {
+             *      "RateOfCustomIDFee": 10000,
+             *      "EIDEffectiveHeight": 10000
+             *    },
              *    "Signature": "...",
              *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
              * }
@@ -1131,7 +1137,10 @@ namespace Elastos {
              *    "OwnerPublicKey": "...",
              *    "DraftHash": "...",
              *    "DraftData": "", // Optional, string format, limit 1 Mbytes
-             *    "RateOfCustomIDFee": 10000,
+             *    "CustomIDFeeRateInfo": {
+             *      "RateOfCustomIDFee": 10000,
+             *      "EIDEffectiveHeight": 10000
+             *    },
              *    "Signature": "...",
              *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
              *    "CRCouncilMemberSignature": "...",

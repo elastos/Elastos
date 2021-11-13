@@ -51,7 +51,7 @@ namespace Elastos {
 #define JsonKeyReservedCustomIDList "ReservedCustomIDList"
 #define JsonKeyReceiverDID "ReceiverDID"
 #define JsonKeyReceivedCustomIDList "ReceivedCustomIDList"
-#define JsonKeyRateOfCustomIDFee "RateOfCustomIDFee"
+#define JsonKeyCustomIDFeeRateInfo "CustomIDFeeRateInfo"
 #define JsonKeySecretaryDID "SecretaryGeneralDID"
 #define JsonKeySignature "Signature"
 #define JsonKeyNewOwnerSignature "NewOwnerSignature"
@@ -96,6 +96,53 @@ namespace Elastos {
 			uint8_t _stage;
 			BigInt _amount;
 		};
+
+        class CRCProposal;
+
+        class UpgradeCodeInfo {
+        public:
+            UpgradeCodeInfo();
+
+            ~UpgradeCodeInfo();
+
+            void Serialize(ByteStream &stream, uint8_t version) const;
+
+            bool Deserialize(const ByteStream &stream, uint8_t version);
+
+        private:
+            friend class CRCProposal;
+
+            uint32_t _workingHeight;
+            std::string _nodeVersion;
+            std::string _nodeDownloadUrl;
+            uint256 _nodeBinHash;
+            bool _force;
+        };
+
+        class CustomIDFeeRateInfo {
+        public:
+            CustomIDFeeRateInfo();
+
+            ~CustomIDFeeRateInfo();
+
+            void Serialize(ByteStream &stream, uint8_t version) const;
+
+            bool Deserialize(const ByteStream &stream, uint8_t version);
+
+            nlohmann::json ToJson(uint8_t version) const;
+
+            void FromJson(const nlohmann::json &j, uint8_t version);
+
+            bool operator==(const CustomIDFeeRateInfo &info) const;
+
+            CustomIDFeeRateInfo &operator=(const CustomIDFeeRateInfo &info);
+
+        private:
+            // The rate of custom DID fee.
+            uint64_t _rateOfCustomIDFee;
+            // Effective at the side chain height of EID.
+            uint32_t _eIDEffectiveHeight;
+        };
 
 		class CRCProposal : public IPayload {
 		public:
@@ -458,7 +505,7 @@ namespace Elastos {
 			std::vector<std::string> _reservedCustomIDList;
 			std::vector<std::string> _receivedCustomIDList;
 			Address _receiverDID;
-			uint64_t _rateOfCustomIDFee;
+            CustomIDFeeRateInfo _customIDFeeRateInfo;
 			Address _newRecipient;
 			bytes_t _newOwnerPublicKey;
 			bytes_t _secretaryPublicKey;
