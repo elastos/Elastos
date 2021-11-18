@@ -62,11 +62,12 @@ namespace Elastos {
             j["ChainID"] = _info->GetChainID();
 
             ArgInfo("r => {}", j.dump());
+            return j;
         }
 
         nlohmann::json SubWallet::GetAddresses(uint32_t index, uint32_t count, bool internal) const {
             WarnLog();
-            return {};
+            return nlohmann::json();
 		}
 
         nlohmann::json SubWallet::GetPublicKeys(uint32_t index, uint32_t count, bool internal) const {

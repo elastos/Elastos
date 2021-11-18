@@ -76,7 +76,7 @@ namespace Elastos {
 																	const std::string &sideChainAddress,
                                                                     const std::string &lockAddress,
 																	const std::string &fee,
-																	const std::string &memo) {
+																	const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("version: {}", version);
@@ -220,7 +220,7 @@ namespace Elastos {
 			const nlohmann::json &payloadJson,
 			const std::string &amount,
 			const std::string &fee,
-			const std::string &memo) {
+			const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
@@ -269,7 +269,7 @@ namespace Elastos {
         nlohmann::json MainchainSubWallet::CreateUpdateProducerTransaction(const nlohmann::json &inputsJson,
                                                                            const nlohmann::json &payloadJson,
                                                                            const std::string &fee,
-                                                                           const std::string &memo) {
+                                                                           const std::string &memo) const {
 
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
@@ -305,7 +305,7 @@ namespace Elastos {
 			const nlohmann::json &inputsJson,
 			const nlohmann::json &payloadJson,
 			const std::string &fee,
-			const std::string &memo) {
+			const std::string &memo) const {
 
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
@@ -340,7 +340,7 @@ namespace Elastos {
         nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(const nlohmann::json &inputsJson,
                                                                             const std::string &amount,
                                                                             const std::string &fee,
-                                                                            const std::string &memo) {
+                                                                            const std::string &memo) const {
             WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
@@ -399,7 +399,7 @@ namespace Elastos {
             return addr;
 		}
 
-        bool MainchainSubWallet::VoteAmountFromJson(BigInt &voteAmount, const nlohmann::json &j) {
+        bool MainchainSubWallet::VoteAmountFromJson(BigInt &voteAmount, const nlohmann::json &j) const {
             ErrorChecker::CheckParam(!j.is_string(), Error::InvalidArgument, "stake value should be big int string");
             std::string voteAmountString = j.get<std::string>();
             ErrorChecker::CheckBigIntAmount(voteAmountString);
@@ -409,7 +409,7 @@ namespace Elastos {
             return true;
 		}
 
-        bool MainchainSubWallet::VoteContentFromJson(VoteContentArray &voteContents, BigInt &maxAmount, const nlohmann::json &j) {
+        bool MainchainSubWallet::VoteContentFromJson(VoteContentArray &voteContents, BigInt &maxAmount, const nlohmann::json &j) const {
 		    BigInt tmpAmount;
 
             for (nlohmann::json::const_iterator it = j.cbegin(); it != j.cend(); ++it) {
@@ -491,7 +491,7 @@ namespace Elastos {
         nlohmann::json MainchainSubWallet::CreateVoteTransaction(const nlohmann::json &inputsJson,
                                                                  const nlohmann::json &voteContentsJson,
                                                                  const std::string &fee,
-                                                                 const std::string &memo) {
+                                                                 const std::string &memo) const {
             WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
@@ -608,7 +608,7 @@ namespace Elastos {
 				const nlohmann::json &payloadJSON,
 				const std::string &amount,
 				const std::string &fee,
-				const std::string &memo) {
+				const std::string &memo) const {
 
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
@@ -665,7 +665,7 @@ namespace Elastos {
 				const nlohmann::json &inputsJson,
 				const nlohmann::json &payloadJSON,
 				const std::string &fee,
-				const std::string &memo) {
+				const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
@@ -703,7 +703,7 @@ namespace Elastos {
 				const nlohmann::json &inputsJson,
 				const nlohmann::json &payloadJSON,
 				const std::string &fee,
-				const std::string &memo) {
+				const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
@@ -742,7 +742,7 @@ namespace Elastos {
 				const nlohmann::json &inputsJson,
 				const std::string &amount,
 				const std::string &fee,
-				const std::string &memo) {
+				const std::string &memo) const {
             WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
@@ -797,7 +797,7 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::CreateCRCouncilMemberClaimNodeTransaction(const nlohmann::json &inputsJson,
                                                                                      const nlohmann::json &payloadJson,
                                                                                      const std::string &fee,
-                                                                                     const std::string &memo) {
+                                                                                     const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
@@ -916,7 +916,7 @@ namespace Elastos {
         nlohmann::json MainchainSubWallet::CreateProposalTransaction(const nlohmann::json &inputsJson,
                                                                      const nlohmann::json &payload,
                                                                      const std::string &fee,
-                                                                     const std::string &memo) {
+                                                                     const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
             ArgInfo("inputs: {}", inputsJson.dump());
@@ -985,7 +985,7 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::CreateProposalReviewTransaction(const nlohmann::json &inputsJson,
                                                                            const nlohmann::json &payload,
 																		   const std::string &fee,
-																		   const std::string &memo) {
+																		   const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
@@ -1105,7 +1105,7 @@ namespace Elastos {
         MainchainSubWallet::CreateProposalTrackingTransaction(const nlohmann::json &inputsJson,
                                                               const nlohmann::json &payload,
                                                               const std::string &fee,
-                                                              const std::string &memo) {
+                                                              const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
@@ -1206,7 +1206,7 @@ namespace Elastos {
                 const nlohmann::json &inputsJson,
                 const nlohmann::json &payload,
                 const std::string &fee,
-                const std::string &memo) {
+                const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
             ArgInfo("inputs: {}", inputsJson.dump());
@@ -1310,7 +1310,7 @@ namespace Elastos {
 		        const nlohmann::json &inputsJson,
                 const nlohmann::json &payload,
                 const std::string &fee,
-                const std::string &memo) {
+                const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
@@ -1415,7 +1415,7 @@ namespace Elastos {
                 const nlohmann::json &inputsJson,
                 const nlohmann::json &payload,
                 const std::string &fee,
-                const std::string &memo) {
+                const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
@@ -1459,7 +1459,7 @@ namespace Elastos {
         //////////////////////////////////////////////////
         /*              Reserve Custom ID               */
         //////////////////////////////////////////////////
-        nlohmann::json MainchainSubWallet::ReserveCustomIDOwnerDigest(const nlohmann::json &payload) const {
+        std::string MainchainSubWallet::ReserveCustomIDOwnerDigest(const nlohmann::json &payload) const {
             ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
             ArgInfo("payload: {}", payload.dump());
 
@@ -1487,7 +1487,7 @@ namespace Elastos {
             return digest;
         }
 
-        nlohmann::json MainchainSubWallet::ReserveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const {
+        std::string MainchainSubWallet::ReserveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const {
             ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
             ArgInfo("payload: {}", payload.dump());
 
@@ -1519,7 +1519,7 @@ namespace Elastos {
                 const nlohmann::json &inputsJson,
                 const nlohmann::json &payload,
                 const std::string &fee,
-                const std::string &memo) {
+                const std::string &memo) const {
             WalletPtr wallet = _walletManager->GetWallet();
             ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
             ArgInfo("inputs: {}", inputsJson.dump());
@@ -1563,7 +1563,7 @@ namespace Elastos {
         //////////////////////////////////////////////////
         /*               Receive Custom ID              */
         //////////////////////////////////////////////////
-        nlohmann::json MainchainSubWallet::ReceiveCustomIDOwnerDigest(const nlohmann::json &payload) const {
+        std::string MainchainSubWallet::ReceiveCustomIDOwnerDigest(const nlohmann::json &payload) const {
             ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
             ArgInfo("payload: {}", payload.dump());
 
@@ -1591,7 +1591,7 @@ namespace Elastos {
             return digest;
         }
 
-        nlohmann::json MainchainSubWallet::ReceiveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const {
+        std::string MainchainSubWallet::ReceiveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const {
             ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
             ArgInfo("payload: {}", payload.dump());
 
@@ -1623,7 +1623,7 @@ namespace Elastos {
                 const nlohmann::json &inputsJson,
                 const nlohmann::json &payload,
                 const std::string &fee,
-                const std::string &memo) {
+                const std::string &memo) const {
             WalletPtr wallet = _walletManager->GetWallet();
             ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
             ArgInfo("inputs: {}", inputsJson.dump());
@@ -1667,7 +1667,7 @@ namespace Elastos {
         //////////////////////////////////////////////////
         /*              Change Custom ID Fee            */
         //////////////////////////////////////////////////
-        nlohmann::json MainchainSubWallet::ChangeCustomIDFeeOwnerDigest(const nlohmann::json &payload) const {
+        std::string MainchainSubWallet::ChangeCustomIDFeeOwnerDigest(const nlohmann::json &payload) const {
             ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
             ArgInfo("payload: {}", payload.dump());
 
@@ -1695,7 +1695,7 @@ namespace Elastos {
             return digest;
         }
 
-        nlohmann::json MainchainSubWallet::ChangeCustomIDFeeCRCouncilMemberDigest(const nlohmann::json &payload) const {
+        std::string MainchainSubWallet::ChangeCustomIDFeeCRCouncilMemberDigest(const nlohmann::json &payload) const {
             ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
             ArgInfo("payload: {}", payload.dump());
 
@@ -1724,19 +1724,19 @@ namespace Elastos {
         }
 
         nlohmann::json MainchainSubWallet::CreateChangeCustomIDFeeTransaction(
-                const nlohmann::json &inputsJson,
+                const nlohmann::json &inputs,
                 const nlohmann::json &payload,
                 const std::string &fee,
-                const std::string &memo) {
+                const std::string &memo) const {
             WalletPtr wallet = _walletManager->GetWallet();
-            ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
-            ArgInfo("inputs: {}", inputsJson.dump());
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("inputs: {}", inputs.dump());
             ArgInfo("payload: {}", payload.dump());
             ArgInfo("fee: {}", fee);
             ArgInfo("memo: {}", memo);
 
             UTXOSet utxo;
-            UTXOFromJson(utxo, inputsJson);
+            UTXOFromJson(utxo, inputs);
 
             uint8_t version = CRCProposalDefaultVersion;
             PayloadPtr p(new CRCProposal());
@@ -1793,7 +1793,7 @@ namespace Elastos {
 		        const nlohmann::json &inputsJson,
                 const nlohmann::json &payload,
                 const std::string &fee,
-                const std::string &memo) {
+                const std::string &memo) const {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("inputs: {}", inputsJson.dump());
@@ -1827,6 +1827,107 @@ namespace Elastos {
 
 			return result;
 		}
+
+        std::string MainchainSubWallet::RegisterSidechainOwnerDigest(const nlohmann::json &payload) const {
+            ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+            ArgInfo("payload: {}", payload.dump());
+
+            uint8_t version = CRCProposalDefaultVersion;
+            CRCProposal proposal;
+            try {
+                if (payload.contains(JsonKeyDraftData))
+                    version = CRCProposalVersion01;
+                else
+                    version = CRCProposalDefaultVersion;
+                nlohmann::json payloadFixed = payload;
+                payloadFixed[JsonKeyType] = CRCProposal::registerSideChain;
+                proposal.FromJsonRegisterSidechainUnsigned(payloadFixed, version);
+            } catch (const nlohmann::json::exception &e) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
+            }
+
+            if (!proposal.IsValidRegisterSidechainUnsigned(version)) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
+            }
+
+            std::string digest = proposal.DigestRegisterSidechainUnsigned(version).GetHex();
+
+            ArgInfo("r => {}", digest);
+            return digest;
+        }
+
+        std::string MainchainSubWallet::RegisterSidechainCRCouncilMemberDigest(const nlohmann::json &payload) const {
+            ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+            ArgInfo("payload: {}", payload.dump());
+
+            uint8_t version = CRCProposalDefaultVersion;
+            CRCProposal proposal;
+            try {
+                if (payload.contains(JsonKeyDraftData))
+                    version = CRCProposalVersion01;
+                else
+                    version = CRCProposalDefaultVersion;
+                nlohmann::json payloadFixed = payload;
+                payloadFixed[JsonKeyType] = CRCProposal::registerSideChain;
+                proposal.FromJsonRegisterSidechainCRCouncilMemberUnsigned(payloadFixed, version);
+            } catch (const nlohmann::json::exception &e) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
+            }
+
+            if (!proposal.IsValidRegisterSidechainCRCouncilMemberUnsigned(version)) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
+            }
+
+            std::string digest = proposal.DigestRegisterSidechainCRCouncilMemberUnsigned(version).GetHex();
+
+            ArgInfo("r => {}", digest);
+            return digest;
+        }
+
+        nlohmann::json MainchainSubWallet::CreateRegisterSidechainTransaction(
+                const nlohmann::json &inputs,
+                const nlohmann::json &payload,
+                const std::string &fee,
+                const std::string &memo) const {
+            WalletPtr wallet = _walletManager->GetWallet();
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("inputs: {}", inputs.dump());
+            ArgInfo("payload: {}", payload.dump());
+            ArgInfo("fee: {}", fee);
+            ArgInfo("memo: {}", memo);
+
+            UTXOSet utxo;
+            UTXOFromJson(utxo, inputs);
+
+            uint8_t version = CRCProposalDefaultVersion;
+            PayloadPtr p(new CRCProposal());
+            try {
+                if (payload.contains(JsonKeyDraftData))
+                    version = CRCProposalVersion01;
+                else
+                    version = CRCProposalDefaultVersion;
+                nlohmann::json payloadFixed = payload;
+                payloadFixed[JsonKeyType] = CRCProposal::registerSideChain;
+                p->FromJson(payloadFixed, version);
+            } catch (const nlohmann::json::exception &e) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "from json");
+            }
+
+            if (!p->IsValid(version))
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
+
+            BigInt feeAmount;
+            feeAmount.setDec(fee);
+
+            TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposal, p, utxo, {}, memo, feeAmount);
+            tx->SetPayloadVersion(version);
+
+            nlohmann::json result;
+            EncodeTx(result, tx);
+            ArgInfo("r => {}", result.dump());
+
+            return result;
+        }
 
 	}
 }

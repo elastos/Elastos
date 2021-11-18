@@ -73,7 +73,7 @@ namespace Elastos {
 
             TransactionPtr DecodeTx(const nlohmann::json &encodedTx) const;
 
-            bool UTXOFromJson(UTXOSet &utxo, const nlohmann::json &j);
+            bool UTXOFromJson(UTXOSet &utxo, const nlohmann::json &j) const;
 
             bool OutputsFromJson(OutputArray &outputs, const nlohmann::json &j);
 

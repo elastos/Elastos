@@ -45,7 +45,7 @@ namespace Elastos {
 					const std::string &sideChainAddress,
                     const std::string &lockAddress,
 					const std::string &fee,
-					const std::string &memo) override;
+					const std::string &memo) const override;
 
 		public:
 			//////////////////////////////////////////////////
@@ -55,7 +55,7 @@ namespace Elastos {
 				const nlohmann::json &inputsJson,
 				const nlohmann::json &voteContentsJson,
 				const std::string &fee,
-				const std::string &memo) override;
+				const std::string &memo) const override;
 
 		public:
             std::string GetDepositAddress(const std::string &pubkey) const override;
@@ -77,22 +77,22 @@ namespace Elastos {
 															 const nlohmann::json &payload,
 															 const std::string &amount,
 															 const std::string &fee,
-															 const std::string &memo) override;
+															 const std::string &memo) const override;
 
 			nlohmann::json CreateUpdateProducerTransaction(const nlohmann::json &inputsJson,
 														   const nlohmann::json &payload,
 														   const std::string &fee,
-														   const std::string &memo) override;
+														   const std::string &memo) const override;
 
 			nlohmann::json CreateCancelProducerTransaction(const nlohmann::json &inputsJson,
 														   const nlohmann::json &payload,
 														   const std::string &fee,
-														   const std::string &emmo) override;
+														   const std::string &emmo) const override;
 
 			nlohmann::json CreateRetrieveDepositTransaction(const nlohmann::json &inputsJson,
                                                             const std::string &amount,
                                                             const std::string &fee,
-															const std::string &memo) override;
+															const std::string &memo) const override;
 
 			std::string GetOwnerPublicKey() const override;
 
@@ -118,29 +118,29 @@ namespace Elastos {
 													   const nlohmann::json &payloadJSON,
 													   const std::string &amount,
 													   const std::string &fee,
-													   const std::string &memo) override;
+													   const std::string &memo) const override;
 
 			nlohmann::json CreateUpdateCRTransaction(const nlohmann::json &inputsJson,
 													 const nlohmann::json &payloadJSON,
 													 const std::string &fee,
-													 const std::string &memo) override;
+													 const std::string &memo) const override;
 
 			nlohmann::json CreateUnregisterCRTransaction(const nlohmann::json &inputsJson,
 														 const nlohmann::json &payloadJSON,
 														 const std::string &fee,
-														 const std::string &memo) override;
+														 const std::string &memo) const override;
 
 			nlohmann::json CreateRetrieveCRDepositTransaction(const nlohmann::json &inputsJson,
 															  const std::string &amount,
 															  const std::string &fee,
-															  const std::string &memo) override;
+															  const std::string &memo) const override;
 
 			std::string CRCouncilMemberClaimNodeDigest(const nlohmann::json &payload) const override;
 
 			nlohmann::json CreateCRCouncilMemberClaimNodeTransaction(const nlohmann::json &inputsJson,
                                                                      const nlohmann::json &payloadJson,
                                                                      const std::string &fee,
-                                                                     const std::string &memo = "") override;
+                                                                     const std::string &memo = "") const override;
 
 		public:
 			//////////////////////////////////////////////////
@@ -156,7 +156,7 @@ namespace Elastos {
 			        const nlohmann::json &inputsJson,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo) override;
+                    const std::string &memo) const override;
 
 			//////////////////////////////////////////////////
 			/*               Proposal Review                */
@@ -166,7 +166,7 @@ namespace Elastos {
 			nlohmann::json CreateProposalReviewTransaction(const nlohmann::json &inputsJson,
                                                            const nlohmann::json &payload,
 														   const std::string &fee,
-														   const std::string &memo) override;
+														   const std::string &memo) const override;
 
 			//////////////////////////////////////////////////
 			/*               Proposal Tracking              */
@@ -180,7 +180,7 @@ namespace Elastos {
             nlohmann::json CreateProposalTrackingTransaction(const nlohmann::json &inputsJson,
                                                              const nlohmann::json &payload,
 															 const std::string &fee,
-															 const std::string &memo) override;
+															 const std::string &memo) const override;
 
 			//////////////////////////////////////////////////
 			/*      Proposal Secretary General Election     */
@@ -195,7 +195,7 @@ namespace Elastos {
                     const nlohmann::json &inputsJson,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") override;
+                    const std::string &memo = "") const override;
 
 			//////////////////////////////////////////////////
 			/*             Proposal Change Owner            */
@@ -208,7 +208,7 @@ namespace Elastos {
                     const nlohmann::json &inputsJson,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") override ;
+                    const std::string &memo = "") const override;
 
 			//////////////////////////////////////////////////
 			/*           Proposal Terminate Proposal        */
@@ -221,46 +221,46 @@ namespace Elastos {
                     const nlohmann::json &inputsJson,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") override;
+                    const std::string &memo = "") const override;
 
             //////////////////////////////////////////////////
             /*              Reserve Custom ID               */
             //////////////////////////////////////////////////
-            nlohmann::json ReserveCustomIDOwnerDigest(const nlohmann::json &payload) const override;
+            std::string ReserveCustomIDOwnerDigest(const nlohmann::json &payload) const override;
 
-            nlohmann::json ReserveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const override;
+            std::string ReserveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const override;
 
             nlohmann::json CreateReserveCustomIDTransaction(
                     const nlohmann::json &inputsJson,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") override;
+                    const std::string &memo = "") const override;
 
             //////////////////////////////////////////////////
             /*               Receive Custom ID              */
             //////////////////////////////////////////////////
-            nlohmann::json ReceiveCustomIDOwnerDigest(const nlohmann::json &payload) const override;
+            std::string ReceiveCustomIDOwnerDigest(const nlohmann::json &payload) const override;
 
-            nlohmann::json ReceiveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const override;
+            std::string ReceiveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const override;
 
             nlohmann::json CreateReceiveCustomIDTransaction(
                     const nlohmann::json &inputsJson,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") override;
+                    const std::string &memo = "") const override;
 
             //////////////////////////////////////////////////
             /*              Change Custom ID Fee            */
             //////////////////////////////////////////////////
-            nlohmann::json ChangeCustomIDFeeOwnerDigest(const nlohmann::json &payload) const override;
+            std::string ChangeCustomIDFeeOwnerDigest(const nlohmann::json &payload) const override;
 
-            nlohmann::json ChangeCustomIDFeeCRCouncilMemberDigest(const nlohmann::json &payload) const override;
+            std::string ChangeCustomIDFeeCRCouncilMemberDigest(const nlohmann::json &payload) const override;
 
             nlohmann::json CreateChangeCustomIDFeeTransaction(
-                    const nlohmann::json &inputsJson,
+                    const nlohmann::json &inputs,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") override;
+                    const std::string &memo = "") const override;
 
 			//////////////////////////////////////////////////
 			/*               Proposal Withdraw              */
@@ -271,12 +271,25 @@ namespace Elastos {
 			        const nlohmann::json &inputsJson,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo) override;
+                    const std::string &memo) const override;
+
+            //////////////////////////////////////////////////
+            /*               Proposal Register side-chain   */
+            //////////////////////////////////////////////////
+            std::string RegisterSidechainOwnerDigest(const nlohmann::json &payload) const override;
+
+            std::string RegisterSidechainCRCouncilMemberDigest(const nlohmann::json &payload) const override;
+
+            nlohmann::json CreateRegisterSidechainTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") const override;
 
 		private:
-			bool VoteContentFromJson(VoteContentArray &voteContents, BigInt &maxAmount, const nlohmann::json &j);
+			bool VoteContentFromJson(VoteContentArray &voteContents, BigInt &maxAmount, const nlohmann::json &j) const;
 
-			bool VoteAmountFromJson(BigInt &voteAmount, const nlohmann::json &j);
+			bool VoteAmountFromJson(BigInt &voteAmount, const nlohmann::json &j) const;
 
 		protected:
 			friend class MasterWallet;

@@ -270,7 +270,7 @@ namespace Elastos {
             return tx;
         }
 
-        bool ElastosBaseSubWallet::UTXOFromJson(UTXOSet &utxo, const nlohmann::json &j) {
+        bool ElastosBaseSubWallet::UTXOFromJson(UTXOSet &utxo, const nlohmann::json &j) const {
             for (nlohmann::json::const_iterator it = j.cbegin(); it != j.cend(); ++it) {
                 if (!(*it).contains("TxHash") ||
                     !(*it).contains("Index") ||

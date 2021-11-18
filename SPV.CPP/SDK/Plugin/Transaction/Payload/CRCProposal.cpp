@@ -166,6 +166,100 @@ namespace Elastos {
             return true;
         }
 
+        SideChainInfo::SideChainInfo() {
+
+		}
+
+        SideChainInfo::~SideChainInfo() {
+
+		}
+
+        void SideChainInfo::Serialize(ByteStream &stream, uint8_t version) const {
+            stream.WriteVarString(_sideChainName);
+            stream.WriteUint32(_magicNumber);
+            stream.WriteBytes(_genesisHash);
+            stream.WriteUint64(_exchangeRate);
+            stream.WriteUint32(_effectiveHeight);
+            stream.WriteVarString(_resourcePath);
+		}
+
+        bool SideChainInfo::Deserialize(const ByteStream &stream, uint8_t version) {
+            if (!stream.ReadVarString(_sideChainName)) {
+                Log::error("deserialize side-chain name failed");
+                return false;
+            }
+
+            if (!stream.ReadUint32(_magicNumber)) {
+                Log::error("deserialize magic number failed");
+                return false;
+            }
+
+            if (!stream.ReadBytes(_genesisHash)) {
+                Log::error("deserialize genesis hash failed");
+                return false;
+            }
+
+            if (!stream.ReadUint64(_exchangeRate)) {
+                Log::error("deserialize exchange rate failed");
+                return false;
+            }
+
+            if (!stream.ReadUint32(_effectiveHeight)) {
+                Log::error("deserialize effective height failed");
+                return false;
+            }
+
+            if (!stream.ReadVarString(_resourcePath)) {
+                Log::error("deserialize resource path failed");
+                return false;
+            }
+
+            return true;
+		}
+
+        nlohmann::json SideChainInfo::ToJson(uint8_t version) const {
+            nlohmann::json j;
+            j["SideChainName"] = _sideChainName;
+            j["MagicNumber"] = _magicNumber;
+            j["GenesisHash"] = _genesisHash.GetHex();
+            j["ExchangeRate"] = _exchangeRate;
+            j["EffectiveHeight"] = _effectiveHeight;
+            j["ResourcePath"] = _resourcePath;
+            return j;
+		}
+
+        void SideChainInfo::FromJson(const nlohmann::json &j, uint8_t version) {
+            _sideChainName = j["SideChainName"].get<std::string>();
+            _magicNumber = j["MagicNumber"].get<uint32_t>();
+            _genesisHash.SetHex(j["GenesisHash"].get<std::string>());
+            _exchangeRate = j["ExchangeRate"].get<uint64_t>();
+            _effectiveHeight = j["EffectiveHeight"].get<uint32_t>();
+            _resourcePath = j["ResourcePath"].get<std::string>();
+		}
+
+        bool SideChainInfo::IsValid(uint8_t version) const {
+            return true;
+		}
+
+        bool SideChainInfo::operator==(const SideChainInfo &info) const {
+            return _sideChainName == info._sideChainName &&
+                   _magicNumber == info._magicNumber &&
+                   _genesisHash == info._genesisHash &&
+                   _exchangeRate == info._exchangeRate &&
+                   _effectiveHeight == info._effectiveHeight &&
+                   _resourcePath == info._resourcePath;
+        }
+
+        SideChainInfo &SideChainInfo::operator=(const SideChainInfo &info) {
+		    _sideChainName = info._sideChainName;
+		    _magicNumber = info._magicNumber;
+		    _genesisHash = info._genesisHash;
+		    _exchangeRate = info._exchangeRate;
+		    _effectiveHeight = info._effectiveHeight;
+		    _resourcePath = info._resourcePath;
+            return *this;
+		}
+
         CustomIDFeeRateInfo::CustomIDFeeRateInfo() {
 
         }
@@ -359,25 +453,17 @@ namespace Elastos {
 			return _crCouncilMemberSignature;
 		}
 
-		const uint256 &CRCProposal::DigestNormalOwnerUnsigned(uint8_t version) const {
-			if (_digestOwnerUnsigned == 0) {
-				ByteStream stream;
-				SerializeOwnerUnsigned(stream, version);
-				_digestOwnerUnsigned = sha256(stream.GetBytes());
-			}
+        uint256 CRCProposal::DigestNormalOwnerUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeOwnerUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
-			return _digestOwnerUnsigned;
-		}
-
-		const uint256 &CRCProposal::DigestNormalCRCouncilMemberUnsigned(uint8_t version) const {
-			if (_digestCRCouncilMemberUnsigned == 0) {
-				ByteStream stream;
-				SerializeCRCouncilMemberUnsigned(stream, version);
-				_digestCRCouncilMemberUnsigned = sha256(stream.GetBytes());
-			}
-
-			return _digestCRCouncilMemberUnsigned;
-		}
+        uint256 CRCProposal::DigestNormalCRCouncilMemberUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeCRCouncilMemberUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
 		size_t CRCProposal::EstimateSize(uint8_t version) const {
 			ByteStream stream, byteStream;
@@ -778,25 +864,17 @@ namespace Elastos {
 			return true;
 		}
 
-		const uint256 &CRCProposal::DigestChangeOwnerUnsigned(uint8_t version) const {
-			if (_digestChangeOwnerUnsigned == 0) {
-				ByteStream stream;
-				SerializeChangeOwnerUnsigned(stream, version);
-				_digestChangeOwnerUnsigned = sha256(stream.GetBytes());
-			}
+        uint256 CRCProposal::DigestChangeOwnerUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeChangeOwnerUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
-			return _digestChangeOwnerUnsigned;
-		}
-
-		const uint256 &CRCProposal::DigestChangeOwnerCRCouncilMemberUnsigned(uint8_t version) const {
-			if (_digestChangeOwnerCRCouncilMemberUnsigned == 0) {
-				ByteStream stream;
-				SerializeChangeOwnerCRCouncilMemberUnsigned(stream, version);
-				_digestChangeOwnerCRCouncilMemberUnsigned = sha256(stream.GetBytes());
-			}
-
-			return _digestChangeOwnerCRCouncilMemberUnsigned;
-		}
+        uint256 CRCProposal::DigestChangeOwnerCRCouncilMemberUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeChangeOwnerCRCouncilMemberUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
 		// terminate proposal
 		void CRCProposal::SerializeTerminateProposalUnsigned(ByteStream &stream, uint8_t version) const {
@@ -984,25 +1062,17 @@ namespace Elastos {
 			return true;
 		}
 
-		const uint256 &CRCProposal::DigestTerminateProposalOwnerUnsigned(uint8_t version) const {
-			if (_digestTerminateProposalOwnerUnsigned == 0) {
-				ByteStream stream;
-				SerializeTerminateProposalUnsigned(stream, version);
-				_digestTerminateProposalOwnerUnsigned = sha256(stream.GetBytes());
-			}
+        uint256 CRCProposal::DigestTerminateProposalOwnerUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeTerminateProposalUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
-			return _digestTerminateProposalOwnerUnsigned;
-		}
-
-		const uint256 &CRCProposal::DigestTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const {
-			if (_digestTerminateProposalCRCouncilMemberUnsigned == 0) {
-				ByteStream stream;
-				SerializeTerminateProposalCRCouncilMemberUnsigned(stream, version);
-				_digestTerminateProposalCRCouncilMemberUnsigned = sha256(stream.GetBytes());
-			}
-
-			return _digestTerminateProposalCRCouncilMemberUnsigned;
-		}
+        uint256 CRCProposal::DigestTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeTerminateProposalCRCouncilMemberUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
 		// change secretary general
 		void CRCProposal::SerializeSecretaryElectionUnsigned(ByteStream &stream, uint8_t version) const {
@@ -1212,25 +1282,17 @@ namespace Elastos {
 			return true;
 		}
 
-		const uint256 &CRCProposal::DigestSecretaryElectionUnsigned(uint8_t version) const {
-			if (_digestSecretaryElectionUnsigned == 0) {
-				ByteStream stream;
-				SerializeSecretaryElectionUnsigned(stream, version);
-				_digestSecretaryElectionUnsigned = sha256(stream.GetBytes());
-			}
+        uint256 CRCProposal::DigestSecretaryElectionUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeSecretaryElectionUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
-			return _digestSecretaryElectionUnsigned;
-		}
-
-		const uint256 &CRCProposal::DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const {
-			if (_digestSecretaryElectionCRCouncilMemberUnsigned == 0) {
-				ByteStream stream;
-				SerializeSecretaryElectionCRCouncilMemberUnsigned(stream, version);
-				_digestSecretaryElectionCRCouncilMemberUnsigned = sha256(stream.GetBytes());
-			}
-
-			return _digestSecretaryElectionCRCouncilMemberUnsigned;
-		}
+        uint256 CRCProposal::DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeSecretaryElectionCRCouncilMemberUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
         void CRCProposal::SerializeReserveCustomIDUnsigned(ByteStream &stream, uint8_t version) const {
             uint16_t type = _type;
@@ -1414,25 +1476,17 @@ namespace Elastos {
             return true;
 		}
 
-        const uint256 &CRCProposal::DigestReserveCustomIDOwnerUnsigned(uint8_t version) const {
-            if (_digestReserveCustomIDOwnerUnsigned == 0) {
-                ByteStream stream;
-                SerializeReserveCustomIDUnsigned(stream, version);
-                _digestReserveCustomIDOwnerUnsigned = sha256(stream.GetBytes());
-            }
+        uint256 CRCProposal::DigestReserveCustomIDOwnerUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeReserveCustomIDUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
-            return _digestReserveCustomIDOwnerUnsigned;
-		}
-
-        const uint256 &CRCProposal::DigestReserveCustomIDCRCouncilMemberUnsigned(uint8_t version) const {
-            if (_digestReserveCustomIDCRCouncilMemberUnsigned == 0) {
-                ByteStream stream;
-                SerializeReserveCustomIDCRCouncilMemberUnsigned(stream, version);
-                _digestReserveCustomIDCRCouncilMemberUnsigned = sha256(stream.GetBytes());
-            }
-
-            return _digestReserveCustomIDCRCouncilMemberUnsigned;
-		}
+        uint256 CRCProposal::DigestReserveCustomIDCRCouncilMemberUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeReserveCustomIDCRCouncilMemberUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
         // ReceiveCustomID
         void CRCProposal::SerializeReceiveCustomIDUnsigned(ByteStream &stream, uint8_t version) const {
@@ -1627,25 +1681,17 @@ namespace Elastos {
             return true;
 		}
 
-        const uint256 &CRCProposal::DigestReceiveCustomIDOwnerUnsigned(uint8_t version) const {
-            if (_digestReceiveCustomIDOwnerUnsigned == 0) {
-                ByteStream stream;
-                SerializeReceiveCustomIDUnsigned(stream, version);
-                _digestReceiveCustomIDOwnerUnsigned = sha256(stream.GetBytes());
-            }
+        uint256 CRCProposal::DigestReceiveCustomIDOwnerUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeReceiveCustomIDUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
-            return _digestReceiveCustomIDOwnerUnsigned;
-		}
-
-        const uint256 &CRCProposal::DigestReceiveCustomIDCRCouncilMemberUnsigned(uint8_t version) const {
-            if (_digestReceiveCustomIDCRCouncilMemberUnsigned == 0) {
-                ByteStream stream;
-                SerializeReceiveCustomIDCRCCouncilMemberUnsigned(stream, version);
-                _digestReceiveCustomIDCRCouncilMemberUnsigned = sha256(stream.GetBytes());
-            }
-
-            return _digestReceiveCustomIDCRCouncilMemberUnsigned;
-		}
+        uint256 CRCProposal::DigestReceiveCustomIDCRCouncilMemberUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeReceiveCustomIDCRCCouncilMemberUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
         // ChangeCustomIDFee
         void CRCProposal::SerializeChangeCustomIDFeeUnsigned(ByteStream &stream, uint8_t version) const {
@@ -1819,24 +1865,201 @@ namespace Elastos {
             return true;
 		}
 
-        const uint256 &CRCProposal::DigestChangeCustomIDFeeOwnerUnsigned(uint8_t version) const {
-            if (_digestChangeCustomIDFeeOwnerUnsigned == 0) {
-                ByteStream stream;
-                SerializeChangeCustomIDFeeUnsigned(stream, version);
-                _digestChangeCustomIDFeeOwnerUnsigned = sha256(stream.GetBytes());
-            }
+        uint256 CRCProposal::DigestChangeCustomIDFeeOwnerUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeChangeCustomIDFeeUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
 
-            return _digestChangeCustomIDFeeOwnerUnsigned;
+        uint256 CRCProposal::DigestChangeCustomIDFeeCRCouncilMemberUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeChangeCustomIDFeeCRCCouncilMemberUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+        }
+
+        void CRCProposal::SerializeRegisterSidechainUnsigned(ByteStream &stream, uint8_t version) const {
+            uint16_t type = _type;
+            stream.WriteUint16(type);
+            stream.WriteVarString(_categoryData);
+            stream.WriteVarBytes(_ownerPublicKey);
+            stream.WriteBytes(_draftHash);
+            if (version >= CRCProposalVersion01)
+                stream.WriteVarBytes(_draftData);
+            _sidechainInfo.Serialize(stream, version);
 		}
 
-        const uint256 &CRCProposal::DigestChangeCustomIDFeeCRCouncilMemberUnsigned(uint8_t version) const {
-            if (_digestChangeCustomIDFeeCRCouncilMemberUnsigned == 0) {
-                ByteStream stream;
-                SerializeChangeCustomIDFeeCRCCouncilMemberUnsigned(stream, version);
-                _digestChangeCustomIDFeeCRCouncilMemberUnsigned = sha256(stream.GetBytes());
+        bool CRCProposal::DeserializeRegisterSidechainUnsigned(const ByteStream &stream, uint8_t version) {
+            if (!stream.ReadVarString(_categoryData)) {
+                SPVLOG_ERROR("deserialize change custom id category data");
+                return false;
             }
 
-            return _digestChangeCustomIDFeeCRCouncilMemberUnsigned;
+            if (!stream.ReadVarBytes(_ownerPublicKey)) {
+                SPVLOG_ERROR("deserialize change custom id owner pubkey");
+                return false;
+            }
+
+            if (!stream.ReadBytes(_draftHash)) {
+                SPVLOG_ERROR("deserialize change custom id draft hash");
+                return false;
+            }
+
+            if (version >= CRCProposalVersion01) {
+                if (!stream.ReadVarBytes(_draftData)) {
+                    SPVLOG_ERROR("deserialize change custom id draft data");
+                    return false;
+                }
+            }
+
+            if (!_sidechainInfo.Deserialize(stream, version)) {
+                SPVLOG_ERROR("deserialize change custom id fee");
+                return false;
+            }
+
+            return true;
+		}
+
+        void CRCProposal::SerializeRegisterSidechainCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const {
+            SerializeRegisterSidechainUnsigned(stream, version);
+            stream.WriteVarBytes(_signature);
+            stream.WriteBytes(_crCouncilMemberDID.ProgramHash());
+		}
+
+        bool CRCProposal::DeserializeRegisterSidechainCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version) {
+            if (!DeserializeRegisterSidechainUnsigned(stream, version)) {
+                return false;
+            }
+
+            if (!stream.ReadVarBytes(_signature)) {
+                SPVLOG_ERROR("deserialize id signature");
+                return false;
+            }
+
+            uint168 programHash;
+            if (!stream.ReadBytes(programHash)) {
+                SPVLOG_ERROR("deserialize cr council mem did");
+                return false;
+            }
+            _crCouncilMemberDID = Address(programHash);
+            return true;
+		}
+
+        void CRCProposal::SerializeRegisterSidechain(ByteStream &stream, uint8_t version) const {
+            SerializeRegisterSidechainCRCouncilMemberUnsigned(stream, version);
+            stream.WriteBytes(_crCouncilMemberSignature);
+		}
+
+        bool CRCProposal::DeserializeRegisterSidechain(const ByteStream &stream, uint8_t version) {
+            if (!DeserializeRegisterSidechainCRCouncilMemberUnsigned(stream, version)) {
+                return false;
+            }
+
+            if (!stream.ReadVarBytes(_crCouncilMemberSignature)) {
+                SPVLOG_ERROR("deserialize register side-chain council member sign");
+                return false;
+            }
+            return true;
+		}
+
+        nlohmann::json CRCProposal::ToJsonRegisterSidechainUnsigned(uint8_t version) const {
+            nlohmann::json j;
+
+            j[JsonKeyType] = _type;
+            j[JsonKeyCategoryData] = _categoryData;
+            j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
+            j[JsonKeyDraftHash] = _draftHash.GetHex();
+            if (version >= CRCProposalVersion01)
+                j[JsonKeyDraftData] = Base64::Encode(_draftData);
+            j[JsonKeySidechainInfo] = _sidechainInfo.ToJson(version);
+
+            return j;
+		}
+
+        void CRCProposal::FromJsonRegisterSidechainUnsigned(const nlohmann::json &j, uint8_t version) {
+            _categoryData = j[JsonKeyCategoryData].get<std::string>();
+            _ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
+            _draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
+            if (version >= CRCProposalVersion01) {
+                std::string draftData = j[JsonKeyDraftData].get<std::string>();
+                _draftData = Base64::Decode(draftData);
+                ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
+                uint256 draftHash(sha256_2(_draftData));
+                ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
+            }
+            _sidechainInfo.FromJson(j[JsonKeySidechainInfo], version);
+		}
+
+        nlohmann::json CRCProposal::ToJsonRegisterSidechainCRCouncilMemberUnsigned(uint8_t version) const {
+            nlohmann::json j = ToJsonRegisterSidechainUnsigned(version);
+            j[JsonKeySignature] = _signature.getHex();
+            j[JsonKeyCRCouncilMemberDID] = _crCouncilMemberDID.String();
+            return j;
+		}
+
+        void CRCProposal::FromJsonRegisterSidechainCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version) {
+            FromJsonRegisterSidechainUnsigned(j, version);
+            _signature.setHex(j[JsonKeySignature].get<std::string>());
+            _crCouncilMemberDID = Address(j[JsonKeyCRCouncilMemberDID].get<std::string>());
+		}
+
+        bool CRCProposal::IsValidRegisterSidechainUnsigned(uint8_t version) const {
+            if (_type != registerSideChain) {
+                SPVLOG_ERROR("invalid type: {}", _type);
+                return false;
+            }
+
+            if (_categoryData.size() > 4096) {
+                SPVLOG_ERROR("category data exceed 4096 bytes");
+                return false;
+            }
+
+            try {
+                Key key(CTElastos, _ownerPublicKey);
+            } catch (const std::exception &e) {
+                SPVLOG_ERROR("invalid reserve custom id pubkey");
+                return false;
+            }
+
+            if (!_sidechainInfo.IsValid(version)) {
+                return false;
+            }
+
+            return true;
+		}
+
+        bool CRCProposal::IsValidRegisterSidechainCRCouncilMemberUnsigned(uint8_t version) const {
+            if (!IsValidRegisterSidechainUnsigned(version)) {
+                return false;
+            }
+
+            try {
+                if (!Key(CTElastos, _ownerPublicKey).Verify(DigestRegisterSidechainUnsigned(version), _signature)) {
+                    SPVLOG_ERROR("change custom id fee verify owner signature fail");
+                    return false;
+                }
+            } catch (const std::exception &e) {
+                SPVLOG_ERROR("verify signature exception: {}", e.what());
+                return false;
+            }
+
+            if (!_crCouncilMemberDID.Valid()) {
+                SPVLOG_ERROR("invalid cr committee did");
+                return false;
+            }
+
+            return true;
+		}
+
+        uint256 CRCProposal::DigestRegisterSidechainUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeRegisterSidechainUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+		}
+
+        uint256 CRCProposal::DigestRegisterSidechainCRCouncilMemberUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeRegisterSidechainCRCouncilMemberUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
 		}
 
 		// top serialize or deserialize
@@ -1864,6 +2087,10 @@ namespace Elastos {
 
 			    case changeCustomIDFee:
                     SerializeChangeCustomIDFee(stream, version);
+			        break;
+
+			    case registerSideChain:
+			        SerializeRegisterSidechain(stream, version);
 			        break;
 
 			    case normal:
@@ -1910,6 +2137,10 @@ namespace Elastos {
                 case changeCustomIDFee:
                     r = DeserializeChangeCustomIDFee(stream, version);
                     break;
+
+			    case registerSideChain:
+			        r = DeserializeRegisterSidechain(stream, version);
+			        break;
 
                 case normal:
                 case elip:
@@ -1969,95 +2200,37 @@ namespace Elastos {
 
 		nlohmann::json CRCProposal::ToJson(uint8_t version) const {
 			nlohmann::json j;
-
 			switch (_type) {
 				case normal:
-				case elip:
-					j = ToJsonNormalCRCouncilMemberUnsigned(version);
-					j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
-					break;
-
-				case secretaryGeneralElection:
-					j = ToJsonSecretaryElectionCRCouncilMemberUnsigned(version);
-					j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
-					break;
-
-				case changeProposalOwner:
-					j = ToJsonChangeOwnerCRCouncilMemberUnsigned(version);
-					j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
-					break;
-
-				case terminateProposal:
-					j = ToJsonTerminateProposalCRCouncilMemberUnsigned(version);
-					j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
-					break;
-
-			    case reserveCustomID:
-			        j = ToJsonReserveCustomIDCRCouncilMemberUnsigned(version);
-			        j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
-			        break;
-
-			    case receiveCustomID:
-			        j = ToJsonReceiveCustomIDCRCouncilMemberUnsigned(version);
-			        j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
-			        break;
-
-			    case changeCustomIDFee:
-                    j = ToJsonChangeCustomIDFeeCRCouncilMemberUnsigned(version);
-                    j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
-			        break;
-
-				default:
-					SPVLOG_ERROR("unknow type: {}", _type);
-					break;
+				case elip: j = ToJsonNormalCRCouncilMemberUnsigned(version); break;
+				case secretaryGeneralElection: j = ToJsonSecretaryElectionCRCouncilMemberUnsigned(version); break;
+				case changeProposalOwner: j = ToJsonChangeOwnerCRCouncilMemberUnsigned(version); break;
+				case terminateProposal: j = ToJsonTerminateProposalCRCouncilMemberUnsigned(version); break;
+			    case reserveCustomID: j = ToJsonReserveCustomIDCRCouncilMemberUnsigned(version); break;
+			    case receiveCustomID: j = ToJsonReceiveCustomIDCRCouncilMemberUnsigned(version); break;
+			    case changeCustomIDFee: j = ToJsonChangeCustomIDFeeCRCouncilMemberUnsigned(version); break;
+			    case registerSideChain: j = ToJsonRegisterSidechainCRCouncilMemberUnsigned(version); break;
+				default: SPVLOG_ERROR("unknow type: {}", _type); return j;
 			}
-			return j;
+            j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
+            return j;
 		}
 
 		void CRCProposal::FromJson(const nlohmann::json &j, uint8_t version) {
 			_type = CRCProposal::Type(j[JsonKeyType].get<uint16_t>());
-
 			switch (_type) {
 				case normal:
-				case elip:
-					FromJsonNormalCRCouncilMemberUnsigned(j, version);
-					_crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
-					break;
-
-				case secretaryGeneralElection:
-					FromJsonSecretaryElectionCRCouncilMemberUnsigned(j, version);
-					_crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
-					break;
-
-				case changeProposalOwner:
-					FromJsonChangeOwnerCRCouncilMemberUnsigned(j, version);
-					_crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
-					break;
-
-				case terminateProposal:
-					FromJsonTerminateProposalCRCouncilMemberUnsigned(j, version);
-					_crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
-					break;
-
-			    case reserveCustomID:
-			        FromJsonReserveCustomIDCRCouncilMemberUnsigned(j, version);
-                    _crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
-			        break;
-
-			    case receiveCustomID:
-			        FromJsonReceiveCustomIDCRCouncilMemberUnsigned(j, version);
-                    _crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
-			        break;
-
-			    case changeCustomIDFee:
-			        FromJsonChangeCustomIDFeeCRCouncilMemberUnsigned(j, version);
-                    _crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
-			        break;
-
-				default:
-					SPVLOG_ERROR("unknow type: {}", _type);
-					break;
+				case elip: FromJsonNormalCRCouncilMemberUnsigned(j, version); break;
+				case secretaryGeneralElection: FromJsonSecretaryElectionCRCouncilMemberUnsigned(j, version); break;
+				case changeProposalOwner: FromJsonChangeOwnerCRCouncilMemberUnsigned(j, version); break;
+				case terminateProposal: FromJsonTerminateProposalCRCouncilMemberUnsigned(j, version); break;
+			    case reserveCustomID: FromJsonReserveCustomIDCRCouncilMemberUnsigned(j, version); break;
+			    case receiveCustomID: FromJsonReceiveCustomIDCRCouncilMemberUnsigned(j, version); break;
+			    case changeCustomIDFee: FromJsonChangeCustomIDFeeCRCouncilMemberUnsigned(j, version); break;
+			    case registerSideChain: FromJsonRegisterSidechainCRCouncilMemberUnsigned(j, version);
+				default: SPVLOG_ERROR("unknow type: {}", _type); return;
 			}
+            _crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
 		}
 
 		bool CRCProposal::IsValidNormalOwnerUnsigned(uint8_t version) const {
@@ -2119,43 +2292,20 @@ namespace Elastos {
 			bool isValid = false;
 			switch (_type) {
 				case normal:
-				case elip:
-					isValid = IsValidNormalCRCouncilMemberUnsigned(version);
-					break;
-
-				case secretaryGeneralElection:
-					isValid = IsValidSecretaryElectionCRCouncilMemberUnsigned(version);
-					break;
-
-				case changeProposalOwner:
-					isValid = IsValidChangeOwnerCRCouncilMemberUnsigned(version);
-					break;
-
-				case terminateProposal:
-					isValid = IsValidTerminateProposalCRCouncilMemberUnsigned(version);
-					break;
-
-			    case reserveCustomID:
-			        isValid = IsValidReserveCustomIDCRCouncilMemberUnsigned(version);
-			        break;
-
-			    case receiveCustomID:
-			        isValid = IsValidReceiveCustomIDCRCouncilMemberUnsigned(version);
-			        break;
-
-			    case changeCustomIDFee:
-			        isValid = IsValidChangeCustomIDFeeCRCouncilMemberUnsigned(version);
-			        break;
-
-				default:
-					break;
+				case elip: isValid = IsValidNormalCRCouncilMemberUnsigned(version); break;
+				case secretaryGeneralElection: isValid = IsValidSecretaryElectionCRCouncilMemberUnsigned(version); break;
+				case changeProposalOwner: isValid = IsValidChangeOwnerCRCouncilMemberUnsigned(version); break;
+				case terminateProposal: isValid = IsValidTerminateProposalCRCouncilMemberUnsigned(version); break;
+			    case reserveCustomID: isValid = IsValidReserveCustomIDCRCouncilMemberUnsigned(version); break;
+			    case receiveCustomID: isValid = IsValidReceiveCustomIDCRCouncilMemberUnsigned(version); break;
+			    case changeCustomIDFee: isValid = IsValidChangeCustomIDFeeCRCouncilMemberUnsigned(version); break;
+			    case registerSideChain: isValid = IsValidRegisterSidechainCRCouncilMemberUnsigned(version); break;
+				default: break;
 			}
-
 			if (_crCouncilMemberSignature.empty()) {
 				SPVLOG_ERROR("cr committee not signed");
 				isValid = false;
 			}
-
 			return isValid;
 		}
 
@@ -2179,6 +2329,8 @@ namespace Elastos {
 			_signature = payload._signature;
 			_newOwnerSignature = payload._newOwnerSignature;
 			_secretarySignature = payload._secretarySignature;
+			_upgradeCodeInfo = payload._upgradeCodeInfo;
+			_sidechainInfo = payload._sidechainInfo;
 
 			_crCouncilMemberDID = payload._crCouncilMemberDID;
 			_crCouncilMemberSignature = payload._crCouncilMemberSignature;
@@ -2187,112 +2339,97 @@ namespace Elastos {
 
 		bool CRCProposal::Equal(const IPayload &payload, uint8_t version) const {
 			bool equal = false;
+            const CRCProposal &p = dynamic_cast<const CRCProposal &>(payload);
 			try {
-				const CRCProposal &realPayload = dynamic_cast<const CRCProposal &>(payload);
-
 				switch (_type) {
 					case normal:
 					case elip:
-						equal = _type == realPayload._type &&
-								_categoryData == realPayload._categoryData &&
-								_ownerPublicKey == realPayload._ownerPublicKey &&
-								_draftHash == realPayload._draftHash &&
-								_budgets == realPayload._budgets &&
-								_recipient == realPayload._recipient &&
-								_signature == realPayload._signature &&
-								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
-								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
-						if (version >= CRCProposalVersion01)
-							equal = equal && _draftData == realPayload._draftData;
+						equal = _type == p._type &&
+                                _categoryData == p._categoryData &&
+                                _ownerPublicKey == p._ownerPublicKey &&
+                                _draftHash == p._draftHash &&
+                                _budgets == p._budgets &&
+                                _recipient == p._recipient &&
+                                _signature == p._signature &&
+                                _crCouncilMemberDID == p._crCouncilMemberDID &&
+                                _crCouncilMemberSignature == p._crCouncilMemberSignature;
 						break;
-
 					case secretaryGeneralElection:
-						equal = _type == realPayload._type &&
-								_categoryData == realPayload._categoryData &&
-								_ownerPublicKey == realPayload._ownerPublicKey &&
-								_draftHash == realPayload._draftHash &&
-								_secretaryPublicKey == realPayload._secretaryPublicKey &&
-								_secretaryDID == realPayload._secretaryDID &&
-								_signature == realPayload._signature &&
-								_secretarySignature == realPayload._secretarySignature &&
-								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
-								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
-						if (version >= CRCProposalVersion01)
-							equal = equal && _draftData == realPayload._draftData;
+						equal = _type == p._type &&
+                                _categoryData == p._categoryData &&
+                                _ownerPublicKey == p._ownerPublicKey &&
+                                _draftHash == p._draftHash &&
+                                _secretaryPublicKey == p._secretaryPublicKey &&
+                                _secretaryDID == p._secretaryDID &&
+                                _signature == p._signature &&
+                                _secretarySignature == p._secretarySignature &&
+                                _crCouncilMemberDID == p._crCouncilMemberDID &&
+                                _crCouncilMemberSignature == p._crCouncilMemberSignature;
 						break;
-
 					case changeProposalOwner:
-						equal = _type == realPayload._type &&
-								_categoryData == realPayload._categoryData &&
-								_ownerPublicKey == realPayload._ownerPublicKey &&
-								_draftHash == realPayload._draftHash &&
-								_targetProposalHash == realPayload._targetProposalHash &&
-								_newRecipient == realPayload._newRecipient &&
-								_newOwnerPublicKey == realPayload._newOwnerPublicKey &&
-								_signature == realPayload._signature &&
-								_newOwnerSignature == realPayload._newOwnerSignature &&
-								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
-								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
-						if (version >= CRCProposalVersion01)
-							equal = equal && _draftData == realPayload._draftData;
+						equal = _type == p._type &&
+                                _categoryData == p._categoryData &&
+                                _ownerPublicKey == p._ownerPublicKey &&
+                                _draftHash == p._draftHash &&
+                                _targetProposalHash == p._targetProposalHash &&
+                                _newRecipient == p._newRecipient &&
+                                _newOwnerPublicKey == p._newOwnerPublicKey &&
+                                _signature == p._signature &&
+                                _newOwnerSignature == p._newOwnerSignature &&
+                                _crCouncilMemberDID == p._crCouncilMemberDID &&
+                                _crCouncilMemberSignature == p._crCouncilMemberSignature;
 						break;
-
 					case terminateProposal:
-						equal = _type == realPayload._type &&
-								_categoryData == realPayload._categoryData &&
-								_ownerPublicKey == realPayload._ownerPublicKey &&
-								_draftHash == realPayload._draftHash &&
-								_targetProposalHash == realPayload._targetProposalHash &&
-								_signature == realPayload._signature &&
-								_crCouncilMemberDID == realPayload._crCouncilMemberDID &&
-								_crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
-						if (version >= CRCProposalVersion01)
-							equal = equal && _draftData == realPayload._draftData;
+						equal = _type == p._type &&
+                                _categoryData == p._categoryData &&
+                                _ownerPublicKey == p._ownerPublicKey &&
+                                _draftHash == p._draftHash &&
+                                _targetProposalHash == p._targetProposalHash &&
+                                _signature == p._signature &&
+                                _crCouncilMemberDID == p._crCouncilMemberDID &&
+                                _crCouncilMemberSignature == p._crCouncilMemberSignature;
 						break;
-
 				    case reserveCustomID:
-				        equal = _type == realPayload._type &&
-				                _categoryData == realPayload._categoryData &&
-                                _ownerPublicKey == realPayload._ownerPublicKey &&
-                                _draftHash == realPayload._draftHash &&
-                                _reservedCustomIDList == realPayload._reservedCustomIDList &&
-                                _signature == realPayload._signature &&
-                                _crCouncilMemberDID == realPayload._crCouncilMemberDID &&
-                                _crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
-
-                        if (version >= CRCProposalVersion01)
-                            equal = equal && _draftData == realPayload._draftData;
+				        equal = _type == p._type &&
+                                _categoryData == p._categoryData &&
+                                _ownerPublicKey == p._ownerPublicKey &&
+                                _draftHash == p._draftHash &&
+                                _reservedCustomIDList == p._reservedCustomIDList &&
+                                _signature == p._signature &&
+                                _crCouncilMemberDID == p._crCouncilMemberDID &&
+                                _crCouncilMemberSignature == p._crCouncilMemberSignature;
 				        break;
-
 				    case receiveCustomID:
-                        equal = _type == realPayload._type &&
-                                _categoryData == realPayload._categoryData &&
-                                _ownerPublicKey == realPayload._ownerPublicKey &&
-                                _draftHash == realPayload._draftHash &&
-                                _receivedCustomIDList == realPayload._receivedCustomIDList &&
-                                _receiverDID == realPayload._receiverDID &&
-                                _signature == realPayload._signature &&
-                                _crCouncilMemberDID == realPayload._crCouncilMemberDID &&
-                                _crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
-
-                        if (version >= CRCProposalVersion01)
-                            equal = equal && _draftData == realPayload._draftData;
+                        equal = _type == p._type &&
+                                _categoryData == p._categoryData &&
+                                _ownerPublicKey == p._ownerPublicKey &&
+                                _draftHash == p._draftHash &&
+                                _receivedCustomIDList == p._receivedCustomIDList &&
+                                _receiverDID == p._receiverDID &&
+                                _signature == p._signature &&
+                                _crCouncilMemberDID == p._crCouncilMemberDID &&
+                                _crCouncilMemberSignature == p._crCouncilMemberSignature;
 				        break;
-
 				    case changeCustomIDFee:
-                        equal = _type == realPayload._type &&
-                                _categoryData == realPayload._categoryData &&
-                                _ownerPublicKey == realPayload._ownerPublicKey &&
-                                _draftHash == realPayload._draftHash &&
-                                _customIDFeeRateInfo == realPayload._customIDFeeRateInfo &&
-                                _signature == realPayload._signature &&
-                                _crCouncilMemberDID == realPayload._crCouncilMemberDID &&
-                                _crCouncilMemberSignature == realPayload._crCouncilMemberSignature;
-
-                        if (version >= CRCProposalVersion01)
-                            equal = equal && _draftData == realPayload._draftData;
+                        equal = _type == p._type &&
+                                _categoryData == p._categoryData &&
+                                _ownerPublicKey == p._ownerPublicKey &&
+                                _draftHash == p._draftHash &&
+                                _customIDFeeRateInfo == p._customIDFeeRateInfo &&
+                                _signature == p._signature &&
+                                _crCouncilMemberDID == p._crCouncilMemberDID &&
+                                _crCouncilMemberSignature == p._crCouncilMemberSignature;
 				        break;
-
+				    case registerSideChain:
+				        equal = _type == p._type &&
+				                _categoryData == p._categoryData &&
+				                _ownerPublicKey == p._ownerPublicKey &&
+				                _draftHash == p._draftHash &&
+				                _sidechainInfo == p._sidechainInfo &&
+				                _signature == p._signature &&
+				                _crCouncilMemberDID == p._crCouncilMemberDID &&
+				                _crCouncilMemberSignature == p._crCouncilMemberSignature;
+				        break;
 					default:
 						equal = false;
 						break;
@@ -2301,6 +2438,8 @@ namespace Elastos {
 				SPVLOG_ERROR("payload is not instance of CRCProposal");
 				equal = false;
 			}
+            if (version >= CRCProposalVersion01)
+                equal = equal && _draftData == p._draftData;
 			return equal;
 		}
 

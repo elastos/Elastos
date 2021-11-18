@@ -66,7 +66,7 @@ namespace Elastos {
 					const std::string &sideChainAddress,
 					const std::string &lockAddress,
 					const std::string &fee,
-					const std::string &memo) = 0;
+					const std::string &memo) const = 0;
 
 		public:
 		    virtual std::string GetDepositAddress(const std::string &pubkey) const = 0;
@@ -131,7 +131,7 @@ namespace Elastos {
 				const nlohmann::json &inputs,
 				const nlohmann::json &voteContents,
 				const std::string &fee,
-				const std::string &memo) = 0;
+				const std::string &memo) const = 0;
 
 		public:
 			//////////////////////////////////////////////////
@@ -197,7 +197,7 @@ namespace Elastos {
 				const nlohmann::json &payload,
 				const std::string &amount,
 				const std::string &fee,
-				const std::string &memo) = 0;
+				const std::string &memo) const = 0;
 
 			/**
 			 * Create update producer transaction.
@@ -222,7 +222,7 @@ namespace Elastos {
 				const nlohmann::json &inputs,
 				const nlohmann::json &payload,
 				const std::string &fee,
-				const std::string &memo) = 0;
+				const std::string &memo) const = 0;
 
 			/**
 			 * Create cancel producer transaction.
@@ -246,7 +246,7 @@ namespace Elastos {
 				const nlohmann::json &inputs,
 				const nlohmann::json &payload,
 				const std::string &fee,
-				const std::string &memo) = 0;
+				const std::string &memo) const = 0;
 
 			/**
 			 * Create retrieve deposit transaction.
@@ -271,7 +271,7 @@ namespace Elastos {
                     const nlohmann::json &inputs,
                     const std::string &amount,
                     const std::string &fee,
-                    const std::string &memo) = 0;
+                    const std::string &memo) const = 0;
 
 			/**
 			 * Get owner public key.
@@ -367,7 +367,7 @@ namespace Elastos {
 					const nlohmann::json &payloadJSON,
 					const std::string &amount,
 					const std::string &fee,
-					const std::string &memo) = 0;
+					const std::string &memo) const = 0;
 
 			/**
 			 * Create update cr transaction.
@@ -391,7 +391,7 @@ namespace Elastos {
 					const nlohmann::json &inputs,
 					const nlohmann::json &payloadJSON,
 					const std::string &fee,
-					const std::string &memo) = 0;
+					const std::string &memo) const = 0;
 
 			/**
 			 * Create unregister cr transaction.
@@ -415,7 +415,7 @@ namespace Elastos {
 					const nlohmann::json &inputs,
 					const nlohmann::json &payloadJSON,
 					const std::string &fee,
-					const std::string &memo) = 0;
+					const std::string &memo) const = 0;
 
 			/**
 			 * Create retrieve deposit cr transaction.
@@ -439,7 +439,7 @@ namespace Elastos {
 					const nlohmann::json &inputs,
 					const std::string &amount,
 					const std::string &fee,
-					const std::string &memo) = 0;
+					const std::string &memo) const = 0;
 
 			/**
 			 * Generate digest for signature of CR council members
@@ -477,7 +477,7 @@ namespace Elastos {
                     const nlohmann::json &inputs,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") = 0;
+                    const std::string &memo = "") const = 0;
 
 
 		public:
@@ -587,7 +587,7 @@ namespace Elastos {
 			        const nlohmann::json &inputs,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") = 0;
+                    const std::string &memo = "") const = 0;
 
 
 			//////////////////////////////////////////////////
@@ -640,7 +640,7 @@ namespace Elastos {
 			virtual nlohmann::json CreateProposalReviewTransaction(const nlohmann::json &inputs,
                                                                    const nlohmann::json &payload,
 																   const std::string &fee,
-																   const std::string &memo = "") = 0;
+																   const std::string &memo = "") const = 0;
 
 
 			//////////////////////////////////////////////////
@@ -746,7 +746,7 @@ namespace Elastos {
             virtual nlohmann::json CreateProposalTrackingTransaction(const nlohmann::json &inputs,
                                                                      const nlohmann::json &payload,
                                                                      const std::string &fee,
-                                                                     const std::string &memo = "") = 0;
+                                                                     const std::string &memo = "") const = 0;
 
 			//////////////////////////////////////////////////
 			/*      Proposal Secretary General Election     */
@@ -816,7 +816,7 @@ namespace Elastos {
                     const nlohmann::json &inputs,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") = 0;
+                    const std::string &memo = "") const = 0;
 
 			//////////////////////////////////////////////////
 			/*             Proposal Change Owner            */
@@ -889,7 +889,7 @@ namespace Elastos {
                     const nlohmann::json &inputs,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") = 0;
+                    const std::string &memo = "") const = 0;
 
 			//////////////////////////////////////////////////
 			/*           Proposal Terminate Proposal        */
@@ -952,7 +952,7 @@ namespace Elastos {
                     const nlohmann::json &inputs,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") = 0;
+                    const std::string &memo = "") const = 0;
 
             //////////////////////////////////////////////////
             /*              Reserve Custom ID               */
@@ -968,7 +968,7 @@ namespace Elastos {
              * }
              * @return
              */
-            virtual nlohmann::json ReserveCustomIDOwnerDigest(const nlohmann::json &payload) const = 0;
+            virtual std::string ReserveCustomIDOwnerDigest(const nlohmann::json &payload) const = 0;
 
             /**
              * @param payload Reserve Custom ID payload
@@ -983,7 +983,7 @@ namespace Elastos {
              * }
              * @return
              */
-            virtual nlohmann::json ReserveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
+            virtual std::string ReserveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
 
             /**
              * @param inputs UTXO which will be used. eg
@@ -1015,7 +1015,7 @@ namespace Elastos {
                     const nlohmann::json &inputs,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") = 0;
+                    const std::string &memo = "") const = 0;
 
             //////////////////////////////////////////////////
             /*               Receive Custom ID              */
@@ -1032,7 +1032,7 @@ namespace Elastos {
              * }
              * @return
              */
-            virtual nlohmann::json ReceiveCustomIDOwnerDigest(const nlohmann::json &payload) const = 0;
+            virtual std::string ReceiveCustomIDOwnerDigest(const nlohmann::json &payload) const = 0;
 
             /**
              * @param payload Receive Custom ID payload
@@ -1048,7 +1048,7 @@ namespace Elastos {
              * }
              * @return
              */
-            virtual nlohmann::json ReceiveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
+            virtual std::string ReceiveCustomIDCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
 
             /**
              * @param inputs UTXO which will be used. eg
@@ -1081,7 +1081,7 @@ namespace Elastos {
                     const nlohmann::json &inputs,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") = 0;
+                    const std::string &memo = "") const = 0;
 
             //////////////////////////////////////////////////
             /*              Change Custom ID Fee            */
@@ -1100,7 +1100,7 @@ namespace Elastos {
              * }
              * @return
              */
-            virtual nlohmann::json ChangeCustomIDFeeOwnerDigest(const nlohmann::json &payload) const = 0;
+            virtual std::string ChangeCustomIDFeeOwnerDigest(const nlohmann::json &payload) const = 0;
 
             /**
              * @param payload Change custom ID fee payload
@@ -1118,7 +1118,7 @@ namespace Elastos {
              * }
              * @return
              */
-            virtual nlohmann::json ChangeCustomIDFeeCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
+            virtual std::string ChangeCustomIDFeeCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
 
             /**
              * @param inputs UTXO which will be used. eg
@@ -1153,7 +1153,7 @@ namespace Elastos {
                     const nlohmann::json &inputs,
                     const nlohmann::json &payload,
                     const std::string &fee,
-                    const std::string &memo = "") = 0;
+                    const std::string &memo = "") const = 0;
 
 			//////////////////////////////////////////////////
 			/*               Proposal Withdraw              */
@@ -1175,7 +1175,7 @@ namespace Elastos {
 
 			/**
 			 * Create proposal withdraw transaction.
-             * @param inputs UTXO which will be used. eg
+             * @inputs UTXO which will be used. eg
              * [
              *   {
              *     "TxHash": "...", // string
@@ -1185,7 +1185,7 @@ namespace Elastos {
              *   },
              *   ...
              * ]
-			 * @param payload Proposal payload.
+			 * @payload Proposal payload.
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
@@ -1193,8 +1193,8 @@ namespace Elastos {
 			 *   "Amount": "100000000", // 1 ela = 100000000 sela
 			 *   "Signature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109"
 			 * }
-			 * @param fee Fee amount. Bigint string in SELA
-			 * @param memo Remarks string. Can be empty string.
+			 * @fee Fee amount. Bigint string in SELA
+			 * @memo Remarks string. Can be empty string.
 			 *
 			 * @return Transaction in JSON format.
 			 */
@@ -1202,9 +1202,92 @@ namespace Elastos {
 			         const nlohmann::json &inputs,
                      const nlohmann::json &payload,
                      const std::string &fee,
-                     const std::string &memo = "") = 0;
+                     const std::string &memo = "") const = 0;
 
-		};
+            //////////////////////////////////////////////////
+            /*               Proposal Register side-chain   */
+            //////////////////////////////////////////////////
+            /**
+             * @payload Change custom ID fee payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "SidechainInfo": {
+             *      "SideChainName": "...",
+             *      "MagicNumber": 0, // uint32_t
+             *      "GenesisHash": "...", // hexstring of uint256
+             *      "ExchangeRate": 1, // uint64_t
+             *      "EffectiveHeight": 1000, // uint32_t
+             *      "ResourcePath": "..." // path string
+             *    }
+             * }
+             * @return
+             */
+            virtual std::string RegisterSidechainOwnerDigest(const nlohmann::json &payload) const = 0;
+
+            /**
+             * @payload Change custom ID fee payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "SidechainInfo": {
+             *      "SideChainName": "...",
+             *      "MagicNumber": 0, // uint32_t
+             *      "GenesisHash": "...", // hexstring of uint256
+             *      "ExchangeRate": 1, // uint64_t
+             *      "EffectiveHeight": 1000, // uint32_t
+             *      "ResourcePath": "..." // path string
+             *    }
+             *    "Signature": "...",
+             *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+             * }
+             * @return
+             */
+            virtual std::string RegisterSidechainCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
+
+            /**
+             * @inputs UTXO which will be used. eg
+             * [
+             *   {
+             *     "TxHash": "...", // string
+             *     "Index": 123, // int
+             *     "Address": "...", // string
+             *     "Amount": "100000000" // bigint string in SELA
+             *   },
+             *   ...
+             * ]
+             * @payload Register side-chain payload
+             * {
+             *    "CategoryData": "testdata",  // limit: 4096 bytes
+             *    "OwnerPublicKey": "...",
+             *    "DraftHash": "...",
+             *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+             *    "SidechainInfo": {
+             *      "SideChainName": "...",
+             *      "MagicNumber": 0, // uint32_t
+             *      "GenesisHash": "...", // hexstring of uint256
+             *      "ExchangeRate": 1, // uint64_t
+             *      "EffectiveHeight": 1000, // uint32_t
+             *      "ResourcePath": "..." // path string
+             *    }
+             *    "Signature": "...",
+             *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+             *    "CRCouncilMemberSignature": "...",
+             * }
+			 * @fee Fee amount. Bigint string in SELA
+			 * @memo Remark string
+			 * @return
+             */
+            virtual nlohmann::json CreateRegisterSidechainTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") const = 0;
+        };
 
 	}
 }
