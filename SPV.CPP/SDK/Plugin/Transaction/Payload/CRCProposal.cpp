@@ -137,34 +137,56 @@ namespace Elastos {
 
         bool UpgradeCodeInfo::Deserialize(const ByteStream &stream, uint8_t version) {
             if (!stream.ReadUint32(_workingHeight)) {
-                Log::info("deserialize workingHeight failed");
+                SPVLOG_ERROR("deserialize workingHeight failed");
                 return false;
             }
 
             if (!stream.ReadVarString(_nodeVersion)) {
-                Log::info("deserialize nodeVersion failed");
+                SPVLOG_ERROR("deserialize nodeVersion failed");
                 return false;
             }
 
             if (!stream.ReadVarString(_nodeDownloadUrl)) {
-                Log::info("deserialize nodeDownloadUrl failed");
+                SPVLOG_ERROR("deserialize nodeDownloadUrl failed");
                 return false;
             }
 
             if (!stream.ReadBytes(_nodeBinHash)) {
-                Log::info("deserialize nodeBinHash failed");
+                SPVLOG_ERROR("deserialize nodeBinHash failed");
                 return false;
             }
 
             uint8_t force = 0;
             if (!stream.ReadUint8(force)) {
-                Log::info("deserialize force failed");
+                SPVLOG_ERROR("deserialize force failed");
                 return false;
             }
             _force = force == 0 ? false : true;
 
             return true;
         }
+
+        nlohmann::json UpgradeCodeInfo::ToJson(uint8_t version) const {
+            nlohmann::json j;
+            j["WorkingHeight"] = _workingHeight;
+            j["NodeVersion"] = _nodeVersion;
+            j["NodeDownloadUrl"] = _nodeDownloadUrl;
+            j["NodeBinHash"] = _nodeBinHash.GetHex();
+            j["Force"] = _force;
+            return j;
+		}
+
+        void UpgradeCodeInfo::FromJson(const nlohmann::json &j, uint8_t version) {
+            _workingHeight = j["WorkingHeight"].get<uint32_t>();
+            _nodeVersion = j["NodeVersion"].get<std::string>();
+            _nodeDownloadUrl = j["NodeDownloadUrl"].get<std::string>();
+            _nodeBinHash.SetHex(j["NodeBinHash"].get<std::string>());
+            _force = j["Force"].get<bool>();
+		}
+
+        bool UpgradeCodeInfo::IsValid(uint8_t version) const {
+		    return true;
+		}
 
         SideChainInfo::SideChainInfo() {
 
@@ -185,32 +207,32 @@ namespace Elastos {
 
         bool SideChainInfo::Deserialize(const ByteStream &stream, uint8_t version) {
             if (!stream.ReadVarString(_sideChainName)) {
-                Log::error("deserialize side-chain name failed");
+                SPVLOG_ERROR("deserialize side-chain name failed");
                 return false;
             }
 
             if (!stream.ReadUint32(_magicNumber)) {
-                Log::error("deserialize magic number failed");
+                SPVLOG_ERROR("deserialize magic number failed");
                 return false;
             }
 
             if (!stream.ReadBytes(_genesisHash)) {
-                Log::error("deserialize genesis hash failed");
+                SPVLOG_ERROR("deserialize genesis hash failed");
                 return false;
             }
 
             if (!stream.ReadUint64(_exchangeRate)) {
-                Log::error("deserialize exchange rate failed");
+                SPVLOG_ERROR("deserialize exchange rate failed");
                 return false;
             }
 
             if (!stream.ReadUint32(_effectiveHeight)) {
-                Log::error("deserialize effective height failed");
+                SPVLOG_ERROR("deserialize effective height failed");
                 return false;
             }
 
             if (!stream.ReadVarString(_resourcePath)) {
-                Log::error("deserialize resource path failed");
+                SPVLOG_ERROR("deserialize resource path failed");
                 return false;
             }
 
@@ -275,12 +297,12 @@ namespace Elastos {
 
         bool CustomIDFeeRateInfo::Deserialize(const ByteStream &stream, uint8_t version) {
             if (!stream.ReadUint64(_rateOfCustomIDFee)) {
-                Log::error("deserialize rateOfCustomIDFee failed");
+                SPVLOG_ERROR("deserialize rateOfCustomIDFee failed");
                 return false;
             }
 
             if (!stream.ReadUint32(_eIDEffectiveHeight)) {
-                Log::error("deserialize eIDEffectiveHeight failed");
+                SPVLOG_ERROR("deserialize eIDEffectiveHeight failed");
                 return false;
             }
 
@@ -1946,7 +1968,7 @@ namespace Elastos {
 
         void CRCProposal::SerializeRegisterSidechain(ByteStream &stream, uint8_t version) const {
             SerializeRegisterSidechainCRCouncilMemberUnsigned(stream, version);
-            stream.WriteBytes(_crCouncilMemberSignature);
+            stream.WriteVarBytes(_crCouncilMemberSignature);
 		}
 
         bool CRCProposal::DeserializeRegisterSidechain(const ByteStream &stream, uint8_t version) {
@@ -2034,7 +2056,7 @@ namespace Elastos {
 
             try {
                 if (!Key(CTElastos, _ownerPublicKey).Verify(DigestRegisterSidechainUnsigned(version), _signature)) {
-                    SPVLOG_ERROR("change custom id fee verify owner signature fail");
+                    SPVLOG_ERROR("change register side-chain verify owner signature fail");
                     return false;
                 }
             } catch (const std::exception &e) {
@@ -2059,6 +2081,180 @@ namespace Elastos {
         uint256 CRCProposal::DigestRegisterSidechainCRCouncilMemberUnsigned(uint8_t version) const {
             ByteStream stream;
             SerializeRegisterSidechainCRCouncilMemberUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+		}
+
+        // upgrade code
+        void CRCProposal::SerializeUpgradeCodeUnsigned(ByteStream &stream, uint8_t version) const {
+            uint16_t type = _type;
+            stream.WriteUint16(type);
+            stream.WriteVarString(_categoryData);
+            stream.WriteVarBytes(_ownerPublicKey);
+            stream.WriteBytes(_draftHash);
+            _upgradeCodeInfo.Serialize(stream, version);
+		}
+
+        bool CRCProposal::DeserializeUpgradeCodeUnsigned(const ByteStream &stream, uint8_t version) {
+            if (!stream.ReadVarString(_categoryData)) {
+                SPVLOG_ERROR("deserialize upgrade code category data");
+                return false;
+            }
+
+            if (!stream.ReadVarBytes(_ownerPublicKey)) {
+                SPVLOG_ERROR("deserialize upgrade code owner pubkey");
+                return false;
+            }
+
+            if (!stream.ReadBytes(_draftHash)) {
+                SPVLOG_ERROR("deserialize upgrade code draft hash");
+                return false;
+            }
+
+            if (!_upgradeCodeInfo.Deserialize(stream, version)) {
+                SPVLOG_ERROR("deserialize upgrade code");
+                return false;
+            }
+
+            return true;
+		}
+
+        void CRCProposal::SerializeUpgradeCodeCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const {
+            SerializeUpgradeCodeUnsigned(stream, version);
+            stream.WriteVarBytes(_signature);
+            stream.WriteBytes(_crCouncilMemberDID.ProgramHash());
+		}
+
+        bool CRCProposal::DeserializeUpgradeCodeCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version) {
+            if (!DeserializeUpgradeCodeUnsigned(stream, version)) {
+                return false;
+            }
+
+            if (!stream.ReadVarBytes(_signature)) {
+                SPVLOG_ERROR("deserialize upgrade code signature failed");
+                return false;
+            }
+
+            uint168 programHash;
+            if (!stream.ReadBytes(programHash)) {
+                SPVLOG_ERROR("deserialize upgrade code cr council did");
+                return false;
+            }
+            _crCouncilMemberDID = Address(programHash);
+
+            return true;
+		}
+
+        void CRCProposal::SerializeUpgradeCode(ByteStream &stream, uint8_t version) const {
+            SerializeUpgradeCodeCRCouncilMemberUnsigned(stream, version);
+            stream.WriteVarBytes(_crCouncilMemberSignature);
+		}
+
+        bool CRCProposal::DeserializeUpgradeCode(const ByteStream &stream, uint8_t version) {
+            if (!DeserializeUpgradeCodeCRCouncilMemberUnsigned(stream, version)) {
+                return false;
+            }
+
+            if (!stream.ReadVarBytes(_crCouncilMemberSignature)) {
+                SPVLOG_ERROR("deserialize cr council mem sign failed");
+                return false;
+            }
+
+            return true;
+		}
+
+        nlohmann::json CRCProposal::ToJsonUpgradeCodeUnsigned(uint8_t version) const {
+            nlohmann::json j;
+
+            j[JsonKeyType] = _type;
+            j[JsonKeyCategoryData] = _categoryData;
+            j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
+            j[JsonKeyDraftHash] = _draftHash.GetHex();
+            j[JsonKeyUpgradeCodeInfo] = _upgradeCodeInfo.ToJson(version);
+
+            return j;
+		}
+
+        void CRCProposal::FromJsonUpgradeCode(const nlohmann::json &j, uint8_t version) {
+            uint16_t type = j[JsonKeyType].get<uint16_t>();
+            _type = CRCProposal::Type(type);
+            _categoryData = j[JsonKeyCategoryData].get<std::string>();
+            _ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
+            _draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
+            _upgradeCodeInfo.FromJson(j[JsonKeyUpgradeCodeInfo], version);
+		}
+
+        nlohmann::json CRCProposal::ToJsonUpgradeCodeCRCouncilMemberUnsigned(uint8_t version) const {
+            nlohmann::json j = ToJsonUpgradeCodeUnsigned(version);
+            j[JsonKeySignature] = _signature.getHex();
+            j[JsonKeyCRCouncilMemberDID] = _crCouncilMemberDID.String();
+            return j;
+		}
+
+        void CRCProposal::FromJsonUpgradeCodeCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version) {
+            FromJsonUpgradeCode(j, version);
+            _signature.setHex(j[JsonKeySignature].get<std::string>());
+            _crCouncilMemberDID = Address(j[JsonKeyCRCouncilMemberDID].get<std::string>());
+		}
+
+        bool CRCProposal::IsValidUpgradeCodeUnsigned(uint8_t version) const {
+            if (_type != mainChainUpgradeCode &&
+                _type != ethUpdateCode &&
+                _type != didUpdateCode) {
+                SPVLOG_ERROR("invalid type: {}", _type);
+                return false;
+            }
+
+            if (_categoryData.size() > 4096) {
+                SPVLOG_ERROR("category data exceed 4096 bytes");
+                return false;
+            }
+
+            try {
+                Key key(CTElastos, _ownerPublicKey);
+            } catch (const std::exception &e) {
+                SPVLOG_ERROR("invalid owner pubkey");
+                return false;
+            }
+
+            if (!_upgradeCodeInfo.IsValid(version)) {
+                return false;
+            }
+
+            return true;
+		}
+
+        bool CRCProposal::IsValidUpgradeCodeCRCouncilMemberUnsigned(uint8_t version) const {
+            if (!IsValidUpgradeCodeUnsigned(version)) {
+                return false;
+            }
+
+            try {
+                if (!Key(CTElastos, _ownerPublicKey).Verify(DigestUpgradeCodeUnsigned(version), _signature)) {
+                    SPVLOG_ERROR("change upgrade code verify owner signature fail");
+                    return false;
+                }
+            } catch (const std::exception &e) {
+                SPVLOG_ERROR("verify signature exception: {}", e.what());
+                return false;
+            }
+
+            if (!_crCouncilMemberDID.Valid()) {
+                SPVLOG_ERROR("invalid cr committee did");
+                return false;
+            }
+
+            return true;
+		}
+
+        uint256 CRCProposal::DigestUpgradeCodeUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeUpgradeCodeUnsigned(stream, version);
+            return uint256(sha256(stream.GetBytes()));
+		}
+
+        uint256 CRCProposal::DigestUpgradeCodeCRCouncilMemberUnsigned(uint8_t version) const {
+            ByteStream stream;
+            SerializeUpgradeCodeCRCouncilMemberUnsigned(stream, version);
             return uint256(sha256(stream.GetBytes()));
 		}
 
@@ -2140,6 +2336,12 @@ namespace Elastos {
 
 			    case registerSideChain:
 			        r = DeserializeRegisterSidechain(stream, version);
+			        break;
+
+			    case mainChainUpgradeCode:
+			    case didUpdateCode:
+			    case ethUpdateCode:
+			        r = DeserializeUpgradeCode(stream, version);
 			        break;
 
                 case normal:

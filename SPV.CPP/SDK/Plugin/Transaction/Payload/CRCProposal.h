@@ -59,6 +59,7 @@ namespace Elastos {
 #define JsonKeyCRCouncilMemberDID "CRCouncilMemberDID"
 #define JsonKeyCRCouncilMemberSignature "CRCouncilMemberSignature"
 #define JsonKeySidechainInfo "SidechainInfo"
+#define JsonKeyUpgradeCodeInfo "UpgradeCodeInfo"
 
 		class Budget : public JsonSerializer {
 		public:
@@ -109,6 +110,12 @@ namespace Elastos {
             void Serialize(ByteStream &stream, uint8_t version) const;
 
             bool Deserialize(const ByteStream &stream, uint8_t version);
+
+            nlohmann::json ToJson(uint8_t version) const;
+
+            void FromJson(const nlohmann::json &j, uint8_t version);
+
+            bool IsValid(uint8_t version) const;
 
         private:
             friend class CRCProposal;
@@ -509,6 +516,36 @@ namespace Elastos {
             uint256 DigestRegisterSidechainUnsigned(uint8_t version) const;
 
             uint256 DigestRegisterSidechainCRCouncilMemberUnsigned(uint8_t version) const;
+
+		public:
+		    // upgrade code
+            void SerializeUpgradeCodeUnsigned(ByteStream &stream, uint8_t version) const;
+
+		    bool DeserializeUpgradeCodeUnsigned(const ByteStream &stream, uint8_t version);
+
+		    void SerializeUpgradeCodeCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+		    bool DeserializeUpgradeCodeCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+		    void SerializeUpgradeCode(ByteStream &stream, uint8_t version) const;
+
+		    bool DeserializeUpgradeCode(const ByteStream &stream, uint8_t version);
+
+		    nlohmann::json ToJsonUpgradeCodeUnsigned(uint8_t version) const;
+
+		    void FromJsonUpgradeCode(const nlohmann::json &j, uint8_t version);
+
+		    nlohmann::json ToJsonUpgradeCodeCRCouncilMemberUnsigned(uint8_t version) const;
+
+		    void FromJsonUpgradeCodeCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+		    bool IsValidUpgradeCodeUnsigned(uint8_t version) const;
+
+		    bool IsValidUpgradeCodeCRCouncilMemberUnsigned(uint8_t version) const;
+
+		    uint256 DigestUpgradeCodeUnsigned(uint8_t version) const;
+
+		    uint256 DigestUpgradeCodeCRCouncilMemberUnsigned(uint8_t version) const;
 
         public:
             // override interface
