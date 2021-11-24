@@ -49,6 +49,13 @@ namespace Elastos {
                                       const std::string &digest,
                                       const std::string &signature) const;
 
+        protected:
+            friend class MasterWallet;
+
+            RippleSubWallet(const CoinInfoPtr &info,
+                            const ChainConfigPtr &config,
+                            MasterWallet *parent,
+                            const std::string &netType);
         };
 
     }

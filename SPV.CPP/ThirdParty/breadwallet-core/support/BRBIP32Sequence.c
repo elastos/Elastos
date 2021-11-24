@@ -237,7 +237,8 @@ size_t _BRBIP32Serialize(char *str, size_t strLen, uint8_t depth, uint32_t finge
                          const void *key, size_t keyLen)
 {
     size_t len, off = 0;
-    uint8_t data[4 + sizeof(depth) + sizeof(fingerprint) + sizeof(child) + sizeof(chain) + 1 + keyLen];
+    size_t dataSize = 4 + sizeof(depth) + sizeof(fingerprint) + sizeof(child) + sizeof(chain) + 1 + keyLen;
+    uint8_t *data = (uint8_t *)alloca(dataSize);
     
     memcpy(&data[off], (keyLen < 33 ? BIP32_XPRV : BIP32_XPUB), 4);
     off += 4;
@@ -253,7 +254,7 @@ size_t _BRBIP32Serialize(char *str, size_t strLen, uint8_t depth, uint32_t finge
     memcpy(&data[off], key, keyLen);
     off += keyLen;
     len = BRBase58CheckEncode(str, strLen, data, off);
-    mem_clean(data, sizeof(data));
+    mem_clean(data, dataSize);
     return len;
 }
 
@@ -295,11 +296,12 @@ size_t BRBIP32SerializeMasterPubKey(char *str, size_t strLen, BRMasterPubKey mpk
 BRMasterPubKey BRBIP32ParseMasterPubKey(const char *str)
 {
     BRMasterPubKey mpk = BR_MASTER_PUBKEY_NONE;
-    uint8_t data[4 + sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(UInt256) + 33];
-    size_t dataLen = BRBase58CheckDecode(data, sizeof(data), str);
+    size_t dataSize = 4 + sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(UInt256) + 33;
+    uint8_t *data = (uint8_t *)alloca(dataSize);
+    size_t dataLen = BRBase58CheckDecode(data, dataSize, str);
     
-    if (dataLen == sizeof(data) && memcmp(data, BIP32_XPUB, 4) == 0) {
-        mpk.fingerPrint = ((union { uint8_t u8[4]; uint32_t u32; }){ data[5], data[6], data[7], data[8] }).u32;
+    if (dataLen == dataSize && memcmp(data, BIP32_XPUB, 4) == 0) {
+        mpk.fingerPrint = UInt32GetBE(&data[5]);
         mpk.chainCode = UInt256Get(&data[13]);
         memcpy(mpk.pubKey, &data[45], sizeof(mpk.pubKey));
     }

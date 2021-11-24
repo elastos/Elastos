@@ -17,6 +17,7 @@
 #include <WalletCore/Base58.h>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include <support/BRBIP32Sequence.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -289,5 +290,17 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 		HDKeychain rootprv(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 
 		REQUIRE("0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280" == rootprv.getChild("1'/0").pubkey().getHex());
+	}
+
+	SECTION("verify fp & pubkey") {
+        std::string m = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+        uint512 seed = BIP39::DeriveSeed(m, "");
+        HDKeychain root = HDKeychain(CTBitcoin, HDSeed(seed.bytes()).getExtendedKey(CTBitcoin, true)).getChild("44'/0'/0'");
+        std::string extkey = Base58::CheckEncode(root.getPublic().extkey());
+
+        BRMasterPubKey mpk = BRBIP32ParseMasterPubKey(extkey.c_str());
+
+        REQUIRE(root.pubkey() == bytes_t(mpk.pubKey, sizeof(mpk.pubKey)));
+        REQUIRE(root.parent_fp() == mpk.fingerPrint);
 	}
 }

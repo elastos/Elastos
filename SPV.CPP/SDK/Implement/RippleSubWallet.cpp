@@ -20,37 +20,49 @@
  * SOFTWARE.
  */
 
+#include "MasterWallet.h"
+#include <Common/ErrorChecker.h>
 #include "RippleSubWallet.h"
 
 namespace Elastos {
     namespace ElaWallet {
 
-        nlohmann::json RippleSubWallet::GetAddresses(uint32_t index, uint32_t count, bool internal) const {
+        RippleSubWallet::RippleSubWallet(const CoinInfoPtr &info,
+                                         const ChainConfigPtr &config,
+                                         MasterWallet *parent,
+                                         const std::string &netType) :
+                                         SubWallet(info, config, parent) {
+            AccountPtr account = _parent->GetAccount();
 
+            if (account->GetRipplePubKey().empty())
+                ErrorChecker::ThrowParamException(Error::CreateSubWalletError, "need to call IMasterWallet::VerifyPayPassword() or re-import wallet first");
+        }
+
+        RippleSubWallet::~RippleSubWallet() {
+
+        }
+
+        nlohmann::json RippleSubWallet::GetAddresses(uint32_t index, uint32_t count, bool internal) const {
             return nlohmann::json();
         }
 
         nlohmann::json RippleSubWallet::GetPublicKeys(uint32_t index, uint32_t count, bool internal) const {
-
             return nlohmann::json();
         }
 
         nlohmann::json RippleSubWallet::SignTransaction(const nlohmann::json &tx, const std::string &passwd) const {
-
             return nlohmann::json();
         }
 
         std::string RippleSubWallet::SignDigest(const std::string &address,
                                                 const std::string &digest,
                                                 const std::string &passwd) const {
-
             return "";
         }
 
         bool RippleSubWallet::VerifyDigest(const std::string &pubkey,
                                            const std::string &digest,
                                            const std::string &signature) const {
-
             return false;
         }
 
