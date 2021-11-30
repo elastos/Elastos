@@ -442,12 +442,20 @@ namespace Elastos {
 			ArgInfo("chainID: {}", chainID);
 			ArgInfo("address: {}", address);
 
-			bool valid = false;
-			if (chainID == CHAINID_MAINCHAIN || chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
-				valid = Address(address).Valid();
-			} else if (chainID.find("ETH") != std::string::npos) {
-				valid = addressValidateString(address.c_str()) == ETHEREUM_BOOLEAN_TRUE;
-			}
+            bool valid = false;
+            if (chainID == CHAINID_MAINCHAIN || chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
+                valid = Address(address).Valid();
+            } else if (chainID == "BTC") {
+                BRAddressParams addrParams;
+                if (_config->GetNetType() == CONFIG_MAINNET) {
+                    addrParams = BITCOIN_ADDRESS_PARAMS;
+                } else {
+                    addrParams = BITCOIN_TEST_ADDRESS_PARAMS;
+                }
+                valid = BRAddressIsValid(addrParams, address.c_str());
+            } else if (chainID.find("ETH") != std::string::npos) {
+                valid = addressValidateString(address.c_str()) == ETHEREUM_BOOLEAN_TRUE;
+            }
 
 			ArgInfo("r => {}", valid);
 			return valid;
