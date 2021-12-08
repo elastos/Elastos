@@ -112,7 +112,7 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 	}
 	REQUIRE(masterWallets.empty());
 
-	mnemonic = MasterWallet::GenerateMnemonic("english", __rootPath);
+	mnemonic = MasterWallet::GenerateMnemonic("english");
 	masterWallet = manager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 	REQUIRE(masterWallet != nullptr);
 
@@ -121,7 +121,7 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 	REQUIRE(masterWallets[0] == masterWallet);
 	REQUIRE(masterWallet->GetAllSubWallets().size() == 0);
 
-	mnemonic2 = MasterWallet::GenerateMnemonic("english", __rootPath);
+	mnemonic2 = MasterWallet::GenerateMnemonic("english");
 	masterWallet2 = manager->CreateMasterWallet(masterWalletId2, mnemonic2, phrasePassword, payPassword, singleAddress);
 	REQUIRE(masterWallet2 != nullptr);
 

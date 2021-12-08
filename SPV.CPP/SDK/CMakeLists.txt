@@ -15,8 +15,8 @@ endforeach()
 
 set(SPVSDK_SOURCE_FILES ${BRETH_SOURCE_FILES_REMOVE_TEST} ${SPVSDK_SOURCE_FILES})
 
-set(SPVSDK_DEPENDS boost libressl libsqlite json libspdlog secp256k1)
-set(LIBS boost_filesystem boost_system boost_thread crypto ssl sqlite3 spdlog)
+set(SPVSDK_DEPENDS boost libressl libsqlite json libspdlog secp256k1 libutf8proc)
+set(LIBS boost_filesystem boost_system boost_thread crypto ssl sqlite3 spdlog utf8proc)
 
 if(WIN32)
 	add_definitions(

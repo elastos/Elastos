@@ -1,170 +1,246 @@
-// Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+/*
+ * Copyright (c) 2021 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
-#include "BIP39.h"
 #include "Mnemonic.h"
-#include "WordLists/Chinese.h"
-#include "WordLists/English.h"
-#include "WordLists/French.h"
-#include "WordLists/Italian.h"
-#include "WordLists/Japanese.h"
-#include "WordLists/Spanish.h"
+#include <utf8proc.h>
 
+#include <Common/hash.h>
 #include <Common/ErrorChecker.h>
 #include <Common/uint256.h>
 #include <Common/Utils.h>
 
 #include <sstream>
-#include <Common/hash.h>
-
-#define MNEMONIC_PREFIX "mnemonic_"
-#define MNEMONIC_EXTENSION ".txt"
+#include <boost/algorithm/string.hpp>
 
 namespace fs = boost::filesystem;
 
 namespace Elastos {
-	namespace ElaWallet {
+    namespace ElaWallet {
 
-		Mnemonic::Mnemonic(const fs::path &rootPath) :
-			_rootPath(rootPath) {
-		}
+        Mnemonic::Mnemonic() {
+        }
 
-		std::string Mnemonic::Create(const std::string &language, WordCount words) const {
-			std::string languageLowerCase = language;
-			size_t entropyBits = 0;
+        WordList Mnemonic::Create(const bytes_t &entropy, const Dictionary &lexicon) {
+            if ((entropy.size() % MnemonicSeedMultiple) != 0)
+                return {};
 
-			std::transform(languageLowerCase.begin(), languageLowerCase.end(), languageLowerCase.begin(), ::tolower);
+            const size_t entropyBits = (entropy.size() * ByteBits);
+            const size_t checkBits = (entropyBits / EntropyBitDivisor);
+            const size_t totalBits = (entropyBits + checkBits);
+            const size_t wordCount = (totalBits / BitsPerWord);
 
-			switch (words) {
-				case WORDS_12:
-					entropyBits = 128;
-					break;
+            if ((totalBits % BitsPerWord) != 0 || (wordCount % MnemonicWordMultiple) != 0)
+                return {};
 
-				case WORDS_15:
-					entropyBits = 160;
-					break;
+            bytes_t data = entropy + sha256(entropy);
 
-				case WORDS_18:
-					entropyBits = 192;
-					break;
+            size_t bit = 0;
+            WordList words;
 
-				case WORDS_21:
-					entropyBits = 224;
-					break;
+            for (size_t word = 0; word < wordCount; word++) {
+                size_t position = 0;
+                for (size_t loop = 0; loop < BitsPerWord; loop++) {
+                    bit = (word * BitsPerWord + loop);
+                    position <<= 1;
 
-				case WORDS_24:
-					entropyBits = 256;
-					break;
+                    const auto byte = bit / ByteBits;
 
-				default:
-					ErrorChecker::ThrowParamException(Error::InvalidMnemonicWordCount, "invalid mnemonic word count");
-			}
+                    if ((data[byte] & Bip39Shift(bit)) > 0)
+                        position++;
+                }
 
-			bytes_t entropy = Utils::GetRandom(entropyBits / 8);
+                if (position >= DictionarySize)
+                    return {};
+                words.push_back(lexicon[position]);
+            }
 
-			if (languageLowerCase == "english") {
-				return BIP39::Encode(EnglishWordLists, entropy);
-			} else if (languageLowerCase == "chinese") {
-				return BIP39::Encode(ChineseWordLists, entropy);
-			} else if (languageLowerCase == "french") {
-				return BIP39::Encode(FrenchWordLists, entropy);
-			} else if (languageLowerCase == "italian") {
-				return BIP39::Encode(ItalianWordLists, entropy);
-			} else if (languageLowerCase == "japanese") {
-				return BIP39::Encode(JapaneseWordLists, entropy);
-			} else if (languageLowerCase == "spanish") {
-				return BIP39::Encode(SpanishWordLists, entropy);
-			}
+            if (words.size() != ((bit + 1) / BitsPerWord))
+                return {};
 
-			fs::path filePath = _rootPath / (MNEMONIC_PREFIX + languageLowerCase + MNEMONIC_EXTENSION);
-			ErrorChecker::CheckLogic(!fs::exists(filePath), Error::Mnemonic, "unsupport language " + language);
+            return words;
+        }
 
-			std::vector<std::string> wordLists;
-			LoadPath(filePath, wordLists);
-			return BIP39::Encode(wordLists, entropy);
-		}
+        bytes_t Mnemonic::Entropy(const WordList &words, const Dictionary &lexicon) {
+            const auto wordCount = words.size();
+            if ((wordCount % MnemonicWordMultiple) != 0)
+                return {};
 
-		bool Mnemonic::Validate(const std::string &mnemonic) const {
-			bytes_t entropy = BIP39::Decode(EnglishWordLists, mnemonic);
-			if (!entropy.empty()) {
-				entropy.clean();
-				return true;
-			}
+            const auto totalBits = BitsPerWord * wordCount;
+            const auto checkBits = totalBits / (EntropyBitDivisor + 1);
+            const auto entropyBits = totalBits - checkBits;
 
-			entropy = BIP39::Decode(ChineseWordLists, mnemonic);
-			if (!entropy.empty()) {
-				entropy.clean();
-				return true;
-			}
+            if ((entropyBits % ByteBits) != 0)
+                return {};
 
-			entropy = BIP39::Decode(FrenchWordLists, mnemonic);
-			if (!entropy.empty()) {
-				entropy.clean();
-				return true;
-			}
+            size_t bit = 0;
+            bytes_t data((totalBits + ByteBits - 1) / ByteBits, 0);
 
-			entropy = BIP39::Decode(ItalianWordLists, mnemonic);
-			if (!entropy.empty()) {
-				entropy.clean();
-				return true;
-			}
+            for (const auto& word: words) {
+                const auto position = FindPosition(lexicon, word);
+                if (position == -1)
+                    return {};
 
-			entropy = BIP39::Decode(JapaneseWordLists, mnemonic);
-			if (!entropy.empty()) {
-				entropy.clean();
-				return true;
-			}
+                for (size_t loop = 0; loop < BitsPerWord; loop++, bit++)
+                {
+                    if (position & (1 << (BitsPerWord - loop - 1)))
+                    {
+                        const auto byte = bit / ByteBits;
+                        data[byte] |= Bip39Shift(bit);
+                    }
+                }
+            }
 
-			entropy = BIP39::Decode(SpanishWordLists, mnemonic);
-			if (!entropy.empty()) {
-				entropy.clean();
-				return true;
-			}
+            data.resize(entropyBits / ByteBits);
+            return data;
+        }
 
-			bool valid = false;
-			std::vector<std::string> wordLists;
-			wordLists.reserve(BIP39_WORDLIST_COUNT);
-			ErrorChecker::CheckPathExists(_rootPath);
+        bool Mnemonic::Validate(const WordList &words, const Dictionary &lexicon) {
+            bytes_t entropy = Entropy(words, lexicon);
+            if (entropy.empty())
+                return false;
 
-			for (fs::directory_iterator it{_rootPath}; it != fs::directory_iterator{}; ++it) {
-				fs::path filePath = *it;
-				if (fs::is_regular_file(filePath) &&
-					filePath.filename().string().find(MNEMONIC_PREFIX) == 0 &&
-					filePath.extension().string() == MNEMONIC_EXTENSION) {
-					LoadPath(filePath, wordLists);
-					entropy = BIP39::Decode(wordLists, mnemonic);
-					if (!entropy.empty()) {
-						valid = true;
-						break;
-					}
-				}
-			}
+            const auto mnemonic = Create(entropy, lexicon);
+            return std::equal(mnemonic.begin(), mnemonic.end(), words.begin());
+        }
 
-			entropy.clean();
-			return valid;
-		}
+        bool Mnemonic::Validate(const WordList &words, const DictionaryMap &lexicons) {
+            for (const auto &lexicon : lexicons) {
+                if (Validate(words, *lexicon.second))
+                    return true;
+            }
 
-		uint512 Mnemonic::DeriveSeed(const std::string &mnemonic, const std::string &passphrase) const {
-			ErrorChecker::CheckLogic(!Validate(mnemonic), Error::Mnemonic, "invalid mnemonic");
+            return false;
+        }
 
-			return BIP39::DeriveSeed(mnemonic, passphrase);
-		}
+        std::string Mnemonic::Create(const std::string &language, WordCount wordCount) {
+            std::string languageLowerCase = language;
+            size_t entropyBits = 0;
 
+            switch (wordCount) {
+                case WORDS_12: entropyBits = 128; break;
+                case WORDS_15: entropyBits = 160; break;
+                case WORDS_18: entropyBits = 192; break;
+                case WORDS_21: entropyBits = 224; break;
+                case WORDS_24: entropyBits = 256; break;
+                default:
+                    ErrorChecker::ThrowParamException(Error::InvalidMnemonicWordCount, "invalid mnemonic word count");
+            }
 
-		void Mnemonic::LoadPath(const fs::path &filePath, std::vector<std::string> &wordLists) const {
-			std::fstream in(filePath.string());
-			std::string line;
+            std::transform(languageLowerCase.begin(), languageLowerCase.end(), languageLowerCase.begin(), ::tolower);
+            bytes_t entropy = Utils::GetRandom(entropyBits / 8);
 
-			wordLists.clear();
-			wordLists.reserve(BIP39_WORDLIST_COUNT);
+            auto it = Language::All.find(languageLowerCase);
+            if (it == Language::All.end())
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid mnemonic language");
 
-			while (std::getline(in, line)) {
-				wordLists.push_back(line);
-			}
+            WordList words = Create(entropy, *it->second);
+            return boost::algorithm::join(words, " ");
+        }
 
-			ErrorChecker::CheckLogic(wordLists.size() != BIP39_WORDLIST_COUNT, Error::Mnemonic, "invalid word lists");
-		}
+        bytes_t Mnemonic::Entropy(const std::string &mnemonic, const Dictionary &lexicon) {
+            utf8proc_uint8_t *mnemonicTmp = utf8proc_NFKD((const utf8proc_uint8_t *)mnemonic.c_str());
+            std::string mnemonicFixed((char *)mnemonicTmp);
+            free(mnemonicTmp);
 
-	}
+            WordList words;
+            boost::algorithm::split(words, mnemonicFixed, boost::is_any_of(" \n\r\t"), boost::token_compress_on);
+            words.erase(std::remove(words.begin(), words.end(), ""), words.end());
+
+            return Entropy(words, lexicon);
+        }
+
+        bool Mnemonic::Validate(const std::string &mnemonic) {
+            utf8proc_uint8_t *mnemonicTmp = utf8proc_NFKD((const utf8proc_uint8_t *)mnemonic.c_str());
+            std::string mnemonicFixed((char *)mnemonicTmp);
+            free(mnemonicTmp);
+
+            WordList words;
+            boost::algorithm::split(words, mnemonicFixed, boost::is_any_of(" \n\r\t"), boost::token_compress_on);
+            words.erase(std::remove(words.begin(), words.end(), ""), words.end());
+
+            return Validate(words);
+        }
+
+        uint512 Mnemonic::DeriveSeed(const std::string &mnemonic, const std::string &passphrase) {
+            utf8proc_uint8_t *mnemonicTmp = utf8proc_NFKD((const utf8proc_uint8_t *)mnemonic.c_str());
+            std::string mnemonicFixed((char *)mnemonicTmp);
+            free(mnemonicTmp);
+
+            utf8proc_uint8_t *passphraseTmp = utf8proc_NFKD((const utf8proc_uint8_t *)passphrase.c_str());
+            std::string passphraseFixed((char *)passphraseTmp);
+            free(passphraseTmp);
+
+            WordList words;
+            boost::algorithm::split(words, mnemonicFixed, boost::is_any_of(" \n\r\t"), boost::token_compress_on);
+            words.erase(std::remove(words.begin(), words.end(), ""), words.end());
+
+            ErrorChecker::CheckLogic(!Validate(words), Error::Mnemonic, "invalid mnemonic");
+
+            std::string sentence = boost::algorithm::join(words, " ");
+            std::string salt = "mnemonic" + passphraseFixed;
+
+            return PBKDF2(bytes_t(sentence.data(), sentence.size()), bytes_t(salt.data(), salt.size()), 2048);
+        }
+
+        uint512 Mnemonic::PBKDF2(const bytes_t &pw, const bytes_t &salt, unsigned int rounds) {
+            bytes_t s(salt.size() + sizeof(uint32_t));
+            uint32_t i, j;
+            uint512 key;
+            size_t length, keyLen = key.size();
+            bytes_t U, T, k;
+
+            assert(rounds > 0);
+
+            memcpy(s.data(), salt.data(), salt.size());
+
+            for (i = 0; keyLen > 0; i++) {
+                s[salt.size() + 0] = (uint8_t)(((i + 1) >> 24) & 0xff);
+                s[salt.size() + 1] = (uint8_t)(((i + 1) >> 16) & 0xff);
+                s[salt.size() + 2] = (uint8_t)(((i + 1) >> 8) & 0xff);
+                s[salt.size() + 3] = (uint8_t)((i + 1) & 0xff);
+
+                U = hmac_sha512(pw, s); // U1 = hmac_hash(pw, salt || be32(i))
+                T = U;
+
+                for (unsigned int r = 1; r < rounds; r++) {
+                    U = hmac_sha512(pw, U); // Urounds = hmac_hash(pw, Urounds-1)
+                    for (j = 0; j < T.size(); j++) T[j] ^= U[j]; // Ti = U1 ^ U2 ^ ... ^ Urounds
+                }
+
+                // dk = T1 || T2 || ... || Tdklen/hlen
+                length = keyLen < T.size() ? keyLen : T.size();
+                k += T;
+                keyLen -= length;
+            }
+
+            key = uint512(k);
+
+            s.clean();
+            U.clean();
+            T.clean();
+            k.clean();
+
+            return key;
+        }
+
+    }
 }

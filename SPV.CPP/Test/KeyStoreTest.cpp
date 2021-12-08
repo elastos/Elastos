@@ -9,7 +9,6 @@
 #include <Account/Account.h>
 #include <Common/Log.h>
 #include <WalletCore/KeyStore.h>
-#include <WalletCore/BIP39.h>
 #include <WalletCore/Base58.h>
 #include <WalletCore/HDKeychain.h>
 #include <WalletCore/CoinInfo.h>
@@ -37,7 +36,7 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE(walletData.GetM() == 1);
 			REQUIRE(walletData.GetN() == 1);
 
-			uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
+			uint512 seed = Mnemonic::DeriveSeed(mnemonic, passphrase);
 			HDSeed hdseed(seed.bytes());
 			HDKeychain rootprv(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 
@@ -74,7 +73,7 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE(walletData.GetM() == 1);
 			REQUIRE(walletData.GetN() == 1);
 
-			uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
+			uint512 seed = Mnemonic::DeriveSeed(mnemonic, passphrase);
 			HDSeed hdseed(seed.bytes());
 			HDKeychain rootprv(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 
@@ -140,7 +139,7 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE(2 == walletData.GetM());
 			REQUIRE(3 == walletData.GetN());
 
-			uint512 seed = BIP39::DeriveSeed(mnemonic, "");
+			uint512 seed = Mnemonic::DeriveSeed(mnemonic, "");
 			HDSeed hdseed(seed.bytes());
 			HDKeychain rootprv(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 
@@ -181,7 +180,7 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE(1 == walletData.GetM());
 			REQUIRE(1 == walletData.GetN());
 
-			uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
+			uint512 seed = Mnemonic::DeriveSeed(mnemonic, passphrase);
 			HDSeed hdseed(seed.bytes());
 			HDKeychain rootprv(hdseed.getExtendedKey(true));
 
@@ -228,7 +227,7 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE(1 == walletData.GetM());
 			REQUIRE(1 == walletData.GetN());
 
-			uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
+			uint512 seed = Mnemonic::DeriveSeed(mnemonic, passphrase);
 			HDSeed hdseed(seed.bytes());
 			HDKeychain rootprv(hdseed.getExtendedKey(true));
 
@@ -271,7 +270,7 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE(1 == walletData.GetM());
 			REQUIRE(1 == walletData.GetN());
 
-			uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
+			uint512 seed = Mnemonic::DeriveSeed(mnemonic, passphrase);
 			HDSeed hdseed(seed.bytes());
 			HDKeychain rootprv(hdseed.getExtendedKey(true));
 

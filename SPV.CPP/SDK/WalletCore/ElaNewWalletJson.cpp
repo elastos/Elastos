@@ -5,7 +5,7 @@
 #include "ElaNewWalletJson.h"
 #include "CoinInfo.h"
 #include "HDKeychain.h"
-#include "BIP39.h"
+#include "Mnemonic.h"
 #include "Base58.h"
 
 #include <Common/ErrorChecker.h>
@@ -195,7 +195,7 @@ namespace Elastos {
             if (_seed.empty() && !_mnemonic.empty() &&
                     (!_mnemonicHasPassphrase || (_mnemonicHasPassphrase && !passphrase.empty()))) {
                 Log::info("Regerate seed from old keystore");
-                uint512 seed = BIP39::DeriveSeed(_mnemonic, passphrase);
+                uint512 seed = Mnemonic::DeriveSeed(_mnemonic, passphrase);
                 bytes_t seedBytes = seed.bytes();
                 _seed = seedBytes.getHex();
             }

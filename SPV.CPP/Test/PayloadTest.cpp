@@ -29,7 +29,6 @@
 #include <Plugin/Transaction/Payload/CRCouncilMemberClaimNode.h>
 #include <WalletCore/Mnemonic.h>
 #include <WalletCore/HDKeychain.h>
-#include <WalletCore/BIP39.h>
 #include <WalletCore/Key.h>
 #include <Plugin/Transaction/Payload/RechargeToSideChain.h>
 #include <Plugin/Transaction/Payload/CRCProposalReview.h>
@@ -48,8 +47,8 @@
 using namespace Elastos::ElaWallet;
 
 static void initCRCouncilMemberClaimNodePayload(CRCouncilMemberClaimNode &payload, uint8_t version) {
-	std::string mnemonic = Mnemonic(boost::filesystem::path("Data")).Create("English", Mnemonic::WORDS_12);
-	uint512 seed = BIP39::DeriveSeed(mnemonic, "");
+	std::string mnemonic = Mnemonic::Create("English", Mnemonic::WORDS_12);
+	uint512 seed = Mnemonic::DeriveSeed(mnemonic, "");
 	HDSeed hdseed(seed.bytes());
 	HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 	HDKeychain masterKey = rootkey.getChild("44'/0'/0'");
@@ -89,8 +88,8 @@ static void initRegisterAsset(AssetPtr &asset) {
 }
 
 static void initCRCProposalPayload(CRCProposal &crcProposal, CRCProposal::Type type, uint8_t version) {
-	std::string mnemonic = Mnemonic(boost::filesystem::path("Data")).Create("English", Mnemonic::WORDS_12);
-	uint512 seed = BIP39::DeriveSeed(mnemonic, "");
+	std::string mnemonic = Mnemonic::Create("English", Mnemonic::WORDS_12);
+	uint512 seed = Mnemonic::DeriveSeed(mnemonic, "");
 	HDSeed hdseed(seed.bytes());
 	HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 	HDKeychain masterKey = rootkey.getChild("44'/0'/0'");

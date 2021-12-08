@@ -27,7 +27,7 @@
 #include <Common/ByteStream.h>
 #include <WalletCore/Base58.h>
 #include <WalletCore/AES.h>
-#include <WalletCore/BIP39.h>
+#include <WalletCore/Mnemonic.h>
 #include <WalletCore/CoinInfo.h>
 #include <WalletCore/HDKeychain.h>
 #include <WalletCore/Key.h>
@@ -225,7 +225,7 @@ namespace Elastos {
 									 "Too much signers");
 
 			bytes_t xprv;
-			uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
+			uint512 seed = Mnemonic::DeriveSeed(mnemonic, passphrase);
 			HDSeed hdseed(seed.bytes());
 			HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
             HDKeychain stdrootkey(CTBitcoin, hdseed.getExtendedKey(CTBitcoin, true));
@@ -279,7 +279,7 @@ namespace Elastos {
 
 		Account::Account(const std::string &path, const std::string &mnemonic, const std::string &passphrase,
 						 const std::string &payPasswd, bool singleAddress) {
-			uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
+			uint512 seed = Mnemonic::DeriveSeed(mnemonic, passphrase);
             HDSeed hdseed(seed.bytes());
 			HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
             HDKeychain stdrootkey(CTBitcoin, hdseed.getExtendedKey(CTBitcoin, true));
@@ -527,7 +527,7 @@ namespace Elastos {
 			if (!_localstore->Readonly()) {
 				ErrorChecker::CheckPassword(newPassword, "New");
 
-				uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
+				uint512 seed = Mnemonic::DeriveSeed(mnemonic, passphrase);
 				HDSeed hdseed(seed.bytes());
 				HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 				HDKeychain stdrootkey(CTBitcoin, hdseed.getExtendedKey(CTBitcoin, true));
@@ -999,7 +999,7 @@ namespace Elastos {
                 std::string mnemonic = std::string((char *) &bytes[0], bytes.size());
                 bytes = AES::DecryptCCM(_localstore->GetPassPhrase(), payPasswd);
                 std::string passphrase = std::string((char *)&bytes[0], bytes.size());
-                seed = BIP39::DeriveSeed(mnemonic, passphrase);
+                seed = Mnemonic::DeriveSeed(mnemonic, passphrase);
                 _localstore->SetSeed(AES::EncryptCCM(seed.bytes(), payPasswd));
                 haveSeed = true;
 
@@ -1124,7 +1124,7 @@ namespace Elastos {
 
 		bool Account::VerifyPrivateKey(const std::string &mnemonic, const std::string &passphrase) const {
 			if (!_localstore->Readonly() && _xpub != nullptr) {
-				HDSeed seed(BIP39::DeriveSeed(mnemonic, passphrase).bytes());
+				HDSeed seed(Mnemonic::DeriveSeed(mnemonic, passphrase).bytes());
 				HDKeychain rootkey = HDKeychain(CTElastos, seed.getExtendedKey(CTElastos, true));
 
 				HDKeychain xpub = rootkey.getChild("44'/0'/0'").getPublic();
@@ -1144,7 +1144,7 @@ namespace Elastos {
 				bytes_t bytes = AES::DecryptCCM(_localstore->GetMnemonic(), payPasswd);
 				std::string mnemonic((char *) &bytes[0], bytes.size());
 
-				uint512 seed = BIP39::DeriveSeed(mnemonic, passphrase);
+				uint512 seed = Mnemonic::DeriveSeed(mnemonic, passphrase);
 				HDSeed hdseed(seed.bytes());
 				HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
 

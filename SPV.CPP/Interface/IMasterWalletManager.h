@@ -36,9 +36,18 @@ namespace Elastos {
 			virtual ~IMasterWalletManager() noexcept {}
 
 			/**
-			  * Generate a mnemonic by random entropy. We support English, Chinese, French, Italian, Japanese, and
-			  * 	Spanish 6 types of mnemonic currently.
-			  * @param language specify mnemonic language.
+			  * Generate a mnemonic by random entropy.
+			  * @param language specify mnemonic language. We support language below
+			  *   ChineseSimplified,
+			  *   ChineseTraditional,
+			  *   Czech,
+			  *   English,
+			  *   French,
+			  *   Italian,
+			  *   Japanese,
+			  *   Korean,
+			  *   Portuguese,
+			  *   Spanish
 			  * @param wordCount value can only be one of {12, 15, 18, 21, 24}.
 			  * @return a random mnemonic.
 			  */

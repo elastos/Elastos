@@ -11,7 +11,6 @@
 #include <Common/Utils.h>
 #include <Common/Lockable.h>
 #include <WalletCore/AES.h>
-#include <WalletCore/BIP39.h>
 #include <WalletCore/Mnemonic.h>
 #include <WalletCore/HDKeychain.h>
 #include <WalletCore/Base58.h>
@@ -67,7 +66,7 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 		std::string payPassword = "12345678";
 		uint32_t coinIndex = 0;
 
-		uint512 seed = BIP39::DeriveSeed(phrase, phrasePassword);
+		uint512 seed = Mnemonic::DeriveSeed(phrase, phrasePassword);
 
 		HDSeed hdseed(seed.bytes());
 		HDKeychain rootprv(CTElastos, hdseed.getExtendedKey(CTElastos, true));
@@ -173,7 +172,7 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 		std::string mnemonic = keystore["mnemonic"];
 		std::string phrasePasswd = keystore["PhrasePassword"];
 
-		uint512 seed = BIP39::DeriveSeed(mnemonic, phrasePasswd);
+		uint512 seed = Mnemonic::DeriveSeed(mnemonic, phrasePasswd);
 
 		HDSeed hdseed(seed.bytes());
 		HDKeychain rootprv(CTElastos, hdseed.getExtendedKey(CTElastos, true));
@@ -284,7 +283,7 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 		REQUIRE_NOTHROW(bytes = AES::DecryptCCM(phrasePasswd, "s12345678"));
 		std::string phrasepass((char *)bytes.data(), bytes.size());
 
-		uint512 seed = BIP39::DeriveSeed(phrase, phrasepass);
+		uint512 seed = Mnemonic::DeriveSeed(phrase, phrasepass);
 
 		HDSeed hdseed(seed.bytes());
 		HDKeychain rootprv(CTElastos, hdseed.getExtendedKey(CTElastos, true));
@@ -294,7 +293,7 @@ TEST_CASE("HDKeychain test", "[HDKeychain]") {
 
 	SECTION("verify fp & pubkey") {
         std::string m = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-        uint512 seed = BIP39::DeriveSeed(m, "");
+        uint512 seed = Mnemonic::DeriveSeed(m, "");
         HDKeychain root = HDKeychain(CTBitcoin, HDSeed(seed.bytes()).getExtendedKey(CTBitcoin, true)).getChild("44'/0'/0'");
         std::string extkey = Base58::CheckEncode(root.getPublic().extkey());
 

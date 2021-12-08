@@ -8,19 +8,14 @@
 #include <WalletCore/Mnemonic.h>
 #include <Common/Log.h>
 
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <Common/Log.h>
+#include <boost/algorithm/string.hpp>
 
 using namespace Elastos::ElaWallet;
 
-#define ROOT_PATH "./Data/"
-
 TEST_CASE("Mnemonic words test", "[Mnemonic]") {
-	SECTION("Word count 12") {
-		Mnemonic m(ROOT_PATH);
+    Log::registerMultiLogger();
 
+    SECTION("Word count 12") {
 		std::vector<Mnemonic::WordCount> wordCount = {
 			Mnemonic::WORDS_12,
 			Mnemonic::WORDS_15,
@@ -30,11 +25,16 @@ TEST_CASE("Mnemonic words test", "[Mnemonic]") {
 		};
 
 		std::vector<std::string> lang = {
-			"english",
-			"chinese",
-			"french",
-			"japanese",
-			"spanish"
+			"English",
+			"ChineseSimplified",
+			"ChineseTraditional",
+			"Czech",
+			"French",
+			"Japanese",
+			"Spanish",
+			"Korean",
+			"Italian",
+			"Portuguese"
 		};
 
 		for (size_t k = 0; k < wordCount.size(); k++) {
@@ -43,7 +43,7 @@ TEST_CASE("Mnemonic words test", "[Mnemonic]") {
 				for (size_t i = 0; i < 10; ++i) {
 					std::string phrase;
 
-					REQUIRE_NOTHROW(phrase = m.Create(lang[l], wc));
+					REQUIRE_NOTHROW(phrase = Mnemonic::Create(lang[l], wc));
 					std::vector<std::string> words;
 					boost::algorithm::split(words, phrase, boost::is_any_of(" \n\r\t"), boost::token_compress_on);
 					words.erase(std::remove(words.begin(), words.end(), ""), words.end());
@@ -59,85 +59,36 @@ TEST_CASE("Mnemonic words test", "[Mnemonic]") {
 					else if (wc == Mnemonic::WORDS_24)
 						REQUIRE(words.size() == 24);
 
-					REQUIRE_NOTHROW(m.DeriveSeed(phrase, ""));
+					REQUIRE_NOTHROW(Mnemonic::DeriveSeed(phrase, ""));
 				}
 			}
 		}
-
 	}
-}
 
-TEST_CASE("Mnemonic of English test", "[English]") {
-	Log::registerMultiLogger();
-	Mnemonic mnemonic(ROOT_PATH);
+    SECTION("mnemonic to seed") {
+        uint512 constSeed("086c1a55a6c8acc657357195f5ea233a89df54e977323e285f958036700ff4a30ea486e90d3c07154e987d7e1b7d10436fc9f7280851f3689b413a61d26880aa");
 
-	std::string phrase;
+        std::string mnemonic = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
 
-	REQUIRE_NOTHROW(phrase = mnemonic.Create("english"));
+        uint512 seed = Mnemonic::DeriveSeed(mnemonic, "");
 
-	uint512 seed;
-	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, ""));
-	REQUIRE(seed != 0);
-}
+        REQUIRE(constSeed == seed);
+    }
 
-TEST_CASE("Mnemonic of Chinese test", "[Chinese]") {
-	Mnemonic mnemonic(ROOT_PATH);
+    SECTION("Decode mnemonic") {
+        std::string mnemonic = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
 
-	std::string phrase;
+        bytes_t entropy = Mnemonic::Entropy(mnemonic, Language::ChineseSimplified);
+        REQUIRE("e9b2c1aa5a85467099067cdb5a44f2ac" == entropy.getHex());
 
-	REQUIRE_NOTHROW(phrase = mnemonic.Create("chinese"));
+        WordList words = Mnemonic::Create(entropy, Language::ChineseSimplified);
 
-	uint512 seed;
-	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, "123"));
-	REQUIRE_THROWS(seed = mnemonic.DeriveSeed("闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 县", ""));
-	REQUIRE_THROWS(seed = mnemonic.DeriveSeed("闲 齿 兰 丹 请 毛 训 胁 浇 摄 县", ""));
-	REQUIRE(seed != 0);
-}
+        REQUIRE(mnemonic == boost::algorithm::join(words, " "));
+    }
 
-TEST_CASE("Mnemonic of French test", "[French]") {
-	Mnemonic mnemonic(ROOT_PATH);
-
-	std::string phrase;
-
-	REQUIRE_NOTHROW(phrase = mnemonic.Create("french"));
-
-	uint512 seed;
-	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, "456"));
-	REQUIRE(seed != 0);
-}
-
-TEST_CASE("Mnemonic of Italian test", "[Italian]") {
-	Mnemonic mnemonic(ROOT_PATH);
-
-	std::string phrase;
-
-	REQUIRE_NOTHROW(phrase = mnemonic.Create("italian"));
-
-	uint512 seed;
-	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, "abc"));
-	REQUIRE(seed != 0);
-}
-
-TEST_CASE("Mnemonic of Japanese test", "[Japanese]") {
-	Mnemonic mnemonic(ROOT_PATH);
-
-	std::string phrase;
-
-	REQUIRE_NOTHROW(phrase = mnemonic.Create("japanese"));
-
-	uint512 seed;
-	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, "hello"));
-	REQUIRE(seed != 0);
-}
-
-TEST_CASE("Mnemonic of Spanish test", "[Spanish]") {
-	Mnemonic mnemonic(ROOT_PATH);
-
-	std::string phrase;
-
-	REQUIRE_NOTHROW(phrase = mnemonic.Create("spanish"));
-
-	uint512 seed;
-	REQUIRE_NOTHROW(seed = mnemonic.DeriveSeed(phrase, "world"));
-	REQUIRE(seed != 0);
+    SECTION("invalid mnemonic test") {
+        uint512 seed;
+        REQUIRE_THROWS(seed = Mnemonic::DeriveSeed("闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 县", ""));
+        REQUIRE_THROWS(seed = Mnemonic::DeriveSeed("闲 齿 兰 丹 请 毛 训 胁 浇 摄 县", ""));
+    }
 }

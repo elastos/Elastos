@@ -7,12 +7,14 @@
 #include <catch.hpp>
 #include <WalletCore/Address.h>
 #include <WalletCore/HDKeychain.h>
-#include <WalletCore/BIP39.h>
+#include <WalletCore/Mnemonic.h>
 #include <Common/Log.h>
 #include <WalletCore/Base58.h>
 #include <support/BRKey.h>
 #include <ethereum/ewm/BREthereumAccount.h>
 #include <WalletCore/Key.h>
+#include <WalletCore/Mnemonic.h>
+#include <utf8proc.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -24,7 +26,7 @@ TEST_CASE("Address test", "[Address]") {
 		std::string phrase = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
 		std::string phrasePasswd = "";
 
-		uint512 seed = BIP39::DeriveSeed(phrase, phrasePasswd);
+		uint512 seed = Mnemonic::DeriveSeed(phrase, phrasePasswd);
 
 		HDKeychain child = HDKeychain(CTElastos, HDSeed(seed.bytes()).getExtendedKey(CTElastos, true)).getChild("44'/0'/0'/0/0");
 
@@ -34,7 +36,7 @@ TEST_CASE("Address test", "[Address]") {
 	SECTION("eth sidechain address test") {
         std::string m = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
         std::string addr = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94";
-        uint512 seed = BIP39::DeriveSeed(m, "");
+        uint512 seed = Mnemonic::DeriveSeed(m, "");
         UInt512 ethseed = *(UInt512 *) seed.begin();
         BREthereumAccount account = createAccountWithBIP32Seed(ethseed);
 
@@ -79,7 +81,7 @@ TEST_CASE("Address test", "[Address]") {
         std::string prvkey1 = "L4p2b9VAf8k5aUahF1JCJUzZkgNEAqLfq8DDdQiyAprQAKSbu8hf";
         std::string prvkey2 = "KzJgGiEeGUVWmPR97pVWDnCVraZvM2fnrCVrg2irV4353HciE6Un";
 
-	    uint512 seed = BIP39::DeriveSeed(m, "");
+	    uint512 seed = Mnemonic::DeriveSeed(m, "");
 	    bytes_t seedBytes = seed.bytes();
         REQUIRE(seedBytes.getHex() == s);
 
@@ -125,6 +127,26 @@ TEST_CASE("Address test", "[Address]") {
         prvbytes.push_back(1);
         REQUIRE(Base58::CheckEncode(prvbytes) == prvkey2);
 	}
+
+    SECTION("btc french mnemonic test") {
+        //test data from https://iancoleman.io/bip39/
+        std::string m = "tenir jouissif brique tangible marathon kimono sécher pleurer période aboutir choisir berceau";
+        std::string xprvroot = "xprv9s21ZrQH143K31wMPD5ehQ1mYBAthJQh7DVPJyCry9Vu9t6QZhVoMSu8iJNDUMkqMorMu1n96hvbE2A2mhGehvSV8p8n9YH23DpE7dXRBXm";
+        std::string addr = "189R7P7RVLNsn7wtfDvNtPven9WeB9Vgw1";
+
+        uint512 seed;
+
+        REQUIRE_NOTHROW(seed = Mnemonic::DeriveSeed(m, ""));
+
+        bytes_t seedBytes = seed.bytes();
+
+        HDKeychain root = HDKeychain(CTBitcoin, HDSeed(seedBytes).getExtendedKey(CTBitcoin, true));
+        REQUIRE(xprvroot == Base58::CheckEncode(root.extkey()));
+
+        bytes_t bytes = hash160(root.getChild("44'/0'/0'/0/0").pubkey());
+        bytes.insert(bytes.begin(), BITCOIN_PUBKEY_PREFIX);
+        REQUIRE(Base58::CheckEncode(bytes) == addr);
+    }
 
 	SECTION("eth private key to asddress") {
         bytes_t prvkey = bytes_t("1ab42cc412b618bdea3a599e3c9bae199ebf030895b039e9db1e30dafb12b727");

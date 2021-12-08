@@ -25,7 +25,7 @@
 #include <catch.hpp>
 #include <WalletCore/Address.h>
 #include <WalletCore/HDKeychain.h>
-#include <WalletCore/BIP39.h>
+#include <WalletCore/Mnemonic.h>
 #include <Common/Log.h>
 #include <WalletCore/Base58.h>
 #include <support/BRKey.h>
@@ -61,7 +61,7 @@ TEST_CASE("BIP84", "test") {
         std::string address10 = "bc1q8c6fshw2dlwun7ekn9qwf37cu2rn755upcp6el";
 
         HDKeychain::setVersions(0x04b2430c, 0x04b24746);
-        uint512 seed = BIP39::DeriveSeed(mnemonic, "");
+        uint512 seed = Mnemonic::DeriveSeed(mnemonic, "");
         HDKeychain rootkey = HDKeychain(CTBitcoin, HDSeed(seed.bytes()).getExtendedKey(CTBitcoin, true));
         HDKeychain xkey = rootkey.getChild("84'/0'/0'");
         HDKeychain key00 = xkey.getChild("0/0");

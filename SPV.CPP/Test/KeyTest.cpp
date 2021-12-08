@@ -11,7 +11,7 @@
 #include <Common/Log.h>
 #include <Common/Utils.h>
 #include <WalletCore/Mnemonic.h>
-#include <WalletCore/BIP39.h>
+#include <WalletCore/Mnemonic.h>
 #include <WalletCore/Key.h>
 
 #include <boost/shared_ptr.hpp>
@@ -31,7 +31,7 @@ TEST_CASE("Key sign pressure test", "[KeySign]") {
 	std::string phrase = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
 	std::string phrasePasswd = "";
 
-	uint512 seed = BIP39::DeriveSeed(phrase, phrasePasswd);
+	uint512 seed = Mnemonic::DeriveSeed(phrase, phrasePasswd);
 
 	HDKeychain child = HDKeychain(CTElastos, HDSeed(seed.bytes()).getExtendedKey(CTElastos, true)).getChild("44'/0'/0'/0/0");
 
