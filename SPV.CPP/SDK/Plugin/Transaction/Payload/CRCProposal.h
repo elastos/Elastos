@@ -568,6 +568,9 @@ namespace Elastos {
 
 			bool Equal(const IPayload &payload, uint8_t version) const override;
 
+        private:
+		    bytes_t CheckAndDecodeDraftData(const std::string &draftData, const uint256 &draftHash) const;
+
 		private:
 			CRCProposal::Type _type;
 			std::string _categoryData;

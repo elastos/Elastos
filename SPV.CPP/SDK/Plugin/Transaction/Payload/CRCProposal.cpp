@@ -798,10 +798,7 @@ namespace Elastos {
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
 			if (version >= CRCProposalVersion01) {
 				std::string draftData = j[JsonKeyDraftData].get<std::string>();
-				_draftData = Base64::Decode(draftData);
-				ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
-				uint256 draftHash(sha256_2(_draftData));
-				ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
+				_draftData = CheckAndDecodeDraftData(draftData, _draftHash);
 			}
 			_targetProposalHash.SetHex(j[JsonKeyTargetProposalHash].get<std::string>());
 			_newRecipient = Address(j[JsonKeyNewRecipient].get<std::string>());
@@ -1010,10 +1007,7 @@ namespace Elastos {
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
 			if (version >= CRCProposalVersion01) {
 				std::string draftData = j[JsonKeyDraftData].get<std::string>();
-				_draftData = Base64::Decode(draftData);
-				ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
-				uint256 draftHash(sha256_2(_draftData));
-				ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
+				_draftData = CheckAndDecodeDraftData(draftData, _draftHash);
 			}
 			_targetProposalHash.SetHex(j[JsonKeyTargetProposalHash].get<std::string>());
 		}
@@ -1222,10 +1216,7 @@ namespace Elastos {
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
 			if (version >= CRCProposalVersion01) {
 				std::string draftData = j[JsonKeyDraftData].get<std::string>();
-				_draftData = Base64::Decode(draftData);
-				ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
-				uint256 draftHash(sha256_2(_draftData));
-				ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
+				_draftData = CheckAndDecodeDraftData(draftData, _draftHash);
 			}
 			_secretaryPublicKey.setHex(j[JsonKeySecretaryPublicKey].get<std::string>());
 			_secretaryDID = Address(j[JsonKeySecretaryDID].get<std::string>());
@@ -1434,10 +1425,7 @@ namespace Elastos {
             _draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
             if (version >= CRCProposalVersion01) {
                 std::string draftData = j[JsonKeyDraftData].get<std::string>();
-                _draftData = Base64::Decode(draftData);
-                ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
-                uint256 draftHash(sha256_2(_draftData));
-                ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
+                _draftData = CheckAndDecodeDraftData(draftData, _draftHash);
             }
             _reservedCustomIDList = j[JsonKeyReservedCustomIDList].get<std::vector<std::string>>();
 		}
@@ -1638,10 +1626,7 @@ namespace Elastos {
             _draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
             if (version >= CRCProposalVersion01) {
                 std::string draftData = j[JsonKeyDraftData].get<std::string>();
-                _draftData = Base64::Decode(draftData);
-                ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
-                uint256 draftHash(sha256_2(_draftData));
-                ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
+                _draftData = CheckAndDecodeDraftData(draftData, _draftHash);
             }
             _receivedCustomIDList = j[JsonKeyReservedCustomIDList].get<std::vector<std::string>>();
             _receiverDID = Address(j[JsonKeyReceiverDID].get<std::string>());
@@ -1823,10 +1808,7 @@ namespace Elastos {
             _draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
             if (version >= CRCProposalVersion01) {
                 std::string draftData = j[JsonKeyDraftData].get<std::string>();
-                _draftData = Base64::Decode(draftData);
-                ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
-                uint256 draftHash(sha256_2(_draftData));
-                ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
+                _draftData = CheckAndDecodeDraftData(draftData, _draftHash);
             }
             _customIDFeeRateInfo.FromJson(j[JsonKeyCustomIDFeeRateInfo], version);
 		}
@@ -2003,10 +1985,7 @@ namespace Elastos {
             _draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
             if (version >= CRCProposalVersion01) {
                 std::string draftData = j[JsonKeyDraftData].get<std::string>();
-                _draftData = Base64::Decode(draftData);
-                ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
-                uint256 draftHash(sha256_2(_draftData));
-                ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
+                _draftData = CheckAndDecodeDraftData(draftData, _draftHash);
             }
             _sidechainInfo.FromJson(j[JsonKeySidechainInfo], version);
 		}
@@ -2378,10 +2357,7 @@ namespace Elastos {
 			_draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
 			if (version >= CRCProposalVersion01) {
 				std::string draftData = j[JsonKeyDraftData].get<std::string>();
-				_draftData = Base64::Decode(draftData);
-				ErrorChecker::CheckParam(_draftData.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
-				uint256 draftHash(sha256_2(_draftData));
-				ErrorChecker::CheckParam(draftHash != _draftHash, Error::ProposalHashNotMatch, "proposal hash not match");
+				_draftData = CheckAndDecodeDraftData(draftData, _draftHash);
 			}
 			_budgets = j[JsonKeyBudgets].get<std::vector<Budget>>();
 			_recipient = Address(j[JsonKeyRecipient].get<std::string>());
@@ -2654,5 +2630,18 @@ namespace Elastos {
 			}
 			return *this;
 		}
+
+        bytes_t CRCProposal::CheckAndDecodeDraftData(const std::string &draftData, const uint256 &draftHash) const {
+#if 0
+            bytes_t draftDataDecoded = Base64::Decode(draftData);
+#else
+            bytes_t draftDataDecoded(draftData);
+#endif
+            ErrorChecker::CheckParam(draftDataDecoded.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
+            uint256 draftHashDecoded(sha256_2(draftDataDecoded));
+            ErrorChecker::CheckParam(draftHash != draftHashDecoded, Error::ProposalHashNotMatch, "proposal hash not match");
+            return draftDataDecoded;
+        }
+
 	}
 }
