@@ -23,6 +23,7 @@
 #include "MasterWallet.h"
 
 #include <Common/ErrorChecker.h>
+#include <Common/Log.h>
 #include <Plugin/Transaction/Payload/TransferCrossChainAsset.h>
 #include <SpvService/Config.h>
 #include <WalletCore/CoinInfo.h>
@@ -38,7 +39,7 @@ namespace Elastos {
 											   const ChainConfigPtr &config,
 											   MasterWallet *parent,
 											   const std::string &netType) :
-				SubWallet(info, config, parent, netType) {
+				ElastosBaseSubWallet(info, config, parent, netType) {
 
 		}
 
@@ -47,22 +48,28 @@ namespace Elastos {
 		}
 
 		nlohmann::json SidechainSubWallet::CreateWithdrawTransaction(
-			const std::string &fromAddress,
+			const nlohmann::json &inputsJson,
 			const std::string &amount,
 			const std::string &mainChainAddress,
+			const std::string &fee,
 			const std::string &memo) {
 
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
-			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("inputs: {}", inputsJson.dump());
 			ArgInfo("amount: {}", amount);
 			ArgInfo("mainChainAddr: {}", mainChainAddress);
+			ArgInfo("fee: {}", fee);
 			ArgInfo("memo: {}", memo);
+
+			UTXOSet utxo;
+			UTXOFromJson(utxo, inputsJson);
 
 			ErrorChecker::CheckBigIntAmount(amount);
 
-			BigInt bgAmount;
+			BigInt bgAmount, feeAmount;
 			bgAmount.setDec(amount);
+			feeAmount.setDec(fee);
 
 			PayloadPtr payload = nullptr;
 			try {
@@ -73,26 +80,16 @@ namespace Elastos {
 												  "main chain message error: " + std::string(e.what()));
 			}
 
-			std::vector<OutputPtr> outputs;
+			OutputArray outputs;
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount + DEPOSIT_OR_WITHDRAW_FEE, Address(ELA_SIDECHAIN_DESTROY_ADDR))));
-			AddressPtr fromAddr(new Address(fromAddress));
 
-			TransactionPtr tx = wallet->CreateTransaction(Transaction::transferCrossChainAsset, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::transferCrossChainAsset, payload, utxo, outputs, memo, feeAmount);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
 
 			ArgInfo("r => {}", result.dump());
 			return result;
-		}
-
-		std::string SidechainSubWallet::GetGenesisAddress() const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-
-			std::string address = _config->GenesisAddress();
-
-			ArgInfo("r => {}", address);
-			return address;
 		}
 
 	}

@@ -206,7 +206,7 @@ namespace Elastos {
 			stream.ReadVarBytes(pubKey);
 
 			Key key;
-			key.SetPubKey(pubKey);
+			key.SetPubKey(CTElastos, pubKey);
 
 			ByteStream ostream;
 			SerializeUnsigned(ostream, version);

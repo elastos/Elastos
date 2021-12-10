@@ -185,6 +185,11 @@ transactionGetRlpHexEncoded (BREthereumTransaction transaction,
                              BREthereumNetwork network,
                              BREthereumRlpType type,
                              const char *prefix);
+
+extern BREthereumTransaction
+transactionRlpHexDecode (BREthereumNetwork network,
+                         BREthereumRlpType type,
+                         const char *hexString);
 //
 // Transaction Comparison
 //

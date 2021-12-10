@@ -23,16 +23,13 @@
 #include "EthereumClient.h"
 #include "Common/Log.h"
 #include "Common/ErrorChecker.h"
-#include "WalletCore/WordLists/English.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		EthereumClient::EthereumClient(EthereumEWM::Client *client,
-									   const EthereumNetworkPtr &network,
+		EthereumClient::EthereumClient(const EthereumNetworkPtr &network,
 									   const std::string &storagePath,
 									   const bytes_t &pubkey) :
-			_client(client),
 			_network(network),
 			_storagePath(storagePath) {
 
@@ -40,92 +37,10 @@ namespace Elastos {
 									 "pubkey should be 65 bytes and begin with 0x04");
 
 			_ewm = EthereumEWMPtr(
-				new EthereumEWM(this, CRYPTO_SYNC_MODE_P2P_WITH_API_SYNC, _network, _storagePath, pubkey, 0, 6));
+				new EthereumEWM(CRYPTO_SYNC_MODE_API_ONLY, _network, _storagePath, pubkey, 0, 6));
 		}
 
-		void EthereumClient::getGasPrice(BREthereumWallet wid, int rid) {
-			_client->getGasPrice(wid, rid);
-		}
-
-		void EthereumClient::getGasEstimate(BREthereumWallet wid,
-											BREthereumCookie cookie,
-											const std::string &from,
-											const std::string &to,
-											const std::string &amount,
-											const std::string &gasPrice,
-											const std::string &data,
-											int rid) {
-			_client->getGasEstimate(wid, cookie, from, to, amount, gasPrice, data, rid);
-		}
-
-		void EthereumClient::getBalance(BREthereumWallet wid, const std::string &address, int rid) {
-			_client->getBalance(wid, address, rid);
-		}
-
-		void EthereumClient::submitTransaction(BREthereumWallet wid,
-											   BREthereumTransfer tid,
-											   const std::string &rawTransaction,
-											   int rid) {
-			_client->submitTransaction(wid, tid, rawTransaction, rid);
-		}
-
-		void EthereumClient::getTransactions(const std::string &address,
-											 uint64_t begBlockNumber,
-											 uint64_t endBlockNumber,
-											 int rid) {
-			_client->getTransactions(address, begBlockNumber, endBlockNumber, rid);
-		}
-
-		void EthereumClient::getLogs(const std::string &contract,
-									 const std::string &address,
-									 const std::string &event,
-									 uint64_t begBlockNumber,
-									 uint64_t endBlockNumber,
-									 int rid) {
-			_client->getLogs(contract, address, event, begBlockNumber, endBlockNumber, rid);
-		}
-
-		void EthereumClient::getBlocks(const std::string &address,
-									   int interests,
-									   uint64_t blockNumberStart,
-									   uint64_t blockNumberStop,
-									   int rid) {
-			_client->getBlocks(address, interests, blockNumberStart, blockNumberStop, rid);
-		}
-
-		void EthereumClient::getTokens(int rid) {
-			_client->getTokens(rid);
-		}
-
-		void EthereumClient::getBlockNumber(int rid) {
-			_client->getBlockNumber(rid);
-		}
-
-		void EthereumClient::getNonce(const std::string &address, int rid) {
-			_client->getNonce(address, rid);
-		}
-
-		void EthereumClient::handleEWMEvent(const BREthereumEWMEvent &event) {
-			_client->handleEWMEvent(event);
-		}
-
-		void EthereumClient::handlePeerEvent(const BREthereumPeerEvent &event) {
-			_client->handlePeerEvent(event);
-		}
-
-		void EthereumClient::handleWalletEvent(const EthereumWalletPtr &wallet,
-											   const BREthereumWalletEvent &event) {
-			_client->handleWalletEvent(wallet, event);
-		}
-
-		void EthereumClient::handleTokenEvent(const EthereumTokenPtr &token, const BREthereumTokenEvent &event) {
-			_client->handleTokenEvent(token, event);
-		}
-
-		void EthereumClient::handleTransferEvent(const EthereumWalletPtr &wallet,
-												 const EthereumTransferPtr &transaction,
-												 const BREthereumTransferEvent &event) {
-			_client->handleTransferEvent(wallet, transaction, event);
+        EthereumClient::~EthereumClient() {
 		}
 
 	}

@@ -94,8 +94,6 @@ namespace Elastos {
 
 		private:
 
-			bool Compare(const bytes_t &a, const bytes_t &b) const;
-
 			void GenerateCode(Prefix prefix, const std::vector<bytes_t> &pubkeys, uint8_t m, bool did = false);
 
 			void GenerateProgramHash(Prefix prefix);
@@ -105,18 +103,17 @@ namespace Elastos {
 		private:
 			uint168 _programHash;
 			bytes_t _code;
-			std::string _str;
 			bool _isValid;
 		};
 
 		typedef boost::shared_ptr<Address> AddressPtr;
 		typedef struct _AddressCompare {
-			bool operator() (const AddressPtr &x, const AddressPtr &y) const {
-				return *x < *y;
+			bool operator() (const Address &x, const Address &y) const {
+				return x < y;
 			}
 		} AddressCompare;
-		typedef std::set<AddressPtr, AddressCompare> AddressSet;
-		typedef std::vector<AddressPtr> AddressArray;
+		typedef std::set<Address, AddressCompare> AddressSet;
+		typedef std::vector<Address> AddressArray;
 
 	}
 }

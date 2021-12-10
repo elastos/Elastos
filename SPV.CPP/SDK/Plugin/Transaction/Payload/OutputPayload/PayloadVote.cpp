@@ -266,7 +266,7 @@ namespace Elastos {
 			return size;
 		}
 
-		void PayloadVote::Serialize(ByteStream &stream, bool extend) const {
+		void PayloadVote::Serialize(ByteStream &stream) const {
 			stream.WriteUint8(_version);
 
 			stream.WriteVarUint(_content.size());
@@ -275,7 +275,7 @@ namespace Elastos {
 			}
 		}
 
-		bool PayloadVote::Deserialize(const ByteStream &stream, bool extend) {
+		bool PayloadVote::Deserialize(const ByteStream &stream) {
 			if (!stream.ReadUint8(_version)) {
 				Log::error("payload vote deserialize version error");
 				return false;

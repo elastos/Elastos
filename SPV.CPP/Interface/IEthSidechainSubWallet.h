@@ -48,11 +48,16 @@ namespace Elastos {
 			 * a single decimal point with at least one preceeding characters.  Thus: 0.001, 1.0000, 12
 			 * and 12.100 are all valid.  But .1 is invalid (required 0.1).
 			 * @param amountUnit
+			 * @param nonce
 			 * @return
 			 */
 			virtual nlohmann::json CreateTransfer(const std::string &targetAddress,
 												  const std::string &amount,
-												  EthereumAmountUnit amountUnit) const = 0;
+												  EthereumAmountUnit amountUnit,
+                                                  const std::string &gasPrice,
+                                                  EthereumAmountUnit gasPriceUnit,
+                                                  const std::string &gasLimit,
+												  uint64_t nonce) const = 0;
 
 			/**
 			 *
@@ -68,6 +73,7 @@ namespace Elastos {
 			 * @param gasPriceUnit
 			 * @param gasLimit
 			 * @param data
+			 * @param nonce
 			 * @return
 			 */
 			virtual nlohmann::json CreateTransferGeneric(const std::string &targetAddress,
@@ -76,22 +82,12 @@ namespace Elastos {
 														 const std::string &gasPrice,
 														 EthereumAmountUnit gasPriceUnit,
 														 const std::string &gasLimit,
-														 const std::string &data) const = 0;
+														 const std::string &data,
+														 uint64_t nonce) const = 0;
 
-			/**
-			 *
-			 * @param tx
-			 */
-			virtual void DeleteTransfer(const nlohmann::json &tx) = 0;
+			virtual std::string ExportPrivateKey(const std::string &payPassword) const = 0;
 
-			/**
-			 * @param tokenSymbol
-			 * @return
-			 */
-			virtual nlohmann::json GetTokenTransactions(uint32_t start, uint32_t count, const std::string &txid,
-														const std::string &tokenSymbol) const = 0;
-
-		};
+        };
 
 	}
 }

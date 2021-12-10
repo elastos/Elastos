@@ -49,59 +49,10 @@ networkGetChainIdOld(BREthereumNetwork network);
 extern BREthereumNetworkId
 networkGetNetworkId (BREthereumNetwork network);
 
-extern BREthereumHash
-networkGetGenesisBlockHeaderHash (BREthereumNetwork network);
+extern void InsertEthereumNetwork(const char *name, int chainId, int networkId);
 
-extern BREthereumHash
-networkGetTrustedCheckpointBlockHeaderHash (BREthereumNetwork network);
+extern BREthereumNetwork FindEthereumNetwork(const char *name);
 
-
-/**
- * Get an array of DNS seeds, with TXT records, for network
- *
- * @param network the network
- * @return A NULL terminated array of strings
- */
-extern const char**
-networkGetSeeds (BREthereumNetwork network);
-
-extern size_t
-networkGetSeedsCount (BREthereumNetwork network);
-
-/**
- * BRD Enodes - backup to a failed 'seeds' query
- */
-extern const char**
-networkGetEnodesBRD (BREthereumNetwork network);
-
-/**
- * Community Enocdes - backup to a failed 'seeds' query
- */
-extern const char**
-networkGetEnodesCommunity (BREthereumNetwork network);
-
-/**
- * Local Enodes
- */
-extern const char**
-networkGetEnodesLocal (BREthereumNetwork network, int parity);
-
-/// MARK: - Networks
-
-extern const BREthereumNetwork ethereumMainnet;
-extern const BREthereumNetwork ethereumTestnet;
-extern const BREthereumNetwork ethereumRinkeby;
-extern const BREthereumNetwork ethereumPrvnet;
-
-extern const BREthereumNetwork ethereumDIDMainnet;
-extern const BREthereumNetwork ethereumDIDTestnet;
-extern const BREthereumNetwork ethereumDIDRinkeby;
-extern const BREthereumNetwork ethereumDIDPrvnet;
-
-extern const BREthereumNetwork ethereumHecoMainnet;
-extern const BREthereumNetwork ethereumHecoTestnet;
-extern const BREthereumNetwork ethereumHecoRinkeby;
-extern const BREthereumNetwork ethereumHecoPrvnet;
 #ifdef __cplusplus
 }
 #endif

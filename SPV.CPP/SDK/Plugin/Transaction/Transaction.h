@@ -92,17 +92,13 @@ namespace Elastos {
 
 			virtual ~Transaction();
 
-			void Serialize(ByteStream &stream, bool extend = false) const;
+			void Serialize(ByteStream &stream) const;
 
-			bool Deserialize(const ByteStream &stream, bool extend = false);
-
-			bool DeserializeOld(const ByteStream &stream, bool extend = false);
+			bool Deserialize(const ByteStream &stream);
 
 			virtual bool DeserializeType(const ByteStream &istream);
 
 			uint64_t CalculateFee(uint64_t feePerKb);
-
-			uint64_t GetTxFee(const boost::shared_ptr<Wallet> &wallet);
 
 			bool IsRegistered() const;
 
@@ -119,10 +115,6 @@ namespace Elastos {
 			void SetVersion(uint8_t version);
 
 			const std::vector<OutputPtr> &GetOutputs() const;
-
-			void FixIndex();
-
-			OutputPtr OutputOfIndex(uint16_t fixedIndex) const;
 
 			void SetOutputs(const std::vector<OutputPtr> &outputs);
 
@@ -176,8 +168,6 @@ namespace Elastos {
 
 			virtual void FromJson(const nlohmann::json &j);
 
-			static uint64_t GetMinOutputAmount();
-
 			const IPayload *GetPayload() const;
 
 			IPayload *GetPayload();
@@ -198,8 +188,6 @@ namespace Elastos {
 
 			const std::vector<ProgramPtr> &GetPrograms() const;
 
-			nlohmann::json GetSummary(const WalletPtr &wallet, const std::map<std::string, std::string> &genesisAddresses, uint32_t confirms, bool detail);
-
 			uint8_t	GetPayloadVersion() const;
 
 			void SetPayloadVersion(uint8_t version);
@@ -208,7 +196,7 @@ namespace Elastos {
 
 			void SetFee(uint64_t fee);
 
-			void SerializeUnsigned(ByteStream &ostream, bool extend = false) const;
+			void SerializeUnsigned(ByteStream &ostream) const;
 
 			uint256 GetShaData() const;
 
@@ -219,10 +207,6 @@ namespace Elastos {
 			uint32_t GetConfirms(uint32_t walletBlockHeight) const;
 
 			std::string GetConfirmStatus(uint32_t walletBlockHeight) const;
-
-			bool Decode(const TxEntity &e);
-
-			bool Encode(TxEntity &e);
 
 		public:
 			virtual PayloadPtr InitPayload(uint8_t type);

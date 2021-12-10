@@ -12,8 +12,7 @@ namespace Elastos {
 
 		TransactionInput::TransactionInput() :
 			_index(0),
-			_sequence(0),
-			_containDetail(false) {
+			_sequence(0) {
 		}
 
 		TransactionInput::TransactionInput(const TransactionInput &input) {
@@ -25,28 +24,13 @@ namespace Elastos {
 			_index = input._index;
 			_sequence = input._sequence;
 
-			_containDetail = input._containDetail;
-			_amount = input._amount;
-			_addr = input._addr;
-
 			return *this;
 		}
 
 		TransactionInput::TransactionInput(const uint256 &txHash, uint16_t index) :
 			_txHash(txHash),
 			_index(index),
-			_sequence(0),
-			_containDetail(false) {
-
-		}
-
-		TransactionInput::TransactionInput(const uint256 &txHash, uint16_t index, const BigInt &amount, const Address &addr) :
-			_txHash(txHash),
-			_index(index),
-			_sequence(0),
-			_containDetail(true),
-			_amount(amount),
-			_addr(addr) {
+			_sequence(0) {
 
 		}
 
@@ -82,42 +66,10 @@ namespace Elastos {
 			return _txHash.size() + sizeof(_index) + sizeof(_sequence);
 		}
 
-		void TransactionInput::FixDetail(const BigInt &amount, const Address &addr) {
-			_containDetail = true;
-			_amount = amount;
-			_addr = addr;
-		}
-
-		bool TransactionInput::ContainDetail() const {
-			return _addr.Valid();
-		}
-
-		const BigInt &TransactionInput::GetAmount() const {
-			return _amount;
-		}
-
-		void TransactionInput::SetAmount(const BigInt &amount) {
-			_amount = amount;
-		}
-
-		const Address &TransactionInput::GetAddress() const {
-			return _addr;
-		}
-
-		void TransactionInput::SetAddress(const Address &addr) {
-			_addr = addr;
-		}
-
 		bool TransactionInput::operator==(const TransactionInput &in) const {
-			if (_containDetail != in._containDetail)
-				return false;
-
 			bool equal = _txHash == in._txHash &&
 						 _index == in._index &&
 						 _sequence == in._sequence;
-
-			if (_containDetail)
-				equal = equal && _amount == in._amount && _addr == in._addr;
 
 			return equal;
 		}
@@ -136,20 +88,13 @@ namespace Elastos {
 			return size;
 		}
 
-		void TransactionInput::Serialize(ByteStream &stream, bool extend) const {
+		void TransactionInput::Serialize(ByteStream &stream) const {
 			stream.WriteBytes(_txHash);
 			stream.WriteUint16(_index);
 			stream.WriteUint32(_sequence);
-			if (extend) {
-				stream.WriteUint8(_containDetail ? 1 : 0);
-				if (_containDetail) {
-					stream.WriteVarBytes(_amount.getHexBytes());
-					stream.WriteBytes(_addr.ProgramHash());
-				}
-			}
 		}
 
-		bool TransactionInput::Deserialize(const ByteStream &stream, bool extend) {
+		bool TransactionInput::Deserialize(const ByteStream &stream) {
 			if (!stream.ReadBytes(_txHash)) {
 				Log::error("deser input txHash");
 				return false;
@@ -165,31 +110,6 @@ namespace Elastos {
 				return false;
 			}
 
-			if (extend) {
-				uint8_t containDetail;
-				if (!stream.ReadUint8(containDetail)) {
-					Log::error("deser contain detail");
-					return false;
-				}
-				_containDetail = containDetail != 0;
-
-				if (_containDetail) {
-					bytes_t amountBytes;
-					if (!stream.ReadVarBytes(amountBytes)) {
-						Log::error("deser input amount");
-						return false;
-					}
-					_amount.setHexBytes(amountBytes);
-
-					uint168 programHash;
-					if (!stream.ReadBytes(programHash)) {
-						Log::error("deser input addr");
-						return false;
-					}
-					_addr.SetProgramHash(programHash);
-				}
-			}
-
 			return true;
 		}
 
@@ -198,9 +118,6 @@ namespace Elastos {
 			j["TxHash"] = _txHash.GetHex();
 			j["Index"] = _index;
 			j["Sequence"] = _sequence;
-			j["ContainDetail"] = _containDetail;
-			j["Amount"] = _amount.getDec();
-			j["Address"] = _addr.String();
 			return j;
 		}
 
@@ -208,9 +125,6 @@ namespace Elastos {
 			_txHash = uint256(j["TxHash"].get<std::string>());
 			_index = j["Index"].get<uint16_t>();
 			_sequence = j["Sequence"].get<uint32_t>();
-			_containDetail = j["ContainDetail"].get<bool>();
-			_amount.setDec(j["Amount"].get<std::string>());
-			_addr = Address(j["Address"].get<std::string>());
 		}
 
 	}

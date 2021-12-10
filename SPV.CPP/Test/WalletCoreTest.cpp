@@ -47,7 +47,7 @@ TEST_CASE("WalletCore test", "[WalletCore]") {
 		bytes_t extkey;
 		REQUIRE(Base58::CheckDecode(xPrivKey, extkey));
 
-		HDKeychain rootKey(extkey);
+		HDKeychain rootKey(CTElastos, extkey);
 
 		// Sign
 #if 1
@@ -62,7 +62,7 @@ TEST_CASE("WalletCore test", "[WalletCore]") {
 
 		// Verify
 		Key verifyKey;
-		verifyKey.SetPubKey(requestKey.pubkey());
+		verifyKey.SetPubKey(CTElastos, requestKey.pubkey());
 
 		REQUIRE(verifyKey.Verify(msg, signature));
 	}

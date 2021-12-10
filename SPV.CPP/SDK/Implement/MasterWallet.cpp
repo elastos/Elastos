@@ -24,7 +24,8 @@
 #include "MainchainSubWallet.h"
 #include "SubWallet.h"
 #include "MasterWallet.h"
-#include "TokenchainSubWallet.h"
+#include "BTCSubWallet.h"
+#include "RippleSubWallet.h"
 
 #include <Plugin/Transaction/Asset.h>
 #include <Common/Utils.h>
@@ -33,6 +34,7 @@
 #include <WalletCore/Mnemonic.h>
 #include <WalletCore/CoinInfo.h>
 #include <SpvService/Config.h>
+#include <Wallet/WalletCommon.h>
 
 #include <vector>
 #include <boost/filesystem.hpp>
@@ -46,36 +48,39 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet(const std::string &id,
 								   const ConfigPtr &config,
-								   const std::string &dataPath,
-								   bool p2pEnable,
-								   MasterWalletInitFrom from) :
+								   const std::string &dataPath) :
 				_id(id),
-				_p2pEnable(p2pEnable),
-				_initFrom(from),
-				_earliestPeerTime(0),
 				_config(config) {
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id));
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
 								   const std::string &mnemonic,
 								   const std::string &passphrase,
-								   const std::string &payPasswd,
+								   const std::string &passwd,
 								   bool singleAddress,
-								   bool p2pEnable,
 								   const ConfigPtr &config,
-								   const std::string &dataPath,
-								   time_t earliestPeerTime,
-								   MasterWalletInitFrom from) :
+								   const std::string &dataPath) :
 				_id(id),
-				_p2pEnable(p2pEnable),
-				_earliestPeerTime(earliestPeerTime),
-				_initFrom(from),
 				_config(config) {
 
-			_account = AccountPtr(new Account(dataPath + "/" + _id, mnemonic, passphrase, payPasswd, singleAddress));
+			_account = AccountPtr(new Account(dataPath + "/" + _id, mnemonic, passphrase, passwd, singleAddress));
 			_account->Save();
+            SetupNetworkParameters();
+		}
+
+        MasterWallet::MasterWallet(const std::string &id,
+                                   const std::string &singlePrivateKey,
+                                   const std::string &passwd,
+                                   const ConfigPtr &config,
+                                   const std::string &dataPath) :
+                                   _id(id),
+                                   _config(config) {
+            _account = AccountPtr(new Account(dataPath + "/" + _id, singlePrivateKey, passwd));
+            _account->Save();
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -83,13 +88,8 @@ namespace Elastos {
 								   const std::string &backupPassword,
 								   const std::string &payPasswd,
 								   const ConfigPtr &config,
-								   const std::string &dataPath,
-								   bool p2pEnable,
-								   MasterWalletInitFrom from) :
+								   const std::string &dataPath) :
 				_id(id),
-				_p2pEnable(p2pEnable),
-				_earliestPeerTime(0),
-				_initFrom(from),
 				_config(config) {
 
 			KeyStore keystore;
@@ -97,43 +97,35 @@ namespace Elastos {
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, keystore, payPasswd));
 			_account->Save();
+            SetupNetworkParameters();
 		}
 
-		MasterWallet::MasterWallet(const std::string &id,
-								   const nlohmann::json &readonlyWalletJson,
-								   const ConfigPtr &config,
-								   const std::string &dataPath,
-								   bool p2pEnable,
-								   MasterWalletInitFrom from) :
-			_id(id),
-			_p2pEnable(p2pEnable),
-			_initFrom(from),
-			_earliestPeerTime(0),
-			_config(config) {
-
-			_account = AccountPtr(new Account(dataPath + "/" + _id, readonlyWalletJson));
-			_account->Save();
-		}
+//		MasterWallet::MasterWallet(const std::string &id,
+//								   const nlohmann::json &readonlyWalletJson,
+//								   const ConfigPtr &config,
+//								   const std::string &dataPath) :
+//			_id(id),
+//			_config(config) {
+//
+//			_account = AccountPtr(new Account(dataPath + "/" + _id, readonlyWalletJson));
+//			_account->Save();
+//            SetupNetworkParameters();
+//		}
 
 		MasterWallet::MasterWallet(const std::string &id,
 								   const std::vector<PublicKeyRing> &pubKeyRings,
 								   uint32_t m,
 								   const ConfigPtr &config,
 								   const std::string &dataPath,
-								   bool p2pEnable,
 								   bool singleAddress,
-								   bool compatible,
-								   time_t earliestPeerTime,
-								   MasterWalletInitFrom from) :
+								   bool compatible) :
 				_id(id),
-				_p2pEnable(p2pEnable),
-				_initFrom(from),
-				_earliestPeerTime(earliestPeerTime),
 				_config(config) {
 			ErrorChecker::CheckParam(pubKeyRings.size() < m, Error::InvalidArgument, "Invalid M");
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, pubKeyRings, m, singleAddress, compatible));
 			_account->Save();
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -143,21 +135,16 @@ namespace Elastos {
 								   uint32_t m,
 								   const ConfigPtr &config,
 								   const std::string &dataPath,
-								   bool p2pEnable,
 								   bool singleAddress,
-								   bool compatible,
-								   time_t earliestPeerTime,
-								   MasterWalletInitFrom from) :
+								   bool compatible) :
 				_id(id),
-				_p2pEnable(p2pEnable),
-				_initFrom(from),
-				_earliestPeerTime(earliestPeerTime),
 				_config(config) {
 
 			ErrorChecker::CheckParam(cosigners.size() + 1 < m, Error::InvalidArgument, "Invalid M");
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, xprv, payPassword, cosigners, m, singleAddress, compatible));
 			_account->Save();
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -168,30 +155,24 @@ namespace Elastos {
 								   uint32_t m,
 								   const ConfigPtr &config,
 								   const std::string &dataPath,
-								   bool p2pEnable,
 								   bool singleAddress,
-								   bool compatible,
-								   time_t earliestPeerTime,
-								   MasterWalletInitFrom from) :
+								   bool compatible) :
 				_id(id),
-				_p2pEnable(p2pEnable),
-				_initFrom(from),
-				_earliestPeerTime(earliestPeerTime),
 				_config(config) {
 
 			ErrorChecker::CheckParam(cosigners.size() + 1 < m, Error::InvalidArgument, "Invalid M");
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, mnemonic, passphrase, payPasswd, cosigners, m, singleAddress, compatible));
 			_account->Save();
+            SetupNetworkParameters();
 		}
 
 		MasterWallet::~MasterWallet() {
 
 		}
 
-		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath,
-		                                           Mnemonic::WordCount wordCount) {
-			return Mnemonic(boost::filesystem::path(rootPath)).Create(language, wordCount);
+		std::string MasterWallet::GenerateMnemonic(const std::string &language, Mnemonic::WordCount wordCount) {
+			return Mnemonic::Create(language, wordCount);
 		}
 
 		void MasterWallet::RemoveLocalStore() {
@@ -252,7 +233,6 @@ namespace Elastos {
 			CoinInfoPtr info(new CoinInfo());
 
 			info->SetChainID(chainID);
-			info->SetVisibleAsset(Asset::GetELAAssetID());
 
 			ISubWallet *subWallet = SubWalletFactoryMethod(info, chainConfig, this, _config->GetNetType());
 			_createdWallets[chainID] = subWallet;
@@ -294,7 +274,6 @@ namespace Elastos {
 				std::string id = _id + ":" + subWallet->GetChainID();
 				Log::info("{} closing...", id);
 
-				subWallet->SyncStop();
 				it = _createdWallets.erase(it);
 
 				delete subWallet;
@@ -302,6 +281,14 @@ namespace Elastos {
 				Log::info("{} closed", id);
 			}
 		}
+
+        void MasterWallet::SetupNetworkParameters() {
+            const std::map<std::string, ChainConfigPtr> configs = _config->GetConfigs();
+
+            for (std::map<std::string, ChainConfigPtr>::const_iterator it = configs.begin(); it != configs.end(); ++it)
+                if (!it->second->Name().empty())
+                    InsertEthereumNetwork(it->second->Name().c_str(), it->second->ChainID(), it->second->NetworkID());
+        }
 
 		void MasterWallet::DestroyWallet(const std::string &chainID) {
 			ArgInfo("{} {}", _id, GetFunName());
@@ -311,7 +298,6 @@ namespace Elastos {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "chainID not found");
 
 			ISubWallet *subWallet = _createdWallets[chainID];
-			subWallet->SyncStop();
 			_account->RemoveSubWalletInfo(subWallet->GetChainID());
 			_account->Save();
 
@@ -332,6 +318,7 @@ namespace Elastos {
 			return j;
 		}
 
+#if 0
 		nlohmann::json MasterWallet::ExportReadonlyWallet() const {
 			ArgInfo("{} {}", _id, GetFunName());
 
@@ -340,6 +327,7 @@ namespace Elastos {
 			ArgInfo("r => {}", j.dump());
 			return j;
 		}
+#endif
 
 		nlohmann::json MasterWallet::ExportKeystore(const std::string &backupPassword, const std::string &payPassword) const {
 			ArgInfo("{} {}", _id, GetFunName());
@@ -348,19 +336,6 @@ namespace Elastos {
 			ErrorChecker::CheckPassword(backupPassword, "Backup");
 
 			std::vector<CoinInfoPtr> coinInfo = _account->SubWalletInfoList();
-			for (CoinInfoPtr &info : coinInfo) {
-				WalletMap::iterator it = _createdWallets.find(info->GetChainID());
-				if (it == _createdWallets.end())
-					continue;
-
-				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
-				if (subWallet == nullptr)
-					continue;
-
-				time_t timestamp = subWallet->GetFirstTxnTimestamp();
-				if (timestamp > 0)
-					info->SetEaliestPeerTime(timestamp);
-			}
 			_account->SetSubWalletInfoList(coinInfo);
 			_account->Save();
 
@@ -403,78 +378,36 @@ namespace Elastos {
 			return mpk;
 		}
 
-		void MasterWallet::InitSubWallets() {
-			const std::vector<CoinInfoPtr> &info = _account->SubWalletInfoList();
+        void MasterWallet::InitSubWallets() {
+            const std::vector<CoinInfoPtr> &info = _account->SubWalletInfoList();
 
-			if (info.size() == 0) {
-				ChainConfigPtr mainchainConfig = _config->GetChainConfig(CHAINID_MAINCHAIN);
-				if (mainchainConfig) {
-					CoinInfoPtr defaultInfo(new CoinInfo());
-					defaultInfo->SetChainID(CHAINID_MAINCHAIN);
-					defaultInfo->SetVisibleAsset(Asset::GetELAAssetID());
+            for (int i = 0; i < info.size(); ++i) {
+                ChainConfigPtr chainConfig = _config->GetChainConfig(info[i]->GetChainID());
+                if (chainConfig == nullptr) {
+                    Log::error("Can not find config of chain ID: " + info[i]->GetChainID());
+                    continue;
+                }
 
-					ISubWallet *subWallet = SubWalletFactoryMethod(defaultInfo, mainchainConfig, this, _config->GetNetType());
-					ErrorChecker::CheckCondition(subWallet == nullptr, Error::CreateSubWalletError,
-												 "Recover sub wallet error");
-					_createdWallets[subWallet->GetChainID()] = subWallet;
-
-					_account->AddSubWalletInfoList(defaultInfo);
-					_account->Save();
-				}
-			} else {
-				for (int i = 0; i < info.size(); ++i) {
-					ChainConfigPtr chainConfig = _config->GetChainConfig(info[i]->GetChainID());
-					if (chainConfig == nullptr) {
-						Log::error("Can not find config of chain ID: " + info[i]->GetChainID());
-						continue;
-					}
-
-					ISubWallet *subWallet = SubWalletFactoryMethod(info[i], chainConfig, this, _config->GetNetType());
-					ErrorChecker::CheckCondition(subWallet == nullptr, Error::CreateSubWalletError,
-												 "Recover sub wallet error");
-					_createdWallets[subWallet->GetChainID()] = subWallet;
-				}
-			}
-		}
+                ISubWallet *subWallet = SubWalletFactoryMethod(info[i], chainConfig, this, _config->GetNetType());
+                ErrorChecker::CheckCondition(subWallet == nullptr, Error::CreateSubWalletError,
+                                             "Recover sub wallet error");
+                _createdWallets[subWallet->GetChainID()] = subWallet;
+            }
+        }
 
 		ISubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfoPtr &info, const ChainConfigPtr &config,
 														MasterWallet *parent, const std::string &netType) {
 
-			if (_initFrom == CreateNormal) {
-				Log::info("Create new master wallet");
-				info->SetEaliestPeerTime(config->ChainParameters()->LastCheckpoint().Timestamp());
-			} else if (_initFrom == CreateMultiSign) {
-				if (_earliestPeerTime != 0) {
-					info->SetEaliestPeerTime(_earliestPeerTime);
-				} else {
-					info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
-				}
-				Log::info("Create new multi-sign master wallet");
-			} else if (_initFrom == ImportFromMnemonic) {
-				if (_earliestPeerTime != 0) {
-					info->SetEaliestPeerTime(_earliestPeerTime);
-				} else {
-					info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
-				}
-				Log::info("Import master wallet with mnemonic");
-			} else if (_initFrom == ImportFromKeyStore) {
-				Log::info("Master wallet import with keystore");
-			} else if (_initFrom == ImportFromLocalStore) {
-				Log::info("Master wallet init from local store");
-			} else {
-				Log::error("Should not be here");
-				info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
-			}
-			Log::info("{}:{} Ealiest peer time: {}", _id, info->GetChainID(), info->GetEarliestPeerTime());
-
 			if (info->GetChainID() == "ELA") {
 				return new MainchainSubWallet(info, config, parent, netType);
 			} else if (info->GetChainID() == "IDChain") {
-				return new IDChainSubWallet(info, config, parent, netType);
-			} else if (info->GetChainID() == "TokenChain") {
-				return new TokenchainSubWallet(info, config, parent, netType);
-			} else if (info->GetChainID() == "ETHSC" || info->GetChainID() == "ETHDID" || info->GetChainID() == "ETHHECO") {
+                return new IDChainSubWallet(info, config, parent, netType);
+            } else if (info->GetChainID() == "BTC") {
+			    return new BTCSubWallet(info, config, parent, netType);
+			} else if (info->GetChainID().find("ETH") !=  std::string::npos) {
                 return new EthSidechainSubWallet(info, config, parent, netType);
+//            } else if (info->GetChainID() == "XRP") {
+//			    return new RippleSubWallet(info, config, parent, netType);
 			} else {
 				ErrorChecker::ThrowLogicException(Error::InvalidChainID, "Invalid chain ID: " + info->GetChainID());
 			}
@@ -488,16 +421,6 @@ namespace Elastos {
 
 		AccountPtr MasterWallet::GetAccount() const {
 			return _account;
-		}
-
-		void MasterWallet::startPeerManager(SubWallet *wallet) {
-			if (_p2pEnable)
-				wallet->StartP2P();
-		}
-
-		void MasterWallet::stopPeerManager(SubWallet *wallet) {
-			if (_p2pEnable)
-				wallet->StopP2P();
 		}
 
 		bool MasterWallet::IsAddressValid(const std::string &address) const {
@@ -518,12 +441,20 @@ namespace Elastos {
 			ArgInfo("chainID: {}", chainID);
 			ArgInfo("address: {}", address);
 
-			bool valid = false;
-			if (chainID == CHAINID_MAINCHAIN || chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
-				valid = Address(address).Valid();
-			} else if (chainID == CHAINID_ESC) {
-				valid = addressValidateString(address.c_str()) == ETHEREUM_BOOLEAN_TRUE;
-			}
+            bool valid = false;
+            if (chainID == CHAINID_MAINCHAIN || chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
+                valid = Address(address).Valid();
+            } else if (chainID == "BTC") {
+                BRAddressParams addrParams;
+                if (_config->GetNetType() == CONFIG_MAINNET) {
+                    addrParams = BITCOIN_ADDRESS_PARAMS;
+                } else {
+                    addrParams = BITCOIN_TEST_ADDRESS_PARAMS;
+                }
+                valid = BRAddressIsValid(addrParams, address.c_str());
+            } else if (chainID.find("ETH") != std::string::npos) {
+                valid = addressValidateString(address.c_str()) == ETHEREUM_BOOLEAN_TRUE;
+            }
 
 			ArgInfo("r => {}", valid);
 			return valid;

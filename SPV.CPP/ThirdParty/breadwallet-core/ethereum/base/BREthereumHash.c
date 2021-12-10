@@ -8,6 +8,12 @@
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#else
+#include <stdlib.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -103,7 +109,7 @@ hashRlpDecode (BRRlpItem item, BRRlpCoder coder) {
 extern BRRlpItem
 hashEncodeList (BRArrayOf (BREthereumHash) hashes, BRRlpCoder coder) {
     size_t itemCount = array_count(hashes);
-    BRRlpItem items[itemCount];
+    BRRlpItem *items = (BRRlpItem *)alloca(itemCount * sizeof(BRRlpItem));
     for (size_t index = 0; index < itemCount; index++)
         items[index] = hashRlpEncode(hashes[index], coder);
     return rlpEncodeListItems (coder, items, itemCount);

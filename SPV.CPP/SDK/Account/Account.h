@@ -62,8 +62,11 @@ namespace Elastos {
 			Account(const std::string &path, const std::string &mnemonic, const std::string &passphrase,
 					const std::string &payPasswd, bool singleAddress);
 
+			// only eth subwallet with single private key
+			Account(const std::string &path, const std::string singlePrivateKey, const std::string &passwd);
+
 			// Read-Only wallet JSON
-			Account(const std::string &path, const nlohmann::json &walletJSON);
+//			Account(const std::string &path, const nlohmann::json &walletJSON);
 
 			// keystore
 			Account(const std::string &path, const KeyStore &ks, const std::string &payPasswd);
@@ -75,6 +78,8 @@ namespace Elastos {
 			HDKeychainPtr RootKey(const std::string &payPassword) const;
 
 			HDKeychainPtr MasterPubKey() const;
+
+			HDKeychainPtr BitcoinMasterPubKey() const;
 
 			std::string GetxPrvKeyString(const std::string &payPasswd) const;
 
@@ -124,9 +129,9 @@ namespace Elastos {
 
 			KeyStore ExportKeystore(const std::string &payPasswd) const;
 
-			nlohmann::json ExportReadonlyWallet() const;
+//			nlohmann::json ExportReadonlyWallet() const;
 
-			bool ImportReadonlyWallet(const nlohmann::json &walletJSON);
+//			bool ImportReadonlyWallet(const nlohmann::json &walletJSON);
 
 			std::string ExportMnemonic(const std::string &payPasswd) const;
 
@@ -148,17 +153,19 @@ namespace Elastos {
 
 			bytes_t GetETHSCPubKey() const;
 
+			bytes_t GetRipplePubKey() const;
+
+            bytes_t GetSinglePrivateKey(const std::string &passwd) const;
+
 			bool HasMnemonic() const;
 
 			bool HasPassphrase() const;
 		private:
 			void Init() const;
 
-			void SupportETHSC(const uint512 &seed, const std::string &payPasswd) const;
-
 		private:
 			LocalStorePtr _localstore;
-			mutable HDKeychainPtr _xpub;
+			mutable HDKeychainPtr _xpub, _btcMasterPubKey;
 			mutable int _cosignerIndex;
 			mutable HDKeychainPtr _curMultiSigner; // multi sign current wallet signer
 			mutable HDKeychainArray _allMultiSigners; // including _multiSigner and sorted

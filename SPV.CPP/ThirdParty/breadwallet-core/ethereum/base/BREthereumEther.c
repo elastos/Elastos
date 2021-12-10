@@ -9,8 +9,6 @@
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <assert.h>
 #include "support/BRAssert.h"
 #include "BREthereumEther.h"
@@ -171,4 +169,5 @@ etherCompare (BREthereumEther e1, BREthereumEther e2) {
         case +1: return ETHEREUM_COMPARISON_GT;
         default: BRFail();
     }
+    return ETHEREUM_COMPARISON_LT;
 }

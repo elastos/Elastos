@@ -42,6 +42,7 @@ feeBasisGetFee (BREthereumFeeBasis feeBasis, int *overflow) {  // BREthereumBool
                                                      createUInt256 (feeBasis.u.gas.limit.amountOfGas),
                                                      overflow));
     }
+    return etherCreateZero();
 }
 
 extern BREthereumBoolean
@@ -57,4 +58,5 @@ feeBasisEqual (const BREthereumFeeBasis *feeBasis1,
             return AS_ETHEREUM_BOOLEAN (ETHEREUM_COMPARISON_EQ == gasCompare (feeBasis1->u.gas.limit, feeBasis2->u.gas.limit) &&
                                         ETHEREUM_COMPARISON_EQ == gasPriceCompare(feeBasis1->u.gas.price, feeBasis2->u.gas.price));
     }
+    return ETHEREUM_BOOLEAN_FALSE;
 }

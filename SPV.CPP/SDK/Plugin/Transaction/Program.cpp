@@ -21,8 +21,7 @@ namespace Elastos {
 			operator=(program);
 		}
 
-		Program::Program(const std::string &path, const bytes_t &code, const bytes_t &parameter) :
-				_path(path),
+		Program::Program(const bytes_t &code, const bytes_t &parameter) :
 				_parameter(parameter),
 				_code(code) {
 
@@ -32,7 +31,6 @@ namespace Elastos {
 		}
 
 		Program &Program::operator=(const Program &p) {
-			_path = p._path;
 			_code = p._code;
 			_parameter = p._parameter;
 			return *this;
@@ -54,7 +52,7 @@ namespace Elastos {
 			while (stream.ReadVarBytes(signature)) {
 				bool verified = false;
 				for (size_t i = 0; i < publicKeys.size(); ++i) {
-					key.SetPubKey(publicKeys[i]);
+					key.SetPubKey(CTElastos, publicKeys[i]);
 					if (key.Verify(md, signature)) {
 						verified = true;
 						break;
@@ -105,7 +103,7 @@ namespace Elastos {
 			nlohmann::json signers;
 			while (stream.ReadVarBytes(signature)) {
 				for (size_t i = 0; i < publicKeys.size(); ++i) {
-					key.SetPubKey(publicKeys[i]);
+					key.SetPubKey(CTElastos, publicKeys[i]);
 					if (key.Verify(md, signature)) {
 						signers.push_back(publicKeys[i].getHex());
 						break;
@@ -139,7 +137,7 @@ namespace Elastos {
 
 			if (signType == SignTypeMultiSign || signType == SignTypeCrossChain) {
 				stream.Skip(1);
-			} else if (signType != SignTypeStandard) {
+			} else if (signType != SignTypeStandard && signType != SignTypeDID) {
 				Log::error("unsupport sign type");
 				return SignTypeInvalid;
 			}
@@ -167,14 +165,6 @@ namespace Elastos {
 			_parameter = parameter;
 		}
 
-		void Program::SetPath(const std::string &path) {
-			_path = path;
-		}
-
-		const std::string &Program::GetPath() const {
-			return _path;
-		}
-
 		size_t Program::EstimateSize() const {
 			size_t size = 0;
 			ByteStream stream;
@@ -199,15 +189,12 @@ namespace Elastos {
 			return size;
 		}
 
-		void Program::Serialize(ByteStream &stream, bool extend) const {
+		void Program::Serialize(ByteStream &stream) const {
 			stream.WriteVarBytes(_parameter);
 			stream.WriteVarBytes(_code);
-			if (extend) {
-				stream.WriteVarString(_path);
-			}
 		}
 
-		bool Program::Deserialize(const ByteStream &stream, bool extend) {
+		bool Program::Deserialize(const ByteStream &stream) {
 			if (!stream.ReadVarBytes(_parameter)) {
 				Log::error("Program deserialize parameter fail");
 				return false;
@@ -218,13 +205,6 @@ namespace Elastos {
 				return false;
 			}
 
-			if (extend) {
-				if (!stream.ReadVarString(_path)) {
-					Log::error("Program deserialize path fail");
-					return false;
-				}
-			}
-
 			return true;
 		}
 
@@ -233,15 +213,11 @@ namespace Elastos {
 
 			jsonData["Parameter"] = _parameter.getHex();
 			jsonData["Code"] = _code.getHex();
-			jsonData["Path"] = _path;
 
 			return jsonData;
 		}
 
 		void Program::FromJson(const nlohmann::json &j) {
-
-			_path = j.find("Path") != j.end() ? j["Path"].get<std::string>() : "";
-
 			_parameter.setHex(j["Parameter"].get<std::string>());
 			_code.setHex(j["Code"].get<std::string>());
 		}

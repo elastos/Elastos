@@ -13,8 +13,13 @@
 #include <memory.h>
 #include <assert.h>
 #include <pthread.h>
+#include <string.h>
 #include "ethereum/util/BRUtil.h"
 #include "BRRlpCoder.h"
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#endif
 
 static int
 rlpDecodeStringEmptyCheck (BRRlpCoder coder, BRRlpItem item);
@@ -339,7 +344,7 @@ convertFromBigEndian (uint8_t *target, size_t targetCount, uint8_t *bytes, size_
     // Bytes represents a number in big-endian              : 04 00
     // Fill out the number with prefix zeros                : 00 00 00 00 00 00 04 00
     // Copy the bytes into target, swap if little endian    : 00 04 00 00 00 00 00 00
-    uint8_t value[targetCount];
+    uint8_t *value = (uint8_t*)alloca(targetCount);
     memset (value, 0, targetCount);
     memcpy (&value[targetCount - bytesCount], bytes, bytesCount);
 
@@ -371,7 +376,7 @@ encodeLengthIntoBytes (uint64_t length, uint8_t baseline,
         convertToBigEndianAndNormalize (bytes9, (uint8_t *) &length, lengthSize, &bytesIndex, &bytesCount);
 
         // The encoding - a header byte with the bytesCount and then the big_endian bytes themselves.
-        uint8_t encoding [1 + bytesCount];
+        uint8_t *encoding = (uint8_t*)alloca(1 + bytesCount);
         encoding[0] = baseline + RLP_PREFIX_LENGTH_LIMIT + bytesCount;
         memcpy (&encoding[1], &bytes9[bytesIndex], bytesCount);
 
@@ -485,7 +490,7 @@ static BRRlpItem
 coderEncodeNumber (BRRlpCoder coder, uint8_t *source, size_t sourceCount) {
     // Encode a number by converting the number to a big_endian representation and then simply
     // encoding those bytes.
-    uint8_t bytes [sourceCount]; // big_endian representation of the bytes in 'source'
+    uint8_t *bytes = (uint8_t*)alloca(sourceCount); // big_endian representation of the bytes in 'source'
     size_t bytesIndex;           // Index of the first non-zero byte
     size_t bytesCount;           // The number of bytes to encode
     
@@ -749,7 +754,7 @@ rlpEncodeHexString (BRRlpCoder coder, const char *string) {
         return rlpEncodeString(coder, string);
     else if (stringLen < (16 * 1024)) {
         size_t bytesCount = stringLen / 2;
-        uint8_t bytes[bytesCount];
+        uint8_t *bytes = (uint8_t *)alloca(bytesCount);
         decodeHex(bytes, bytesCount, string, stringLen);
         return rlpEncodeBytes(coder, bytes, bytesCount);
     }
@@ -803,7 +808,7 @@ rlpEncodeList2 (BRRlpCoder coder, BRRlpItem item1, BRRlpItem item2) {
 
 extern BRRlpItem
 rlpEncodeList (BRRlpCoder coder, size_t count, ...) {
-    BRRlpItem items[count];
+    BRRlpItem *items = (BRRlpItem *)alloca(count * sizeof(BRRlpItem));
     
     va_list args;
     va_start (args, count);
@@ -831,6 +836,8 @@ rlpDecodeList (BRRlpCoder coder, BRRlpItem item, size_t *itemsCount) {
             *itemsCount = item->itemsCount;
             return item->items;
     }
+
+    return NULL;
 }
 
 //

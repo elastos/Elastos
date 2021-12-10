@@ -14,6 +14,7 @@
 #include <Common/Utils.h>
 #include <Common/Log.h>
 #include <Common/ElementSet.h>
+#include <bitcoin/BRTransaction.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -212,7 +213,6 @@ TEST_CASE("new tx with type and payload", "[IDTransaction]") {
 
 		DIDInfo *didInfo = dynamic_cast<DIDInfo *>(tx2->GetPayload());
 
-#if 0
 		REQUIRE(didInfo->IsValid(0));
 		const DIDHeaderInfo &header = didInfo->DIDHeader();
 		REQUIRE(header.Specification() == "elastos/did/1.0");
@@ -222,6 +222,7 @@ TEST_CASE("new tx with type and payload", "[IDTransaction]") {
 			REQUIRE(header.Operation() == "update");
 		}
 
+#if 0
 		const DIDPayloadInfo &didPayloadInfo = didInfo->DIDPayload();
 		REQUIRE(didPayloadInfo.ID() == "did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R");
 		REQUIRE(didPayloadInfo.PublicKeyInfo().size() == 1);
@@ -230,4 +231,86 @@ TEST_CASE("new tx with type and payload", "[IDTransaction]") {
 #endif
 	}
 
+}
+
+TEST_CASE("btc tx hash test", "BTC Transaction") {
+    std::string txid = "c30e3ff210df5ff5d2d50cf94af0c903afe7b03d140138fd340dbce51ca57250";
+    std::string rawtx = "010000000001031b7c351d164529869d76698518864e8af25ab765262a038052d21c2f3405c86e0100000000ffffffff34d1049608ba8e858539c23bff8d223424077873f290524049fe79743eb20e83000000006a47304402200f5ca65b5c0fd4b16583eb5fb7150e564da7bb303f86452fb08c581ac22cea03022051452dee4d7087f758e3b6ffdb69bbe7cba3e345dd073294c437f838513cdcd00121027eacc54ed1e13cf22f40f1bc193e970aff966e3f703fb0c09b80edcb330b63a4ffffffff3138a9ed9e1b1c23465244086923f7a5cb0e9263c62662e70de068c02a46a054000000006a47304402205af164f0fe330eb341c421fe0fc110e82b67b5e2c7f0603b1916858808ac92f3022062419d20b83f39b3fae1a92a1e6af392847e6192b9ba29a58f62e88f03b4ef98012102e00749114b7cc1ff5c40854eb66530e17cb65256c63e9b51e95850ff9c2cac5affffffff01a27c1e00000000001976a914bd8d92bc54b1c763cd0c7a97082e3f44a36e7b5688ac02483045022100922bbd91e9bf9bb53072818d485012e33827211def89ef76c6b130948c94e7aa02200ec1331569f55539ebffb6f14b3dda786882655dce34f89216acd1d0826d808301210236059b49c851936aa332ba7e3ed74ad73c5c187e0d41f64a329a682fb0666d9d000000000000";
+    nlohmann::json txJson = R"({
+    "result": {
+        "txid": "c30e3ff210df5ff5d2d50cf94af0c903afe7b03d140138fd340dbce51ca57250",
+        "hash": "7c25b6320f1f82e20804761b0c4059a6719f27285a7947eb493a69fd32c1895c",
+        "version": 1,
+        "size": 491,
+        "vsize": 407,
+        "weight": 1628,
+        "locktime": 0,
+        "vin": [
+            {
+                "txid": "6ec805342f1cd25280032a2665b75af28a4e86188569769d862945161d357c1b",
+                "vout": 1,
+                "scriptSig": {
+                    "asm": "",
+                    "hex": ""
+                },
+                "txinwitness": [
+                    "3045022100922bbd91e9bf9bb53072818d485012e33827211def89ef76c6b130948c94e7aa02200ec1331569f55539ebffb6f14b3dda786882655dce34f89216acd1d0826d808301",
+                    "0236059b49c851936aa332ba7e3ed74ad73c5c187e0d41f64a329a682fb0666d9d"
+                ],
+                "sequence": 4294967295
+            },
+            {
+                "txid": "830eb23e7479fe49405290f27378072434228dff3bc23985858eba089604d134",
+                "vout": 0,
+                "scriptSig": {
+                    "asm": "304402200f5ca65b5c0fd4b16583eb5fb7150e564da7bb303f86452fb08c581ac22cea03022051452dee4d7087f758e3b6ffdb69bbe7cba3e345dd073294c437f838513cdcd0[ALL] 027eacc54ed1e13cf22f40f1bc193e970aff966e3f703fb0c09b80edcb330b63a4",
+                    "hex": "47304402200f5ca65b5c0fd4b16583eb5fb7150e564da7bb303f86452fb08c581ac22cea03022051452dee4d7087f758e3b6ffdb69bbe7cba3e345dd073294c437f838513cdcd00121027eacc54ed1e13cf22f40f1bc193e970aff966e3f703fb0c09b80edcb330b63a4"
+                },
+                "sequence": 4294967295
+            },
+            {
+                "txid": "54a0462ac068e00de76226c663920ecba5f7236908445246231c1b9eeda93831",
+                "vout": 0,
+                "scriptSig": {
+                    "asm": "304402205af164f0fe330eb341c421fe0fc110e82b67b5e2c7f0603b1916858808ac92f3022062419d20b83f39b3fae1a92a1e6af392847e6192b9ba29a58f62e88f03b4ef98[ALL] 02e00749114b7cc1ff5c40854eb66530e17cb65256c63e9b51e95850ff9c2cac5a",
+                    "hex": "47304402205af164f0fe330eb341c421fe0fc110e82b67b5e2c7f0603b1916858808ac92f3022062419d20b83f39b3fae1a92a1e6af392847e6192b9ba29a58f62e88f03b4ef98012102e00749114b7cc1ff5c40854eb66530e17cb65256c63e9b51e95850ff9c2cac5a"
+                },
+                "sequence": 4294967295
+            }
+        ],
+        "vout": [
+            {
+                "value": 0.01997986,
+                "n": 0,
+                "scriptPubKey": {
+                    "asm": "OP_DUP OP_HASH160 bd8d92bc54b1c763cd0c7a97082e3f44a36e7b56 OP_EQUALVERIFY OP_CHECKSIG",
+                    "hex": "76a914bd8d92bc54b1c763cd0c7a97082e3f44a36e7b5688ac",
+                    "reqSigs": 1,
+                    "type": "pubkeyhash",
+                    "addresses": [
+                        "1JHGJw8sgAhRPbgNFeEgF4dkbncsRi2bkQ"
+                    ]
+                }
+            }
+        ],
+        "hex": "010000000001031b7c351d164529869d76698518864e8af25ab765262a038052d21c2f3405c86e0100000000ffffffff34d1049608ba8e858539c23bff8d223424077873f290524049fe79743eb20e83000000006a47304402200f5ca65b5c0fd4b16583eb5fb7150e564da7bb303f86452fb08c581ac22cea03022051452dee4d7087f758e3b6ffdb69bbe7cba3e345dd073294c437f838513cdcd00121027eacc54ed1e13cf22f40f1bc193e970aff966e3f703fb0c09b80edcb330b63a4ffffffff3138a9ed9e1b1c23465244086923f7a5cb0e9263c62662e70de068c02a46a054000000006a47304402205af164f0fe330eb341c421fe0fc110e82b67b5e2c7f0603b1916858808ac92f3022062419d20b83f39b3fae1a92a1e6af392847e6192b9ba29a58f62e88f03b4ef98012102e00749114b7cc1ff5c40854eb66530e17cb65256c63e9b51e95850ff9c2cac5affffffff01a27c1e00000000001976a914bd8d92bc54b1c763cd0c7a97082e3f44a36e7b5688ac02483045022100922bbd91e9bf9bb53072818d485012e33827211def89ef76c6b130948c94e7aa02200ec1331569f55539ebffb6f14b3dda786882655dce34f89216acd1d0826d808301210236059b49c851936aa332ba7e3ed74ad73c5c187e0d41f64a329a682fb0666d9d000000000000",
+        "blockhash": "00000000000000000003d5c42611488d293bf43b2afb7a9f3c39c8d2f462473f",
+        "confirmations": 128,
+        "time": 1635323085,
+        "blocktime": 1635323085
+    },
+    "error": null,
+    "id": "test"
+})"_json;
+
+    bytes_t txData;
+    txData.setHex(rawtx);
+    BRTransaction *tx = BRTransactionParse(txData.data(), txData.size());
+    REQUIRE(tx != NULL);
+    uint256 txHash;
+    memcpy(txHash.begin(), tx->txHash.u8, txHash.size());
+    REQUIRE(txid == txHash.GetHex());
+
+    memcpy(txHash.begin(), tx->inputs[0].txHash.u8, txHash.size());
+    REQUIRE(txHash.GetHex() == txJson["result"]["vin"][0]["txid"]);
 }

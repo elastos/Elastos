@@ -59,6 +59,8 @@ namespace Elastos {
 
 			virtual HDKeychainPtr MasterPubKey() const = 0;
 
+			virtual HDKeychainPtr BitcoinMasterPubKey() const = 0;
+
 			virtual std::string GetxPrvKeyString(const std::string &payPasswd) const = 0;
 
 			virtual std::string MasterPubKeyString() const = 0;
@@ -107,9 +109,9 @@ namespace Elastos {
 
 			virtual KeyStore ExportKeystore(const std::string &payPasswd) const = 0;
 
-			virtual nlohmann::json ExportReadonlyWallet() const = 0;
+//			virtual nlohmann::json ExportReadonlyWallet() const = 0;
 
-			virtual bool ImportReadonlyWallet(const nlohmann::json &walletJSON) = 0;
+//			virtual bool ImportReadonlyWallet(const nlohmann::json &walletJSON) = 0;
 
 			virtual std::string ExportMnemonic(const std::string &payPasswd) const = 0;
 
@@ -130,6 +132,10 @@ namespace Elastos {
 			virtual uint512 GetSeed(const std::string &payPasswd) const = 0;
 
 			virtual bytes_t GetETHSCPubKey() const = 0;
+
+            virtual bytes_t GetRipplePubKey() const = 0;
+
+			virtual bytes_t GetSinglePrivateKey(const std::string &passwd) const = 0;
 
 			virtual bool HasMnemonic() const = 0;
 

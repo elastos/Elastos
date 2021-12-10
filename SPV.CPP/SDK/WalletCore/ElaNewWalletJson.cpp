@@ -5,11 +5,12 @@
 #include "ElaNewWalletJson.h"
 #include "CoinInfo.h"
 #include "HDKeychain.h"
-#include "BIP39.h"
+#include "Mnemonic.h"
 #include "Base58.h"
 
 #include <Common/ErrorChecker.h>
 #include <Common/Log.h>
+#include <support/BRKey.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -78,6 +79,30 @@ namespace Elastos {
 			_ethscPrimaryPubKey = pubkey;
 		}
 
+        const std::string &ElaNewWalletJson::GetxPubKeyBitcoin() const {
+            return _xPubKeyBitcoin;
+        }
+
+        void ElaNewWalletJson::SetxPubKeyBitcoin(const std::string &xpub) {
+            _xPubKeyBitcoin = xpub;
+        }
+
+        const std::string &ElaNewWalletJson::GetSinglePrivateKey() const {
+            return _singlePrivateKey;
+		}
+
+        void ElaNewWalletJson::SetSinglePrivateKey(const std::string &prvkey) {
+            _singlePrivateKey = prvkey;
+		}
+
+        const std::string &ElaNewWalletJson::GetRipplePrimaryPubKey() const {
+		    return _ripplePrimaryPubKey;
+		}
+
+        void ElaNewWalletJson::SetRipplePrimaryPubKey(const std::string &pubkey) {
+            _ripplePrimaryPubKey = pubkey;
+		}
+
 		nlohmann::json ElaNewWalletJson::ToJson(bool withPrivKey) const {
 			nlohmann::json j = ElaWebWalletJson::ToJson(withPrivKey);
 			ToJsonCommon(j);
@@ -100,10 +125,13 @@ namespace Elastos {
 			j["xPubKeyHDPM"] = _xPubKeyHDPM;
 			j["seed"] = _seed;
 			j["ethscPrimaryPubKey"] = _ethscPrimaryPubKey;
+            j["xPubKeyBitcoin"] = _xPubKeyBitcoin;
+            j["singlePrivateKey"] = _singlePrivateKey;
+            j["ripplePrimaryPubKey"] = _ripplePrimaryPubKey;
 		}
 
 		void ElaNewWalletJson::FromJsonCommon(const nlohmann::json &j) {
-			if (j.find("CoinInfoList") != j.end()) {
+			if (j.contains("CoinInfoList")) {
 				_coinInfoList.clear();
 				nlohmann::json coinInfoList = j["CoinInfoList"];
 				for (nlohmann::json::iterator it = coinInfoList.begin(); it != coinInfoList.end(); ++it) {
@@ -113,77 +141,109 @@ namespace Elastos {
 				}
 			}
 
-			if (j.find("SingleAddress") != j.end()) {
+			if (j.contains("SingleAddress")) {
 				_singleAddress = j["SingleAddress"].get<bool>();
 			}
 
-			if (j.find("OwnerPubKey") != j.end()) {
+			if (j.contains("OwnerPubKey")) {
 				_ownerPubKey = j["OwnerPubKey"].get<std::string>();
 			}
 
-			if (j.find("xPubKeyHDPM") != j.end()) {
+			if (j.contains("xPubKeyHDPM")) {
 				_xPubKeyHDPM = j["xPubKeyHDPM"].get<std::string>();
 			}
 
-			if (j.find("seed") != j.end()) {
-				_seed = j["seed"].get<std::string>();
-			}
-
-			if (j.find("ethscPrimaryPubKey") != j.end()) {
+			if (j.contains("ethscPrimaryPubKey")) {
 				_ethscPrimaryPubKey = j["ethscPrimaryPubKey"].get<std::string>();
 			}
 
-			if (j.find("CoSigners") != j.end() && j["Type"] == "MultiSign") {
+			if (j.contains("ripplePrimaryPubKey")) {
+			    _ripplePrimaryPubKey = j["ripplePrimaryPubKey"].get<std::string>();
+			}
+
+            if (j.contains("xPubKeyBitcoin")) {
+                _xPubKeyBitcoin = j["xPubKeyBitcoin"].get<std::string>();
+            }
+
+			if (j.contains("CoSigners") && j["Type"] == "MultiSign") {
 				ErrorChecker::ThrowParamException(Error::KeyStore, "Unsupport old version multi-sign keystore");
 			}
 
-			if (j.find("RequiredSignCount") != j.end()) {
+			if (j.contains("RequiredSignCount")) {
 				ErrorChecker::ThrowParamException(Error::KeyStore, "Unsupport old version multi-sign keystore");
 			}
 
 			std::string passphrase;
-			if (j.find("PhrasePassword") != j.end()) {
+			if (j.contains("PhrasePassword")) {
 				passphrase = j["PhrasePassword"].get<std::string>();
 				if (!passphrase.empty())
 					_mnemonicHasPassphrase = true;
 			}
 
-			if (j.find("IsSingleAddress") != j.end()) {
+			if (j.contains("IsSingleAddress")) {
 				_singleAddress = j["IsSingleAddress"];
 			}
 
-			if (_xPrivKey.empty() && !_mnemonic.empty()) {
-				Log::info("Regerate xprv from old keystore");
-				HDSeed seed(BIP39::DeriveSeed(_mnemonic, passphrase).bytes());
-				HDKeychain rootkey(seed.getExtendedKey(true));
+            if (j.contains("seed")) {
+                _seed = j["seed"].get<std::string>();
+            }
 
-				_ownerPubKey = rootkey.getChild("44'/0'/1'/0/0").pubkey().getHex();
+            if (j.contains("singlePrivateKey")) {
+                _singlePrivateKey = j["singlePrivateKey"].get<std::string>();
+            }
 
-				_xPrivKey = Base58::CheckEncode(rootkey.extkey());
-				_xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
+            if (_seed.empty() && !_mnemonic.empty() &&
+                    (!_mnemonicHasPassphrase || (_mnemonicHasPassphrase && !passphrase.empty()))) {
+                Log::info("Regerate seed from old keystore");
+                uint512 seed = Mnemonic::DeriveSeed(_mnemonic, passphrase);
+                bytes_t seedBytes = seed.bytes();
+                _seed = seedBytes.getHex();
+            }
 
-				HDKeychain requestKey = rootkey.getChild("1'/0");
-				_requestPrivKey = requestKey.privkey().getHex();
-				_requestPubKey = requestKey.pubkey().getHex();
+            if (_xPrivKey.empty() && !_seed.empty()) {
+                Log::info("Regenerate xprv from old keystore");
+                bytes_t seedBytes(_seed);
+                HDSeed hdseed(seedBytes);
+                HDKeychain rootkey(CTElastos, hdseed.getExtendedKey(CTElastos, true));
+                _xPrivKey = Base58::CheckEncode(rootkey.extkey());
+            }
 
-				_publicKeyRing.emplace_back(_requestPubKey, _xPubKeyHDPM);
-				if (_m == 0)
-					_m = 1;
-				_n = _publicKeyRing.size();
-				ErrorChecker::CheckParam(_n != 1, Error::KeyStore, "Import keystore should be n == 1");
-			}
+            if (!_xPrivKey.empty()) {
+                bytes_t bytes;
+                Base58::CheckDecode(_xPrivKey, bytes);
+                HDKeychain rootkey(CTElastos, bytes);
 
-			if ((_xPubKeyHDPM.empty() || _ownerPubKey.empty()) && !_xPrivKey.empty()) {
-				bytes_t bytes;
-				Base58::CheckDecode(_xPrivKey, bytes);
-				HDKeychain rootkey(bytes);
+                _ownerPubKey = rootkey.getChild("44'/0'/1'/0/0").pubkey().getHex();
+                _xPubKeyHDPM = Base58::CheckEncode(rootkey.getChild("45'").getPublic().extkey());
+                _xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
 
-				if (_ownerPubKey.empty())
-					_ownerPubKey = rootkey.getChild("44'/0'/1'/0/0").pubkey().getHex();
+                HDKeychain requestKey = rootkey.getChild("1'/0");
+                _requestPrivKey = requestKey.privkey().getHex();
+                _requestPubKey = requestKey.pubkey().getHex();
+            }
 
-				if (_xPubKeyHDPM.empty())
-					_xPubKeyHDPM = Base58::CheckEncode(rootkey.getChild("45'").getPublic().extkey());
-			}
+            if (_ethscPrimaryPubKey.empty() && !_seed.empty()) {
+                bytes_t seedBytes(_seed);
+                HDSeed hdseed(seedBytes);
+                HDKeychain rootkey(CTBitcoin, hdseed.getExtendedKey(CTBitcoin, true));
+                _ethscPrimaryPubKey = rootkey.getChild("44'/60'/0'/0/0").uncompressed_pubkey().getHex();
+            }
+
+            if (_ripplePrimaryPubKey.empty() && !_seed.empty()) {
+                bytes_t seedBytes(_seed);
+                HDSeed hdseed(seedBytes);
+                HDKeychain rootkey(CTBitcoin, hdseed.getExtendedKey(CTBitcoin, true));
+                _ripplePrimaryPubKey = rootkey.getChild("44'/144'/0'/0/0").pubkey().getHex();
+            }
+
+            if (_xPubKeyBitcoin.empty() && !_seed.empty()) {
+                Log::info("Regenerate btc masterPubKey from old keystore");
+                bytes_t seedBytes(_seed);
+                HDSeed hdseed(seedBytes);
+                HDKeychain rootkey(CTBitcoin, hdseed.getExtendedKey(CTBitcoin, true));
+
+                _xPubKeyBitcoin = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
+            }
 		}
 
 	}

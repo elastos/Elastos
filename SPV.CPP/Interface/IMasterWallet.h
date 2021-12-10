@@ -86,12 +86,6 @@ namespace Elastos {
 			virtual std::string ExportMnemonic(const std::string &payPassword) const = 0;
 
 			/**
-			 * Export wallet info except private keys.
-			 * @return If success, readonly wallet will be returned.
-			 */
-			virtual nlohmann::json ExportReadonlyWallet() const = 0;
-
-			/**
 			 * Export root private key of the current wallet.
 			 * @param payPasswd use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @return root private key.

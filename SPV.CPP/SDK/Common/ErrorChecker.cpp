@@ -55,9 +55,6 @@ namespace Elastos {
 		}
 
 		void ErrorChecker::CheckBigIntAmount(const std::string &amount) {
-			if (amount == "-1")
-				return;
-
 			for (size_t i = 0; i < amount.size(); ++i)
 				CheckCondition(!isdigit(amount[i]), Error::InvalidArgument, "invalid bigint amount: " + amount);
 		}

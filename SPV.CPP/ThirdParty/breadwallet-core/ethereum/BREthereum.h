@@ -31,7 +31,10 @@ installSharedWordList (const char *wordList[], int wordListLength);
 
 static inline UInt512
 zeroUInt512 (void) {
-    return UINT512_ZERO;
+    UInt512 zero;
+    for (int i = 0; i < sizeof(zero.u64) / sizeof(zero.u64[0]); ++i)
+        zero.u64[i] = 0;
+    return zero;
 }
 
 #ifdef __cplusplus

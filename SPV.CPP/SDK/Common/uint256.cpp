@@ -40,7 +40,7 @@ uint128 &uint128::operator=(uint64_t b) {
 	return *this;
 }
 
-uint128::uint128(const std::vector<unsigned char> &vch) {
+uint128::uint128(const bytes_t &vch) {
 	if (vch.size() == sizeof(pn))
 		memcpy(pn, &vch[0], sizeof(pn));
 	else
@@ -68,7 +68,7 @@ uint160::uint160(const std::string &str) {
 	SetHex(str);
 }
 
-uint160::uint160(const std::vector<unsigned char> &vch) {
+uint160::uint160(const bytes_t &vch) {
 	if (vch.size() == sizeof(pn))
 		memcpy(pn, &vch[0], sizeof(pn));
 	else
@@ -232,6 +232,15 @@ uint512::uint512(const basetype &b) {
 		pn[i] = b.pn[i];
 }
 
+uint512 &uint512::operator=(const bytes_t &vch) {
+    if (vch.size() == sizeof(pn))
+        memcpy(pn, &vch[0], sizeof(pn));
+    else
+        memset(pn, 0, sizeof(pn));
+
+    return *this;
+}
+
 uint512::uint512(uint64_t b) {
 	pn[0] = (unsigned int) b;
 	pn[1] = (unsigned int) (b >> 32);
@@ -243,11 +252,8 @@ uint512::uint512(const std::string &str) {
 	SetHex(str);
 }
 
-uint512::uint512(const std::vector<unsigned char> &vch) {
-	if (vch.size() == sizeof(pn))
-		memcpy(pn, &vch[0], sizeof(pn));
-	else
-		*this = 0;
+uint512::uint512(const bytes_t &vch) {
+    operator=(vch);
 }
 
 uint512 &uint512::operator=(const basetype &b) {

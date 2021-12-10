@@ -18,6 +18,11 @@
 #include "ethereum/rlp/BRRlp.h"
 #include "BREthereumLogic.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

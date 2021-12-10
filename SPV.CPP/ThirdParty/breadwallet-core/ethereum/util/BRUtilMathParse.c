@@ -17,6 +17,10 @@
 #include "support/BRAssert.h"
 #include "BRUtil.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#endif
+
 //
 // Parsing
 //
@@ -62,6 +66,27 @@ parseIsDecimal(const char *number) {
             : CORE_PARSE_OK);
 }
 
+#if defined(_WIN32) || defined(_WIN64)
+static char* strsep(char** stringp, const char* delim)
+{
+    char* start = *stringp;
+    char* p;
+
+    p = (start != NULL) ? strpbrk(start, delim) : NULL;
+
+    if (p == NULL)
+    {
+        *stringp = NULL;
+    }
+    else
+    {
+        *p = '\0';
+        *stringp = p + 1;
+    }
+
+    return start;
+}
+#endif
 
 #define SURELY_ENOUGH_CHARS 100     // No more than ~78 in UInt256
 
@@ -144,7 +169,7 @@ parseMaximumDigitsForUInt64InBase (int base) {
         case 2:  return 64;
         case 10: return 19;
         case 16: return 16;
-        default: BRFail();
+        default: BRFail(); return 0;
     }
 }
 
@@ -154,7 +179,7 @@ parseMaximumDigitsForUInt256InBase (int base) {
         case 2:  return 256;
         case 10: return 78;
         case 16: return 64;
-        default: BRFail();
+        default: BRFail(); return 0;
     }
 }
 
@@ -198,7 +223,9 @@ parseUInt64 (const char *string, int digits, int base) {
     assert (digits <= maxDigits );
     
     //
-    char number[1 + maxDigits], *numberEnd;
+    size_t numberCount = 1 + maxDigits;
+    char *number, *numberEnd;
+    number = (char *) alloca(numberCount);
     strncpy (number, string, maxDigits);
     number[maxDigits] = '\0';
 
@@ -366,6 +393,7 @@ coerceString (UInt256 x, int base) {
         }
         default:
             BRFail();
+            return NULL;
     }
 }
 

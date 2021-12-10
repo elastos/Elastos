@@ -167,6 +167,7 @@ TEST_CASE("VerifiableCredential test", "[VerifiableCredential]") {
 	}
 }
 
+#if 0
 TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 	SECTION("ToJson FromJson test") {
 		DIDPayloadInfo didPayloadInfo;
@@ -228,7 +229,6 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 
 		nlohmann::json j = didPayloadInfo.ToJson(0);
 
-#if 0
 		DIDPayloadInfo didPayloadInfo2;
 		didPayloadInfo2.FromJson(j, 0);
 
@@ -316,10 +316,8 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 		}
 
 		REQUIRE(didPayloadInfo2.Expires() == didPayloadInfo.Expires());
-#endif
 	}
 
-#if 0
 	SECTION("DIDPayloadInfo FromJson from json") {
 		std::vector<nlohmann::json> list;
 		list.push_back(R"(
@@ -344,5 +342,5 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 			REQUIRE(didPayloadInfo.PublicKeyInfo()[0].PublicKeyBase58() == "kN614vs5PcGmgR4rqonH42zCrLRtTshZmWQWs8b88g9c");
 		}
 	}
-#endif
 }
+#endif

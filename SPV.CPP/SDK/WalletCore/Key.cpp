@@ -20,11 +20,11 @@ namespace Elastos {
 		Key::Key() {
 		}
 
-		Key::Key(const bytes_t &key) {
+		Key::Key(CoinType type, const bytes_t &key) {
 			if (key.size() == 32) {
-				_key.setPrivKey(key);
+				_key.setPrivKey(type, key);
 			} else if (key.size() == 33) {
-				_key.setPubKey(key);
+				_key.setPubKey(type, key);
 			} else {
 				ErrorChecker::ThrowLogicException(Error::Key, "invalid key");
 			}
@@ -45,9 +45,9 @@ namespace Elastos {
 			ErrorChecker::CheckLogic(!keychain.valid(), Error::Key, "keychain is not valid");
 
 			if (keychain.isPrivate()) {
-				_key.setPrivKey(keychain.privkey());
+				_key.setPrivKey(keychain.coinType(), keychain.privkey());
 			} else {
-				_key.setPubKey(keychain.pubkey());
+				_key.setPubKey(keychain.coinType(), keychain.pubkey());
 			}
 			return *this;
 		}
@@ -57,8 +57,8 @@ namespace Elastos {
 			return *this;
 		}
 
-		bool Key::SetPubKey(const bytes_t &pubKey) {
-			return nullptr != _key.setPubKey(pubKey);
+		bool Key::SetPubKey(CoinType type, const bytes_t &pubKey) {
+			return nullptr != _key.setPubKey(type, pubKey);
 		}
 
 		bytes_t Key::PubKey(bool compress) const {
@@ -69,8 +69,8 @@ namespace Elastos {
 			return _key.getPrivKey();
 		}
 
-		bool Key::SetPrvKey(const bytes_t &prv) {
-			return nullptr != _key.setPrivKey(prv);
+		bool Key::SetPrvKey(CoinType type, const bytes_t &prv) {
+			return nullptr != _key.setPrivKey(type, prv);
 		}
 
 
@@ -142,6 +142,34 @@ namespace Elastos {
 
 			return result;
 		}
+
+        bytes_t Key::SignDER(const uint256 &md) const {
+            bytes_t sig;
+
+            ErrorChecker::CheckLogic(_key.getKey() == nullptr, Error::Sign, "invalid key for signing");
+
+            unsigned int sigLen = ECDSA_size(_key.getKey());
+            sig.resize(sigLen);
+            int r = ECDSA_sign(0, md.begin(), md.size(), sig.data(), &sigLen, _key.getKey());
+            if (r != 1)
+                ErrorChecker::ThrowLogicException(Error::Sign, "Sign DER fail");
+
+            sig.resize(sigLen);
+
+            return sig;
+		}
+
+        bool Key::VerifyDER(const uint256 &md, const bytes_t &sig) const {
+            bool result = false;
+
+            ErrorChecker::CheckLogic(_key.getKey() == nullptr, Error::Sign, "invalid key for verify");
+
+            if (1 == ECDSA_verify(0, md.begin(), md.size(), sig.data(), sig.size(), _key.getKey())) {
+                result = true;
+            }
+
+            return result;
+        }
 
 	}
 }

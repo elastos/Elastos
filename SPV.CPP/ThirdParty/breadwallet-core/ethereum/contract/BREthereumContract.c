@@ -8,6 +8,10 @@
 //  See the LICENSE file at the project root for license information.
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#endif
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <memory.h>
@@ -69,7 +73,7 @@ struct BREthereumFunctionRecord {
 static void argumentEncodeAddress (uint8_t *bytes, size_t bytesCount, uint8_t *target, size_t targetCount) {
     memset (target, 0, targetCount);
 
-    uint8_t decodedBytes[bytesCount/2];
+    uint8_t *decodedBytes = (uint8_t *)alloca(bytesCount/2);
     decodeHex(decodedBytes, bytesCount/2, (char *) bytes, bytesCount);
 
     memcpy (&target[targetCount - bytesCount/2], decodedBytes, bytesCount/2);

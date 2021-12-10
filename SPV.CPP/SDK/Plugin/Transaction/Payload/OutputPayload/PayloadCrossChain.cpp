@@ -71,14 +71,14 @@ namespace Elastos {
 			return size;
 		}
 
-		void PayloadCrossChain::Serialize(ByteStream &stream, bool extend) const {
+		void PayloadCrossChain::Serialize(ByteStream &stream) const {
 			stream.WriteUint8(_version);
 			stream.WriteVarString(_targetAddress);
 			stream.WriteUint64(_targetAmount.getUint64());
 			stream.WriteVarBytes(_targetData);
 		}
 
-		bool PayloadCrossChain::Deserialize(const ByteStream &stream, bool extend) {
+		bool PayloadCrossChain::Deserialize(const ByteStream &stream) {
 			if (!stream.ReadUint8(_version)) {
 				Log::error("deser op version");
 				return false;

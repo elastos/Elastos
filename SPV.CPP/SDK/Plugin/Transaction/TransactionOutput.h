@@ -40,13 +40,13 @@ namespace Elastos {
 
 			size_t EstimateSize() const;
 
-			void Serialize(ByteStream &stream, uint8_t txVersion, bool extend = false) const;
+			void Serialize(ByteStream &stream, uint8_t txVersion) const;
 
-			bool Deserialize(const ByteStream &stream, uint8_t txVersion, bool extend = false);
+			bool Deserialize(const ByteStream &stream, uint8_t txVersion);
 
 			bool IsValid() const;
 
-			const AddressPtr &Addr() const;
+			const Address &GetAddress() const;
 
 			const BigInt &Amount() const;
 
@@ -76,21 +76,15 @@ namespace Elastos {
 
 			void FromJson(const nlohmann::json &j);
 
-			uint16_t FixedIndex() const;
-
-			void SetFixedIndex(uint16_t index);
-
 			bool operator==(const TransactionOutput &o) const;
 
 			bool operator!=(const TransactionOutput &o) const;
 
 		private:
-			uint16_t _fixedIndex;
-
 			BigInt _amount; // to support token chain
 			uint256 _assetID;
 			uint32_t _outputLock;
-			AddressPtr _addr;
+			Address _address;
 
 			Type _outputType;
 

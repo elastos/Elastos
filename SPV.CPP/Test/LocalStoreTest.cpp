@@ -37,11 +37,11 @@ TEST_CASE("LocalStore test", "[LocalStore]") {
 			bytes_t xpubkey;
 			REQUIRE(Base58::CheckDecode(store->GetxPubKey(), xpubkey));
 
-			HDKeychain mpk(xpubkey);
+			HDKeychain mpk(CTElastos, xpubkey);
 			Address addr(PrefixStandard, mpk.getChild("0/0").pubkey());
 
 			bytes_t xprvkey = AES::DecryptCCM(store->GetxPrivKey(), payPasswd);
-			HDKeychain rootprv(xprvkey);
+			HDKeychain rootprv(CTElastos, xprvkey);
 			Address addrprv(PrefixStandard, rootprv.getChild("44'/0'/0'/0/0").pubkey());
 			REQUIRE(addrprv.String() == addr.String());
 			REQUIRE(addr.String() == "ENjw5MoRDuKRsuZ6WhhbzxmJ1yuSvecLSf");
@@ -120,11 +120,11 @@ TEST_CASE("LocalStore test", "[LocalStore]") {
 			bytes_t xpubkey;
 			REQUIRE(Base58::CheckDecode(store->GetxPubKey(), xpubkey));
 
-			HDKeychain mpk(xpubkey);
+			HDKeychain mpk(CTElastos, xpubkey);
 			Address addr(PrefixStandard, mpk.getChild("0/0").pubkey());
 
 			bytes_t xprvkey = AES::DecryptCCM(store->GetxPrivKey(), payPasswd);
-			HDKeychain rootprv(xprvkey);
+			HDKeychain rootprv(CTElastos, xprvkey);
 			Address addrprv(PrefixStandard, rootprv.getChild("44'/0'/0'/0/0").pubkey());
 			REQUIRE(addrprv.String() == addr.String());
 			REQUIRE(addr.String() == "EWkMVjB48znLGXCNNpLzf2rLmnX1iU91FP");
@@ -219,11 +219,11 @@ TEST_CASE("LocalStore test", "[LocalStore]") {
 			bytes_t xpubkey;
 			REQUIRE(Base58::CheckDecode(store->GetxPubKey(), xpubkey));
 
-			HDKeychain mpk(xpubkey);
+			HDKeychain mpk(CTElastos, xpubkey);
 			Address addr(PrefixStandard, mpk.getChild("0/0").pubkey());
 
 			bytes_t xprvkey = AES::DecryptCCM(store->GetxPrivKey(), payPasswd);
-			HDKeychain rootprv(xprvkey);
+			HDKeychain rootprv(CTElastos, xprvkey);
 			Address addrprv(PrefixStandard, rootprv.getChild("44'/0'/0'/0/0").pubkey());
 			REQUIRE(addrprv.String() == addr.String());
 			REQUIRE(addr.String() == "EPmxXC5orLrXd1FJK8Skz5tmf2gDreh8fd");

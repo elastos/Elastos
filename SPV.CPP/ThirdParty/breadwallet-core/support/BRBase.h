@@ -27,6 +27,7 @@
 #define BRBase_h
 
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,6 +46,11 @@ typedef uint64_t BRBlockHeight;
 #define BLOCK_HEIGHT_MINIMUM       (0)
 #define BLOCK_HEIGHT_MAXIMUM       (UINT64_MAX - 5)  // Leave room for special values
 
+#ifndef HAVE_STRLCPY
+static inline size_t strlcpy(char *dst, const char *src, size_t dstsize) {
+    return snprintf(dst, dstsize, "%s", src);
+}
+#endif
 /**
  * Check if `height` is between the MINIMUM and MAXIMUM values.
  */
@@ -53,6 +59,15 @@ typedef uint64_t BRBlockHeight;
 
 // Special values
 #define BLOCK_HEIGHT_UNBOUND       (UINT64_MAX)
+
+// To address Clang 'dead store' issues of 'Address: "Value stored in `var` is never read"', define
+// a convenience macro to note that the warning has been analyzed and can be ignored.  Note: it
+// doesn't seem Clang has its own way to avoid this 'dead store' warning.
+#ifdef __clang_analyzer__
+#  define ANALYZER_IGNORE_UNREAD_VARIABLE(var)     ((void) var)
+#else
+#  define ANALYZER_IGNORE_UNREAD_VARIABLE(var)
+#endif
 
 #ifdef __cplusplus
 }

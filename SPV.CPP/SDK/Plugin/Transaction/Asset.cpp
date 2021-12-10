@@ -59,7 +59,7 @@ namespace Elastos {
 			return size;
 		}
 
-		void Asset::Serialize(ByteStream &stream, bool extend) const {
+		void Asset::Serialize(ByteStream &stream) const {
 			stream.WriteVarString(_name);
 			stream.WriteVarString(_description);
 			stream.WriteBytes(&_precision, 1);
@@ -67,7 +67,7 @@ namespace Elastos {
 			stream.WriteBytes(&_recordType, 1);
 		}
 
-		bool Asset::Deserialize(const ByteStream &stream, bool extend) {
+		bool Asset::Deserialize(const ByteStream &stream) {
 			if (!stream.ReadVarString(_name)) {
 				Log::error("Asset payload deserialize name fail");
 				return false;

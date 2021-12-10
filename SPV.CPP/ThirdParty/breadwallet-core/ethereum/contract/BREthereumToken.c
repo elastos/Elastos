@@ -13,6 +13,10 @@
 #include "support/BRSet.h"
 #include "BREthereumToken.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#define strcasecmp stricmp
+#endif
+
 #define TOKEN_DEFAULT_INITIALIZATION_COUNT   (100)
 
 //

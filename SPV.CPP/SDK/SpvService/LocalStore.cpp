@@ -43,6 +43,9 @@ namespace Elastos {
 			j["coinInfo"] = _subWalletsInfoList;
 			j["seed"] = _seed;
 			j["ethscPrimaryPubKey"] = _ethscPrimaryPubKey;
+			j["ripplePrimaryPubKey"] = _ripplePrimaryPubKey;
+            j["xPubKeyBitcoin"] = _xPubKeyBitcoin;
+            j["SinglePrivateKey"] = _singlePrivateKey;
 			return j;
 		}
 
@@ -66,19 +69,25 @@ namespace Elastos {
 					_singleAddress = j["singleAddress"].get<bool>();
 					_readonly = j["readonly"].get<bool>();
 
-					if (j.find("xPubKeyHDPM") != j.end()) {
+					if (j.contains("xPubKeyHDPM")) {
 						_xPubKeyHDPM = j["xPubKeyHDPM"].get<std::string>();
 					} else {
 						_xPubKeyHDPM.clear();
 					}
 
-					if (j.find("seed") != j.end()) {
+					if (j.contains("seed")) {
 						_seed = j["seed"].get<std::string>();
 					} else {
 						_seed.clear();
 					}
 
-					if (j.find("ethscPrimaryPubKey") != j.end()) {
+					if (j.contains("SinglePrivateKey")) {
+					    _singlePrivateKey = j["SinglePrivateKey"].get<std::string>();
+					} else {
+					    _singlePrivateKey.clear();
+					}
+
+					if (j.contains("ethscPrimaryPubKey")) {
 						_ethscPrimaryPubKey = j["ethscPrimaryPubKey"].get<std::string>();
 						bool isEmpty = true;
 						for (size_t i = 2; i < _ethscPrimaryPubKey.length(); ++i) {
@@ -92,6 +101,19 @@ namespace Elastos {
 					} else {
 						_ethscPrimaryPubKey.clear();
 					}
+
+					if (j.contains("ripplePrimaryPubKey")) {
+                        _ripplePrimaryPubKey = j["ripplePrimaryPubKey"].get<std::string>();
+					} else {
+					    _ripplePrimaryPubKey.clear();
+					}
+
+                    // support btc
+                    if (j.find("xPubKeyBitcoin") != j.end()) {
+                        _xPubKeyBitcoin = j["xPubKeyBitcoin"].get<std::string>();
+                    } else {
+                        _xPubKeyBitcoin.clear();
+                    }
 
 					_subWalletsInfoList = j["coinInfo"].get<std::vector<CoinInfoPtr>>();
 				} else {
@@ -109,6 +131,7 @@ namespace Elastos {
 					_xPubKeyHDPM.clear();
 					_seed.clear();
 					_ethscPrimaryPubKey.clear();
+					_ripplePrimaryPubKey.clear();
 
 					if (mpk.is_object()) {
 						bytes.setHex(mpk["ELA"]);
@@ -119,7 +142,7 @@ namespace Elastos {
 							stream.ReadBytes(chainCode, 32);
 							stream.ReadBytes(pubKey, 33);
 
-							bytes = HDKeychain(pubKey, chainCode).extkey();
+							bytes = HDKeychain(CTElastos, pubKey, chainCode).extkey();
 							_xPubKey = Base58::CheckEncode(bytes);
 						}
 					}
@@ -191,6 +214,9 @@ namespace Elastos {
 
 			bytes = AES::DecryptCCM(_seed, oldPasswd);
 			_seed = AES::EncryptCCM(bytes, newPasswd);
+
+			bytes = AES::DecryptCCM(_singlePrivateKey, oldPasswd);
+			_singlePrivateKey = AES::EncryptCCM(bytes, newPasswd);
 
 			bytes.clean();
 		}
@@ -420,6 +446,30 @@ namespace Elastos {
 
 		const std::string &LocalStore::GetETHSCPrimaryPubKey() const {
 			return _ethscPrimaryPubKey;
+		}
+
+        void LocalStore::SetxPubKeyBitcoin(const std::string &xpub) {
+            _xPubKeyBitcoin = xpub;
+        }
+
+        const std::string &LocalStore::GetxPubKeyBitcoin() const {
+            return _xPubKeyBitcoin;
+        }
+
+        void LocalStore::SetSinglePrivateKey(const std::string &prvkey) {
+            _singlePrivateKey = prvkey;
+		}
+
+        const std::string &LocalStore::GetSinglePrivateKey() const {
+            return _singlePrivateKey;
+		}
+
+        void LocalStore::SetRipplePrimaryPubKey(const std::string &pubkey) {
+            _ripplePrimaryPubKey = pubkey;
+		}
+
+        const std::string &LocalStore::GetRipplePrimaryPubKey() const {
+            return _ripplePrimaryPubKey;
 		}
 
 	}

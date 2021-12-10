@@ -28,8 +28,6 @@ namespace Elastos {
 
 			TransactionInput(const uint256 &txHash, uint16_t index);
 
-			TransactionInput(const uint256 &txHash, uint16_t index, const BigInt &amount, const Address &addr);
-
 			~TransactionInput();
 
 			const uint256 &TxHash() const;
@@ -46,27 +44,15 @@ namespace Elastos {
 
 			size_t EstimateSize() const;
 
-			void Serialize(ByteStream &stream, bool extend = false) const;
+			void Serialize(ByteStream &stream) const;
 
-			bool Deserialize(const ByteStream &stream, bool extend = false);
+			bool Deserialize(const ByteStream &stream);
 
 			nlohmann::json ToJson() const;
 
 			void FromJson(const nlohmann::json &j);
 
 			size_t GetSize() const;
-
-			void FixDetail(const BigInt &amount, const Address &addr);
-
-			bool ContainDetail() const;
-
-			const BigInt &GetAmount() const;
-
-			void SetAmount(const BigInt &amount);
-
-			const Address &GetAddress() const;
-
-			void SetAddress(const Address &addr);
 
 			bool operator==(const TransactionInput &in) const;
 
@@ -75,10 +61,6 @@ namespace Elastos {
 			uint256 _txHash;
 			uint16_t _index;
 			uint32_t _sequence;
-
-			bool _containDetail; // input from current wallet
-			BigInt _amount;
-			Address _addr;
 		};
 
 		typedef boost::shared_ptr<TransactionInput> InputPtr;

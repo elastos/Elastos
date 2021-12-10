@@ -36,6 +36,7 @@ namespace Elastos {
 		}
 
 		EthereumTransfer::~EthereumTransfer() {
+            transferRelease ((BREthereumTransfer) _identifier);
 		}
 
 		BREthereumTransfer EthereumTransfer::getRaw() const {
@@ -158,6 +159,17 @@ namespace Elastos {
 				desc = GetCString(errorDescription);
 
 			return desc;
+		}
+
+        std::string EthereumTransfer::RlpEncode(BREthereumNetwork network, BREthereumRlpType type) const {
+            BREthereumTransaction tx = transferGetOriginatingTransaction (getRaw());
+
+            char *p = transactionGetRlpHexEncoded (tx, network, type, NULL);
+            std::string txEncoded(p);
+
+            free(p);
+
+            return txEncoded;
 		}
 
 		nlohmann::json EthereumTransfer::ToJson() const {

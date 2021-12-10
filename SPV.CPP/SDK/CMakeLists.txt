@@ -4,7 +4,8 @@ file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp" "*.c")
 file(GLOB_RECURSE BRETH_SOURCE_FILES
 	"../ThirdParty/breadwallet-core/bitcoin/*.c"
 	"../ThirdParty/breadwallet-core/ethereum/*.c"
-	"../ThirdParty/breadwallet-core/support/*.c")
+	"../ThirdParty/breadwallet-core/support/*.c"
+	"../ThirdParty/breadwallet-core/ripple/*.c")
 unset(BRETH_SOURCE_FILES_REMOVE_TEST)
 foreach(src ${BRETH_SOURCE_FILES})
 	if (NOT src MATCHES ".*test.*.c")
@@ -14,11 +15,23 @@ endforeach()
 
 set(SPVSDK_SOURCE_FILES ${BRETH_SOURCE_FILES_REMOVE_TEST} ${SPVSDK_SOURCE_FILES})
 
-set(SPVSDK_DEPENDS boost libressl libfruit libsqlite json libspdlog secp256k1)
-set(LIBS boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3 spdlog)
-if(ANDROID)
+set(SPVSDK_DEPENDS boost libressl libsqlite json libspdlog secp256k1 libutf8proc)
+set(LIBS boost_filesystem boost_system boost_thread crypto ssl sqlite3 spdlog utf8proc)
+
+if(WIN32)
+	add_definitions(
+			-DWIN32_LEAN_AND_MEAN
+			-D_CRT_SECURE_NO_WARNINGS
+			-D_CRT_NONSTDC_NO_WARNINGS)
+
+	# Force source code encoding to utf-8
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /utf-8")
+
+	set(SPVSDK_DEPENDS pthreads-w32 ${SPVSDK_DEPENDS})
+	set(LIBS ${LIBS} pthread Ws2_32)
+elseif(ANDROID)
 	set(LIBS ${LIBS} log)
-else()
+elseif(DARWIN OR IOS)
 	set(LIBS ${LIBS} resolv)
 endif()
 

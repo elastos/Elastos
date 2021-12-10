@@ -12,11 +12,9 @@
 #include <Implement/MainchainSubWallet.h>
 #include <Implement/SidechainSubWallet.h>
 #include <Implement/IDChainSubWallet.h>
-#include <Plugin/Registry.h>
-#include <Plugin/ELAPlugin.h>
-#include <Plugin/IDPlugin.h>
-#include <Plugin/TokenPlugin.h>
 #include <SpvService/Config.h>
+#include <Common/Log.h>
+#include <Wallet/WalletCommon.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -24,6 +22,15 @@ static const std::string rootPath = ".";
 #define MasterWalletTestID "MasterWalletID"
 #define PASSPHRASE         "passphrase"
 #define PAY_PASSWORD       "payPassword"
+
+static const std::string _netType = "MainNet";
+static nlohmann::json _config = R"({
+			"ELA": { },
+			"IDChain": { },
+			"ETHSC": { "ChainID": 20, "NetworkID": 20 },
+			"ETHDID": { "ChainID": 20, "NetworkID": 20 },
+			"ETHHECO": { "ChainID": 128, "NetworkID": 128 }
+		})"_json;
 
 class TestMasterWallet : public MasterWallet {
 public:
@@ -34,11 +41,8 @@ public:
 					 "phrasePassword",
 					 "payPassword",
 					 false,
-					 false,
 					 config,
-					 rootPath,
-					 0,
-					 ImportFromMnemonic) {
+					 rootPath) {
 	}
 
 	explicit TestMasterWallet(const std::string &passphrase,
@@ -49,19 +53,15 @@ public:
 					 passphrase,
 					 payPasswd,
 					 false,
-					 false,
 					 config,
-					 rootPath,
-					 0,
-					 ImportFromMnemonic) {
+					 rootPath) {
 	}
 
 	TestMasterWallet(const std::string &mnemonic,
 					 const std::string &passphrase,
 					 const std::string &payPasswd,
 					 const ConfigPtr &config) :
-		MasterWallet(MasterWalletTestID, mnemonic, passphrase, payPasswd, false, false, config, rootPath, 0,
-					 ImportFromMnemonic) {
+		MasterWallet(MasterWalletTestID, mnemonic, passphrase, payPasswd, false, config, rootPath) {
 	}
 
 	TestMasterWallet(const std::string &mnemonic,
@@ -69,18 +69,16 @@ public:
 					 const std::string &payPasswd,
 					 bool singleAddress,
 					 const ConfigPtr &config) :
-		MasterWallet(MasterWalletTestID, mnemonic, passphrase, payPasswd, singleAddress, false, config, rootPath, 0,
-					 ImportFromMnemonic) {
+		MasterWallet(MasterWalletTestID, mnemonic, passphrase, payPasswd, singleAddress, config, rootPath) {
 	}
 
 	TestMasterWallet(const std::string &id, const ConfigPtr &config) :
-		MasterWallet(id, config, rootPath, false, ImportFromMnemonic) {
+		MasterWallet(id, config, rootPath) {
 	}
 
 	TestMasterWallet(const nlohmann::json &keystore, const std::string &backupPassword, const std::string &payPasswd,
 					 const ConfigPtr &config) :
-		MasterWallet(MasterWalletTestID, keystore, backupPassword, payPasswd, config, rootPath, false,
-					 ImportFromKeyStore) {
+		MasterWallet(MasterWalletTestID, keystore, backupPassword, payPasswd, config, rootPath) {
 	}
 
 	std::string GetxPubKey() {
@@ -93,15 +91,9 @@ public:
 TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 	Log::registerMultiLogger();
 
-#ifdef SPV_ENABLE_STATIC
-	Log::info("Registering plugin ...");
-	REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
-	REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
-	REGISTER_MERKLEBLOCKPLUGIN(TokenChain, getTokenPluginComponent);
-#endif
-
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
+
+	ConfigPtr config(new Config(_netType, _config));
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(PASSPHRASE, PAY_PASSWORD, config));
 
 	ISubWallet *subWallet = masterWallet->CreateSubWallet(CHAINID_MAINCHAIN);
@@ -125,8 +117,6 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 
 	std::vector<std::string> chainIDs = masterWallet->GetSupportedChains();
 	for (int i = 0; i < chainIDs.size(); ++i) {
-		if (chainIDs[i] == CHAINID_ESC)
-			continue;
 		subWallet = masterWallet->CreateSubWallet(chainIDs[i]);
 		REQUIRE(subWallet != nullptr);
 	}
@@ -151,7 +141,7 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 
 TEST_CASE("Master wallet ChangePassword method test", "[ChangePassword]") {
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
+	ConfigPtr config(new Config(_netType, _config));
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(PASSPHRASE, PAY_PASSWORD, config));
 
 	REQUIRE_THROWS(masterWallet->ChangePassword("wrongPassword", "newPayPassword"));
@@ -173,7 +163,7 @@ TEST_CASE("Master wallet ChangePassword method test", "[ChangePassword]") {
 
 TEST_CASE("Master wallet IsAddressValid method test", "[IsAddressValid]") {
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
+	ConfigPtr config(new Config(_netType, _config));
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(PASSPHRASE, PAY_PASSWORD, config));
 
 	REQUIRE(masterWallet->IsAddressValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3")); //normal
@@ -189,7 +179,7 @@ TEST_CASE("Master wallet IsAddressValid method test", "[IsAddressValid]") {
 
 TEST_CASE("Master wallet GetAllSubWallets method test", "[GetAllSubWallets]") {
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
+	ConfigPtr config(new Config(_netType, _config));
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, PASSPHRASE, PAY_PASSWORD, config));
 
@@ -207,7 +197,7 @@ TEST_CASE("Master wallet manager initFromKeyStore method", "[initFromKeyStore]")
 	Log::registerMultiLogger();
 
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
+	ConfigPtr config(new Config(_netType, _config));
 
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	boost::shared_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, PASSPHRASE, PAY_PASSWORD, config));
@@ -231,7 +221,7 @@ TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
 	Log::registerMultiLogger();
 
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
+	ConfigPtr config(new Config(_netType, _config));
 
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	boost::shared_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, PASSPHRASE, PAY_PASSWORD, config));

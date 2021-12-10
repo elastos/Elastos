@@ -30,7 +30,9 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class Config;
+#define SPV_API_PUBLIC  __attribute__((__visibility__("default")))
+
+        class Config;
 		class Lockable;
 
 		class SPV_API_PUBLIC MasterWalletManager : public IMasterWalletManager {
@@ -42,30 +44,14 @@ namespace Elastos {
 			 * @param dataPath The path contains data of wallet created. If empty, data of wallet will store in rootPath.
 			 * @param config If netType is "MainNet" or "TestNet" or "RegTest", config will be ignore.
 			 *
-			 * If netType is "PrvNet", config must be provided as below:
+			 * Config eg: netType: "MainNet"
 			 * {
-			 * 	"ELA": {
-			 * 		"GenesisAddress": "",
-			 * 		"ChainParameters": {
-			 * 			"MagicNumber": 20190808,
-			 * 			"StandardPort": 30018,
-			 * 			"DNSSeeds": [ "172.26.0.165" ],
-			 * 			"CheckPoints": [
-			 * 				[0, "8df798783097be3a8f382f6537e47c7168d4bf4d741fa3fa8c48c607a06352cf", 1513936800, 486801407]
-			 * 			]
-			 * 		}
-			 * 	},
-			 * 	"IDChain": {
-			 * 		"GenesisAddress": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
-			 * 		"ChainParameters": {
-			 * 			"MagicNumber": 20190816,
-			 * 			"StandardPort": 30138,
-			 * 			"DNSSeeds": [ "172.26.0.165" ],
-			 * 			"CheckPoints": [
-			 * 				[0,     "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3", 1513936800, 486801407]
-			 * 			]
-			 * 		}
-			 * 	}
+			 * 	"ELA": { },
+			 * 	"IDChain": { },
+			 * 	"ETHSC": { "ChainID": 20, "NetworkID": 20 },
+			 * 	"ETHDID": { "ChainID": 20, "NetworkID": 20 },
+			 * 	"ETHHECO": { "ChainID": 128, "NetworkID": 128 },
+			 * 	"BTC": {}
 			 * }
 			 */
 			explicit MasterWalletManager(const std::string &rootPath, const std::string &netType = "MainNet",
@@ -79,9 +65,14 @@ namespace Elastos {
 			virtual IMasterWallet *CreateMasterWallet(
 				const std::string &masterWalletID,
 				const std::string &mnemonic,
-				const std::string &phrasePassword,
-				const std::string &payPassword,
+				const std::string &passphrase,
+				const std::string &passwd,
 				bool singleAddress);
+
+            virtual IMasterWallet *CreateMasterWallet(
+                    const std::string &masterWalletID,
+                    const std::string &singlePrivateKey,
+                    const std::string &passwd);
 
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
 				const std::string &masterWalletID,
@@ -138,10 +129,6 @@ namespace Elastos {
 				bool singleAddress,
 				time_t timestamp = 0);
 
-			virtual IMasterWallet *ImportReadonlyWallet(
-				const std::string &masterWalletID,
-				const nlohmann::json &walletJson);
-
 			virtual std::string GetVersion() const;
 
 			virtual void FlushData();
@@ -150,9 +137,6 @@ namespace Elastos {
 
 		protected:
 			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;
-
-			MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath,
-								const std::string &dataPath);
 
 			void LoadMasterWalletID();
 
@@ -165,7 +149,6 @@ namespace Elastos {
 			Config *_config;
 			std::string _rootPath;
 			std::string _dataPath;
-			bool _p2pEnable;
 			mutable MasterWalletMap _masterWalletMap;
 		};
 	}

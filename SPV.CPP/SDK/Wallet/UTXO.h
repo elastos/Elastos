@@ -24,9 +24,7 @@ namespace Elastos {
 
 			UTXO &operator=(const UTXO &u);
 
-			UTXO(const uint256 &hash, uint16_t i, time_t t = 0, uint32_t h = 0, const OutputPtr &o = nullptr);
-
-			UTXO(const InputPtr &input);
+			UTXO(const uint256 &hash, uint16_t n, const Address &address, const BigInt &amount);
 
 			virtual ~UTXO();
 
@@ -40,28 +38,21 @@ namespace Elastos {
 
 			void SetIndex(uint16_t index);
 
-			time_t Timestamp() const;
+			const Address &GetAddress() const;
 
-			void SetTimestamp(time_t t);
+			void SetAddress(const Address &address);
 
-			uint32_t BlockHeight() const;
+			const BigInt &GetAmount() const;
 
-			void SetBlockHeight(uint32_t h);
-
-			const OutputPtr &Output() const;
-
-			void SetOutput(const OutputPtr &o);
-
-			uint32_t GetConfirms(uint32_t lastBlockHeight) const;
+			void SetAmount(const BigInt &amount);
 
 			bool Equal(const InputPtr &input) const;
 
 			bool Equal(const uint256 &hash, uint16_t index) const;
 
 		protected:
-			time_t _timestamp;
-			uint32_t _blockHeight;
-			OutputPtr _output;
+			Address _address;
+			BigInt _amount;
 
 			uint256 _hash;
 			uint16_t _n;

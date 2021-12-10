@@ -59,8 +59,8 @@ if (SPV_ENABLE_SHARED)
 endif()
 
 if(SPV_ENABLE_STATIC)
-    set(LIBS spvsdk-static curl.a sqlite3.a ssl.a crypto.a boost_system.a boost_filesystem.a boost_thread.a fruit.a resolv z)
-    set(ELAWALLET_DEPENDS libspvsdk libfruit boost libressl json libsqlite libcurl)
+    set(LIBS spvsdk-static curl.a sqlite3.a ssl.a crypto.a boost_system.a boost_filesystem.a boost_thread.a utf8proc.a resolv z)
+    set(ELAWALLET_DEPENDS libspvsdk boost libressl json libsqlite libcurl)
     set(TARGET_NAME wallet.static)
 
     add_executable(wallet.static ${WALLET_SOURCE_FILES})

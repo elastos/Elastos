@@ -127,10 +127,15 @@ inline static int UInt512IsZero(UInt512 u)
 
 inline static UInt256 UInt256Reverse(UInt256 u)
 {
-    return ((UInt256) { .u8 = { u.u8[31], u.u8[30], u.u8[29], u.u8[28], u.u8[27], u.u8[26], u.u8[25], u.u8[24],
-                                u.u8[23], u.u8[22], u.u8[21], u.u8[20], u.u8[19], u.u8[18], u.u8[17], u.u8[16],
-                                u.u8[15], u.u8[14], u.u8[13], u.u8[12], u.u8[11], u.u8[10], u.u8[ 9], u.u8[ 8],
-                                u.u8[ 7], u.u8[ 6], u.u8[5],  u.u8[ 4], u.u8[ 3], u.u8[ 2], u.u8[ 1], u.u8[ 0] } });
+    UInt256 data = u;
+    uint8_t tmp;
+    for (int i = 0; i < sizeof(u) / 2; ++i) {
+        tmp = data.u8[i];
+        data.u8[i] = data.u8[sizeof(u) - i - 1];
+        data.u8[sizeof(u) - i - 1] = tmp;
+    }
+
+    return data;
 }
 
 #define UINT128_ZERO ((const UInt128) { .u64 = { 0, 0 } })
@@ -184,90 +189,104 @@ inline static UInt256 UInt256Reverse(UInt256 u)
 
 inline static void UInt16SetBE(void *b2, uint16_t u)
 {
-    *(union _u16 *)b2 = (union _u16) {
-		(uint8_t)((u >> 8) & 0xff),
-		(uint8_t)(u & 0xff)
+    union _u16 data = {
+            (uint8_t)((u >> 8) & 0xff),
+            (uint8_t)(u & 0xff)
     };
+
+    *(union _u16 *)b2 = data;
 }
 
 inline static void UInt16SetLE(void *b2, uint16_t u)
 {
-    *(union _u16 *)b2 = (union _u16) {
-    	(uint8_t)(u & 0xff),
-    	(uint8_t)((u >> 8) & 0xff)
+    union _u16 data = {
+            (uint8_t)(u & 0xff),
+            (uint8_t)((u >> 8) & 0xff)
     };
+
+    *(union _u16 *)b2 = data;
 }
 
 inline static void UInt32SetBE(void *b4, uint32_t u)
 {
-    *(union _u32 *)b4 = (union _u32) {
-    	(uint8_t)((u >> 24) & 0xff),
-    	(uint8_t)((u >> 16) & 0xff),
-    	(uint8_t)((u >> 8) & 0xff),
-    	(uint8_t)(u & 0xff)
+    union _u32 data = {
+            (uint8_t)((u >> 24) & 0xff),
+            (uint8_t)((u >> 16) & 0xff),
+            (uint8_t)((u >> 8) & 0xff),
+            (uint8_t)(u & 0xff)
     };
+
+    *(union _u32 *)b4 = data;
 }
 
 inline static void UInt32SetLE(void *b4, uint32_t u)
 {
-    *(union _u32 *)b4 = (union _u32) {
-    	(uint8_t)(u & 0xff),
-    	(uint8_t)((u >> 8) & 0xff),
-    	(uint8_t)((u >> 16) & 0xff),
-    	(uint8_t)((u >> 24) & 0xff)
+    union _u32 data = {
+            (uint8_t)(u & 0xff),
+            (uint8_t)((u >> 8) & 0xff),
+            (uint8_t)((u >> 16) & 0xff),
+            (uint8_t)((u >> 24) & 0xff)
     };
+
+    *(union _u32 *)b4 = data;
 }
 
 inline static void UInt64SetBE(void *b8, uint64_t u)
 {
-	*(union _u64 *)b8 = (union _u64) {
-		(uint8_t)((u >> 56) & 0xff),
-		(uint8_t)((u >> 48) & 0xff),
-		(uint8_t)((u >> 40) & 0xff),
-		(uint8_t)((u >> 32) & 0xff),
-		(uint8_t)((u >> 24) & 0xff),
-		(uint8_t)((u >> 16) & 0xff),
-		(uint8_t)((u >> 8) & 0xff),
-		(uint8_t)(u & 0xff)
-	};
+    union _u64 data = {
+            (uint8_t)((u >> 56) & 0xff),
+            (uint8_t)((u >> 48) & 0xff),
+            (uint8_t)((u >> 40) & 0xff),
+            (uint8_t)((u >> 32) & 0xff),
+            (uint8_t)((u >> 24) & 0xff),
+            (uint8_t)((u >> 16) & 0xff),
+            (uint8_t)((u >> 8) & 0xff),
+            (uint8_t)(u & 0xff)
+    };
+
+	*(union _u64 *)b8 = data;
 }
 
 inline static void UInt64SetLE(void *b8, uint64_t u)
 {
-    *(union _u64 *)b8 = (union _u64) {
-		(uint8_t)(u & 0xff),
-		(uint8_t)((u >> 8) & 0xff),
-		(uint8_t)((u >> 16) & 0xff),
-		(uint8_t)((u >> 24) & 0xff),
-		(uint8_t)((u >> 32) & 0xff),
-		(uint8_t)((u >> 40) & 0xff),
-		(uint8_t)((u >> 48) & 0xff),
-		(uint8_t)((u >> 56) & 0xff)
+    union _u64 data = {
+        (uint8_t)(u & 0xff),
+        (uint8_t)((u >> 8) & 0xff),
+        (uint8_t)((u >> 16) & 0xff),
+        (uint8_t)((u >> 24) & 0xff),
+        (uint8_t)((u >> 32) & 0xff),
+        (uint8_t)((u >> 40) & 0xff),
+        (uint8_t)((u >> 48) & 0xff),
+        (uint8_t)((u >> 56) & 0xff)
     };
+
+    *(union _u64 *)b8 = data;
 }
 
 inline static void UInt128Set(void *b16, UInt128 u)
 {
-    *(union _u128 *)b16 =
-        (union _u128) { u.u8[0], u.u8[1], u.u8[2],  u.u8[3],  u.u8[4],  u.u8[5],  u.u8[6],  u.u8[7],
-                        u.u8[8], u.u8[9], u.u8[10], u.u8[11], u.u8[12], u.u8[13], u.u8[14], u.u8[15] };
+    union _u128 data = { u.u8[0], u.u8[1], u.u8[2],  u.u8[3],  u.u8[4],  u.u8[5],  u.u8[6],  u.u8[7],
+                    u.u8[8], u.u8[9], u.u8[10], u.u8[11], u.u8[12], u.u8[13], u.u8[14], u.u8[15] };
+    *(union _u128 *)b16 = data;
 }
 
 inline static void UInt160Set(void *b20, UInt160 u)
 {
-    *(union _u160 *)b20 =
-        (union _u160) { u.u8[0],  u.u8[1],  u.u8[2],  u.u8[3],  u.u8[4],  u.u8[5],  u.u8[6],  u.u8[7],
-                        u.u8[8],  u.u8[9],  u.u8[10], u.u8[11], u.u8[12], u.u8[13], u.u8[14], u.u8[15],
-                        u.u8[16], u.u8[17], u.u8[18], u.u8[19] };
+    union _u160 data = { u.u8[0],  u.u8[1],  u.u8[2],  u.u8[3],  u.u8[4],  u.u8[5],  u.u8[6],  u.u8[7],
+        u.u8[8],  u.u8[9],  u.u8[10], u.u8[11], u.u8[12], u.u8[13], u.u8[14], u.u8[15],
+        u.u8[16], u.u8[17], u.u8[18], u.u8[19] };
+
+    *(union _u160 *)b20 = data;
 }
 
 inline static void UInt256Set(void *b32, UInt256 u)
 {
-    *(union _u256 *)b32 =
-        (union _u256) { u.u8[0],  u.u8[1],  u.u8[2],  u.u8[3],  u.u8[4],  u.u8[5],  u.u8[6],  u.u8[7],
-                        u.u8[8],  u.u8[9],  u.u8[10], u.u8[11], u.u8[12], u.u8[13], u.u8[14], u.u8[15],
-                        u.u8[16], u.u8[17], u.u8[18], u.u8[19], u.u8[20], u.u8[21], u.u8[22], u.u8[23],
-                        u.u8[24], u.u8[25], u.u8[26], u.u8[27], u.u8[28], u.u8[29], u.u8[30], u.u8[31] };
+    union _u256 data = { u.u8[0],  u.u8[1],  u.u8[2],  u.u8[3],  u.u8[4],  u.u8[5],  u.u8[6],  u.u8[7],
+        u.u8[8],  u.u8[9],  u.u8[10], u.u8[11], u.u8[12], u.u8[13], u.u8[14], u.u8[15],
+        u.u8[16], u.u8[17], u.u8[18], u.u8[19], u.u8[20], u.u8[21], u.u8[22], u.u8[23],
+        u.u8[24], u.u8[25], u.u8[26], u.u8[27], u.u8[28], u.u8[29], u.u8[30], u.u8[31] };
+
+    *(union _u256 *)b32 = data;
 }
 
 inline static uint16_t UInt16GetBE(const void *b2)
@@ -310,37 +329,17 @@ inline static uint64_t UInt64GetLE(const void *b8)
 
 inline static UInt128 UInt128Get(const void *b16)
 {
-    return (UInt128) { .u8 = {
-        ((const uint8_t *)b16)[0],  ((const uint8_t *)b16)[1],  ((const uint8_t *)b16)[2],  ((const uint8_t *)b16)[3],
-        ((const uint8_t *)b16)[4],  ((const uint8_t *)b16)[5],  ((const uint8_t *)b16)[6],  ((const uint8_t *)b16)[7],
-        ((const uint8_t *)b16)[8],  ((const uint8_t *)b16)[9],  ((const uint8_t *)b16)[10], ((const uint8_t *)b16)[11],
-        ((const uint8_t *)b16)[12], ((const uint8_t *)b16)[13], ((const uint8_t *)b16)[14], ((const uint8_t *)b16)[15]
-    } };
+    return *(UInt128 *)b16;
 }
 
 inline static UInt160 UInt160Get(const void *b20)
 {
-    return (UInt160) { .u8 = {
-        ((const uint8_t *)b20)[0],  ((const uint8_t *)b20)[1],  ((const uint8_t *)b20)[2],  ((const uint8_t *)b20)[3],
-        ((const uint8_t *)b20)[4],  ((const uint8_t *)b20)[5],  ((const uint8_t *)b20)[6],  ((const uint8_t *)b20)[7],
-        ((const uint8_t *)b20)[8],  ((const uint8_t *)b20)[9],  ((const uint8_t *)b20)[10], ((const uint8_t *)b20)[11],
-        ((const uint8_t *)b20)[12], ((const uint8_t *)b20)[13], ((const uint8_t *)b20)[14], ((const uint8_t *)b20)[15],
-        ((const uint8_t *)b20)[16], ((const uint8_t *)b20)[17], ((const uint8_t *)b20)[18], ((const uint8_t *)b20)[19]
-    } };
+    return *(UInt160*)b20;
 }
 
 inline static UInt256 UInt256Get(const void *b32)
 {
-    return (UInt256) { .u8 = {
-        ((const uint8_t *)b32)[0],  ((const uint8_t *)b32)[1],  ((const uint8_t *)b32)[2],  ((const uint8_t *)b32)[3],
-        ((const uint8_t *)b32)[4],  ((const uint8_t *)b32)[5],  ((const uint8_t *)b32)[6],  ((const uint8_t *)b32)[7],
-        ((const uint8_t *)b32)[8],  ((const uint8_t *)b32)[9],  ((const uint8_t *)b32)[10], ((const uint8_t *)b32)[11],
-        ((const uint8_t *)b32)[12], ((const uint8_t *)b32)[13], ((const uint8_t *)b32)[14], ((const uint8_t *)b32)[15],
-        ((const uint8_t *)b32)[16], ((const uint8_t *)b32)[17], ((const uint8_t *)b32)[18], ((const uint8_t *)b32)[19],
-        ((const uint8_t *)b32)[20], ((const uint8_t *)b32)[21], ((const uint8_t *)b32)[22], ((const uint8_t *)b32)[23],
-        ((const uint8_t *)b32)[24], ((const uint8_t *)b32)[25], ((const uint8_t *)b32)[26], ((const uint8_t *)b32)[27],
-        ((const uint8_t *)b32)[28], ((const uint8_t *)b32)[29], ((const uint8_t *)b32)[30], ((const uint8_t *)b32)[31]
-    } };
+    return *(UInt256*)b32;
 }
 
 #ifdef __cplusplus

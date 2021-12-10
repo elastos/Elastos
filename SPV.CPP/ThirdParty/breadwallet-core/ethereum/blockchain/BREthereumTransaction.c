@@ -306,6 +306,8 @@ transactionIsSigned (BREthereumTransaction transaction) {
         case SIGNATURE_TYPE_RECOVERABLE_RSV:
             return AS_ETHEREUM_BOOLEAN (transaction->signature.sig.rsv.v != 0);
     }
+
+    return ETHEREUM_BOOLEAN_FALSE;
 }
 
 extern const BREthereumHash
@@ -488,7 +490,6 @@ transactionRlpDecode (BRRlpItem item,
         assert (32 >= sData.bytesCount);
         memcpy (&transaction->signature.sig.vrs.s[32 - sData.bytesCount],
                 sData.bytes, sData.bytesCount);
-        
     }
     
     switch (type) {
@@ -548,6 +549,32 @@ transactionGetRlpHexEncoded (BREthereumTransaction transaction,
     rlpReleaseItem(coder, item);
     rlpCoderRelease(coder);
     return result;
+}
+
+extern BREthereumTransaction
+transactionRlpHexDecode (BREthereumNetwork network,
+                         BREthereumRlpType type,
+                         const char *hexString) {
+    if (NULL == hexString)
+        return NULL;
+
+    if (!strncmp(hexString, "0x", 2))
+        hexString += 2;
+
+    size_t targetLen = 0;
+    uint8_t *target = decodeHexCreate (&targetLen, hexString, strlen(hexString));
+
+    BRRlpCoder coder = rlpCoderCreate();
+    BRRlpData data = { targetLen, target };
+    BRRlpItem item = rlpGetItem (coder, data);
+
+    BREthereumTransaction tx = transactionRlpDecode (item, network, type, coder);
+
+    rlpReleaseItem(coder, item);
+    rlpDataRelease(data);
+    rlpCoderRelease(coder);
+
+    return tx;
 }
 
 extern BREthereumTransactionStatus

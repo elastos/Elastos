@@ -51,13 +51,15 @@ namespace Elastos {
 #define JsonKeyReservedCustomIDList "ReservedCustomIDList"
 #define JsonKeyReceiverDID "ReceiverDID"
 #define JsonKeyReceivedCustomIDList "ReceivedCustomIDList"
-#define JsonKeyRateOfCustomIDFee "RateOfCustomIDFee"
+#define JsonKeyCustomIDFeeRateInfo "CustomIDFeeRateInfo"
 #define JsonKeySecretaryDID "SecretaryGeneralDID"
 #define JsonKeySignature "Signature"
 #define JsonKeyNewOwnerSignature "NewOwnerSignature"
 #define JsonKeySecretarySignature "SecretaryGeneralSignature"
 #define JsonKeyCRCouncilMemberDID "CRCouncilMemberDID"
 #define JsonKeyCRCouncilMemberSignature "CRCouncilMemberSignature"
+#define JsonKeySidechainInfo "SidechainInfo"
+#define JsonKeyUpgradeCodeInfo "UpgradeCodeInfo"
 
 		class Budget : public JsonSerializer {
 		public:
@@ -96,6 +98,88 @@ namespace Elastos {
 			uint8_t _stage;
 			BigInt _amount;
 		};
+
+        class CRCProposal;
+
+        class UpgradeCodeInfo {
+        public:
+            UpgradeCodeInfo();
+
+            ~UpgradeCodeInfo();
+
+            void Serialize(ByteStream &stream, uint8_t version) const;
+
+            bool Deserialize(const ByteStream &stream, uint8_t version);
+
+            nlohmann::json ToJson(uint8_t version) const;
+
+            void FromJson(const nlohmann::json &j, uint8_t version);
+
+            bool IsValid(uint8_t version) const;
+
+        private:
+            friend class CRCProposal;
+
+            uint32_t _workingHeight;
+            std::string _nodeVersion;
+            std::string _nodeDownloadUrl;
+            uint256 _nodeBinHash;
+            bool _force;
+        };
+
+        class SideChainInfo {
+        public:
+            SideChainInfo();
+
+            ~SideChainInfo();
+
+            void Serialize(ByteStream &stream, uint8_t version) const;
+
+            bool Deserialize(const ByteStream &stream, uint8_t version);
+
+            nlohmann::json ToJson(uint8_t version) const;
+
+            void FromJson(const nlohmann::json &j, uint8_t version);
+
+            bool IsValid(uint8_t version) const;
+
+            bool operator==(const SideChainInfo &info) const;
+
+            SideChainInfo &operator=(const SideChainInfo &info);
+
+        private:
+            std::string _sideChainName;
+            uint32_t _magicNumber;
+            uint256 _genesisHash;
+            uint64_t _exchangeRate;
+            uint32_t _effectiveHeight;
+            std::string _resourcePath;
+        };
+
+        class CustomIDFeeRateInfo {
+        public:
+            CustomIDFeeRateInfo();
+
+            ~CustomIDFeeRateInfo();
+
+            void Serialize(ByteStream &stream, uint8_t version) const;
+
+            bool Deserialize(const ByteStream &stream, uint8_t version);
+
+            nlohmann::json ToJson(uint8_t version) const;
+
+            void FromJson(const nlohmann::json &j, uint8_t version);
+
+            bool operator==(const CustomIDFeeRateInfo &info) const;
+
+            CustomIDFeeRateInfo &operator=(const CustomIDFeeRateInfo &info);
+
+        private:
+            // The rate of custom DID fee.
+            uint64_t _rateOfCustomIDFee;
+            // Effective at the side chain height of EID.
+            uint32_t _eIDEffectiveHeight;
+        };
 
 		class CRCProposal : public IPayload {
 		public:
@@ -219,10 +303,11 @@ namespace Elastos {
 
 			bool IsValidNormalCRCouncilMemberUnsigned(uint8_t version) const;
 
-			const uint256 &DigestNormalOwnerUnsigned(uint8_t version) const;
+			uint256 DigestNormalOwnerUnsigned(uint8_t version) const;
 
-			const uint256 &DigestNormalCRCouncilMemberUnsigned(uint8_t version) const;
+			uint256 DigestNormalCRCouncilMemberUnsigned(uint8_t version) const;
 
+        public:
 			// change owner
 			void SerializeChangeOwnerUnsigned(ByteStream &stream, uint8_t version) const;
 
@@ -248,10 +333,11 @@ namespace Elastos {
 
 			bool IsValidChangeOwnerCRCouncilMemberUnsigned(uint8_t version) const;
 
-			const uint256 &DigestChangeOwnerUnsigned(uint8_t version) const;
+			uint256 DigestChangeOwnerUnsigned(uint8_t version) const;
 
-			const uint256 &DigestChangeOwnerCRCouncilMemberUnsigned(uint8_t version) const;
+			uint256 DigestChangeOwnerCRCouncilMemberUnsigned(uint8_t version) const;
 
+        public:
 			// terminate proposal
 			void SerializeTerminateProposalUnsigned(ByteStream &stream, uint8_t version) const;
 
@@ -277,10 +363,11 @@ namespace Elastos {
 
 			bool IsValidTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const;
 
-			const uint256 &DigestTerminateProposalOwnerUnsigned(uint8_t version) const;
+			uint256 DigestTerminateProposalOwnerUnsigned(uint8_t version) const;
 
-			const uint256 &DigestTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const;
+			uint256 DigestTerminateProposalCRCouncilMemberUnsigned(uint8_t version) const;
 
+        public:
 			// secretary election
 			void SerializeSecretaryElectionUnsigned(ByteStream &stream, uint8_t version) const;
 
@@ -306,10 +393,11 @@ namespace Elastos {
 
 			bool IsValidSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
 
-			const uint256 &DigestSecretaryElectionUnsigned(uint8_t version) const;
+			uint256 DigestSecretaryElectionUnsigned(uint8_t version) const;
 
-			const uint256 &DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
+			uint256 DigestSecretaryElectionCRCouncilMemberUnsigned(uint8_t version) const;
 
+        public:
 			// ReserveCustomID
 			void SerializeReserveCustomIDUnsigned(ByteStream &stream, uint8_t version) const;
 
@@ -335,10 +423,11 @@ namespace Elastos {
 
             bool IsValidReserveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
 
-            const uint256 &DigestReserveCustomIDOwnerUnsigned(uint8_t version) const;
+            uint256 DigestReserveCustomIDOwnerUnsigned(uint8_t version) const;
 
-            const uint256 &DigestReserveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
+            uint256 DigestReserveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
 
+        public:
 			// ReceiveCustomID
             void SerializeReceiveCustomIDUnsigned(ByteStream &stream, uint8_t version) const;
 
@@ -364,10 +453,11 @@ namespace Elastos {
 
 			bool IsValidReceiveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
 
-			const uint256 &DigestReceiveCustomIDOwnerUnsigned(uint8_t version) const;
+			uint256 DigestReceiveCustomIDOwnerUnsigned(uint8_t version) const;
 
-			const uint256 &DigestReceiveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
+			uint256 DigestReceiveCustomIDCRCouncilMemberUnsigned(uint8_t version) const;
 
+        public:
 			// ChangeCustomIDFee
             void SerializeChangeCustomIDFeeUnsigned(ByteStream &stream, uint8_t version) const;
 
@@ -393,10 +483,71 @@ namespace Elastos {
 
 			bool IsValidChangeCustomIDFeeCRCouncilMemberUnsigned(uint8_t version) const;
 
-            const uint256 &DigestChangeCustomIDFeeOwnerUnsigned(uint8_t version) const;
+            uint256 DigestChangeCustomIDFeeOwnerUnsigned(uint8_t version) const;
 
-            const uint256 &DigestChangeCustomIDFeeCRCouncilMemberUnsigned(uint8_t version) const;
+            uint256 DigestChangeCustomIDFeeCRCouncilMemberUnsigned(uint8_t version) const;
 
+        public:
+            // register side-chain
+            void SerializeRegisterSidechainUnsigned(ByteStream &stream, uint8_t version) const;
+
+            bool DeserializeRegisterSidechainUnsigned(const ByteStream &stream, uint8_t version);
+
+            void SerializeRegisterSidechainCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+            bool DeserializeRegisterSidechainCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+            void SerializeRegisterSidechain(ByteStream &stream, uint8_t version) const;
+
+            bool DeserializeRegisterSidechain(const ByteStream &stream, uint8_t version);
+
+            nlohmann::json ToJsonRegisterSidechainUnsigned(uint8_t version) const;
+
+            void FromJsonRegisterSidechainUnsigned(const nlohmann::json &j, uint8_t version);
+
+            nlohmann::json ToJsonRegisterSidechainCRCouncilMemberUnsigned(uint8_t version) const;
+
+            void FromJsonRegisterSidechainCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+            bool IsValidRegisterSidechainUnsigned(uint8_t version) const;
+
+            bool IsValidRegisterSidechainCRCouncilMemberUnsigned(uint8_t version) const;
+
+            uint256 DigestRegisterSidechainUnsigned(uint8_t version) const;
+
+            uint256 DigestRegisterSidechainCRCouncilMemberUnsigned(uint8_t version) const;
+
+		public:
+		    // upgrade code
+            void SerializeUpgradeCodeUnsigned(ByteStream &stream, uint8_t version) const;
+
+		    bool DeserializeUpgradeCodeUnsigned(const ByteStream &stream, uint8_t version);
+
+		    void SerializeUpgradeCodeCRCouncilMemberUnsigned(ByteStream &stream, uint8_t version) const;
+
+		    bool DeserializeUpgradeCodeCRCouncilMemberUnsigned(const ByteStream &stream, uint8_t version);
+
+		    void SerializeUpgradeCode(ByteStream &stream, uint8_t version) const;
+
+		    bool DeserializeUpgradeCode(const ByteStream &stream, uint8_t version);
+
+		    nlohmann::json ToJsonUpgradeCodeUnsigned(uint8_t version) const;
+
+		    void FromJsonUpgradeCode(const nlohmann::json &j, uint8_t version);
+
+		    nlohmann::json ToJsonUpgradeCodeCRCouncilMemberUnsigned(uint8_t version) const;
+
+		    void FromJsonUpgradeCodeCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
+
+		    bool IsValidUpgradeCodeUnsigned(uint8_t version) const;
+
+		    bool IsValidUpgradeCodeCRCouncilMemberUnsigned(uint8_t version) const;
+
+		    uint256 DigestUpgradeCodeUnsigned(uint8_t version) const;
+
+		    uint256 DigestUpgradeCodeCRCouncilMemberUnsigned(uint8_t version) const;
+
+        public:
             // override interface
 			size_t EstimateSize(uint8_t version) const override;
 
@@ -417,34 +568,10 @@ namespace Elastos {
 
 			bool Equal(const IPayload &payload, uint8_t version) const override;
 
-		private:
-			// normal & elip
-			mutable uint256 _digestOwnerUnsigned;
-			mutable uint256 _digestCRCouncilMemberUnsigned;
+        private:
+		    std::string EncodeDraftData(const bytes_t &draftData) const;
 
-			// secretary election
-			mutable uint256 _digestSecretaryElectionUnsigned;
-			mutable uint256 _digestSecretaryElectionCRCouncilMemberUnsigned;
-
-			// change owner
-			mutable uint256 _digestChangeOwnerUnsigned;
-			mutable uint256 _digestChangeOwnerCRCouncilMemberUnsigned;
-
-			// terminate proposal
-			mutable uint256 _digestTerminateProposalOwnerUnsigned;
-			mutable uint256 _digestTerminateProposalCRCouncilMemberUnsigned;
-
-			// reserve custom ID
-			mutable uint256 _digestReserveCustomIDOwnerUnsigned;
-			mutable uint256 _digestReserveCustomIDCRCouncilMemberUnsigned;
-
-			// receive custom ID
-			mutable uint256 _digestReceiveCustomIDOwnerUnsigned;
-			mutable uint256 _digestReceiveCustomIDCRCouncilMemberUnsigned;
-
-			// change custom ID fee
-			mutable uint256 _digestChangeCustomIDFeeOwnerUnsigned;
-			mutable uint256 _digestChangeCustomIDFeeCRCouncilMemberUnsigned;
+		    bytes_t CheckAndDecodeDraftData(const std::string &draftData, const uint256 &draftHash) const;
 
 		private:
 			CRCProposal::Type _type;
@@ -458,7 +585,7 @@ namespace Elastos {
 			std::vector<std::string> _reservedCustomIDList;
 			std::vector<std::string> _receivedCustomIDList;
 			Address _receiverDID;
-			uint64_t _rateOfCustomIDFee;
+            CustomIDFeeRateInfo _customIDFeeRateInfo;
 			Address _newRecipient;
 			bytes_t _newOwnerPublicKey;
 			bytes_t _secretaryPublicKey;
@@ -470,6 +597,11 @@ namespace Elastos {
 			// cr council member did
 			Address _crCouncilMemberDID;
 			bytes_t _crCouncilMemberSignature;
+
+			// upgrade code info
+			UpgradeCodeInfo _upgradeCodeInfo;
+
+			SideChainInfo _sidechainInfo;
 		};
 	}
 }

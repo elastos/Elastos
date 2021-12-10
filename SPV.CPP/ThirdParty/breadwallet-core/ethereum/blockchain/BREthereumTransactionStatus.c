@@ -59,7 +59,8 @@ transactionStatusCreateErrored (BREthereumTransactionErrorType type,
     BREthereumTransactionStatus status;
     status.type = TRANSACTION_STATUS_ERRORED;
     status.u.errored.type = type;
-    strlcpy (status.u.errored.detail, detail, TRANSACTION_STATUS_DETAIL_BYTES);
+    snprintf(status.u.errored.detail, sizeof(status.u.errored.detail), "%s", detail);
+//    strlcpy (status.u.errored.detail, detail, TRANSACTION_STATUS_DETAIL_BYTES);
     return status;
 }
 
@@ -167,6 +168,8 @@ transactionStatusRLPDecode (BRRlpItem item,
                     : transactionStatusCreate(TRANSACTION_STATUS_PENDING));
         }
     }
+
+    return transactionStatusCreate(type);
 }
 
 extern BRRlpItem

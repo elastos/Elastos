@@ -84,14 +84,6 @@ namespace Elastos {
 
 			void setDefaultGasLimit(uint64_t gasLimit);
 
-			// Balance
-			std::string getBalance() const;
-
-			std::string getBalance(EthereumAmount::Unit unit) const;
-
-			// Estimate GasPrice and Gas
-			void estimateGasPrice();
-
 			void estimateGas(const EthereumTransferPtr &transaction);
 
 			// Transactions
@@ -100,25 +92,35 @@ namespace Elastos {
 
 			std::string transferEstimatedFee(const std::string &amount) const;
 
-			EthereumTransferPtr createTransfer(const std::string &targetAddress, const std::string &amount,
-											   EthereumAmount::Unit amountUnit) const;
+            EthereumTransferPtr createTransfer(const std::string &targetAddress,
+                                               const std::string &amount,
+											   EthereumAmount::Unit amountUnit,
+                                               const std::string &gasPrice,
+                                               EthereumAmount::Unit gasPriceUnit,
+                                               const std::string &gasLimit,
+											   uint64_t nonce) const;
 
 			EthereumTransferPtr createTransferGeneric(const std::string &targetAddress,
-													  const std::string &amount, EthereumAmount::Unit amountUnit,
-													  const std::string &gasPrice, EthereumAmount::Unit gasPriceUnit,
-													  const std::string &gasLimit, const std::string &data) const;
+													  const std::string &amount,
+													  EthereumAmount::Unit amountUnit,
+													  const std::string &gasPrice,
+													  EthereumAmount::Unit gasPriceUnit,
+													  const std::string &gasLimit,
+													  const std::string &data,
+													  uint64_t nonce) const;
 
 			void sign(EthereumTransferPtr &transaction, const std::string &paperKey) const;
 
 			void signWithPrivateKey(EthereumTransferPtr &transaction, const BRKey &key) const;
 
-			void submit(const EthereumTransferPtr &transaction);
-
-			std::vector<EthereumTransferPtr> getTransfers() const;
-
 		private:
-			BREthereumTransfer createRawTransaction(const std::string &targetAddress, const std::string &amount,
-													EthereumAmount::Unit unit) const;
+			BREthereumTransfer createRawTransaction(const std::string &targetAddress,
+                                                    const std::string &amount,
+                                                    EthereumAmount::Unit amountUnit,
+                                                    const std::string &gasPrice,
+                                                    EthereumAmount::Unit gasPriceUnit,
+                                                    const std::string &gasLimit,
+                                                    uint64_t nonce) const;
 
 			BREthereumTransfer createRawTransactionGeneric(const std::string &to,
 														   const std::string &amount,
@@ -126,15 +128,12 @@ namespace Elastos {
 														   const std::string &gasPrice,
 														   EthereumAmount::Unit gasPriceUnit,
 														   const std::string &gasLimit,
-														   const std::string &data) const;
+														   const std::string &data,
+														   uint64_t nonce) const;
 
 			void signRawTransaction(BREthereumTransfer transaction, const std::string &paperKey) const;
 
 			void signRawTransactionWithPrivateKey(BREthereumTransfer transaction, const BRKey &key) const;
-
-			void submitRawTransaction(BREthereumTransfer transaction) const;
-
-			std::vector<EthereumTransferPtr> getRawTransactions() const;
 
 		private:
 			EthereumAccountPtr _account;

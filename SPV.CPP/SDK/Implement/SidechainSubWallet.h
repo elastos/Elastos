@@ -19,27 +19,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef __ELASTOS_SDK_SIDECHAINSUBWALLET_H__
 #define __ELASTOS_SDK_SIDECHAINSUBWALLET_H__
 
-#include "SubWallet.h"
+#include "ElastosBaseSubWallet.h"
 
 #include <ISidechainSubWallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class SidechainSubWallet : public virtual ISidechainSubWallet, public SubWallet {
+		class SidechainSubWallet : public virtual ISidechainSubWallet, public ElastosBaseSubWallet {
 		public:
 			virtual ~SidechainSubWallet();
 
 			virtual nlohmann::json CreateWithdrawTransaction(
-					const std::string &fromAddress,
+					const nlohmann::json &inputsJson,
 					const std::string &amount,
 					const std::string &mainChainAddress,
+					const std::string &fee,
 					const std::string &memo);
-
-			virtual std::string GetGenesisAddress() const;
 
 		protected:
 			friend class MasterWallet;

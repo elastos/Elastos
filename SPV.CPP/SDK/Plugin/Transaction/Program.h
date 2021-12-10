@@ -23,7 +23,7 @@ namespace Elastos {
 
 			Program(const Program &program);
 
-			Program(const std::string &path, const bytes_t &code, const bytes_t &parameter);
+			Program(const bytes_t &code, const bytes_t &parameter);
 
 			~Program();
 
@@ -43,15 +43,11 @@ namespace Elastos {
 
 			void SetParameter(const bytes_t &parameter);
 
-			void SetPath(const std::string &path);
-
-			const std::string &GetPath() const;
-
 			size_t EstimateSize() const;
 
-			void Serialize(ByteStream &stream, bool extend = false) const;
+			void Serialize(ByteStream &stream) const;
 
-			bool Deserialize(const ByteStream &stream, bool extend = false);
+			bool Deserialize(const ByteStream &stream);
 
 			virtual nlohmann::json ToJson() const;
 
@@ -62,7 +58,6 @@ namespace Elastos {
 			bool operator!=(const Program &p) const;
 
 		private:
-			std::string _path;
 			bytes_t _code;
 			bytes_t _parameter;
 		};

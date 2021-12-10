@@ -12,7 +12,6 @@
 #define BR_Ethereum_Log_h
 
 #include "ethereum/base/BREthereumBase.h"
-#include "BREthereumBloomFilter.h"
 #include "BREthereumTransactionStatus.h"
 
 #ifdef __cplusplus
@@ -38,12 +37,6 @@ typedef struct {
  */
 extern BREthereumLogTopic
 logTopicCreateFromString (const char *string);
-
-extern BREthereumBloomFilter
-logTopicGetBloomFilter (BREthereumLogTopic topic);
-
-extern BREthereumBloomFilter
-logTopicGetBloomFilterAddress (BREthereumAddress address);
 
 extern BREthereumBoolean
 logTopicMatchesAddress (BREthereumLogTopic topic,

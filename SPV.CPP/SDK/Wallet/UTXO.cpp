@@ -17,40 +17,26 @@ namespace Elastos {
 #define TX_UNCONFIRMED INT32_MAX
 
 		UTXO::UTXO() :
-			_n(0),
-			_timestamp(0),
-			_blockHeight(TX_UNCONFIRMED),
-			_output(new TransactionOutput()) {
+			_n(0) {
 		}
 
-		UTXO::UTXO(const UTXO &u) :
-			_output(new TransactionOutput()) {
+		UTXO::UTXO(const UTXO &u) {
 			this->operator=(u);
 		}
 
 		UTXO &UTXO::operator=(const UTXO &u) {
-			this->_n = u._n;
+            this->_address = u._address;
+            this->_amount = u._amount;
 			this->_hash = u._hash;
-			*this->_output = *u._output;
-			this->_timestamp = u._timestamp;
-			this->_blockHeight = u._blockHeight;
+            this->_n = u._n;
 			return *this;
 		}
 
-		UTXO::UTXO(const uint256 &hash, uint16_t i, time_t t, uint32_t h, const OutputPtr &o) :
+		UTXO::UTXO(const uint256 &hash, uint16_t n, const Address &address, const BigInt &amount) :
 			_hash(hash),
-			_n(i),
-			_timestamp(t),
-			_blockHeight(h),
-			_output(o) {
-		}
-
-		UTXO::UTXO(const InputPtr &input) :
-			_timestamp(0),
-			_blockHeight(0),
-			_output(nullptr) {
-			_hash = input->TxHash();
-			_n = input->Index();
+			_n(n),
+			_address(address),
+			_amount(amount) {
 		}
 
 		UTXO::~UTXO() {
@@ -76,35 +62,20 @@ namespace Elastos {
 			_n = index;
 		}
 
-		time_t UTXO::Timestamp() const {
-			return _timestamp;
+		const Address &UTXO::GetAddress() const {
+			return _address;
 		}
 
-		void UTXO::SetTimestamp(time_t t) {
-			_timestamp = t;
+		void UTXO::SetAddress(const Address &address) {
+			_address = address;
 		}
 
-		uint32_t UTXO::BlockHeight() const {
-			return _blockHeight;
+        const BigInt &UTXO::GetAmount() const {
+            return _amount;
 		}
 
-		void UTXO::SetBlockHeight(uint32_t h) {
-			_blockHeight = h;
-		}
-
-		const OutputPtr &UTXO::Output() const {
-			return _output;
-		}
-
-		void UTXO::SetOutput(const OutputPtr &o) {
-			_output = o;
-		}
-
-		uint32_t UTXO::GetConfirms(uint32_t lastBlockHeight) const {
-			if (_blockHeight == TX_UNCONFIRMED)
-				return 0;
-
-			return lastBlockHeight >= _blockHeight ? lastBlockHeight - _blockHeight + 1 : 0;
+        void UTXO::SetAmount(const BigInt &amount) {
+            _amount = amount;
 		}
 
 		bool UTXO::Equal(const InputPtr &input) const {

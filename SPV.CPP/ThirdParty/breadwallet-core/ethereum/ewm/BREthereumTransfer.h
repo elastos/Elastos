@@ -38,7 +38,8 @@ transferCreate (BREthereumAddress sourceAddress,
                 BREthereumAddress *targetAddress,
                 BREthereumAmount amount,
                 BREthereumFeeBasis feeBasis,
-                BREthereumTransferBasisType transferBasisType);
+                BREthereumTransferBasisType transferBasisType,
+                uint64_t nonce);
 
 /**
  * Create a transfer from a pre-existing transaction which is to be used as the
