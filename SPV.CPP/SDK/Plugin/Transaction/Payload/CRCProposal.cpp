@@ -783,7 +783,7 @@ namespace Elastos {
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
 			if (version >= CRCProposalVersion01)
-				j[JsonKeyDraftData] = Base64::Encode(_draftData);
+				j[JsonKeyDraftData] = EncodeDraftData(_draftData);
 			j[JsonKeyTargetProposalHash] = _targetProposalHash.GetHex();
 			j[JsonKeyNewRecipient] = _newRecipient.String();
 			j[JsonKeyNewOwnerPublicKey] = _newOwnerPublicKey.getHex();
@@ -994,7 +994,7 @@ namespace Elastos {
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
 			if (version >= CRCProposalVersion01)
-				j[JsonKeyDraftData] = Base64::Encode(_draftData);
+				j[JsonKeyDraftData] = EncodeDraftData(_draftData);
 			j[JsonKeyTargetProposalHash] = _targetProposalHash.GetHex();
 
 			return j;
@@ -1202,7 +1202,7 @@ namespace Elastos {
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
 			if (version >= CRCProposalVersion01)
-				j[JsonKeyDraftData] = Base64::Encode(_draftData);
+				j[JsonKeyDraftData] = EncodeDraftData(_draftData);
 			j[JsonKeySecretaryPublicKey] = _secretaryPublicKey.getHex();
 			j[JsonKeySecretaryDID] = _secretaryDID.String();
 
@@ -1412,7 +1412,7 @@ namespace Elastos {
             j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
             j[JsonKeyDraftHash] = _draftHash.GetHex();
             if (version >= CRCProposalVersion01)
-                j[JsonKeyDraftData] = Base64::Encode(_draftData);
+                j[JsonKeyDraftData] = EncodeDraftData(_draftData);
             j[JsonKeyReservedCustomIDList] = _reservedCustomIDList;
 
             return j;
@@ -1612,7 +1612,7 @@ namespace Elastos {
             j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
             j[JsonKeyDraftHash] = _draftHash.GetHex();
             if (version >= CRCProposalVersion01)
-                j[JsonKeyDraftData] = Base64::Encode(_draftData);
+                j[JsonKeyDraftData] = EncodeDraftData(_draftData);
             j[JsonKeyReceivedCustomIDList] = _receivedCustomIDList;
             j[JsonKeyReceiverDID] = _receiverDID.String();
 
@@ -1795,7 +1795,7 @@ namespace Elastos {
             j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
             j[JsonKeyDraftHash] = _draftHash.GetHex();
             if (version >= CRCProposalVersion01)
-                j[JsonKeyDraftData] = Base64::Encode(_draftData);
+                j[JsonKeyDraftData] = EncodeDraftData(_draftData);
             j[JsonKeyCustomIDFeeRateInfo] = _customIDFeeRateInfo.ToJson(version);
 
             return j;
@@ -1973,7 +1973,7 @@ namespace Elastos {
             j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
             j[JsonKeyDraftHash] = _draftHash.GetHex();
             if (version >= CRCProposalVersion01)
-                j[JsonKeyDraftData] = Base64::Encode(_draftData);
+                j[JsonKeyDraftData] = EncodeDraftData(_draftData);
             j[JsonKeySidechainInfo] = _sidechainInfo.ToJson(version);
 
             return j;
@@ -2344,7 +2344,7 @@ namespace Elastos {
 			j[JsonKeyOwnerPublicKey] = _ownerPublicKey.getHex();
 			j[JsonKeyDraftHash] = _draftHash.GetHex();
 			if (version >= CRCProposalVersion01)
-				j[JsonKeyDraftData] = Base64::Encode(_draftData);
+				j[JsonKeyDraftData] = EncodeDraftData(_draftData);
 			j[JsonKeyBudgets] = _budgets;
 			j[JsonKeyRecipient] = _recipient.String();
 			return j;
@@ -2631,11 +2631,21 @@ namespace Elastos {
 			return *this;
 		}
 
-        bytes_t CRCProposal::CheckAndDecodeDraftData(const std::string &draftData, const uint256 &draftHash) const {
-#if 0
-            bytes_t draftDataDecoded = Base64::Decode(draftData);
+//#define DraftData_Base64
+#define DraftData_Hexstring
+        std::string CRCProposal::EncodeDraftData(const bytes_t &draftData) const {
+#ifdef DraftData_Hexstring
+		    return draftData.getHex();
 #else
+            return Base64::Encode(draftData);
+#endif
+		}
+
+        bytes_t CRCProposal::CheckAndDecodeDraftData(const std::string &draftData, const uint256 &draftHash) const {
+#ifdef DraftData_Hexstring
             bytes_t draftDataDecoded(draftData);
+#else
+            bytes_t draftDataDecoded = Base64::Decode(draftData);
 #endif
             ErrorChecker::CheckParam(draftDataDecoded.size() > DRAFT_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "proposal origin content too large");
             uint256 draftHashDecoded(sha256_2(draftDataDecoded));
