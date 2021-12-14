@@ -182,7 +182,7 @@ namespace Elastos {
 			j[JsonKeyVoteResult] = _voteResult;
 			j[JsonKeyOpinionHash] = _opinionHash.GetHex();
 			if (version >= CRCProposalReviewVersion01)
-				j[JsonKeyOpinionData] = Base64::Encode(_opinionData);
+				j[JsonKeyOpinionData] = _opinionData.getHex();
 			j[JsonKeyDID] = _did.String();
 			return j;
 		}
@@ -193,7 +193,7 @@ namespace Elastos {
 			_opinionHash.SetHex(j[JsonKeyOpinionHash].get<std::string>());
 			if (version >= CRCProposalReviewVersion01) {
 				std::string opinionData = j[JsonKeyOpinionData].get<std::string>();
-				_opinionData = Base64::Decode(opinionData);
+				_opinionData.setHex(opinionData);
 				ErrorChecker::CheckParam(_opinionData.size() > OPINION_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "opinion hash too large");
 				uint256 opinionHash(sha256_2(_opinionData));
 				ErrorChecker::CheckParam(opinionHash != _opinionHash, Error::ProposalHashNotMatch, "opinion hash not match");

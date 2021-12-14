@@ -333,7 +333,7 @@ namespace Elastos {
 			j[JsonKeyProposalHash] = _proposalHash.GetHex();
 			j[JsonKeyMessageHash] = _messageHash.GetHex();
 			if (version >= CRCProposalTrackingVersion01)
-				j[JsonKeyMessageData] = Base64::Encode(_messageData);
+				j[JsonKeyMessageData] = _messageData.getHex();
 			j[JsonKeyStage] = _stage;
 			j[JsonKeyOwnerPublicKey] = _ownerPubKey.getHex();
 			j[JsonKeyNewOwnerPublicKey] = _newOwnerPubKey.getHex();
@@ -345,7 +345,7 @@ namespace Elastos {
 			_messageHash.SetHex(j[JsonKeyMessageHash].get<std::string>());
 			if (version >= CRCProposalTrackingVersion01) {
 				std::string messageData = j[JsonKeyMessageData].get<std::string>();
-				_messageData = Base64::Decode(messageData);
+				_messageData.setHex(messageData);
 				ErrorChecker::CheckParam(_messageData.size() > MESSAGE_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "message data size too large");
 				uint256 messageHash(sha256_2(_messageData));
 				ErrorChecker::CheckParam(messageHash != _messageHash, Error::ProposalHashNotMatch, "message hash not match");
@@ -372,7 +372,7 @@ namespace Elastos {
 			j[JsonKeyType] = _type;
 			j[JsonKeySecretaryGeneralOpinionHash] = _secretaryGeneralOpinionHash.GetHex();
 			if (version >= CRCProposalTrackingVersion01)
-				j[JsonKeySecretaryGeneralOpinionData] = Base64::Encode(_secretaryGeneralOpinionData);
+				j[JsonKeySecretaryGeneralOpinionData] = _secretaryGeneralOpinionData.getHex();
 			return j;
 		}
 
@@ -383,7 +383,7 @@ namespace Elastos {
 			_secretaryGeneralOpinionHash.SetHex(j[JsonKeySecretaryGeneralOpinionHash].get<std::string>());
 			if (version >= CRCProposalTrackingVersion01) {
 				std::string data = j[JsonKeySecretaryGeneralOpinionData].get<std::string>();
-				_secretaryGeneralOpinionData = Base64::Decode(data);
+				_secretaryGeneralOpinionData.setHex(data);
 				ErrorChecker::CheckParam(_secretaryGeneralOpinionData.size() > OPINION_DATA_MAX_SIZE, Error::ProposalContentTooLarge, "opinion data size too large");
 				uint256 opinionHash(sha256_2(_secretaryGeneralOpinionData));
 				ErrorChecker::CheckParam(opinionHash != _secretaryGeneralOpinionHash, Error::ProposalHashNotMatch, "opinion hash not match");
