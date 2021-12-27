@@ -45,6 +45,9 @@ namespace Elastos {
 			ArgInfo("target: {}", targetAddress);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("amountUnit: {}", amountUnit);
+			ArgInfo("gasPrice: {}", gasPrice);
+			ArgInfo("gasPriceUnit: {}", gasPriceUnit);
+			ArgInfo("gasLimit: {}", gasLimit);
 			ArgInfo("nonce: {}", nonce);
 
 			if (amountUnit != TOKEN_DECIMAL &&

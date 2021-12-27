@@ -110,17 +110,27 @@ finish:
 			return _key;
 		}
 
-		bytes_t secp256k1_key::getPrivKey() const {
-			ErrorChecker::CheckLogic(!_key, Error::Key, "prv key is not set");
+        bytes_t secp256k1_key::getPrivKey() const {
+            bytes_t privKey(32);
+            if (_key == NULL) {
+                Log::error("getPrivKey fail: _key is null");
+                return privKey;
+            }
 
-			const BIGNUM *bn = EC_KEY_get0_private_key(_key);
-			ErrorChecker::CheckLogic(!bn, Error::Key, "get prv key fail");
+            const BIGNUM *bn = EC_KEY_get0_private_key(_key);
+            if (bn == NULL) {
+                Log::error("getPrivKey fail: EC_KEY_get0_private_key(_key) return null");
+                return privKey;
+            }
 
-			bytes_t privKey(32);
-			assert(BN_num_bytes(bn) <= 32);
-			BN_bn2bin(bn, &privKey[0]);
-			return privKey;
-		}
+            if (BN_num_bytes(bn) <= 32) {
+                BN_bn2bin(bn, &privKey[32 - BN_num_bytes(bn)]);
+            } else {
+                Log::error("BN_num_bytes should <= 32, but get {}", BN_num_bytes(bn));
+            }
+
+            return privKey;
+        }
 
 		EC_KEY *secp256k1_key::setPrivKey(CoinType type, const bytes_t &privkey) {
 			if (_key) EC_KEY_free(_key);
