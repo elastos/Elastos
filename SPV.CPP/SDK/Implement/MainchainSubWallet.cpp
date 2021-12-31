@@ -356,7 +356,12 @@ namespace Elastos {
 			bgAmount.setDec(amount);
 
             OutputArray outputs;
-            Address receiveAddr = (*utxo.begin())->GetAddress();
+            AddressArray addresses;
+            _walletManager->GetWallet()->GetAddresses(addresses, 0, 1, false);
+
+            ErrorChecker::CheckLogic(addresses.empty(), Error::Address, "can't get address");
+            Address receiveAddr = addresses[0];
+
             outputs.push_back(OutputPtr(new TransactionOutput(bgAmount - feeAmount, receiveAddr)));
 
 			PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());
