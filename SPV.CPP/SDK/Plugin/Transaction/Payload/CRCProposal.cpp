@@ -1628,7 +1628,7 @@ namespace Elastos {
                 std::string draftData = j[JsonKeyDraftData].get<std::string>();
                 _draftData = CheckAndDecodeDraftData(draftData, _draftHash);
             }
-            _receivedCustomIDList = j[JsonKeyReservedCustomIDList].get<std::vector<std::string>>();
+            _receivedCustomIDList = j[JsonKeyReceivedCustomIDList].get<std::vector<std::string>>();
             _receiverDID = Address(j[JsonKeyReceiverDID].get<std::string>());
 		}
 
