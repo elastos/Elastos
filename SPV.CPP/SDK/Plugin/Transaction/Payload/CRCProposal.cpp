@@ -1980,6 +1980,7 @@ namespace Elastos {
 		}
 
         void CRCProposal::FromJsonRegisterSidechainUnsigned(const nlohmann::json &j, uint8_t version) {
+		    _type = CRCProposal::Type(j[JsonKeyType].get<uint16_t>());
             _categoryData = j[JsonKeyCategoryData].get<std::string>();
             _ownerPublicKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
             _draftHash.SetHex(j[JsonKeyDraftHash].get<std::string>());
