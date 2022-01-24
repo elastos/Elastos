@@ -587,8 +587,8 @@ namespace Elastos {
 			if (GetSignType() != account->GetSignType())
 				return false;
 
-            if (_xpub == nullptr && account->MasterPubKey() != nullptr ||
-                _xpub != nullptr && account->MasterPubKey() == nullptr)
+            if ((_xpub == nullptr && account->MasterPubKey() != nullptr) ||
+                (_xpub != nullptr && account->MasterPubKey() == nullptr))
                 return false;
 
 			if (_xpub == nullptr && account->MasterPubKey() == nullptr)
