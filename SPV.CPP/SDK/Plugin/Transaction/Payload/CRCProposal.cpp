@@ -2406,7 +2406,7 @@ namespace Elastos {
 			    case reserveCustomID: FromJsonReserveCustomIDCRCouncilMemberUnsigned(j, version); break;
 			    case receiveCustomID: FromJsonReceiveCustomIDCRCouncilMemberUnsigned(j, version); break;
 			    case changeCustomIDFee: FromJsonChangeCustomIDFeeCRCouncilMemberUnsigned(j, version); break;
-			    case registerSideChain: FromJsonRegisterSidechainCRCouncilMemberUnsigned(j, version);
+			    case registerSideChain: FromJsonRegisterSidechainCRCouncilMemberUnsigned(j, version); break;
 				default: SPVLOG_ERROR("unknow type: {}", _type); return;
 			}
             _crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
