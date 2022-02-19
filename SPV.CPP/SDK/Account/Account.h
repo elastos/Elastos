@@ -62,6 +62,10 @@ namespace Elastos {
 			Account(const std::string &path, const std::string &mnemonic, const std::string &passphrase,
 					const std::string &payPasswd, bool singleAddress);
 
+            // HD standard with seed + [mnemonic:passphrase]
+            Account(const std::string &path, const uint512 &seed, const std::string &payPasswd, bool singleAddress,
+                    const std::string &mnemonic, const std::string &passphrase);
+
 			// only eth subwallet with single private key
 			Account(const std::string &path, const std::string singlePrivateKey, const std::string &passwd);
 

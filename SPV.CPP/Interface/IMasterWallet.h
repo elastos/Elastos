@@ -85,6 +85,13 @@ namespace Elastos {
 			 */
 			virtual std::string ExportMnemonic(const std::string &payPassword) const = 0;
 
+            /**
+             * Export seed of the current wallet.
+             * @param payPassword  use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+             * @return If success will return the seed of master wallet.
+             */
+            virtual std::string ExportSeed(const std::string &payPassword) const = 0;
+
 			/**
 			 * Export root private key of the current wallet.
 			 * @param payPasswd use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.

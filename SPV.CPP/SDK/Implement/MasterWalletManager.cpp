@@ -480,7 +480,7 @@ namespace Elastos {
 				return _masterWalletMap[masterWalletID];
 			}
 
-			ErrorChecker::CheckLogic(!Mnemonic::Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");
+            ErrorChecker::CheckParam(!Mnemonic::Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletID, mnemonic, phrasePassword, payPassword,
 														  singleAddress, ConfigPtr(new Config(*_config)),
@@ -492,6 +492,50 @@ namespace Elastos {
 
 			return masterWallet;
 		}
+
+        IMasterWallet *MasterWalletManager::ImportWalletWithSeed(const std::string &masterWalletID,
+                                                                 const std::string &seed,
+                                                                 const std::string &payPassword,
+                                                                 bool singleAddress,
+                                                                 const std::string &mnemonic,
+                                                                 const std::string &passphrase) {
+            ArgInfo("{}", GetFunName());
+            ArgInfo("masterWalletID: {}", masterWalletID);
+            ArgInfo("seed: *");
+            ArgInfo("payPassword: *");
+            ArgInfo("singleAddr: {}", singleAddress);
+            ArgInfo("mnemonic: *, empty: {}", mnemonic.empty());
+            ArgInfo("passphrase: *, empty: {}", passphrase.empty());
+
+            boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
+
+            ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
+            ErrorChecker::CheckPassword(payPassword, "Pay");
+
+            uint512 s;
+            s.SetHex(seed);
+
+            if (!mnemonic.empty()) {
+                ErrorChecker::CheckParam(!Mnemonic::Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");
+                uint512 stmp = Mnemonic::DeriveSeed(mnemonic, passphrase);
+                ErrorChecker::CheckParam(s != stmp, Error::Mnemonic, "seed not matches [mnemonic+passphrase]");
+            }
+
+            if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
+                ArgInfo("r => already exist");
+                return _masterWalletMap[masterWalletID];
+            }
+
+            MasterWallet *masterWallet = new MasterWallet(masterWalletID, s, payPassword, singleAddress, mnemonic,
+                                                          passphrase, ConfigPtr(new Config(*_config)),
+                                                          _dataPath);
+            checkRedundant(masterWallet);
+            _masterWalletMap[masterWalletID] = masterWallet;
+
+            ArgInfo("r => import with seed + [mnemonic:passphrase]");
+
+            return masterWallet;
+        }
 
 //		IMasterWallet *MasterWalletManager::ImportReadonlyWallet(
 //			const std::string &masterWalletID,

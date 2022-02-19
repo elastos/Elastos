@@ -129,6 +129,14 @@ namespace Elastos {
 				bool singleAddress,
 				time_t timestamp = 0);
 
+            virtual IMasterWallet *ImportWalletWithSeed(
+                    const std::string &masterWalletID,
+                    const std::string &seed,
+                    const std::string &payPassword,
+                    bool singleAddress,
+                    const std::string &mnemonic = "",
+                    const std::string &passphrase = "");
+
 			virtual std::string GetVersion() const;
 
 			virtual void FlushData();

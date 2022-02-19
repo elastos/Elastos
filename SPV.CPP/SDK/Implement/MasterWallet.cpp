@@ -71,6 +71,24 @@ namespace Elastos {
             SetupNetworkParameters();
 		}
 
+        MasterWallet::MasterWallet(
+                const std::string &id,
+                const uint512 &seed,
+                const std::string &payPasswd,
+                bool singleAddress,
+                const std::string &mnemonic, // can be empty
+                const std::string &passphrase, // can be empty
+                const ConfigPtr &config,
+                const std::string &dataPath) :
+                _id(id),
+                _config(config) {
+
+            _account = AccountPtr(new Account(dataPath + "/" + _id, seed, payPasswd, singleAddress,
+                                              mnemonic, passphrase));
+            _account->Save();
+            SetupNetworkParameters();
+        }
+
         MasterWallet::MasterWallet(const std::string &id,
                                    const std::string &singlePrivateKey,
                                    const std::string &passwd,
@@ -356,7 +374,17 @@ namespace Elastos {
 			return mnemonic;
 		}
 
-		std::string MasterWallet::ExportPrivateKey(const std::string &payPasswd) const {
+        std::string MasterWallet::ExportSeed(const std::string &payPassword) const {
+            ArgInfo("{} {}", _id, GetFunName());
+            ArgInfo("payPassword: *");
+
+            uint512 seed = _account->GetSeed(payPassword);
+
+            ArgInfo("r => *");
+            return seed.GetHex();
+        }
+
+        std::string MasterWallet::ExportPrivateKey(const std::string &payPasswd) const {
 			ArgInfo("{} {}", _id, GetFunName());
 			ArgInfo("payPsswd: *");
 

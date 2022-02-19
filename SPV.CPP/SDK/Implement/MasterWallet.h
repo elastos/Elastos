@@ -76,6 +76,8 @@ namespace Elastos {
 
 			std::string ExportMnemonic(const std::string &payPassword) const;
 
+            std::string ExportSeed(const std::string &payPassword) const;
+
 //			nlohmann::json ExportReadonlyWallet() const;
 
 			std::string ExportPrivateKey(const std::string &payPasswd) const;
@@ -133,6 +135,16 @@ namespace Elastos {
 					bool singleAddress,
 					const ConfigPtr &config,
 					const std::string &dataPath);
+
+            MasterWallet(
+                    const std::string &id,
+                    const uint512 &seed,
+                    const std::string &payPasswd,
+                    bool singleAddress,
+                    const std::string &mnemonic, // can be empty
+                    const std::string &passphrase, // can be empty
+                    const ConfigPtr &config,
+                    const std::string &dataPath);
 
             MasterWallet(
                     const std::string &id,

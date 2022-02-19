@@ -192,22 +192,42 @@ namespace Elastos {
 					const std::string &payPassword) = 0;
 
 			/**
-			 * Import master wallet by mnemonic.
-			 * @param masterWalletID is the unique identification of a master wallet object.
-			 * @param mnemonic for importing the master wallet.
-			 * @param phrasePassword combine with mnemonic to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
-			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			 * @param singleAddress singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security.
-			 * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
-			 * @return If success will return a pointer of master wallet interface.
+			 * Import master wallet by mnemonic
+			 * @param masterWalletID is the unique identification of a master wallet object
+			 * @param mnemonic for importing the master wallet
+			 * @param passphrase combine with mnemonic to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
+			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception
+			 * @param singleAddress singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security
+			 * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction
+			 * @return If success will return a pointer of master wallet interface
 			 */
 			virtual IMasterWallet *ImportWalletWithMnemonic(
 					const std::string &masterWalletID,
 					const std::string &mnemonic,
-					const std::string &phrasePassword,
+					const std::string &passphrase,
 					const std::string &payPassword,
 					bool singleAddress,
 					time_t timestamp = 0) = 0;
+
+            /**
+             * Import master wallet by seed
+             * Node: If the mnemonic is not empty, verify that the seed matches mnemonic + passphrase.
+             *  If the mnemonic is empty, IMasterWallet::ExportMnemonic() will return empty.
+             * @param masterWalletID is the unique identification of a master wallet object
+             * @param seed hex-string of uint512
+             * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception
+             * @param singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security
+             * @param mnemonic mnemonic words string separated by spaces
+             * @param passphrase combine with mnemonic to generate seed
+             * @return If success will return a pointer of master wallet interface
+             */
+            virtual IMasterWallet *ImportWalletWithSeed(
+                    const std::string &masterWalletID,
+                    const std::string &seed,
+                    const std::string &payPassword,
+                    bool singleAddress,
+                    const std::string &mnemonic = "",
+                    const std::string &passphrase = "") = 0;
 
 			/**
 			 * Get version
