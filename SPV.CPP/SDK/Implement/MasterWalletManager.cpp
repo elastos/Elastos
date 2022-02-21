@@ -512,8 +512,9 @@ namespace Elastos {
             ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
             ErrorChecker::CheckPassword(payPassword, "Pay");
 
+            bytes_t seedBytes(seed);
             uint512 s;
-            s.SetHex(seed);
+            s = seedBytes;
 
             if (!mnemonic.empty()) {
                 ErrorChecker::CheckParam(!Mnemonic::Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");

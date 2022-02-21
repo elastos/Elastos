@@ -379,9 +379,10 @@ namespace Elastos {
             ArgInfo("payPassword: *");
 
             uint512 seed = _account->GetSeed(payPassword);
+            bytes_t seedBytes = seed.bytes();
 
             ArgInfo("r => *");
-            return seed.GetHex();
+            return seedBytes.getHex();
         }
 
         std::string MasterWallet::ExportPrivateKey(const std::string &payPasswd) const {
