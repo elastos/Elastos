@@ -45,8 +45,11 @@
 #include <fstream>
 #include <vector>
 #include <IBTCSubWallet.h>
+#include <boost/program_options.hpp>
 
 using namespace Elastos::ElaWallet;
+
+namespace po = boost::program_options;
 
 #define ERRNO_APP -255
 #define ERRNO_CMD -1
@@ -209,74 +212,108 @@ static int create(int argc, char *argv[]) {
 	checkParam(2);
 
 	try {
+        IMasterWallet *masterWallet = nullptr;
 		std::string walletName = argv[1];
 		if (nullptr != manager->GetMasterWallet(walletName)) {
 			std::cerr << "Wallet '" << walletName << "' already exist." << std::endl;
 			return ERRNO_APP;
 		}
 
-		std::cout << "What mnemonic language would you like?" << std::endl;
-		std::cout << "English (Default)" << std::endl;
-		std::cout << "Chinese" << std::endl;
-		std::cout << "Japanese" << std::endl;
-		std::cout << "French" << std::endl;
-		std::cout << "Spanish" << std::endl;
-		std::cout << "Enter language (empty for default): ";
+		std::cout << "Create multi-sign wallet? (y/n default: n)" << std::endl;
+		std::cout << "Enter your input (empty for default): ";
+		std::string isMultisignWallet;
+		std::getline(std::cin, isMultisignWallet);
+		if (isMultisignWallet.empty())
+		    isMultisignWallet = "n";
 
-		std::string language;
-		std::getline(std::cin, language);
-		if (language.empty())
-			language = "English";
+		if (isMultisignWallet == "y") {
+            std::cout << "Enter xpubkey of cosigner (exit: q)" << std::endl;
+            nlohmann::json cosigners;
+		    std::string cosigner;
+		    while (1) {
+		        std::cout << "xpubkey: ";
+		        std::getline(std::cin, cosigner);
+		        if (cosigner == "q") {
+		            break;
+		        }
 
-		int wordCount = 12;
-		std::cout << "How many mnemonic word count would you like?" << std::endl;
-		std::cout << "12 (Default)" << std::endl;
-		std::cout << "15" << std::endl;
-		std::cout << "18" << std::endl;
-		std::cout << "21" << std::endl;
-		std::cout << "24" << std::endl;
-		std::cout << "Enter word count (empty for default): ";
+                cosigners.push_back(cosigner);
+		    }
 
-		std::string wordCountString;
-		std::getline(std::cin, wordCountString);
-		if (!wordCountString.empty())
-			wordCount = std::stoi(wordCountString);
+		    uint32_t m;
+            std::cout << "How many signers(m) ?" << std::endl;
+            std::cout << "Enter m: ";
+            std::cin >> m;
 
-		const std::string mnemonic = manager->GenerateMnemonic(language, wordCount);
+            masterWallet = manager->CreateMultiSignMasterWallet(walletName, cosigners, m, false, false, 0);
 
-		std::cout << "Please write down the following mnemonic words." << std::endl;
-		std::cout << mnemonic << std::endl;
-		std::cout << "Then press enter to continue...";
-		std::cin.get();
+		} else if (isMultisignWallet == "n") {
+            std::cout << "What mnemonic language would you like?" << std::endl;
+            std::cout << "English (Default)" << std::endl;
+            std::cout << "Chinese" << std::endl;
+            std::cout << "Japanese" << std::endl;
+            std::cout << "French" << std::endl;
+            std::cout << "Spanish" << std::endl;
+            std::cout << "Enter language (empty for default): ";
 
-		std::string password, passphrase;
+            std::string language;
+            std::getline(std::cin, language);
+            if (language.empty())
+                language = "English";
 
-		if (0 > createPassphrase(passphrase)) {
-			std::cerr << "Create failed!" << std::endl;
-			return ERRNO_APP;
+            int wordCount = 12;
+            std::cout << "How many mnemonic word count would you like?" << std::endl;
+            std::cout << "12 (Default)" << std::endl;
+            std::cout << "15" << std::endl;
+            std::cout << "18" << std::endl;
+            std::cout << "21" << std::endl;
+            std::cout << "24" << std::endl;
+            std::cout << "Enter word count (empty for default): ";
+
+            std::string wordCountString;
+            std::getline(std::cin, wordCountString);
+            if (!wordCountString.empty())
+                wordCount = std::stoi(wordCountString);
+
+            const std::string mnemonic = manager->GenerateMnemonic(language, wordCount);
+
+            std::cout << "Please write down the following mnemonic words." << std::endl;
+            std::cout << mnemonic << std::endl;
+            std::cout << "Then press enter to continue...";
+            std::cin.get();
+
+            std::string password, passphrase;
+
+            if (0 > createPassphrase(passphrase)) {
+                std::cerr << "Create failed!" << std::endl;
+                return ERRNO_APP;
+            }
+
+            if (0 > createPaymentPassword(password)) {
+                std::cerr << "Create failed!" << std::endl;
+                return ERRNO_APP;
+            }
+
+            masterWallet = manager->CreateMasterWallet(walletName, mnemonic, passphrase, password, false);
+        } else {
+		    std::cout << "Invalid input" << std::endl;
+		    return ERRNO_APP;
 		}
 
-		if (0 > createPaymentPassword(password)) {
-			std::cerr << "Create failed!" << std::endl;
-			return ERRNO_APP;
-		}
+        if (!masterWallet) {
+            std::cerr << "Create master wallet failed." << std::endl;
+            return ERRNO_APP;
+        }
 
-		IMasterWallet *masterWallet = manager->CreateMasterWallet(walletName,
-																  mnemonic, passphrase, password, false);
-		if (!masterWallet) {
-			std::cerr << "Create master wallet failed." << std::endl;
-			return ERRNO_APP;
-		}
+        ISubWallet *subWallet = masterWallet->CreateSubWallet(CHAINID_ELA);
+        if (!subWallet) {
+            std::cerr << "Create main chain wallet failed." << std::endl;
+            return ERRNO_APP;
+        }
 
-		ISubWallet *subWallet = masterWallet->CreateSubWallet(CHAINID_ELA);
-		if (!subWallet) {
-			std::cerr << "Create main chain wallet failed." << std::endl;
-			return ERRNO_APP;
-		}
+        std::cout << "Wallet create success." << std::endl;
 
-		std::cout << "Wallet create success." << std::endl;
-
-		currentWallet = masterWallet;
+        currentWallet = masterWallet;
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -441,8 +478,13 @@ static int remove(int argc, char *argv[]) {
 static int list(int argc, char *argv[]) {
     if (argc == 1) {
         std::vector<std::string> walletIDs = manager->GetAllMasterWalletID();
-        for (const std::string &walletName : walletIDs)
-            std::cout << walletName << std::endl;
+        for (const std::string &walletName : walletIDs) {
+            if (walletName == currentWallet->GetID()) {
+                std::cout << " * " << walletName << std::endl;
+            } else {
+                std::cout << "   " << walletName << std::endl;
+            }
+        }
     } else if (argc == 2) {
         std::string walletName = argv[1];
         IMasterWallet *masterWallet = manager->GetMasterWallet(walletName);
@@ -1287,7 +1329,8 @@ static int _export(int argc, char *argv[]) {
 		    std::cout << xprv << std::endl;
         } else if (exportWhat == "xpub") {
             std::string xpub = currentWallet->ExportMasterPublicKey();
-            std::cout << xpub << std::endl;
+            std::cout << "xpub: " << xpub << std::endl;
+            std::cout << "xpub info: " << currentWallet->GetPubKeyInfo().dump(4) << std::endl;
         } else if (exportWhat == "privatekey" || exportWhat == "p") {
 		    IEthSidechainSubWallet *ethSubWallet = dynamic_cast<IEthSidechainSubWallet*>(currentWallet->GetSubWallet("ETHSC"));
 		    if (ethSubWallet == NULL) {
