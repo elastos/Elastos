@@ -1,7 +1,24 @@
-// Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
-
+/*
+ * Copyright (c) 2022 Elastos Foundation LTD.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #ifndef __ELASTOS_SDK_TRANSACTION_H__
 #define __ELASTOS_SDK_TRANSACTION_H__
 
@@ -70,6 +87,20 @@ namespace Elastos {
 				crcProposalRealWithdraw  = 0x2a,
 				crcAssetsRectify         = 0x2b,
 				crCouncilMemberClaimNode = 0x31,
+
+                RevertToPOW              = 0x41,
+                RevertToDPOS             = 0x42,
+
+                ReturnSideChainDepositCoin = 0x51,
+
+                // DPoS2.0
+                DposV2ClaimReward             = 0x60,
+                DposV2ClaimRewardRealWithdraw = 0x61,
+                Stake                         = 0x62,
+                Voting                        = 0x63,
+                CancelVotes                   = 0x64,
+                Unstake                       = 0x65,
+                UnstakeRealWithdraw           = 0x66,
 
 				TypeMaxCount
 			};

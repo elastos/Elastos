@@ -53,6 +53,12 @@
 #include <ethereum/base/BREthereumLogic.h>
 #include <Plugin/Transaction/Payload/OutputPayload/PayloadCrossChain.h>
 #include <Plugin/Transaction/Payload/TransferAsset.h>
+#include <Plugin/Transaction/Payload/Stake.h>
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadStake.h>
+#include <Plugin/Transaction/Payload/Voting.h>
+#include <Plugin/Transaction/Payload/DPoSV2ClaimReward.h>
+#include <Plugin/Transaction/Payload/CancelVotes.h>
+#include <Plugin/Transaction/Payload/Unstake.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -1931,6 +1937,234 @@ namespace Elastos {
             EncodeTx(result, tx);
             ArgInfo("r => {}", result.dump());
 
+            return result;
+        }
+
+        nlohmann::json MainchainSubWallet::CreateStakeTransaction(
+                const nlohmann::json &inputs,
+                const nlohmann::json &payload,
+                const std::string &lockAddress,
+                const std::string &amount,
+                const std::string &fee,
+                const std::string &memo) const {
+            WalletPtr wallet = _walletManager->GetWallet();
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("inputs: {}", inputs.dump());
+            ArgInfo("payload: {}", payload.dump());
+            ArgInfo("lockAddress: {}", lockAddress);
+            ArgInfo("amount: {}", amount);
+            ArgInfo("fee: {}", fee);
+            ArgInfo("memo: {}", memo);
+
+            UTXOSet utxo;
+            UTXOFromJson(utxo, inputs);
+
+            uint8_t version = 0;
+            PayloadPtr p(new Stake());
+            OutputPayloadPtr outputpayload(new PayloadStake());
+            try {
+                outputpayload->FromJson(payload);
+            } catch (const nlohmann::json::exception &e) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "payload from json");
+            }
+
+            BigInt bgAmount;
+            bgAmount.setDec(amount);
+            Address receiveAddr(lockAddress);
+
+            OutputArray outputs;
+            outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr, Asset::GetELAAssetID(),
+                                                              TransactionOutput::Stake, outputpayload)));
+
+            BigInt feeAmount;
+            feeAmount.setDec(fee);
+
+            TransactionPtr tx = wallet->CreateTransaction(Transaction::Stake, p, utxo, outputs, memo, feeAmount);
+            tx->SetPayloadVersion(version);
+
+            nlohmann::json result;
+            EncodeTx(result, tx);
+            ArgInfo("r => {}", result.dump());
+
+            return result;
+        }
+
+        nlohmann::json MainchainSubWallet::CreateDPoSV2VoteTransaction(
+                const nlohmann::json &inputs,
+                const nlohmann::json &payload,
+                const std::string &fee,
+                const std::string &memo) const {
+            WalletPtr wallet = _walletManager->GetWallet();
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("inputs: {}", inputs.dump());
+            ArgInfo("payload: {}", payload.dump());
+            ArgInfo("fee: {}", fee);
+            ArgInfo("memo: {}", memo);
+
+            UTXOSet utxo;
+            UTXOFromJson(utxo, inputs);
+
+            uint8_t version = 0;
+            PayloadPtr p(new Voting());
+            try {
+                payload.at("Version").get_to(version);
+                p->FromJson(payload, version);
+            } catch (const nlohmann::json::exception &e) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "payload from json");
+            }
+
+            BigInt feeAmount;
+            feeAmount.setDec(fee);
+
+            TransactionPtr tx = wallet->CreateTransaction(Transaction::Voting, p, utxo, {}, memo, feeAmount);
+            tx->SetPayloadVersion(version);
+
+            nlohmann::json result;
+            EncodeTx(result, tx);
+            ArgInfo("r => {}", result.dump());
+
+            return result;
+        }
+
+        std::string MainchainSubWallet::DPoSV2ClaimRewardDigest(const nlohmann::json &payload) const {
+            WalletPtr wallet = _walletManager->GetWallet();
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("payload: {}", payload.dump());
+
+            uint8_t version = DPoSV2ClaimRewardVersion;
+            DPoSV2ClaimReward p;
+            try {
+                p.FromJsonUnsigned(payload, version);
+            } catch (const nlohmann::json::exception &e) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "payload from json");
+            }
+
+            uint256 digest = p.DigestDPoSV2ClaimReward(version);
+
+            ArgInfo("r => {}", digest.GetHex());
+            return digest.GetHex();
+        }
+
+        nlohmann::json MainchainSubWallet::CreateDPoSV2ClaimRewardTransaction(
+                const nlohmann::json &inputs,
+                const nlohmann::json &payload,
+                const std::string &fee,
+                const std::string &memo) const {
+            WalletPtr wallet = _walletManager->GetWallet();
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("inputs: {}", inputs.dump());
+            ArgInfo("payload: {}", payload.dump());
+            ArgInfo("fee: {}", fee);
+            ArgInfo("memo: {}", memo);
+
+            UTXOSet utxo;
+            UTXOFromJson(utxo, inputs);
+
+            uint8_t version = DPoSV2ClaimRewardVersion;
+            PayloadPtr p(new DPoSV2ClaimReward());
+            try {
+                p->FromJson(payload, version);
+            } catch (const nlohmann::json::exception &e) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "payload from json");
+            }
+            BigInt feeAmount;
+            feeAmount.setDec(fee);
+
+            TransactionPtr tx = wallet->CreateTransaction(Transaction::DposV2ClaimReward, p, utxo, {}, memo, feeAmount);
+            tx->SetPayloadVersion(version);
+
+            nlohmann::json result;
+            EncodeTx(result, tx);
+            ArgInfo("r => {}", result.dump());
+
+            return result;
+        }
+
+        nlohmann::json MainchainSubWallet::CreateCancelVotesTransaction(
+                const nlohmann::json &inputs,
+                const nlohmann::json &payload,
+                const std::string &fee,
+                const std::string &memo) const {
+            WalletPtr wallet = _walletManager->GetWallet();
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("inputs: {}", inputs.dump());
+            ArgInfo("payload: {}", payload.dump());
+            ArgInfo("fee: {}", fee);
+            ArgInfo("memo: {}", memo);
+
+            UTXOSet utxo;
+            UTXOFromJson(utxo, inputs);
+
+            uint8_t version = 0;
+            PayloadPtr p(new CancelVotes());
+            try {
+                p->FromJson(payload, version);
+            } catch (const nlohmann::json::exception &e) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "payload from json");
+            }
+            BigInt feeAmount;
+            feeAmount.setDec(fee);
+
+            TransactionPtr tx = wallet->CreateTransaction(Transaction::CancelVotes, p, utxo, {}, memo, feeAmount);
+            tx->SetPayloadVersion(version);
+
+            nlohmann::json result;
+            EncodeTx(result, tx);
+            ArgInfo("r => {}", result.dump());
+            return result;
+        }
+
+        std::string MainchainSubWallet::UnstakeDigest(const nlohmann::json &payload) const {
+            WalletPtr wallet = _walletManager->GetWallet();
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("payload: {}", payload.dump());
+
+            uint8_t version = 0;
+            Unstake p;
+            try {
+                p.FromJsonUnsigned(payload, version);
+            } catch (const nlohmann::json::exception &e) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "payload from json");
+            }
+
+            uint256 digest = p.DigestUnstake(version);
+
+            ArgInfo("r => {}", digest.GetHex());
+            return digest.GetHex();
+        }
+
+        nlohmann::json MainchainSubWallet::CreateUnstakeTransaction(
+                const nlohmann::json &inputs,
+                const nlohmann::json &payload,
+                const std::string &fee,
+                const std::string &memo) const {
+            WalletPtr wallet = _walletManager->GetWallet();
+            ArgInfo("{} {}", GetSubWalletID(), GetFunName());
+            ArgInfo("inputs: {}", inputs.dump());
+            ArgInfo("payload: {}", payload.dump());
+            ArgInfo("fee: {}", fee);
+            ArgInfo("memo: {}", memo);
+
+            UTXOSet utxo;
+            UTXOFromJson(utxo, inputs);
+
+            uint8_t version = 0;
+            PayloadPtr p(new Unstake());
+            try {
+                p->FromJson(payload, version);
+            } catch (const nlohmann::json::exception &e) {
+                ErrorChecker::ThrowParamException(Error::InvalidArgument, "payload from json");
+            }
+
+            BigInt feeAmount;
+            feeAmount.setDec(fee);
+
+            TransactionPtr tx = wallet->CreateTransaction(Transaction::CancelVotes, p, utxo, {}, memo, feeAmount);
+            tx->SetPayloadVersion(version);
+
+            nlohmann::json result;
+            EncodeTx(result, tx);
+            ArgInfo("r => {}", result.dump());
             return result;
         }
 

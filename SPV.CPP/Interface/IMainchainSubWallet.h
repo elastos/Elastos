@@ -1287,6 +1287,189 @@ namespace Elastos {
                     const nlohmann::json &payload,
                     const std::string &fee,
                     const std::string &memo = "") const = 0;
+
+            //////////////////////////////////////////////////
+            /*               DPoS 2.0                       */
+            //////////////////////////////////////////////////
+            /**
+             * @param inputs tx inputs in json format
+             * [
+             *   {
+             *     "TxHash": "...", // string
+             *     "Index": 123, // int
+             *     "Address": "...", // string
+             *     "Amount": "100000000" // bigint string in SELA
+             *   },
+             *   ...
+             * ]
+             * @param payload
+             * {
+             *   "Version": 0, // uint8_t
+             *   "StakeAddress": "...",
+             * }
+             * @param lockAddress lock addres
+             * @param amount stake amount. bigint string in SELA
+             * @param fee Fee amount. Bigint string in SELA
+             * @param memo Remark string
+             * @return
+             */
+            virtual nlohmann::json CreateStakeTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &lockAddress,
+                    const std::string &amount,
+                    const std::string &fee,
+                    const std::string &memo = "") const = 0;
+
+            /**
+             * @param inputs only accept ordinary addresses with the same private key as the stake address
+             * @param payload
+             * if version is 0x00
+             * {
+             *   "Version": 0x0, // uint8_t
+             *   "Contents": [
+             *     {
+             *       "VoteType": 0x0, // uint8_t
+             *       "VotesInfo": [
+             *         {
+             *           "Candidate": "...", // string
+             *           "Votes": 100000, // uint64_t
+             *           "Locktime": 1000000 // uint32_t
+             *         },
+             *         ...
+             *       ]
+             *     },
+             *     ...
+             *   ]
+             * }
+             *
+             * if version is 0x01
+             * {
+             *   "Version": 0x01,
+             *   "RenewalVotesContent": [
+             *     {
+             *       "ReferKey": "0x...", // uint256 string
+             *       "VoteInfo": {
+             *         "Candidate": "...", // string
+             *         "Votes": 10000, // uint64_t
+             *         "Locktime": 100000000 // uint32_t
+             *       }
+             *     },
+             *     ...
+             *   ]
+             * }
+             * @param fee Fee amount. Bigint string in SELA
+             * @param memo Remark string
+             * @return
+             */
+            virtual nlohmann::json CreateDPoSV2VoteTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") const = 0;
+
+            /**
+             * @param payload
+             * {
+             *   "Amount": "100000000" // Bigint string in SELA, 1 ELA = 100000000 SELA
+             * }
+             * @return
+             */
+            virtual std::string DPoSV2ClaimRewardDigest(const nlohmann::json &payload) const = 0;
+
+            /**
+             * @param inputs UTXO which will be used. eg
+             * [
+             *   {
+             *     "TxHash": "...", // string
+             *     "Index": 123, // int
+             *     "Address": "...", // string
+             *     "Amount": "100000000" // bigint string in SELA
+             *   },
+             *   ...
+             * ]
+             * @param payload
+             * {
+             *   "Amount": "100000000", // Bigint string in SELA, 1 ELA = 100000000 SELA
+             *   "Signature": "..."
+             * }
+			 * @fee Fee amount. Bigint string in SELA
+			 * @memo Remark string
+             * @return
+             */
+            virtual nlohmann::json CreateDPoSV2ClaimRewardTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") const = 0;
+
+            /**
+             * @param inputs UTXO which will be used. eg
+             * [
+             *   {
+             *     "TxHash": "...", // string
+             *     "Index": 123, // int
+             *     "Address": "...", // string
+             *     "Amount": "100000000" // bigint string in SELA
+             *   },
+             *   ...
+             * ]
+             * @param payload
+             * {
+             *   "ReferKeys": [
+             *     "0x...", // uint256 string
+             *     ...
+             *   ]
+             * }
+             * @param fee Fee amount. Bigint string in SELA
+             * @param memo Remark string
+             * @return
+             */
+            virtual nlohmann::json CreateCancelVotesTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") const = 0;
+
+            /**
+             * @param payload
+             * {
+             *   "ToAddress": "...", // return voting rights to here
+             *   "Code": "...", // hex-string of code
+             *   "Value": "100000000" // SELA
+             * }
+             * @return
+             */
+            virtual std::string UnstakeDigest(const nlohmann::json &payload) const = 0;
+
+            /**
+             * @param inputs inputs UTXO which will be used. eg
+             * [
+             *   {
+             *     "TxHash": "...", // string
+             *     "Index": 123, // int
+             *     "Address": "...", // string
+             *     "Amount": "100000000" // bigint string in SELA
+             *   },
+             *   ...
+             * ]
+             * @param payload
+             * {
+             *   "ToAddress": "...",
+             *   "Code": "...",
+             *   "Value": "100000000",
+             *   "Signature": "..."
+             * }
+             * @param fee Fee amount. Bigint string in SELA
+             * @param memo Remark string
+             * @return
+             */
+            virtual nlohmann::json CreateUnstakeTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") const = 0;
+
         };
 
 	}

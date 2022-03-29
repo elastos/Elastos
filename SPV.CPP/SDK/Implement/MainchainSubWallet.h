@@ -286,7 +286,47 @@ namespace Elastos {
                     const std::string &fee,
                     const std::string &memo = "") const override;
 
-		private:
+
+            //////////////////////////////////////////////////
+            /*               DPoS 2.0                       */
+            //////////////////////////////////////////////////
+            nlohmann::json CreateStakeTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &lockAddress,
+                    const std::string &amount,
+                    const std::string &fee,
+                    const std::string &memo = "") const override;
+
+            nlohmann::json CreateDPoSV2VoteTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") const override;
+
+            std::string DPoSV2ClaimRewardDigest(const nlohmann::json &payload) const override;
+
+            nlohmann::json CreateDPoSV2ClaimRewardTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") const override;
+
+            nlohmann::json CreateCancelVotesTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") const override;
+
+            std::string UnstakeDigest(const nlohmann::json &payload) const override;
+
+            nlohmann::json CreateUnstakeTransaction(
+                    const nlohmann::json &inputs,
+                    const nlohmann::json &payload,
+                    const std::string &fee,
+                    const std::string &memo = "") const override;
+
+        private:
 			bool VoteContentFromJson(VoteContentArray &voteContents, BigInt &maxAmount, const nlohmann::json &j) const;
 
 			bool VoteAmountFromJson(BigInt &voteAmount, const nlohmann::json &j) const;

@@ -24,6 +24,7 @@
 
 #include <nlohmann/json.hpp>
 #include <boost/shared_ptr.hpp>
+#include "uint256.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -50,6 +51,39 @@ namespace nlohmann {
 			p->FromJson(j);
 		}
 	};
+
+    template<>
+    struct adl_serializer<uint128> {
+        static void to_json(json &j, const uint128 &u) {
+            j = u.GetHex();
+        }
+
+        static void from_json(const json &j, uint128 &u) {
+            u.SetHex(j);
+        }
+    };
+
+    template<>
+    struct adl_serializer<uint256> {
+        static void to_json(json &j, const uint256 &u) {
+            j = u.GetHex();
+        }
+
+        static void from_json(const json &j, uint256 &u) {
+            u.SetHex(j);
+        }
+    };
+
+    template<>
+    struct adl_serializer<uint512> {
+        static void to_json(json &j, const uint512 &u) {
+            j = u.GetHex();
+        }
+
+        static void from_json(const json &j, uint512 &u) {
+            u.SetHex(j);
+        }
+    };
 
 }
 #endif //__ELASTOS_SDK__ADLSERIALIZER_H__
