@@ -36,6 +36,8 @@ namespace Elastos {
 
             ~DPoSV2ClaimReward();
 
+            DPoSV2ClaimReward(uint64_t amount, const bytes_t &signature);
+
             void SerializeUnsigned(ByteStream &stream, uint8_t version) const;
 
             bool DeserializeUnsigned(const ByteStream &stream, uint8_t version);

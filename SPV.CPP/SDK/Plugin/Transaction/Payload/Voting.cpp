@@ -33,6 +33,10 @@ namespace Elastos {
         VotesWithLockTime::~VotesWithLockTime() {
         }
 
+        VotesWithLockTime::VotesWithLockTime(const bytes_t &candidate, uint64_t votes, uint32_t lockTime) :
+            _candidate(candidate), _votes(votes), _lockTime(lockTime) {
+        }
+
         size_t VotesWithLockTime::EstimateSize(uint8_t version) const {
             size_t size = 0;
             ByteStream stream;
@@ -95,6 +99,11 @@ namespace Elastos {
 
         VotesContent::~VotesContent() {
 
+        }
+
+        VotesContent::VotesContent(uint8_t voteType, const std::vector<VotesWithLockTime> &votesInfo) :
+            _voteType(voteType),
+            _votesInfo(votesInfo) {
         }
 
         size_t VotesContent::EstimateSize(uint8_t version) const {
@@ -176,6 +185,11 @@ namespace Elastos {
         RenewalVotesContent::~RenewalVotesContent() {
         }
 
+        RenewalVotesContent::RenewalVotesContent(const uint256 &referKey, const VotesWithLockTime &voteInfo) :
+            _referKey(referKey), _voteInfo(voteInfo) {
+
+        }
+
         size_t RenewalVotesContent::EstimateSize(uint8_t version) const {
             size_t size = 0;
 
@@ -226,6 +240,12 @@ namespace Elastos {
         }
 
         Voting::~Voting() {
+
+        }
+
+        Voting::Voting(const std::vector<VotesContent> &contents,
+                       const std::vector<RenewalVotesContent> &renewalVotesContent) :
+                       _contents(contents), _renewalVotesContent(renewalVotesContent) {
 
         }
 

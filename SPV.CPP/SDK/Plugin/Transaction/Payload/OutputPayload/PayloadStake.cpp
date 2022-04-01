@@ -17,6 +17,11 @@ namespace Elastos {
 
         }
 
+        PayloadStake::PayloadStake(uint8_t version, const uint168 &stakeAddress) :
+            _version(version), _stakeAddress(stakeAddress) {
+
+        }
+
         size_t PayloadStake::EstimateSize() const {
             size_t size = 0;
 

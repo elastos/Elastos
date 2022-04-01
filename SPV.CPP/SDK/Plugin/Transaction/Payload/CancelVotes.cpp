@@ -36,6 +36,11 @@ namespace Elastos {
 
         }
 
+        CancelVotes::CancelVotes(const std::vector<uint256> &referKeys) :
+            _referKeys(referKeys) {
+
+        }
+
         size_t CancelVotes::EstimateSize(uint8_t version) const {
             ByteStream stream;
             size_t size = 0;

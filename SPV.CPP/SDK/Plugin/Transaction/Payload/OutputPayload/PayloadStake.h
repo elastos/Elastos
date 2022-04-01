@@ -16,6 +16,8 @@ namespace Elastos {
 
             ~PayloadStake();
 
+            PayloadStake(uint8_t version, const uint168 &stakeAddress);
+
         public:
             virtual size_t EstimateSize() const;
 

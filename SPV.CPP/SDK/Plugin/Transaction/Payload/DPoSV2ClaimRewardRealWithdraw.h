@@ -29,11 +29,13 @@
 namespace Elastos {
     namespace ElaWallet {
 
-        class DposV2ClaimRewardRealWithdraw : public IPayload {
+        class DPoSV2ClaimRewardRealWithdraw : public IPayload {
         public:
-            DposV2ClaimRewardRealWithdraw();
+            DPoSV2ClaimRewardRealWithdraw();
 
-            ~DposV2ClaimRewardRealWithdraw();
+            ~DPoSV2ClaimRewardRealWithdraw();
+
+            DPoSV2ClaimRewardRealWithdraw(const std::vector<uint256> &withdrawTxHashes);
 
         public:
             virtual size_t EstimateSize(uint8_t version) const;
@@ -50,7 +52,7 @@ namespace Elastos {
 
             virtual IPayload &operator=(const IPayload &payload);
 
-            DposV2ClaimRewardRealWithdraw &operator=(const DposV2ClaimRewardRealWithdraw &payload);
+            DPoSV2ClaimRewardRealWithdraw &operator=(const DPoSV2ClaimRewardRealWithdraw &payload);
 
             virtual bool Equal(const IPayload &payload, uint8_t version) const;
 

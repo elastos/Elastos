@@ -35,6 +35,8 @@ namespace Elastos {
 
             ~Unstake();
 
+            Unstake(uint168 toAddr, const bytes_t &code, uint64_t value, const bytes_t &signature);
+
             void SerializeUnsigned(ByteStream &stream, uint8_t version) const;
 
             bool DeserializeUnsigned(const ByteStream &stream, uint8_t version);

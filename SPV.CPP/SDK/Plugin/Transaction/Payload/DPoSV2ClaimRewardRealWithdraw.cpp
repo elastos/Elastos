@@ -21,20 +21,25 @@
  */
 
 #include <Common/Log.h>
-#include "DposV2ClaimRewardRealWithdraw.h"
+#include "DPoSV2ClaimRewardRealWithdraw.h"
 
 namespace Elastos {
     namespace ElaWallet {
 
-        DposV2ClaimRewardRealWithdraw::DposV2ClaimRewardRealWithdraw() {
+        DPoSV2ClaimRewardRealWithdraw::DPoSV2ClaimRewardRealWithdraw() {
 
         }
 
-        DposV2ClaimRewardRealWithdraw::~DposV2ClaimRewardRealWithdraw() {
+        DPoSV2ClaimRewardRealWithdraw::~DPoSV2ClaimRewardRealWithdraw() {
 
         }
 
-        size_t DposV2ClaimRewardRealWithdraw::EstimateSize(uint8_t version) const {
+        DPoSV2ClaimRewardRealWithdraw::DPoSV2ClaimRewardRealWithdraw(const std::vector<uint256> &withdrawTxHashes) :
+                _withdrawTxHashes(withdrawTxHashes) {
+
+        }
+
+        size_t DPoSV2ClaimRewardRealWithdraw::EstimateSize(uint8_t version) const {
             ByteStream stream;
             size_t size = 0;
 
@@ -45,24 +50,24 @@ namespace Elastos {
             return size;
         }
 
-        void DposV2ClaimRewardRealWithdraw::Serialize(ByteStream &stream, uint8_t version) const {
+        void DPoSV2ClaimRewardRealWithdraw::Serialize(ByteStream &stream, uint8_t version) const {
             stream.WriteVarUint(_withdrawTxHashes.size());
             for (const uint256 &hash : _withdrawTxHashes) {
                 stream.WriteBytes(hash);
             }
         }
 
-        bool DposV2ClaimRewardRealWithdraw::Deserialize(const ByteStream &stream, uint8_t version) {
+        bool DPoSV2ClaimRewardRealWithdraw::Deserialize(const ByteStream &stream, uint8_t version) {
             uint64_t size;
             if (!stream.ReadVarUint(size)) {
-                Log::error("DposV2ClaimRewardRealWithdraw deserialize size");
+                Log::error("DPoSV2ClaimRewardRealWithdraw deserialize size");
                 return false;
             }
 
             _withdrawTxHashes.resize(size);
             for (size_t i = 0; i < size; ++i) {
                 if (!stream.ReadBytes(_withdrawTxHashes[i])) {
-                    Log::error("DposV2ClaimRewardRealWithdraw deserialize hash[{}]", i);
+                    Log::error("DPoSV2ClaimRewardRealWithdraw deserialize hash[{}]", i);
                     return false;
                 }
             }
@@ -70,7 +75,7 @@ namespace Elastos {
             return true;
         }
 
-        nlohmann::json DposV2ClaimRewardRealWithdraw::ToJson(uint8_t version) const {
+        nlohmann::json DPoSV2ClaimRewardRealWithdraw::ToJson(uint8_t version) const {
             nlohmann::json j, hashes;
 
             for (const uint256 &hash : _withdrawTxHashes)
@@ -81,7 +86,7 @@ namespace Elastos {
             return j;
         }
 
-        void DposV2ClaimRewardRealWithdraw::FromJson(const nlohmann::json &j, uint8_t version) {
+        void DPoSV2ClaimRewardRealWithdraw::FromJson(const nlohmann::json &j, uint8_t version) {
             nlohmann::json hashes = j["WithdrawTxHashes"];
 
             _withdrawTxHashes.clear();
@@ -89,32 +94,32 @@ namespace Elastos {
                 _withdrawTxHashes.emplace_back((*it).get<std::string>());
         }
 
-        bool DposV2ClaimRewardRealWithdraw::IsValid(uint8_t version) const {
+        bool DPoSV2ClaimRewardRealWithdraw::IsValid(uint8_t version) const {
             return true;
         }
 
-        IPayload &DposV2ClaimRewardRealWithdraw::operator=(const IPayload &payload) {
+        IPayload &DPoSV2ClaimRewardRealWithdraw::operator=(const IPayload &payload) {
             try {
-                const DposV2ClaimRewardRealWithdraw &p= dynamic_cast<const DposV2ClaimRewardRealWithdraw &>(payload);
+                const DPoSV2ClaimRewardRealWithdraw &p= dynamic_cast<const DPoSV2ClaimRewardRealWithdraw &>(payload);
                 operator=(p);
             } catch (const std::bad_cast &e) {
-                Log::error("payload is not instance of DposV2ClaimRewardRealWithdraw");
+                Log::error("payload is not instance of DPoSV2ClaimRewardRealWithdraw");
             }
 
             return *this;
         }
 
-        DposV2ClaimRewardRealWithdraw &DposV2ClaimRewardRealWithdraw::operator=(const DposV2ClaimRewardRealWithdraw &payload) {
+        DPoSV2ClaimRewardRealWithdraw &DPoSV2ClaimRewardRealWithdraw::operator=(const DPoSV2ClaimRewardRealWithdraw &payload) {
             _withdrawTxHashes = payload._withdrawTxHashes;
             return *this;
         }
 
-        bool DposV2ClaimRewardRealWithdraw::Equal(const IPayload &payload, uint8_t version) const {
+        bool DPoSV2ClaimRewardRealWithdraw::Equal(const IPayload &payload, uint8_t version) const {
             try {
-                const DposV2ClaimRewardRealWithdraw &p= dynamic_cast<const DposV2ClaimRewardRealWithdraw &>(payload);
+                const DPoSV2ClaimRewardRealWithdraw &p= dynamic_cast<const DPoSV2ClaimRewardRealWithdraw &>(payload);
                 return _withdrawTxHashes == p._withdrawTxHashes;
             } catch (const std::bad_cast &e) {
-                Log::error("payload is not instance of DposV2ClaimRewardRealWithdraw");
+                Log::error("payload is not instance of DPoSV2ClaimRewardRealWithdraw");
             }
             return false;
         }

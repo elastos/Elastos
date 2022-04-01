@@ -35,6 +35,8 @@ namespace Elastos {
 
             ~CancelVotes();
 
+            CancelVotes(const std::vector<uint256> &referKeys);
+
         public:
             virtual size_t EstimateSize(uint8_t version) const;
 

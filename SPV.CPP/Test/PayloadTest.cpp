@@ -43,6 +43,13 @@
 #include <Plugin/Transaction/Payload/CRInfo.h>
 #include <Plugin/Transaction/Payload/UnregisterCR.h>
 #include <Plugin/Transaction/Payload/RegisterIdentification.h>
+#include <Plugin/Transaction/Payload/Stake.h>
+#include <Plugin/Transaction/Payload/Voting.h>
+#include <Plugin/Transaction/Payload/DPoSV2ClaimReward.h>
+#include <Plugin/Transaction/Payload/DPoSV2ClaimRewardRealWithdraw.h>
+#include <Plugin/Transaction/Payload/CancelVotes.h>
+#include <Plugin/Transaction/Payload/Unstake.h>
+#include <Plugin/Transaction/Payload/UnstakeRealWithdraw.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -536,5 +543,136 @@ TEST_CASE("Payload Test", "[Transaction Payload]") {
 		p2.FromJson(j, version);
 		REQUIRE(p1.Equal(p2, version));
 	}
+
+    SECTION("Stake") {
+        uint8_t version = 0;
+        Stake p1, p2;
+        ByteStream stream;
+        p1.Serialize(stream, version);
+        REQUIRE(p2.Deserialize(stream, version));
+        REQUIRE(p1.Equal(p2, version));
+
+        nlohmann::json j = p1.ToJson(version);
+        p2.FromJson(j, version);
+        REQUIRE(p1.Equal(p2, version));
+    }
+
+    SECTION("Voting") {
+        // vote
+        SECTION("Vote") {
+            uint8_t version = VoteVersion;
+            std::vector<VotesContent> contents;
+            for (size_t i = 0; i < 20; ++i) {
+                std::vector<VotesWithLockTime> votesInfo;
+                for (size_t j = 0; j < 20; ++j) {
+                    votesInfo.emplace_back(getRandBytes(50), getRandUInt64(), getRandUInt32());
+                }
+                contents.emplace_back(getRandUInt8(), votesInfo);
+            }
+            Voting p1(contents, {}), p2, p3;
+            ByteStream stream;
+            p1.Serialize(stream, version);
+            REQUIRE(p2.Deserialize(stream, version));
+            REQUIRE(p1.Equal(p2, version));
+
+            nlohmann::json j = p1.ToJson(version);
+            p3.FromJson(j, version);
+            REQUIRE(p1.Equal(p3, version));
+        }
+
+            // renewal
+        SECTION("renewal") {
+            uint8_t version = RenewalVoteVersion;
+            std::vector<RenewalVotesContent> renewalVotesContent;
+            for (size_t i = 0; i < 20; ++i) {
+                renewalVotesContent.emplace_back(getRanduint256(), VotesWithLockTime(getRandBytes(50), getRandUInt64(), getRandUInt32()));
+            }
+
+            Voting p1({}, renewalVotesContent), p2, p3;
+            ByteStream stream;
+            p1.Serialize(stream, version);
+            REQUIRE(p2.Deserialize(stream, version));
+            REQUIRE(p1.Equal(p2, version));
+
+            nlohmann::json j = p1.ToJson(version);
+            p3.FromJson(j, version);
+            REQUIRE(p1.Equal(p3, version));
+        }
+    }
+
+    SECTION("DPoSV2ClaimReward") {
+        uint8_t version = DPoSV2ClaimRewardVersion;
+        DPoSV2ClaimReward p1(getRandUInt64(), getRandBytes(64)), p2, p3;
+
+        ByteStream stream;
+        p1.Serialize(stream, version);
+        REQUIRE(p2.Deserialize(stream, version));
+        REQUIRE(p1.Equal(p2, version));
+
+        nlohmann::json j = p1.ToJson(version);
+        p3.FromJson(j, version);
+        REQUIRE(p1.Equal(p3, version));
+    }
+
+    SECTION("DPoSV2ClaimRewardRealWithdraw") {
+        uint8_t version = 0;
+        std::vector<uint256> hashes;
+        for (size_t i = 0; i < 20; ++i) {
+            hashes.push_back(getRanduint256());
+        }
+        DPoSV2ClaimRewardRealWithdraw p1(hashes), p2, p3;
+        ByteStream stream;
+        p1.Serialize(stream, version);
+        REQUIRE(p2.Deserialize(stream, version));
+        REQUIRE(p1.Equal(p2, version));
+
+        nlohmann::json j = p1.ToJson(version);
+        p3.FromJson(j, version);
+        REQUIRE(p1.Equal(p3, version));
+    }
+
+    SECTION("CancelVotes") {
+        uint8_t version = 0;
+        std::vector<uint256> hashes;
+        for (size_t i = 0; i < 20; ++i) {
+            hashes.push_back(getRanduint256());
+        }
+        CancelVotes p1(hashes), p2, p3;
+        ByteStream stream;
+        p1.Serialize(stream, version);
+        REQUIRE(p2.Deserialize(stream, version));
+        REQUIRE(p1.Equal(p2, version));
+
+        nlohmann::json j = p1.ToJson(version);
+        p3.FromJson(j, version);
+        REQUIRE(p1.Equal(p3, version));
+    }
+
+    SECTION("Unstake") {
+        uint8_t version = 0;
+        Unstake p1(getRandUInt168(), getRandBytes(21), getRandUInt64(), getRandBytes(64)), p2, p3;
+
+        ByteStream stream;
+        p1.Serialize(stream, version);
+        REQUIRE(p2.Deserialize(stream, version));
+        REQUIRE(p1.Equal(p2, version));
+
+        nlohmann::json j = p1.ToJson(version);
+        p3.FromJson(j, version);
+        REQUIRE(p1.Equal(p3, version));
+    }
+
+    SECTION("UnstakeRealWithdraw") {
+        uint8_t version = 0;
+        UnstakeRealWithdraw p1(getRanduint256(), getRandUInt168(), getRandUInt64()), p2, p3;
+        ByteStream stream;
+        p1.Serialize(stream, version);
+        REQUIRE(p2.Deserialize(stream, version));
+        REQUIRE(p1.Equal(p2, version));
+
+        nlohmann::json j = p1.ToJson(version);
+        p3.FromJson(j, version);
+        REQUIRE(p1.Equal(p3, version));
+    }
 
 }

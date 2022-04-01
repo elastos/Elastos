@@ -34,6 +34,8 @@ namespace Elastos {
 
             ~UnstakeRealWithdraw();
 
+            UnstakeRealWithdraw(const uint256 &retVotesTxHash, const uint168 &stakeAddress, uint64_t value);
+
         public:
             virtual size_t EstimateSize(uint8_t version) const;
 

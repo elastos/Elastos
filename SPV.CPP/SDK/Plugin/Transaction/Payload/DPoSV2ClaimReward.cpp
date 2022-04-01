@@ -29,11 +29,13 @@ namespace Elastos {
     namespace ElaWallet {
 
         DPoSV2ClaimReward::DPoSV2ClaimReward() {
-
         }
 
         DPoSV2ClaimReward::~DPoSV2ClaimReward() {
+        }
 
+        DPoSV2ClaimReward::DPoSV2ClaimReward(uint64_t amount, const bytes_t &signature) :
+            _amount(amount), _signature(signature) {
         }
 
         void DPoSV2ClaimReward::SerializeUnsigned(ByteStream &stream, uint8_t version) const {

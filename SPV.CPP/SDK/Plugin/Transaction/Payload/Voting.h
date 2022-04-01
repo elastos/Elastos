@@ -36,6 +36,8 @@ namespace Elastos {
 
             ~VotesWithLockTime();
 
+            VotesWithLockTime(const bytes_t &candidate, uint64_t votes, uint32_t lockTime);
+
             size_t EstimateSize(uint8_t version) const;
 
             void Serialize(ByteStream &stream, uint8_t version) const;
@@ -65,6 +67,8 @@ namespace Elastos {
 
             ~VotesContent();
 
+            VotesContent(uint8_t voteType, const std::vector<VotesWithLockTime> &votesInfo);
+
             size_t EstimateSize(uint8_t version) const;
 
             void Serialize(ByteStream &stream, uint8_t version) const;
@@ -92,6 +96,8 @@ namespace Elastos {
 
             ~RenewalVotesContent();
 
+            RenewalVotesContent(const uint256 &referKey, const VotesWithLockTime &voteInfo);
+
             size_t EstimateSize(uint8_t version) const;
 
             void Serialize(ByteStream &stream, uint8_t version) const;
@@ -118,6 +124,8 @@ namespace Elastos {
             Voting();
 
             ~Voting();
+
+            Voting(const std::vector<VotesContent> &contents, const std::vector<RenewalVotesContent> &renewalVotesContent);
 
         public:
             virtual size_t EstimateSize(uint8_t version) const;

@@ -38,6 +38,11 @@ namespace Elastos {
 
         }
 
+        Unstake::Unstake(uint168 toAddr, const bytes_t &code, uint64_t value, const bytes_t &signature) :
+            _toAddr(toAddr), _code(code), _value(value), _signature(signature) {
+
+        }
+
         void Unstake::SerializeUnsigned(ByteStream &stream, uint8_t version) const {
             stream.WriteBytes(_toAddr);
             stream.WriteVarBytes(_code);
