@@ -149,13 +149,14 @@ namespace Elastos {
             if (_parent->GetSignType() == Account::MultiSign) {
                 std::vector<HDKeychain> keychains;
 
-                if (derivateCount > 0)
+                if (derivateCount > 0) {
                     for (const HDKeychainPtr &keychain : _parent->MultiSignCosigner())
                         keychains.push_back(keychain->getChild(chain));
 
-                if (keychains.empty()) {
-                    derivateCount = 0;
-                    Log::error("keychains is empty when derivate address");
+                    if (keychains.empty()) {
+                        derivateCount = 0;
+                        Log::error("keychains is empty when derivate address");
+                    }
                 }
 
                 while (derivateCount--) {
