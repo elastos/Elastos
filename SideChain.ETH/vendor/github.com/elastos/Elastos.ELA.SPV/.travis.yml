@@ -1,0 +1,24 @@
+language: go
+go:
+  - "1.10"
+sudo: false
+install:
+  - go get -v github.com/Masterminds/glide
+  - cd $GOPATH/src/github.com/Masterminds/glide && git checkout e73500c735917e39a8b782e0632418ab70250341 && go install && cd -
+  - export PATH=$PATH:$PWD/src/github.com/elastos/
+  - glide install
+deploy:
+  provider: releases
+  api_key: $GIT_TOKEN
+  file: service
+  skip_cleanup: true
+  on:
+    tags: true
+    branches:
+      only:
+        - master
+        - dev
+        - /(release).{7}/
+script:
+  - go test -v -short ./...
+  - make

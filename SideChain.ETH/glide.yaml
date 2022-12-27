@@ -1,0 +1,146 @@
+package: github.com/elastos/Elastos.ELA.SideChain.ETH
+import:
+- package: bazil.org/fuse
+  subpackages:
+  - fs
+- package: github.com/Azure/azure-storage-blob-go
+  version: ~0.2.0
+  subpackages:
+  - 2018-03-28/azblob
+- package: github.com/aristanetworks/goarista
+  subpackages:
+  - monotime
+- package: github.com/btcsuite/btcd
+  subpackages:
+  - btcec
+- package: github.com/davecgh/go-spew
+  version: ~1.1.0
+  subpackages:
+  - spew
+- package: github.com/deckarep/golang-set
+  version: ~1.7.1
+- package: github.com/docker/docker
+  version: ~17.5.0-ce-rc3
+  subpackages:
+  - pkg/reexec
+- package: github.com/edsrzf/mmap-go
+- package: github.com/elastic/gosigar
+  version: ~0.9.0
+- package: github.com/fatih/color
+  version: ~1.7.0
+- package: github.com/fjl/memsize
+  subpackages:
+  - memsizeui
+- package: github.com/gizak/termui
+  version: ~2.3.0
+- package: github.com/go-stack/stack
+  version: ~1.8.0
+- package: github.com/golang/protobuf
+  version: ~1.2.0
+  subpackages:
+  - proto
+  - protoc-gen-go/descriptor
+- package: github.com/golang/snappy
+- package: github.com/hashicorp/golang-lru
+  version: ~0.5.0
+  subpackages:
+  - simplelru
+- package: github.com/huin/goupnp
+  version: ~1.0.0
+  subpackages:
+  - dcps/internetgateway1
+  - dcps/internetgateway2
+- package: github.com/influxdata/influxdb
+  version: ~1.6.4
+  subpackages:
+  - client
+- package: github.com/jackpal/go-nat-pmp
+  version: ~1.0.1
+- package: github.com/julienschmidt/httprouter
+  version: ~1.2.0
+- package: github.com/karalabe/hid
+- package: github.com/mattn/go-colorable
+  version: ~0.0.9
+- package: github.com/mattn/go-isatty
+  version: ~0.0.4
+- package: github.com/mohae/deepcopy
+- package: github.com/naoina/toml
+  version: ~0.1.1
+- package: github.com/olekukonko/tablewriter
+  version: ~0.0.1
+- package: github.com/opentracing/opentracing-go
+  version: 328fceb7548c744337cd010914152b74eaf4c4ab
+  subpackages:
+  - log
+- package: github.com/pborman/uuid
+  version: ~1.2.0
+- package: github.com/peterh/liner
+  version: ~1.1.0
+- package: github.com/prometheus/prometheus
+  version: ~2.1.0
+  subpackages:
+  - util/flock
+- package: github.com/rjeczalik/notify
+  version: ~0.9.2
+- package: github.com/robertkrimen/otto
+- package: github.com/rs/cors
+  version: ~1.6.0
+- package: github.com/syndtr/goleveldb
+  subpackages:
+  - leveldb
+  - leveldb/errors
+  - leveldb/filter
+  - leveldb/iterator
+  - leveldb/opt
+  - leveldb/storage
+  - leveldb/util
+- package: github.com/uber/jaeger-client-go
+  version: ~2.15.0
+  subpackages:
+  - config
+  - log
+- package: golang.org/x/crypto
+  subpackages:
+  - openpgp
+  - pbkdf2
+  - ripemd160
+  - scrypt
+  - ssh
+  - ssh/terminal
+- package: golang.org/x/net
+  subpackages:
+  - context
+  - websocket
+- package: golang.org/x/sync
+  subpackages:
+  - syncmap
+- package: golang.org/x/sys
+  subpackages:
+  - cpu
+- package: golang.org/x/text
+- package: gopkg.in/natefinch/npipe.v2
+- package: gopkg.in/olebedev/go-duktape.v3
+- package: gopkg.in/urfave/cli.v1
+  version: ~1.20.0
+- package: github.com/AlexpanXX/fsnotify
+- package: github.com/elastos/Elastos.ELA.SideChain
+  version: release_v0.1.4
+- package: github.com/elastos/Elastos.ELA.SPV
+  version: v0.0.4.1
+- package: github.com/elastos/Elastos.ELA
+  version: v0.3.2.1
+- package: github.com/gorilla/websocket
+- package: github.com/mattn/go-sqlite3
+testImport:
+- package: github.com/cespare/cp
+  version: ~1.0.0
+- package: github.com/stretchr/testify
+  version: ~1.2.2
+  subpackages:
+  - assert
+  - require
+- package: gopkg.in/check.v1
+ignore:
+  - github.com/russross/blackfriday/v2
+#ignore:
+#- crypto/ed25519
