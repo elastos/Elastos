@@ -1,0 +1,12 @@
+include elastos_adenine/stubs/health_check_pb2_grpc.py
+include elastos_adenine/stubs/health_check_pb2.py
+include elastos_adenine/stubs/node_rpc_pb2_grpc.py
+include elastos_adenine/stubs/node_rpc_pb2.py
+include elastos_adenine/stubs/common_pb2_grpc.py
+include elastos_adenine/stubs/common_pb2.py
+include elastos_adenine/stubs/hive_pb2_grpc.py
+include elastos_adenine/stubs/hive_pb2.py
+include elastos_adenine/stubs/wallet_pb2_grpc.py
+include elastos_adenine/stubs/wallet_pb2.py
+include elastos_adenine/stubs/sidechain_eth_pb2_grpc.py
+include elastos_adenine/stubs/sidechain_eth_pb2.py

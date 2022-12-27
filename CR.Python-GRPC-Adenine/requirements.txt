@@ -1,0 +1,9 @@
+cryptography==2.9.2
+grpcio==1.28.1
+grpcio-tools==1.28.1
+PyJWT==1.7.1
+pytest==5.4.1
+python-decouple==3.3
+solidity-parser==0.0.7
+twine==3.1.1
+pytest-dependency==0.5.1
