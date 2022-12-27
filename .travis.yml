@@ -1,7 +1,0 @@
-language: go
-go:
-  - "1.13"
-sudo: false
-script:
-  - go test `go list ./... | grep -v benchmark` -short
-  - make
