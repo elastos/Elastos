@@ -1,0 +1,41 @@
+version : "3"
+services:
+  ebp-mongo:
+    image: mongo:3.7
+    container_name: ebp-mongo
+    volumes:
+      - ./.data/db:/data/db
+    ports:
+      - 27090:27090
+
+  ebp-backend:
+    environment:
+      - NODE_ENV=staging
+    container_name: ebp-backend
+    image: ebp-backend
+    build: .
+    command: >
+      sh -c "npm install &&
+             npm run start:staging"
+    volumes:
+      - ./index.ts:/app/index.ts
+      - ./src:/app/src
+      - ./dist:/app/dist
+      - ./newrelic.js:/app/dist/newrelic.js
+      - ./package.json:/app/package.json
+      - ./node_modules:/app/node_modules
+      - ./env:/app/env
+    ports:
+      - 3000:3000
+    links:
+      - ebp-mongo
+
+  swagger_ui:
+    environment:
+      - API_URL=/api_doc/main.yml
+    image: swaggerapi/swagger-ui
+    volumes:
+      - ./api_doc:/usr/share/nginx/html/api_doc
+    restart: always
+    ports:
+      - 9001:8080

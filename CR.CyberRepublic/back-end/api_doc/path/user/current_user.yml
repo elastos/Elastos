@@ -1,0 +1,14 @@
+get:
+  tags:
+  - user
+  description: get current login user info
+  operationId: current_user
+  security:
+    - api-token: []
+
+
+  responses:
+    200:
+      $ref: '../../schema/success_response.yml'
+    401:
+      $ref: '../../schema/unauthorized_response.yml'

@@ -1,0 +1,73 @@
+@import "@/style/variable";
+@import "@/style/color";
+
+.p_SuggestionList {
+  .ant-btn {
+    border: 0;
+    border-radius: 0;
+  }
+  .btn-create-suggestion.ant-btn {
+    background: $cr_btn_primary;
+    color: white;
+    cursor: pointer;
+  }
+
+  .btn-view-archived.ant-btn {
+    background: $bg_lighter_gray;
+    color: $text_dark_gray;
+    margin-right: 12px;
+    border: 1px solid $bg_light_gray;
+    cursor: pointer;
+  }
+
+  .btn-link.ant-btn {
+    color: $cr_btn_primary;
+  }
+
+  .ant-btn-group > .ant-btn:first-child:not(:last-child),
+  .ant-btn-group > span:first-child:not(:last-child) > .ant-btn {
+    border-radius: 0;
+  }
+  .list-container {
+    margin-bottom: 40px;
+  }
+  .item-container {
+    padding: 30px 0 15px;
+    
+    @media only screen and (max-width: $mobile-width) {
+      padding-bottom: 8px;
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #E5E5E5;
+    }
+  }
+  .list-container .title {
+    font-size: 30px;
+  }
+
+  .cr-pagination {
+    text-align: center;
+  }
+
+  @media only screen and (max-width: $lg-width) {
+    margin-left: 5%;
+    margin-right: 5%;
+  }
+}
+
+.cr-icon-group {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.suggestion-header {
+  .title {
+    font-size: 96px;
+
+    @media only screen and (max-width: $mobile-width) {
+      font-size: 20vw;
+    }
+  }
+}

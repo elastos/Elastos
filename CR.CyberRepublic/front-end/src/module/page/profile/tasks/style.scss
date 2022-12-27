@@ -1,0 +1,92 @@
+
+@import "../../../../style/variable";
+@import "../../../../style/color";
+
+.p_ProfileTasks,
+.p_ProfileProjects {
+  background: white;
+  text-align: left;
+
+  .filter-group {
+    margin-bottom: $gap_1;
+    margin-left: $gap_0;
+
+    @media only screen and (max-width: $mobile-width) {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+
+  .ant-input,
+  .ant-select {
+    width: 250px;
+  }
+
+  .ant-select,
+  .ant-input,
+  .status-selector {
+    @media only screen and (max-width: $mobile-width) {
+      width: 100%;
+      margin-bottom: $gap_1;
+    }
+  }
+
+  .search-group {
+    .ant-input {
+      margin-bottom: 0;
+    }
+  }
+
+  .ant-list-item {
+    border: 1px solid $border_gray;
+    padding: 16px;
+    // border-radius: 8px;
+
+    &:not(:first-child) {
+      margin-top: 16px;
+    }
+  }
+
+  .ant-list-item-content {
+    max-height: 188px;
+
+    @media only screen and (max-width: $mobile-width) {
+      .view-button {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+      }
+    }
+  }
+
+  .carousel-wrapper {
+    width: 204px;
+    height: 204px;
+  }
+
+  .ant-list-item-extra-wrap {
+    flex-flow: row-reverse;
+  }
+
+  .ant-list-item-extra {
+    margin-left: 0;
+    margin-right: 58px;
+  }
+
+  .task-title {
+    line-height: 1.2;
+  }
+
+  .btn-create-task {
+    margin-left: $gap_0;
+  }
+
+  .ql-editor {
+    padding: 0;
+    font-size: 14px;
+  }
+
+  .subtitle {
+    color: rgba(0, 0, 0, 0.45);
+  }
+}

@@ -1,0 +1,35 @@
+# SERVER
+SERVER_URL=http://localhost:3001
+SERVER_PORT=3000
+API_URL=http://localhost:3000
+
+# DB
+# this is for local running to develop
+DB_URL=mongodb://localhost:27017/EBP
+# this is for running docker container to develop
+#DB_URL=mongodb://ebp-mongo:27017/EBP
+
+# APP
+APP_SECRET=elastos
+APP_PRIVATE_KEY="your app private key in pem format"
+APP_DID=did
+DID_SIDECHAIN_AUTH=xxx
+DID_SIDECHAIN_URL=xxx
+
+# AWS
+AWS_ACCESS_KEY=YOUR_AWS_KEY
+AWS_ACCESS_SECRET=YOUR_AWS_SECRET
+S3_REGION=YOUR_S3_REGION
+S3_BUCKET=YOUR_S3_BUCKET
+
+# ADMIN_USER
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=password
+ADMIN_EMAIL=admin@ebp.com
+
+# Forum SSO Secret
+SSO_SECRET=YOUR_SSO_SECRET
+
+# Google Translation
+TRANSLATION_PROJECT_ID=YOUR_TRANSLATION_PROJECT_ID
+TRANSLATION_KEY_FILE=YOUR_TRANSLATION_KEY_FILE

@@ -1,0 +1,70 @@
+@import "@/style/variable";
+@import "@/style/color";
+
+.c_SuggestionActions {
+  margin: 27px 0;
+  color: $text_lighter_gray;
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: space-between;
+
+  .cr-icon-group {
+    > span {
+      line-height: 16px;
+      height: 16px;
+    }
+    > a span{
+      color: rgba(3, 30, 40, 0.3);
+    }
+  }
+  .anticon-ellipsis {
+    font-weight: bold;
+    font-size: 20px;
+  }
+  .self-right {
+    justify-self: flex-end;
+    display: flex;
+    justify-content: flex-end;
+    flex-basis: 40%;
+  }
+  svg {
+    fill: currentColor;
+  }
+  .selected {
+    color: black;
+    svg {
+      fill: black;
+    }
+  }
+}
+
+.popover-actions {
+  color: $text_lighter_gray;
+  svg {
+    fill: currentColor;
+  }
+  .cr-icon-group {
+    padding: 5px 0;
+    .selected {
+      color: black;
+    }
+  }
+  .follow-icon svg {
+    stroke: currentColor;
+    stroke-width: 3;
+  }
+
+  .archive-icon svg {
+    zoom: 0.8;
+    > path {
+      stroke: currentColor;
+      stroke-width: 3;
+      fill: currentColor;
+    }
+  }
+
+  .selected {
+    color: black;
+  }
+}

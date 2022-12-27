@@ -1,0 +1,58 @@
+@import '@/style/variable';
+@import '@/style/color';
+@import '@/style/typography';
+
+.c_ProfileContainer {
+  background: white;
+
+  .c_Project.c_Detail {
+    padding: 0 $gap_2;
+  }
+}
+
+.c_TaskDetail,
+.p_TaskApplication,
+.c_ProfileContainer {
+
+  .grid-col, .gridCol {
+    padding: 0 $gap_2;
+    margin: $gap_0 0;
+  }
+
+  .l_banner {
+    margin-bottom: $gap_0;
+  }
+
+  .form-wrapper {
+    padding: $gap_2 0;
+  }
+
+  &.admin-right-column {
+    min-height: 192px;
+  }
+
+  p {
+    white-space: pre-line;
+  }
+
+  .ant-badge {
+    color: $primary_color;
+  }
+
+  .meta {
+    margin-bottom: $gap_4;
+
+    .help-icon {
+      margin-left: $gap_0;
+    }
+
+    .meta-row {
+      min-height: 24px;
+      line-height: 24px;
+    }
+  }
+}
+
+.ant-dropdown {
+  padding-top: 12px !important;
+}

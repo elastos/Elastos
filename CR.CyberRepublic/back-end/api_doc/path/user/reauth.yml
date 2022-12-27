@@ -1,0 +1,16 @@
+get:
+  tags:
+  - user
+  description: reauth api
+  operationId: reauth
+
+  responses:
+    200:
+      $ref: '../../schema/success_response.yml'
+
+  parameters:
+    - name: apiToken
+      in: query
+      required: true
+      schema:
+        type: string

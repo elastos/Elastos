@@ -1,0 +1,80 @@
+@import '../../style/variable';
+@import '../../style/color';
+
+.c_Search {
+
+  .subtitle {
+    color: $text_light_gray;
+    font-size: 14px;
+  }
+
+  .description-ql-editor-wrapper {
+    height: 116px;
+  }
+
+  .admin-left-column {
+    padding-top: 8px;
+    .filter-select-container {
+      padding-bottom: $gap_0;
+
+      .filter-select {
+        width: 100%;
+      }
+    }
+  }
+
+  .ant-affix {
+    background: rgba(255, 255, 255, 0.85);
+    height: 100%;
+    overflow: auto;
+  }
+
+  .loadmore {
+    margin: $gap_3 0;
+  }
+
+  .search-mobile-container {
+    margin-bottom: $gap_0;
+  }
+
+  .gap-bottom {
+    margin-bottom: $gap_0;
+  }
+
+  .admin-right-column {
+    min-height: 392px;
+    padding: 8px 20px 0 20px !important;
+
+    .ant-list-item {
+      &:hover {
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+      margin: $gap_0 0;
+      .ant-list-item-main {
+        .ant-list-item-content {
+          .ql-editor {
+            padding: 0;
+          }
+        }
+      }
+    }
+  }
+
+  .filters-tree {
+    width: 100%;
+    margin-bottom: $gap_1;
+  }
+
+  .no-margin {
+    padding: 8px 0;
+  }
+
+  .task-title {
+    line-height: 1.2;
+  }
+}
+
+.filters-menu {
+  background-color: white;
+  padding: $gap_2;
+}

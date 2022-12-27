@@ -1,0 +1,42 @@
+
+@import "../../../style/variable";
+@import "../../../style/color";
+
+.c_ConstitutionContainer {
+  padding-left: 10px;
+  background: url(/assets/images/bg-square-sm.png) no-repeat;
+
+  .content {
+    margin: 20px 50px 20px 0;
+    color: #333;
+    font-size: 16px;
+    font-family: "synthese",sans-serif;
+
+    @media only screen and (max-width: $mobile-width) {
+      margin-right: 10px;
+      margin-left: 10px;
+    }
+
+    .title {
+      font-family: "komu-a", sans-serif;
+      line-height: normal;
+      font-size: 50px;
+      color: #031E28;
+    }
+    h3 {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    p {
+      text-indent: 2em;
+    }
+
+    ol, ul {
+      margin-left: 50px;
+    }
+    em {
+      font-weight: bold;
+      font-style: normal;
+    }
+  }
+}

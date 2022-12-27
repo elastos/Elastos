@@ -1,0 +1,21 @@
+get:
+  tags:
+  - task
+  description: get task api
+  operationId: task/get
+  parameters:
+    - name: taskId
+      in: path
+      description: taskId
+      required: false
+      schema:
+        type: string
+        format: uuid
+  security:
+    - api-token: []
+
+  responses:
+    200:
+      $ref: '../../schema/success_response.yml'
+    401:
+      $ref: '../../schema/unauthorized_response.yml'

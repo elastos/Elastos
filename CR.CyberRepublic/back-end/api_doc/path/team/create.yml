@@ -1,0 +1,17 @@
+post:
+  tags:
+  - team
+  description: create team api
+  operationId: team/create
+  security:
+    - api-token: []
+
+
+  responses:
+    200:
+      $ref: '../../schema/success_response.yml'
+    401:
+      $ref: '../../schema/unauthorized_response.yml'
+
+  requestBody:
+    $ref: '../../schema/team_request.yml'

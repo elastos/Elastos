@@ -1,0 +1,21 @@
+.p_council{
+
+    .ebp-wrap{
+        max-width: 78vw;
+    }
+    .p_content{
+        margin-top: 32px;
+    }
+
+    .d_list{
+        text-align: left;
+
+        .ant-list-item{
+            padding-top: 0;
+        }
+
+        .f_h4{
+            font-size: 18px;
+        }
+    }
+}

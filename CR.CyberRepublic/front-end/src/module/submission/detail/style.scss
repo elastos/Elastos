@@ -1,0 +1,110 @@
+
+@import '../../../style/variable';
+@import '../../../style/color';
+
+
+.c_SubmissionDetail {
+  padding: $gap_3;
+  width: 100%;
+
+  .top-section {
+    border: 1px solid $border_gray;
+    border-radius: 5px 50px 5px 5px;
+    width: 752px;
+    margin: 0 auto;
+
+    .col-left {
+      display: flex;
+      width: 250px;
+
+      .left-container {
+        width: 100%;
+
+        .pictures-container {
+          width: 100%;
+          text-align: center;
+          background-color: $primary_color;
+
+          i {
+            font-size: 250px;
+            max-height: 250px;
+            max-width: 250px;
+          }
+        }
+
+        .type-container {
+          display: flex;
+          text-align: center;
+          justify-content: center;
+          align-items: center;
+          height: 250px;
+        }
+
+        .divider {
+          border: 1px solid gainsboro;
+          margin: $gap_3 0;
+        }
+      }
+    }
+
+    .col-right {
+      border-left: 1px solid $border_gray;
+      padding: $gap_2 $gap_0 $gap_2 $gap_2;
+      height: 500px;
+
+      .title {
+        height: 108px;
+        width: 300px;
+        overflow: hidden;
+        span {
+          color: $primary_color;
+          font-size: 24px;
+        }
+      }
+
+      .leader {
+        position: absolute;
+        width: 150px;
+        top: $gap_2;
+        right: $gap_2;
+        display: inline-block;
+        text-align: right;
+
+        & > div {
+          margin-top: $gap_0;
+        }
+      }
+
+      .content {
+        display: block;
+        position: relative;
+        padding: $gap_0 $gap_2 0 $gap_2;
+        height: 120px;
+      }
+
+      .divider {
+        border: 1px solid gainsboro;
+        margin-right: $gap_2;
+      }
+
+      .description-title {
+        font-weight: bold;
+        margin: $gap_0 $gap_2 $gap_0 0;
+      }
+
+      .description-content {
+        white-space: pre-line;
+        margin: $gap_0 $gap_2 $gap_0 0;
+      }
+    }
+  }
+
+  .description-box {
+    padding-left: $gap_2;
+
+    .description-content {
+      height: 190px;
+      overflow: auto;
+    }
+  }
+}

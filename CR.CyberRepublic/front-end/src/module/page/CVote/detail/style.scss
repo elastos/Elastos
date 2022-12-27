@@ -1,0 +1,95 @@
+@import "@/style/color";
+
+.p_CVoteDetail {
+  .content {
+    margin-top: 50px;
+  }
+  .md-RichEditor-root {
+    padding: 0;
+    margin-top: 0;
+  }
+  .md-RichEditor-editor .public-DraftEditor-content {
+    min-height: 10px;
+    font-weight: 200;
+    line-height: 1.8em;
+  }
+  .notes {
+    border-top: 1px solid #E5E5E5;
+  }
+  .notes-title {
+    font-size: 16px;
+  }
+  .notes-content {
+    color: rgba(3, 30, 40, 0.4);
+  }
+  .subtitle-container {
+    display: flex;
+    font-size: 20px;
+    align-items: flex-end;
+    margin-bottom: 24px;
+  }
+  .subtitle-item {
+    margin-right: 30px;
+    .value {
+      background: #1DE9B6;
+      padding: 0 5px;
+    }
+    .text {
+      font-size: 11px;
+      color: rgba(3, 30, 40, 0.4);
+    }
+  }
+  .ant-btn {
+    border-radius: 0 !important;
+    margin-right: 15px;
+    box-sizing: border-box;
+    flex: 210px;
+  }
+  .ant-btn.ant-btn-primary {
+    color: white;
+    background-color: #008D85;
+    border: none;
+  }
+  .ant-btn-primary:hover, .ant-btn-primary:focus {
+    color: #fff;
+    background-color: #008D85;
+    border: none;
+  }
+  .ant-btn.ant-btn-danger {
+    color: white;
+    background-color: #BE1313;
+    border: none;
+  }
+  .ant-btn-danger:hover, .ant-btn-danger:focus {
+    color: #fff;
+    background-color: #BE1313;
+    border: none;
+  }
+  .d_item {
+    .ant-form-item-children {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+
+  .d_btn {
+    width: 100%;
+    background: #66bda3;
+    color: #fff;
+    border-color: #009999;
+  }
+
+  input:read-only,
+  textarea:read-only {
+    cursor: not-allowed;
+  }
+
+  .cvoteStatus {
+    color: $cr_dark_color;
+    font-weight: 600;
+  }
+  .ant-tabs-nav-scroll{
+    text-align: center;
+  }
+
+}

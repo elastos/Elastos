@@ -1,0 +1,15 @@
+get:
+  tags:
+  - community
+  description: get all community
+  operationId: community/all
+  security:
+    - api-token: []
+
+  responses:
+    200:
+      $ref: '../../schema/success_response.yml'
+    401:
+      $ref: '../../schema/unauthorized_response.yml'
+
+  parameters:

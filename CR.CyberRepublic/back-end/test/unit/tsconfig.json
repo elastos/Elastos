@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmitOnError": false,
+    "allowJs": true,
+    "baseUrl": "src",
+    "lib": [ "es2015" ]
+  }
+}

@@ -1,0 +1,78 @@
+
+@import "../../../../style/variable";
+@import "../../../../style/color";
+
+.p_DeveloperSearch {
+  background: white;
+
+  .ant-list-item {
+    border: 1px solid $border_gray;
+    padding: 16px;
+    // border-radius: 8px;
+
+    &:not(:first-child) {
+      margin-top: 16px;
+    }
+  }
+
+  .ant-table-empty {
+    display: none;
+  }
+
+  .ant-list-item-content {
+    max-height: 188px;
+  }
+
+  .carousel-wrapper {
+    width: 204px;
+    height: 204px;
+  }
+
+  .ant-list-item-extra-wrap {
+    flex-flow: row-reverse;
+  }
+
+  .ant-list-item-extra {
+    margin-left: 0;
+    margin-right: 58px;
+  }
+
+  .ebp-wrap {
+    .d_row {
+      .admin-left-column.wrap-box-user {
+        .group {
+          margin: $gap_2 0;
+
+          &:first-child {
+            margin-top: $gap_0;
+          }
+
+          .title {
+            font-weight: bold;
+            font-size: 11px;
+            margin: $gap_0;
+          }
+          .content {
+            padding: 0 $gap_1;
+
+            .radio {
+              display: block;
+            }
+
+            .checkbox {
+              display: block;
+            }
+
+            .showMore {
+              padding-left: $gap_2;
+              margin-top: $gap_0;
+              font-size: 11px;
+              cursor: pointer;
+              color: black;
+            }
+          }
+        }
+      }
+    }
+  }
+}

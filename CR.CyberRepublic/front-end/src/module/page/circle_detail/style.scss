@@ -1,0 +1,28 @@
+
+@import "../../../style/variable";
+@import "../../../style/color";
+@import "../../../style/typography";
+
+$mobile-padding: $gap_0 0px;
+
+.p_CircleDetail {
+  text-align: left;
+
+  .p_admin_breadcrumb {
+    padding: 0 $gap_3;
+  }
+
+  @media only screen and (max-width: $mobile-width) {
+    padding: 0 24px;
+  }
+
+  .c_Footer {
+    margin-top: 0;
+  }
+
+  h3 {
+    @extend .komu-a;
+    font-size: 32px;
+  }
+}
+

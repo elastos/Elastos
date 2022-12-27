@@ -1,0 +1,78 @@
+@import '@/style/variable';
+@import '@/style/color';
+@import '@/style/typography';
+
+.c_TeamPopup {
+  padding: $gap_2;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+
+  .app-header {
+    font-size: 36px;
+    position: relative;
+    padding-top: $gap_1;
+
+    h3 {
+      padding: 0;
+    }
+  }
+
+  .app-meta-row {
+    min-height: 24px;
+  }
+
+  .carousel-wrapper {
+    position: absolute;
+    right: -$gap_3;
+    top: $gap_2;
+    width: 150px;
+  }
+
+  .app-meta,
+  .app-footer,
+  .app-applications {
+    margin-top: $gap_2;
+  }
+
+  .app-meta {
+    @extend .synthese;
+    padding-bottom: $gap_2;
+  }
+
+  .ql-editor {
+    padding: 0;
+    font-size: 14px;
+  }
+
+  .task-description,
+  .task-goals,
+  .task-breakdown {
+    margin: $gap_1 0;
+    white-space: pre-line;
+  }
+
+  .task-description {
+    font-weight: 600;
+  }
+
+  .app-footer .ant-btn {
+    height: 36px;
+    & > span {
+      @extend .komu-a;
+      text-transform: uppercase;
+      font-size: 24px;
+      line-height: 38px;
+    }
+  }
+
+  .help-icon {
+    margin-left: $gap_0;
+  }
+
+  .square {
+    position: absolute;
+    top: 0;
+    left: -28px;
+  }
+}

@@ -1,0 +1,82 @@
+@import '../../../../style/variable';
+@import '../../../../style/color';
+@import '../../../../style/typography';
+
+.c_Team.c_Detail {
+    margin-top: $gap_3;
+    text-align: justify;
+
+    .application-form {
+        margin-top: $gap_2;
+    }
+
+    .project-icon {
+        width: 96px;
+        height: 96px;
+        position: relative;
+        display: inline-block;
+        margin-right: $gap_3;
+    }
+
+    .base-icon, .overlay-icon {
+        width: 96px;
+        height: 96px;
+        position: absolute;
+        top: 0;
+    }
+
+    .base-icon {
+        background-image: url('/assets/images/IconBG.png');
+        background-size: contain;
+    }
+
+    .project-description {
+        display: inline-block;
+    }
+
+    .project-name,
+    .project-funding {
+        height: 32px;
+        line-height: 32px;
+        font-size: 24px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+
+    .project-likes {
+        margin-top: 64px;
+        color: $primary_color;
+    }
+
+    .project-avatar {
+        margin-top: -64px;
+        margin-left: -64px;
+        margin-right: $gap_2;
+    }
+
+    .project-name {
+        font-size: 36px;
+        padding-top: $gap_0;
+    }
+
+    .footer {
+        margin-top: $gap_3;
+    }
+
+    .description {
+        margin-top: $gap_3;
+    }
+
+    h3 {
+        @extend .komu-a;
+        color: $cr100_green;
+        font-size: 36px;
+    }
+
+    .submit-button {
+        @extend .komu-a;
+        background: $text_new_gray;
+        color: $cr100_green;
+        margin-top: $gap_3;
+    }
+}

@@ -1,0 +1,53 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Node template
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+build/Release
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+
+# dotenv environment variables file
+/env/*.env
+/env/*.pem
+
+newrelic.js
+
+.idea
+yarn.lock
+
+# TODO: add test to ensure this is ignored!
+dist/
+test-results.xml
+coverage/
+
+# IDE - VSCode
+.vscode/*
+
+# git file
+issues.json
+
+.DS_Store
+.data
+.upload
+google-translation-service-acct.json

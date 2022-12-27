@@ -1,0 +1,390 @@
+
+@import '../../style/variable';
+@import '../../style/color';
+
+$avatar-size: 160px;
+
+.c_Member {
+  padding-top: $gap_0;
+
+  .profile-edit-btn {
+    visibility: hidden;
+  }
+
+  @media only screen and (max-width: $mobile-width) {
+    .profile-edit-btn {
+      visibility: visible;
+    }
+  }
+
+  .member-content:hover {
+    .profile-edit-btn {
+      visibility: visible;
+    }
+  }
+
+  .profile-skillset-info {
+    max-width: 250px;
+    text-align: right;
+
+    .ant-tag {
+      margin-top: 1px;
+      margin-bottom: 1px;
+    }
+  }
+
+  .header {
+    width: 100%;
+    max-width: 780px;
+    height: 50px;
+    display: inline-flex;
+    background-color: $bg_obsidian;
+    .content {
+      color: #fff;
+      padding-top: 12px;
+      font-size: 16px;
+      margin-left: 40px;
+      flex: 1;
+    }
+    .close-btn {
+      font-size: 24px;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 12px;
+      margin-right: 24px;
+    }
+  }
+
+  .profile-metrics {
+    top: 12px;
+    .item {
+      padding: 16px;
+      >.value {
+        text-align: center;
+        font-weight: 700;
+        font-size: 24px;
+      }
+    }
+  }
+  // padding: 0 20%;
+  text-align: left;
+  .member-content {
+    width: 100%;
+    max-width: 780px;
+    margin: auto;
+  }
+
+  .member-content-mobile {
+    width: auto;
+  }
+
+  .ant-btn-primary {
+    margin-right: $gap_0;
+  }
+
+  .gridCol {
+    padding: 0 $gap_2;
+    margin: $gap_0 0;
+
+    min-height: 40vh;
+
+    &.left-vert-sep {
+      border-left: 1px solid $border_gray;
+    }
+  }
+
+  .form-wrapper {
+    padding: $gap_2 0;
+  }
+
+  &.public {
+
+    .section-title > h4 {
+      color: $text_dark_gray;
+    }
+
+    .label-col {
+      color: $text_light_gray;
+    }
+
+    .task-thumbnail {
+      width: 100%;
+      padding-left: $gap_0;
+    }
+
+    .ant-row {
+      p {
+        padding-bottom: $gap_0;
+      }
+    }
+
+    .ant-divider-inner-text {
+      color: $text_light_gray;
+    }
+
+  }
+
+  .profile-banner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 165px;
+
+    .profile-edit-btn {
+      position: absolute;
+      color: #fff;
+      font-size: 24px;
+      top: 24px;
+      right: 24px;
+      cursor: pointer;
+    }
+
+    span {
+      display: inline-block;
+      background-repeat: no-repeat;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+    }
+
+    &.profile-banner-mobile {
+      width: auto;
+      height: 151px;
+      overflow: hidden;
+
+      span {
+        padding-bottom: 56.25%;
+        display: inline-block;
+        height: 0;
+        width: 100%;
+        vertical-align: top;
+        background-position: top;
+        background-size: auto;
+      }
+    }
+  }
+
+  .profile-info-container {
+    margin-top: 0 !important;
+    background: #f7f9fd;
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+
+    &.profile-info-container-mobile {
+      padding: 0 24px;
+      padding-bottom: 24px;
+    }
+  }
+
+  .skillset-header {
+    padding-left: 24px;
+
+    @media only screen and (max-width: $mobile-width) {
+      padding-left: 0;
+    }
+
+    & > h4 {
+      font-size: 24px;
+      padding-top: 24px;
+    }
+  }
+
+  .skillset-content {
+    width: 498px;
+    margin-right: 24px;
+    margin-top: 24px;
+
+    @media only screen and (max-width: $mobile-width) {
+      float: left;
+    }
+  }
+
+  .profession-container {
+    @media only screen and (max-width: $mobile-width) {
+      margin-top: $gap_1;
+    }
+  }
+
+  .profile-avatar-container {
+    position: relative;
+    z-index: 2;
+    width: $avatar-size;
+    float: right;
+
+    .ant-upload {
+      width: $avatar-size;
+      height: $avatar-size;
+    }
+
+    &.profile-avatar-container-mobile {
+      float: none;
+      width: 100%;
+    }
+
+    $avatarTopOffset: -16px;
+    .profile-avatar {
+      margin-top: $avatarTopOffset;
+      overflow: hidden;
+      width: $avatar-size;
+      height: $avatar-size;
+
+      img {
+        width: 100%;
+      }
+    }
+  }
+
+  .profile-button {
+    &:not(.profile-button-mobile) {
+      position: absolute;
+      top: $gap_0;
+      right: $gap_0;
+
+      a {
+        i.anticon {
+          font-size: 22px;
+
+          &.anticon-loading {
+            font-size: 20px;
+            margin-right: 2px;
+          }
+        }
+
+        &:not(:last-child) {
+          margin-right: $gap_0;
+        }
+      }
+    }
+  }
+
+  .profile-send-msg {
+    width: 100%;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .profile-follow, .profile-edit, .profile-show {
+    width: 100%;
+    &.separated {
+      margin-bottom: 16px;
+    }
+  }
+
+  .profile-left {
+    width: 200px;
+    padding-bottom: 16px;
+  }
+
+  .profile-right {
+    position: relative;
+    width: calc(100% - 200px);
+    padding-left: 60px;
+    padding-right: 40px;
+    padding-bottom: 16px;
+  }
+
+  .profile-general-info {
+    line-height: 32px;
+    font-size: 13px;
+    span {
+      margin-left: 8px;
+    }
+
+    &.profile-general-info-mobile {
+      margin-bottom: 10px !important;
+    }
+  }
+
+  .profile-general-title {
+    text-transform: uppercase;
+    font-size: 36px;
+    padding-bottom: 0;
+    padding-top: 0;
+    margin-bottom: 8px;
+    margin-top: 8px;
+
+    &.profile-general-title-mobile {
+      text-align: center;
+    }
+  }
+
+  .profile-social {
+    a {
+      margin-right: 16px;
+      color: $text_default_color;
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+
+    &.profile-social-mobile {
+      text-align: left;
+      margin-bottom: 8px;
+    }
+  }
+
+  .portfolio-container {
+    .link-container {
+      margin-right: $gap_0;
+    }
+  }
+
+  .profile-description {
+    border-top: 1px solid #d7d7d9;
+    padding: 24px 0 0 0;
+    margin-right: 24px;
+    float: right;
+    width: 498px;
+
+    &.profile-description-mobile {
+      margin: 0;
+      margin-top: 24px;
+      width: auto;
+    }
+  }
+
+  .projects-tasks {
+    margin-top: $gap_4;
+
+    .pt-header {
+      margin: $gap_2;
+      .pt-header-label {
+        font-size: 50px;
+      }
+    }
+
+    .pt-list {
+      margin-bottom: $gap_3;
+      th {
+        background: #0F2631;
+        font-family: 'Synthese', sans-serif;
+        color: white;
+        font-weight: 600;
+      }
+      tr {
+        background: $bg_blue;
+      }
+      td {
+        border: 0;
+        font-family: 'Synthese', sans-serif;
+        color: black;
+      }
+      .cr-btn {
+        padding: 0 24px;
+        height: 28px;
+      }
+    }
+  }
+
+  .c_Comments {
+    h3 {
+      font-size: 50px;
+      font-family: "komu-a", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+}

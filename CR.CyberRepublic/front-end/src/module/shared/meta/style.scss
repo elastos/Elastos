@@ -1,0 +1,21 @@
+@import "@/style/variable";
+@import "@/style/color";
+
+.c_Meta {
+  display: flex;
+  flex: 0 80px;
+  color: rgba(3, 30, 40, 0.4);
+  > span {
+    &:not(:last-child):after {
+      content: "\A";
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: rgba(3, 30, 40, 0.4);
+      display: inline-block;
+      margin: 0 10px;
+      top: -3px;
+      position: relative;
+    }
+  }
+}

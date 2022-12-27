@@ -1,0 +1,36 @@
+
+@import "../../../style/variable";
+
+.p_TaskDetail{
+
+  background: #ffffff;
+  text-align: left;
+
+  .ant-breadcrumb {
+    padding: 0 $gap_3;
+  }
+
+  .ebp-page {
+    max-width: $lg-width;
+    margin: 0 auto;
+    margin-top: $gap_3;
+  }
+
+  .d_box {
+    padding: 0 $gap_3;
+
+    .btnContainer {
+      padding-top: $gap_2;
+      text-align: right;
+    }
+  }
+
+  .c_Project.c_Detail {
+    padding: 0 $gap_2;
+  }
+
+  .d_rightContainer {
+    border-left: 1px solid #e0e0e0;
+  }
+}
+

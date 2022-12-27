@@ -1,0 +1,77 @@
+
+@import "../../../style/variable";
+@import "../../../style/color";
+@import "../../../style/typography";
+
+$mobile-padding: $gap_0 0px;
+
+.p_ProjectDetail {
+  text-align: left;
+
+  .p_admin_breadcrumb {
+    padding: 0 $gap_3;
+  }
+
+  @media only screen and (max-width: $mobile-width) {
+    padding: 0 24px;
+  }
+
+  .c_Footer {
+    margin-top: 0;
+  }
+
+  h3 {
+    @extend .komu-a;
+    font-size: 32px;
+    padding: $gap_3 0;
+  }
+
+  h3.with-gizmo:before {
+    top: -$gap_0 + $gap_3;
+  }
+
+  .ebp-wrap {
+    padding: 0;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .c_Project.c_Detail {
+    .description {
+      margin-top: 0;
+    }
+
+    .contributors > h3,
+    .applications > h3,
+    .subscribers > h3 {
+      padding-bottom: 0;
+    }
+
+    .contributors > h3 {
+      padding-top: 0;
+    }
+
+    .contributors {
+      margin-top: 0;
+    }
+
+    .action-wrapper {
+      margin: $gap_3 0;
+
+      button:not(:last-child) {
+        margin-right: $gap_1;
+      }
+    }
+  }
+
+  .project-slider {
+      background: white;
+  }
+
+  .slider-project-icon {
+      .ant-avatar {
+          background: $bg_dark;
+      }
+  }
+}
+

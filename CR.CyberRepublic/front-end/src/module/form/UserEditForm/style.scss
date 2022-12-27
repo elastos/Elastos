@@ -1,0 +1,213 @@
+
+@import "@/style/variable";
+@import "@/style/color";
+@import "@/style/typography";
+
+.c_userEditFormContainer {
+  &:not(.completing) {
+    .uef-switcher {
+      .uef-section-index,
+      .uef-section-done-marker {
+        display: none;
+      }
+
+      .uef-section-description {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .uef-section {
+        padding-right: 0;
+      }
+    }
+  }
+
+  .header-profile {
+    margin: $gap_3 0;
+    display: inline-block;
+
+    .header-icon {
+        width: 12px;
+        height: 12px;
+        margin-bottom: $gap_2;
+    }
+    .header-label {
+        font-size: 60px;
+        line-height: 60px;
+    }
+  }
+
+  .uef-header {
+    text-align: center;
+    margin-bottom: $gap_4;
+
+    h4 {
+      padding: 0;
+    }
+  }
+
+  &:not(.completing) {
+    .uef-section {
+      @media only screen and (max-width: $mobile-width) {
+        text-align: center;
+      }
+    }
+
+    .uef-section-description {
+      @media only screen and (max-width: $mobile-width) {
+        margin-left: 0;
+      }
+    }
+  }
+
+  .uef-section {
+    height: $gap_4;
+    position: relative; // done marker is positioned absolutely inside
+
+    @media only screen and (max-width: $mobile-width) {
+      height: $gap_5;
+      padding-right: $gap_0;
+    }
+
+    text-align: right;
+    padding-right: $gap_1;
+    background: $bg_light_gray;
+    margin: 0 $gap_0;
+    cursor: pointer;
+
+    &.completing.done,
+    &.active {
+      background: $cr_dark_color;
+    }
+
+    &.completing.done {
+      color: $cr_light_color;
+
+      .uef-section-done-marker {
+        visibility: visible;
+      }
+    }
+
+    &.active {
+      color: $primary_color;
+    }
+  }
+
+  .uef-section-index {
+    font-size: 34px;
+    line-height: 34px;
+    padding-top: 4px;
+    @extend .komu-a;
+  }
+
+  .uef-section-description {
+    text-transform: uppercase;
+    font-size: 18px;
+    @extend .komu-a;
+
+    @media only screen and (max-width: $mobile-width) {
+      margin-left: $gap_0;
+      height: 54px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+    }
+  }
+
+  .uef-button-row {
+    text-align: center;
+
+    button {
+      margin-right: $gap_1;
+    }
+  }
+
+  .uef-section-done-marker {
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: $gap_0;
+    line-height: 60px;
+
+    @media only screen and (max-width: $mobile-width) {
+      & > img {
+        height: 32px;
+      }
+    }
+  }
+
+  .uef-section-content {
+    padding: 0 $gap_3;
+    margin-bottom: $gap_3;
+  }
+
+  .uef-switcher {
+    padding: 0 $gap_4;
+
+    @media only screen and (max-width: $mobile-width) {
+      padding-left: $gap_1;
+      padding-right: $gap_1;
+    }
+  }
+
+  .timezone-picker {
+    @extend .synthese;
+    font-size: 14px;
+
+    & > input {
+      padding-top: 7px;
+    }
+  }
+
+  .d_taskCreateForm {
+    background-color: #f7f9fd;
+    padding: $gap_3 $gap_4 0px;
+
+    @media only screen and (max-width: $mobile-width) {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .label {
+      padding: $gap_1 0px;
+      font-weight: 700;
+    }
+    .midLabel {
+      white-space: nowrap;
+      padding: 0 $gap_1;
+      text-align: right;
+    }
+
+    .ant-form-item-label {
+      text-align: left;
+    }
+
+    .ant-select-selection {
+      .ant-select-arrow::before {
+          content: '';
+      }
+      // .ant-select-arrow {
+      //     top: calc(50% - 7px);
+      //     width: 14px;
+      //     height: 27px;
+      //     margin-right: 4px;
+      //     transform: rotate(90deg);
+      //     background-size: contain;
+      //     background: url("/assets/images/arrow.svg") no-repeat;
+      // }
+  }
+
+    .labelContainer {
+      padding-right: 8px;
+      margin-bottom: $gap_1;
+      text-align: right;
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    .avatarContainer {
+      margin-bottom: $gap_1;
+    }
+  }
+}

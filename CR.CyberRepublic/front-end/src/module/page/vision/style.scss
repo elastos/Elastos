@@ -1,0 +1,72 @@
+
+@import "../../../style/variable";
+@import "../../../style/color";
+
+$mobile-padding: $gap_0 0px;
+$landingPageWidth: 1152px;
+
+.p_training {
+  background: #ffffff;
+  text-align: left;
+
+  %container {
+    max-width: $landingPageWidth;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media only screen and (max-width: $mobile-width) {
+    padding: 0 24px;
+  }
+
+  .ebp-wrap {
+    padding: 0;
+  }
+
+  .evangelist {
+    min-height: 750px;
+
+    background-color: $bg_blue;
+    padding-top: 100px;
+    padding-bottom: 100px;
+
+    .container {
+      position: relative;
+      margin-left: auto;
+      margin-right: auto;
+
+      max-width: 915px;
+      background-color: #fff;
+
+      .left-box-container {
+        position: absolute;
+        top: -50px;
+        left: -50px;
+      }
+      .right-box-container {
+        position: absolute;
+        bottom: $gap_5;
+        right: -29.5px;
+      }
+    }
+
+    .title {
+      font-family: "synthese",sans-serif;
+      font-size: 36px;
+      padding-top: 102px;
+      text-align: center;
+    }
+
+    .content {
+      font-family: "synthese",sans-serif;
+      font-weight: 200;
+      font-size: 24px;
+      padding: 38px 80px 74px;
+      text-align: center;
+    }
+  }
+
+  .c_Footer {
+    margin-top: 0;
+  }
+}

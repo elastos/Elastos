@@ -1,0 +1,37 @@
+@import "@/style/variable";
+@import "@/style/color";
+
+.p_MySuggestionList {
+  background: $bg_lighter_gray;
+  padding: 40px 30px;
+  .cr-mysuggestion-header .title {
+    font-size: 30px;
+  }
+  .cr-mysuggestion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .list-container {
+    margin-bottom: 40px;
+  }
+  .item-container {
+    padding: 30px 0;
+    &:not(:last-child) {
+      border-bottom: 1px solid #E5E5E5;
+    }
+  }
+  .item-container .title-link {
+    font-size: 20px;
+    color: rgba(0, 0, 0, 0.65);
+    transition: all 0.3s;
+    text-decoration: none;
+    margin-top: 8px;
+    margin-bottom: 0;
+    display: block;
+    &:hover {
+      color: $link_color;
+    }
+  }
+
+}

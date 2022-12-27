@@ -1,0 +1,30 @@
+.wrap-box-user {
+  h1 {
+    text-align: left;
+  }
+}
+
+.c_SubmissionTableContainer {
+
+  .showArchivedContainer {
+    margin: 4px 8px;
+  }
+
+  table {
+
+    > thead.ant-table-thead > tr > th {
+      word-break: normal;
+      white-space: nowrap;
+    }
+
+    td {
+      word-break: normal;
+      white-space: nowrap;
+    }
+
+    .anticon {
+      font-size: 150%;
+      cursor: pointer;
+    }
+  }
+}

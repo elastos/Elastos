@@ -1,0 +1,270 @@
+@import './color.scss';
+@import './variable.scss';
+
+.flex-center{
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+.spin-container {
+  padding: $gap_2;
+}
+.v-center{
+
+}
+.h-center{
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+}
+.flex-space{
+  display: flex;
+  justify-content: space-between;
+}
+
+.ebp-wrap{
+  max-width: $main_width;
+  height: 100%;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  //outline: 1px solid red;
+
+  padding: 0 $gap_3;
+}
+
+.w100{
+  width: 100%;
+}
+.layout-pt{
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+.layout-pl{
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.ebp-admin-wrap{
+  max-width: $main_width;
+  height: 100%;
+  margin: 0 auto;
+  background: #FFF;
+
+  //outline: 1px solid red;
+}
+
+.ebp-page {
+  @extend .ebp-wrap;
+  background: #ffffff;
+  min-height: 40vh;
+  margin-top: $gap_2;
+  padding: 0 $gap_2 $gap_3;
+
+  > .d_row,
+  > .d_row > .d_box {
+    min-height: inherit
+  }
+
+  .d_leftContainer {
+    border-right: 1px solid $border_gray;
+  }
+}
+
+// this is for the grey description row
+.ebp-page-desc {
+  text-align: center;
+
+  > p {
+    max-width: 700px;
+    padding: $gap_2 0;
+    font-size: 16px;
+
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.ebp-page-title {
+  text-align: center;
+  padding-top: $gap_3;
+  padding-bottom: 0;
+}
+
+.ebp-header-divider {
+  height: 0;
+  // background: linear-gradient(90deg, #ffffff 3.52% ,rgba(71, 170, 167, 0.55) 47.51%, rgba(224, 224, 224, 0.55) 100%);
+  // transform: matrix(1, 0, 0, -1, 0, 0);
+}
+
+//Common class
+.pull-right {
+  float: right;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.ebp-gray-box {
+
+  border-radius: 5px;
+  border: 1px solid $border_gray;
+
+  h2 {
+    text-align: center;
+  }
+}
+
+.text-light-gray {
+  color: $text_light_gray;
+}
+
+.pill {
+
+  border-radius: 8px;
+  border-width: 0;
+
+  &.ant-btn.ant-btn-ebp {
+    font-size: 14px;
+    padding: 0 15px;
+    border-width: 0;
+  }
+}
+
+.alpha-tag {
+  color: $primary_color;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: right;
+  opacity: 0.66;
+}
+
+.ant-btn.cr-btn {
+  border-radius: 0;
+  border: 1px solid #0F2631;
+  // background-color: $bg_blue;
+  // padding: 0 30px;
+  min-width: 155px;
+  height: 40px;
+
+  > span {
+    color: #000;
+    font-size: 16px;
+    line-height: 16px;
+  }
+}
+
+.ant-btn.cr-btn-komu {
+  > span {
+    font-family: "komu-a", sans-serif;
+    letter-spacing: 0.1em;
+  }
+}
+.ant-btn.cr-btn-default {
+  border-color: black;
+  > span {
+    color: black;
+  }
+  &:hover {
+    > span {
+      color: $cr_btn_primary;
+    }
+    border-color: $cr_btn_primary;
+  }
+}
+.ant-btn.cr-btn-primary {
+  background: $cr_btn_primary;
+  border-color: $cr_btn_primary;
+  > span {
+    color: white;
+  }
+}
+
+.ant-btn.cr-btn-danger {
+  background: $cr_btn_danger;
+  border-color: $cr_btn_danger;
+  > span {
+    color: white;
+  }
+}
+
+.ant-btn.cr-btn-black {
+  background: $bg_obsidian;
+  border-color: $bg_obsidian;
+  > span {
+    color: white;
+  }
+}
+
+.cr-input {
+  .ant-select-selection {
+    border-radius: 0;
+    border: 1px solid #434D72;
+  }
+}
+
+.mirror-image {
+  transform: scaleX(-1);
+}
+
+h3.with-gizmo {
+  position: relative;
+}
+
+h3.with-gizmo:before {
+  position: absolute;
+  top: -$gap_0;
+  left: -$gap_1;
+  display:inline-block;
+  width: 12px;
+  height: 12px;
+  background-image: url("/assets/images/tri-square-dark.svg");
+  background-size: 12px 12px;
+  content: "";
+}
+
+.no-modal-padding {
+  .ant-modal-body {
+    padding: 0;
+  }
+}
+
+.cr-title-with-icon {
+  padding-left: 10px;
+  background: url(/assets/images/bg-square-sm.png) 0 10px no-repeat;
+}
+
+.cr-strikethrough {
+  text-decoration: none;
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+  border: 0;
+  color: black;
+  &:focus, &:active {
+    color: inherit;
+  }
+  /* keeps it from wrapping across multiple lines */
+  &:after {
+    content: "";
+    /* required property */
+    position: absolute;
+    bottom: 3px;
+    left: 0;
+    /* adjust as necessary, depending on line thickness */
+    /* or use calc() if you don't need to support IE8: */
+    height: 100%;
+    /* 4px = half the line thickness */
+    // height: calc(50% - 4px);
+    width: 100%;
+    // border-top: 9px solid $cr_primary_highlight;
+    border-bottom: 9px solid $cr_primary_highlight;
+    z-index: -1;
+  }
+}

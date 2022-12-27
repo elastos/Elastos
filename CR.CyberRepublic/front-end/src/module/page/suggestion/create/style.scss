@@ -1,0 +1,17 @@
+@import "@/style/variable";
+@import "@/style/color";
+
+.c_SuggestionDetail {
+  .mention {
+    background-color: yellow;
+  }
+  svg.more-info-icon {
+    width: 20px;
+
+    > path {
+      stroke: $cr_dark_color;
+      stroke-width: 2;
+      fill: $cr_dark_color;
+    }
+  }
+}
