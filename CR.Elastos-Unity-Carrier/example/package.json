@@ -1,0 +1,75 @@
+{
+  "name": "example",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "build:ios": "react-native bundle --entry-file ./index.js --bundle-output ./ios/bundle/index.jsbundle --platform ios --assets-dest ./ios/bundle --dev false",
+    "test": "jest",
+    "autotest:ios": "./node_modules/.bin/wdio ./config/wdio.ios.app.conf.js",
+    "autotest:android": "./node_modules/.bin/wdio ./config/wdio.android.app.conf.js"
+  },
+  "dependencies": {
+    "lodash": "4.17.11",
+    "native-base": "2.7.0",
+    "react": "16.4.1",
+    "react-native": "0.56.0",
+    "react-native-elastos-carrier": "file:../"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.4.3",
+    "@babel/core": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "@babel/register": "^7.4.0",
+    "@babel/traverse": "^7.4.3",
+    "@babel/types": "^7.4.0",
+    "@wdio/appium-service": "^5.7.9",
+    "@wdio/cli": "^5.7.15",
+    "@wdio/jasmine-framework": "^5.7.8",
+    "@wdio/local-runner": "^5.7.15",
+    "@wdio/mocha-framework": "^5.7.14",
+    "@wdio/sauce-service": "^5.7.8",
+    "@wdio/selenium-standalone-service": "^5.7.8",
+    "@wdio/spec-reporter": "^5.7.9",
+    "@wdio/sync": "^5.7.9",
+    "babel-eslint": "7.2.3",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-react-native": "4.0.0",
+    "eslint": "4.4.1",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-flowtype": "2.35.0",
+    "eslint-plugin-import": "2.7.0",
+    "eslint-plugin-jsx-a11y": "6.0.2",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-prettier": "2.1.2",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-react": "7.1.0",
+    "eslint-plugin-react-native": "3.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "eslint-plugin-wdio": "^5.7.8",
+    "flow-bin": "0.52.0",
+    "flow-typed": "2.1.5",
+    "husky": "0.14.3",
+    "jest": "23.4.2",
+    "node-fetch": "^2.3.0",
+    "prettier": "1.5.3",
+    "react-test-renderer": "16.4.1",
+    "wdio-html-reporter": "^1.0.2",
+    "webdriverio": "^5.7.15"
+  },
+  "jest": {
+    "preset": "react-native",
+    "setupFiles": [
+      "./test/setup.js"
+    ],
+    "globals": {
+      "__DEV__": true
+    },
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!react-native|react-navigation)/"
+    ]
+  }
+}
