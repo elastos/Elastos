@@ -1,0 +1,59 @@
+// Copyright (c) 2012-2018 The Elastos Open Source Project
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#define CATCH_CONFIG_MAIN
+
+#include <catch.hpp>
+
+#include "TestHelper.h"
+
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <WalletCore/Mnemonic.h>
+#include <WalletCore/Mnemonic.h>
+#include <WalletCore/Key.h>
+
+#include <boost/shared_ptr.hpp>
+#include <boost/filesystem/path.hpp>
+#include <ethereum/base/BREthereumAddress.h>
+
+using namespace Elastos::ElaWallet;
+
+TEST_CASE("Key sign pressure test", "[KeySign]") {
+	Log::registerMultiLogger();
+
+#ifdef PRESSURE_TEST
+#define LOOP_COUNT 10000
+#else
+#define LOOP_COUNT 1
+#endif
+	std::string phrase = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
+	std::string phrasePasswd = "";
+
+	uint512 seed = Mnemonic::DeriveSeed(phrase, phrasePasswd);
+
+	HDKeychain child = HDKeychain(CTElastos, HDSeed(seed.bytes()).getExtendedKey(CTElastos, true)).getChild("44'/0'/0'/0/0");
+
+	Key key1, key2;
+
+	key1.SetPrvKey(CTElastos, child.privkey());
+	key2.SetPubKey(CTElastos, child.pubkey());
+
+	for (int i = 0; i < LOOP_COUNT; ++i) {
+		std::string message = getRandString(120);
+
+		bytes_t signedData = key1.Sign(message);
+		REQUIRE(key2.Verify(message, signedData));
+	}
+
+	bytes_t prvkey = child.privkey();
+	HDKeychain hdkey(CTElastos, prvkey, bytes_t(32));
+	REQUIRE(child.pubkey() == hdkey.pubkey());
+	REQUIRE(child.uncompressed_pubkey() == hdkey.uncompressed_pubkey());
+
+	Key k(CTElastos, prvkey);
+	REQUIRE(child.pubkey() == k.PubKey());
+	REQUIRE(child.uncompressed_pubkey() == k.PubKey(false));
+}
+
