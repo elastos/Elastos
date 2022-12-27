@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package hive;
+
+// The service definition.
+service Hive {
+  rpc UploadAndSign (Request) returns (Response) {}
+  rpc VerifyAndShow (Request) returns (Response) {}
+}
+
+// The request message
+message Request {
+  string input = 1;
+  bytes file_content = 2;
+}
+
+// The response message
+message Response {
+  string output = 1;
+  string status_message = 2;
+  bool status = 3;
+  bytes file_content = 4;
+}

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package sidechain_eth;
+
+// The service definition.
+service SidechainEth {
+  rpc DeployEthContract (Request) returns (Response) {}
+  rpc WatchEthContract (Request) returns (Response) {}
+}
+
+// The request message
+message Request {
+  string input = 1;
+}
+
+// The response message
+message Response {
+  string output = 1;
+  string status_message = 2;
+  bool status = 3;
+}
