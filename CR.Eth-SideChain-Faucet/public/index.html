@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELA Ethereum Network testnet faucet</title>
+    <link rel="stylesheet" type="text/css" href="./assets/stylesheets/application.css">
+    <link rel="apple-touch-icon" href="./favicons/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./favicons/android-chrome-192x192.png">
+    <link rel="mask-icon" color="#6151cc" href="./favicons/safari-pinned-tab.svg">
+    <link rel="manifest" href="./favicons/manifest.webmanifest">
+    <link href="./favicons/favicon.ico" rel="icon" type="image/x-icon">
+    <script src='https://www.google.com/recaptcha/api.js'></script>
+  </head>
+  <body>
+    <header class="header">
+      <div class="container">
+      </div>
+    </header>
+    <section class="content">
+      <form action="/" method="POST" id="faucetForm">
+        <div class="request-tokens">
+          <h1>ELA Ethereum Network faucet</h1>
+            <input type="text" id="receiver" name="receiver" />
+            <h2>
+              Please use ELA Ethereum RPC to connect<br>
+              to the  testnet.
+            </h2>
+            <button type="submit" id="requestTokens" class="request-tokens-button">Request 1 ETH ELA</button>
+        </div>
+        <div class="text-xs-center">
+          <div class="g-recaptcha" data-sitekey="6Lf6P7QUAAAAACibLL-0AJsBouTPVyP6G0Uf8koY"></div>
+        </div>
+      </form>
+    </section>
+    <div class="loading-container hidden">
+      <div class="loading">
+        <div class="loading-i"></div>
+        <div class="loading-i"></div>
+        <div class="loading-i"></div>
+        <div class="loading-i"></div>
+        <div class="loading-i"></div>
+        <div class="loading-i"></div>
+      </div>
+    </div>
+    <footer class="footer">
+      <div class="container">
+        <p class="rights">2018 ELA Network. All rights reserved.</p>
+
+        <div class="socials">
+          <a href="https://twitter.com/Elastos_org" class="social social_twitter"></a>
+          <a href="https://www.elastos.org/" class="social social_oracles"></a>
+          <a href="https://t.me/elastosgroup" class="social social_telegram"></a>
+          <a href="https://github.com/elastos" class="social social_github"></a>
+        </div>
+      </div>
+    </footer>
+    <script src="./assets/javascripts/application.js?v=1.4" type="text/javascript"></script>
+    <script type="text/javascript">
+      var url = new URL(window.location.href);
+      document.getElementById('receiver').value = url.searchParams.get("address");
+    </script>
+  </body>
+</html>
