@@ -1,0 +1,12 @@
+{
+  "SPVDisableDNS": false,
+  "SPVPermanentPeers": [
+    "localhost:20338"
+  ],
+  "EnableRPC": true,
+  "RPCUser": "User",
+  "RPCPass": "Password",
+  "RPCWhiteList": [
+    "127.0.0.1"
+  ]
+}
