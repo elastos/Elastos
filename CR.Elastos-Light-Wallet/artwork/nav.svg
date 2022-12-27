@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="4px" viewBox="0 0 24 4" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.1 (72631) - https://sketchapp.com -->
+    <title>Group 23</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="160.542852%" x2="-53.6145639%" y2="-101.90892%" id="linearGradient-1">
+            <stop stop-color="#6AE4FF" offset="0%"></stop>
+            <stop stop-color="#00A8FF" offset="100%"></stop>
+        </linearGradient>
+        <circle id="path-2" cx="22" cy="2" r="2"></circle>
+        <circle id="path-3" cx="12" cy="2" r="2"></circle>
+        <circle id="path-4" cx="2" cy="2" r="2"></circle>
+    </defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-23" transform="translate(-1.000000, -1.000000)">
+            <g transform="translate(1.000000, 1.000000)">
+                <g id="Oval">
+                    <use fill="url(#linearGradient-1)" xlink:href="#path-2"></use>
+                    <use fill="#FFFFFF" xlink:href="#path-2"></use>
+                </g>
+                <g id="Oval-Copy-2">
+                    <use fill="url(#linearGradient-1)" xlink:href="#path-3"></use>
+                    <use fill="#FFFFFF" xlink:href="#path-3"></use>
+                </g>
+                <g id="Oval-Copy-3">
+                    <use fill="url(#linearGradient-1)" xlink:href="#path-4"></use>
+                    <use fill="#FFFFFF" xlink:href="#path-4"></use>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

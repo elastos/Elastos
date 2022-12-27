@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="26px" height="26px" viewBox="0 0 26 26" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.1 (72631) - https://sketchapp.com -->
+    <title>Copy26</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="84.9220384%" y1="-29.7823858%" x2="0%" y2="112.307394%" id="linearGradient-1">
+            <stop stop-color="#F4D2AE" offset="0%"></stop>
+            <stop stop-color="#E5A776" offset="100%"></stop>
+        </linearGradient>
+        <rect id="path-2" x="0" y="0" width="26" height="26" rx="10"></rect>
+        <filter x="-42.3%" y="-26.9%" width="184.6%" height="184.6%" filterUnits="objectBoundingBox" id="filter-3">
+            <feMorphology radius="1" operator="erode" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="4" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="4" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.309803922   0 0 0 0 0.282352941   0 0 0 0 0.552941176  0 0 0 0.148137019 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Copy26" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Copy-Button">
+            <g>
+                <g id="Rectangle">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+                    <use fill="url(#linearGradient-1)" fill-rule="evenodd" xlink:href="#path-2"></use>
+                </g>
+                <g id="Copy" transform="translate(6.500000, 6.500000)" stroke="#FFFFFF" stroke-width="1.5">
+                    <g id="Group" transform="translate(0.140693, 0.140693)">
+                        <rect id="Rectangle-Copy-3" x="3.31703591" y="3.31703591" width="9.53399542" height="9.53399542" rx="3"></rect>
+                        <path d="M3.12834225,10.0106952 L3.12834225,10.0106952 L2.5026738,10.0106952 C1.12048523,10.0106952 0,8.89020996 0,7.50802139 L0,2.5026738 C0,1.12048523 1.12048523,0 2.5026738,0 L7.50802139,0 C8.89020996,0 10.0106952,1.12048523 10.0106952,2.5026738 L10.0106952,3.12834225 L10.0106952,3.12834225" id="Path"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

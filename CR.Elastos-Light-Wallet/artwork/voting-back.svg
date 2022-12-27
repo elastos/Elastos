@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="22px" height="22px" viewBox="0 0 22 22" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.1 (72631) - https://sketchapp.com -->
+    <title>Back Button</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="84.9220384%" y1="-29.7823858%" x2="0%" y2="112.307394%" id="linearGradient-1">
+            <stop stop-color="#F4D2AE" offset="0%"></stop>
+            <stop stop-color="#E5A776" offset="100%"></stop>
+        </linearGradient>
+        <rect id="path-2" x="0" y="0" width="20" height="20" rx="5.57142857"></rect>
+        <filter x="-27.5%" y="-17.5%" width="155.0%" height="155.0%" filterUnits="objectBoundingBox" id="filter-3">
+            <feMorphology radius="0.5" operator="erode" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="2" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.309803922   0 0 0 0 0.282352941   0 0 0 0 0.552941176  0 0 0 0.148137019 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Back-Button" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Copy-Button" transform="translate(1.000000, 1.000000)">
+            <g>
+                <g id="Rectangle">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+                    <use fill="url(#linearGradient-1)" fill-rule="evenodd" xlink:href="#path-2"></use>
+                </g>
+                <g id="Copy" transform="translate(7.222222, 7.222222)">
+                    <g id="Group" transform="translate(0.108225, 0.108225)"></g>
+                </g>
+                <polyline id="Path-6" stroke="#FFFFFF" stroke-width="0.835714286" stroke-linecap="round" points="11.1111111 5.55555556 7.77777778 10 11.1111111 14.4444444"></polyline>
+            </g>
+        </g>
+    </g>
+</svg>

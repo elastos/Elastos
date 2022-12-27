@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.1 (72631) - https://sketchapp.com -->
+    <title>FB</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="-18.6892744%" x2="79.5731749%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#2D3036" offset="0%"></stop>
+            <stop stop-color="#383C42" offset="0%"></stop>
+            <stop stop-color="#2D3036" offset="100%"></stop>
+        </linearGradient>
+        <path d="M14.6987435,4.00300606 L12.7799073,4 C10.6241606,4 9.23102234,5.39556191 9.23102234,7.55556408 L9.23102234,9.1949172 L7.30171833,9.1949172 C7.13500356,9.1949172 7,9.3268831 7,9.48966108 L7,11.8648969 C7,12.0276749 7.1351575,12.1594905 7.30171833,12.1594905 L9.23102234,12.1594905 L9.23102234,17.7054064 C9.23102234,17.8681844 9.3660259,18 9.53274067,18 L12.0499336,18 C12.2166484,18 12.3516519,17.8680341 12.3516519,17.7054064 L12.3516519,12.1594905 L14.6074583,12.1594905 C14.7741731,12.1594905 14.9091766,12.0276749 14.9091766,11.8648969 L14.9101003,9.48966108 C14.9101003,9.4115036 14.8782351,9.33665279 14.8217399,9.28134134 C14.7652447,9.22602989 14.6882757,9.1949172 14.608228,9.1949172 L12.3516519,9.1949172 L12.3516519,7.80521711 C12.3516519,7.13727127 12.5146722,6.79818805 13.4058189,6.79818805 L14.6984356,6.79773714 C14.8649964,6.79773714 15,6.66577124 15,6.50314357 L15,4.29759963 C15,4.13512226 14.8651504,4.00330666 14.6987435,4.00300606 Z" id="path-2"></path>
+        <filter x="-306.2%" y="-182.1%" width="612.5%" height="392.9%" filterUnits="objectBoundingBox" id="filter-3">
+            <feOffset dx="-4" dy="-5" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="6" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.107359222   0 0 0 0 0.24874153   0 0 0 0 0.559782609  0 0 0 0.179824082 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="FB" transform="translate(1.000000, 1.000000)">
+            <g>
+                <rect id="Rectangle" fill="url(#linearGradient-1)" x="0" y="0" width="22" height="22" rx="8.91428571"></rect>
+                <g id="Path" fill-rule="nonzero">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+                    <use fill="#FFFFFF" xlink:href="#path-2"></use>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

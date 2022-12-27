@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="763px" height="75px" viewBox="0 0 763 75" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.1 (72631) - https://sketchapp.com -->
+    <title>Error</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="-1.11022302e-14%" y1="50%" x2="100%" y2="50%" id="linearGradient-1">
+            <stop stop-color="#F96E7C" offset="0%"></stop>
+            <stop stop-color="#B44B83" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="101.556793%" y1="50%" x2="-1.86286807%" y2="50%" id="linearGradient-2">
+            <stop stop-color="#17181C" stop-opacity="0.453425481" offset="0%"></stop>
+            <stop stop-color="#1A1A1E" stop-opacity="0.170044799" offset="100%"></stop>
+        </linearGradient>
+        <rect id="path-3" x="-1.25055521e-12" y="-2.34479103e-13" width="762.171429" height="74.6571429" rx="22.2857143"></rect>
+        <filter x="-7.5%" y="-55.6%" width="115.1%" height="254.0%" filterUnits="objectBoundingBox" id="filter-5">
+            <feOffset dx="0" dy="16" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="16.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.0175721056   0 0 0 0 0.0612828351   0 0 0 0 0.0338370629  0 0 0 0.274311626 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Error" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-4" fill="white">
+            <use xlink:href="#path-3"></use>
+        </mask>
+        <g id="Rectangle" opacity="0.900000036">
+            <use fill="black" fill-opacity="1" filter="url(#filter-5)" xlink:href="#path-3"></use>
+            <use fill="url(#linearGradient-1)" fill-rule="evenodd" xlink:href="#path-3"></use>
+            <use fill-opacity="0.48" fill="url(#linearGradient-2)" fill-rule="evenodd" xlink:href="#path-3"></use>
+        </g>
+        <g id="problem" mask="url(#mask-4)">
+            <g transform="translate(22.842857, 22.285714)" id="Group-2">
+                <g>
+                    <path d="M30.2333313,17.9641882 L21.0317688,3.04952322 C19.8537232,1.13992994 17.8230286,0 15.6,0 C13.3769714,0 11.3462768,1.13992994 10.1682312,3.04952322 L0.966668686,17.9641882 C0.334204102,18.9892825 0,20.1725466 0,21.3859039 C0,24.9542337 2.87025143,27.8571429 6.3984375,27.8571429 L24.8015625,27.8571429 C28.3297486,27.8571429 31.2,24.9542337 31.2,21.3859039 C31.2,20.1725466 30.8657959,18.9892825 30.2333313,17.9641882 Z M24.8015625,26.0082174 L6.3984375,26.0082174 C3.87833861,26.0082174 1.828125,23.9346765 1.828125,21.3859039 C1.828125,20.5189794 2.06663815,19.6742034 2.51771849,18.9430594 L11.719281,4.02839437 C12.5612182,2.66360817 14.0118164,1.84892541 15.6,1.84892541 C17.1881836,1.84892541 18.6387818,2.66360817 19.480719,4.02839437 L28.6822815,18.9430594 C29.1333618,19.6742034 29.371875,20.5189794 29.371875,21.3859039 C29.371875,23.9346765 27.3216614,26.0082174 24.8015625,26.0082174 Z" id="Shape" fill="#FF9191" fill-rule="nonzero"></path>
+                    <g id="Group-5" transform="translate(14.485714, 8.357143)" fill="#FFFFFF" fill-rule="nonzero">
+                        <polygon id="Path" points="0 0 2.22857143 0 2.22857143 8.91428571 0 8.91428571"></polygon>
+                        <polygon id="Path" points="0 11.1428571 2.22857143 11.1428571 2.22857143 13.3714286 0 13.3714286"></polygon>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,81 @@
+{
+  "name": "elastos-light-wallet",
+  "version": "v1.0.0-RC34",
+  "description": "elastos light wallet",
+  "productName": "Elastos Light Wallet",
+  "main": "index.js",
+  "build": {
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "hardenedRuntime": true
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    }
+  },
+  "scripts": {
+    "eslint": "eslint --fix 'scripts/**/*.js'",
+    "eslint-lib": "eslint --fix 'libraries/**/*.js'",
+    "eslint-test": "eslint --fix 'test/**/*.js'",
+    "coverage": "nyc -x 'test/**' ./node_modules/mocha/bin/mocha --experimental-worker --recursive -t 100000 test",
+    "start": "electron . --enable-logging --remote-debugging-port=9222",
+    "test": "check-node-version --node 12 --npm 6 && ./node_modules/mocha/bin/mocha test",
+    "test-ledger": "check-node-version --node 12 --npm 6 && ./node_modules/mocha/bin/mocha --timeout 100000 ledger-test -g 'ledger'",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist-all": "electron-builder -mwl",
+    "dist-mac": "electron-builder -m",
+    "dist-win": "electron-builder -w",
+    "dist-linux": "electron-builder -l",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cyber-republic/elastos-light-wallet.git"
+  },
+  "keywords": [
+    "elastos"
+  ],
+  "author": "coranos",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cyber-republic/elastos-light-wallet/issues"
+  },
+  "homepage": "https://github.com/cyber-republic/elastos-light-wallet#readme",
+  "dependencies": {
+    "@ledgerhq/hw-transport-node-hid": "^5.13.1",
+    "babel-polyfill": "^6.26.0",
+    "bignumber.js": "^9.0.0",
+    "bip39": "^3.0.2",
+    "bs58": "^4.0.1",
+    "check-node-version": "^4.0.3",
+    "elliptic": "^6.5.2",
+    "node": "v12.16.1",
+    "node-jsx": "^0.13.3",
+    "qrcode.react": "^1.0.0",
+    "react": "^16.13.1",
+    "react-bootstrap": "^1.0.1",
+    "react-dom": "^16.13.1",
+    "regenerator-runtime": "^0.13.5",
+    "ripemd160": "^2.0.2",
+    "rss-parser": "^3.7.6",
+    "smart-buffer": "^4.1.0",
+    "usb": "^1.6.3",
+    "wif": "^2.0.6"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "electron": "^8.2.5",
+    "electron-builder": "^22.6.0",
+    "eslint": "^6.8.0",
+    "eslint-config-google": "^0.14.0",
+    "mocha": "^7.1.2",
+    "node-abi": "^2.16.0",
+    "nyc": "^15.0.1"
+  }
+}
