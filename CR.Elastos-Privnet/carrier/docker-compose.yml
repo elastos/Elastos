@@ -1,0 +1,16 @@
+version : "3"
+services:
+
+  ela-carrier-bootstrap-1:
+    container_name: ela-carrier-bootstrap-1
+    image: cyberrepublic/elastos-carrier-bootstrap-node:release-v5.2.3
+    volumes:
+      - ${PWD}/bootstrap/bootstrapd.conf:/home/elauser/bootstrapd.conf
+    ports:
+      - 33445:33445
+    networks:
+      - carrier
+    tty: true
+
+networks:
+  carrier:

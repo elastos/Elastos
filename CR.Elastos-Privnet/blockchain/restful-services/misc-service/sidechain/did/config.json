@@ -1,0 +1,13 @@
+{
+  "ServerPort":"8080",
+  "Db":{
+      "DbDriverName":"mysql",
+      "DbDriverSource":"elastos:12345678@tcp(privnet-mysql:3306)/chain_did"
+  },
+  "Ela":{
+      "Restful":"privnet-sidechain-did-node:20604",
+      "Jsonrpc":"privnet-sidechain-did-node:20606",
+      "Enable":true
+  },
+  "EnableCors":false
+}

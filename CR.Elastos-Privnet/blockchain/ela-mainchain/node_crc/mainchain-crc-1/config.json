@@ -1,0 +1,69 @@
+{
+    "Configuration": {
+        "Magic": 7630401,
+        "DisableDNS": true,
+        "PermanentPeers": [
+            "privnet-mainchain-node:20338",
+            "privnet-mainchain-crc-1:20338",
+            "privnet-mainchain-crc-2:20338",
+            "privnet-mainchain-dpos-1:20338",
+            "privnet-mainchain-dpos-2:20338"
+        ],
+        "HttpRestStart": true,
+        "EnableRPC": true,
+        "PrintLevel": 1,
+        "MaxLogsSize": 0,
+        "MaxPerLogSize": 0,
+        "MinCrossChainTxFee": 10000,
+        "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
+        "PowConfiguration": {
+            "PayToAddr": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+            "AutoMining": true,
+            "MinerInfo": "ELA",
+            "MinTxFee": 100,
+            "InstantBlock": false
+        },
+        "RpcConfiguration": {
+            "User": "",
+            "Pass": "",
+            "WhiteIPList": [
+                "0.0.0.0"
+            ]
+        },
+        "DPoSConfiguration": {
+            "EnableArbiter": true,
+            "Magic": 7630403,
+            "IPAddress": "privnet-mainchain-crc-1",
+            "PrintLevel": 1,
+            "SignTolerance": 5,
+            "MaxLogsSize": 0,
+            "MaxPerLogSize": 0,
+            "OriginArbiters": [
+                "02677bd3dc8ea4a9ab22f8ba5c5348fc1ce4ba5f1810e8ec8603d5bd927b630b3e",
+                "0232d3172b7fc139b7605b83cd27e3c6f64fde1e71da2489764723639a6d40b5b9"
+            ],
+            "CRCArbiters": [
+                "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
+                "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08"
+            ],
+            "NormalArbitratorsCount": 2,
+            "CandidatesCount": 24,
+            "EmergencyInactivePenalty": 0,
+            "MaxInactiveRounds": 20,
+            "InactivePenalty": 0,
+            "PreConnectOffset": 20
+        },
+        "CRConfiguration": {
+            "MemberCount": 2,
+            "VotingPeriod": 21600,
+            "DutyPeriod": 262800
+        },
+        "CheckAddressHeight": 101,
+        "VoteStartHeight": 100,
+        "CRCOnlyDPOSHeight": 200,
+        "PublicDPOSHeight": 500,
+        "CRVotingStartHeight": 600,
+        "CRCommitteeStartHeight": 2000000,
+        "EnableUtxoDB": true
+    }
+}

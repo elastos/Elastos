@@ -1,0 +1,8 @@
+{
+  "name": "Mainchain Miner Rewards",
+  "description": "This is where the mining rewards from mainchain go",
+  "privateKey": "100094e9b4b029fe7b49e4c8ceb14aacc2e830bce94c9e713e51e26d6a665a0b",
+  "publicKey": "02167480ede5b9f7cad7077a5dce0ef18a066d3fab6274c3db7503311598a99e88",
+  "address": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+  "passwordforkeystore": "elastos"
+}

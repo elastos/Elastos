@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: ela-hive-ipfs-peer
+  name: ela-hive-ipfs-peer
+spec:
+  ports:
+  - name: "4001"
+    port: 4001
+    targetPort: 4001
+  - name: "5001"
+    port: 5001
+    targetPort: 5001
+  - name: "8080"
+    port: 8080
+    targetPort: 8080
+  - name: "8081"
+    port: 8081
+    targetPort: 8081
+  selector:
+    app: ela-hive-ipfs-peer
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: ela-hive-ipfs-peer
+  name: ela-hive-ipfs-peer
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ela-hive-ipfs-peer
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ela-hive-ipfs-peer
+    spec:
+      containers:
+      - image: cyberrepublic/ela-hive-ipfs-peer:privnet-v0.6
+        name: ela-hive-ipfs-peer
+        ports:
+        - containerPort: 4001
+        - containerPort: 5001
+        - containerPort: 8080
+        - containerPort: 8081
+        resources: {}
+        tty: true
+      restartPolicy: Always
+status: {}

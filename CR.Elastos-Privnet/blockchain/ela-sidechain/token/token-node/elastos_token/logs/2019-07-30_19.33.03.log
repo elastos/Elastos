@@ -1,0 +1,202 @@
+2019-07-30 19:33:03.413 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/main.go:58: Node version: 
+2019-07-30 19:33:03.413 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/main.go:59: go version go1.11.5 linux/amd64
+2019-07-30 19:33:03.413 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/main.go:64: 1. BlockChain init
+2019-07-30 19:33:03.447 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/main.go:73: 2. SPV module init
+2019-07-30 19:33:03.522 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SPV/sdk/service.go:464: SPV service started...
+2019-07-30 19:33:03.528 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/main.go:137: 3. Start the P2P networks
+2019-07-30 19:33:03.530 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/main.go:160: 4. --Initialize pow service
+2019-07-30 19:33:03.530 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/main.go:177: Start POW Services
+2019-07-30 19:33:03.530 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/main.go:181: 5. --Start the RPC service
+2019-07-30 19:33:03.530 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:33:03.531 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:03.531 [INF] STAT: -> 162 []
+2019-07-30 19:33:06.127 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  163
+2019-07-30 19:33:06.128 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:33:06.128 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:10.577 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 172.18.0.10:20338 (outbound)
+2019-07-30 19:33:10.578 [WRN] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:188: No sync peer candidates available
+2019-07-30 19:33:11.099 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  164
+2019-07-30 19:33:11.100 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:33:11.100 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:11.626 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 172.18.0.5:20338 (outbound)
+2019-07-30 19:33:11.627 [WRN] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:188: No sync peer candidates available
+2019-07-30 19:33:11.627 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 172.18.0.9:20338 (outbound)
+2019-07-30 19:33:11.627 [WRN] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:188: No sync peer candidates available
+2019-07-30 19:33:11.627 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 172.18.0.3:20338 (outbound)
+2019-07-30 19:33:11.627 [WRN] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:188: No sync peer candidates available
+2019-07-30 19:33:17.527 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  165
+2019-07-30 19:33:17.527 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:33:17.527 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:18.538 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  166
+2019-07-30 19:33:18.538 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:33:18.539 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:21.612 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 172.18.0.4:20338 (outbound)
+2019-07-30 19:33:21.612 [WRN] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:188: No sync peer candidates available
+2019-07-30 19:33:24.365 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:29.251 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  167
+2019-07-30 19:33:29.251 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:33:29.251 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:30.313 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:52.060 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  168
+2019-07-30 19:33:52.063 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:33:52.065 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:52.490 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:53.619 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  169
+2019-07-30 19:33:53.619 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:33:53.620 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:54.555 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:58.006 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  170
+2019-07-30 19:33:58.006 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:33:58.006 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:33:58.579 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:34:03.532 [INF] STAT: -> 170 []
+2019-07-30 19:34:04.722 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  171
+2019-07-30 19:34:04.722 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:34:04.722 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:34:05.627 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:34:14.561 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  172
+2019-07-30 19:34:14.561 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:34:14.561 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:34:14.743 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:34:25.218 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  173
+2019-07-30 19:34:25.218 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:34:25.218 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:34:25.815 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:34:32.172 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  174
+2019-07-30 19:34:32.172 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:34:32.172 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:34:32.856 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:03.531 [INF] STAT: -> 174 []
+2019-07-30 19:35:07.207 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  175
+2019-07-30 19:35:07.207 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:35:07.207 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:07.998 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:14.781 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  176
+2019-07-30 19:35:14.781 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:35:14.781 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:15.051 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:34.377 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  177
+2019-07-30 19:35:34.377 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:35:34.377 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:35.149 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:39.523 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  178
+2019-07-30 19:35:39.523 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:35:39.523 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:40.196 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:46.873 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  179
+2019-07-30 19:35:46.873 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:35:46.874 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:47.245 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:47.468 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  180
+2019-07-30 19:35:47.468 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:35:47.478 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:35:48.268 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:36:03.531 [INF] STAT: -> 180 []
+2019-07-30 19:36:04.377 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  181
+2019-07-30 19:36:04.377 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:36:04.378 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:36:05.360 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:36:11.955 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  182
+2019-07-30 19:36:11.956 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:36:11.956 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:36:12.447 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:36:37.287 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  183
+2019-07-30 19:36:37.287 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:36:37.288 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:36:37.560 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:37:03.531 [INF] STAT: -> 183 []
+2019-07-30 19:37:07.114 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  184
+2019-07-30 19:37:07.114 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:37:07.115 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:37:07.716 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:37:12.334 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  185
+2019-07-30 19:37:12.334 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:37:12.334 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:37:12.816 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:37:39.528 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  186
+2019-07-30 19:37:39.530 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:37:39.530 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:37:40.022 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:38:03.531 [INF] STAT: -> 186 []
+2019-07-30 19:38:47.737 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  187
+2019-07-30 19:38:47.737 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:38:47.737 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:38:47.966 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:38:53.454 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  188
+2019-07-30 19:38:53.454 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:38:53.454 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:38:54.103 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:03.535 [INF] STAT: -> 188 []
+2019-07-30 19:39:10.818 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  189
+2019-07-30 19:39:10.819 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:39:10.819 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:11.201 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:11.385 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  190
+2019-07-30 19:39:11.385 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:39:11.385 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:12.210 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:12.258 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  191
+2019-07-30 19:39:12.258 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:39:12.258 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:13.220 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:20.221 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  192
+2019-07-30 19:39:20.221 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:39:20.221 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:20.254 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:20.934 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  193
+2019-07-30 19:39:20.934 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:39:20.934 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:21.276 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:30.209 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  194
+2019-07-30 19:39:30.210 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:39:30.211 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:30.334 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:34.895 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  195
+2019-07-30 19:39:34.895 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:39:34.896 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:39:35.362 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:40:01.244 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  196
+2019-07-30 19:40:01.244 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:40:01.245 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:40:01.536 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:40:03.531 [INF] STAT: -> 196 []
+2019-07-30 19:40:39.769 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  197
+2019-07-30 19:40:39.769 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-07-30 19:40:39.769 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-07-30 19:40:40.706 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999

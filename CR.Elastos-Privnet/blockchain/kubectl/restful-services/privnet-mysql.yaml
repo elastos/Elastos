@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-mysql
+  name: privnet-mysql
+spec:
+  ports:
+  - name: "3306"
+    port: 3306
+    targetPort: 3306
+  selector:
+    app: privnet-mysql
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-mysql
+  name: privnet-mysql
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: privnet-mysql
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: privnet-mysql
+    spec:
+      containers:
+      - env:
+        - name: MYSQL_DATABASE
+          value: ws
+        - name: MYSQL_PASSWORD
+          value: "12345678"
+        - name: MYSQL_ROOT_PASSWORD
+          value: "12345678"
+        - name: MYSQL_USER
+          value: elastos
+        image: mysql:5.7
+        livenessProbe:
+          exec:
+            command:
+            - mysqladmin
+            - ping
+            - -h
+            - localhost
+            - -P
+            - "3306"
+            - -u
+            - elastos
+            - -p12345678
+          failureThreshold: 5
+          periodSeconds: 30
+          timeoutSeconds: 120
+        name: privnet-mysql
+        ports:
+        - containerPort: 3306
+        resources: {}
+        tty: true
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: privnet-mysql-hostpath0
+      restartPolicy: Always
+      volumes:
+      - hostPath:
+          path: /home/kpachhai/.volumes/elastos-privnet/mysql
+        name: privnet-mysql-hostpath0
+status: {}

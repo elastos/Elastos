@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-sidechain-service
+  name: privnet-sidechain-service
+spec:
+  ports:
+  - name: "8080"
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: privnet-sidechain-service
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-sidechain-service
+  name: privnet-sidechain-service
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: privnet-sidechain-service
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: privnet-sidechain-service
+    spec:
+      containers:
+      - image: cyberrepublic/elastos-sidechain-service:privnet-v0.6
+        livenessProbe:
+          exec:
+            command:
+            - curl
+            - -f
+            - http://localhost:8080/api/1/currHeight
+          failureThreshold: 5
+          periodSeconds: 30
+          timeoutSeconds: 120
+        name: privnet-sidechain-service
+        ports:
+        - containerPort: 8080
+        resources: {}
+        tty: true
+      restartPolicy: Always
+status: {}

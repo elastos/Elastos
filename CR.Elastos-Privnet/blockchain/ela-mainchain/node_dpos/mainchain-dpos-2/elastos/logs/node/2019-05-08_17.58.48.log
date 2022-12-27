@@ -1,0 +1,1599 @@
+2019/05/08 17:58:48.314450 [1;35m[INF][m GID 1, Node version: 
+2019/05/08 17:58:48.315028 [1;35m[INF][m GID 1, go version go1.11.5 linux/amd64
+2019/05/08 17:58:48.454799 [1;35m[INF][m GID 1, current block height -> 8
+2019/05/08 17:58:48.455413 [1;35m[INF][m GID 1, Start the P2P networks
+2019/05/08 17:58:48.455513 [1;35m[INF][m GID 1, Start services
+2019/05/08 17:58:48.501689 [1;35m[INF][m GID 62, New valid peer 172.28.0.2:10015 (outbound)
+2019/05/08 17:58:48.501937 [1;35m[INF][m GID 62, Syncing to block height 29 from peer 172.28.0.2:10015
+2019/05/08 17:58:50.360195 [1;35m[INF][m GID 62, New valid peer 172.28.0.8:56198 (inbound)
+2019/05/08 17:58:50.365073 [1;35m[INF][m GID 62, New valid peer 172.28.0.3:42302 (inbound)
+2019/05/08 17:58:50.894176 [1;35m[INF][m GID 62, New valid peer 172.28.0.6:34534 (inbound)
+2019/05/08 17:58:53.458104 [1;35m[INF][m GID 1, Start consensus
+2019/05/08 17:58:53.478620 [1;35m[INF][m GID 1, Start POW Services
+2019/05/08 17:58:53.481237 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:58:54.257428 [1;35m[INF][m GID 62, New valid peer 172.28.0.5:58980 (inbound)
+2019/05/08 17:58:54.523122 [1;35m[INF][m GID 62, New valid peer 172.28.0.8:10015 (outbound)
+2019/05/08 17:58:54.882349 [1;35m[INF][m GID 62, New valid peer 172.28.0.4:54236 (inbound)
+2019/05/08 17:58:55.349505 [1;35m[INF][m GID 62, New valid peer 172.28.0.3:10015 (outbound)
+2019/05/08 17:58:55.404119 [1;35m[INF][m GID 62, New valid peer 172.28.0.6:10015 (outbound)
+2019/05/08 17:58:56.566219 [1;35m[INF][m GID 62, New valid peer 172.28.0.4:10015 (outbound)
+2019/05/08 17:58:56.632141 [1;35m[INF][m GID 62, New valid peer 172.28.0.5:10015 (outbound)
+2019/05/08 17:58:58.069912 [1;35m[INF][m GID 62, New valid peer 172.28.0.22:58980 (inbound)
+2019/05/08 17:58:58.422604 [1;35m[INF][m GID 62, New valid peer 172.28.0.2:36454 (inbound)
+2019/05/08 17:58:58.482082 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:58:58.482313 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:58:59.032259 [1;35m[INF][m GID 62, New valid peer 172.28.0.16:40874 (inbound)
+2019/05/08 17:58:59.541687 [1;35m[INF][m GID 62, New valid peer 172.28.0.12:59628 (inbound)
+2019/05/08 17:59:00.647625 [1;35m[INF][m GID 62, Lost peer 172.28.0.22:58980 (inbound)
+2019/05/08 17:59:00.697042 [1;35m[INF][m GID 62, New valid peer 172.28.0.11:57562 (inbound)
+2019/05/08 17:59:01.528804 [1;35m[INF][m GID 62, New valid peer 172.28.0.15:55624 (inbound)
+2019/05/08 17:59:03.522654 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:59:03.546264 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:59:05.848783 [1;35m[INF][m GID 62, New valid peer 172.28.0.9:42380 (inbound)
+2019/05/08 17:59:06.883388 [1;35m[INF][m GID 62, New valid peer 172.28.0.10:41398 (inbound)
+2019/05/08 17:59:08.559638 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:59:08.559738 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:59:08.929586 [1;35m[INF][m GID 62, New valid peer 172.28.0.14:35962 (inbound)
+2019/05/08 17:59:08.971400 [1;35m[INF][m GID 62, New valid peer 172.28.0.13:48670 (inbound)
+2019/05/08 17:59:11.135481 [1;35m[INF][m GID 62, New valid peer 172.28.0.18:34984 (inbound)
+2019/05/08 17:59:13.647986 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:59:13.648701 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:59:18.658321 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:59:18.658576 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:59:23.668358 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:59:23.698599 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:59:27.839514 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 17:59:27.840534 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:59:32.847375 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:59:32.858179 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:59:37.877097 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:59:37.877702 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:59:42.896874 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:59:42.897057 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:59:47.900383 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:59:47.904320 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 17:59:48.512 [INF] STAT: -> 34 [32 172.28.0.11:57562 (inbound), 32 172.28.0.16:40874 (inbound), 32 172.28.0.14:35962 (inbound), 31 172.28.0.8:56198 (inbound), 31 172.28.0.4:54236 (inbound), 32 172.28.0.13:48670 (inbound), 32 172.28.0.18:34984 (inbound), 31 172.28.0.3:42302 (inbound), 31 172.28.0.6:34534 (inbound), 31 172.28.0.5:58980 (inbound), 32 172.28.0.2:36454 (inbound), 32 172.28.0.9:42380 (inbound), 32 172.28.0.10:41398 (inbound), 32 172.28.0.12:59628 (inbound), 32 172.28.0.15:55624 (inbound), 31 172.28.0.2:10015 (outbound), 31 172.28.0.8:10015 (outbound), 31 172.28.0.3:10015 (outbound), 31 172.28.0.6:10015 (outbound), 32 172.28.0.4:10015 (outbound), 32 172.28.0.5:10015 (outbound)]
+2019/05/08 17:59:52.925286 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:59:52.925434 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 17:59:57.967916 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 17:59:57.968089 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:00:02.981157 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:02.982310 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:00:08.001949 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:08.002260 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:00:13.018705 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:13.021575 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:00:18.035163 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:18.037404 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:00:23.037687 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:23.045253 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:00:28.083150 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:28.083336 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:00:33.149536 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:33.149934 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:00:38.172581 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:38.172791 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:00:43.183303 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:43.184809 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:00:48.250657 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:48.250795 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:00:48.514 [INF] STAT: -> 38 [38 172.28.0.3:42302 (inbound), 38 172.28.0.6:34534 (inbound), 38 172.28.0.5:58980 (inbound), 38 172.28.0.2:36454 (inbound), 38 172.28.0.9:42380 (inbound), 38 172.28.0.10:41398 (inbound), 38 172.28.0.12:59628 (inbound), 38 172.28.0.15:55624 (inbound), 38 172.28.0.11:57562 (inbound), 38 172.28.0.16:40874 (inbound), 38 172.28.0.14:35962 (inbound), 38 172.28.0.8:56198 (inbound), 38 172.28.0.4:54236 (inbound), 38 172.28.0.13:48670 (inbound), 38 172.28.0.18:34984 (inbound), 38 172.28.0.3:10015 (outbound), 38 172.28.0.6:10015 (outbound), 38 172.28.0.4:10015 (outbound), 38 172.28.0.5:10015 (outbound), 38 172.28.0.2:10015 (outbound), 38 172.28.0.8:10015 (outbound)]
+2019/05/08 18:00:53.264048 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:53.265024 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:00:58.285696 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:00:58.286532 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:01:03.323831 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:03.324421 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:01:08.337242 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:08.337381 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:01:13.366554 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:13.370074 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:01:18.430603 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:18.430793 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:01:23.438903 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:23.439627 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:01:28.444204 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:28.444355 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:01:33.588944 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:33.591205 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:01:38.648296 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:38.653123 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:01:43.655411 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:43.655727 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:01:48.455 [INF] STAT: -> 41 [39 172.28.0.12:59628 (inbound), 39 172.28.0.15:55624 (inbound), 39 172.28.0.11:57562 (inbound), 39 172.28.0.16:40874 (inbound), 39 172.28.0.14:35962 (inbound), 39 172.28.0.8:56198 (inbound), 39 172.28.0.4:54236 (inbound), 39 172.28.0.13:48670 (inbound), 40 172.28.0.18:34984 (inbound), 39 172.28.0.3:42302 (inbound), 39 172.28.0.6:34534 (inbound), 39 172.28.0.5:58980 (inbound), 39 172.28.0.2:36454 (inbound), 39 172.28.0.9:42380 (inbound), 39 172.28.0.10:41398 (inbound), 39 172.28.0.2:10015 (outbound), 39 172.28.0.8:10015 (outbound), 39 172.28.0.3:10015 (outbound), 39 172.28.0.6:10015 (outbound), 39 172.28.0.4:10015 (outbound), 39 172.28.0.5:10015 (outbound)]
+2019/05/08 18:01:48.669446 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:48.669627 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:01:53.675642 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:53.684189 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:01:58.701690 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:01:58.701997 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:02:03.713582 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:03.713765 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:02:08.750988 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:08.751611 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:02:13.776574 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:13.791988 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:02:18.900497 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:18.906356 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:02:23.915150 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:23.915603 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:02:28.920548 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:28.923600 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:02:33.929814 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:33.930113 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:02:38.953753 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:38.955618 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:02:44.009430 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:44.016757 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:02:48.479 [INF] STAT: -> 48 [45 172.28.0.4:54236 (inbound), 47 172.28.0.13:48670 (inbound), 47 172.28.0.18:34984 (inbound), 44 172.28.0.8:56198 (inbound), 44 172.28.0.6:34534 (inbound), 45 172.28.0.5:58980 (inbound), 46 172.28.0.2:36454 (inbound), 47 172.28.0.9:42380 (inbound), 47 172.28.0.10:41398 (inbound), 44 172.28.0.3:42302 (inbound), 46 172.28.0.15:55624 (inbound), 46 172.28.0.12:59628 (inbound), 46 172.28.0.16:40874 (inbound), 47 172.28.0.14:35962 (inbound), 46 172.28.0.11:57562 (inbound), 46 172.28.0.4:10015 (outbound), 46 172.28.0.5:10015 (outbound), 44 172.28.0.2:10015 (outbound), 45 172.28.0.8:10015 (outbound), 45 172.28.0.3:10015 (outbound), 45 172.28.0.6:10015 (outbound)]
+2019/05/08 18:02:49.020779 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:49.021511 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:02:54.060116 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:54.060535 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:02:59.080613 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:02:59.081218 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:04.114043 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:03:04.120989 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:09.124819 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:03:09.129781 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:14.141377 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:03:14.142222 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:19.152194 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:03:19.153533 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:21.818997 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:03:21.823867 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:26.830160 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:03:26.831492 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:31.838060 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:03:31.838152 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:36.855215 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:03:36.855933 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:41.903344 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:03:41.903609 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:46.919511 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:03:46.924404 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:03:48.458 [INF] STAT: -> 55 [52 172.28.0.12:59628 (inbound), 52 172.28.0.15:55624 (inbound), 52 172.28.0.11:57562 (inbound), 52 172.28.0.16:40874 (inbound), 55 172.28.0.14:35962 (inbound), 50 172.28.0.8:56198 (inbound), 51 172.28.0.4:54236 (inbound), 55 172.28.0.13:48670 (inbound), 55 172.28.0.18:34984 (inbound), 50 172.28.0.3:42302 (inbound), 50 172.28.0.6:34534 (inbound), 51 172.28.0.5:58980 (inbound), 52 172.28.0.2:36454 (inbound), 54 172.28.0.9:42380 (inbound), 54 172.28.0.10:41398 (inbound), 51 172.28.0.8:10015 (outbound), 51 172.28.0.3:10015 (outbound), 52 172.28.0.6:10015 (outbound), 52 172.28.0.4:10015 (outbound), 52 172.28.0.5:10015 (outbound), 50 172.28.0.2:10015 (outbound)]
+2019/05/08 18:03:51.947806 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:03:51.948129 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:56.982173 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:03:56.982432 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:03:59.199759 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:03:59.201184 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:04:04.215890 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:04.218259 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:04:09.251834 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:09.252170 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:04:14.273805 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:14.274137 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:04:19.280163 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:19.280700 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:04:24.290621 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:24.293492 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:04:29.316936 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:29.317173 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:04:34.321086 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:34.321467 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:04:39.373178 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:39.373441 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:04:44.389129 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:44.389705 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:04:48.501 [INF] STAT: -> 60 [59 172.28.0.11:57562 (inbound), 59 172.28.0.16:40874 (inbound), 59 172.28.0.14:35962 (inbound), 58 172.28.0.8:56198 (inbound), 59 172.28.0.4:54236 (inbound), 59 172.28.0.13:48670 (inbound), 59 172.28.0.18:34984 (inbound), 58 172.28.0.3:42302 (inbound), 58 172.28.0.6:34534 (inbound), 59 172.28.0.5:58980 (inbound), 59 172.28.0.2:36454 (inbound), 59 172.28.0.9:42380 (inbound), 59 172.28.0.10:41398 (inbound), 59 172.28.0.12:59628 (inbound), 59 172.28.0.15:55624 (inbound), 59 172.28.0.8:10015 (outbound), 59 172.28.0.3:10015 (outbound), 59 172.28.0.6:10015 (outbound), 59 172.28.0.4:10015 (outbound), 59 172.28.0.5:10015 (outbound), 58 172.28.0.2:10015 (outbound)]
+2019/05/08 18:04:49.399040 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:49.399296 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:04:54.403830 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:54.404992 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:04:59.410781 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:04:59.411541 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:04.426218 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:05:04.427815 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:09.025582 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:05:09.027309 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:11.142599 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:05:11.154598 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:16.179430 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:05:16.182407 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:21.208729 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:05:21.209746 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:26.210673 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:05:26.210890 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:28.777785 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:05:28.778248 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:33.852878 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:05:33.853026 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:38.853542 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:05:38.856697 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:43.893452 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:05:43.895054 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:05:48.456 [INF] STAT: -> 68 [64 172.28.0.8:56198 (inbound), 65 172.28.0.4:54236 (inbound), 67 172.28.0.13:48670 (inbound), 67 172.28.0.18:34984 (inbound), 64 172.28.0.3:42302 (inbound), 65 172.28.0.6:34534 (inbound), 65 172.28.0.5:58980 (inbound), 66 172.28.0.2:36454 (inbound), 67 172.28.0.9:42380 (inbound), 67 172.28.0.10:41398 (inbound), 67 172.28.0.12:59628 (inbound), 67 172.28.0.15:55624 (inbound), 67 172.28.0.11:57562 (inbound), 67 172.28.0.16:40874 (inbound), 67 172.28.0.14:35962 (inbound), 66 172.28.0.6:10015 (outbound), 66 172.28.0.4:10015 (outbound), 66 172.28.0.5:10015 (outbound), 64 172.28.0.2:10015 (outbound), 65 172.28.0.8:10015 (outbound), 65 172.28.0.3:10015 (outbound)]
+2019/05/08 18:05:48.959474 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:05:48.959710 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:53.965196 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:05:53.965459 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:05:58.997285 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:05:59.004960 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:06:04.019077 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:06:04.021985 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:06:05.696952 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:06:05.698102 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:06:10.704632 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:06:10.706549 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:06:15.714335 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:06:15.714598 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:06:20.721191 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:06:20.723267 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:06:25.757721 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:06:25.758671 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:06:30.767386 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:06:30.767742 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:06:35.862055 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:06:35.862447 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:06:40.905041 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:06:40.905288 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:06:45.907430 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:06:45.909856 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:06:48.517 [INF] STAT: -> 77 [76 172.28.0.14:35962 (inbound), 76 172.28.0.11:57562 (inbound), 76 172.28.0.16:40874 (inbound), 76 172.28.0.13:48670 (inbound), 77 172.28.0.18:34984 (inbound), 75 172.28.0.8:56198 (inbound), 75 172.28.0.4:54236 (inbound), 75 172.28.0.5:58980 (inbound), 76 172.28.0.2:36454 (inbound), 76 172.28.0.9:42380 (inbound), 76 172.28.0.10:41398 (inbound), 75 172.28.0.3:42302 (inbound), 75 172.28.0.6:34534 (inbound), 76 172.28.0.12:59628 (inbound), 76 172.28.0.15:55624 (inbound), 75 172.28.0.6:10015 (outbound), 75 172.28.0.4:10015 (outbound), 75 172.28.0.5:10015 (outbound), 75 172.28.0.2:10015 (outbound), 75 172.28.0.8:10015 (outbound), 75 172.28.0.3:10015 (outbound)]
+2019/05/08 18:06:50.914617 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:06:50.914856 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:06:55.918725 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:06:55.919620 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:07:00.942992 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:00.943214 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:07:05.955905 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:05.958059 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:07:10.965537 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:10.965793 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:07:16.005712 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:16.026615 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:07:21.051885 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:21.076156 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:07:26.082379 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:26.082534 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:07:31.119065 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:31.119931 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:07:36.149027 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:36.150213 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:07:41.153985 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:41.161005 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:07:46.166659 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:46.166885 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:07:48.461 [INF] STAT: -> 81 [81 172.28.0.14:35962 (inbound), 79 172.28.0.11:57562 (inbound), 79 172.28.0.16:40874 (inbound), 81 172.28.0.13:48670 (inbound), 81 172.28.0.18:34984 (inbound), 79 172.28.0.8:56198 (inbound), 79 172.28.0.4:54236 (inbound), 79 172.28.0.5:58980 (inbound), 79 172.28.0.2:36454 (inbound), 81 172.28.0.9:42380 (inbound), 81 172.28.0.10:41398 (inbound), 79 172.28.0.3:42302 (inbound), 79 172.28.0.6:34534 (inbound), 79 172.28.0.12:59628 (inbound), 80 172.28.0.15:55624 (inbound), 79 172.28.0.2:10015 (outbound), 79 172.28.0.8:10015 (outbound), 79 172.28.0.3:10015 (outbound), 79 172.28.0.6:10015 (outbound), 79 172.28.0.4:10015 (outbound), 79 172.28.0.5:10015 (outbound)]
+2019/05/08 18:07:51.167006 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:51.167239 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:07:56.176580 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:07:56.176803 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:01.177858 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:01.178507 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:06.199398 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:06.199633 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:11.201176 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:11.215131 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:16.363177 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:16.363401 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:21.426987 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:21.443072 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:26.466143 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:26.466388 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:31.481849 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:31.481997 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:36.520237 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:36.521914 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:41.567275 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:41.567640 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:46.596913 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:46.597689 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:08:48.507 [INF] STAT: -> 89 [85 172.28.0.12:59628 (inbound), 85 172.28.0.15:55624 (inbound), 85 172.28.0.11:57562 (inbound), 84 172.28.0.16:40874 (inbound), 87 172.28.0.14:35962 (inbound), 83 172.28.0.8:56198 (inbound), 84 172.28.0.4:54236 (inbound), 87 172.28.0.13:48670 (inbound), 88 172.28.0.18:34984 (inbound), 87 172.28.0.10:41398 (inbound), 83 172.28.0.3:42302 (inbound), 83 172.28.0.6:34534 (inbound), 84 172.28.0.5:58980 (inbound), 84 172.28.0.2:36454 (inbound), 87 172.28.0.9:42380 (inbound), 84 172.28.0.5:10015 (outbound), 83 172.28.0.2:10015 (outbound), 84 172.28.0.8:10015 (outbound), 84 172.28.0.3:10015 (outbound), 84 172.28.0.6:10015 (outbound), 84 172.28.0.4:10015 (outbound)]
+2019/05/08 18:08:51.597925 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:51.607054 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:54.201763 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:08:54.204153 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:08:59.208919 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:08:59.211745 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:09:04.217301 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:09:04.217625 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:09:09.232404 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:09:09.233364 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:09:14.244792 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:09:14.245050 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:09:19.251506 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:09:19.251992 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:09:24.278353 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:09:24.278557 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:09:24.946021 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:09:24.973428 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:09:30.012397 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:09:30.012779 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:09:35.017205 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:09:35.017457 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:09:40.032103 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:09:40.032356 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:09:45.035904 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:09:45.039799 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:09:48.458 [INF] STAT: -> 99 [95 172.28.0.11:57562 (inbound), 95 172.28.0.16:40874 (inbound), 97 172.28.0.14:35962 (inbound), 94 172.28.0.8:56198 (inbound), 94 172.28.0.4:54236 (inbound), 97 172.28.0.13:48670 (inbound), 97 172.28.0.18:34984 (inbound), 94 172.28.0.3:42302 (inbound), 94 172.28.0.6:34534 (inbound), 94 172.28.0.5:58980 (inbound), 95 172.28.0.2:36454 (inbound), 97 172.28.0.9:42380 (inbound), 97 172.28.0.10:41398 (inbound), 95 172.28.0.12:59628 (inbound), 95 172.28.0.15:55624 (inbound), 95 172.28.0.3:10015 (outbound), 95 172.28.0.6:10015 (outbound), 95 172.28.0.4:10015 (outbound), 95 172.28.0.5:10015 (outbound), 94 172.28.0.2:10015 (outbound), 94 172.28.0.8:10015 (outbound)]
+2019/05/08 18:09:50.060046 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:09:50.061321 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:09:55.065953 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:09:55.066880 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:00.072239 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:10:00.073584 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:05.086602 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:10:05.087732 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:10.148420 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:10:10.148801 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:15.215230 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:10:15.215546 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:20.220203 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:10:20.222954 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:25.227135 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:10:25.228447 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:30.232369 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:10:30.232689 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:35.235312 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:10:35.236958 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:40.264850 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:10:40.265080 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:45.278523 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:10:45.279084 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:10:48.455 [INF] STAT: -> 102 [102 172.28.0.11:57562 (inbound), 102 172.28.0.16:40874 (inbound), 102 172.28.0.14:35962 (inbound), 101 172.28.0.8:56198 (inbound), 102 172.28.0.4:54236 (inbound), 102 172.28.0.13:48670 (inbound), 102 172.28.0.18:34984 (inbound), 102 172.28.0.10:41398 (inbound), 101 172.28.0.3:42302 (inbound), 101 172.28.0.6:34534 (inbound), 102 172.28.0.5:58980 (inbound), 102 172.28.0.2:36454 (inbound), 102 172.28.0.9:42380 (inbound), 102 172.28.0.12:59628 (inbound), 102 172.28.0.15:55624 (inbound), 101 172.28.0.2:10015 (outbound), 102 172.28.0.8:10015 (outbound), 102 172.28.0.3:10015 (outbound), 102 172.28.0.6:10015 (outbound), 102 172.28.0.4:10015 (outbound), 102 172.28.0.5:10015 (outbound)]
+2019/05/08 18:10:50.301705 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:10:50.302078 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:53.237461 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:10:53.247044 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:10:55.584477 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:10:55.585206 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:00.588818 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:00.589285 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:02.224872 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:11:02.227128 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:07.236178 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:07.247716 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:12.249821 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:12.250685 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:17.251884 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:17.253847 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:22.271710 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:22.273262 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:27.367329 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:27.367936 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:32.375900 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:32.377741 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:37.382417 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:37.382908 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:42.384473 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:42.387455 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:47.453074 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:47.454959 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:11:48.458 [INF] STAT: -> 112 [109 172.28.0.5:58980 (inbound), 110 172.28.0.2:36454 (inbound), 111 172.28.0.9:42380 (inbound), 111 172.28.0.10:41398 (inbound), 109 172.28.0.3:42302 (inbound), 109 172.28.0.6:34534 (inbound), 110 172.28.0.12:59628 (inbound), 110 172.28.0.15:55624 (inbound), 111 172.28.0.14:35962 (inbound), 110 172.28.0.11:57562 (inbound), 110 172.28.0.16:40874 (inbound), 111 172.28.0.13:48670 (inbound), 111 172.28.0.18:34984 (inbound), 109 172.28.0.8:56198 (inbound), 109 172.28.0.4:54236 (inbound), 109 172.28.0.6:10015 (outbound), 110 172.28.0.4:10015 (outbound), 110 172.28.0.5:10015 (outbound), 108 172.28.0.2:10015 (outbound), 109 172.28.0.8:10015 (outbound), 109 172.28.0.3:10015 (outbound)]
+2019/05/08 18:11:52.485242 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:52.486263 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:11:57.492095 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:11:57.492513 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:12:02.497995 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:12:02.502949 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:12:07.516660 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:12:07.517587 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:12:11.513695 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:12:11.543291 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:12:16.550621 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:12:16.550872 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:12:21.566201 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:12:21.567075 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:12:26.577092 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:12:26.579215 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:12:31.604486 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:12:31.610108 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:12:36.613880 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:12:36.617100 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:12:41.641136 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:12:41.641406 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:12:46.646849 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:12:46.647331 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:12:48.476 [INF] STAT: -> 118 [118 172.28.0.9:42380 (inbound), 118 172.28.0.10:41398 (inbound), 115 172.28.0.3:42302 (inbound), 115 172.28.0.6:34534 (inbound), 115 172.28.0.5:58980 (inbound), 116 172.28.0.2:36454 (inbound), 117 172.28.0.12:59628 (inbound), 117 172.28.0.15:55624 (inbound), 117 172.28.0.11:57562 (inbound), 117 172.28.0.16:40874 (inbound), 118 172.28.0.14:35962 (inbound), 115 172.28.0.8:56198 (inbound), 115 172.28.0.4:54236 (inbound), 118 172.28.0.13:48670 (inbound), 118 172.28.0.18:34984 (inbound), 115 172.28.0.3:10015 (outbound), 115 172.28.0.6:10015 (outbound), 116 172.28.0.4:10015 (outbound), 116 172.28.0.5:10015 (outbound), 115 172.28.0.2:10015 (outbound), 115 172.28.0.8:10015 (outbound)]
+2019/05/08 18:12:50.097186 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:12:50.135560 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:12:55.151178 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:12:55.152540 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:13:00.169549 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:00.171593 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:13:05.198437 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:05.203610 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:13:10.210092 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:10.210942 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:13:15.235865 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:15.236314 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:13:20.237421 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:20.237537 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:13:25.242206 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:25.242446 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:13:30.254463 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:30.257942 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:13:35.276420 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:35.276664 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:13:40.283385 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:40.283650 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:13:45.303630 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:45.304087 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:13:48.496 [INF] STAT: -> 121 [119 172.28.0.8:56198 (inbound), 119 172.28.0.4:54236 (inbound), 120 172.28.0.13:48670 (inbound), 120 172.28.0.18:34984 (inbound), 119 172.28.0.10:41398 (inbound), 119 172.28.0.3:42302 (inbound), 119 172.28.0.6:34534 (inbound), 119 172.28.0.5:58980 (inbound), 119 172.28.0.2:36454 (inbound), 119 172.28.0.9:42380 (inbound), 119 172.28.0.12:59628 (inbound), 119 172.28.0.15:55624 (inbound), 119 172.28.0.11:57562 (inbound), 119 172.28.0.16:40874 (inbound), 120 172.28.0.14:35962 (inbound), 119 172.28.0.4:10015 (outbound), 119 172.28.0.5:10015 (outbound), 119 172.28.0.2:10015 (outbound), 119 172.28.0.8:10015 (outbound), 119 172.28.0.3:10015 (outbound), 119 172.28.0.6:10015 (outbound)]
+2019/05/08 18:13:50.400515 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:50.401283 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:13:55.432856 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:13:55.433752 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:00.469256 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:14:00.470418 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:05.475737 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:14:05.497976 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:08.562978 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:14:08.569332 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:13.575994 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:14:13.576293 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:18.596554 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:14:18.597551 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:22.598849 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:14:22.599208 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:27.600149 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:14:27.600258 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:32.627832 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:14:32.628169 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:37.638170 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:14:37.638361 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:42.672453 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:14:42.673663 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:47.688198 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:14:47.694875 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:14:48.470 [INF] STAT: -> 126 [125 172.28.0.11:57562 (inbound), 125 172.28.0.16:40874 (inbound), 126 172.28.0.14:35962 (inbound), 125 172.28.0.8:56198 (inbound), 125 172.28.0.4:54236 (inbound), 126 172.28.0.13:48670 (inbound), 126 172.28.0.18:34984 (inbound), 126 172.28.0.10:41398 (inbound), 125 172.28.0.3:42302 (inbound), 125 172.28.0.6:34534 (inbound), 125 172.28.0.5:58980 (inbound), 125 172.28.0.2:36454 (inbound), 125 172.28.0.9:42380 (inbound), 125 172.28.0.12:59628 (inbound), 125 172.28.0.15:55624 (inbound), 125 172.28.0.6:10015 (outbound), 125 172.28.0.4:10015 (outbound), 125 172.28.0.5:10015 (outbound), 124 172.28.0.2:10015 (outbound), 125 172.28.0.8:10015 (outbound), 125 172.28.0.3:10015 (outbound)]
+2019/05/08 18:14:52.716092 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:14:52.716354 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:53.991330 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:14:53.996236 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:14:59.008635 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:14:59.009787 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:15:04.014283 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:15:04.014584 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:15:09.026769 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:15:09.029887 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:15:13.683337 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:15:13.686544 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:15:18.720930 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:15:18.721422 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:15:23.780488 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:15:23.783561 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:15:28.812997 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:15:28.813528 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:15:33.826138 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:15:33.827371 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:15:38.849383 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:15:38.850215 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:15:43.852644 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:15:43.852813 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:15:48.476 [INF] STAT: -> 134 [131 172.28.0.2:36454 (inbound), 131 172.28.0.9:42380 (inbound), 131 172.28.0.10:41398 (inbound), 131 172.28.0.3:42302 (inbound), 131 172.28.0.6:34534 (inbound), 131 172.28.0.5:58980 (inbound), 131 172.28.0.12:59628 (inbound), 131 172.28.0.15:55624 (inbound), 131 172.28.0.11:57562 (inbound), 131 172.28.0.16:40874 (inbound), 131 172.28.0.14:35962 (inbound), 132 172.28.0.18:34984 (inbound), 131 172.28.0.8:56198 (inbound), 131 172.28.0.4:54236 (inbound), 131 172.28.0.13:48670 (inbound), 131 172.28.0.3:10015 (outbound), 131 172.28.0.6:10015 (outbound), 131 172.28.0.4:10015 (outbound), 131 172.28.0.5:10015 (outbound), 131 172.28.0.2:10015 (outbound), 131 172.28.0.8:10015 (outbound)]
+2019/05/08 18:15:48.863545 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:15:48.863898 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:15:53.891629 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:15:53.891940 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:15:58.897374 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:15:58.897543 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:16:03.902182 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:16:03.902484 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:16:06.489088 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:16:06.491878 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:16:11.500709 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:16:11.501464 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:16:16.527241 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:16:16.528183 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:16:21.537892 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:16:21.538225 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:16:26.552704 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:16:26.557629 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:16:31.561866 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:16:31.562127 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:16:36.563979 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:16:36.564435 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:16:41.579763 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:16:41.580075 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:16:46.591188 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:16:46.591411 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:16:48.463 [INF] STAT: -> 140 [138 172.28.0.6:34534 (inbound), 138 172.28.0.5:58980 (inbound), 138 172.28.0.2:36454 (inbound), 139 172.28.0.9:42380 (inbound), 139 172.28.0.10:41398 (inbound), 138 172.28.0.3:42302 (inbound), 138 172.28.0.15:55624 (inbound), 138 172.28.0.12:59628 (inbound), 138 172.28.0.16:40874 (inbound), 139 172.28.0.14:35962 (inbound), 138 172.28.0.11:57562 (inbound), 138 172.28.0.4:54236 (inbound), 139 172.28.0.13:48670 (inbound), 139 172.28.0.18:34984 (inbound), 138 172.28.0.8:56198 (inbound), 138 172.28.0.5:10015 (outbound), 138 172.28.0.2:10015 (outbound), 138 172.28.0.8:10015 (outbound), 138 172.28.0.3:10015 (outbound), 138 172.28.0.6:10015 (outbound), 138 172.28.0.4:10015 (outbound)]
+2019/05/08 18:16:51.593722 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:16:51.595672 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:16:56.656325 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:16:56.664593 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:01.669407 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:01.670312 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:06.676280 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:06.676499 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:11.700168 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:11.715127 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:16.716131 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:16.717053 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:21.754341 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:21.755985 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:26.761336 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:26.762705 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:31.764674 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:31.764887 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:33.059265 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:17:33.110336 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:38.111919 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:38.112402 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:43.137181 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:43.141508 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:48.148906 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:48.151758 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:17:48.469 [INF] STAT: -> 144 [141 172.28.0.3:42302 (inbound), 141 172.28.0.6:34534 (inbound), 141 172.28.0.5:58980 (inbound), 141 172.28.0.2:36454 (inbound), 142 172.28.0.9:42380 (inbound), 142 172.28.0.10:41398 (inbound), 141 172.28.0.12:59628 (inbound), 141 172.28.0.15:55624 (inbound), 141 172.28.0.11:57562 (inbound), 141 172.28.0.16:40874 (inbound), 142 172.28.0.14:35962 (inbound), 141 172.28.0.8:56198 (inbound), 141 172.28.0.4:54236 (inbound), 142 172.28.0.13:48670 (inbound), 142 172.28.0.18:34984 (inbound), 141 172.28.0.3:10015 (outbound), 141 172.28.0.6:10015 (outbound), 141 172.28.0.4:10015 (outbound), 141 172.28.0.5:10015 (outbound), 141 172.28.0.2:10015 (outbound), 141 172.28.0.8:10015 (outbound)]
+2019/05/08 18:17:53.186628 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:53.188425 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:17:58.190941 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:17:58.191264 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:03.196242 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:18:03.197531 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:08.250595 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:18:08.253222 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:13.291617 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:18:13.291901 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:18.303758 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:18:18.304049 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:20.787630 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:18:20.813591 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:25.839777 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:18:25.842732 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:28.717707 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:18:28.718041 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:33.720161 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:18:33.720598 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:38.760330 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:18:38.762803 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:43.763809 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:18:43.767051 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:18:48.466 [INF] STAT: -> 150 [147 172.28.0.8:56198 (inbound), 147 172.28.0.4:54236 (inbound), 149 172.28.0.13:48670 (inbound), 149 172.28.0.18:34984 (inbound), 149 172.28.0.10:41398 (inbound), 147 172.28.0.3:42302 (inbound), 147 172.28.0.6:34534 (inbound), 147 172.28.0.5:58980 (inbound), 148 172.28.0.2:36454 (inbound), 149 172.28.0.9:42380 (inbound), 148 172.28.0.12:59628 (inbound), 148 172.28.0.15:55624 (inbound), 148 172.28.0.11:57562 (inbound), 148 172.28.0.16:40874 (inbound), 149 172.28.0.14:35962 (inbound), 147 172.28.0.5:10015 (outbound), 146 172.28.0.2:10015 (outbound), 147 172.28.0.8:10015 (outbound), 147 172.28.0.3:10015 (outbound), 147 172.28.0.6:10015 (outbound), 147 172.28.0.4:10015 (outbound)]
+2019/05/08 18:18:48.776578 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:18:48.781415 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:53.790795 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:18:53.793213 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:18:58.806341 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:18:58.806647 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:19:01.684901 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:19:01.689721 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:19:06.726765 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:19:06.728228 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:19:11.733768 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:19:11.766782 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:19:16.771031 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:19:16.791717 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:19:21.794622 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:19:21.794908 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:19:26.799382 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:19:26.800416 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:19:31.817217 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:19:31.817512 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:19:35.593330 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:19:35.595062 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:19:40.673801 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:19:40.675649 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:19:45.706826 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:19:45.711374 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:19:48.507 [INF] STAT: -> 159 [155 172.28.0.8:56198 (inbound), 155 172.28.0.4:54236 (inbound), 158 172.28.0.13:48670 (inbound), 158 172.28.0.18:34984 (inbound), 155 172.28.0.3:42302 (inbound), 155 172.28.0.6:34534 (inbound), 155 172.28.0.5:58980 (inbound), 156 172.28.0.2:36454 (inbound), 158 172.28.0.9:42380 (inbound), 158 172.28.0.10:41398 (inbound), 157 172.28.0.12:59628 (inbound), 157 172.28.0.15:55624 (inbound), 157 172.28.0.11:57562 (inbound), 157 172.28.0.16:40874 (inbound), 158 172.28.0.14:35962 (inbound), 155 172.28.0.4:10015 (outbound), 155 172.28.0.5:10015 (outbound), 155 172.28.0.2:10015 (outbound), 155 172.28.0.8:10015 (outbound), 155 172.28.0.3:10015 (outbound), 155 172.28.0.6:10015 (outbound)]
+2019/05/08 18:19:50.730037 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:19:50.730339 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:19:55.757358 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:19:55.757588 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:00.761203 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:20:00.761380 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:01.734216 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:20:01.734858 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:06.744983 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:20:06.745217 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:10.840067 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:20:10.847458 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:15.866670 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:20:15.867017 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:20.894373 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:20:20.894522 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:25.949664 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:20:25.949880 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:30.978530 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:20:30.981641 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:35.994460 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:20:35.994595 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:41.002578 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:20:41.002765 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:46.057470 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:20:46.057734 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:20:48.479 [INF] STAT: -> 166 [165 172.28.0.8:56198 (inbound), 165 172.28.0.4:54236 (inbound), 166 172.28.0.13:48670 (inbound), 166 172.28.0.18:34984 (inbound), 165 172.28.0.3:42302 (inbound), 165 172.28.0.6:34534 (inbound), 165 172.28.0.5:58980 (inbound), 165 172.28.0.2:36454 (inbound), 166 172.28.0.9:42380 (inbound), 166 172.28.0.10:41398 (inbound), 165 172.28.0.12:59628 (inbound), 165 172.28.0.15:55624 (inbound), 165 172.28.0.11:57562 (inbound), 165 172.28.0.16:40874 (inbound), 166 172.28.0.14:35962 (inbound), 165 172.28.0.5:10015 (outbound), 165 172.28.0.2:10015 (outbound), 165 172.28.0.8:10015 (outbound), 165 172.28.0.3:10015 (outbound), 165 172.28.0.6:10015 (outbound), 165 172.28.0.4:10015 (outbound)]
+2019/05/08 18:20:51.066735 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:20:51.066899 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:51.466938 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:20:51.512911 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:20:56.521921 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:20:56.526811 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:01.579749 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:21:01.581036 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:06.582214 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:21:06.586019 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:11.643865 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:21:11.646994 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:16.336074 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:21:16.345325 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:21.399663 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:21:21.400401 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:26.400895 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:21:26.401361 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:31.408383 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:21:31.409210 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:36.411067 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:21:36.411328 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:41.414337 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:21:41.415132 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:46.418102 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:21:46.418533 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:21:48.465 [INF] STAT: -> 173 [173 172.28.0.9:42380 (inbound), 173 172.28.0.10:41398 (inbound), 172 172.28.0.3:42302 (inbound), 172 172.28.0.6:34534 (inbound), 172 172.28.0.5:58980 (inbound), 172 172.28.0.2:36454 (inbound), 172 172.28.0.12:59628 (inbound), 173 172.28.0.15:55624 (inbound), 173 172.28.0.11:57562 (inbound), 172 172.28.0.16:40874 (inbound), 173 172.28.0.14:35962 (inbound), 172 172.28.0.8:56198 (inbound), 172 172.28.0.4:54236 (inbound), 173 172.28.0.13:48670 (inbound), 173 172.28.0.18:34984 (inbound), 172 172.28.0.2:10015 (outbound), 172 172.28.0.8:10015 (outbound), 172 172.28.0.3:10015 (outbound), 172 172.28.0.6:10015 (outbound), 172 172.28.0.4:10015 (outbound), 172 172.28.0.5:10015 (outbound)]
+2019/05/08 18:21:51.428774 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:21:51.431771 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:56.436144 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:21:56.436497 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:21:58.460986 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:21:58.461344 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:03.467694 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:22:03.468060 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:08.605833 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:22:08.606119 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:13.638901 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:22:13.639926 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:18.646564 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:22:18.654621 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:21.650853 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:22:21.659308 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:22.797010 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:22:22.815288 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:27.878769 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:22:27.880683 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:32.888535 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:22:32.889553 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:33.097898 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 1
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     02677bd3dc8ea4a9ab22f8ba5c5348fc1ce4ba5f1810e8ec8603d5bd927b630b3e   true
+2     0232d3172b7fc139b7605b83cd27e3c6f64fde1e71da2489764723639a6d40b5b9  false
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+3     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+4     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/05/08 18:22:37.893593 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:22:37.894505 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:42.926278 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:22:42.926822 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:47.940425 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:22:47.945355 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:22:48.457 [INF] STAT: -> 182 [179 172.28.0.12:59628 (inbound), 179 172.28.0.15:55624 (inbound), 179 172.28.0.11:57562 (inbound), 179 172.28.0.16:40874 (inbound), 180 172.28.0.14:35962 (inbound), 180 172.28.0.18:34984 (inbound), 177 172.28.0.8:56198 (inbound), 179 172.28.0.4:54236 (inbound), 180 172.28.0.13:48670 (inbound), 179 172.28.0.2:36454 (inbound), 180 172.28.0.9:42380 (inbound), 180 172.28.0.10:41398 (inbound), 177 172.28.0.3:42302 (inbound), 177 172.28.0.6:34534 (inbound), 179 172.28.0.5:58980 (inbound), 179 172.28.0.8:10015 (outbound), 179 172.28.0.3:10015 (outbound), 179 172.28.0.6:10015 (outbound), 179 172.28.0.4:10015 (outbound), 179 172.28.0.5:10015 (outbound), 177 172.28.0.2:10015 (outbound)]
+2019/05/08 18:22:49.957221 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:22:49.958803 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:54.257912 [1;35m[INF][m GID 62, Lost peer 172.28.0.5:58980 (inbound)
+2019/05/08 18:22:54.875634 [1;35m[INF][m GID 62, Lost peer 172.28.0.4:54236 (inbound)
+2019/05/08 18:22:54.962029 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:22:54.962685 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:22:55.316946 [1;35m[INF][m GID 62, Lost peer 172.28.0.3:10015 (outbound)
+2019/05/08 18:22:56.581905 [1;35m[INF][m GID 62, Lost peer 172.28.0.5:10015 (outbound)
+2019/05/08 18:22:59.287200 [1;35m[INF][m GID 62, New valid peer 172.28.0.5:34552 (inbound)
+2019/05/08 18:22:59.879232 [1;35m[INF][m GID 62, New valid peer 172.28.0.4:58034 (inbound)
+2019/05/08 18:22:59.975483 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:22:59.978500 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:23:00.378502 [1;35m[INF][m GID 62, New valid peer 172.28.0.3:10015 (outbound)
+2019/05/08 18:23:01.633920 [1;35m[INF][m GID 62, New valid peer 172.28.0.5:10015 (outbound)
+2019/05/08 18:23:04.986241 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:23:04.986960 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:23:05.362322 [1;35m[INF][m GID 62, Lost peer 172.28.0.8:56198 (inbound)
+2019/05/08 18:23:05.364283 [1;35m[INF][m GID 62, Lost peer 172.28.0.3:42302 (inbound)
+2019/05/08 18:23:09.990694 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:23:09.993634 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:23:10.399166 [1;35m[INF][m GID 62, New valid peer 172.28.0.8:60168 (inbound)
+2019/05/08 18:23:10.415926 [1;35m[INF][m GID 62, New valid peer 172.28.0.3:46266 (inbound)
+2019/05/08 18:23:14.994696 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:23:14.995166 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:23:20.016647 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:23:20.016901 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:23:22.115866 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:23:22.123557 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:23:27.135585 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:23:27.136735 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:23:32.209802 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:23:32.210021 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:23:37.211229 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:23:37.211899 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:23:42.244339 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:23:42.244786 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:23:47.251799 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:23:47.252050 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:23:48.456 [INF] STAT: -> 192 [188 172.28.0.6:34534 (inbound), 190 172.28.0.2:36454 (inbound), 191 172.28.0.9:42380 (inbound), 191 172.28.0.10:41398 (inbound), 192 172.28.0.3:46266 (inbound), 190 172.28.0.15:55624 (inbound), 190 172.28.0.12:59628 (inbound), 190 172.28.0.16:40874 (inbound), 192 172.28.0.14:35962 (inbound), 190 172.28.0.5:34552 (inbound), 190 172.28.0.11:57562 (inbound), 190 172.28.0.4:58034 (inbound), 192 172.28.0.13:48670 (inbound), 192 172.28.0.18:34984 (inbound), 192 172.28.0.8:60168 (inbound), 189 172.28.0.4:10015 (outbound), 190 172.28.0.5:10015 (outbound), 188 172.28.0.2:10015 (outbound), 189 172.28.0.8:10015 (outbound), 190 172.28.0.3:10015 (outbound), 189 172.28.0.6:10015 (outbound)]
+2019/05/08 18:23:52.299853 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:23:52.301249 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:23:57.305644 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:23:57.306921 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:02.326167 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:02.327233 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:07.333559 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:07.333844 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:12.339188 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:12.346343 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:13.422018 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:24:13.428494 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:18.430875 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:18.431025 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:23.453086 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:23.455187 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:28.476485 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:28.504864 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:33.508923 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:33.510261 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:34.689026 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 05ec107e7b3d55908bc5285bfcabee8127fb2b53fb1c63078d096e49ac5d7a22
+2019/05/08 18:24:34.927527 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 05ec107e7b3d55908bc5285bfcabee8127fb2b53fb1c63078d096e49ac5d7a22
+2019/05/08 18:24:34.928791 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 200
+2019/05/08 18:24:34.980816 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 2
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7  false
+2     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a   true
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450  false
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+3     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+4     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/05/08 18:24:38.518270 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:38.518522 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:43.528966 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:43.530014 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:24:48.479 [INF] STAT: -> 200 [198 172.28.0.11:57562 (inbound), 198 172.28.0.16:40874 (inbound), 200 172.28.0.14:35962 (inbound), 199 172.28.0.5:34552 (inbound), 200 172.28.0.8:60168 (inbound), 199 172.28.0.4:58034 (inbound), 200 172.28.0.13:48670 (inbound), 200 172.28.0.18:34984 (inbound), 200 172.28.0.10:41398 (inbound), 200 172.28.0.3:46266 (inbound), 197 172.28.0.6:34534 (inbound), 199 172.28.0.2:36454 (inbound), 200 172.28.0.9:42380 (inbound), 198 172.28.0.12:59628 (inbound), 198 172.28.0.15:55624 (inbound), 197 172.28.0.2:10015 (outbound), 197 172.28.0.8:10015 (outbound), 199 172.28.0.3:10015 (outbound), 197 172.28.0.6:10015 (outbound), 197 172.28.0.4:10015 (outbound), 199 172.28.0.5:10015 (outbound)]
+2019/05/08 18:24:48.564809 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:48.567889 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:52.574669 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: cb0ed4e86a83e023d06213aac4cb43a4e7889d73f56d0c59d68342df583c5b8e
+2019/05/08 18:24:52.673853 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: cb0ed4e86a83e023d06213aac4cb43a4e7889d73f56d0c59d68342df583c5b8e
+2019/05/08 18:24:52.673971 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 201
+2019/05/08 18:24:53.576937 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:53.577918 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:24:54.005398 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 061c918e846841d453fdff01e8f92ca6ffbc0ccf62e7578a15e76513c06464d8
+2019/05/08 18:24:54.164732 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 061c918e846841d453fdff01e8f92ca6ffbc0ccf62e7578a15e76513c06464d8
+2019/05/08 18:24:54.167669 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 202
+2019/05/08 18:24:58.030132 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 4b6775f85ef4ba05e04a38822b7591938702c073ee0ebcfe139846b6ae4d4de8
+2019/05/08 18:24:58.158881 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 4b6775f85ef4ba05e04a38822b7591938702c073ee0ebcfe139846b6ae4d4de8
+2019/05/08 18:24:58.323376 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 203
+2019/05/08 18:24:58.584851 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:24:58.587705 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:01.593920 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:25:01.645302 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: b2cdd504670668c24a525ed00c80d8348f422497725ba27b23c0e724756ad6a0
+2019/05/08 18:25:01.647413 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:02.026120 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: b2cdd504670668c24a525ed00c80d8348f422497725ba27b23c0e724756ad6a0
+2019/05/08 18:25:02.026498 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 204
+2019/05/08 18:25:04.066924 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8e3c19f5aa8ca1c3305301e3e42c696a03831d9050af288768ebfc8fcbdbb2f3
+2019/05/08 18:25:04.203166 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8e3c19f5aa8ca1c3305301e3e42c696a03831d9050af288768ebfc8fcbdbb2f3
+2019/05/08 18:25:04.203864 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 205
+2019/05/08 18:25:06.696376 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:25:06.696685 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:11.697230 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:25:11.697381 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:16.747190 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:25:16.747569 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:18.579372 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: e96803e82233ffbbb761e20e8da4596325f7b92535f9bceb4a2fc3694fa2435c
+2019/05/08 18:25:18.717043 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: e96803e82233ffbbb761e20e8da4596325f7b92535f9bceb4a2fc3694fa2435c
+2019/05/08 18:25:18.717170 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 206
+2019/05/08 18:25:19.380152 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:25:19.390854 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:23.417132 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 57524c207c12402c522eab86c2cad3cbf08547d430b40f2ea16bee744e707bda
+2019/05/08 18:25:23.584068 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 57524c207c12402c522eab86c2cad3cbf08547d430b40f2ea16bee744e707bda
+2019/05/08 18:25:23.585681 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 207
+2019/05/08 18:25:24.445821 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:25:24.446069 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:24.518571 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 50f60572c4b108b58d308401d7fac7f38e761e51c3f322427869924e716bdbaf
+2019/05/08 18:25:24.727579 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 50f60572c4b108b58d308401d7fac7f38e761e51c3f322427869924e716bdbaf
+2019/05/08 18:25:24.734096 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 208
+2019/05/08 18:25:29.512178 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:25:29.539158 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:34.546309 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:25:34.546524 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:39.548314 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:25:39.551746 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:44.444891 [1;35m[INF][m GID 62, Lost peer 172.28.0.5:34552 (inbound)
+2019/05/08 18:25:44.558264 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:25:44.558507 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:46.662610 [1;35m[INF][m GID 62, Lost peer 172.28.0.5:10015 (outbound)
+2019-05-08 18:25:48.464 [INF] STAT: -> 208 [208 172.28.0.12:59628 (inbound), 208 172.28.0.15:55624 (inbound), 208 172.28.0.11:57562 (inbound), 208 172.28.0.16:40874 (inbound), 208 172.28.0.14:35962 (inbound), 208 172.28.0.8:60168 (inbound), 208 172.28.0.4:58034 (inbound), 208 172.28.0.13:48670 (inbound), 208 172.28.0.18:34984 (inbound), 208 172.28.0.3:46266 (inbound), 206 172.28.0.6:34534 (inbound), 208 172.28.0.2:36454 (inbound), 208 172.28.0.9:42380 (inbound), 208 172.28.0.10:41398 (inbound), 207 172.28.0.8:10015 (outbound), 208 172.28.0.3:10015 (outbound), 208 172.28.0.6:10015 (outbound), 208 172.28.0.4:10015 (outbound), 205 172.28.0.2:10015 (outbound)]
+2019/05/08 18:25:49.364097 [1;35m[INF][m GID 62, New valid peer 172.28.0.5:35682 (inbound)
+2019/05/08 18:25:49.567897 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:25:49.568786 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:51.717069 [1;35m[INF][m GID 62, New valid peer 172.28.0.5:10015 (outbound)
+2019/05/08 18:25:54.632548 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:25:54.639683 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:25:55.340510 [1;35m[INF][m GID 62, Lost peer 172.28.0.6:10015 (outbound)
+2019/05/08 18:25:55.449566 [1;35m[INF][m GID 62, Lost peer 172.28.0.3:46266 (inbound)
+2019/05/08 18:25:58.444962 [1;35m[INF][m GID 62, Lost peer 172.28.0.2:36454 (inbound)
+2019/05/08 18:25:59.642340 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:25:59.642892 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:26:00.407475 [1;35m[INF][m GID 62, New valid peer 172.28.0.6:10015 (outbound)
+2019/05/08 18:26:00.524660 [1;35m[INF][m GID 62, Lost peer 172.28.0.3:10015 (outbound)
+2019/05/08 18:26:00.584710 [1;35m[INF][m GID 62, New valid peer 172.28.0.3:47454 (inbound)
+2019/05/08 18:26:03.522103 [1;35m[INF][m GID 62, Lost peer 172.28.0.2:10015 (outbound)
+2019/05/08 18:26:03.640310 [1;35m[INF][m GID 62, New valid peer 172.28.0.2:41466 (inbound)
+2019/05/08 18:26:04.693133 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:26:04.694915 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:26:05.594455 [1;35m[INF][m GID 62, New valid peer 172.28.0.3:10015 (outbound)
+2019/05/08 18:26:05.912608 [1;35m[INF][m GID 62, Lost peer 172.28.0.6:34534 (inbound)
+2019/05/08 18:26:08.561917 [1;35m[INF][m GID 62, New valid peer 172.28.0.2:10015 (outbound)
+2019/05/08 18:26:09.151495 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 2d233c014e46a7daf9031204f0f2d32b78804c13be48250cf5191d6c09756264
+2019/05/08 18:26:09.245604 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 2d233c014e46a7daf9031204f0f2d32b78804c13be48250cf5191d6c09756264
+2019/05/08 18:26:09.253435 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 209
+2019/05/08 18:26:09.729680 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:26:09.729784 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:26:10.986059 [1;35m[INF][m GID 62, New valid peer 172.28.0.6:39818 (inbound)
+2019/05/08 18:26:14.769903 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:26:14.770824 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:26:19.894702 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:26:19.907844 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:26:24.983622 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:26:24.985998 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:26:29.922416 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: a5b47578683e2a7e0ea96f5cba13a05ea9a3f0f3d10f15f1012beebafc8037ec
+2019/05/08 18:26:30.001338 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:26:30.001627 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:26:30.056012 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: a5b47578683e2a7e0ea96f5cba13a05ea9a3f0f3d10f15f1012beebafc8037ec
+2019/05/08 18:26:30.092055 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 210
+2019/05/08 18:26:35.032872 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:26:35.033900 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:26:37.743217 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:26:37.745477 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: 6619db0f77b88d23ea24e1f4859275380a9646a961b334276938928136143389
+2019/05/08 18:26:37.745808 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:26:37.961077 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 6619db0f77b88d23ea24e1f4859275380a9646a961b334276938928136143389
+2019/05/08 18:26:37.961168 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 211
+2019/05/08 18:26:42.748144 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:26:42.748446 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:26:47.792925 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:26:47.796471 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:26:48.455 [INF] STAT: -> 211 [210 172.28.0.15:55624 (inbound), 210 172.28.0.2:41466 (inbound), 209 172.28.0.12:59628 (inbound), 209 172.28.0.16:40874 (inbound), 211 172.28.0.14:35962 (inbound), 211 172.28.0.6:39818 (inbound), 210 172.28.0.11:57562 (inbound), 209 172.28.0.4:58034 (inbound), 211 172.28.0.13:48670 (inbound), 211 172.28.0.18:34984 (inbound), 209 172.28.0.5:35682 (inbound), 211 172.28.0.8:60168 (inbound), 210 172.28.0.9:42380 (inbound), 210 172.28.0.10:41398 (inbound), 210 172.28.0.3:47454 (inbound), 210 172.28.0.3:10015 (outbound), 209 172.28.0.8:10015 (outbound), 211 172.28.0.2:10015 (outbound), 210 172.28.0.6:10015 (outbound), 209 172.28.0.4:10015 (outbound), 209 172.28.0.5:10015 (outbound)]
+2019/05/08 18:26:52.849499 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:26:52.849727 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:26:53.555529 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: bded44ba44d5a7b0e2c5a5d9f9bb2f06f9ccfbf550ad8fd484cc1d9f4059c72d
+2019/05/08 18:26:53.797922 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: bded44ba44d5a7b0e2c5a5d9f9bb2f06f9ccfbf550ad8fd484cc1d9f4059c72d
+2019/05/08 18:26:53.804808 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 212
+2019/05/08 18:26:57.850750 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:26:57.851002 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:02.852358 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:27:02.852879 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:05.834385 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 819e581b5428d4de9a02f963103f2706f666277af622db1cfd8ed5606045466a
+2019/05/08 18:27:06.274121 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 819e581b5428d4de9a02f963103f2706f666277af622db1cfd8ed5606045466a
+2019/05/08 18:27:06.274663 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 213
+2019/05/08 18:27:06.296162 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:27:06.297147 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:11.299297 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:27:11.299657 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:11.516138 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 15695500015f5a1225a336ef3f5b03de4eb22fe23e91d513af7bdcf63b9680f9
+2019/05/08 18:27:11.883495 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 15695500015f5a1225a336ef3f5b03de4eb22fe23e91d513af7bdcf63b9680f9
+2019/05/08 18:27:11.894797 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 214
+2019/05/08 18:27:16.303952 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:27:16.306403 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:17.983932 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: a16d0090d964cf54fdd3333a5fad93dc1a4d4a50f09b4e77562161b3975f7598
+2019/05/08 18:27:18.184522 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: a16d0090d964cf54fdd3333a5fad93dc1a4d4a50f09b4e77562161b3975f7598
+2019/05/08 18:27:18.186879 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 215
+2019/05/08 18:27:21.309652 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:27:21.312773 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:26.317966 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:27:26.318775 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:31.327213 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:27:31.351512 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:34.165196 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 335a7c1d549b8e367a48cfa44eee975028a512171ea37cd0e01a61c1242d50fe
+2019/05/08 18:27:34.417261 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 335a7c1d549b8e367a48cfa44eee975028a512171ea37cd0e01a61c1242d50fe
+2019/05/08 18:27:34.417404 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 216
+2019/05/08 18:27:36.452509 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:27:36.453534 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:41.460948 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:27:41.463764 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:44.885642 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d44747e0ac00e76ffe61ebfd4d699f4db4cd70b90dc3f1542a9447e0c1492eed
+2019/05/08 18:27:45.511574 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d44747e0ac00e76ffe61ebfd4d699f4db4cd70b90dc3f1542a9447e0c1492eed
+2019/05/08 18:27:45.580700 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 217
+2019/05/08 18:27:46.476032 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:27:46.476174 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:27:48.517 [INF] STAT: -> 217 [216 172.28.0.8:60168 (inbound), 215 172.28.0.4:58034 (inbound), 216 172.28.0.13:48670 (inbound), 216 172.28.0.18:34984 (inbound), 215 172.28.0.5:35682 (inbound), 215 172.28.0.3:47454 (inbound), 216 172.28.0.9:42380 (inbound), 216 172.28.0.10:41398 (inbound), 215 172.28.0.12:59628 (inbound), 215 172.28.0.15:55624 (inbound), 215 172.28.0.2:41466 (inbound), 215 172.28.0.11:57562 (inbound), 215 172.28.0.16:40874 (inbound), 216 172.28.0.14:35962 (inbound), 216 172.28.0.6:39818 (inbound), 216 172.28.0.3:10015 (outbound), 215 172.28.0.8:10015 (outbound), 216 172.28.0.2:10015 (outbound), 215 172.28.0.6:10015 (outbound), 215 172.28.0.4:10015 (outbound), 215 172.28.0.5:10015 (outbound)]
+2019/05/08 18:27:51.500086 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:27:51.500430 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:52.489556 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 2b37fd06f28cedfd13f77015cbb80d630b59010f16fe15c14224ac9c106ffcf9
+2019/05/08 18:27:52.986235 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 2b37fd06f28cedfd13f77015cbb80d630b59010f16fe15c14224ac9c106ffcf9
+2019/05/08 18:27:53.012732 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 218
+2019/05/08 18:27:56.278888 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: eab5d6c24d4ec07ed89093d702b3a42d7666e0bee997451a0c7619ae43eb46ce
+2019/05/08 18:27:56.508780 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:27:56.510056 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:27:56.552771 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: eab5d6c24d4ec07ed89093d702b3a42d7666e0bee997451a0c7619ae43eb46ce
+2019/05/08 18:27:56.552926 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 219
+2019/05/08 18:28:01.520478 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:28:01.520689 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:06.532754 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:28:06.532905 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:11.568355 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:28:11.570147 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:13.487632 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: f68e75eec16dc42c50107408db90da7f096382c21bef5e3252decf4bb0f8f9ef
+2019/05/08 18:28:13.710186 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: f68e75eec16dc42c50107408db90da7f096382c21bef5e3252decf4bb0f8f9ef
+2019/05/08 18:28:13.710352 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 220
+2019/05/08 18:28:16.590520 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:28:16.591347 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:21.594014 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:28:21.594278 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:22.200267 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 98522b46da3e6bb7fb8614c6a5ac410b0a84285f6fc3e7304d03770a4de08d84
+2019/05/08 18:28:22.288108 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 98522b46da3e6bb7fb8614c6a5ac410b0a84285f6fc3e7304d03770a4de08d84
+2019/05/08 18:28:22.289231 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 221
+2019/05/08 18:28:26.615030 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:28:26.615567 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:29.035650 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3d7e8295d984d8874596f940ff9a8149b50b0a72d62b4be883aee98044b5203f
+2019/05/08 18:28:29.265028 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3d7e8295d984d8874596f940ff9a8149b50b0a72d62b4be883aee98044b5203f
+2019/05/08 18:28:29.272896 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 222
+2019/05/08 18:28:31.630250 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:28:31.631004 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:33.459232 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 5cb0f7f0d285b431914185148f833908724875997e6e2350e2c2473999194dd3
+2019/05/08 18:28:33.657705 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 5cb0f7f0d285b431914185148f833908724875997e6e2350e2c2473999194dd3
+2019/05/08 18:28:33.657923 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 223
+2019/05/08 18:28:36.637228 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:28:36.637538 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:37.694269 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 786878751da648e984a3957e363a62cc11a7fa76363119f0aae9f59dfcdf3a66
+2019/05/08 18:28:38.025733 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 786878751da648e984a3957e363a62cc11a7fa76363119f0aae9f59dfcdf3a66
+2019/05/08 18:28:38.027062 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 224
+2019/05/08 18:28:41.350567 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:28:41.353687 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:46.356329 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:28:46.356640 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:47.501555 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 1fda88175680a792da64326a95bf7bb1002ab833385bf6afb0b9d7ebe0ab7dde
+2019/05/08 18:28:47.503535 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 225
+2019/05/08 18:28:47.522931 [1;35m[INF][m GID 62, Rejected block 1fda88175680a792da64326a95bf7bb1002ab833385bf6afb0b9d7ebe0ab7dde from 172.28.0.3:10015 (outbound): duplicate block in pool
+2019-05-08 18:28:48.455 [INF] STAT: -> 225 [222 172.28.0.12:59628 (inbound), 222 172.28.0.15:55624 (inbound), 222 172.28.0.2:41466 (inbound), 222 172.28.0.11:57562 (inbound), 221 172.28.0.16:40874 (inbound), 224 172.28.0.14:35962 (inbound), 224 172.28.0.6:39818 (inbound), 224 172.28.0.8:60168 (inbound), 222 172.28.0.4:58034 (inbound), 224 172.28.0.13:48670 (inbound), 224 172.28.0.18:34984 (inbound), 220 172.28.0.5:35682 (inbound), 222 172.28.0.3:47454 (inbound), 223 172.28.0.9:42380 (inbound), 223 172.28.0.10:41398 (inbound), 223 172.28.0.3:10015 (outbound), 221 172.28.0.8:10015 (outbound), 224 172.28.0.2:10015 (outbound), 222 172.28.0.6:10015 (outbound), 221 172.28.0.4:10015 (outbound), 220 172.28.0.5:10015 (outbound)]
+2019/05/08 18:28:51.360430 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:28:51.362058 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:51.745722 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:28:51.753104 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: 2c63571322bf7316f7a9d4b002a9be758738daa9cd704dff14e35210796e09aa
+2019/05/08 18:28:51.762391 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:51.975606 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 2c63571322bf7316f7a9d4b002a9be758738daa9cd704dff14e35210796e09aa
+2019/05/08 18:28:51.982289 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 226
+2019/05/08 18:28:52.250335 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:28:52.250604 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:57.281915 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:28:57.282552 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:28:58.441484 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8691ef3fa861bed521534b64ab8056a6afb27464866f60487996c801dae3cd0f
+2019/05/08 18:28:58.449393 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: cba695bf89a71f43c1fc515ff64077894eb55bd465f44d4d3bc5c84bb4346669
+2019/05/08 18:28:58.598416 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8691ef3fa861bed521534b64ab8056a6afb27464866f60487996c801dae3cd0f
+2019/05/08 18:28:58.600092 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 227
+2019/05/08 18:29:02.292746 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:02.295234 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:29:07.378669 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:07.378894 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:29:08.498784 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 182f21df83086c277489bad40281a519ddfd11d126838462749f8912cef8db8c
+2019/05/08 18:29:08.723658 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 182f21df83086c277489bad40281a519ddfd11d126838462749f8912cef8db8c
+2019/05/08 18:29:08.724483 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 228
+2019/05/08 18:29:12.379366 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:12.379628 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:29:14.646345 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 967fe67e5ac2bae5646b15f3c9134a3960ccbd69f20cf666d22f99208a04edef
+2019/05/08 18:29:14.893532 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 967fe67e5ac2bae5646b15f3c9134a3960ccbd69f20cf666d22f99208a04edef
+2019/05/08 18:29:14.894569 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 229
+2019/05/08 18:29:17.406704 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:17.414636 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:29:22.421527 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:22.421875 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:29:27.462623 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:27.465542 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:29:28.978310 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 9aa1c45304dfc41069827f5a4aa9115d71979402ed6097eca0fa2a08be5f3a8b
+2019/05/08 18:29:29.250205 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 9aa1c45304dfc41069827f5a4aa9115d71979402ed6097eca0fa2a08be5f3a8b
+2019/05/08 18:29:29.250580 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 230
+2019/05/08 18:29:32.469160 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:32.469460 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:29:34.086098 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 17c5bee69bd8b1a8e5cb733fe667e40eedd771f447779db0109bc143b30070cb
+2019/05/08 18:29:34.251383 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 17c5bee69bd8b1a8e5cb733fe667e40eedd771f447779db0109bc143b30070cb
+2019/05/08 18:29:34.251444 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 231
+2019/05/08 18:29:37.484928 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:37.485946 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:29:42.502837 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:42.503222 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:29:47.510525 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:47.511638 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:29:48.470 [INF] STAT: -> 231 [229 172.28.0.5:35682 (inbound), 231 172.28.0.8:60168 (inbound), 230 172.28.0.4:58034 (inbound), 231 172.28.0.13:48670 (inbound), 231 172.28.0.18:34984 (inbound), 231 172.28.0.9:42380 (inbound), 231 172.28.0.10:41398 (inbound), 230 172.28.0.3:47454 (inbound), 230 172.28.0.12:59628 (inbound), 230 172.28.0.15:55624 (inbound), 230 172.28.0.2:41466 (inbound), 230 172.28.0.11:57562 (inbound), 229 172.28.0.16:40874 (inbound), 231 172.28.0.14:35962 (inbound), 231 172.28.0.6:39818 (inbound), 229 172.28.0.5:10015 (outbound), 231 172.28.0.3:10015 (outbound), 229 172.28.0.8:10015 (outbound), 231 172.28.0.2:10015 (outbound), 230 172.28.0.6:10015 (outbound), 229 172.28.0.4:10015 (outbound)]
+2019/05/08 18:29:48.545054 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 7d4b8e323125cb133610ef5f45f676edadfc46b4ac69921ef9c367c200cf2ba5
+2019/05/08 18:29:48.835928 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 7d4b8e323125cb133610ef5f45f676edadfc46b4ac69921ef9c367c200cf2ba5
+2019/05/08 18:29:48.835976 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 232
+2019/05/08 18:29:52.515615 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:52.517730 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:29:57.568528 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:29:57.569258 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:30:02.671148 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:30:02.672157 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:30:07.675211 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:30:07.675430 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:30:12.688936 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:30:12.689197 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:30:14.874169 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 16473b9ae904241818b0abbc932f59c1ac07f21e65150fa8986e9a9d2bdeb3e6
+2019/05/08 18:30:14.894591 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 66e4dd7c06bd6d888fa8257285f7e6f4ec33812ffdac50d7ca3beee838f9a624
+2019/05/08 18:30:15.198092 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 66e4dd7c06bd6d888fa8257285f7e6f4ec33812ffdac50d7ca3beee838f9a624
+2019/05/08 18:30:15.198129 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 233
+2019/05/08 18:30:17.689934 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:30:17.691908 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:30:21.198223 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: c8b58911591c768b614a6290af7f9dabdffdfbcb4927658928d68f5b0d0d5650
+2019/05/08 18:30:21.382493 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: c8b58911591c768b614a6290af7f9dabdffdfbcb4927658928d68f5b0d0d5650
+2019/05/08 18:30:21.389873 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 234
+2019/05/08 18:30:22.702280 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:30:22.704280 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:30:27.705915 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:30:27.708212 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:30:32.716726 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:30:32.718632 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:30:37.608408 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:30:37.609514 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: c03c4738d42b47a82323bf780485f5be26ddbc8cf241fa66c79415d6a150265e
+2019/05/08 18:30:37.624196 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:30:37.827489 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: c03c4738d42b47a82323bf780485f5be26ddbc8cf241fa66c79415d6a150265e
+2019/05/08 18:30:37.831933 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 235
+2019/05/08 18:30:42.715676 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:30:42.719023 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:30:47.809337 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:30:47.809518 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:30:48.456 [INF] STAT: -> 235 [234 172.28.0.12:59628 (inbound), 234 172.28.0.15:55624 (inbound), 234 172.28.0.2:41466 (inbound), 234 172.28.0.11:57562 (inbound), 234 172.28.0.16:40874 (inbound), 235 172.28.0.14:35962 (inbound), 235 172.28.0.6:39818 (inbound), 235 172.28.0.8:60168 (inbound), 234 172.28.0.4:58034 (inbound), 235 172.28.0.13:48670 (inbound), 235 172.28.0.18:34984 (inbound), 233 172.28.0.5:35682 (inbound), 234 172.28.0.3:47454 (inbound), 234 172.28.0.9:42380 (inbound), 234 172.28.0.10:41398 (inbound), 234 172.28.0.5:10015 (outbound), 234 172.28.0.3:10015 (outbound), 234 172.28.0.8:10015 (outbound), 235 172.28.0.2:10015 (outbound), 234 172.28.0.6:10015 (outbound), 234 172.28.0.4:10015 (outbound)]
+2019/05/08 18:30:52.825688 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:30:52.830759 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:30:57.834018 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:30:57.834139 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:02.842896 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:31:02.853583 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:06.293253 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:31:06.294949 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: 87180e67c9030183bf58868dbcd41b9da1b722e9b208b94cac8acc581065da3e
+2019/05/08 18:31:06.295319 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:06.456712 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 87180e67c9030183bf58868dbcd41b9da1b722e9b208b94cac8acc581065da3e
+2019/05/08 18:31:06.457013 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 236
+2019/05/08 18:31:09.206487 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: ec4cb85a9d7df45c6bd178744c8b4227e4aff5cea7ad2b283c223e8eacd0ac69
+2019/05/08 18:31:09.354577 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: ec4cb85a9d7df45c6bd178744c8b4227e4aff5cea7ad2b283c223e8eacd0ac69
+2019/05/08 18:31:09.354652 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 237
+2019/05/08 18:31:11.300110 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:31:11.303665 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:16.329149 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:31:16.329594 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:17.773836 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 0be3a2723a02e56a9647042c6e57dbbde25a4712029be8d0b52bc27a18ff31d7
+2019/05/08 18:31:18.076266 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 0be3a2723a02e56a9647042c6e57dbbde25a4712029be8d0b52bc27a18ff31d7
+2019/05/08 18:31:18.077161 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 238
+2019/05/08 18:31:21.332385 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:31:21.335000 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:24.059018 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d420b924370e0c4789ae9a0de6e5ce745d9a94c469faa14654790c4389972ba4
+2019/05/08 18:31:24.282890 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d420b924370e0c4789ae9a0de6e5ce745d9a94c469faa14654790c4389972ba4
+2019/05/08 18:31:24.292583 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 239
+2019/05/08 18:31:26.347746 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:31:26.347992 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:31.357177 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:31:31.357582 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:32.869491 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 1f72cb516ab1ebe59226723d8d94cad42b8933e9a736e6200036fad93dd9e59e
+2019/05/08 18:31:33.131593 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 1f72cb516ab1ebe59226723d8d94cad42b8933e9a736e6200036fad93dd9e59e
+2019/05/08 18:31:33.131737 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 240
+2019/05/08 18:31:36.358579 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:31:36.362389 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:41.368084 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:31:41.368419 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:42.488584 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: aafeb798f5c801a467ab5298d8e744ba209d79fbce2667710f6cadb0a1887527
+2019/05/08 18:31:42.824531 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: aafeb798f5c801a467ab5298d8e744ba209d79fbce2667710f6cadb0a1887527
+2019/05/08 18:31:42.844039 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 241
+2019/05/08 18:31:46.428410 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:31:46.428985 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:31:48.509 [INF] STAT: -> 241 [239 172.28.0.11:57562 (inbound), 239 172.28.0.16:40874 (inbound), 240 172.28.0.14:35962 (inbound), 240 172.28.0.6:39818 (inbound), 240 172.28.0.8:60168 (inbound), 239 172.28.0.4:58034 (inbound), 240 172.28.0.13:48670 (inbound), 240 172.28.0.18:34984 (inbound), 238 172.28.0.5:35682 (inbound), 239 172.28.0.3:47454 (inbound), 240 172.28.0.9:42380 (inbound), 240 172.28.0.10:41398 (inbound), 239 172.28.0.12:59628 (inbound), 239 172.28.0.15:55624 (inbound), 240 172.28.0.2:41466 (inbound), 240 172.28.0.2:10015 (outbound), 239 172.28.0.6:10015 (outbound), 239 172.28.0.4:10015 (outbound), 238 172.28.0.5:10015 (outbound), 240 172.28.0.3:10015 (outbound), 239 172.28.0.8:10015 (outbound)]
+2019/05/08 18:31:51.429920 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:31:51.433139 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:56.441585 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:31:56.442055 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:31:57.839744 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 50e4aa02b72f7925ceb8f5f469fbafde503f71adcea4a65bca6eebbad223f1c4
+2019/05/08 18:31:58.048318 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 50e4aa02b72f7925ceb8f5f469fbafde503f71adcea4a65bca6eebbad223f1c4
+2019/05/08 18:31:58.049069 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 242
+2019/05/08 18:32:01.473859 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:32:01.474124 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:32:03.912182 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 784fe2d8182c96ad506f10dcdd7d54517e8787eff229d72ecb67c767306c3a3b
+2019/05/08 18:32:04.196500 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 784fe2d8182c96ad506f10dcdd7d54517e8787eff229d72ecb67c767306c3a3b
+2019/05/08 18:32:04.216473 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 243
+2019/05/08 18:32:06.487032 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:32:06.487279 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:32:11.506046 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:32:11.511801 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:32:12.065581 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 78ba5c679de8cd4b59c4e27e6c2ee56706718acbbccbd2803ca4e031d3842ac7
+2019/05/08 18:32:12.276839 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 78ba5c679de8cd4b59c4e27e6c2ee56706718acbbccbd2803ca4e031d3842ac7
+2019/05/08 18:32:12.300891 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 244
+2019/05/08 18:32:16.527653 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:32:16.527987 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:32:21.530069 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:32:21.532049 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:32:26.550332 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:32:26.550628 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:32:31.572737 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:32:31.573699 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:32:34.529179 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3fd69601b6c56db34dda35728c3eff046ed7edfe61b3744e61a3df330f8c2d80
+2019/05/08 18:32:34.752385 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3fd69601b6c56db34dda35728c3eff046ed7edfe61b3744e61a3df330f8c2d80
+2019/05/08 18:32:34.752499 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 245
+2019/05/08 18:32:35.551968 [1;35m[INF][m GID 62, Lost peer 172.28.0.3:10015 (outbound)
+2019/05/08 18:32:36.588723 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:32:36.590652 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:32:39.558452 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: fc6d26b26483bf321030cd6b9cb27205f1cab93da333c1b1d8496f8469bfb07c
+2019/05/08 18:32:39.868517 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: fc6d26b26483bf321030cd6b9cb27205f1cab93da333c1b1d8496f8469bfb07c
+2019/05/08 18:32:39.871382 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 246
+2019/05/08 18:32:40.584560 [1;35m[INF][m GID 62, New valid peer 172.28.0.3:10015 (outbound)
+2019/05/08 18:32:41.596290 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:32:41.597234 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:32:44.841308 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 4cb6b1b81ef4aa4891fa208163eac4781dce235d19996f306082186c90ac6c70
+2019/05/08 18:32:45.024941 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 4cb6b1b81ef4aa4891fa208163eac4781dce235d19996f306082186c90ac6c70
+2019/05/08 18:32:45.025212 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 247
+2019/05/08 18:32:46.636591 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:32:46.636986 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:32:48.461 [INF] STAT: -> 247 [244 172.28.0.4:58034 (inbound), 245 172.28.0.13:48670 (inbound), 246 172.28.0.18:34984 (inbound), 244 172.28.0.5:35682 (inbound), 246 172.28.0.8:60168 (inbound), 245 172.28.0.9:42380 (inbound), 245 172.28.0.10:41398 (inbound), 244 172.28.0.3:47454 (inbound), 244 172.28.0.15:55624 (inbound), 244 172.28.0.2:41466 (inbound), 244 172.28.0.12:59628 (inbound), 244 172.28.0.16:40874 (inbound), 245 172.28.0.14:35962 (inbound), 246 172.28.0.6:39818 (inbound), 244 172.28.0.11:57562 (inbound), 244 172.28.0.8:10015 (outbound), 245 172.28.0.2:10015 (outbound), 244 172.28.0.6:10015 (outbound), 244 172.28.0.4:10015 (outbound), 244 172.28.0.5:10015 (outbound), 246 172.28.0.3:10015 (outbound)]
+2019/05/08 18:32:51.673418 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:32:51.673816 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:32:55.297487 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 007fb8f0ec1c019c71d0c683a5c47692dbc54d55437c7dc54c05a8996b66fa04
+2019/05/08 18:32:55.528406 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 007fb8f0ec1c019c71d0c683a5c47692dbc54d55437c7dc54c05a8996b66fa04
+2019/05/08 18:32:55.530615 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 248
+2019/05/08 18:32:56.100568 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:32:56.102587 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:01.143586 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:01.144268 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:06.169354 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:06.173238 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:11.176276 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:11.176449 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:16.202185 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:16.202502 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:21.242942 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:21.243053 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:26.064996 [1;35m[INF][m GID 62, Lost peer 172.28.0.6:39818 (inbound)
+2019/05/08 18:33:26.243737 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:26.244021 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:26.616196 [1;35m[INF][m GID 62, Lost peer 172.28.0.4:10015 (outbound)
+2019/05/08 18:33:29.887657 [1;35m[INF][m GID 62, Lost peer 172.28.0.4:58034 (inbound)
+2019/05/08 18:33:30.405294 [1;35m[INF][m GID 62, Lost peer 172.28.0.6:10015 (outbound)
+2019/05/08 18:33:31.085962 [1;35m[INF][m GID 62, New valid peer 172.28.0.6:44446 (inbound)
+2019/05/08 18:33:31.275985 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:31.276253 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:31.698966 [1;35m[INF][m GID 62, New valid peer 172.28.0.4:10015 (outbound)
+2019/05/08 18:33:33.596026 [1;35m[INF][m GID 62, Lost peer 172.28.0.2:41466 (inbound)
+2019/05/08 18:33:34.364191 [1;35m[INF][m GID 62, Lost peer 172.28.0.5:35682 (inbound)
+2019/05/08 18:33:34.890792 [1;35m[INF][m GID 62, New valid peer 172.28.0.4:35842 (inbound)
+2019/05/08 18:33:35.448466 [1;35m[INF][m GID 62, New valid peer 172.28.0.6:10015 (outbound)
+2019/05/08 18:33:36.287256 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:36.287924 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:36.693095 [1;35m[INF][m GID 62, Lost peer 172.28.0.5:10015 (outbound)
+2019/05/08 18:33:38.544591 [1;35m[INF][m GID 62, Lost peer 172.28.0.2:10015 (outbound)
+2019/05/08 18:33:38.655383 [1;35m[INF][m GID 62, New valid peer 172.28.0.2:46298 (inbound)
+2019/05/08 18:33:39.507398 [1;35m[INF][m GID 62, New valid peer 172.28.0.5:40688 (inbound)
+2019/05/08 18:33:39.522792 [1;35m[INF][m GID 62, Lost peer 172.28.0.8:10015 (outbound)
+2019/05/08 18:33:40.407113 [1;35m[INF][m GID 62, Lost peer 172.28.0.8:60168 (inbound)
+2019/05/08 18:33:41.288700 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:41.289280 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:41.714149 [1;35m[INF][m GID 62, New valid peer 172.28.0.5:10015 (outbound)
+2019/05/08 18:33:43.550249 [1;35m[INF][m GID 62, New valid peer 172.28.0.2:10015 (outbound)
+2019/05/08 18:33:43.772364 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: a560c22c1f84e78601acadf9e736afd4936e204a81f0526eda0e2cc1b6bbcd5a
+2019/05/08 18:33:43.910599 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: a560c22c1f84e78601acadf9e736afd4936e204a81f0526eda0e2cc1b6bbcd5a
+2019/05/08 18:33:43.915310 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 249
+2019/05/08 18:33:44.718664 [1;35m[INF][m GID 62, New valid peer 172.28.0.8:10015 (outbound)
+2019/05/08 18:33:45.423459 [1;35m[INF][m GID 62, New valid peer 172.28.0.8:38100 (inbound)
+2019/05/08 18:33:46.348474 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:46.348865 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:33:48.490 [INF] STAT: -> 249 [248 172.28.0.4:35842 (inbound), 248 172.28.0.5:40688 (inbound), 248 172.28.0.9:42380 (inbound), 248 172.28.0.10:41398 (inbound), 248 172.28.0.3:47454 (inbound), 248 172.28.0.6:44446 (inbound), 248 172.28.0.2:46298 (inbound), 248 172.28.0.12:59628 (inbound), 248 172.28.0.15:55624 (inbound), 248 172.28.0.14:35962 (inbound), 249 172.28.0.8:38100 (inbound), 248 172.28.0.11:57562 (inbound), 248 172.28.0.16:40874 (inbound), 248 172.28.0.13:48670 (inbound), 248 172.28.0.18:34984 (inbound), 248 172.28.0.3:10015 (outbound), 248 172.28.0.5:10015 (outbound), 248 172.28.0.2:10015 (outbound), 248 172.28.0.4:10015 (outbound), 248 172.28.0.6:10015 (outbound), 249 172.28.0.8:10015 (outbound)]
+2019/05/08 18:33:51.355569 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:51.355827 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:56.409755 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:33:56.409961 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:57.990963 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:33:57.998296 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: 4790573d8bce204ed37b5e2790f96fd3415c750aa4647d9eadae1c31c737923c
+2019/05/08 18:33:58.007190 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:33:58.190722 [1;35m[INF][m GID 6815, 172.28.0.8:38100 (inbound) sent a reject message Code: REJECT_INVALID, Hash 4790573d8bce204ed37b5e2790f96fd3415c750aa4647d9eadae1c31c737923c, Reason: Rejected block 4790573d8bce204ed37b5e2790f96fd3415c750aa4647d9eadae1c31c737923c from 172.28.0.7:10015 (outbound): duplicate block in pool
+2019/05/08 18:33:58.498927 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 4790573d8bce204ed37b5e2790f96fd3415c750aa4647d9eadae1c31c737923c
+2019/05/08 18:33:58.506083 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 250
+2019/05/08 18:34:03.013079 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:03.013405 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:34:06.494181 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 986612e02603e0190fd61ad9631e90beaf833d6df7f803334e4b7f7463788488
+2019/05/08 18:34:06.796561 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 986612e02603e0190fd61ad9631e90beaf833d6df7f803334e4b7f7463788488
+2019/05/08 18:34:06.801913 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 251
+2019/05/08 18:34:08.069996 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:08.070089 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:34:13.161261 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:13.161471 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:34:15.335225 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: b86f6e6791fc150992e57c5aab70b1a0312c15f272ac5bcd8fbd0be6fe689ed4
+2019/05/08 18:34:15.531022 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: b86f6e6791fc150992e57c5aab70b1a0312c15f272ac5bcd8fbd0be6fe689ed4
+2019/05/08 18:34:15.534094 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 252
+2019/05/08 18:34:18.183605 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:18.184535 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:34:20.132058 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 83c4a951e4bb570fdb3b1e6a1f52d7b08c3e105013805b70eda64fbc38bc8ef5
+2019/05/08 18:34:20.324961 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 83c4a951e4bb570fdb3b1e6a1f52d7b08c3e105013805b70eda64fbc38bc8ef5
+2019/05/08 18:34:20.324999 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 253
+2019/05/08 18:34:22.254767 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: c65a7a10fc0f9541d6226ff40038807ff242a494287fd009edda944b1c4eb405
+2019/05/08 18:34:22.522281 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: c65a7a10fc0f9541d6226ff40038807ff242a494287fd009edda944b1c4eb405
+2019/05/08 18:34:22.522445 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 254
+2019/05/08 18:34:23.189887 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:23.190227 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:34:28.225088 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:28.226707 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:34:30.852487 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 12c34a691c41db7ee960568d44f575c9f0f905c74ea19d4742fa1c858afbc08d
+2019/05/08 18:34:31.048495 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 12c34a691c41db7ee960568d44f575c9f0f905c74ea19d4742fa1c858afbc08d
+2019/05/08 18:34:31.048753 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 255
+2019/05/08 18:34:33.227146 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:33.227240 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:34:37.963870 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 044bc4043e425f7cbbbeccd1d408d58dc32e96120f290c4d99c3284ff4faec4e
+2019/05/08 18:34:38.266035 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 044bc4043e425f7cbbbeccd1d408d58dc32e96120f290c4d99c3284ff4faec4e
+2019/05/08 18:34:38.278790 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 256
+2019/05/08 18:34:38.528013 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:38.533649 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:34:43.562517 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:43.562740 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:34:48.301106 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8a4b3bb32a6c194c98aeb82c02497179f87195555e7b8c34669ee9a742cb949a
+2019-05-08 18:34:48.493 [INF] STAT: -> 256 [254 172.28.0.3:47454 (inbound), 254 172.28.0.6:44446 (inbound), 255 172.28.0.4:35842 (inbound), 256 172.28.0.5:40688 (inbound), 255 172.28.0.9:42380 (inbound), 255 172.28.0.10:41398 (inbound), 254 172.28.0.12:59628 (inbound), 255 172.28.0.15:55624 (inbound), 256 172.28.0.2:46298 (inbound), 254 172.28.0.11:57562 (inbound), 254 172.28.0.16:40874 (inbound), 256 172.28.0.14:35962 (inbound), 256 172.28.0.8:38100 (inbound), 256 172.28.0.13:48670 (inbound), 256 172.28.0.18:34984 (inbound), 255 172.28.0.4:10015 (outbound), 255 172.28.0.6:10015 (outbound), 256 172.28.0.8:10015 (outbound), 256 172.28.0.3:10015 (outbound), 256 172.28.0.5:10015 (outbound), 256 172.28.0.2:10015 (outbound)]
+2019/05/08 18:34:48.494056 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8a4b3bb32a6c194c98aeb82c02497179f87195555e7b8c34669ee9a742cb949a
+2019/05/08 18:34:48.494187 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 257
+2019/05/08 18:34:48.582161 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:48.582657 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:34:53.587844 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:53.589834 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:34:57.977090 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 9862dad5baa9e37c117a74f87e3534e374a46a34451ff23bf2f00f3cc6535af7
+2019/05/08 18:34:58.306599 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 9862dad5baa9e37c117a74f87e3534e374a46a34451ff23bf2f00f3cc6535af7
+2019/05/08 18:34:58.306771 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 258
+2019/05/08 18:34:58.609934 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:34:58.610384 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:35:03.620703 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:35:03.621166 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:35:04.165596 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3b499db37a98e8975d523c48f5220c8a5986b9d922dad462523d2a5a868de121
+2019/05/08 18:35:04.398790 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3b499db37a98e8975d523c48f5220c8a5986b9d922dad462523d2a5a868de121
+2019/05/08 18:35:04.398847 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 259
+2019/05/08 18:35:08.622143 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:35:08.622427 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:35:13.646950 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:35:13.647183 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:35:18.662216 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:35:18.662783 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:35:20.395970 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3a74d3a94e3115b8a9e2c900df3a618794563a0e891e047ab65f8fa691c53d1d
+2019/05/08 18:35:21.033841 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3a74d3a94e3115b8a9e2c900df3a618794563a0e891e047ab65f8fa691c53d1d
+2019/05/08 18:35:21.034074 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 260
+2019/05/08 18:35:23.669148 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:35:23.669369 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:35:25.814433 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:35:25.817207 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: f71d3b1db74777f4e629958e02d3135fe8eca211dfad632a19957e86a5d074dd
+2019/05/08 18:35:25.818904 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:35:25.935734 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: f71d3b1db74777f4e629958e02d3135fe8eca211dfad632a19957e86a5d074dd
+2019/05/08 18:35:25.935988 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 261
+2019/05/08 18:35:30.850756 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:35:30.851995 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:35:31.812199 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 5730354dd509cf26ad2a8175f3bbcc9e177b3532127dc2bc40f1c3670e7ab26b
+2019/05/08 18:35:32.015763 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 5730354dd509cf26ad2a8175f3bbcc9e177b3532127dc2bc40f1c3670e7ab26b
+2019/05/08 18:35:32.015886 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 262
+2019/05/08 18:35:35.897525 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:35:35.897759 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:35:40.933822 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:35:40.935103 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:35:45.660619 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 22db1df19ddd6559e91d6bad11ebb14b27476803f447c0568d483a88f4dc0857
+2019/05/08 18:35:45.873089 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 22db1df19ddd6559e91d6bad11ebb14b27476803f447c0568d483a88f4dc0857
+2019/05/08 18:35:45.873948 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 263
+2019/05/08 18:35:45.948545 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:35:45.957463 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:35:48.456 [INF] STAT: -> 263 [261 172.28.0.11:57562 (inbound), 261 172.28.0.16:40874 (inbound), 262 172.28.0.14:35962 (inbound), 262 172.28.0.8:38100 (inbound), 262 172.28.0.13:48670 (inbound), 262 172.28.0.18:34984 (inbound), 261 172.28.0.3:47454 (inbound), 261 172.28.0.6:44446 (inbound), 262 172.28.0.4:35842 (inbound), 262 172.28.0.5:40688 (inbound), 262 172.28.0.9:42380 (inbound), 262 172.28.0.10:41398 (inbound), 261 172.28.0.12:59628 (inbound), 261 172.28.0.15:55624 (inbound), 262 172.28.0.2:46298 (inbound), 262 172.28.0.3:10015 (outbound), 262 172.28.0.5:10015 (outbound), 262 172.28.0.2:10015 (outbound), 261 172.28.0.4:10015 (outbound), 262 172.28.0.6:10015 (outbound), 262 172.28.0.8:10015 (outbound)]
+2019/05/08 18:35:50.958097 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:35:50.958314 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:35:55.979440 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:35:55.979759 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:00.988443 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:00.992878 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:05.160362 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 363dea4dda3cb9c8bba83d1ca4cca3d16f3db27f6420b95bb8b516e79e240d67
+2019/05/08 18:36:05.391842 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 363dea4dda3cb9c8bba83d1ca4cca3d16f3db27f6420b95bb8b516e79e240d67
+2019/05/08 18:36:05.396371 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 264
+2019/05/08 18:36:05.997675 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:05.998551 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:09.798556 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3810e11073441a837691091a1b354b61b0f8194b5860062813f25ddd43e27fca
+2019/05/08 18:36:09.962792 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3810e11073441a837691091a1b354b61b0f8194b5860062813f25ddd43e27fca
+2019/05/08 18:36:09.976480 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 265
+2019/05/08 18:36:10.999351 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:10.999722 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:11.966821 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d98842fe02a5ddcc63a1b71d921e9e4b7f2aa2a0e4735bd9e66d431ee1e558f8
+2019/05/08 18:36:12.294316 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d98842fe02a5ddcc63a1b71d921e9e4b7f2aa2a0e4735bd9e66d431ee1e558f8
+2019/05/08 18:36:12.303487 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 266
+2019/05/08 18:36:16.014495 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:16.014732 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:21.051509 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:21.051784 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:22.258032 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 1c49b9b98907a2860d03c3324f108f4831d6686aed288688dfbbbcc20e5390c2
+2019/05/08 18:36:22.417964 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 1c49b9b98907a2860d03c3324f108f4831d6686aed288688dfbbbcc20e5390c2
+2019/05/08 18:36:22.418248 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 267
+2019/05/08 18:36:26.002450 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: db78f9330b7544b494e32bbfe4dfbca14a6c5c3c8c5cd58ef4330c4609ebc82c
+2019/05/08 18:36:26.055686 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:26.062534 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:26.136840 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: db78f9330b7544b494e32bbfe4dfbca14a6c5c3c8c5cd58ef4330c4609ebc82c
+2019/05/08 18:36:26.137546 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 268
+2019/05/08 18:36:31.071067 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:31.074020 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:36.112008 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:36.112496 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:36.992315 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:36:37.034729 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: eea4167d539c0a20bb8896c3abf1cc759919ccc5ed7f50f4acbf1dbccc6b9959
+2019/05/08 18:36:37.037699 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:37.243957 [1;35m[INF][m GID 6815, 172.28.0.8:38100 (inbound) sent a reject message Code: REJECT_INVALID, Hash eea4167d539c0a20bb8896c3abf1cc759919ccc5ed7f50f4acbf1dbccc6b9959, Reason: Rejected block eea4167d539c0a20bb8896c3abf1cc759919ccc5ed7f50f4acbf1dbccc6b9959 from 172.28.0.7:10015 (outbound): duplicate block in pool
+2019/05/08 18:36:37.265328 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: eea4167d539c0a20bb8896c3abf1cc759919ccc5ed7f50f4acbf1dbccc6b9959
+2019/05/08 18:36:37.265435 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 269
+2019/05/08 18:36:42.065728 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:42.067781 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:47.091397 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:47.095179 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:36:48.470 [INF] STAT: -> 269 [268 172.28.0.11:57562 (inbound), 268 172.28.0.16:40874 (inbound), 269 172.28.0.14:35962 (inbound), 269 172.28.0.8:38100 (inbound), 269 172.28.0.13:48670 (inbound), 269 172.28.0.18:34984 (inbound), 268 172.28.0.3:47454 (inbound), 268 172.28.0.6:44446 (inbound), 268 172.28.0.4:35842 (inbound), 269 172.28.0.5:40688 (inbound), 268 172.28.0.9:42380 (inbound), 268 172.28.0.10:41398 (inbound), 268 172.28.0.12:59628 (inbound), 268 172.28.0.15:55624 (inbound), 269 172.28.0.2:46298 (inbound), 269 172.28.0.3:10015 (outbound), 269 172.28.0.5:10015 (outbound), 269 172.28.0.2:10015 (outbound), 268 172.28.0.4:10015 (outbound), 268 172.28.0.6:10015 (outbound), 269 172.28.0.8:10015 (outbound)]
+2019/05/08 18:36:52.106895 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:52.108143 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:36:57.111729 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:36:57.112099 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:02.141786 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:37:02.142275 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:03.315711 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: adae14ea58cf7d064e56088df369794dcc325447996452decdc791c830815041
+2019/05/08 18:37:03.504637 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: adae14ea58cf7d064e56088df369794dcc325447996452decdc791c830815041
+2019/05/08 18:37:03.504677 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 270
+2019/05/08 18:37:07.152846 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:37:07.153948 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:08.652501 [1;35m[INF][m GID 62, Lost peer 172.28.0.2:46298 (inbound)
+2019/05/08 18:37:10.322304 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 78be4193433cc53f3a983f0e479c276bd418d00924cc577c66896ff40bf83484
+2019/05/08 18:37:10.928508 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 78be4193433cc53f3a983f0e479c276bd418d00924cc577c66896ff40bf83484
+2019/05/08 18:37:10.928602 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 271
+2019/05/08 18:37:12.180275 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:37:12.190542 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:13.675621 [1;35m[INF][m GID 62, New valid peer 172.28.0.2:48408 (inbound)
+2019/05/08 18:37:17.219791 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:37:17.222350 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:18.655913 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8a63f430f37873d21522c5dbea1eced1d220cf6560d22f0c9109c181201ca16c
+2019/05/08 18:37:18.855783 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8a63f430f37873d21522c5dbea1eced1d220cf6560d22f0c9109c181201ca16c
+2019/05/08 18:37:18.855857 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 272
+2019/05/08 18:37:20.796018 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:37:20.796304 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:25.362260 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 09605610f9406c93086c3425e4d80755e90db24298edd64a820b6e18068bc320
+2019/05/08 18:37:25.533638 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 09605610f9406c93086c3425e4d80755e90db24298edd64a820b6e18068bc320
+2019/05/08 18:37:25.533789 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 273
+2019/05/08 18:37:25.804176 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:37:25.804438 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:30.863405 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:37:30.863981 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:31.901945 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: ee2060f1b7ee03c22fa6b08de370bc8b097431a10cb1e509590c6f66bd9501eb
+2019/05/08 18:37:32.022183 [1;35m[INF][m GID 6815, 172.28.0.8:38100 (inbound) sent a reject message Code: REJECT_INVALID, Hash ee2060f1b7ee03c22fa6b08de370bc8b097431a10cb1e509590c6f66bd9501eb, Reason: Rejected block ee2060f1b7ee03c22fa6b08de370bc8b097431a10cb1e509590c6f66bd9501eb from 172.28.0.7:10015 (outbound): duplicate block in pool
+2019/05/08 18:37:32.143022 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: ee2060f1b7ee03c22fa6b08de370bc8b097431a10cb1e509590c6f66bd9501eb
+2019/05/08 18:37:32.146058 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 274
+2019/05/08 18:37:35.867701 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:37:35.868152 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:35.973509 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:37:35.976657 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: 84dbd1aff2b478633aafdba5dd408e371d994765cd3574deca38fc1a6db91dba
+2019/05/08 18:37:35.981520 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:36.037498 [1;35m[INF][m GID 6718, 172.28.0.5:40688 (inbound) sent a reject message Code: REJECT_INVALID, Hash 84dbd1aff2b478633aafdba5dd408e371d994765cd3574deca38fc1a6db91dba, Reason: Rejected block 84dbd1aff2b478633aafdba5dd408e371d994765cd3574deca38fc1a6db91dba from 172.28.0.7:10015 (outbound): duplicate block in pool
+2019/05/08 18:37:36.058125 [1;35m[INF][m GID 6627, 172.28.0.4:35842 (inbound) sent a reject message Code: REJECT_INVALID, Hash 84dbd1aff2b478633aafdba5dd408e371d994765cd3574deca38fc1a6db91dba, Reason: Rejected block 84dbd1aff2b478633aafdba5dd408e371d994765cd3574deca38fc1a6db91dba from 172.28.0.7:10015 (outbound): duplicate block in pool
+2019/05/08 18:37:36.203587 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 84dbd1aff2b478633aafdba5dd408e371d994765cd3574deca38fc1a6db91dba
+2019/05/08 18:37:36.203638 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 275
+2019/05/08 18:37:41.037489 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:37:41.037639 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:44.766665 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8e839fbbe2a24142a32772d30c86ecc23677120ce91834b98efa7badcac0a4ac
+2019/05/08 18:37:45.006448 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8e839fbbe2a24142a32772d30c86ecc23677120ce91834b98efa7badcac0a4ac
+2019/05/08 18:37:45.006894 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 276
+2019/05/08 18:37:46.077459 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:37:46.077742 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:37:48.465 [INF] STAT: -> 276 [273 172.28.0.12:59628 (inbound), 273 172.28.0.15:55624 (inbound), 276 172.28.0.8:38100 (inbound), 273 172.28.0.11:57562 (inbound), 273 172.28.0.16:40874 (inbound), 275 172.28.0.14:35962 (inbound), 275 172.28.0.18:34984 (inbound), 275 172.28.0.2:48408 (inbound), 275 172.28.0.13:48670 (inbound), 275 172.28.0.5:40688 (inbound), 274 172.28.0.9:42380 (inbound), 275 172.28.0.10:41398 (inbound), 273 172.28.0.3:47454 (inbound), 273 172.28.0.6:44446 (inbound), 274 172.28.0.4:35842 (inbound), 275 172.28.0.3:10015 (outbound), 275 172.28.0.5:10015 (outbound), 275 172.28.0.2:10015 (outbound), 273 172.28.0.4:10015 (outbound), 274 172.28.0.6:10015 (outbound), 275 172.28.0.8:10015 (outbound)]
+2019/05/08 18:37:51.084514 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:37:51.085515 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:37:54.904972 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d710c199a5a1dc53c8897eb495d1a561efc6f8a0840e89c3d95d29570cf7cb36
+2019/05/08 18:37:55.095866 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d710c199a5a1dc53c8897eb495d1a561efc6f8a0840e89c3d95d29570cf7cb36
+2019/05/08 18:37:55.095947 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 277
+2019/05/08 18:37:56.113418 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:37:56.115371 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:01.120817 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:38:01.122455 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:06.126093 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:38:06.129709 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:07.133596 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 0c233af09ed2e8934a1654dd3e1596ddb264a16b0c05136df074ced9ea03ed10
+2019/05/08 18:38:07.405635 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 0c233af09ed2e8934a1654dd3e1596ddb264a16b0c05136df074ced9ea03ed10
+2019/05/08 18:38:07.405772 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 278
+2019/05/08 18:38:11.151025 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:38:11.151564 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:13.875406 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: e2caefff7ee90ddad1da288f27a08a734684397b4f2467b706e03069bc27e4f4
+2019/05/08 18:38:14.014406 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: e2caefff7ee90ddad1da288f27a08a734684397b4f2467b706e03069bc27e4f4
+2019/05/08 18:38:14.016554 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 279
+2019/05/08 18:38:16.166991 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:38:16.167681 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:16.801141 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 74128cf0bb35c07075b506a1585d30c4bfaa6054a95018de1b168ad0139d2198
+2019/05/08 18:38:17.082826 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 74128cf0bb35c07075b506a1585d30c4bfaa6054a95018de1b168ad0139d2198
+2019/05/08 18:38:17.082997 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 280
+2019/05/08 18:38:20.319275 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: b3434d942448d1684f1c25c8cf2c7b0571c08e992188bc3e0371b45f57a6b00e
+2019/05/08 18:38:20.613861 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: b3434d942448d1684f1c25c8cf2c7b0571c08e992188bc3e0371b45f57a6b00e
+2019/05/08 18:38:20.621687 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 281
+2019/05/08 18:38:21.175579 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:38:21.175827 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:26.191708 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:38:26.194366 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:29.947260 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 05fa8364a26297277d16f1630e9e889aaee50011175cf62b2241f11ee9f0df21
+2019/05/08 18:38:30.165764 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 05fa8364a26297277d16f1630e9e889aaee50011175cf62b2241f11ee9f0df21
+2019/05/08 18:38:30.166089 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 282
+2019/05/08 18:38:31.275165 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:38:31.275403 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:35.962866 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: c6a9d37d8934e4d4174454c532518546715c94a4187494ef7a9f60e684faf0fc
+2019/05/08 18:38:36.109874 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: c6a9d37d8934e4d4174454c532518546715c94a4187494ef7a9f60e684faf0fc
+2019/05/08 18:38:36.117859 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 283
+2019/05/08 18:38:36.295035 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:38:36.295837 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:41.299910 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:38:41.300161 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:46.071925 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 69c21499f824389c280dedb41d56d549ed126a358ad09df497c23d86cdd94120
+2019/05/08 18:38:46.305140 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 69c21499f824389c280dedb41d56d549ed126a358ad09df497c23d86cdd94120
+2019/05/08 18:38:46.315981 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 284
+2019/05/08 18:38:46.351385 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:38:46.351554 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:38:48.495 [INF] STAT: -> 284 [283 172.28.0.13:48670 (inbound), 283 172.28.0.18:34984 (inbound), 283 172.28.0.2:48408 (inbound), 282 172.28.0.6:44446 (inbound), 282 172.28.0.4:35842 (inbound), 283 172.28.0.5:40688 (inbound), 282 172.28.0.9:42380 (inbound), 283 172.28.0.10:41398 (inbound), 282 172.28.0.3:47454 (inbound), 282 172.28.0.15:55624 (inbound), 281 172.28.0.12:59628 (inbound), 281 172.28.0.16:40874 (inbound), 283 172.28.0.14:35962 (inbound), 283 172.28.0.8:38100 (inbound), 282 172.28.0.11:57562 (inbound), 283 172.28.0.3:10015 (outbound), 283 172.28.0.5:10015 (outbound), 283 172.28.0.2:10015 (outbound), 282 172.28.0.4:10015 (outbound), 282 172.28.0.6:10015 (outbound), 283 172.28.0.8:10015 (outbound)]
+2019/05/08 18:38:51.366870 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:38:51.372747 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:53.531869 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: a081c56214ed1d83dec9960ffca53d4bed069ad2c2ad24861ebc0613bb3f6343
+2019/05/08 18:38:53.668445 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: a081c56214ed1d83dec9960ffca53d4bed069ad2c2ad24861ebc0613bb3f6343
+2019/05/08 18:38:53.668491 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 285
+2019/05/08 18:38:54.255841 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:38:54.261575 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:55.054291 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:38:55.054985 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: c63b04109521dd807bb92058783678ecc9dc601e8ff12954934c01dddf3e3668
+2019/05/08 18:38:55.055484 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:38:55.197777 [1;35m[INF][m GID 6294, 172.28.0.3:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash c63b04109521dd807bb92058783678ecc9dc601e8ff12954934c01dddf3e3668, Reason: Rejected block c63b04109521dd807bb92058783678ecc9dc601e8ff12954934c01dddf3e3668 from 172.28.0.7:57198 (inbound): duplicate block in pool
+2019/05/08 18:38:55.247676 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: c63b04109521dd807bb92058783678ecc9dc601e8ff12954934c01dddf3e3668
+2019/05/08 18:38:55.247920 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 286
+2019/05/08 18:39:00.070212 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:00.070880 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:05.077909 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:05.078656 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:06.315463 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:39:06.338902 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: 55d7e11d62af92f1c480e45548f4e9519b038fa48e9d97fe9654b77269a25b74
+2019/05/08 18:39:06.339836 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:06.703643 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 55d7e11d62af92f1c480e45548f4e9519b038fa48e9d97fe9654b77269a25b74
+2019/05/08 18:39:06.711009 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 287
+2019/05/08 18:39:09.435696 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 98c61d1bd5d922ca65bd78b36fa6f2d003d9ef45d1a63c7d13b8ff5db47b9afc
+2019/05/08 18:39:09.646261 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 98c61d1bd5d922ca65bd78b36fa6f2d003d9ef45d1a63c7d13b8ff5db47b9afc
+2019/05/08 18:39:09.659801 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 288
+2019/05/08 18:39:11.341453 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:11.341575 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:16.343824 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:16.346888 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:21.352495 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:21.353501 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:26.359114 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:26.359378 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:31.365049 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:31.367316 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:36.374073 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:36.374306 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:37.986754 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: ba758b1e5ff91cbbf357daf5520a780e114fae2a437944f0b09db612820d90bc
+2019/05/08 18:39:38.155590 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: ba758b1e5ff91cbbf357daf5520a780e114fae2a437944f0b09db612820d90bc
+2019/05/08 18:39:38.155841 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 289
+2019/05/08 18:39:41.374854 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:41.375002 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:44.489459 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 041f4580a820751872cb3049a3a6a38e6d895c5bc33e830dfd0cebfe868b0677
+2019/05/08 18:39:44.684122 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 041f4580a820751872cb3049a3a6a38e6d895c5bc33e830dfd0cebfe868b0677
+2019/05/08 18:39:44.685173 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 290
+2019/05/08 18:39:46.480125 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:46.480488 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:39:48.455 [INF] STAT: -> 290 [288 172.28.0.12:59628 (inbound), 288 172.28.0.15:55624 (inbound), 289 172.28.0.14:35962 (inbound), 290 172.28.0.8:38100 (inbound), 288 172.28.0.11:57562 (inbound), 288 172.28.0.16:40874 (inbound), 289 172.28.0.13:48670 (inbound), 289 172.28.0.18:34984 (inbound), 289 172.28.0.2:48408 (inbound), 288 172.28.0.4:35842 (inbound), 289 172.28.0.5:40688 (inbound), 288 172.28.0.9:42380 (inbound), 288 172.28.0.10:41398 (inbound), 288 172.28.0.3:47454 (inbound), 288 172.28.0.6:44446 (inbound), 288 172.28.0.4:10015 (outbound), 288 172.28.0.6:10015 (outbound), 289 172.28.0.8:10015 (outbound), 289 172.28.0.3:10015 (outbound), 289 172.28.0.5:10015 (outbound), 289 172.28.0.2:10015 (outbound)]
+2019/05/08 18:39:49.584607 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 662fb094f606d7c34dd87ca0d12b13ea9a475fd4affc0293064959f651c179e7
+2019/05/08 18:39:49.837378 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 662fb094f606d7c34dd87ca0d12b13ea9a475fd4affc0293064959f651c179e7
+2019/05/08 18:39:49.839676 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 291
+2019/05/08 18:39:51.500890 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:51.501186 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:56.506474 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:39:56.507265 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:39:58.541868 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 534e7230003a43ff6758fd809c31d0af1c858c32e384e5d08db06ce149d5cb74
+2019/05/08 18:39:58.838411 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 534e7230003a43ff6758fd809c31d0af1c858c32e384e5d08db06ce149d5cb74
+2019/05/08 18:39:58.838508 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 292
+2019/05/08 18:40:01.561936 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:01.572883 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:40:06.618083 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:06.618895 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:40:11.624163 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:11.624605 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:40:16.628972 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:16.629155 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:40:18.255806 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: f7aa87e4f4c299c2febced92231cd0ad153c35d3b1e29fc76eab7889a38216ef
+2019/05/08 18:40:18.425978 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: f7aa87e4f4c299c2febced92231cd0ad153c35d3b1e29fc76eab7889a38216ef
+2019/05/08 18:40:18.430483 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 293
+2019/05/08 18:40:21.644558 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:21.646250 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:40:23.842833 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:40:23.859321 [1;35m[INF][m GID 248, [ConfirmBlock] block hash: 5fa8660b26b2bb9b9d8e13eaf9196d5b13c3be61b3667df9789cdf8b0d18fdb3
+2019/05/08 18:40:23.862360 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:40:23.976338 [1;35m[INF][m GID 4133, 172.28.0.3:47454 (inbound) sent a reject message Code: REJECT_INVALID, Hash 5fa8660b26b2bb9b9d8e13eaf9196d5b13c3be61b3667df9789cdf8b0d18fdb3, Reason: Rejected block 5fa8660b26b2bb9b9d8e13eaf9196d5b13c3be61b3667df9789cdf8b0d18fdb3 from 172.28.0.7:10015 (outbound): duplicate block in pool
+2019/05/08 18:40:24.082828 [1;35m[INF][m GID 6561, 172.28.0.4:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash 5fa8660b26b2bb9b9d8e13eaf9196d5b13c3be61b3667df9789cdf8b0d18fdb3, Reason: Rejected block 5fa8660b26b2bb9b9d8e13eaf9196d5b13c3be61b3667df9789cdf8b0d18fdb3 from 172.28.0.7:58524 (inbound): duplicate block in pool
+2019/05/08 18:40:24.086782 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 5fa8660b26b2bb9b9d8e13eaf9196d5b13c3be61b3667df9789cdf8b0d18fdb3
+2019/05/08 18:40:24.089244 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 294
+2019/05/08 18:40:28.872376 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:28.872797 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:40:32.005942 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 572b185009362d607a464ef2aacb98d50353eb0f15caeba2aaef29b3cc4cbed5
+2019/05/08 18:40:32.175811 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 572b185009362d607a464ef2aacb98d50353eb0f15caeba2aaef29b3cc4cbed5
+2019/05/08 18:40:32.175996 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 295
+2019/05/08 18:40:33.883316 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:33.883836 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:40:38.946310 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:38.946695 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:40:42.413558 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: b110657290ea3baa1e4be1536782659964373ea84c6f3d26dca1f1ceacd608e5
+2019/05/08 18:40:42.506487 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: b110657290ea3baa1e4be1536782659964373ea84c6f3d26dca1f1ceacd608e5
+2019/05/08 18:40:42.506841 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 296
+2019/05/08 18:40:43.949491 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:43.950512 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:40:48.463 [INF] STAT: -> 296 [296 172.28.0.2:48408 (inbound), 295 172.28.0.13:48670 (inbound), 295 172.28.0.18:34984 (inbound), 295 172.28.0.10:41398 (inbound), 294 172.28.0.3:47454 (inbound), 294 172.28.0.6:44446 (inbound), 295 172.28.0.4:35842 (inbound), 295 172.28.0.5:40688 (inbound), 295 172.28.0.9:42380 (inbound), 294 172.28.0.12:59628 (inbound), 294 172.28.0.15:55624 (inbound), 294 172.28.0.11:57562 (inbound), 294 172.28.0.16:40874 (inbound), 295 172.28.0.14:35962 (inbound), 296 172.28.0.8:38100 (inbound), 295 172.28.0.3:10015 (outbound), 295 172.28.0.5:10015 (outbound), 296 172.28.0.2:10015 (outbound), 294 172.28.0.4:10015 (outbound), 295 172.28.0.6:10015 (outbound), 296 172.28.0.8:10015 (outbound)]
+2019/05/08 18:40:48.977673 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:48.977879 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:40:53.994785 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:53.995234 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:40:57.549030 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 37b49b55b597ea3a0f78e55189c354904aa4f23600402c8e6899342b60f96d07
+2019/05/08 18:40:58.007978 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 37b49b55b597ea3a0f78e55189c354904aa4f23600402c8e6899342b60f96d07
+2019/05/08 18:40:58.014979 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 297
+2019/05/08 18:40:59.001019 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:40:59.002705 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:00.007838 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: e73b365390a636a4b4c107c9dacab15f82c451bb037d4d2aa09626eaeea152ed
+2019/05/08 18:41:00.095281 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: e73b365390a636a4b4c107c9dacab15f82c451bb037d4d2aa09626eaeea152ed
+2019/05/08 18:41:00.147822 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 298
+2019/05/08 18:41:04.015162 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:41:04.015443 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:09.024584 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:41:09.024813 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:14.046441 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:41:14.046668 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:16.009263 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 770d99daa7e11d9bc4e1204f00a9e6fff1a31724aeb5fa9f0e161d1bd6656978
+2019/05/08 18:41:16.091793 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 770d99daa7e11d9bc4e1204f00a9e6fff1a31724aeb5fa9f0e161d1bd6656978
+2019/05/08 18:41:16.101907 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 299
+2019/05/08 18:41:19.047595 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:41:19.048037 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:24.097178 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:41:24.097574 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:26.245328 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 96d476b1b283b07fbf623cece4d6ae901f451a39167eb259c8de2ee919e73ed6
+2019/05/08 18:41:26.399050 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 96d476b1b283b07fbf623cece4d6ae901f451a39167eb259c8de2ee919e73ed6
+2019/05/08 18:41:26.399219 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 300
+2019/05/08 18:41:29.127522 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:41:29.127750 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:34.133986 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:41:34.135714 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:35.841738 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: ce361ca5a64595bb8766115c85545795553375cba6b39d4bc38e711f6c4e9067
+2019/05/08 18:41:36.096614 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: ce361ca5a64595bb8766115c85545795553375cba6b39d4bc38e711f6c4e9067
+2019/05/08 18:41:36.103796 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 301
+2019/05/08 18:41:37.937718 [1;35m[INF][m GID 248, <================Solved Block==============>
+2019/05/08 18:41:37.943536 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:38.223918 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 97478863191cc5b83abf19c7350f275e219562219e8d4026b4c522d116041a42
+2019/05/08 18:41:38.446762 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 97478863191cc5b83abf19c7350f275e219562219e8d4026b4c522d116041a42
+2019/05/08 18:41:38.446799 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 302
+2019/05/08 18:41:42.945391 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:41:42.945813 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:47.448438 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 575dc9e58e2e191001056e9c961d77f0d841658d7915b44136b8662fadc60310
+2019/05/08 18:41:47.534913 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 575dc9e58e2e191001056e9c961d77f0d841658d7915b44136b8662fadc60310
+2019/05/08 18:41:47.535180 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 303
+2019/05/08 18:41:47.947523 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:41:47.951991 [1;35m[INF][m GID 248, difficulty:  520095999
+2019-05-08 18:41:48.456 [INF] STAT: -> 303 [300 172.28.0.15:55624 (inbound), 300 172.28.0.12:59628 (inbound), 300 172.28.0.16:40874 (inbound), 302 172.28.0.14:35962 (inbound), 302 172.28.0.8:38100 (inbound), 300 172.28.0.11:57562 (inbound), 302 172.28.0.13:48670 (inbound), 302 172.28.0.18:34984 (inbound), 302 172.28.0.2:48408 (inbound), 300 172.28.0.6:44446 (inbound), 300 172.28.0.4:35842 (inbound), 302 172.28.0.5:40688 (inbound), 300 172.28.0.9:42380 (inbound), 301 172.28.0.10:41398 (inbound), 300 172.28.0.3:47454 (inbound), 300 172.28.0.4:10015 (outbound), 300 172.28.0.6:10015 (outbound), 302 172.28.0.8:10015 (outbound), 302 172.28.0.3:10015 (outbound), 302 172.28.0.5:10015 (outbound), 302 172.28.0.2:10015 (outbound)]
+2019/05/08 18:41:52.970773 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:41:52.973214 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:54.918658 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3fcf5b66d50898157033f4b70fdbd81f6171bdd22d57e15d215ab542f1cfe73b
+2019/05/08 18:41:55.365363 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 3fcf5b66d50898157033f4b70fdbd81f6171bdd22d57e15d215ab542f1cfe73b
+2019/05/08 18:41:55.374490 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 304
+2019/05/08 18:41:55.754663 [1;35m[INF][m GID 62, Lost peer 172.28.0.18:34984 (inbound)
+2019/05/08 18:41:57.980959 [1;35m[INF][m GID 248, five second countdown ends. Re-generate block.
+2019/05/08 18:41:57.981052 [1;35m[INF][m GID 248, difficulty:  520095999
+2019/05/08 18:41:59.218637 [1;35m[INF][m GID 62, Lost peer 172.28.0.13:48670 (inbound)
+2019/05/08 18:41:59.218761 [1;35m[INF][m GID 62, Lost peer 172.28.0.15:55624 (inbound)
+2019/05/08 18:41:59.218806 [1;35m[INF][m GID 62, Lost peer 172.28.0.14:35962 (inbound)
+2019/05/08 18:41:59.394956 [1;35m[INF][m GID 62, Lost peer 172.28.0.12:59628 (inbound)
+2019/05/08 18:41:59.402640 [1;35m[INF][m GID 62, Lost peer 172.28.0.9:42380 (inbound)
+2019/05/08 18:41:59.528876 [1;35m[INF][m GID 62, Lost peer 172.28.0.10:41398 (inbound)
+2019/05/08 18:41:59.552171 [1;35m[INF][m GID 62, Lost peer 172.28.0.11:57562 (inbound)
+2019/05/08 18:41:59.776631 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d02158c5027e5e6b24a7013453cb0d563ca7597ea6fe14413522e89d9e394324
+2019/05/08 18:41:59.846837 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d02158c5027e5e6b24a7013453cb0d563ca7597ea6fe14413522e89d9e394324
+2019/05/08 18:41:59.851146 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 305
+2019/05/08 18:42:01.016332 [1;35m[INF][m GID 62, Lost peer 172.28.0.4:35842 (inbound)
+2019/05/08 18:42:01.016613 [1;35m[INF][m GID 62, Lost peer 172.28.0.4:10015 (outbound)
+2019/05/08 18:42:01.973485 [1;35m[INF][m GID 62, Lost peer 172.28.0.5:40688 (inbound)
+2019/05/08 18:42:01.974293 [1;35m[INF][m GID 62, Lost peer 172.28.0.5:10015 (outbound)

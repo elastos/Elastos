@@ -1,0 +1,18 @@
+{
+  "privateKey": "1d5fdc0ad6b0b90e212042f850c0ab1e7d9fafcbd7a89e6da8ff64e8e5c490d2",
+  "settings": {
+    "privateKey": "78F3F61DE57C2058FAB709641EAB8880F2312702896F5599FB4A714EBCF3CFFC",
+    "info": {
+      "Tag": "DID Property",
+      "Ver": "1.0",
+      "Status": 1,
+      "Properties": [
+        {
+          "Key": "clark",
+          "Value": "hello,world",
+          "Status": 1
+        }
+      ]
+    }
+  }
+}

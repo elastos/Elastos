@@ -1,0 +1,186 @@
+2019/05/08 17:53:30.993574 [1;35m[INF][m GID 1, Node version: 
+2019/05/08 17:53:30.993927 [1;35m[INF][m GID 1, go version go1.11.5 linux/amd64
+2019/05/08 17:53:31.046170 [1;35m[INF][m GID 1, current block height -> 0
+2019/05/08 17:53:31.046593 [1;35m[INF][m GID 1, Start the P2P networks
+2019/05/08 17:53:31.046625 [1;35m[INF][m GID 1, Start services
+2019/05/08 17:53:31.051463 [1;35m[INF][m GID 67, New valid peer 172.28.0.6:48720 (inbound)
+2019/05/08 17:53:31.051826 [1;35m[INF][m GID 67, New valid peer 172.28.0.8:10015 (outbound)
+2019/05/08 17:53:31.051850 [1;35m[INF][m GID 67, New valid peer 172.28.0.3:10015 (outbound)
+2019/05/08 17:53:31.051869 [1;35m[INF][m GID 67, New valid peer 172.28.0.2:10015 (outbound)
+2019/05/08 17:53:31.052252 [1;35m[INF][m GID 67, New valid peer 172.28.0.6:10015 (outbound)
+2019/05/08 17:53:31.564936 [1;35m[INF][m GID 67, New valid peer 172.28.0.5:10015 (outbound)
+2019/05/08 17:53:31.566302 [1;35m[INF][m GID 67, New valid peer 172.28.0.5:46762 (inbound)
+2019/05/08 17:53:31.992531 [1;35m[INF][m GID 67, New valid peer 172.28.0.7:47420 (inbound)
+2019/05/08 17:53:31.995417 [1;35m[INF][m GID 67, New valid peer 172.28.0.7:10015 (outbound)
+2019/05/08 17:53:33.001546 [1;35m[INF][m GID 67, New valid peer 172.28.0.9:59898 (inbound)
+2019/05/08 17:53:33.428863 [1;35m[INF][m GID 67, New valid peer 172.28.0.14:34506 (inbound)
+2019/05/08 17:53:33.960678 [1;35m[INF][m GID 67, New valid peer 172.28.0.10:60946 (inbound)
+2019/05/08 17:53:34.982807 [1;35m[INF][m GID 67, New valid peer 172.28.0.11:49792 (inbound)
+2019/05/08 17:53:35.995149 [1;35m[INF][m GID 67, New valid peer 172.28.0.3:47854 (inbound)
+2019/05/08 17:53:36.048096 [1;35m[INF][m GID 1, Start consensus
+2019/05/08 17:53:36.048232 [1;35m[INF][m GID 1, Start POW Services
+2019/05/08 17:53:36.048318 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:53:36.131928 [1;35m[INF][m GID 67, New valid peer 172.28.0.12:36636 (inbound)
+2019/05/08 17:53:37.472643 [1;35m[INF][m GID 67, New valid peer 172.28.0.13:54202 (inbound)
+2019/05/08 17:53:39.458888 [1;35m[INF][m GID 355, <================Solved Block==============>
+2019/05/08 17:53:39.463280 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:53:40.112224 [1;35m[INF][m GID 67, New valid peer 172.28.0.15:47248 (inbound)
+2019/05/08 17:53:42.998215 [1;35m[INF][m GID 67, New valid peer 172.28.0.16:34712 (inbound)
+2019/05/08 17:53:44.484623 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:53:44.485277 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:53:45.332831 [1;35m[INF][m GID 67, New valid peer 172.28.0.21:59012 (inbound)
+2019/05/08 17:53:49.502529 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:53:49.504077 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:53:52.172411 [1;35m[INF][m GID 355, <================Solved Block==============>
+2019/05/08 17:53:52.172991 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:53:54.777046 [1;35m[INF][m GID 355, <================Solved Block==============>
+2019/05/08 17:53:54.821915 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:53:59.836657 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:53:59.839397 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:04.861003 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:54:04.862111 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:09.867267 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:54:09.870741 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:14.878689 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:54:14.888379 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:19.888869 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:54:19.889053 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:24.907493 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:54:24.907967 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:25.741120 [1;35m[INF][m GID 355, <================Solved Block==============>
+2019/05/08 17:54:25.750371 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:30.752836 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:54:30.753257 [1;35m[INF][m GID 355, difficulty:  520095999
+2019-05-08 17:54:31.057 [INF] STAT: -> 7 [4 172.28.0.5:46762 (inbound), 4 172.28.0.7:47420 (inbound), 4 172.28.0.10:60946 (inbound), 4 172.28.0.11:49792 (inbound), 5 172.28.0.15:47248 (inbound), 5 172.28.0.21:59012 (inbound), 4 172.28.0.6:48720 (inbound), 4 172.28.0.9:59898 (inbound), 4 172.28.0.14:34506 (inbound), 4 172.28.0.3:47854 (inbound), 4 172.28.0.12:36636 (inbound), 4 172.28.0.13:54202 (inbound), 5 172.28.0.16:34712 (inbound), 4 172.28.0.8:10015 (outbound), 4 172.28.0.3:10015 (outbound), 4 172.28.0.2:10015 (outbound), 7 172.28.0.6:10015 (outbound), 4 172.28.0.5:10015 (outbound), 4 172.28.0.7:10015 (outbound)]
+2019/05/08 17:54:35.757298 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:54:35.757603 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:39.970980 [1;35m[INF][m GID 67, FORK: Block 8e4a8ba62737448d49741981de661da200462665440d906186fd8b9bfb7b7880 forks the chain at height 8/block d2de7754dd1ac499932e29a835337b7e532edb30aee0a10834ab153fc53e535d, but does not cause a reorganize
+2019/05/08 17:54:40.072146 [1;35m[INF][m GID 67, Lost peer 172.28.0.2:10015 (outbound)
+2019/05/08 17:54:40.072943 [1;35m[INF][m GID 67, Lost peer 172.28.0.21:59012 (inbound)
+2019/05/08 17:54:40.861767 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:54:40.864869 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:45.112319 [1;35m[INF][m GID 67, New valid peer 172.28.0.21:59150 (inbound)
+2019/05/08 17:54:45.191077 [1;35m[INF][m GID 67, New valid peer 172.28.0.2:10015 (outbound)
+2019/05/08 17:54:46.035473 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:54:46.035831 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:46.059182 [1;35m[INF][m GID 355, <================Solved Block==============>
+2019/05/08 17:54:46.059684 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:46.161639 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash 84346da8c62b35eb110acb5f816ad86f799b395f2b32729959386cfe47e8b7de, Reason: Rejected block 84346da8c62b35eb110acb5f816ad86f799b395f2b32729959386cfe47e8b7de from 172.28.0.4:52916 (inbound): can't rollback to height: 8
+2019/05/08 17:54:51.100051 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:54:51.100303 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:54:56.106538 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:54:56.106816 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:55:01.161669 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:01.164040 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:55:06.184030 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:06.184877 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:55:11.203872 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:11.205900 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:55:16.249058 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:16.249614 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:55:21.322207 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:21.322609 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:55:26.328028 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:26.328298 [1;35m[INF][m GID 355, difficulty:  520095999
+2019-05-08 17:55:31.053 [INF] STAT: -> 12 [12 172.28.0.3:47854 (inbound), 12 172.28.0.12:36636 (inbound), 12 172.28.0.13:54202 (inbound), 12 172.28.0.16:34712 (inbound), 12 172.28.0.21:59150 (inbound), 12 172.28.0.6:48720 (inbound), 12 172.28.0.9:59898 (inbound), 12 172.28.0.14:34506 (inbound), 12 172.28.0.11:49792 (inbound), 12 172.28.0.15:47248 (inbound), 12 172.28.0.5:46762 (inbound), 8 172.28.0.7:47420 (inbound), 12 172.28.0.10:60946 (inbound), 12 172.28.0.8:10015 (outbound), 12 172.28.0.3:10015 (outbound), 12 172.28.0.2:10015 (outbound), 12 172.28.0.6:10015 (outbound), 12 172.28.0.5:10015 (outbound), 8 172.28.0.7:10015 (outbound)]
+2019/05/08 17:55:31.338404 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:31.339450 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:55:32.725113 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash d00e2bada8e69fe29a319ed0518f0f68c2488a96b108bdae2a4d058af75ba3c7, Reason: Rejected block d00e2bada8e69fe29a319ed0518f0f68c2488a96b108bdae2a4d058af75ba3c7 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:55:35.988546 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash 9b4c0185ef6355fda33612ab4c76210fb825e23c6df4313ad4a3822d8c64d72c, Reason: Rejected block 9b4c0185ef6355fda33612ab4c76210fb825e23c6df4313ad4a3822d8c64d72c from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:55:36.342553 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:36.342802 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:55:41.349206 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:41.351132 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:55:46.167220 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash 1a7e0d2e2c6d30bbdfa4c97c90dc93ee46d17d55594fc1592d3474246412cfc0, Reason: Rejected block 1a7e0d2e2c6d30bbdfa4c97c90dc93ee46d17d55594fc1592d3474246412cfc0 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:55:46.356789 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:46.357020 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:55:51.363510 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:51.363716 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:55:56.379419 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:55:56.379712 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:56:01.407192 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:01.407614 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:56:06.409779 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:06.410271 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:56:11.445949 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:11.455775 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:56:16.458770 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:16.459769 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:56:20.711610 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash 584470c6bc9ea6062571ec11d5018a61b7c52749969ae18cde0451c58a623521, Reason: Rejected block 584470c6bc9ea6062571ec11d5018a61b7c52749969ae18cde0451c58a623521 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:56:21.465643 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:21.465932 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:56:26.521409 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:26.522416 [1;35m[INF][m GID 355, difficulty:  520095999
+2019-05-08 17:56:31.059 [INF] STAT: -> 16 [15 172.28.0.10:60946 (inbound), 15 172.28.0.11:49792 (inbound), 15 172.28.0.15:47248 (inbound), 15 172.28.0.5:46762 (inbound), 8 172.28.0.7:47420 (inbound), 15 172.28.0.14:34506 (inbound), 15 172.28.0.3:47854 (inbound), 15 172.28.0.12:36636 (inbound), 15 172.28.0.13:54202 (inbound), 15 172.28.0.16:34712 (inbound), 15 172.28.0.21:59150 (inbound), 16 172.28.0.6:48720 (inbound), 15 172.28.0.9:59898 (inbound), 16 172.28.0.3:10015 (outbound), 15 172.28.0.2:10015 (outbound), 15 172.28.0.6:10015 (outbound), 15 172.28.0.5:10015 (outbound), 8 172.28.0.7:10015 (outbound), 16 172.28.0.8:10015 (outbound)]
+2019/05/08 17:56:31.526878 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:31.527252 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:56:36.533115 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:36.533541 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:56:41.535168 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash e5f6d1b6f66986f0a37adae6d8982a1b5778ab0d03824977a1dcdde284833f1f, Reason: Rejected block e5f6d1b6f66986f0a37adae6d8982a1b5778ab0d03824977a1dcdde284833f1f from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:56:41.545298 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:41.545460 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:56:46.545917 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:46.563451 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:56:49.866145 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash c6bea3d6dbb8c175f0adb245eb6dbaf803c736143b20c82abb67a7439a1e7276, Reason: Rejected block c6bea3d6dbb8c175f0adb245eb6dbaf803c736143b20c82abb67a7439a1e7276 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:56:51.595387 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:51.595628 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:56:54.907499 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash 1c6a8d07f1e590c5ca412d0b2c693f46f2a870cf8646d10428eaa17319008a3c, Reason: Rejected block 1c6a8d07f1e590c5ca412d0b2c693f46f2a870cf8646d10428eaa17319008a3c from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:56:56.609760 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:56:56.610000 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:01.623124 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:01.623349 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:06.780886 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:06.781161 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:11.804787 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:11.807823 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:16.812634 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:16.817742 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:21.820497 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:21.826780 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:26.879074 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:26.879361 [1;35m[INF][m GID 355, difficulty:  520095999
+2019-05-08 17:57:31.100 [INF] STAT: -> 19 [19 172.28.0.11:49792 (inbound), 19 172.28.0.15:47248 (inbound), 19 172.28.0.5:46762 (inbound), 8 172.28.0.7:47420 (inbound), 19 172.28.0.10:60946 (inbound), 19 172.28.0.3:47854 (inbound), 19 172.28.0.12:36636 (inbound), 19 172.28.0.13:54202 (inbound), 19 172.28.0.16:34712 (inbound), 19 172.28.0.21:59150 (inbound), 19 172.28.0.6:48720 (inbound), 19 172.28.0.9:59898 (inbound), 19 172.28.0.14:34506 (inbound), 19 172.28.0.8:10015 (outbound), 19 172.28.0.3:10015 (outbound), 19 172.28.0.2:10015 (outbound), 19 172.28.0.6:10015 (outbound), 19 172.28.0.5:10015 (outbound), 8 172.28.0.7:10015 (outbound)]
+2019/05/08 17:57:31.881547 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:31.881824 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:36.886341 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:36.886725 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:39.138894 [1;35m[INF][m GID 355, <================Solved Block==============>
+2019/05/08 17:57:39.173679 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:39.314839 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash c565016abdddce306810f1e35df10f3cf6a14f2ebbc45c07ccaa07c50c5c69f0, Reason: Rejected block c565016abdddce306810f1e35df10f3cf6a14f2ebbc45c07ccaa07c50c5c69f0 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:57:43.591324 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash 6164df25ed121f96025b8627969ee90f69090a38131d2c1f0ab77694d3dcf9f8, Reason: Rejected block 6164df25ed121f96025b8627969ee90f69090a38131d2c1f0ab77694d3dcf9f8 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:57:44.217367 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:44.217759 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:49.270458 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:49.270694 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:54.375761 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:54.376944 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:57:59.485255 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:57:59.486857 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:58:01.406129 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash e4f399a6dab2f1eba1d2334184de437e6c89f46577cd1317d92043216845ee46, Reason: Rejected block e4f399a6dab2f1eba1d2334184de437e6c89f46577cd1317d92043216845ee46 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:58:04.535201 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:58:04.535408 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:58:08.584796 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash d6d5aebda855ba8b4946f7ce9817470c262f05e706afdb532b38d984004c049c, Reason: Rejected block d6d5aebda855ba8b4946f7ce9817470c262f05e706afdb532b38d984004c049c from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:58:09.563311 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:58:09.564066 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:58:14.583618 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:58:14.585166 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:58:14.585023 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash 0cd7dd5735a9a75ff0deacfdfc199ac6cf638dc12ea76d0adba9437cdd52b309, Reason: Rejected block 0cd7dd5735a9a75ff0deacfdfc199ac6cf638dc12ea76d0adba9437cdd52b309 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:58:17.996522 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash 6a86dda199f24f10d97aae4a8e08ca07ba3cfe4bf52de26b45b15456153d18c6, Reason: Rejected block 6a86dda199f24f10d97aae4a8e08ca07ba3cfe4bf52de26b45b15456153d18c6 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:58:19.593729 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:58:19.594085 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:58:20.606730 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash 5532ac18cb9238615224866cd0e2ccf8a80b53d4eada4844dbb68e32a886eea8, Reason: Rejected block 5532ac18cb9238615224866cd0e2ccf8a80b53d4eada4844dbb68e32a886eea8 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:58:22.424442 [1;35m[INF][m GID 355, <================Solved Block==============>
+2019/05/08 17:58:22.424701 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:58:24.738424 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash dd6193f83fd298c13ca6f62ef386cfbd081362a09edff9c4edf50a775d4193b5, Reason: Rejected block dd6193f83fd298c13ca6f62ef386cfbd081362a09edff9c4edf50a775d4193b5 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:58:27.427367 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:58:27.427938 [1;35m[INF][m GID 355, difficulty:  520095999
+2019-05-08 17:58:31.109 [INF] STAT: -> 27 [23 172.28.0.15:47248 (inbound), 22 172.28.0.5:46762 (inbound), 8 172.28.0.7:47420 (inbound), 22 172.28.0.10:60946 (inbound), 22 172.28.0.11:49792 (inbound), 22 172.28.0.12:36636 (inbound), 22 172.28.0.13:54202 (inbound), 23 172.28.0.16:34712 (inbound), 24 172.28.0.21:59150 (inbound), 27 172.28.0.6:48720 (inbound), 22 172.28.0.9:59898 (inbound), 22 172.28.0.14:34506 (inbound), 22 172.28.0.3:47854 (inbound), 24 172.28.0.2:10015 (outbound), 21 172.28.0.6:10015 (outbound), 22 172.28.0.5:10015 (outbound), 8 172.28.0.7:10015 (outbound), 27 172.28.0.8:10015 (outbound), 21 172.28.0.3:10015 (outbound)]
+2019/05/08 17:58:31.585128 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash b3fd93b8d82f92e2be61bdbc79d5d043f614e1866bc1b0d491691d424002ca19, Reason: Rejected block b3fd93b8d82f92e2be61bdbc79d5d043f614e1866bc1b0d491691d424002ca19 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:58:32.440437 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:58:32.449725 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:58:35.213006 [1;35m[INF][m GID 355, <================Solved Block==============>
+2019/05/08 17:58:35.215786 [1;35m[INF][m GID 355, difficulty:  520095999
+2019/05/08 17:58:35.248075 [1;35m[INF][m GID 291, 172.28.0.7:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash ae96bfb2619b4812c64ed61bf0d5cdaa94746bf4f986a7e48ce4f95e313a08a9, Reason: Rejected block ae96bfb2619b4812c64ed61bf0d5cdaa94746bf4f986a7e48ce4f95e313a08a9 from 172.28.0.4:52916 (inbound): leveldb: not found
+2019/05/08 17:58:38.870775 [1;35m[INF][m GID 67, Lost peer 172.28.0.2:10015 (outbound)
+2019/05/08 17:58:40.235918 [1;35m[INF][m GID 355, five second countdown ends. Re-generate block.
+2019/05/08 17:58:40.236052 [1;35m[INF][m GID 355, difficulty:  520095999

@@ -1,0 +1,88 @@
+{
+    "Configuration": {
+        "Magic": 7630403,
+        "Version": 0,
+        "PrintLevel": 1,
+        "SpvPrintLevel": 4,
+        "MaxLogsSize": 0,
+        "MaxPerLogSize": 0,
+        "MainNode": {
+            "Rpc": {
+                "IpAddress": "privnet-mainchain-crc-1",
+                "HttpJsonPort": 20336,
+                "User": "",
+                "Pass": ""
+            },
+            "SpvSeedList": [
+                "privnet-mainchain-crc-1:20338"
+            ],
+            "Magic": 7630401,
+            "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw"
+        },
+        "SideNodeList": [
+            {
+                "Rpc": {
+                    "IpAddress": "privnet-sidechain-did-node",
+                    "HttpJsonPort": 20606,
+                    "User": "",
+                    "Pass": ""
+                },
+                "ExchangeRate": 1.0,
+                "GenesisBlock": "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3",
+                "MiningAddr": "EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw",
+                "PayToAddr": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+                "PowChain": true
+            },
+            {
+                "Rpc":{
+                    "IpAddress":"privnet-sidechain-token-node",
+                    "HttpJsonPort": 20616,
+                    "Pass":"",
+                    "User":""
+                },
+                "ExchangeRate": 1.0,
+                "GenesisBlock":"b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e",
+                "MiningAddr":"EamRAVSKik9XTfC485KZpxcmk4KhmPZCea",
+                "PayToAddr":"EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+                "PowChain":true
+            },
+            {
+                "Rpc":{
+                    "IpAddress":"privnet-sidechain-eth-oracle-node",
+                    "HttpJsonPort": 16666,
+                    "Pass":"",
+                    "User":""
+                },
+                "ExchangeRate": 1.0,
+                "GenesisBlock":"b0cd29490c792dbcbe75adadee415270b9e5c8ae89dfed835440f2ac606eebfc",
+                "MiningAddr":"EQDEN2Eg7EacPenfyBcaTA96PD5CBpKNTM",
+                "PayToAddr":"EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+                "PowChain":false
+            }
+        ],
+        "OriginCrossChainArbiters": [
+            "02677bd3dc8ea4a9ab22f8ba5c5348fc1ce4ba5f1810e8ec8603d5bd927b630b3e",
+            "0232d3172b7fc139b7605b83cd27e3c6f64fde1e71da2489764723639a6d40b5b9"
+        ],
+        "CRCCrossChainArbiters": [
+            "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
+            "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08"
+        ],
+        "DPoSNetAddress": "privnet-mainchain-crc-1:20339",
+        "CRCOnlyDPOSHeight": 200,
+        "SyncInterval": 1000,
+        "SideChainMonitorScanInterval": 1000,
+        "ClearTransactionInterval": 60000,
+        "MinOutbound": 3,
+        "MaxConnections": 8,
+        "SideAuxPowFee": 50000,
+        "MaxTxsPerWithdrawTx": 1000,
+        "RpcConfiguration": {
+            "User": "",
+            "Pass": "",
+            "WhiteIPList": [
+                "0.0.0.0"
+            ]
+        }
+    }
+}

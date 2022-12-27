@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-mainchain-node
+  name: privnet-mainchain-node
+spec:
+  ports:
+  - name: "20333"
+    port: 20333
+    targetPort: 20333
+  - name: "20334"
+    port: 20334
+    targetPort: 20334
+  - name: "20335"
+    port: 20335
+    targetPort: 20335
+  - name: "20336"
+    port: 20336
+    targetPort: 20336
+  - name: "20337"
+    port: 20337
+    targetPort: 20337
+  - name: "20338"
+    port: 20338
+    targetPort: 20338
+  - name: "20339"
+    port: 20339
+    targetPort: 20339
+  selector:
+    app: privnet-mainchain-node
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-mainchain-node
+  name: privnet-mainchain-node
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: privnet-mainchain-node
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: privnet-mainchain-node
+    spec:
+      containers:
+      - image: cyberrepublic/elastos-mainchain-node:privnet-v0.6
+        livenessProbe:
+          exec:
+            command:
+            - curl
+            - -H
+            - '''Content-Type:application/json'''
+            - -H
+            - '''Accept:application/json'''
+            - --data
+            - '''{"method":"getbestblockhash"}'''
+            - http://localhost:20336
+          failureThreshold: 5
+          periodSeconds: 30
+          timeoutSeconds: 120
+        name: privnet-mainchain-node
+        ports:
+        - containerPort: 20333
+        - containerPort: 20334
+        - containerPort: 20335
+        - containerPort: 20336
+        - containerPort: 20337
+        - containerPort: 20338
+        - containerPort: 20339
+        resources: {}
+        tty: true
+        volumeMounts:
+        - mountPath: /ela/elastos
+          name: privnet-mainchain-node-hostpath0
+        - mountPath: /ela/config.json
+          name: privnet-mainchain-node-hostpath1
+        - mountPath: /ela/keystore.dat
+          name: privnet-mainchain-node-hostpath2
+      restartPolicy: Always
+      volumes:
+      - hostPath:
+          path: /home/kpachhai/.volumes/elastos-privnet/mainchain-node
+        name: privnet-mainchain-node-hostpath0
+      - hostPath:
+          path: /home/kpachhai/dev/src/github.com/tuum-tech/elastos-privnet/blockchain/ela-mainchain/node_normal/mainchain-node/config.json
+        name: privnet-mainchain-node-hostpath1
+      - hostPath:
+          path: /home/kpachhai/dev/src/github.com/tuum-tech/elastos-privnet/blockchain/ela-mainchain/node_normal/mainchain-node/keystore.dat
+        name: privnet-mainchain-node-hostpath2
+status: {}

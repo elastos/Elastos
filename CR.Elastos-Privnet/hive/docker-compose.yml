@@ -1,0 +1,29 @@
+version : "3.2"
+services:
+
+  ela-hive-ipfs-peer:
+    container_name: ela-hive-ipfs-peer
+    image: cyberrepublic/ela-hive-ipfs-peer:privnet-v0.6
+    ports:  
+      - 9093:8080 
+      - 9097:8081
+      - 9098:4001
+      - 9099:5001   
+    networks:
+      - hive
+    tty: true
+
+  ela-hive-cluster:
+    container_name: ela-hive-cluster
+    image: cyberrepublic/ela-hive-cluster:privnet-v0.6
+    depends_on:
+      - ela-hive-ipfs-peer
+    ports:
+      - 9094-9096:9094-9096
+    networks:
+      - hive
+    tty: true
+
+networks:
+  hive:
+
