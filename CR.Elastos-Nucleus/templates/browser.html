@@ -1,0 +1,17 @@
+{% extends "base.html" %} 
+{% load static %}
+
+{% block scripts %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/browser.css' %}" />
+{% endblock %}
+
+{% block content %}
+    <div class="row flex-xl-nowrap browser">
+      <main class="col-12 col-xl-12 bd-content" role="main">
+          <div class="browser-content"> 
+            {% block browsertitle %}{% endblock %}
+            {% block browser %}{% endblock %}
+          </div>
+      </main>
+    </div>
+{% endblock content %}

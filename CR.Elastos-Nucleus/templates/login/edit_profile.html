@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  <title>Edit Profile - Elastos Nucleus</title>
+{% endblock title %}
+
+{% block scripts %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col text-center justify-content-center m-3 p-3" style="background-color: #242a37;">
+            <h4 class="login-header">Edit your information below</h4>
+            <form class="text-center" method="post">
+                {% csrf_token %}
+                {% for field in form.visible_fields %}
+                    <p>
+                        <span class="form-field-label">{{ field.label_tag }}</span><br>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+                <button class="register-button" type="submit" style="margin-bottom: 30px;">Change</button>
+            </form>
+        </div>
+        <div class="col text-center m-3 p-3" style="background-color: #242a37;">
+            <h4 class="login-header">User Data</h4>
+            <a href="{% url 'login:get_user_data' %}">
+            <button class="register-button">Get User Data</button>
+            </a>
+            <h4 class="login-header">Remove Account</h4>
+            <a href="{% url 'login:remove_user_data' %}">
+            <button class="register-button">Remove Account</button>
+            </a>
+        </div>
+    </div>
+{% endblock %}

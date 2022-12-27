@@ -1,0 +1,304 @@
+{% extends 'base.html' %} 
+{% load static %}
+{% load django_simple_cookie_consent_tags %}
+{% load qr_code %}
+{% block title %}
+  <title>Landing - Elastos Nucleus</title>
+    {% display_cookie_consent %}
+{% endblock title %}
+
+{% block scripts %}
+    <link href="{% static 'css/landing.css' %}" rel="stylesheet" type="text/css"/>
+    <script>
+        function myFunction() {
+            document.getElementById("myDropdown").classList.toggle("show");
+        }
+
+        window.onclick = function(e) {
+            if (!e.target.matches(".dropbtn")) {
+                var myDropdown = document.getElementById("myDropdown");
+                if (myDropdown.classList.contains("show")) {
+                    myDropdown.classList.remove("show");
+                }
+            }
+        };
+    </script>
+    <script src="{% static '/javascript/elaauth.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<main class="bd-masthead" role="main" style="background-color: #181b22;">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-6 mx-auto col-md-6 order-md-2">
+            <img src="{% static '/images/common/main-pattern.svg' %}"/>
+        </div>
+        <div class="col-md-6 order-md-1 text-center text-white text-md-left pr-md-5">
+          <h1 class="jumbotron-header">Learn Blockchain by Interacting</h1>
+          <p class="jumbotron-text">
+              The console will effectively lower the barrier to entry for new developers entering the blockchain space as it will
+              allow them to easily experiment with Elastos services directly on the browser before deciding to develop their
+              decentralized applications. NOTE: The console is in Closed Beta which means data stored on the databases used by
+              this website may be deleted at any time.
+          </p>
+          <div class="row mx-n2" style="margin-top: 45px;">
+            <div class="col-md px-2">
+                {% if request.session.logged_in != True %}
+                    <button class="login-button" data-toggle="modal" data-target="#myModal" id="login_button" onclick="ela_auth()">
+                            Login with Elastos DID
+                    </button>
+                {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item active">
+                            <a class="nav-link active text-center" id="elastos_qr_code_tab" href="#elastOS" data-toggle="tab">
+                                elastOS
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link text-center" id="elephant_qr_code_tab" href="#elephantWallet" data-toggle="tab">
+                                Elephant Wallet
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="elastOS">
+                            <div class="row align-items-center justify-content-center">
+                                <div class="col-md-12 text-center">
+                                    <h4 class="login-header">
+                                        Scan the code with elastOS
+                                    </h4>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <p class="scan-qr-text">
+                                        You can download the app on both Android and iOS devices(COMING SOON). For more info, download it from
+                                        App Store or go to
+                                        <a href="https://www.elastos.org/" target="blank" style="color: #f48424;">Official ElastOS Website</a>
+                                    </p>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <img src="{% qr_url_from_text elastos_url error_correction='Q' size=3 version=10 image_format='png' %}" style="margin-top: 1rem;"/>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <p class="scan-qr-wait">
+                                        Waiting for phone authentication...
+                                    </p>
+                                </div>
+                            </div>
+                        </div> 
+                        <div class="tab-pane" id="elephantWallet">
+                            <div class="row align-items-center justify-content-center">
+                                <div class="col-md-12 text-center">
+                                    <h4 class="login-header">
+                                        Scan the code with Elephant Wallet
+                                    </h4>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <p class="scan-qr-text">
+                                        You can download the app on both Android and iOS devices. For more info, go to the
+                                        <a href="https://elephantwallet.app/#footer" target="blank" style="color: #f48424;">Official Elephant Wallet App Website</a>
+                                    </p>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <img src="{% qr_url_from_text elephant_url error_correction='Q' size=3 version=10 image_format='png' %}" style="margin-top: 1rem;"/>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <p class="scan-qr-wait text-center">
+                                        Waiting for phone authentication...
+                                    </p>
+                                </div>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+  <!-- Our Mission Row -->
+  <main class="bd-masthead" role="main" style="background-color: #242a37;">
+      <div class="container">
+
+          <!-- Description -->
+          <div class="row justify-content-center m-45px-b md-m-20px-b sm-m-15px-b">
+              <div class="col-12 col-md-10 col-lg-7">
+                <div class="section-title text-center">
+                  <h2 style="font-family: 'Overpass', sans-serif;color: #ffffff;font-size: 44px;">Our Mission</h2>
+                  <p class="main-content">The console will effectively lower the barrier to entry for new developers entering the blockchain
+                      space as it will allow them to easily experiment with Elastos services directly on the browser before
+                      deciding to develop their decentralized applications.
+                  </p>
+                </div>
+              </div>
+          </div>
+
+          <!-- Our Mission -->
+          <div class="row" style="margin-top: 15px;">
+              <div class="col-12 col-md-4">
+                  <div class="mission-box">
+                    <div>
+                        <img src="{% static 'images/common/integrated.svg' %}"/>
+                        <h4>Integrated Playground</h4>
+                        <p>Developers can directly write code on the browser and be able to test and execute their functions using
+                            various Elastos technologies.
+                        </p>
+                    </div>
+                  </div>
+              </div>
+              <div class="col-12 col-md-4">
+                  <div class="mission-box">
+                    <div>
+                        <img src="{% static 'images/common/interactive.svg' %}"/>
+                        <h4>Interactive Services</h4>
+                        <p>Each service has a different page with full interactivity, documentation and samples of code
+                            in various languages that developers can easily “plug-and-play” into their own applications
+                            to quickly get started in integrating Elastos technology.
+                        </p>
+                    </div>
+                  </div>
+              </div>
+              <div class="col-12 col-md-4">
+                  <div class="mission-box">
+                    <div>
+                        <img src="{% static 'images/common/box.svg' %}"/>
+                        <h4>Elastos in a Box</h4>
+                        <p>The goal is to make it very easy to deploy a private network for the entire Elastos infrastructure
+                            so other universities and third parties can also use the same image to deploy their own net.</p>
+                    </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </main>
+
+  <!-- Services Row -->
+  <main class="bd-masthead" role="main" style="background-color: #242a37;">
+      <div class="container">
+
+          <div class="row">
+              <div class="col-12 col-md-4">
+                  <img src="{% static 'images/common/graphic-element.svg' %}"/>
+              </div>
+              <div class="col-12 col-md-8" style="color: #ffffff;">
+                  <div class="section-title">
+                      <h2 style="font-family: 'Overpass', sans-serif;color: #ffffff;font-size: 44px;">Explore Our Services</h2>
+                      <p class="main-content">The console provides a variety of services thats let students and developers all over the
+                          world utilize Elastos ecosystem services in a complete developer environment with necessary tools and the use
+                          of docker containers.
+                      </p>
+                  </div>
+                  <!-- Services -->
+                  <div class="row">
+                      <div class="col-12 col-md-6">
+                          <div>
+                              <p style="float: left; margin-right: 25px;">
+                                  <img src="{% static 'images/common/key.svg' %}"/>
+                              </p>
+                              <p style="font-family: 'Roboto', sans-serif;">Generate API Key</p>
+                          </div>
+                      </div>
+                      <div class="col-12 col-md-6">
+                          <div>
+                              <p style="float: left; margin-right: 25px;">
+                                  <img src="{% static 'images/common/get-aki.svg' %}"/>
+                              </p>
+                              <p style="font-family: 'Roboto', sans-serif;">Get API Key</p>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="col-12 col-md-6">
+                          <div>
+                              <p style="float: left; margin-right: 32px;">
+                                  <img src="{% static 'images/common/upload.svg' %}"/>
+                              </p>
+                              <p style="font-family: 'Roboto', sans-serif;">Upload And Sign</p>
+                          </div>
+                      </div>
+                      <div class="col-12 col-md-6">
+                          <div>
+                              <p style="float: left; margin-right: 25px;">
+                                  <img src="{% static 'images/common/show.svg' %}"/>
+                              </p>
+                              <p style="font-family: 'Roboto', sans-serif;">Verify And Show</p>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="col-12 col-md-6">
+                          <div>
+                              <p style="float: left; margin-right: 30px;">
+                                  <img src="{% static 'images/common/wallet.svg' %}"/>
+                              </p>
+                              <p style="font-family: 'Roboto', sans-serif;">Create Wallet</p>
+                          </div>
+                      </div>
+                      <div class="col-12 col-md-6">
+                          <div>
+                              <p style="float: left; margin-right: 25px;">
+                                  <img src="{% static 'images/common/ela-coin.svg' %}"/>
+                              </p>
+                              <p style="font-family: 'Roboto', sans-serif;">Request ELA</p>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="col-12 col-md-6">
+                          <div>
+                              <p style="float: left; margin-right: 30px;">
+                                  <img src="{% static 'images/common/contract.svg' %}"/>
+                              </p>
+                              <p style="font-family: 'Roboto', sans-serif;">Deploy ETH Contract</p>
+                          </div>
+                      </div>
+                      <div class="col-12 col-md-6">
+                          <div>
+                              <p style="float: left; margin: 0px 26px 0px 7px;">
+                                  <img src="{% static 'images/common/eth-contract.svg' %}"/>
+                              </p>
+                              <p style="font-family: 'Roboto', sans-serif;">Watch ETH Contract</p>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+</main>
+
+<!-- Tutorials Row -->
+  <main class="bd-masthead" role="main" style="background-color: #00adea;">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-6 mx-auto col-md-6 order-md-2">
+            <img src="{% static '/images/common/pattern.svg' %}"/>
+        </div>
+        <div class="col-md-6 order-md-1 text-center text-white text-md-left pr-md-5">
+          <h1 class="jumbotron-header">Start Developing Today</h1>
+          <p class="jumbotron-text">
+              The console provides a variety of services thats let students and developers all over the world utilize
+              Elastos ecosystem services in a complete developer environment with necessary tools and the use of docker containers.
+          </p>
+          <div class="row mx-n2">
+            <div class="col-md px-2">
+                <button class="login-button" id="read_documentation_button">
+                    <a class="login-text" href="https://developer.elastos.org/">
+                        Read Documentation
+                    </a>
+                </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+{% endblock %}

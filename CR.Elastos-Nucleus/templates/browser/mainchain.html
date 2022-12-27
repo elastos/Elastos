@@ -1,0 +1,248 @@
+{% extends "browser.html" %} 
+{% load static %}
+{% load mathfilters %}
+
+{% block title %}
+<title>Mainchain Browser - Elastos Nucleus</title>
+{% endblock title %} 
+
+{% block browsertitle %}
+<h2>Mainchain Browser</h2>
+{% endblock browsertitle %} 
+
+{% block browser %}
+<div class="row justify-content-center">
+    <div class="col-3 dashboard-section">
+        <p style="float: left; margin: 15px;">
+            <img src="{% static 'images/common/contract.svg' %}"/>
+        </p>
+        <p class="dashboard-title" style="margin: 20px;">
+            Explore Mainchain
+        </p>
+        <div class="divider"></div>
+        <div class="container">
+            <div class="row justify-content-center">
+                <p style="float: left; margin: 15px;">
+                    <img src="{% static 'images/common/contract.svg' %}"/>
+                </p>
+                <div class="col block-id">
+                    <div class="chain-name align-top">
+                        Mainchain
+                    </div>
+                    <div class="chain-price align-bottom">
+                        $9,754.34
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-left:40px">
+                <p class="chain-stat" style="float: left; margin: 15px;">
+                    Blocks
+                </p>
+            </div>
+            <div class="row" style="margin-left:40px">
+                <p class="chain-stat" style="float: left; margin: 15px;">
+                    Transactions
+                </p>
+            </div>
+            <div class="row" style="margin-left:40px">
+                <p class="chain-stat" style="float: left; margin: 15px;">
+                    Price
+                </p>
+            </div>
+            <div class="row justify-content-center">
+                <p style="float: left; margin: 15px;">
+                    <img src="{% static 'images/common/contract.svg' %}"/>
+                </p>
+                <div class="col block-id">
+                    <div class="chain-name align-top">
+                        NEO Sidechain
+                    </div>
+                    <div class="chain-price align-bottom">
+                        $9,754.34
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <p style="float: left; margin: 15px;">
+                    <img src="{% static 'images/common/contract.svg' %}"/>
+                </p>
+                <div class="col block-id">
+                    <div class="chain-name align-top">
+                        DID Sidechain
+                    </div>
+                    <div class="chain-price align-bottom">
+                        $9,754.34
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-7 dashboard-section">
+        <p style="float: left; margin: 15px;">
+            <img src="{% static 'images/common/contract.svg' %}"/>
+        </p>
+        <p class="dashboard-title" style="margin: 20px;">
+            Overview
+        </p>
+        <div class="divider"></div>
+        <div class="row justify-content-center">
+            <div class="col-5 overview-section">
+                <div class="row">
+                    <div class="col-4 text-browser">
+                        Price
+                    </div>
+                    <div class="col-6">
+                        <div class="row text-price">
+                            $2.70
+                        </div>
+                        <div class="row text-stats">
+                            0.02125 BTC (+2.47%)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-5 overview-section">
+                <div class="row">
+                    <div class="col-4 text-browser">
+                        Marketcap
+                    </div>
+                    <div class="col-6">
+                        <div class="row text-price">
+                            $23,078,745,473
+                        </div>
+                        <div class="row text-stats">
+                            +2.47%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-5 overview-section">
+                <div class="row">
+                    <div class="col-4 text-browser">
+                        Transactions
+                    </div>
+                    <div class="col-6">
+                        <div class="row text-price">
+                            708.56 M
+                        </div>
+                        <div class="row text-stats">
+                            10.1 TPS
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-5 overview-section">
+                <div class="row">
+                    <div class="col-4 text-browser">
+                        Difficulty
+                    </div>
+                    <div class="col-6">
+                        <div class="row text-price">
+                            2,282.24 TH
+                        </div>
+                        <div class="row text-stats">
+                            0.02125 BTC (+2.47%)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div class="col-5 dashboard-section">
+        <p style="float: left; margin: 15px;">
+            <img src="{% static 'images/common/contract.svg' %}"/>
+        </p>
+        <p class="dashboard-title" style="margin: 20px;">
+            Latest Blocks
+        </p>
+        <div class="divider"></div>
+        {% for block, value in blocks.items %}
+            <div class="row justify-content-center">
+                <div class="col-1 block-section text-center">
+                    {{ value.abbreviation }}
+                </div>
+                <div class="col-4 block-id">
+                    <div class="block-id-price align-top">
+                        {{ value.height }}
+                    </div>
+                    <div class="block-id-stats align-bottom">
+                        {{ value.last_time_visited }}
+                    </div>
+                </div>
+                <div class="col-3 block-info">
+                    <div class="block-info-miner align-top">
+                        Miner: {{ value.minerinfo }}
+                    </div>
+                    <div class="block-info-speed align-bottom">
+                        {{ value.numtransactions }} txns
+                    </div>
+                </div>
+                <div class="col-2 price-section text-center">
+                        {{ value.totaltransactions|floatformat:4 }} ELA
+                </div>
+            </div>
+            <div class="sub-divider"></div>
+        {% endfor %}
+        <div class="row justify-content-center" style="margin-left: 30px; margin-right: 30px">
+            <button type="button" class="block-button btn btn-lg btn-block"><p style="margin:10px">View All Blocks</p></button>
+        </div>
+    </div>
+    <div class="col-5 dashboard-section">
+        <p style="float: left; margin: 15px;">
+            <img src="{% static 'images/common/contract.svg' %}"/>
+        </p>
+        <p class="dashboard-title" style="margin: 20px;">
+            Latest Transactions
+        </p>
+        <div class="divider"></div>
+        {% for block, value in blocks.items %}
+            <div class="row justify-content-center">
+                <div class="col-1 block-section text-center">
+                    {{ value.abbreviation }}
+                </div>
+                <div class="col-4 block-id">
+                    <div class="block-id-price align-top text-truncate">
+                        {{ value.hash }}
+                    </div>
+                    <div class="block-id-stats align-bottom">
+                        {{ value.last_time_visited }}
+                    </div>
+                </div>
+                <div class="col-3 block-info">
+                    <div class="block-info-miner align-top text-truncate">
+                        From: {{ value.hash }}
+                    </div>
+                    <div class="block-info-speed align-bottom text-truncate">
+                        To: {{ value.hash }}
+                    </div>
+                </div>
+                <div class="col-2 price-section text-center">
+                        {{ value.totaltransactions|floatformat:4 }} ELA
+                </div>
+            </div>
+            <div class="sub-divider"></div>
+        {% endfor %}
+        <div class="row justify-content-center" style="margin-left: 30px; margin-right: 30px">
+            <button type="button" class="block-button btn btn-lg btn-block"><p style="margin:10px">View All Blocks</p></button>
+        </div>
+    </div>
+</div>
+
+<!--
+    <form  class="form-group" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Switch</button>
+    </form>
+    <p>Current Height: {{ current_height }}</p>
+    <p>Previous Block Hash: {{ current_block_info.previousblockhash }}</p>
+    <p>Current Block Hash: {{ current_block_info.hash }}</p>
+    <p>Current Miner: {{ current_block_info.minerinfo }}</p>
+    <p>Current Validator: {{ current_block_confirm.sponsor }}</p>
+    <p>Current Difficulty: {{ current_mining_info.difficulty }}</p>
+    <p>Current Hash Rate: {{ current_mining_info.networkhashps|floatformat|div:1000000000000000000 }} EH/s</p>-->
+    {% endblock browser %}

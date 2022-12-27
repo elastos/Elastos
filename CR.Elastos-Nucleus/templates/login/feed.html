@@ -1,0 +1,404 @@
+{% extends 'base.html' %} 
+{% load static %}
+
+{% block title %}
+  <title>Feed - Elastos Nucleus</title>
+{% endblock title %}
+
+{% block scripts %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
+    <script src="{% static 'javascript/suggestService.js' %}" type="text/javascript"></script>
+{% endblock %}
+
+{% block content %}
+    <!--Suggest Service Modal -->
+    <div class="modal fade" id="suggest_service_modal" tabindex="-1" role="dialog">
+     <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title">Suggest Service</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-group-sm">
+                {{ suggest_form.as_p }}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="suggest_service()">Submit</button>
+                <button class="close btn btn-secondary" type="button"  data-dismiss="modal">Close</button>
+            </div>
+        </div>
+     </div>
+    </div>
+
+    <!-- Carousel -->
+    <div id="carouselExampleIndicators" class="carousel slide feed-carousel" data-ride="carousel" style="background-color: #14161c">
+        <ol class="carousel-indicators">
+            <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+        </ol>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="carousel-caption d-none d-md-block text-white">
+                    <h2>View Tutorials</h2>
+                    <p>New to the console? Watch some tutorials to get started.</p>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-caption d-none d-md-block text-white">
+                    <h2>Account Management</h2>
+                    <p>View any deployed dApps on elastOS, API keys, and more on your account page</p>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-caption d-none d-md-block text-white">
+                    <h2>Request some test ELA</h2>
+                    <p>Use our Request ELA service to request test ELA to use for various purposes</p>
+                </div>
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+    </div>
+
+
+    <main class="bd-masthead" role="main" style="background-color: #181b22;">
+        <div class="row">
+            <!-- Services Row -->
+            <div class="col-8 console-services">
+                <p style="float: left; margin: 15px;">
+                    <img src="{% static 'images/common/run-contract.svg' %}"/>
+                </p>
+                <p class="console-services-title" style="margin: 20px;">
+                    CONSOLE SERVICES
+                </p>
+                <div class="divider"></div>
+                <p class="console-services-title" style="font-size: 18px;margin: 0px 20px 20px 20px;">Services Available</p>
+                <div class="row">
+                    <div class="col-4">
+                        <p class="console-services-image">
+                            <img src="{% static 'images/common/key.svg' %}" width="250%"/>
+                        </p>
+                        <p class="console-services-name">
+                            Generate API Key<br><br>
+                            Category: <span class="console-services-category">Common</span><br><br>
+                            <button class="code-button available" disabled>Python</button>&emsp;
+                            <button class="code-button available" disabled>Golang</button>&emsp;
+                            <button class="code-button" disabled>elastOS</button><br><br>
+                            <div class="divider"></div>
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <p class="console-services-image">
+                            <img src="{% static 'images/common/get-aki.svg' %}" width="250%"/>
+                        </p>
+                        <p class="console-services-name">
+                            Get API Key<br><br>
+                            Category: <span class="console-services-category">Common</span><br><br>
+                            <button class="code-button available disabled">Python</button>&emsp;
+                            <button class="code-button available" disabled>Golang</button>&emsp;
+                            <button class="code-button" disabled>elastOS</button><br><br>
+                            <div class="divider"></div>
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <p class="console-services-image">
+                            <img src="{% static 'images/common/upload.svg' %}" width="250%"/>
+                        </p>
+                        <p class="console-services-name">
+                            Upload and Sign<br><br>
+                            Category: <span class="console-services-category">Hive,DID Sidechain</span><br><br>
+                            <button class="code-button available" disabled>Python</button>&emsp;
+                            <button class="code-button available" disabled>Golang</button>&emsp;
+                            <button class="code-button" disabled>elastOS</button><br><br>
+                            <div class="divider"></div>
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <p class="console-services-image">
+                            <img src="{% static 'images/common/show.svg' %}" width="250%"/>
+                        </p>
+                        <p class="console-services-name">
+                            Verify And Show<br><br>
+                            Category: <span class="console-services-category">Hive,DID Sidechain</span><br><br>
+                            <button class="code-button available" disabled>Python</button>&emsp;
+                            <button class="code-button available" disabled>Golang</button>&emsp;
+                            <button class="code-button" disabled>elastOS</button><br><br>
+                            <div class="divider"></div>
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <p class="console-services-image">
+                            <img src="{% static 'images/common/contract.svg' %}" width="250%"/>
+                        </p>
+                        <p class="console-services-name">
+                            Deploy ETH Contract<br><br>
+                            Category:<span class="console-services-category">ETH Sidechain</span><br><br>
+                            <button class="code-button available" disabled>Python</button>&emsp;
+                            <button class="code-button available" disabled>Golang</button>&emsp;
+                            <button class="code-button" disabled>elastOS</button><br><br>
+                            <div class="divider"></div>
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <p class="console-services-image">
+                            <img src="{% static 'images/common/eth-contract.svg' %}" width="250%"/>
+                        </p>
+                        <p class="console-services-name">
+                            Watch ETH Contract<br><br>
+                            Category:<span class="console-services-category">ETH Sidechain</span><br><br>
+                            <button class="code-button available disabled">Python</button>&emsp;
+                            <button class="code-button available" disabled>Golang</button>&emsp;
+                            <button class="code-button" disabled>elastOS</button><br><br>
+                            <div class="divider"></div>
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <p class="console-services-image">
+                            <img src="{% static 'images/common/wallet.svg' %}" width="250%"/>
+                        </p>
+                        <p class="console-services-name">
+                            Create Wallet<br><br>
+                            Category:
+                            <span class="console-services-category">
+                                Wallet,Mainchain,DID Sidechain,Token Sidechain,ETH Sidechain
+                            </span><br><br>
+                            <button class="code-button available" disabled>Python</button>&emsp;
+                            <button class="code-button available" disabled>Golang</button>&emsp;
+                            <button class="code-button" disabled>elastOS</button><br><br>
+                            <div class="divider"></div>
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <p class="console-services-image">
+                            <img src="{% static 'images/common/show.svg' %}" width="250%"/>
+                        </p>
+                        <p class="console-services-name">
+                            View Wallet<br><br>
+                            Category:
+                            <span class="console-services-category">
+                                Wallet,Mainchain,DID Sidechain,Token Sidechain,ETH Sidechain
+                            </span><br><br>
+                            <button class="code-button available disabled">Python</button>&emsp;
+                            <button class="code-button available" disabled>Golang</button>&emsp;
+                            <button class="code-button" disabled>elastOS</button><br><br>
+                            <div class="divider"></div>
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <p class="console-services-image">
+                            <img src="{% static 'images/common/ela-coin.svg' %}" width="250%"/>
+                        </p>
+                        <p class="console-services-name">
+                            Request Test ELA<br><br>
+                            Category:
+                            <span class="console-services-category">
+                                Wallet,Mainchain,DID Sidechain,Token Sidechain,ETH Sidechain
+                            </span><br><br>
+                            <button class="code-button available" disabled>Python</button>&emsp;
+                            <button class="code-button available" disabled>Golang</button>&emsp;
+                            <button class="code-button" disabled>elastOS</button><br><br>
+                            <div class="divider"></div>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <!-- Most Viewed Row -->
+            <div class="col-3 console-services">
+                <p style="float: left; margin: 15px;">
+                    <img src="{% static 'images/common/show.svg' %}"/>
+                </p>
+                <p class="console-services-title" style="margin: 20px;">
+                    MOST RECENT PAGES
+                </p>
+                <div class="divider" style="background-color: #000000"></div>
+                <p style="margin: 0px 20px 20px 20px;">
+                    {% if recent_pages.exists %}
+                    {% for item in recent_pages %}
+                        <div class="container">
+                            <p class="console-services-image">
+                                <img src="{% static 'images/common/show.svg' %}" width="110%"/>
+                            </p>
+                            <div class="d-flex justify-content-between w-90" style="padding-left: 10px;">
+                                
+                                <p class="sidebar-content" href="{% url item.view %}">
+                                    {{ item.name }}
+                                </p> 
+                                <p class="sidebar-content">
+                                    {{ item.number_visits }} visits
+                                </p>
+                            </div>
+                        </div>
+                        <div class="divider" style="margin-top: 10px !important;"></div>
+                    {% endfor %}
+                {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- User Activity Row -->
+            <div class="col console-services">
+                <p style="float: left; margin: 15px;">
+                    <img src="{% static 'images/common/show.svg' %}"/>
+                </p>
+                <p class="console-services-title" style="margin: 20px;">
+                    YOUR ACTIVITY
+                </p>
+                <div class="divider"></div>
+                <div class="row" style="margin-left: 30px; margin-right: 30px">
+                    <div class="wrapper">
+                        <div class="activity-accordion" id="accordion">
+                            {% for activity in your_activity %}
+                                <div class="card-transparent text-white border-dark mb-3">
+                                    {% for key, value in activity.items %}
+                                        {% if key == 'display_string' %}
+                                            <div class="card-header" id="heading{{ forloop.parentloop.counter }}" style="background-color: rgba(0, 0, 0, 0); border-bottom: 0px;">
+                                                <div class="d-flex align-items-stretch">
+                                                    <div class="mr-auto p-2">
+                                                        <span class="float-md-left align-middle">
+                                                            <h5 class="mb-0 align-middle" style="font-family: Overpass;">
+                                                                {{ activity.display_string }}
+                                                            </h5>
+                                                        </span>
+                                                    </div>
+                                                    <div class="p-2">
+                                                        {{ activity.last_visited }}
+                                                    </div>
+                                                    <div class="p-2">
+                                                        <button class="text-white btn btn-block h-100 btn-outline-light collapsed" data-toggle="collapse" data-target="#collapse{{ forloop.parentloop.counter }}" aria-expanded="true" aria-controls="collapse{{ forloop.parentloop.counter }}"></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <div id="collapse{{ forloop.counter }}" class="collapse" aria-labelledby="heading{{ forloop.counter }}" data-parent="#accordion">
+                                        <div class="card-body">
+                                            {% for ind, child in activity.items %}
+                                                {% if ind != 'display_string' and ind != 'last_visited' %}
+                                                    <div class="row" style="margin-left: 0px">
+                                                        <p class="text-white font-weight-bold" style="padding-right: 4px">'{{ ind }}': </p>
+                                                        <p class="text-white font-weight-normal">'{{ child }}'</p>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="divider"></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Support Row -->
+            <div class="col-2 console-services">
+                <p style="float: left; margin: 15px;">
+                    <img src="{% static 'images/feed/bx-help-circle.svg' %}"/>
+                </p>
+                <p class="console-services-title" style="margin: 20px;">
+                    WE NEED YOU!
+                </p>
+                <div class="divider"></div>
+                <p style="float: left; margin: 0px 15px 0px 15px;">
+                    <img src="{% static 'images/feed/bug.svg' %}"/>
+                </p>
+                <p>
+                    <a class="sidebar-content" href="https://github.com/cyber-republic/elastos-nucleus/issues">
+                        Report bugs or tell us what to improve
+                    </a>
+                </p>
+                <p style="float: left; margin: 0px 15px 0px 15px;">
+                    <img src="{% static 'images/feed/github.svg' %}"/>
+                </p>
+                <p>
+                    <a class="sidebar-content" href="#" id="id_suggest_service" data-toggle="modal" data-target="#suggest_service_modal">
+                        Suggest a new service to be added to the Console
+                    </a>
+                </p>
+            </div>
+            <!-- Tutorials Row -->
+            <div class="col-9  console-services">
+                <p style="float: left; margin: 15px;">
+                    <img src="{% static 'images/feed/bx-bookmarks.svg' %}"/>
+                </p>
+                <p class="console-services-title" style="margin: 20px;">
+                    UNDERSTAND THE NUCLEUS CONSOLE
+                </p>
+                <div class="divider"></div>
+                <div class="row justify-content-center" style="margin-left: 10px; margin-right: 10px;">
+                    <div class="col-md-3 mh-100" style="margin-bottom: 45px;">
+                        <div class="container align-items-center justify-content-center border border-secondary">
+                            <img class="rounded mx-auto d-block" src="{% static 'images/feed/bx-bookmarks.svg' %}" alt="Card image" style="max-width: 50px; max-height: 80px; object-fit: contain">
+                        </div>
+                        <p class="dapp-title">Tutorial Title</p>
+                        <p class="dapp-description">
+                            Lorem ipsum dolor sit amet, consectetur 
+                            adipiscing elit, sed do eiusmod tempor incididunt 
+                            ut labore et dolore magna aliqua. 
+                        </p>
+                        <div class="row">
+                            <a class="btn btn-secondary rounded-pill download">Learn More</a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mh-100" style="margin-bottom: 45px;">
+                        <div class="container align-items-center justify-content-center border border-secondary">
+                            <img class="rounded mx-auto d-block" src="{% static 'images/feed/bx-bookmarks.svg' %}" alt="Card image" style="max-width: 50px; max-height: 80px; object-fit: contain">
+                        </div>
+                        <p class="dapp-title">Tutorial Title</p>
+                        <p class="dapp-description">
+                            Lorem ipsum dolor sit amet, consectetur 
+                            adipiscing elit, sed do eiusmod tempor incididunt 
+                            ut labore et dolore magna aliqua. 
+                        </p>
+                        <div class="row">
+                            <a class="btn btn-secondary rounded-pill download">Learn More</a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mh-100" style="margin-bottom: 45px;">
+                        <div class="container align-items-center justify-content-center border border-secondary">
+                            <img class="rounded mx-auto d-block" src="{% static 'images/feed/bx-bookmarks.svg' %}" alt="Card image" style="max-width: 50px; max-height: 80px; object-fit: contain">
+                        </div>
+                        <p class="dapp-title">Tutorial Title</p>
+                        <p class="dapp-description">
+                            Lorem ipsum dolor sit amet, consectetur 
+                            adipiscing elit, sed do eiusmod tempor incididunt 
+                            ut labore et dolore magna aliqua. 
+                        </p>
+                        <div class="row">
+                            <a class="btn btn-secondary rounded-pill download">Learn More</a>
+                        </div>
+                    </div>
+                        <div class="col-md-3 mh-100" style="margin-bottom: 45px;">
+                        <div class="container align-items-center justify-content-center border border-secondary">
+                            <img class="rounded mx-auto d-block" src="{% static 'images/feed/bx-bookmarks.svg' %}" alt="Card image" style="max-width: 50px; max-height: 80px; object-fit: contain">
+                        </div>
+                        <p class="dapp-title">Tutorial Title</p>
+                        <p class="dapp-description">
+                            Lorem ipsum dolor sit amet, consectetur 
+                            adipiscing elit, sed do eiusmod tempor incididunt 
+                            ut labore et dolore magna aliqua. 
+                        </p>
+                        <div class="row">
+                            <a class="btn btn-secondary rounded-pill download">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  <title>Register - Elastos Nucleus</title>
+{% endblock title %}
+
+{% block scripts %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
+{% endblock %}
+
+{% block content %}
+    <div class="row align-items-center justify-content-center">
+        <div class="col-md-12 text-center">
+            <h4 class="login-header">Enter your information below</h4>
+        </div>
+        <div class="col-md-12">
+            <form class="text-center" method="post">
+                {% csrf_token %}
+                {% for field in form.visible_fields %}
+                    <p>
+                        <span class="form-field-label">{{ field.label_tag }}</span><br>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small style="color: grey">{{ field.help_text }}</small>
+                            <div class="modal fade" id="privacyPolicy" tabindex="-1" role="dialog"
+                                 aria-labelledby="privacyPolicy" aria-hidden="true" style="margin: 0 auto;">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content" style="width: 800px;height:800px;">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="privacyPolicyModalLabel">Nucleus Console Privacy Policy</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <embed src={% url 'privacy_policy_pdf' %}'#toolbar=0&navpanes=0&scrollbar=0' style="width: 700px;height:700px;" frameborder="0">
+                                        </div>
+                                        
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="termsAndConditions" tabindex="-1" role="dialog"
+                                 aria-labelledby="termsAndConditions" aria-hidden="true" style="margin: 0 auto;">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content" style="width: 800px;height:800px;">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="termsConditionsModalLabel">Nucleus Console Terms & Conditions</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <embed src={% url 'terms_conditions_pdf' %}'#toolbar=0&navpanes=0&scrollbar=0' style="width: 700px;height:700px;" frameborder="0">
+                                        </div>
+                                        
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+                <button class="register-button" type="submit" style="margin-bottom: 30px;">Register</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

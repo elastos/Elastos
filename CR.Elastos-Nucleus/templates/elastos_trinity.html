@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block scripts %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/elastos_trinity.css' %}" />
+    {% block scripts_elastos_trinity %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div class="row elastos-trinity-title">
+            <h2>
+                {% block elastos_trinity_title %}{% endblock %}
+            </h2>
+    </div>
+    <div class="row flex-xl-nowrap elastos-trinity">
+        <div class="col-12 col-xl-12 bd-content" role="main">
+            <div class="dapp-content">
+                <div  style="margin: 0px 30px 40px 40px">
+                    {% block elastos_trinity %}{% endblock %}
+                </div>
+            </div>
+    </div>
+{% endblock content %}

@@ -1,0 +1,21 @@
+{% extends "browser.html" %} 
+{% load static %} 
+
+{% block title %}
+<title>Token Sidechain Browser - Elastos Nucleus</title>
+{% endblock title %} 
+
+{% block browsertitle %}
+<h5 class="card-header">Token Sidechain Browser</h5>
+{% endblock browsertitle %} 
+
+{% block browser %}
+    <form  class="form-group" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Switch</button>
+    </form>
+    <p>Current Height: {{ current_height }}</p>
+    <p>Previous Block Hash: {{ current_block_info.previousblockhash }}</p>
+    <p>Current Block Hash: {{ current_block_info.hash }}</p>
+{% endblock browser %}

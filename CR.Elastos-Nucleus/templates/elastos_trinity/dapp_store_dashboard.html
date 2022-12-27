@@ -1,0 +1,141 @@
+{% extends "elastos_trinity.html" %}
+{% load static %}
+{% load qr_code %}
+
+{% block title %}
+<title>elastOS - dApp Store Dashboard</title>
+{% endblock title %}
+
+{% block scripts_elastos_trinity %}
+{% endblock scripts_elastos_trinity %}
+
+{% block elastos_trinity_title %}
+elastOS - dApp Store Dashboard
+{% endblock elastos_trinity_title %}
+
+{% block elastos_trinity %}
+     <div class="row justify-content-center">
+                    <div class="col-5 dashboard-section">
+                        <p class="dashboard-header" style="margin: 20px 20px 32px 20px">
+                            Top By Download
+                        </p>
+                        {% for app in top_downloads %}
+                            <div class="row" style="margin-left: 15px; margin-right: 15px">
+                                <div class="col d-flex align-items-center justify-content-left">
+                                    <img class="rounded mx-auto d-block" src="{{ app.icon_url }}" alt="Card image" style="max-width: 100px; max-height: 150px; object-fit: contain">
+                                </div>
+                                <div class="col-7">
+                                    <p class="dapp-top-name font-weight-bold" style="margin-bottom: 0px">
+                                        {{ app.appName }}
+                                    </p>
+                                    <p class="dapp-top-category" style="margin-bottom: 0px">
+                                        {{ app.category }}
+                                    </p>
+                                </div>
+                                <div class="col" style="display: flex; align-items: center;">
+                                    <a href="{{ app.download_url }}" class="btn btn-secondary rounded-pill download" style="margin: 0px">Download</a>
+                                </div>
+                            </div>
+                            <div class="divider" style="margin-top: 20px !important;"></div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-5 dashboard-section">
+                        <p class="dashboard-header" style="margin: 20px 20px 32px 20px">
+                            Top By Category
+                        </p>
+                        {% for app in top_downloads %}
+                            <div class="row" style="margin-left: 15px; margin-right: 15px">
+                                <div class="col d-flex align-items-center justify-content-left">
+                                    <img class="rounded mx-auto d-block" src="{{ app.icon_url }}" alt="Card image" style="max-width: 100px; max-height: 150px; object-fit: contain">
+                                </div>
+                                <div class="col-7">
+                                    <p class="dapp-top-name font-weight-bold" style="margin-bottom: 0px">
+                                        {{ app.appName }}
+                                    </p>
+                                    <p class="dapp-top-category" style="margin-bottom: 0px">
+                                        {{ app.category }}
+                                    </p>
+                                </div>
+                                <div class="col" style="display: flex; align-items: center;">
+                                    <a href="{{ app.download_url }}" class="btn btn-secondary rounded-pill download" style="margin: 0px">Download</a>
+                                </div>
+                            </div>
+                            <div class="divider" style="margin-top: 20px !important;"></div>
+                        {% endfor %}
+                    </div>
+     </div>
+
+    <div class="row justify-content-center">
+        <div class="col-11 dashboard-section">
+            <p class="dashboard-header" style="margin: 30px 30px 30px 30px;">
+                All dApps
+            </p>
+            <div class="row justify-content-center" style="margin-left: 10px; margin-right: 10px;">
+                {% for dapp in dapps_list %}
+                    <div class="col-md-3 mh-100" style="margin-bottom: 45px;">
+                        <div class="container align-items-center justify-content-center border border-secondary">
+                            <img class="rounded mx-auto d-block" src="{{ dapp.icon_url }}" alt="Card image" style="max-width: 100px; max-height: 150px; object-fit: contain">
+                        </div>
+                        <p class="dapp-title">{{ dapp.appName }}</p>
+                        <p class="dapp-description font-weight-light">{{ dapp.appDescription }}</p>
+                        <div class="row">
+                            <a href="{{ dapp.download_url }}" class="btn btn-secondary rounded-pill download">Download</a>
+                            <a class="btn btn-secondary rounded-pill more" data-toggle="modal" data-target="#{{ dapp.uniqueName|cut:"-" }}">More</a>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="{{ dapp.uniqueName|cut:"-" }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-body" style="padding-left: 25px; padding-right: 25px;">
+                                    <h4 class="login-header" style="margin-top: 25px">
+                                        {{ dapp.appName }}
+                                    </h4>
+                                    <div class="row container align-items-center justify-content-center border border-secondary" style="margin-left: 1px;">
+                                        <img src="{% qr_url_from_text dapp.download_url error_correction='Q' size=3 version=10 image_format='png' %}"/>
+                                    </div>
+                                    <div class="row justify-content-between">
+                                        <div class="col-md-7">
+                                            <div class="row" style="margin-left: 0px">
+                                                <p class="dapp-information font-weight-bold" style="padding-right: 4px">Category :</p>
+                                                <p class="dapp-information font-weight-normal">{{ dapp.category }}</p>
+                                            </div>
+                                            <div class="row" style="margin-left: 0px">
+                                                <p class="dapp-information font-weight-bold" style="padding-right: 4px">Version :</p>
+                                                <p class="dapp-information font-weight-normal">{{ dapp.versionName }}</p>
+                                            </div>
+                                            <div class="row" style="margin-left: 0px; margin-bottom: 30px">
+                                                <p class="dapp-information font-weight-bold" style="padding-right: 4px">Published :</p>
+                                                <p class="dapp-information font-weight-normal">{{ dapp.createdAt }}</p>
+                                            </div>
+                                            <div class="row" style="margin-left: 0px">
+                                                <p class="dapp-information font-weight-bold" style="padding-right: 4px">Author :</p>
+                                                <p class="dapp-information font-weight-normal">{{ dapp.authorName }}</p>
+                                            </div>
+                                            <div class="row" style="margin-left: 0px">
+                                                <p class="dapp-information font-weight-bold" style="padding-right: 4px">Email :</p>
+                                                <p class="dapp-information font-weight-normal">{{ dapp.authorEmail }}</p>
+                                            </div>
+                                            <div class="row" style="margin-left: 0px; margin-bottom: 30px">
+                                                <p class="dapp-information font-weight-bold" style="padding-right: 4px">Website :</p>
+                                                <p class="dapp-information font-weight-normal">
+                                                    <a href="{{ dapp.authorWebsite }}">
+                                                        {{ dapp.authorWebsite }}
+                                                    </a>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <a href="{{ dapp.download_url }}" class="btn btn-secondary rounded-pill download float-right" style="width: 100%; max-width: 100%">Download</a>
+                                        </div>
+                                    </div>
+                                    <p class="dapp-information" style="margin-bottom: 30px; line-height: 1.5">{{ dapp.appDescription }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock elastos_trinity %}

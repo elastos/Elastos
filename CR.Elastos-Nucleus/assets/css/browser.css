@@ -1,0 +1,198 @@
+.browser {
+  background-color: #181b22;
+  color: #ffffff;
+}
+
+.browser-content {
+  border-radius: 4px;
+  background-color: #181b22;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  padding: 10px;
+}
+
+.browser-content h2 {
+  font-family: Overpass;
+  font-size: 44px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  color: #ffffff;
+  margin: 40px 85px 40px 95px; 
+  text-align: left;
+}
+
+.dashboard-section {
+  border-radius: 8px;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  background: linear-gradient(0deg, rgba(89, 126, 255, 0.08), rgba(89, 126, 255, 0.08)), #121212;
+  padding: 15px;
+  margin: 30px;
+}
+
+.dashboard-title {
+  font-family: Roboto;
+  font-size: 15px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.divider {
+  height: 1px;
+  opacity: 0.5;
+  background-color: #6b7998;
+  margin: 20px;
+}
+
+.sub-divider {
+  height: 1px;
+  opacity: 0.1;
+  background-color: #6b7998;
+  margin-left: 35px;
+  margin-right: 35px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.overview-section {
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04)), linear-gradient(0deg, rgba(89, 126, 255, 0.12), rgba(89, 126, 255, 0.12)), #121212;
+  border-radius: 3px;
+  padding: 25px;
+  margin: 10px;
+}
+
+.text-browser {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  color: #B2B5C2;
+}
+
+.text-price {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 24px;
+  line-height: 32px;
+  color: #FFFFFF;
+}
+
+.text-stats {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 300;
+  font-size: 12px;
+  line-height: 16px;
+  color: #17a2b8;
+}
+
+.block-id {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.block-id-price {
+  font-family: Overpass;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  color: #00ADEA;
+}
+
+.block-id-stats {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 20px;
+  color: #B2B5C2;
+}
+
+.block-info {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.block-info-miner {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 20px;
+  color: #FFFFFF;
+}
+
+.block-info-speed {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 20px;
+  color: #B2B5C2;
+}
+
+.block-section {
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04)), linear-gradient(0deg, rgba(89, 126, 255, 0.12), rgba(89, 126, 255, 0.12)), #121212;
+  border-radius: 3px;
+  padding: 10px;
+  margin: 10px;
+}
+
+.price-section {
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04)), linear-gradient(0deg, rgba(89, 126, 255, 0.12), rgba(89, 126, 255, 0.12)), #121212;
+  border-radius: 3px;
+  padding: 6px;
+  margin: 14px;
+}
+
+.block-button {
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04)), linear-gradient(0deg, rgba(89, 126, 255, 0.12), rgba(89, 126, 255, 0.12)), #121212;
+}
+
+.block-button p {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 20px;
+  text-align: center;
+  color: #FFFFFF;
+}
+
+.chain-name {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.01em;
+  color: #FFFFFF;
+}
+
+.chain-price {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.01em;
+  color: #FFFFFF;
+}
+
+.chain-stat {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 42px;
+  letter-spacing: 0.01em;
+  color: #FFFFFF;
+}
