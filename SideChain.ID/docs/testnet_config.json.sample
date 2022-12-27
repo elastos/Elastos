@@ -1,0 +1,13 @@
+{
+  "ActiveNet": "test",
+  "SPVDisableDNS": false,
+  "SPVPermanentPeers": [
+    "localhost:21338"
+  ],
+  "EnableRPC": true,
+  "RPCUser": "User",
+  "RPCPass": "Password",
+  "RPCWhiteList": [
+    "127.0.0.1"
+  ]
+}
