@@ -1,0 +1,76 @@
+import java.util.function.BooleanSupplier
+
+apply plugin: 'com.android.library'
+apply plugin: 'com.novoda.bintray-release'
+
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "5.2.2"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+        }
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            jniDebuggable true
+        }
+    }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['native-dist/lib']
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
+    android.libraryVariants.all { variant ->
+        variant.outputs.all {
+            def manifestParser = new com.android.builder.core.DefaultManifestParser(
+                    android.sourceSets.main.manifest.srcFile, new BooleanSupplier() {
+                @Override
+                boolean getAsBoolean() {
+                    return true
+                }
+            }, null)
+            outputFileName = manifestParser.getPackage() + "-${buildType.name}.aar"
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    testImplementation 'junit:junit:4.12'
+
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}
+
+publish {
+    userOrg = 'elastos'
+    groupId = 'org.elastos'
+    artifactId = 'carrier'
+    publishVersion = '5.6.0'
+    desc = 'Elastos Carrier SDK'
+    repoName = 'Elastos.NET.Carrier.Android.SDK'
+    website = 'https://github.com/elastos/Elastos.NET.Carrier.Android.SDK'
+}
