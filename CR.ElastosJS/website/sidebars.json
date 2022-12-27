@@ -1,0 +1,45 @@
+{
+  "gettingStarted": {
+    "Getting Started": [
+      "getting-started/intro",
+      "getting-started/create-wallet",
+      "getting-started/faucet",
+      "getting-started/smart-contract",
+      "getting-started/next-steps",
+      "getting-started/tools"
+    ],
+    "Elastos Fundamentals": [
+      "getting-started/ecosystem",
+      "getting-started/types-of-apps"
+    ]
+  },
+  "tutorials": {
+    "Tutorials": [
+      "tutorial/index",
+      "tutorial/did-auth"
+    ],
+    "Demos": [
+      "demo/lottery-game",
+      "demo/crowd-funding"
+    ]
+  },
+  "bounty": {
+    "Funding": [
+      "bounty/intro",
+      "bounty/funding"
+    ]
+  },
+  "advanced": {
+    "For Ethereum Developers": [
+      "advanced/intro",
+      "advanced/migration-guide",
+      "advanced/tools",
+      "advanced/detailed-analysis"
+    ]
+  },
+  "docs": {
+    "Reference Documentation": [
+      "docs/index"
+    ]
+  }
+}
