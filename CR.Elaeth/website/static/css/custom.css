@@ -1,0 +1,137 @@
+@import url("https://use.typekit.net/ild6syp.css");
+html,
+body,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+li {
+  font-family: "Bio Sans", sans-serif; }
+
+.normal {
+  font-weight: 400; }
+
+.text-white {
+  color: #ffffff; }
+
+.docMainWrapper a,
+.docMainWrapper .toc .toggleNav ul > li.navListItemActive a {
+  color: #0b687c;
+  font-weight: 400; }
+  .docMainWrapper a:hover,
+  .docMainWrapper .toc .toggleNav ul > li.navListItemActive a:hover {
+    color: #92b6cc !important; }
+
+.docMainWrapper h3,
+.docMainWrapper strong {
+  font-weight: 500; }
+
+.docMainWrapper p,
+.docMainWrapper span {
+  font-weight: 300; }
+
+.nav-footer {
+  background-image: url("/img/industry_identity_bg.png");
+  background-size: cover;
+  background-position: center top; }
+
+header .navigationSlider .slidingNav > ul.nav-site {
+  background-color: #ffffff; }
+  header .navigationSlider .slidingNav > ul.nav-site > li > a {
+    color: #333;
+    font-weight: 500; }
+
+.homeContainer {
+  background-color: #ffffff;
+  background-image: url("/img/footer_bg.png"); }
+  .homeContainer .projectTitle {
+    color: white;
+    font-weight: 200; }
+
+.mainContainer .productShowcaseSection {
+  padding-top: 5vh;
+  background-color: #1c2f4a;
+  color: white; }
+  .mainContainer .productShowcaseSection.elaBackground {
+    background-image: url("/img/footer_bg_3.png");
+    background-position-y: 25%; }
+  .mainContainer .productShowcaseSection div, .mainContainer .productShowcaseSection p, .mainContainer .productShowcaseSection h2 {
+    color: white;
+    margin: 0; }
+
+.mainContainer .explainer p {
+  line-height: 2;
+  font-weight: 400;
+  font-size: 1.2rem; }
+
+.mainContainer .explainer .center {
+  text-align: center; }
+
+.mainContainer .explainer a {
+  color: #4f789c; }
+
+.mainContainer .elastosETH {
+  text-align: left; }
+  .mainContainer .elastosETH.elaBackground {
+    background-image: url("/img/footer_bg.png"); }
+  .mainContainer .elastosETH .blockContent p {
+    margin-bottom: 15px;
+    font-weight: 300; }
+  .mainContainer .elastosETH a {
+    color: #92b6cc;
+    font-weight: 400; }
+    .mainContainer .elastosETH a.button {
+      color: #ffffff;
+      background-color: #0b687c; }
+      .mainContainer .elastosETH a.button:hover {
+        background-color: #4f789c; }
+  .mainContainer .elastosETH .blockImage img {
+    max-height: 400px; }
+
+.mainContainer .elastosBlockchain .blockContent {
+  text-align: left; }
+
+.mainContainer .elastosBlockchain ul li {
+  margin-bottom: 12px; }
+
+.mainContainer .elastosBlockchain a {
+  color: #4f789c; }
+  .mainContainer .elastosBlockchain a.button {
+    color: #ffffff;
+    background-color: #0b687c; }
+    .mainContainer .elastosBlockchain a.button:hover {
+      background-color: #4f789c; }
+
+.mainContainer .imageAlignTop .blockImage {
+  max-width: none; }
+  .mainContainer .imageAlignTop .blockImage > img {
+    max-height: 100px; }
+
+.promoRow .button {
+  color: white;
+  border-color: white; }
+  .promoRow .button:hover {
+    background-color: #0b687c; }
+
+.section-title {
+  font-size: 30px;
+  font-weight: 200;
+  text-align: center;
+  margin-bottom: 30px; }
+
+.light-bg {
+  background-color: #f8f9fa; }
+
+@media only screen and (max-width: 736px) {
+  .elastosFeatures.container {
+    border-top: 1px solid #92b6cc;
+    padding-top: 5vh;
+    margin-top: 5vh; } }
+
+@media only screen and (max-width: 1023px) {
+  .mainContainer .elastosETH .blockImage {
+    display: none; } }

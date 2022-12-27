@@ -1,0 +1,15 @@
+
+
+header {
+
+  .navigationSlider .slidingNav > ul.nav-site {
+
+    background-color: $background_white;
+
+    > li > a {
+      color: $text_default_color;
+      font-weight: 500;
+    }
+  }
+
+}
