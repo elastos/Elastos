@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUIRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/px300"
+    >
+
+
+    <com.qmuiteam.qmui.layout.QMUILinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_super_list"
+        android:orientation="vertical">
+
+        <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/iv_icon"
+            android:layout_width="@dimen/px220"
+            android:layout_height="@dimen/px120"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/px10"
+            android:padding="5dp"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/found_vote_initial" />
+
+
+        <TextView
+            android:id="@+id/tv_name"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/px80"
+            android:layout_marginTop="@dimen/px10"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="2"
+            android:padding="@dimen/px5"
+            android:textColor="#ffffffff"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/px10"
+            android:textColor="@color/qmui_config_color_white"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/tv_num_vote"
+            android:layout_width="@dimen/px200"
+            android:layout_height="@dimen/px42"
+            android:layout_gravity="center"
+            android:layout_marginBottom="@dimen/px21"
+            android:layout_marginLeft="@dimen/px20"
+            android:layout_marginRight="@dimen/px20"
+            android:layout_marginTop="@dimen/px7"
+            android:gravity="center"
+            android:text="148556票"
+            android:textColor="#ffffffff"
+            android:textSize="10sp"
+            android:visibility="gone" />
+    </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_my"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:src="@mipmap/found_vote_ranking_sheet"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_my"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="10dp"
+        android:rotation="45"
+        android:text="NO.10"
+        android:textColor="#ffffffff"
+        android:textSize="7sp"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/iv_no"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="@dimen/px20"
+        android:src="@mipmap/found_vote_1st"
+        android:visibility="gone" />
+
+</com.qmuiteam.qmui.layout.QMUIRelativeLayout>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/commonbg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px120"
+        android:layout_marginTop="@dimen/px52"
+        android:layout_marginRight="@dimen/px120"
+        android:orientation="vertical">
+
+
+        <!--android:drawableLeft="@mipmap/asset_wallet_pay_password"-->
+        <!--android:drawablePadding="@dimen/px20"-->
+
+        <org.elastos.wallet.ela.widget.keyboard.SecurityEditText
+            android:id="@+id/et_walletpws"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:hint="@string/please_enter_wallet_password"
+            android:inputType="textPassword"
+            android:paddingBottom="@dimen/px26"
+            android:textColor="@color/wallet_textColor"
+            android:textColorHint="@color/wallet_hintTextColor"
+            android:textSize="@dimen/px26" />
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/px1"
+            android:layout_alignBottom="@id/et_walletpws"
+            android:background="@color/gap_wallet" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/px12"
+            android:drawableLeft="@mipmap/wallet_notice"
+            android:drawablePadding="@dimen/px12"
+            android:text="@string/mustcontain"
+            android:textColor="@color/hint_color"
+            android:textSize="11sp" />
+
+
+        <org.elastos.wallet.ela.widget.keyboard.SecurityEditText
+            android:id="@+id/et_walletpws_next"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/px32"
+            android:background="@null"
+            android:gravity="center_vertical"
+            android:hint="@string/please_enter_your_password_again_confirm"
+            android:inputType="textPassword"
+            android:paddingBottom="@dimen/px26"
+            android:textColor="@color/wallet_textColor"
+            android:textColorHint="@color/wallet_hintTextColor"
+            android:textSize="@dimen/px26" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/px1"
+            android:layout_alignBottom="@id/et_walletpws_next"
+            android:background="@color/gap_wallet" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/px30"
+            android:drawableLeft="@mipmap/wallet_notice"
+            android:drawablePadding="@dimen/px12"
+            android:text="@string/create_a_wallet_text1"
+            android:textColor="@color/wallet_hintTextColor"
+            android:textSize="11sp" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/px8"
+            android:text="@string/create_a_wallet_text2"
+            android:textColor="@color/wallet_hintTextColor"
+            android:textSize="11sp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_create_wallet"
+        style="@style/button_margin"
+        android:layout_marginTop="200dp"
+        android:text="@string/surecreate" />
+</LinearLayout>

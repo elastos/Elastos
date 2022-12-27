@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/qmuilinearlayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/found_bg">
+
+    <RelativeLayout
+        android:id="@+id/second_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <include
+            android:id="@+id/title_layout"
+            layout="@layout/title_bar" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/title_layout"
+            android:layout_margin="15dp"
+            android:background="@drawable/ct_desc_border"
+            android:orientation="vertical">
+
+            <org.elastos.wallet.ela.utils.widget.RoundImageView
+                android:id="@+id/head_ic"
+                android:layout_width="61dp"
+                android:layout_height="61dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="70dp"
+                android:scaleType="matrix"
+                android:src="@mipmap/ct_manager_icon"
+                app:circle="true" />
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp" />
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="80dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginBottom="60dp"
+                android:gravity="center"
+                android:lineSpacingExtra="5dp"
+                android:text="@string/inofficehint" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_getdepos"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_above="@+id/refresh_ct_did"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/ct_btn_border"
+            android:gravity="center"
+            android:text="@string/getcrmode" />
+
+        <TextView
+            android:id="@+id/refresh_ct_info"
+            android:layout_width="120dp"
+            android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="40dp"
+            android:layout_marginBottom="25dp"
+            android:background="@drawable/ct_btn_border"
+            android:gravity="center"
+            android:text="@string/refreshctinfo" />
+
+        <TextView
+            android:id="@+id/refresh_ct_did"
+            android:layout_width="120dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="40dp"
+            android:layout_marginBottom="25dp"
+            android:background="@drawable/ct_btn_border"
+            android:gravity="center"
+            android:text="@string/refreshdidinfo" />
+
+        <TextView
+            android:id="@+id/deposit"
+            android:layout_width="250dp"
+            android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="25dp"
+            android:background="@drawable/ct_btn_border"
+            android:gravity="center"
+            android:text="@string/withdrawaldeposit"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+    <include
+        android:id="@+id/first_layout"
+        layout="@layout/fragment_ct_dismiss_prompt" />
+</FrameLayout>

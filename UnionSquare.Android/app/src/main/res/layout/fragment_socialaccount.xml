@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue1"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <TextView
+        android:id="@+id/tv_tip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white20"
+        android:paddingLeft="15dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:text="@string/tipcanjump"
+        android:textSize="11sp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/et_homepage"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputpersonalurl" />
+
+            <View style="@style/line_margin15" />
+
+            <EditText
+                android:id="@+id/et_google"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputgoogle" />
+
+            <View style="@style/line_margin15" />
+
+            <EditText
+                android:id="@+id/et_mircrosoft"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputmircrosoft" />
+
+            <View style="@style/line_margin15" />
+
+            <EditText
+                android:id="@+id/et_facebook"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputfacebook" />
+
+            <View style="@style/line_margin15" />
+
+            <EditText
+                android:id="@+id/et_twitter"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputtwitter" />
+
+
+            <View style="@style/line_margin15" />
+
+            <EditText
+                android:id="@+id/et_webo"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinpurwebo" />
+
+            <View style="@style/line_margin15" />
+
+            <EditText
+                android:id="@+id/et_wechat"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputwechat" />
+
+            <View style="@style/line_margin15" />
+
+            <EditText
+                android:id="@+id/et_alipay"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputalipay" />
+
+            <View style="@style/line_margin15" />
+
+            <TextView
+                android:id="@+id/tv_public"
+                style="@style/button_margin"
+                android:layout_marginTop="40dp"
+                android:text="@string/publish" />
+
+            <TextView
+                android:layout_marginBottom="40dp"
+                android:id="@+id/tv_keep"
+                style="@style/button_margin"
+                android:layout_marginTop="20dp"
+                android:text="@string/keepasdraft" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

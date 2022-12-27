@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue1"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/statusbarutil_fake_status_bar_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/statusbar_view_height" />
+
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="popBackFragment"
+        android:padding="14dp"
+        android:src="@mipmap/window_750_close" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="14dp"
+        android:text="@string/cragreement"
+        android:textSize="18sp" />
+
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="15dp"
+        android:layout_weight="1"
+        android:background="@drawable/scwhite_cr10"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/tv_agree"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/cragreementcontent"
+            android:textSize="13dp" />
+    </android.support.v4.widget.NestedScrollView>
+
+    <CheckBox
+        android:id="@+id/chechbox"
+        style="@style/CustomCheckboxTheme"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="35dp"
+        android:paddingLeft="5dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:text="@string/iagree"
+        android:textColor="@color/whiter"
+        android:textSize="12sp" />
+
+
+    <TextView
+        android:id="@+id/tv_sure"
+        style="@style/button_margin"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginBottom="70dp"
+        android:text="@string/next" />
+</LinearLayout>

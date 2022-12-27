@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ll"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:background="@color/black">
+
+
+    <com.qmuiteam.qmui.layout.QMUILinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:background="@drawable/sc_26ffffff_2"
+        android:gravity="center|left"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_rank"
+            android:layout_width="58dp"
+            android:layout_height="match_parent"
+            android:gravity="center" />
+
+        <View
+            android:layout_width="@dimen/px1"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/px30"
+            android:layout_marginRight="@dimen/px30"
+            android:layout_marginBottom="@dimen/px30"
+            android:background="@color/white" />
+
+
+        <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/iv_icon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@mipmap/found_vote_initial_circle" />
+
+
+        <com.qmuiteam.qmui.layout.QMUILinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="3dp"
+            android:layout_weight="5"
+            android:gravity="center"
+            android:orientation="vertical">
+
+
+            <TextView
+                android:id="@+id/tv_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="left"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tv_address"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:drawableLeft="@mipmap/found_vote_point_location"
+                android:drawablePadding="6dp"
+                android:layout_gravity="left"
+                android:textColor="@color/white"
+                android:textSize="11sp" />
+
+
+        </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+
+        <com.qmuiteam.qmui.layout.QMUILinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:layout_marginRight="15dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_num"
+                android:layout_gravity="right"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_gravity="right"
+                android:id="@+id/tv_zb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:drawableLeft="@mipmap/found_vote_point_percent"
+                android:drawablePadding="6dp"
+                android:textColor="@color/white"
+                android:textSize="11sp" />
+
+            <android.support.v7.widget.AppCompatCheckBox
+                android:id="@+id/checkbox"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_gravity="center"
+                android:clickable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:visibility="gone" />
+        </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+
+        <ImageView
+            android:id="@+id/iv_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/px32"
+            android:src="@mipmap/point_list_delete"
+            android:visibility="gone" />
+
+
+    </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+</LinearLayout>

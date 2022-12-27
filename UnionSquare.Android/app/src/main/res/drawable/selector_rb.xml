@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:drawable="@drawable/wallet_password_turn_on" android:state_checked="true"/>
+    <item android:drawable="@drawable/wallet_password_turn_on" android:state_selected="true"/>
+    <item android:drawable="@drawable/wallet_password_turn_off" android:state_checked="false"/>
+    <item android:drawable="@drawable/wallet_password_turn_off" android:state_selected="false"/>
+    <item android:drawable="@drawable/wallet_password_turn_off" />
+</selector>

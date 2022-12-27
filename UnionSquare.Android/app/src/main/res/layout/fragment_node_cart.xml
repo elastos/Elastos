@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/found_bg"
+    android:gravity="center"
+    android:orientation="vertical">
+
+
+    <include layout="@layout/title" />
+
+
+    <com.qmuiteam.qmui.layout.QMUILinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.qmuiteam.qmui.layout.QMUIRelativeLayout
+            android:id="@+id/ll_rate"
+            android:layout_width="match_parent"
+            android:layout_height="38dp"
+            android:orientation="vertical">
+
+
+            <android.support.v7.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="@string/vote_qwtpzb"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/tv_ratio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="30dp"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
+            <android.support.v7.widget.AppCompatSeekBar
+                android:id="@+id/sb_suger"
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="center"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:max="100"
+                android:maxHeight="5dp"
+                android:paddingStart="0dp"
+                android:paddingLeft="0dp"
+                android:paddingEnd="0dp"
+                android:paddingRight="0dp"
+                android:progress="20"
+                android:progressDrawable="@drawable/suger_seekbar_line"
+                android:secondaryProgress="10"
+                android:thumb="@null" />
+
+
+        </com.qmuiteam.qmui.layout.QMUIRelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/px40"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:weightSum="2">
+
+            <LinearLayout
+                android:id="@+id/ll_select"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <View
+                    android:id="@+id/line_select"
+                    style="@style/line1"
+                    android:layout_width="77dp" />
+
+                <TextView
+                    android:id="@+id/tv_select"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/px30"
+                    android:text="@string/selectlist" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_unselect"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <View
+                    android:id="@+id/line_unselect"
+                    style="@style/line1"
+                    android:layout_width="77dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_unselect"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/px30"
+                    android:text="@string/unseletList"
+                    android:textColor="@color/whiter50" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/listview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/px30"
+            android:layout_marginTop="22dp"
+            android:layout_marginRight="@dimen/px30"
+            android:layout_weight="1"
+            android:divider="@null"
+            android:dividerHeight="@dimen/px20"
+            android:fadingEdge="none"
+            android:footerDividersEnabled="false"
+            android:headerDividersEnabled="false"
+            android:scrollbars="none"
+            android:visibility="gone" />
+
+
+        <LinearLayout
+            android:id="@+id/ll_blank"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:src="@mipmap/found_vote_empty_list"
+                android:visibility="visible" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:text="@string/nocandidatenode"
+                android:textColor="@color/whiter50"
+                android:textSize="17sp" />
+
+        </LinearLayout>
+
+
+        <!--      <LinearLayout
+                  android:id="@+id/ll_bj"
+                  android:layout_width="match_parent"
+                  android:layout_height="50dp"
+                  android:orientation="horizontal"
+                  >
+
+
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:layout_weight="1"
+                      android:gravity="center|left"
+                      android:orientation="horizontal"
+                      android:paddingLeft="@dimen/px40">
+
+                      <CheckBox
+                          android:id="@+id/sc_checkbox"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content" />
+
+                      <android.support.v7.widget.AppCompatTextView
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:gravity="center|left"
+                          android:text="@string/future_generations"
+                          android:textColor="@color/white"
+                          android:textSize="12sp" />
+
+                  </LinearLayout>
+
+                  <View
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:layout_weight="1" />
+
+                  <android.support.v7.widget.AppCompatTextView
+                      android:id="@+id/tv_sc"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:layout_weight="1"
+                      android:background="@drawable/sc_26ffffff_2"
+                      android:gravity="center"
+                      android:text="@string/delete"
+                      android:textColor="#FEFEFF"
+                      android:textSize="15sp" />
+
+              </LinearLayout>-->
+
+
+        <com.qmuiteam.qmui.layout.QMUILinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal">
+
+            <com.qmuiteam.qmui.layout.QMUILinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center|left"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/px40">
+
+
+                <CheckBox
+                    android:id="@+id/checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+
+                <android.support.v7.widget.AppCompatTextView
+                    android:id="@+id/tv_num"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="全选(0)"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+            </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/tv_yxz"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center|left"
+                android:text="@string/has_chosen"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/tv_ljtp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/sc_26ffffff_2"
+                android:gravity="center"
+                android:text="@string/mmediately_to_vote"
+                android:textColor="#FEFEFF"
+                android:textSize="15sp" />
+
+
+        </com.qmuiteam.qmui.layout.QMUILinearLayout>
+    </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 设置选择和未选中时显示的drawable -->
+    <item android:drawable="@mipmap/selected_already" android:state_enabled="false" />
+    <item android:drawable="@mipmap/wallet_single_address_circle" android:state_checked="false" />
+    <item android:drawable="@mipmap/wallet_single_address" android:state_checked="true" />
+
+
+</selector>

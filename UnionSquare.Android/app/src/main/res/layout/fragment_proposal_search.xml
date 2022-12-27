@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue1"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/statusbarutil_fake_status_bar_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/statusbar_view_height" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:onClick="popBackFragment"
+            android:paddingLeft="14dp"
+            android:src="@mipmap/window_750_back" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/sc_ffffff_cr4"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:src="@mipmap/cr_search_icon" />
+
+            <EditText
+                android:id="@+id/et_search"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:gravity="center_vertical"
+                android:hint="@string/plzinputsearch"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/tv_search"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
+            android:text="@string/search" />
+    </LinearLayout>
+
+    <com.scwang.smartrefresh.layout.SmartRefreshLayout
+        android:id="@+id/srl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:srlAccentColor="@android:color/white"
+        app:srlDisableContentWhenLoading="true"
+        app:srlDisableContentWhenRefresh="true"
+        app:srlEnablePreviewInEditMode="false"
+        app:srlEnableRefresh="false">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tv_nosearch"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="50dp"
+                android:gravity="center_horizontal"
+                android:text="@string/nosearchresult"
+                android:textColor="@color/whiter50" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv"
+                android:paddingBottom="30dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="15dp" />
+        </RelativeLayout>
+
+        <com.scwang.smartrefresh.layout.footer.ClassicsFooter
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:srlAccentColor="@color/whiter" />
+
+    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+</LinearLayout>

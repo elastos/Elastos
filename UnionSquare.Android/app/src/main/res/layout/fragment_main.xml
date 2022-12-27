@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/tab_bg"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/layout_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+
+    <com.chaychan.library.BottomBarLayout
+        android:id="@+id/bottombar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px118"
+        android:orientation="horizontal">
+
+        <com.chaychan.library.BottomBarItem
+            android:id="@+id/bottombaritem"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/mainitembg"
+            android:gravity="center"
+            android:touchscreenBlocksFocus="true"
+            app:iconHeight="@dimen/px60"
+            app:iconNormal="@mipmap/tab_asset_unselected"
+            app:iconSelected="@mipmap/tab_asset_select"
+            app:iconWidth="@dimen/px60"
+            app:itemText="@string/asset"
+            app:itemTextSize="11sp"
+            app:textColorNormal="@color/qmui_config_color_white"
+            app:textColorSelected="@color/qmui_config_color_white" />
+
+
+        <com.chaychan.library.BottomBarItem
+            android:id="@+id/bottombaritem1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/black1"
+            android:gravity="center"
+            app:iconHeight="@dimen/px60"
+            app:iconNormal="@mipmap/tab_society_unselected"
+            app:iconSelected="@mipmap/tab_society_selected"
+            app:iconWidth="@dimen/px60"
+            app:itemText="@string/social"
+            app:itemTextSize="11sp"
+            app:textColorNormal="@color/qmui_config_color_white"
+            app:textColorSelected="@color/qmui_config_color_white" />
+
+        <com.chaychan.library.BottomBarItem
+            android:id="@+id/bottombaritem2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/black1"
+            android:gravity="center"
+            app:iconHeight="@dimen/px60"
+            app:iconNormal="@mipmap/tab_mine_unselected"
+            app:iconSelected="@mipmap/tab_mine_selected"
+            app:iconWidth="@dimen/px60"
+            app:itemText="@string/mine"
+            app:itemTextSize="11sp"
+            app:textColorNormal="@color/qmui_config_color_white"
+            app:textColorSelected="@color/qmui_config_color_white" />
+
+    </com.chaychan.library.BottomBarLayout>
+
+
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

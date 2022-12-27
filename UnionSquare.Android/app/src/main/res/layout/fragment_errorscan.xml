@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/commonbg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <TextView
+        android:id="@+id/tv_erro"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px380"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginRight="15dp"
+        android:background="@drawable/st_ffffff_cr5"
+        android:padding="15dp"
+        android:scrollbars="vertical" />
+
+    <TextView
+        android:id="@+id/tv_copy"
+        style="@style/button_margin"
+        android:layout_marginTop="100dp"
+        android:text="@string/copyscanresult" />
+</LinearLayout>

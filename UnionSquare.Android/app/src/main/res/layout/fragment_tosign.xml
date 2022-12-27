@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/asset_bg"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+
+    <ImageView
+        android:id="@+id/iv_qr"
+        android:layout_width="190dp"
+        android:layout_height="190dp"
+        android:layout_marginTop="70dp"
+        android:background="@mipmap/asset_code_border"
+        android:padding="10dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_onlycode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px70"
+        android:gravity="center"
+        android:lineSpacingMultiplier="1.2"
+        android:text="@string/onlyid"
+        android:textColor="#ffffffff"
+        android:textSize="11sp" />
+
+    <LinearLayout
+        android:id="@+id/ll_vp"
+        android:layout_width="350dp"
+        android:layout_height="270dp"
+        android:layout_marginTop="20dp"
+        android:background="@mipmap/asset_code_border"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/viewpage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingLeft="35dp"
+            android:paddingRight="35dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_vptitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px30"
+        android:gravity="center"
+        android:textColor="#ffffffff"
+        android:textSize="13sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px60"
+        android:gravity="center"
+        android:text="@string/pleasesign"
+        android:textColor="#ffffffff"
+        android:textSize="11sp" />
+
+    <TextView
+        android:id="@+id/tv_multip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px50"
+        android:text="@string/scanallqr"
+        android:textColor="#ffffffff"
+        android:textSize="13sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/tv_back"
+        style="@style/button_margin"
+        android:layout_marginBottom="@dimen/px180"
+        android:text="@string/backtostart"
+        android:textSize="15sp" />
+</LinearLayout>

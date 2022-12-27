@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue1"
+    android:orientation="vertical">
+
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <include layout="@layout/title" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white20"
+                android:drawablePadding="5dp"
+                android:paddingLeft="15dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:text="@string/tipcanjump"
+                android:textSize="11sp" />
+
+            <!-- <RelativeLayout
+                 android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+                 android:descendantFocusability="beforeDescendants">-->
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_show"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+            <!-- </RelativeLayout>-->
+
+            <ImageView
+                android:id="@+id/iv_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/px112"
+                android:src="@mipmap/asset_adding_btn" />
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+
+    <ScrollView
+        android:id="@+id/sv_chose"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/statusbar_view_height"
+        android:fillViewport="true"
+        android:background="@color/c262626"
+        android:visibility="gone"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/c262626"
+                android:padding="15dp">
+
+                <ImageView
+                    android:id="@+id/iv_showshow"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@mipmap/pop_up_fold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="@string/addinfo"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rl_custom"
+                style="@style/settingItem_pading15"
+                >
+
+                <TextView
+                    android:id="@+id/tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:text="@string/custominfor" />
+
+
+                <View
+                    style="@style/line1"
+                    android:layout_alignParentBottom="true" />
+            </RelativeLayout>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_chose"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/c262626" />
+
+
+        </LinearLayout>
+    </ScrollView>
+
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/ll_addcustom"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/statusbar_view_height"
+        android:background="@color/c262626"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp">
+
+            <ImageView
+                android:id="@+id/iv_addcustom_back"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@mipmap/window_750_back" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/addcustominfo"
+                android:textSize="16sp" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rl_addcustom_single"
+            style="@style/settingItem_pading15"
+            android:background="@color/c262626">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="@string/singletext" />
+
+
+            <View
+                style="@style/line1"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rl_addcustom_mult"
+            style="@style/settingItem_pading15"
+            android:background="@color/c262626">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="@string/multtext" />
+
+
+            <View
+                style="@style/line1"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
+
+
+    </LinearLayout>
+</RelativeLayout>

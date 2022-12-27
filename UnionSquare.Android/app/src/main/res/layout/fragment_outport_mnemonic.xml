@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/wallet_bg"
+    android:orientation="vertical">
+
+
+    <include layout="@layout/title" />
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.AppCompatImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/px56"
+                android:src="@mipmap/walllet_copy_word" />
+
+
+            <android.support.v7.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/px50"
+                android:text="@string/copy_down_your_wallet_mnemonic"
+                android:textColor="@color/qmui_config_color_white"
+                android:textSize="14sp" />
+
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/tv_mnemonic"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/px214"
+                android:layout_marginLeft="78px"
+                android:layout_marginTop="@dimen/px50"
+                android:layout_marginRight="@dimen/px78"
+                android:background="@drawable/mnemonic_border"
+                android:gravity="center"
+                android:textColor="@color/qmui_config_color_white"
+                android:textSize="13sp" />
+
+
+            <android.support.v7.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/px36"
+                android:drawableLeft="@mipmap/wallet_notice"
+                android:drawablePadding="@dimen/px8"
+                android:text="@string/text_mnemonic_prompt"
+                android:textColor="@color/qmui_config_color_white"
+                android:textSize="11sp" />
+
+            <LinearLayout
+                android:visibility="gone"
+                android:id="@+id/ll_pwd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/common_margin"
+                android:layout_marginTop="26dp"
+                android:layout_marginRight="@dimen/common_margin"
+                android:background="@color/mainitembg"
+                android:orientation="vertical"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp">
+
+                <EditText
+                    android:id="@+id/et_pwd"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:background="@null"
+                    android:hint="@string/please_enter_your_mnemonic_password"
+                    android:inputType="textPassword"
+                    android:textSize="14sp" />
+
+                <View
+                    style="@style/line1"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="15dp" />
+            </LinearLayout>
+
+            <com.allen.library.SuperButton
+                android:id="@+id/sb"
+                style="@style/PublicButton"
+                android:layout_marginTop="@dimen/px80"
+                android:text="@string/sureoutport" />
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

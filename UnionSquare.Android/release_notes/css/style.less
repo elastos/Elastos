@@ -1,0 +1,297 @@
+html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, a, abbr, address, big, em, img, q, small, strike, strong,
+sub, sup, tt, var, i, dl, dt, dd, ol, ul, li, form, fieldset, label, table, caption, tbody, thead, tfoot, tr, th, td, article,
+aside, canvas, details, figure, figcaption, header, footer, hgroup, menu, nav, output, section, time, mark, audio,
+video, input, select, button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: '微软雅黑', Arial;
+}
+[v-cloak]{
+  display: none;
+}
+/*input[type=search], input[type=text], input[type=password], input[type=datetime], input[type=datetime-local], input[type=date], input[type=month], input[type=time], input[type=week], input[type=number], input[type=email], input[type=url], input[type=tel], input[type=color], textarea {
+    display: block;
+    padding-top: 2px;
+    padding-left: 0;
+    height: 34px;
+    color: #fff;
+    vertical-align: middle;
+    font-size: 14px;
+    line-height: 16px;
+    border-radius: 0;
+    }*/
+/* 修改placeholder的默认样式 */
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+  color: #fff;
+  opacity: 1;
+  font-size: 0.42666667rem;;
+}
+
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+  color: #fff;
+  opacity: 1;
+  font-size: 0.42666667rem;;
+}
+
+input:-ms-input-placeholder {
+  color: #fff;
+  opacity: 1;
+  font-size: 0.42666667rem;;
+}
+
+input::-webkit-input-placeholder {
+  color: #fff;
+  opacity: 1;
+  font-size: 0.42666667rem;;
+}
+
+/*去除默认样式*/
+ul, ol, li {
+  list-style: none;
+}
+
+/*表格边框合并，边框距零*/
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/*继承父元素的字体系列样式*/
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+/*清除浮动*/
+.fl {
+  float: left;
+}
+
+.fr {
+  float: right;
+}
+
+.cf {
+  zoom: 1;
+}
+
+.cf:after {
+  content: "";
+  display: table;
+  clear: both;
+  overflow: hidden;
+}
+
+/*a链接*/
+a {
+  text-decoration: none;
+  color: #000;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+/*去除点击高亮效果*/
+a, button, input, select, img, label {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-tap-highlight-color: transparent;
+  outline: medium none;
+}
+
+input::-moz-focus-inner {
+  border: none;
+  padding: 0;
+}
+
+select, input {
+  vertical-align: middle;
+}
+
+/*去掉苹果的默认UI来渲染按钮*/
+input[type="submit"], input[type="reset"], input[type="button"], button, select {
+  -webkit-appearance: none;
+}
+
+/*placeholder文本颜色*/
+input::-webkit-input-placeholder, textarea::-webkit-input-placeholder {
+  color: #ccc;
+}
+
+input:-moz-placeholder, textarea:-moz-placeholder {
+  color: #ccc;
+}
+
+/*html5标签*/
+header, footer, section, article, aside, nav, figure {
+  display: block;
+}
+
+/*长英文字母 数字 换行*/
+p {
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+/*去除默认样式*/
+h1, h2, h3, h4, h5, h6, strong, i, em, address, caption, cite, code, dfn, th, var {
+  font-weight: normal;
+  font-style: normal;
+}
+
+fieldset, img {
+  border: none;
+  display: block;
+}
+
+/*去除长按a链接弹框*/
+html, body {
+  -webkit-touch-callout: none;
+}
+
+/* 设置为100是方便用rem单位计算 */
+@media screen and (max-width: 319px) {
+  html {
+    /*font-size: 85.33333px;*/
+    font-size: 90px;
+  }
+}
+@rem: 750/10rem;
+html[data-dpr="1"]{
+  .main{
+    .content{
+      .content_box{
+        padding-left: 60/@rem;
+      }
+    }
+  }
+}
+html[data-dpr="2"]{
+  .main{
+    .content{
+      .content_box{
+        padding-left: 60/@rem;
+      }
+    }
+  }
+}
+html[data-dpr="3"]{
+  .main{
+    .content{
+      .content_box{
+        padding-left: 80/@rem;
+      }
+    }
+  }
+}
+.main {
+  header {
+    //display: flex;
+    height: 100/@rem;
+    line-height: 100/@rem;
+    div {
+      //flex: 1;
+      text-align: center;
+      font-size: 32/@rem;
+      font-family: PingFangSC-Regular;
+      img {
+        display: inline-block;
+        height: 40/@rem;
+        margin-left: 30/@rem;
+        vertical-align: middle;
+      }
+    }
+    //div:nth-of-type(1) {
+    //  text-align: left;
+    //}
+    //div:nth-of-type(2) {
+    //  font-weight: 600;
+    //}
+    //div:nth-of-type(3) {
+    //  text-align: right;
+    //  font-size: 28/@rem;
+    //  margin-right: 30/@rem;
+    //}
+  }
+  .content {
+    width: 95%;
+    //height: 79vh;
+    margin: 0 auto;
+    position: relative;
+    .content_box:nth-of-type(1) .content_year{
+      top: 20/@rem;
+    }
+    .content_box:nth-of-type(2) .content_year{
+      top: -20/@rem;
+    }
+    .content_box:nth-of-type(3) .content_year{
+      top: -50/@rem;
+    }
+    .content_box:last-child .content_year{
+      top: -105/@rem;
+    }
+    .footer_bottom{
+      width: 100%;
+      height: 115/@rem;
+    }
+    .content_box {
+      position: relative;
+      margin: 60/@rem auto 0 auto;
+      padding-left: 60px;
+      background-image: url("../images/point.png");
+      background-repeat: no-repeat;
+      background-position:0 -5/@rem;
+      -webkit-background-size: 44/@rem 44/@rem;
+      background-size: 44/@rem 44/@rem;
+      .content_year {
+        position: absolute;
+        top: 20/@rem;
+        left: 21/@rem;
+        width: 1px;
+        height: 112%;
+        background: #E1E1E1;
+        z-index: -1
+      }
+      h2 {
+        font-size: 28/@rem;
+        color: #333333;
+      }
+      p {
+        font-size: 20/@rem;
+        margin: 10/@rem 0;
+        font-family: PingFangSC-Regular;
+        color: #666;
+      }
+      p:first-child {
+        color: #999;
+        margin-bottom: 30/@rem;
+      }
+      p:nth-of-type(2) {
+        color: #666;
+      }
+    }
+  }
+  footer {
+    border-top: 1px solid #E1E1E1;
+    width: 100%;
+    height: 115/@rem;
+    margin-top: 60/@rem;
+    display: flex;
+    background: white; 
+    position:fixed; 
+    bottom:0px;
+    a {
+      display: block;
+      width: 500/@rem;
+      height: 72/@rem;
+      -webkit-border-radius: 10/@rem;
+      -moz-border-radius: 10/@rem;
+      border-radius: 10/@rem;
+      line-height: 72/@rem;
+      margin:auto;
+      background: #4A8AFF;
+      color: white;
+      text-align: center;
+    }
+  }
+}

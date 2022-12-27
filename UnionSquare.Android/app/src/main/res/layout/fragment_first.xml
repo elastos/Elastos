@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+  >
+
+    <ImageView
+        android:id="@+id/iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/px280"
+        android:scaleType="centerCrop"
+        android:src="@mipmap/start_logo" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/iv"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/px60"
+        android:text="ELA Wallet"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/tv_word"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="90dp"
+        android:text="@string/splashword"
+        android:textSize="15sp" />
+</RelativeLayout>

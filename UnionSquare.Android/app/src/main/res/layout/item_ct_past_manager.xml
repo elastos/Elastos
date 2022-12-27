@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#00000000">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/ct_past_item_border">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="15dp"/>
+
+        <TextView
+            android:id="@+id/arrow"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="15dp"
+            android:layout_alignParentRight="true"
+            android:background="@mipmap/found_ct_arrow"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="15dp"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="15dp"
+                android:textSize="11sp"
+                android:textColor="@color/whiter50"/>
+
+            <TextView
+                android:id="@+id/manager_btn"
+                android:layout_width="wrap_content"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="15dp"
+                android:background="@drawable/ct_manager_item_btn_border"
+                android:gravity="center"/>
+        </RelativeLayout>
+
+    </RelativeLayout>
+</FrameLayout>

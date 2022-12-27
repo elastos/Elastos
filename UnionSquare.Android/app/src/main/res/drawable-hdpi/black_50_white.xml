@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid android:color="@color/qmui_config_color_50_pure_black" />
+
+    <stroke
+        android:width="1px"
+        android:color="@color/white" />
+    <corners android:radius="1dp" />
+</shape>

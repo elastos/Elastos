@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="67dp"
+    android:paddingLeft="15dp"
+    android:paddingRight="15dp">
+
+    <ImageView
+        android:id="@+id/iv_status"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_centerVertical="true"
+
+        android:src="@mipmap/asset_trade_record_out" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="30dp"
+        android:layout_toLeftOf="@id/ll_right"
+        android:layout_toRightOf="@id/iv_status"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_balance"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="middle"
+            android:singleLine="true"
+            />
+
+        <TextView
+            android:id="@+id/tv_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/whiter50"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:gravity="right"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="middle"
+            android:maxLength="14"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="确认中"
+            android:textColor="@color/green1"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <View
+        style="@style/line1"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>

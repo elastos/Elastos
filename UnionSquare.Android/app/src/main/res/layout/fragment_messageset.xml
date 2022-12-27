@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue1"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <com.allen.library.SuperTextView
+        android:id="@+id/st_redpoint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="18dp"
+        android:textSize="14sp"
+        app:sDividerLineColor="#26ffffff"
+        app:sDividerLineType="none"
+        app:sLeftTextColor="@color/qmui_config_color_white"
+        app:sLeftTextString="@string/openredpoint"
+        app:sRightViewType="switchBtn"
+        app:sSwitchIsChecked="true"
+        app:sSwitchMinWidth="@dimen/px60"
+        app:sThumbResource="@drawable/thumb"
+        app:sTrackResource="@drawable/track" />
+
+    <View
+        style="@style/line1"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp" />
+
+    <com.allen.library.SuperTextView
+        android:id="@+id/st_sendmsg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="18dp"
+        android:textSize="14sp"
+        app:sDividerLineColor="#26ffffff"
+        app:sDividerLineType="none"
+        app:sLeftTextColor="@color/qmui_config_color_white"
+        app:sLeftTextString="@string/sendmsg"
+        app:sRightViewType="switchBtn"
+        app:sSwitchIsChecked="true"
+        app:sSwitchMinWidth="@dimen/px60"
+        app:sThumbResource="@drawable/thumb"
+        app:sTrackResource="@drawable/track" />
+
+    <View
+        style="@style/line1"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp" />
+</LinearLayout>

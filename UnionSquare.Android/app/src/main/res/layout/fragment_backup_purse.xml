@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/wallet_bg"
+    android:orientation="vertical"
+    >
+
+    <include layout="@layout/title_bar" />
+
+
+    <android.support.v7.widget.AppCompatImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/px72"
+        android:src="@mipmap/wallet_back_up" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/px70"
+        android:text="@string/back_up_your_wallet_immediately"
+        android:textColor="@color/qmui_config_color_white"
+        android:textSize="15sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginLeft="@dimen/px70"
+        android:layout_marginTop="@dimen/px70"
+        android:layout_marginRight="@dimen/px70"
+        android:text="@string/Backup_wallet_export_mnemonic"
+        android:textColor="@color/qmui_config_color_white"
+        android:textSize="13sp" />
+
+
+    <com.allen.library.SuperButton
+        android:id="@+id/sb_backup_the_purse"
+        style="@style/PublicButton"
+        android:layout_marginTop="@dimen/px90"
+        android:text="@string/backup_the_purse" />
+
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

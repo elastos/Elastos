@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <RadioGroup
+        android:id="@+id/rb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ELA"
+            android:textColor="@color/white"
+            android:textSize="14dp" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="IDChain"
+            android:textColor="@color/white"
+            android:textSize="14dp" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/tv_paste"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px56"
+        android:layout_marginTop="@dimen/px39"
+        android:layout_marginRight="@dimen/px56"
+        android:background="@drawable/mnemonic_border"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="粘贴待签名内容"
+        android:textSize="11sp" />
+
+    <android.support.v7.widget.AppCompatEditText
+        android:id="@+id/et_tosign"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px250"
+        android:layout_marginLeft="@dimen/px56"
+        android:layout_marginTop="@dimen/px39"
+        android:layout_marginRight="@dimen/px56"
+        android:background="@drawable/mnemonic_border"
+        android:gravity="start|top"
+        android:hint="请输入代签名内容"
+        android:paddingLeft="@dimen/px24"
+        android:paddingTop="@dimen/px22"
+        android:paddingRight="@dimen/px24"
+        android:textColor="@color/qmui_config_color_white"
+        android:textColorHint="@color/hint_color"
+        android:textSize="11sp" />
+
+    <TextView
+        android:id="@+id/tv_tosign"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px56"
+        android:layout_marginTop="@dimen/px39"
+        android:layout_marginRight="@dimen/px56"
+        android:background="@drawable/mnemonic_border"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="点击签名上面内容"
+        android:textSize="11sp" />
+
+    <android.support.v7.widget.AppCompatEditText
+        android:id="@+id/et_sign"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px250"
+        android:layout_marginLeft="@dimen/px56"
+        android:layout_marginTop="@dimen/px39"
+        android:layout_marginRight="@dimen/px56"
+        android:background="@drawable/mnemonic_border"
+        android:gravity="start|top"
+        android:paddingLeft="@dimen/px24"
+        android:paddingTop="@dimen/px22"
+        android:paddingRight="@dimen/px24"
+        android:textColor="@color/qmui_config_color_white"
+        android:textColorHint="@color/hint_color"
+        android:textSize="11sp" />
+
+    <TextView
+        android:id="@+id/tv_copy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px56"
+        android:layout_marginTop="@dimen/px39"
+        android:layout_marginRight="@dimen/px56"
+        android:background="@drawable/mnemonic_border"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="复制签名后信息"
+        android:textSize="11sp" />
+</LinearLayout>

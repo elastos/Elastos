@@ -1,0 +1,193 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="QMUI.Compat">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/whiter</item>
+        <item name="android:textColorPrimary">#ffffff</item>
+        <item name="android:textColorSecondary">#80ffffff</item>
+        <!--默认 EditView 输入框字体的颜色-->
+        <item name="android:editTextColor">#ffffff</item>
+        <item name="android:textColorHint">#80ffffff</item>
+        <!--默认 Button,TextView的文字颜色-->
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:editTextStyle">@style/Widget.EditText.White</item>
+    </style>
+
+    <style name="card_view">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginLeft">4dp</item>
+        <item name="android:layout_marginRight">4dp</item>
+        <item name="android:foreground">?android:attr/selectableItemBackground</item>
+    </style>
+
+    <style name="App" parent="@android:style/Theme.DeviceDefault.Dialog.NoActionBar">
+        <item name="android:windowActionBar">false</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="MyEditText" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">@android:color/darker_gray</item>
+        <item name="colorControlActivated">@color/maincolor</item>
+    </style>
+
+    <style name="TextInputAppTheme" parent="Base.TextAppearance.AppCompat.Caption">
+        <item name="android:textColor">@color/maincolor</item>
+    </style>
+
+
+    <style name="PublicButton">
+        <item name="android:layout_gravity">center</item>
+        <item name="android:layout_width">@dimen/px500</item>
+        <item name="android:layout_height">@dimen/px80</item>
+        <item name="android:textColor">@color/qmui_config_color_white</item>
+        <item name="sSolidColor">#26ffffff</item>
+        <!--<item name="sCornersRadius">@dimen/px20</item>-->
+        <item name="sStrokeColor">@color/qmui_config_color_white</item>
+        <item name="sStrokeWidth">1dp</item>
+    </style>
+
+    <style name="loading_dialog" parent="android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <!--     <item name="android:windowBackground">@drawable/loading_bg</item>-->
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <style name="PublicButton_2">
+        <item name="android:layout_gravity">center</item>
+        <item name="android:layout_width">@dimen/px500</item>
+        <item name="android:layout_height">@dimen/px80</item>
+        <item name="android:textColor">@color/vote_button</item>
+        <item name="sStrokeColor">@color/vote_button</item>
+        <item name="sSolidColor">@color/qmui_config_color_white</item>
+        <item name="sCornersRadius">@dimen/px20</item>
+    </style>
+
+
+    <style name="CustomCheckboxTheme" parent="@android:style/Widget.CompoundButton.CheckBox">
+        <item name="android:button">@drawable/single_address_wallet</item>
+    </style>
+
+    <style name="PopupKeybroad" parent="android:Animation">
+        <item name="android:windowExitAnimation">@anim/push_bottom_out</item>
+    </style>
+
+    <!--RadioButton样式-->
+    <style name="style_RadioButton">
+        <item name="android:layout_width">30dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/rb_home_selector</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textColor">@drawable/rb_focus_color</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="coustom_dialog" parent="android:style/Theme.Dialog">
+        <!--是否浮现在activity之上-->
+        <item name="android:windowIsFloating">true</item>
+        <!--是否模糊-->
+        <item name="android:backgroundDimEnabled">true</item>
+        <!--背景颜色及透明程度-->
+        <item name="android:windowBackground">@color/transparent</item>
+        <!--是否有标题 -->
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+
+    <style name="settingItem">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/px100</item>
+        <item name="android:textColor">#ffffffff</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="settingItem_margin" parent="settingItem">
+        <item name="android:layout_marginLeft">@dimen/common_margin</item>
+        <item name="android:layout_marginRight">@dimen/common_margin</item>
+    </style>
+
+    <style name="settingItem_margin15" parent="settingItem">
+        <item name="android:layout_marginLeft">15dp</item>
+        <item name="android:layout_marginRight">15dp</item>
+    </style>
+    <style name="common_margin15">
+        <item name="android:layout_marginLeft">15dp</item>
+        <item name="android:layout_marginRight">15dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="settingItem_pading15" parent="settingItem">
+        <item name="android:paddingLeft">15dp</item>
+        <item name="android:paddingRight">15dp</item>
+    </style>
+
+    <style name="line1">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0.5dp</item>
+        <item name="android:background">@color/whiter50</item>
+
+    </style>
+
+    <style name="line_margin15" parent="line1">
+        <item name="android:layout_marginLeft">15dp</item>
+        <item name="android:layout_marginRight">15dp</item>
+    </style>
+
+    <style name="linevertical">
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_width">0.5dp</item>
+        <item name="android:background">#ffffffff</item>
+
+    </style>
+
+    <style name="button1">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/setting_item_select</item>
+    </style>
+
+    <style name="button_margin" parent="button1">
+        <item name="android:layout_marginLeft">@dimen/common_margin_button</item>
+        <item name="android:layout_marginRight">@dimen/common_margin_button</item>
+    </style>
+
+    <style name="MyDatePicker" parent="@android:style/Widget.DatePicker">
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:editTextStyle">@style/Widget.EditText.White</item>
+    </style>
+
+
+    <style name="Widget.EditText.White" parent="@android:style/Widget.EditText">
+        <item name="android:textColor">@color/whiter</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="mTablayout" parent="Base.Widget.Design.TabLayout">
+        <item name="tabIndicatorColor">@color/whiter</item>
+        <item name="tabIndicatorHeight">2dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="tabSelectedTextColor">@color/whiter</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/whiter50</item>
+    </style>
+
+</resources>

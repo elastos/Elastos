@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/qmuilinearlayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/found_bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="@dimen/px10"
+        android:layout_marginTop="@dimen/px22"
+        android:layout_marginRight="@dimen/px10"/>
+
+
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

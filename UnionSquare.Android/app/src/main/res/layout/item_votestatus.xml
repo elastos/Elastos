@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="24dp"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/iv_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_centerHorizontal="true"
+        android:src="@mipmap/asset_vote_node" />
+
+    <TextView
+        android:id="@+id/tv_stutus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/iv_icon"
+        android:background="@drawable/sc_4dffffff_cr6"
+        android:padding="2dp"
+        android:text="@string/expired"
+        android:textColor="#ffffffff"
+        android:textSize="10sp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/iv_icon"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:text="0ELA" />
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_count"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:text="@string/dposnotevote"
+        android:textColor="@color/whiter50"
+        android:textSize="11sp" />
+</RelativeLayout>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 进度条的背景色，设置为橘黄色 -->
+    <item android:id="@android:id/background">
+        <shape>
+            <corners android:radius="8dp" />
+            <solid android:color="#808080" />
+        </shape>
+    </item>
+
+    <!--<item-->
+    <!--android:id="@android:id/progress"-->
+    <!--android:drawable="@drawable/progress" />-->
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape>
+                <corners android:radius="8dp" />
+                <solid android:color="@color/qmui_config_color_white" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 物理路径为Context.getFilesDir() + /files/* -->
+    <files-path path="files" name="files" />
+    <!-- 物理路径为Context.getCacheDir() + /files/* -->
+    <cache-path path="files" name="cache" />
+    <!-- 物理路径为Environment.getExternalStorageDirectory() + /files/* -->
+    <external-path path="files" name="external" />
+    <!-- 物理路径为Context.getExternalFilesDir(String) + /files/* -->
+    <external-files-path path="." name="externalfiles"/>
+    <!-- 物理路径为Context.getExternalCacheDir() + /files/* -->
+    <external-cache-path  path="files" name="externalcache"/>
+    <!-- 物理路径为`Context.getExternalMediaDirs() + /files/*, 要求API21+ -->
+    <external-media-path name="externalmedia" path="files" />
+</paths>

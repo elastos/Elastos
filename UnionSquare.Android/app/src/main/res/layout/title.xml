@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/statusbarutil_fake_status_bar_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/statusbar_view_height" />
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="5dp">
+
+        <ImageView
+            android:id="@+id/iv_title_left"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:onClick="popBackFragment"
+            android:paddingLeft="14dp"
+            android:src="@mipmap/window_750_back" />
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:ellipsize="end"
+            android:lines="1"
+            android:scrollHorizontally="true"
+            android:textColor="@color/qmui_config_color_white"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/iv_title_right"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:paddingRight="14dp"
+            android:src="@mipmap/window_750_back"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_title_right"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:gravity="center"
+            android:paddingRight="14dp"
+            android:textSize="14dp"
+            android:visibility="gone"
+            android:text="@string/jump"
+             />
+    </RelativeLayout>
+
+</LinearLayout>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/wallet_orignal_bg"
+    android:orientation="vertical"
+   >
+
+    <include layout="@layout/title" />
+
+    <android.support.v7.widget.AppCompatImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/px130"
+        android:src="@mipmap/wallet_ela_logo" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="ELA Wallet"
+        android:textColor="#ffffffff"
+        android:textSize="20sp" />
+
+    <com.allen.library.SuperButton
+        android:id="@+id/sb_create_wallet"
+        style="@style/PublicButton"
+        android:layout_height="@dimen/px100"
+        android:layout_marginTop="@dimen/px300"
+        android:text="@string/create_a_wallet_title"
+        app:sCornersRadius="0dp" />
+
+    <com.allen.library.SuperButton
+        android:id="@+id/sb_import_wallet"
+        style="@style/PublicButton"
+        android:layout_height="@dimen/px100"
+        android:layout_marginTop="@dimen/px34"
+        android:text="@string/import_the_wallet"
+        app:sCornersRadius="0dp" />
+
+
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

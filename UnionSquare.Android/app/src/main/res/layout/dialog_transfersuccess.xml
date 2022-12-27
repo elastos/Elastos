@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/setting_item_select"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginTop="24dp"
+        android:src="@mipmap/window_waiting" />
+
+    <TextView
+        android:id="@+id/tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:layout_marginTop="26dp"
+        android:gravity="center"
+        android:text="@string/transfersucess"
+        android:textStyle="bold" />
+
+</LinearLayout>

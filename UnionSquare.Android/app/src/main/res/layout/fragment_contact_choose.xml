@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/asset_bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginLeft="@dimen/common_margin_30"
+        android:layout_marginRight="@dimen/common_margin_30" />
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/ll_add"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@color/qmui_config_color_25_pure_black"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/qmui_config_color_white" />
+
+
+        <TextView
+            android:id="@+id/tv_add"
+            style="@style/button_margin"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="15dp"
+            android:height="50dp"
+            android:background="@drawable/setting_item_select"
+            android:text="@string/newcontact"
+            android:textSize="17sp" />
+
+
+    </LinearLayout>
+</LinearLayout>

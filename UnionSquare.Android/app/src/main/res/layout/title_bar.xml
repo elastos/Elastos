@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#00000000"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/statusbarutil_fake_status_bar_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/statusbar_view_height" />
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_marginBottom="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp">
+        <!--自定义toolbar的title 和subtitle -->
+
+
+        <TextView
+            android:id="@+id/toolbar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:ellipsize="end"
+            android:lines="1"
+            android:scrollHorizontally="true"
+            android:textColor="@color/qmui_config_color_white"
+            android:textSize="15sp" />
+
+        <TextView
+
+            android:id="@+id/tv_title_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right|center_vertical"
+            android:layout_marginRight="14dp"
+            android:textSize="12sp"
+            android:visibility="gone" />
+    </android.support.v7.widget.Toolbar>
+
+</LinearLayout>
