@@ -1,0 +1,46 @@
+
+@@include( '../includes/head.tpl', { "site": "web" } )
+
+<section class="container" style="min-height: 70%" ng-controller='viewCtrl'>
+
+  <div class="tab-content" >
+
+    @@include( '../includes/generateWallet.tpl',     { "site": "web" } )
+
+    @@include( '../includes/sendTx.tpl',             { "site": "web" } )
+
+    @@include( '../includes/swap.tpl',               { "site": "web" } )
+
+    @@include( '../includes/offlineTx.tpl',          { "site": "web" } )
+
+    @@include( '../includes/contracts.tpl',          { "site": "web" } )
+
+    @@include( '../includes/ens.tpl',                { "site": "web" } )
+
+    @@include( '../includes/domainsale.tpl',         { "site": "web" } )
+
+    @@include( '../includes/viewWalletInfo.tpl',     { "site": "web" } )
+
+    @@include( '../includes/txStatus.tpl',           { "site": "web" } )
+
+    @@include( '../includes/bulkGenerate.tpl',       { "site": "web" } )
+
+    @@include( '../includes/print.tpl',              { "site": "web" } )
+
+  </div>
+
+
+  @@include('../includes/alerts.tpl')
+
+
+  <!--
+  <section class="loading-wrap" ng-hide="1==1">
+    <div class="loading">
+      <img src="images/loading.gif" />
+      <h1> Loading... </h1>
+  </section>
+  -->
+
+</section>
+
+@@include( '../includes/footer.tpl', { "site": "web" } )
