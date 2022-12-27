@@ -1,0 +1,19 @@
+{
+  "Configuration": {
+    "ActiveNet": "testnet",
+    "Magic":2018111,
+    "PowConfiguration": {
+      "PayToAddr": "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
+      "MinerInfo": "ELA",
+      "MinTxFee": 100
+    },
+    "EnableRPC": true,
+    "RpcConfiguration": {
+      "User": "User",
+      "Pass": "Password",
+      "WhiteIPList": [
+        "127.0.0.1"
+      ]
+    }
+  }
+}
