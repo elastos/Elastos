@@ -1,0 +1,21 @@
+{
+  "ServerPort":"8080",
+  "Db":{
+      "DbDriverName":"mysql",
+      "DbDriverSource":"elastos:12345678@tcp(testnet-mysql:3306)/chain"
+  },
+  "Ela":{
+      "Restful":"testnet-mainchain-node:21334",
+      "Jsonrpc":"testnet-mainchain-node:21336",
+      "Enable":true
+  },
+  "Eth":{
+    "Endpoint":"http://testnet-sidechain-eth-node:20636",
+    "StartHeight":0,
+    "BatchSize":1,
+    "Retry":10,
+    "Enable":true,
+    "SideChain":false
+  },
+  "EnableCors":false
+}

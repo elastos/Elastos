@@ -1,0 +1,83 @@
+2019/09/25 23:03:45.486038 [1;35m[INF][m GID 1, Init wallet.
+2019/09/25 23:03:45.519188 [1;35m[INF][m GID 1, Arbiter version:  
+2019/09/25 23:03:45.519287 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/09/25 23:03:45.526485 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/09/25 23:03:45.526848 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/09/25 23:03:45.527396 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/09/25 23:03:45.534304 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/09/25 23:03:45.575007 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG
+2019/09/25 23:03:45.575088 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/09/25 23:03:45.575145 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J
+2019/09/25 23:03:45.575192 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+2019/09/25 23:03:45.575239 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XZyAtNipJ7fdgBRhdzCoyS7A3PDSzR7u98
+2019/09/25 23:03:45.575290 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/09/25 23:03:45.575305 [1;35m[INF][m GID 1, 7. Start servers.
+2019/09/25 23:03:45.575318 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/09/25 23:03:45.575331 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/09/25 23:03:45.584509 [1;33m[WRN][m GID 118, [CheckAndRemoveDepositTransactionsFromDB] Get exist deposit transactions failed: Post http://privnet-sidechain-eth-oracle-node:16666: dial tcp 172.21.0.14:16666: connect: connection refused
+2019/09/25 23:03:45.584592 [1;35m[INF][m GID 118, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:03:49.542602 [1;35m[INF][m GID 7, currentHeight: 407  chainHeight: 408
+2019/09/25 23:03:49.552957 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  408
+2019/09/25 23:03:51.618134 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  573
+2019/09/25 23:04:23.039966 [1;35m[INF][m GID 7, currentHeight: 408  chainHeight: 409
+2019/09/25 23:04:23.104084 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  409
+2019/09/25 23:04:26.392178 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  574
+2019/09/25 23:04:31.601203 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  575
+2019/09/25 23:04:45.596004 [1;33m[WRN][m GID 118, [CheckAndRemoveDepositTransactionsFromDB] Get exist deposit transactions failed: Post http://privnet-sidechain-eth-oracle-node:16666: dial tcp 172.21.0.14:16666: connect: connection refused
+2019/09/25 23:04:45.596254 [1;35m[INF][m GID 118, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:04:45.609928 [1;35m[INF][m GID 119, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:04:50.403750 [1;35m[INF][m GID 7, currentHeight: 409  chainHeight: 410
+2019/09/25 23:04:50.428014 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  410
+2019/09/25 23:04:52.744485 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  576
+2019/09/25 23:05:00.859005 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  577
+2019/09/25 23:05:08.987030 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  578
+2019/09/25 23:05:13.675820 [1;35m[INF][m GID 7, currentHeight: 410  chainHeight: 411
+2019/09/25 23:05:13.726987 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  411
+2019/09/25 23:05:22.838112 [1;35m[INF][m GID 8, currentHeight: 197  chainHeight: 198
+2019/09/25 23:05:22.855896 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  198
+2019/09/25 23:05:23.154067 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  579
+2019/09/25 23:05:27.910390 [1;35m[INF][m GID 7, currentHeight: 411  chainHeight: 412
+2019/09/25 23:05:27.915951 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  412
+2019/09/25 23:05:29.903228 [1;35m[INF][m GID 8, currentHeight: 198  chainHeight: 199
+2019/09/25 23:05:29.918355 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  199
+2019/09/25 23:05:31.960065 [1;35m[INF][m GID 8, currentHeight: 199  chainHeight: 200
+2019/09/25 23:05:31.989363 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  200
+2019/09/25 23:05:33.298497 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  580
+2019/09/25 23:05:35.002731 [1;35m[INF][m GID 8, currentHeight: 200  chainHeight: 201
+2019/09/25 23:05:35.005911 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  201
+2019/09/25 23:05:36.340720 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  581
+2019/09/25 23:05:39.084161 [1;35m[INF][m GID 7, currentHeight: 412  chainHeight: 413
+2019/09/25 23:05:39.087152 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  413
+2019/09/25 23:05:42.121832 [1;35m[INF][m GID 7, currentHeight: 413  chainHeight: 414
+2019/09/25 23:05:42.125643 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  414
+2019/09/25 23:05:44.453603 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  582
+2019/09/25 23:05:45.192969 [1;35m[INF][m GID 8, currentHeight: 201  chainHeight: 202
+2019/09/25 23:05:45.237959 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  202
+2019/09/25 23:05:45.603333 [1;33m[WRN][m GID 118, [CheckAndRemoveDepositTransactionsFromDB] Get exist deposit transactions failed: Post http://privnet-sidechain-eth-oracle-node:16666: dial tcp 172.21.0.14:16666: connect: connection refused
+2019/09/25 23:05:45.603852 [1;35m[INF][m GID 118, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:05:45.690716 [1;35m[INF][m GID 119, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:05:48.307699 [1;35m[INF][m GID 8, currentHeight: 202  chainHeight: 203
+2019/09/25 23:05:48.312563 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  203
+2019/09/25 23:06:02.331091 [1;35m[INF][m GID 7, currentHeight: 414  chainHeight: 415
+2019/09/25 23:06:02.336622 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  415
+2019/09/25 23:06:02.616680 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  583
+2019/09/25 23:06:09.491902 [1;35m[INF][m GID 8, currentHeight: 203  chainHeight: 204
+2019/09/25 23:06:09.497852 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  204
+2019/09/25 23:06:10.399747 [1;35m[INF][m GID 7, currentHeight: 415  chainHeight: 416
+2019/09/25 23:06:10.403435 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  416
+2019/09/25 23:06:19.477639 [1;35m[INF][m GID 7, currentHeight: 416  chainHeight: 417
+2019/09/25 23:06:19.516800 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  417
+2019/09/25 23:06:26.684324 [1;35m[INF][m GID 8, currentHeight: 204  chainHeight: 205
+2019/09/25 23:06:26.711353 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  205
+2019/09/25 23:06:28.597748 [1;35m[INF][m GID 7, currentHeight: 417  chainHeight: 418
+2019/09/25 23:06:28.601147 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  418
+2019/09/25 23:06:28.896041 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  584
+2019/09/25 23:06:45.604658 [1;33m[WRN][m GID 118, [CheckAndRemoveDepositTransactionsFromDB] Get exist deposit transactions failed: Post http://privnet-sidechain-eth-oracle-node:16666: dial tcp 172.21.0.14:16666: connect: connection refused
+2019/09/25 23:06:45.604759 [1;35m[INF][m GID 118, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:06:45.699909 [1;35m[INF][m GID 119, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:06:45.820499 [1;35m[INF][m GID 7, currentHeight: 418  chainHeight: 419
+2019/09/25 23:06:45.848332 [1;35m[INF][m GID 7,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  419
+2019/09/25 23:06:47.189377 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  585
+2019/09/25 23:06:56.986219 [1;35m[INF][m GID 8, currentHeight: 205  chainHeight: 206
+2019/09/25 23:06:57.035803 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  206
+2019/09/25 23:07:03.358224 [1;35m[INF][m GID 116, [arbitrator] Main chain height:  586

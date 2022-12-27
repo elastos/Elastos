@@ -1,0 +1,1170 @@
+2019/09/18 18:35:43.342104 [1;35m[INF][m GID 58, Loaded 0 addresses from file 'elastos/data/dpos/peers.json'
+2019/09/18 18:35:43.342328 [1;35m[INF][m GID 48, Server listening on [::]:20339
+2019/09/18 18:35:43.349536 [1;35m[INF][m GID 47, Server listening on 0.0.0.0:20339
+2019/09/18 18:35:43.372606 [1;35m[INF][m GID 1, [UpdatePeers] peers: 2  height:  315
+2019/09/18 18:35:43.372703 [1;35m[INF][m GID 1, [UpdatePeers] i am not in peers
+2019/09/18 18:35:43.963293 [1;35m[INF][m GID 103, [OnBlockReceived] listener received block
+2019/09/18 18:35:43.963437 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:35:43.963559 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:35:43.972778 [1;35m[INF][m GID 84, [OnConfirmReceived] listener received confirm
+2019/09/18 18:35:43.972833 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: d75b78700108a0da5b20695c8f693a5b5c74337cefa4cd09de5c651637e71bae
+2019/09/18 18:35:43.972871 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:35:43.972904 [1;35m[INF][m GID 85, [OnBlockReceived] listener received block
+2019/09/18 18:35:43.972934 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:35:43.972963 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:35:43.972986 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:35:43.973008 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:35:47.972414 [1;35m[INF][m GID 322, [OnBlockReceived] listener received block
+2019/09/18 18:35:47.972441 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:35:47.972461 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:35:48.002951 [1;35m[INF][m GID 280, [OnConfirmReceived] listener received confirm
+2019/09/18 18:35:48.002979 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: ebf9c1b0d9af95cabe9548a79c68d3454f93077dad79ad0bf8eabb7ab56c008f
+2019/09/18 18:35:48.002998 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:35:48.003014 [1;35m[INF][m GID 281, [OnBlockReceived] listener received block
+2019/09/18 18:35:48.003029 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:35:48.003054 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:35:48.003075 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:35:48.003093 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:35:53.569529 [1;35m[INF][m GID 440, [OnBlockReceived] listener received block
+2019/09/18 18:35:53.569588 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:35:53.569612 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:35:53.720123 [1;35m[INF][m GID 491, [OnConfirmReceived] listener received confirm
+2019/09/18 18:35:53.720164 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 9d4de5bcdc98f742efb0b91de35d74f4864bb4ddea421b6e115049f80f2d05f6
+2019/09/18 18:35:53.720193 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:35:53.720218 [1;35m[INF][m GID 492, [OnBlockReceived] listener received block
+2019/09/18 18:35:53.720241 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:35:53.748442 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:35:53.748529 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:35:53.748557 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:03.620707 [1;35m[INF][m GID 624, [OnBlockReceived] listener received block
+2019/09/18 18:36:03.620741 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:03.620894 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:03.657247 [1;35m[INF][m GID 738, [OnConfirmReceived] listener received confirm
+2019/09/18 18:36:03.657350 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 8d44b5216ed0894fc587ddd75d9e47d4879d9956a211e4edd093db99bbb8f2f1
+2019/09/18 18:36:03.657415 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:36:03.657447 [1;35m[INF][m GID 739, [OnBlockReceived] listener received block
+2019/09/18 18:36:03.657552 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:03.657637 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:36:03.657697 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:36:03.657761 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:12.938556 [1;35m[INF][m GID 844, [OnBlockReceived] listener received block
+2019/09/18 18:36:12.938584 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:12.938606 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:13.141645 [1;35m[INF][m GID 846, [OnConfirmReceived] listener received confirm
+2019/09/18 18:36:13.141702 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 90f12b12af571642a455f8ab2ac6fa10d3d17a2d191a175dd42ab77146fb45b1
+2019/09/18 18:36:13.141758 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:36:13.141811 [1;35m[INF][m GID 847, [OnBlockReceived] listener received block
+2019/09/18 18:36:13.141864 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:13.141967 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:36:13.142035 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:36:13.142085 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:13.373509 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:36:18.047060 [1;35m[INF][m GID 969, [OnBlockReceived] listener received block
+2019/09/18 18:36:18.047123 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:18.047151 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:18.113455 [1;35m[INF][m GID 971, [OnConfirmReceived] listener received confirm
+2019/09/18 18:36:18.113519 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: d713408b8973f04034a957490f215d5c64f93e78311ed29e84264944855862c8
+2019/09/18 18:36:18.114761 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:36:18.114058 [1;35m[INF][m GID 972, [OnBlockReceived] listener received block
+2019/09/18 18:36:18.114991 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:18.116040 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:36:18.117390 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:36:18.117438 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:35.487197 [1;35m[INF][m GID 1298, [OnBlockReceived] listener received block
+2019/09/18 18:36:35.487290 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:35.510590 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:35.573828 [1;35m[INF][m GID 1300, [OnConfirmReceived] listener received confirm
+2019/09/18 18:36:35.573879 [1;35m[INF][m GID 1301, [OnBlockReceived] listener received block
+2019/09/18 18:36:35.575345 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 7baf4407b3d684b302ac5829eb8c348a758147e01eda40f9c7de9b5f994b446f
+2019/09/18 18:36:35.575475 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:36:35.575580 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:35.575611 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:36:35.575630 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:36:35.575645 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:43.374396 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:36:44.044403 [1;35m[INF][m GID 1425, [OnBlockReceived] listener received block
+2019/09/18 18:36:44.045046 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:44.045116 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:44.114004 [1;35m[INF][m GID 1433, [OnConfirmReceived] listener received confirm
+2019/09/18 18:36:44.114067 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: ca9d01da3afc85af04dfa150e5512b309f488a47b3d2167704fda332e0575963
+2019/09/18 18:36:44.114091 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:36:44.114137 [1;35m[INF][m GID 1434, [OnBlockReceived] listener received block
+2019/09/18 18:36:44.114188 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:44.114214 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:36:44.114349 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:36:44.114372 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:48.729486 [1;35m[INF][m GID 1468, [OnBlockReceived] listener received block
+2019/09/18 18:36:48.729512 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:48.729560 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:48.841516 [1;35m[INF][m GID 1557, [OnConfirmReceived] listener received confirm
+2019/09/18 18:36:48.841688 [1;35m[INF][m GID 1558, [OnBlockReceived] listener received block
+2019/09/18 18:36:48.841708 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: c63047a85fba49a62c49f032e3d4634760a677a42686775e6423b6654e669b78
+2019/09/18 18:36:48.842138 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:36:48.842404 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:48.844908 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:36:48.844943 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:36:48.850821 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:58.944240 [1;35m[INF][m GID 1731, [OnBlockReceived] listener received block
+2019/09/18 18:36:58.944289 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:58.944312 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:36:59.006731 [1;35m[INF][m GID 1696, [OnConfirmReceived] listener received confirm
+2019/09/18 18:36:59.006761 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 6f8ae2a75d6056151202c5a2f7f7730269d7bf450ca2d4aefcaede9021bdf5ea
+2019/09/18 18:36:59.006782 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:36:59.006800 [1;35m[INF][m GID 1697, [OnBlockReceived] listener received block
+2019/09/18 18:36:59.006818 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:36:59.006843 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:36:59.006865 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:36:59.006880 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:37:06.294534 [1;35m[INF][m GID 1842, [OnBlockReceived] listener received block
+2019/09/18 18:37:06.294557 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:37:06.294573 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:37:06.372465 [1;35m[INF][m GID 1784, [OnConfirmReceived] listener received confirm
+2019/09/18 18:37:06.373782 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: d09ec0fc3e7cb47d80b2229e279e3114c2f8c62e806936371c4eccf1f8fd493e
+2019/09/18 18:37:06.373877 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:37:06.373916 [1;35m[INF][m GID 1785, [OnBlockReceived] listener received block
+2019/09/18 18:37:06.373979 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:37:06.374099 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:37:06.374199 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:37:06.374290 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:37:13.375631 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:37:27.325228 [1;35m[INF][m GID 2206, [OnBlockReceived] listener received block
+2019/09/18 18:37:27.325570 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:37:27.325603 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:37:27.409386 [1;35m[INF][m GID 2208, [OnConfirmReceived] listener received confirm
+2019/09/18 18:37:27.409454 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: d9eabd42ffdce9357d63cb3a6496b8c5756f45c31fd0ca305bae3df8dd7ad293
+2019/09/18 18:37:27.409479 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:37:27.409502 [1;35m[INF][m GID 2209, [OnBlockReceived] listener received block
+2019/09/18 18:37:27.409524 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:37:27.409565 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:37:27.409588 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:37:27.409607 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:37:32.445306 [1;35m[INF][m GID 2381, [OnBlockReceived] listener received block
+2019/09/18 18:37:32.445424 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:37:32.445723 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:37:32.474260 [1;35m[INF][m GID 2396, [OnConfirmReceived] listener received confirm
+2019/09/18 18:37:32.474293 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: e2ec4834e43b86059e1b7dd29be0c4aa860a58ab3059ce7ae732e7c2c6c7b76c
+2019/09/18 18:37:32.474374 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:37:32.474995 [1;35m[INF][m GID 2397, [OnBlockReceived] listener received block
+2019/09/18 18:37:32.475024 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:37:32.475099 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:37:32.475124 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:37:32.475192 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:37:41.839732 [1;35m[INF][m GID 2489, [OnBlockReceived] listener received block
+2019/09/18 18:37:41.839810 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:37:41.839878 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:37:41.862912 [1;35m[INF][m GID 2503, [OnConfirmReceived] listener received confirm
+2019/09/18 18:37:41.862948 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 135cde75cb2d1b5254534121d0cb2a414efddc74aeb6a118a744bbb96ef52a95
+2019/09/18 18:37:41.862971 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:37:41.863062 [1;35m[INF][m GID 2504, [OnBlockReceived] listener received block
+2019/09/18 18:37:41.863085 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:37:41.863249 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:37:41.863274 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:37:41.863298 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:37:43.377236 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:38:02.634474 [1;35m[INF][m GID 2937, [OnBlockReceived] listener received block
+2019/09/18 18:38:02.634512 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:38:02.634536 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:38:02.696192 [1;35m[INF][m GID 2908, [OnConfirmReceived] listener received confirm
+2019/09/18 18:38:02.696236 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 5bc98aa75de684549210729cbd8efb6db67db7998d718dd3d0d33c27bbb22a70
+2019/09/18 18:38:02.696268 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:38:02.696333 [1;35m[INF][m GID 2909, [OnBlockReceived] listener received block
+2019/09/18 18:38:02.696363 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:38:02.696397 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:38:02.696421 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:38:02.696460 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:38:13.385723 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:38:17.074916 [1;35m[INF][m GID 3147, [OnBlockReceived] listener received block
+2019/09/18 18:38:17.074957 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:38:17.074999 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:38:17.148887 [1;35m[INF][m GID 3128, [OnConfirmReceived] listener received confirm
+2019/09/18 18:38:17.148922 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 9491ccfaca269dd63a101a77277aa6a9d9b4dcc6a8a86037cdaa246f7dff97fe
+2019/09/18 18:38:17.148963 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:38:17.148999 [1;35m[INF][m GID 3129, [OnBlockReceived] listener received block
+2019/09/18 18:38:17.149030 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:38:17.149060 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:38:17.149087 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:38:17.149110 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:38:35.415796 [1;35m[INF][m GID 3545, [OnBlockReceived] listener received block
+2019/09/18 18:38:35.415848 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:38:35.416178 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:38:35.462120 [1;35m[INF][m GID 3529, [OnConfirmReceived] listener received confirm
+2019/09/18 18:38:35.462150 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 751d34fe80cbfae660e1a33b897afad380b16ccb92706b219460b070ab1ea1bc
+2019/09/18 18:38:35.462167 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:38:35.462188 [1;35m[INF][m GID 3530, [OnBlockReceived] listener received block
+2019/09/18 18:38:35.462204 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:38:35.462231 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:38:35.462250 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:38:35.462269 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:38:43.389526 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:38:49.533424 [1;35m[INF][m GID 3737, [OnBlockReceived] listener received block
+2019/09/18 18:38:49.533479 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:38:49.533508 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:38:49.696313 [1;35m[INF][m GID 3750, [OnConfirmReceived] listener received confirm
+2019/09/18 18:38:49.696360 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: bad83522cdf6a10675cd36803a309451af236a227240a3304bd2293fccced77c
+2019/09/18 18:38:49.696386 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:38:49.696442 [1;35m[INF][m GID 3751, [OnBlockReceived] listener received block
+2019/09/18 18:38:49.696474 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:38:49.696507 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:38:49.696534 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:38:49.696554 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:39:03.286971 [1;35m[INF][m GID 4115, [OnBlockReceived] listener received block
+2019/09/18 18:39:03.287005 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:39:03.287066 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:39:03.347209 [1;35m[INF][m GID 3897, [OnConfirmReceived] listener received confirm
+2019/09/18 18:39:03.347465 [1;35m[INF][m GID 3898, [OnBlockReceived] listener received block
+2019/09/18 18:39:03.347868 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: d97cd8b12da06a7f5e011bb5822c6c7f4fcc05f75c4f58adb04fb32a816b3332
+2019/09/18 18:39:03.347963 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:39:03.347984 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:39:03.348043 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:39:03.348065 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:39:03.348169 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:39:10.207236 [1;35m[INF][m GID 4216, [OnBlockReceived] listener received block
+2019/09/18 18:39:10.207498 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:39:10.207531 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:39:10.262565 [1;35m[INF][m GID 4141, [OnConfirmReceived] listener received confirm
+2019/09/18 18:39:10.262646 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 3973e9f19749a398ae3bb5f067219b5af259cd0239e3c1e516a1c5373f966af3
+2019/09/18 18:39:10.262680 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:39:10.262688 [1;35m[INF][m GID 4142, [OnBlockReceived] listener received block
+2019/09/18 18:39:10.262726 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:39:10.262765 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:39:10.262788 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:39:10.262807 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:39:13.402221 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:39:22.962590 [1;35m[INF][m GID 4423, [OnBlockReceived] listener received block
+2019/09/18 18:39:22.962672 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:39:22.962708 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:39:22.975011 [1;35m[INF][m GID 4378, [OnConfirmReceived] listener received confirm
+2019/09/18 18:39:22.975041 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: e1eb07d6b0a50f037c429f01559bd7905f284182cb2f954c7a45b529b15b34b0
+2019/09/18 18:39:23.007147 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:39:22.975296 [1;35m[INF][m GID 4379, [OnBlockReceived] listener received block
+2019/09/18 18:39:23.007241 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:39:23.007282 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:39:23.007326 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:39:23.007356 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:39:39.626688 [1;35m[INF][m GID 4789, [OnBlockReceived] listener received block
+2019/09/18 18:39:39.626758 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:39:39.627102 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:39:39.711190 [1;35m[INF][m GID 4820, [OnConfirmReceived] listener received confirm
+2019/09/18 18:39:39.711219 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 66dbdcd9b60a01df5c6ceeadcb330bf3f86619bf155e047a3a85e6491f9c23e7
+2019/09/18 18:39:39.711257 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:39:39.711401 [1;35m[INF][m GID 4821, [OnBlockReceived] listener received block
+2019/09/18 18:39:39.711501 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:39:39.711555 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:39:39.711656 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:39:39.711701 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:39:43.402347 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:39:57.105658 [1;35m[INF][m GID 5040, [OnBlockReceived] listener received block
+2019/09/18 18:39:57.105751 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:39:57.105826 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:39:57.173857 [1;35m[INF][m GID 5107, [OnBlockReceived] listener received block
+2019/09/18 18:39:57.173900 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:39:57.173948 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:39:57.174131 [1;35m[INF][m GID 5106, [OnConfirmReceived] listener received confirm
+2019/09/18 18:39:57.175720 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:39:57.175817 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:39:57.175891 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: eeba36c6b808257845302162535e1393ce9f7871ae0b2f905dffcea1aa557472
+2019/09/18 18:39:57.175979 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:40:09.804604 [1;35m[INF][m GID 5372, [OnBlockReceived] listener received block
+2019/09/18 18:40:09.804658 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:09.804686 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:09.900083 [1;35m[INF][m GID 5374, [OnConfirmReceived] listener received confirm
+2019/09/18 18:40:09.900255 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 90b5c2593e340ee4cb34dd9fc26d815f3e8d098c9eaab987d174ed738effbb17
+2019/09/18 18:40:09.900432 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:40:09.929184 [1;35m[INF][m GID 5375, [OnBlockReceived] listener received block
+2019/09/18 18:40:09.929275 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:09.929368 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:40:09.929397 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:40:09.929443 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:11.686385 [1;35m[INF][m GID 5381, [OnBlockReceived] listener received block
+2019/09/18 18:40:11.686405 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:11.686420 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:11.774708 [1;35m[INF][m GID 5400, [OnConfirmReceived] listener received confirm
+2019/09/18 18:40:11.774831 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 89c073542a851e9431183cce0799a2bbd2100f4c9c8a666af620342a3148b8a8
+2019/09/18 18:40:11.774866 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:40:11.780689 [1;35m[INF][m GID 5401, [OnBlockReceived] listener received block
+2019/09/18 18:40:11.780723 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:11.780963 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:40:11.781015 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:40:11.781058 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:12.822045 [1;35m[INF][m GID 5402, [OnBlockReceived] listener received block
+2019/09/18 18:40:12.822108 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:12.822130 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:12.958269 [1;35m[INF][m GID 5412, [OnConfirmReceived] listener received confirm
+2019/09/18 18:40:12.958374 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 0093accb1fcd9b8310e9f034c4ae1d63ec5bc41fe5fd4d9b846f0e875d51e0de
+2019/09/18 18:40:12.958403 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:40:12.958533 [1;35m[INF][m GID 5413, [OnBlockReceived] listener received block
+2019/09/18 18:40:12.958588 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:12.958677 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:40:12.958771 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:40:12.958796 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:13.403355 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:40:14.057036 [1;35m[INF][m GID 5328, [OnBlockReceived] listener received block
+2019/09/18 18:40:14.057073 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:14.057109 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:14.130404 [1;35m[INF][m GID 5490, [OnConfirmReceived] listener received confirm
+2019/09/18 18:40:14.130448 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: b759db523b329ac8fb9c33ece8f8e22e630c9647bd863ce75fc9d07b99a4c3ee
+2019/09/18 18:40:14.130472 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:40:14.130494 [1;35m[INF][m GID 5491, [OnBlockReceived] listener received block
+2019/09/18 18:40:14.130509 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:14.130570 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:40:14.130637 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:40:14.130664 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:19.638517 [1;35m[INF][m GID 5594, [OnBlockReceived] listener received block
+2019/09/18 18:40:19.638556 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:19.638592 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:19.696532 [1;35m[INF][m GID 5505, [OnConfirmReceived] listener received confirm
+2019/09/18 18:40:19.696572 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 0bd56417b523d19b2c80b9d52684809bea6601275ca80894062524db2795c04b
+2019/09/18 18:40:19.696598 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:40:19.696626 [1;35m[INF][m GID 5602, [OnBlockReceived] listener received block
+2019/09/18 18:40:19.696649 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:19.696692 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:40:19.696719 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:40:19.696746 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:26.965991 [1;35m[INF][m GID 5700, [OnBlockReceived] listener received block
+2019/09/18 18:40:26.966072 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:26.966171 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:27.014574 [1;35m[INF][m GID 5702, [OnConfirmReceived] listener received confirm
+2019/09/18 18:40:27.014893 [1;35m[INF][m GID 5703, [OnBlockReceived] listener received block
+2019/09/18 18:40:27.018547 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: b2c265e1bcc576c0c665a590ee15927dabc351f7f18898db025310ef63b1d108
+2019/09/18 18:40:27.019169 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:40:27.019202 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:27.019262 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:40:27.019337 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:40:27.019480 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:41.487134 [1;35m[INF][m GID 5866, [OnBlockReceived] listener received block
+2019/09/18 18:40:41.487213 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:41.487255 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:41.548688 [1;35m[INF][m GID 5992, [OnConfirmReceived] listener received confirm
+2019/09/18 18:40:41.548847 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 0960848e4dd38dcc6737747b407cdc72976488acefe3ca56b697325333bccb84
+2019/09/18 18:40:41.548891 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:40:41.548921 [1;35m[INF][m GID 5993, [OnBlockReceived] listener received block
+2019/09/18 18:40:41.548963 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:41.549003 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:40:41.549034 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:40:41.549061 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:43.403999 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:40:52.127712 [1;35m[INF][m GID 6047, [OnBlockReceived] listener received block
+2019/09/18 18:40:52.127790 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:52.127817 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:40:52.174032 [1;35m[INF][m GID 6184, [OnConfirmReceived] listener received confirm
+2019/09/18 18:40:52.174158 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 4f6f12460f55d81b71de635fb8f2ae0369e20946c5357a3a26542d0c352ed50f
+2019/09/18 18:40:52.174234 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:40:52.178336 [1;35m[INF][m GID 6185, [OnBlockReceived] listener received block
+2019/09/18 18:40:52.178414 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:40:52.178471 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:40:52.178535 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:40:52.178583 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:00.573718 [1;35m[INF][m GID 6344, [OnBlockReceived] listener received block
+2019/09/18 18:41:00.573810 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:00.573975 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:00.624571 [1;35m[INF][m GID 6239, [OnConfirmReceived] listener received confirm
+2019/09/18 18:41:00.624656 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: e9ecf76c08250d92671e57a8dec1c03168f93cabb2f3dcbbe0605af8d054c2c7
+2019/09/18 18:41:00.624680 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:41:00.624747 [1;35m[INF][m GID 6240, [OnBlockReceived] listener received block
+2019/09/18 18:41:00.624770 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:00.624806 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:41:00.624908 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:41:00.624926 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:11.885290 [1;35m[INF][m GID 6527, [OnBlockReceived] listener received block
+2019/09/18 18:41:11.885325 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:11.885357 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:11.959809 [1;35m[INF][m GID 6449, [OnConfirmReceived] listener received confirm
+2019/09/18 18:41:11.959846 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: cd30ac0bb7719071bec6ae35f3b7c48a04fcaadebe5ce96a8a97093b7c7cec4a
+2019/09/18 18:41:11.959935 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:41:11.959956 [1;35m[INF][m GID 6562, [OnBlockReceived] listener received block
+2019/09/18 18:41:11.960026 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:11.960852 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:41:11.960877 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:41:11.960942 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:13.404072 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:41:27.248825 [1;35m[INF][m GID 6864, [OnBlockReceived] listener received block
+2019/09/18 18:41:27.249536 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:27.249607 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:27.380493 [1;35m[INF][m GID 6866, [OnConfirmReceived] listener received confirm
+2019/09/18 18:41:27.380531 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 99652cf0249123a04856e4d4a5f727a0c4a2cef3c8842db3099873b58b1897ff
+2019/09/18 18:41:27.380550 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:41:27.380681 [1;35m[INF][m GID 6867, [OnBlockReceived] listener received block
+2019/09/18 18:41:27.380722 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:27.380785 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:41:27.380827 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:41:27.380897 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:35.074655 [1;35m[INF][m GID 6990, [OnBlockReceived] listener received block
+2019/09/18 18:41:35.074683 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:35.074707 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:35.115717 [1;35m[INF][m GID 6996, [OnConfirmReceived] listener received confirm
+2019/09/18 18:41:35.115769 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 6ed89e88b5832e67a14be614f595ea485fbd24d9e3e3c7a91d6fab61c105e078
+2019/09/18 18:41:35.115811 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:41:35.115850 [1;35m[INF][m GID 6997, [OnBlockReceived] listener received block
+2019/09/18 18:41:35.115872 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:35.115903 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:41:35.115928 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:41:35.115995 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:37.943755 [1;35m[INF][m GID 6998, [OnBlockReceived] listener received block
+2019/09/18 18:41:37.943806 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:37.943829 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:37.976778 [1;35m[INF][m GID 7032, [OnConfirmReceived] listener received confirm
+2019/09/18 18:41:37.976819 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 4a1ce5ed04a8a274f760003eb6ac577baaa8f517173f2d1a39486bba0d114dcf
+2019/09/18 18:41:37.977743 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:41:37.977843 [1;35m[INF][m GID 7033, [OnBlockReceived] listener received block
+2019/09/18 18:41:37.979788 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:37.979877 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:41:37.979912 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:41:37.979964 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:39.970664 [1;35m[INF][m GID 7070, [OnBlockReceived] listener received block
+2019/09/18 18:41:39.970846 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:39.971014 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:40.030660 [1;35m[INF][m GID 7072, [OnConfirmReceived] listener received confirm
+2019/09/18 18:41:40.030688 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 8139d67e69e4aab39b9270dcd8db0e2262ccca0dcddb5ede576e6f37bd436eb5
+2019/09/18 18:41:40.030738 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:41:40.030760 [1;35m[INF][m GID 7073, [OnBlockReceived] listener received block
+2019/09/18 18:41:40.030794 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:40.030869 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:41:40.030896 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:41:40.030915 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:43.416336 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:41:55.875838 [1;35m[INF][m GID 7403, [OnBlockReceived] listener received block
+2019/09/18 18:41:55.875872 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:55.875913 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:55.932875 [1;35m[INF][m GID 7434, [OnConfirmReceived] listener received confirm
+2019/09/18 18:41:55.932904 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: e4f4721059767baea919064e4faa8a755468ad447ceab3a70cf5e6f2da078d5c
+2019/09/18 18:41:55.932924 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:41:55.932940 [1;35m[INF][m GID 7435, [OnBlockReceived] listener received block
+2019/09/18 18:41:55.932957 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:55.932983 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:41:55.933003 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:41:55.933037 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:59.506394 [1;35m[INF][m GID 7438, [OnBlockReceived] listener received block
+2019/09/18 18:41:59.506495 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:59.506606 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:41:59.608701 [1;35m[INF][m GID 7440, [OnConfirmReceived] listener received confirm
+2019/09/18 18:41:59.614895 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: a5259d7098119633482e4fa058d6ab2795aed731dc2044f0059a8b394a3e449e
+2019/09/18 18:41:59.623465 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:41:59.622307 [1;35m[INF][m GID 7441, [OnBlockReceived] listener received block
+2019/09/18 18:41:59.625013 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:41:59.625052 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:41:59.625089 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:41:59.625115 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:06.092856 [1;35m[INF][m GID 7657, [OnBlockReceived] listener received block
+2019/09/18 18:42:06.096355 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:06.096427 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:06.155374 [1;35m[INF][m GID 7513, [OnConfirmReceived] listener received confirm
+2019/09/18 18:42:06.156688 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 1c9c78a9dcb3065dcf7ce46d6e8b79f5abbb499521f304220790ab5725b4f4ee
+2019/09/18 18:42:06.156816 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:42:06.156601 [1;35m[INF][m GID 7514, [OnBlockReceived] listener received block
+2019/09/18 18:42:06.157524 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:06.157650 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:42:06.157768 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:42:06.157884 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:12.857134 [1;35m[INF][m GID 7735, [OnBlockReceived] listener received block
+2019/09/18 18:42:12.857252 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:12.857318 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:12.930571 [1;35m[INF][m GID 7751, [OnConfirmReceived] listener received confirm
+2019/09/18 18:42:12.930724 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: d8aa6e90f90c1f07858efac31dd7c14bd13d6651a5548a8a9d600afe45ad59a8
+2019/09/18 18:42:12.930835 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:42:12.930974 [1;35m[INF][m GID 7752, [OnBlockReceived] listener received block
+2019/09/18 18:42:12.931082 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:12.931213 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:42:12.931323 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:42:12.931711 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:13.429882 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:42:17.390174 [1;35m[INF][m GID 7788, [OnBlockReceived] listener received block
+2019/09/18 18:42:17.390414 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:17.390466 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:17.520655 [1;35m[INF][m GID 7830, [OnConfirmReceived] listener received confirm
+2019/09/18 18:42:17.520692 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 99d2bd17cfaf4eea97c9568aa0d1fb67ff9d55e5978d7f8e60d043ac150c1815
+2019/09/18 18:42:17.520779 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:42:17.521636 [1;35m[INF][m GID 7831, [OnBlockReceived] listener received block
+2019/09/18 18:42:17.521714 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:17.522093 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:42:17.522401 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:42:17.522472 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:29.005408 [1;35m[INF][m GID 8065, [OnBlockReceived] listener received block
+2019/09/18 18:42:29.005509 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:29.005577 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:29.022733 [1;35m[INF][m GID 7889, [OnConfirmReceived] listener received confirm
+2019/09/18 18:42:29.022921 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: b6612d3d57ce078705f3e240ce26ee79d28250b8317c36b9c1f2ed09ff1affa5
+2019/09/18 18:42:29.023053 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:42:29.023119 [1;35m[INF][m GID 8066, [OnBlockReceived] listener received block
+2019/09/18 18:42:29.024267 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:29.024471 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:42:29.024881 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:42:29.025271 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:35.694471 [1;35m[INF][m GID 8250, [OnBlockReceived] listener received block
+2019/09/18 18:42:35.695321 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:35.695498 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:35.754310 [1;35m[INF][m GID 8252, [OnConfirmReceived] listener received confirm
+2019/09/18 18:42:35.755255 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: de06afe47d5092179fdf5aca64c1d4295e72423ddda0efddff190e483544fc66
+2019/09/18 18:42:35.755649 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:42:35.755803 [1;35m[INF][m GID 8253, [OnBlockReceived] listener received block
+2019/09/18 18:42:35.755865 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:35.755918 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:42:35.756067 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:42:35.756130 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:43.438008 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:42:45.702421 [1;35m[INF][m GID 8350, [OnBlockReceived] listener received block
+2019/09/18 18:42:45.702473 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:45.702497 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:45.828111 [1;35m[INF][m GID 8461, [OnConfirmReceived] listener received confirm
+2019/09/18 18:42:45.828263 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: d5923f18d341bcdf617df29e58bc93d6dfcc902f5a263e4b883829d90a3a1841
+2019/09/18 18:42:45.828293 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:42:45.828436 [1;35m[INF][m GID 8462, [OnBlockReceived] listener received block
+2019/09/18 18:42:45.828494 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:45.828529 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:42:45.828557 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:42:45.828577 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:55.133940 [1;35m[INF][m GID 8554, [OnBlockReceived] listener received block
+2019/09/18 18:42:55.134001 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:55.134026 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:42:55.235610 [1;35m[INF][m GID 8624, [OnConfirmReceived] listener received confirm
+2019/09/18 18:42:55.235694 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 8c83c892950b60342933934b969041b19c2e649b0f636cb7165b97503148f052
+2019/09/18 18:42:55.235729 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:42:55.235851 [1;35m[INF][m GID 8625, [OnBlockReceived] listener received block
+2019/09/18 18:42:55.235894 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:42:55.235958 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:42:55.235992 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:42:55.236023 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:06.555138 [1;35m[INF][m GID 8858, [OnBlockReceived] listener received block
+2019/09/18 18:43:06.555257 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:06.555324 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:06.651897 [1;35m[INF][m GID 8753, [OnConfirmReceived] listener received confirm
+2019/09/18 18:43:06.651933 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 433016d2b623ff721d58491a0a5a8b8cf966c4b95f1e9a9114ffd9565ae17526
+2019/09/18 18:43:06.651955 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:43:06.651981 [1;35m[INF][m GID 8866, [OnBlockReceived] listener received block
+2019/09/18 18:43:06.652001 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:06.652033 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:43:06.652077 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:43:06.652158 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:13.440676 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:43:22.876769 [1;35m[INF][m GID 9159, [OnBlockReceived] listener received block
+2019/09/18 18:43:22.876823 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:22.876843 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:22.915805 [1;35m[INF][m GID 9185, [OnConfirmReceived] listener received confirm
+2019/09/18 18:43:22.915851 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 2aa124a6e946949b380d532c05adf4e2e3125c232d86b187cdd06a9c2c0ab1d7
+2019/09/18 18:43:22.915932 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:43:22.916011 [1;35m[INF][m GID 9186, [OnBlockReceived] listener received block
+2019/09/18 18:43:22.916159 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:22.916266 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:43:22.916362 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:43:22.916447 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:26.679801 [1;35m[INF][m GID 9136, [OnBlockReceived] listener received block
+2019/09/18 18:43:26.679867 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:26.679896 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:26.694952 [1;35m[INF][m GID 9247, [OnConfirmReceived] listener received confirm
+2019/09/18 18:43:26.694978 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 3fd9bd4d3e0a5b1a2bde7fd3f1a4b1159210bf1dc38d82b6c5b419c280d5356e
+2019/09/18 18:43:26.695001 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:43:26.695018 [1;35m[INF][m GID 9248, [OnBlockReceived] listener received block
+2019/09/18 18:43:26.695032 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:26.695054 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:43:26.695075 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:43:26.695092 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:29.637951 [1;35m[INF][m GID 9299, [OnBlockReceived] listener received block
+2019/09/18 18:43:29.637996 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:29.638022 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:29.717326 [1;35m[INF][m GID 9284, [OnConfirmReceived] listener received confirm
+2019/09/18 18:43:29.717362 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: c760ee1e7fab7213674807025c8b41cb17f205f3740efdc077388baaada09817
+2019/09/18 18:43:29.717385 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:43:29.717406 [1;35m[INF][m GID 9285, [OnBlockReceived] listener received block
+2019/09/18 18:43:29.717428 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:29.717456 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:43:29.717501 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:43:29.717525 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:38.749118 [1;35m[INF][m GID 9487, [OnBlockReceived] listener received block
+2019/09/18 18:43:38.749142 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:38.749187 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:38.794260 [1;35m[INF][m GID 9454, [OnConfirmReceived] listener received confirm
+2019/09/18 18:43:38.794311 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 6cd58b13b358d2495fb01def55c68c7d05742057b29fe9b0d00e0f0c50fbe005
+2019/09/18 18:43:38.794333 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:43:38.794353 [1;35m[INF][m GID 9455, [OnBlockReceived] listener received block
+2019/09/18 18:43:38.794372 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:38.794421 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:43:38.794449 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:43:38.794490 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:42.411453 [1;35m[INF][m GID 9590, [OnBlockReceived] listener received block
+2019/09/18 18:43:42.411480 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:42.411499 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:42.425325 [1;35m[INF][m GID 9502, [OnConfirmReceived] listener received confirm
+2019/09/18 18:43:42.425391 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: e51bf5c26b7bbd35fa3eb08f36696ba8eb306d61e00d9b0fb91c13f9ab123cea
+2019/09/18 18:43:42.425411 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:43:42.425478 [1;35m[INF][m GID 9503, [OnBlockReceived] listener received block
+2019/09/18 18:43:42.425502 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:42.425530 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:43:42.425553 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:43:42.425581 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:43.439031 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:43:57.631938 [1;35m[INF][m GID 9906, [OnBlockReceived] listener received block
+2019/09/18 18:43:57.631998 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:57.632155 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:43:57.695519 [1;35m[INF][m GID 9888, [OnConfirmReceived] listener received confirm
+2019/09/18 18:43:57.695699 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: eea3710865b04bbdc569e167db2f0b69cb55df0af1e431d4640c9a73f13112f2
+2019/09/18 18:43:57.695806 [1;35m[INF][m GID 9889, [OnBlockReceived] listener received block
+2019/09/18 18:43:57.695995 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:43:57.696106 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:43:57.696205 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:43:57.696309 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:43:57.696397 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:44:05.023324 [1;35m[INF][m GID 9909, [OnBlockReceived] listener received block
+2019/09/18 18:44:05.023357 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:44:05.023381 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:44:05.106586 [1;35m[INF][m GID 10008, [OnConfirmReceived] listener received confirm
+2019/09/18 18:44:05.106724 [1;35m[INF][m GID 10009, [OnBlockReceived] listener received block
+2019/09/18 18:44:05.117931 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 2e66c085ec3d3111ea1c4661a60976aef01e2defd8de6d1a4b40adf4125bf046
+2019/09/18 18:44:05.118179 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:44:05.118280 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:44:05.118384 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:44:05.118493 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:44:05.118592 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:44:13.439146 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:44:19.052939 [1;35m[INF][m GID 10295, [OnConfirmReceived] listener received confirm
+2019/09/18 18:44:19.053049 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 1df0fad4dd30ae69e5cc517e2f53142ab6028df205bc5605cfdaf8a5fad244e5
+2019/09/18 18:44:19.053105 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:44:19.053254 [1;35m[INF][m GID 10296, [OnBlockReceived] listener received block
+2019/09/18 18:44:19.053440 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:44:19.053622 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:44:19.053859 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:44:19.054739 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:44:25.163093 [1;35m[INF][m GID 10389, [OnBlockReceived] listener received block
+2019/09/18 18:44:25.163205 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:44:25.163301 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:44:25.260711 [1;35m[INF][m GID 10406, [OnConfirmReceived] listener received confirm
+2019/09/18 18:44:25.260814 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 8cc25fcacd28f4b5591f9b8a3965771cff0efc029c157e9d1def3a31ec09ca77
+2019/09/18 18:44:25.260841 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:44:25.260895 [1;35m[INF][m GID 10407, [OnBlockReceived] listener received block
+2019/09/18 18:44:25.260918 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:44:25.260974 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:44:25.261001 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:44:25.261025 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:44:38.746132 [1;35m[INF][m GID 10646, [OnBlockReceived] listener received block
+2019/09/18 18:44:38.746170 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:44:38.746331 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:44:38.821696 [1;35m[INF][m GID 10648, [OnConfirmReceived] listener received confirm
+2019/09/18 18:44:38.821779 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 7f31eadcfd4e2799ec768c4d5906246468954be49fae9bdd2a1044f9d397b7e1
+2019/09/18 18:44:38.821840 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:44:38.821868 [1;35m[INF][m GID 10649, [OnBlockReceived] listener received block
+2019/09/18 18:44:38.822166 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:44:38.822324 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:44:38.822429 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:44:38.822584 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:44:43.151292 [1;35m[INF][m GID 10777, [OnBlockReceived] listener received block
+2019/09/18 18:44:43.151359 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:44:43.151407 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:44:43.206949 [1;35m[INF][m GID 10766, [OnConfirmReceived] listener received confirm
+2019/09/18 18:44:43.208103 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 41a120e8ef6dc2da7f6b930624412d782d8ed6d431eafcf7a71b66e43396caca
+2019/09/18 18:44:43.208127 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:44:43.207796 [1;35m[INF][m GID 10767, [OnBlockReceived] listener received block
+2019/09/18 18:44:43.208160 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:44:43.208189 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:44:43.208211 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:44:43.208230 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:44:43.447569 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:44:46.066070 [1;35m[INF][m GID 10853, [OnBlockReceived] listener received block
+2019/09/18 18:44:46.066140 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:44:46.066385 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:44:46.126135 [1;35m[INF][m GID 10871, [OnConfirmReceived] listener received confirm
+2019/09/18 18:44:46.126236 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: c0c233e7556fa56ecb4f827fff068772b0087c9768c21a7d81d7a20f5fbd8bda
+2019/09/18 18:44:46.126294 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:44:46.126330 [1;35m[INF][m GID 10872, [OnBlockReceived] listener received block
+2019/09/18 18:44:46.126350 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:44:46.126407 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:44:46.126445 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:44:46.126615 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:00.340049 [1;35m[INF][m GID 11106, [OnBlockReceived] listener received block
+2019/09/18 18:45:00.340110 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:00.340133 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:00.413969 [1;35m[INF][m GID 11108, [OnConfirmReceived] listener received confirm
+2019/09/18 18:45:00.414000 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 411d4be34107780e515cd0cff9a12730268e79d5ab0e10c2cea872d7c33d2e0c
+2019/09/18 18:45:00.414096 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:45:00.414170 [1;35m[INF][m GID 11109, [OnBlockReceived] listener received block
+2019/09/18 18:45:00.414215 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:00.414386 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:45:00.414436 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:45:00.414524 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:12.508652 [1;35m[INF][m GID 11395, [OnBlockReceived] listener received block
+2019/09/18 18:45:12.508680 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:12.508710 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:12.545563 [1;35m[INF][m GID 11385, [OnConfirmReceived] listener received confirm
+2019/09/18 18:45:12.545670 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: b74a242377b06f47ec8477d40456c68edb30ba0e5d6c2d102b82a229f9f72ee4
+2019/09/18 18:45:12.545753 [1;35m[INF][m GID 11386, [OnBlockReceived] listener received block
+2019/09/18 18:45:12.546391 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:45:12.546417 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:12.546447 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:45:12.546493 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:45:12.546513 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:13.449782 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:45:18.976528 [1;35m[INF][m GID 11438, [OnBlockReceived] listener received block
+2019/09/18 18:45:18.976586 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:18.976614 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:19.025036 [1;35m[INF][m GID 11498, [OnConfirmReceived] listener received confirm
+2019/09/18 18:45:19.025072 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: ebda50a6e94dc94cefba503805ed409f1fccf0a02c2968b9c17d6144eda4fcbe
+2019/09/18 18:45:19.025128 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:45:19.025167 [1;35m[INF][m GID 11499, [OnBlockReceived] listener received block
+2019/09/18 18:45:19.025191 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:19.025224 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:45:19.025248 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:45:19.025272 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:31.508479 [1;35m[INF][m GID 11750, [OnBlockReceived] listener received block
+2019/09/18 18:45:31.509190 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:31.514233 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:31.564854 [1;35m[INF][m GID 11778, [OnConfirmReceived] listener received confirm
+2019/09/18 18:45:31.572998 [1;35m[INF][m GID 11779, [OnBlockReceived] listener received block
+2019/09/18 18:45:31.575665 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 3303781e68761f0e8e83a75c4c9c5f8f5238a9b163a348ce5d8ebde55d08f2ed
+2019/09/18 18:45:31.575735 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:45:31.575758 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:31.575835 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:45:31.575859 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:45:31.575884 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:32.755393 [1;35m[INF][m GID 11772, [OnBlockReceived] listener received block
+2019/09/18 18:45:32.755464 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:32.755500 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:32.801825 [1;35m[INF][m GID 11724, [OnConfirmReceived] listener received confirm
+2019/09/18 18:45:32.801873 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 74a3d6608461758dd16af44a482fd110ab1e9a8231a8f87caa2328dce182f635
+2019/09/18 18:45:32.801898 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:45:32.801920 [1;35m[INF][m GID 11725, [OnBlockReceived] listener received block
+2019/09/18 18:45:32.801939 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:32.807152 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:45:32.819973 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:45:32.820165 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:43.457735 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:45:50.782015 [1;35m[INF][m GID 12105, [OnBlockReceived] listener received block
+2019/09/18 18:45:50.782090 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:50.782154 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:50.830278 [1;35m[INF][m GID 12108, [OnBlockReceived] listener received block
+2019/09/18 18:45:50.830322 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:45:50.830409 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:45:50.830447 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:45:50.830468 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:45:50.831982 [1;35m[INF][m GID 12107, [OnConfirmReceived] listener received confirm
+2019/09/18 18:45:50.832067 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: aecbebef3a9fdaa1edb9ba9dcc0da23b95bf1f0bf3872473e6758e83a2f8c27e
+2019/09/18 18:45:50.832093 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:46:09.249594 [1;35m[INF][m GID 12493, [OnBlockReceived] listener received block
+2019/09/18 18:46:09.249641 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:46:09.249662 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:46:09.324144 [1;35m[INF][m GID 12423, [OnConfirmReceived] listener received confirm
+2019/09/18 18:46:09.325670 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 230f87631ff280eb8debc11708b77f9be6b461014e8a0cfb0c3c3b33e6d2672f
+2019/09/18 18:46:09.325704 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:46:09.324447 [1;35m[INF][m GID 12424, [OnBlockReceived] listener received block
+2019/09/18 18:46:09.325736 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:46:09.325763 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:46:09.325786 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:46:09.325801 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:46:13.458344 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:46:15.520362 [1;35m[INF][m GID 12538, [OnBlockReceived] listener received block
+2019/09/18 18:46:15.520396 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:46:15.520422 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:46:15.535003 [1;35m[INF][m GID 12606, [OnConfirmReceived] listener received confirm
+2019/09/18 18:46:15.539100 [1;35m[INF][m GID 12607, [OnBlockReceived] listener received block
+2019/09/18 18:46:15.539167 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 5af2ef5601d8d0e955c902ca0d13c3d7d28904749b7b668b9e5890632a5fdbdb
+2019/09/18 18:46:15.539193 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:46:15.539214 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:46:15.546819 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:46:15.548704 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:46:15.549316 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:46:24.200659 [1;35m[INF][m GID 12794, [OnBlockReceived] listener received block
+2019/09/18 18:46:24.200733 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:46:24.200757 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:46:24.230194 [1;35m[INF][m GID 12819, [OnConfirmReceived] listener received confirm
+2019/09/18 18:46:24.230231 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: cc22bb647cff619c98d89476ed1161b0a366181278609e6af02dccbe781afc8b
+2019/09/18 18:46:24.230253 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:46:24.230357 [1;35m[INF][m GID 12820, [OnBlockReceived] listener received block
+2019/09/18 18:46:24.230416 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:46:24.230518 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:46:24.230580 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:46:24.230624 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:46:43.466040 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:46:48.895631 [1;35m[INF][m GID 13301, [OnBlockReceived] listener received block
+2019/09/18 18:46:48.896964 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:46:48.898979 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:46:48.982700 [1;35m[INF][m GID 13303, [OnConfirmReceived] listener received confirm
+2019/09/18 18:46:48.982794 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 29f97a4ea64df3bdb5926bec75093ad3289c9b1a9e75d871c26953d0230df31a
+2019/09/18 18:46:48.983197 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:46:48.983224 [1;35m[INF][m GID 13304, [OnBlockReceived] listener received block
+2019/09/18 18:46:48.983317 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:46:48.983399 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:46:48.983428 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:46:48.983515 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:46:50.956772 [1;35m[INF][m GID 13294, [OnBlockReceived] listener received block
+2019/09/18 18:46:50.956806 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:46:50.956881 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:46:51.021001 [1;35m[INF][m GID 13280, [OnBlockReceived] listener received block
+2019/09/18 18:46:51.021056 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:46:51.021101 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:46:51.021256 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:46:51.021279 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:46:51.021296 [1;35m[INF][m GID 13279, [OnConfirmReceived] listener received confirm
+2019/09/18 18:46:51.021318 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 759b473788d28d184741eb3d47d25aeba31e90f6627178f8fbc833b170ac3ba8
+2019/09/18 18:46:51.021337 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:47:07.247826 [1;35m[INF][m GID 13572, [OnBlockReceived] listener received block
+2019/09/18 18:47:07.247887 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:47:07.247908 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:47:07.372319 [1;35m[INF][m GID 13574, [OnConfirmReceived] listener received confirm
+2019/09/18 18:47:07.372388 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 21e04d39fdfa5eca1d7cf692d1c06e2a9006a22a7c7271e433c3e8a5892d128f
+2019/09/18 18:47:07.372407 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:47:07.372421 [1;35m[INF][m GID 13575, [OnBlockReceived] listener received block
+2019/09/18 18:47:07.372435 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:47:07.372459 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:47:07.372500 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:47:07.372517 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:47:13.477406 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:47:19.270192 [1;35m[INF][m GID 13918, [OnBlockReceived] listener received block
+2019/09/18 18:47:19.270230 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:47:19.270261 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:47:19.294283 [1;35m[INF][m GID 13856, [OnConfirmReceived] listener received confirm
+2019/09/18 18:47:19.294405 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: e525cb00460a78de9fa325a5a4ac9c8600f3e1c532922b49a7a1458fd0a1e49b
+2019/09/18 18:47:19.294495 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:47:19.303790 [1;35m[INF][m GID 13857, [OnBlockReceived] listener received block
+2019/09/18 18:47:19.306350 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:47:19.306516 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:47:19.306616 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:47:19.306676 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:47:33.959886 [1;35m[INF][m GID 14198, [OnBlockReceived] listener received block
+2019/09/18 18:47:33.959978 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:47:33.960054 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:47:34.004115 [1;35m[INF][m GID 14177, [OnConfirmReceived] listener received confirm
+2019/09/18 18:47:34.004214 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: c1b425c3c6bb1c38dcd42179f4f0896d87b04d529fe480b378c7239233386f2e
+2019/09/18 18:47:34.004268 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:47:34.004346 [1;35m[INF][m GID 14242, [OnBlockReceived] listener received block
+2019/09/18 18:47:34.004401 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:47:34.004487 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:47:34.004555 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:47:34.004643 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:47:43.477679 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:47:44.880804 [1;35m[INF][m GID 14447, [OnBlockReceived] listener received block
+2019/09/18 18:47:44.880916 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:47:44.881705 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:47:44.942444 [1;35m[INF][m GID 14361, [OnConfirmReceived] listener received confirm
+2019/09/18 18:47:44.942696 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 8f1fa7a64eba4629b5a90b12a935b1ed5e629ba368073f52348934174ca55c48
+2019/09/18 18:47:44.942873 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:47:44.942971 [1;35m[INF][m GID 14362, [OnBlockReceived] listener received block
+2019/09/18 18:47:44.943630 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:47:44.943698 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:47:44.943719 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:47:44.943735 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:06.531565 [1;35m[INF][m GID 14850, [OnBlockReceived] listener received block
+2019/09/18 18:48:06.531717 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:06.531823 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:06.548251 [1;35m[INF][m GID 14852, [OnConfirmReceived] listener received confirm
+2019/09/18 18:48:06.548304 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: eb12b4d66b3d8b1df44fff37bf80583dc639b7fd74a5d32cc0b52589bead63f1
+2019/09/18 18:48:06.548408 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:48:06.548444 [1;35m[INF][m GID 14853, [OnBlockReceived] listener received block
+2019/09/18 18:48:06.548478 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:06.548525 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:48:06.548560 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:48:06.548595 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:13.482545 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:48:16.184299 [1;35m[INF][m GID 15039, [OnBlockReceived] listener received block
+2019/09/18 18:48:16.184338 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:16.184364 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:16.267216 [1;35m[INF][m GID 15018, [OnConfirmReceived] listener received confirm
+2019/09/18 18:48:16.267280 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 73df210a6dc2498b646d48ac39a96fcd749217880397170adeb4a0c13e38ea31
+2019/09/18 18:48:16.267311 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:48:16.271360 [1;35m[INF][m GID 15019, [OnBlockReceived] listener received block
+2019/09/18 18:48:16.271467 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:16.271592 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:48:16.271647 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:48:16.271669 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:29.674749 [1;35m[INF][m GID 15353, [OnBlockReceived] listener received block
+2019/09/18 18:48:29.674891 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:29.675031 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:29.720702 [1;35m[INF][m GID 15289, [OnBlockReceived] listener received block
+2019/09/18 18:48:29.729325 [1;35m[INF][m GID 15288, [OnConfirmReceived] listener received confirm
+2019/09/18 18:48:29.729729 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:29.752617 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:48:29.752664 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:48:29.752711 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:29.752736 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 1121ebfae45d87c441604d70876569451772a1a817543d8bda6639455df5d3dd
+2019/09/18 18:48:29.752771 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:48:33.881996 [1;35m[INF][m GID 15452, [OnBlockReceived] listener received block
+2019/09/18 18:48:33.882032 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:33.882107 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:33.965706 [1;35m[INF][m GID 15423, [OnConfirmReceived] listener received confirm
+2019/09/18 18:48:33.965767 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 6313ff85ef3ec6edaeb86514bd84bbe848633de0f24da4c90d09f065d52594d9
+2019/09/18 18:48:33.965854 [1;35m[INF][m GID 15424, [OnBlockReceived] listener received block
+2019/09/18 18:48:33.965859 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:48:33.965907 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:33.965967 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:48:33.966018 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:48:33.966159 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:34.843544 [1;35m[INF][m GID 15460, [OnBlockReceived] listener received block
+2019/09/18 18:48:34.843603 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:34.843627 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:34.893714 [1;35m[INF][m GID 15434, [OnBlockReceived] listener received block
+2019/09/18 18:48:34.893748 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:34.899076 [1;35m[INF][m GID 15433, [OnConfirmReceived] listener received confirm
+2019/09/18 18:48:34.899145 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:48:34.899170 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:48:34.899193 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:34.899213 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: aed0921f550c4ba8e22c401265cd9ab5132b8e043528308804c0041ca65b750d
+2019/09/18 18:48:34.899234 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:48:43.487058 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:48:44.870481 [1;35m[INF][m GID 15675, [OnBlockReceived] listener received block
+2019/09/18 18:48:44.870577 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:44.870636 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:44.911309 [1;35m[INF][m GID 15626, [OnConfirmReceived] listener received confirm
+2019/09/18 18:48:44.912936 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 52dc967c047439371dd76b4fa2257df2a5cbac1f6934a6575c90684bfce38da6
+2019/09/18 18:48:44.912996 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:48:44.913545 [1;35m[INF][m GID 15627, [OnBlockReceived] listener received block
+2019/09/18 18:48:44.913611 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:44.913655 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:48:44.913682 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:48:44.913698 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:50.735388 [1;35m[INF][m GID 15583, [OnBlockReceived] listener received block
+2019/09/18 18:48:50.735463 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:50.735516 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:50.781045 [1;35m[INF][m GID 15782, [OnBlockReceived] listener received block
+2019/09/18 18:48:50.781188 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:48:50.781326 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:48:50.781421 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:48:50.781515 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:48:50.781616 [1;35m[INF][m GID 15781, [OnConfirmReceived] listener received confirm
+2019/09/18 18:48:50.781725 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: fcd4597dc4299475899ff134ff95129f040eab4ce8fb2c7adbd516de0fc34f38
+2019/09/18 18:48:50.781829 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:49:01.579905 [1;35m[INF][m GID 16004, [OnBlockReceived] listener received block
+2019/09/18 18:49:01.579939 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:01.580016 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:01.655504 [1;35m[INF][m GID 15972, [OnConfirmReceived] listener received confirm
+2019/09/18 18:49:01.655703 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: aa87ff1c72cb1fb61bc0d43be603aa8788207a80be63eeb3883d15f4bf134607
+2019/09/18 18:49:01.655728 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:49:01.655746 [1;35m[INF][m GID 15973, [OnBlockReceived] listener received block
+2019/09/18 18:49:01.655890 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:01.655921 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:49:01.656007 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:49:01.656099 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:13.491894 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:49:16.254718 [1;35m[INF][m GID 16218, [OnBlockReceived] listener received block
+2019/09/18 18:49:16.257331 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:16.257406 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:16.382659 [1;35m[INF][m GID 16257, [OnConfirmReceived] listener received confirm
+2019/09/18 18:49:16.382762 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 33dc0de2136666138e102f0e1368a4061b3193a336947eef50aaaf767b327749
+2019/09/18 18:49:16.382790 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:49:16.383048 [1;35m[INF][m GID 16322, [OnBlockReceived] listener received block
+2019/09/18 18:49:16.383078 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:16.388726 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:49:16.388953 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:49:16.389018 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:18.894875 [1;35m[INF][m GID 16352, [OnBlockReceived] listener received block
+2019/09/18 18:49:18.894901 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:18.894918 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:19.029779 [1;35m[INF][m GID 16402, [OnConfirmReceived] listener received confirm
+2019/09/18 18:49:19.034785 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 7673fe3967c69ec7dc39796b50ad612dfbb682b1b52e53b8ba46f901d96d1b18
+2019/09/18 18:49:19.034823 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:49:19.034479 [1;35m[INF][m GID 16403, [OnBlockReceived] listener received block
+2019/09/18 18:49:19.034906 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:19.034964 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:49:19.035005 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:49:19.035057 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:22.788973 [1;35m[INF][m GID 16326, [OnBlockReceived] listener received block
+2019/09/18 18:49:22.789012 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:22.789191 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:22.820538 [1;35m[INF][m GID 16406, [OnBlockReceived] listener received block
+2019/09/18 18:49:22.821087 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:22.821538 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:49:22.821825 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:49:22.821928 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:22.829265 [1;35m[INF][m GID 16405, [OnConfirmReceived] listener received confirm
+2019/09/18 18:49:22.829308 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 77035349f134ff22cc838a4e284070c51a91bc90a030cf313f799ee02ffea411
+2019/09/18 18:49:22.829328 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:49:29.656364 [1;35m[INF][m GID 16610, [OnBlockReceived] listener received block
+2019/09/18 18:49:29.656481 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:29.656512 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:29.724103 [1;35m[INF][m GID 16605, [OnConfirmReceived] listener received confirm
+2019/09/18 18:49:29.724131 [1;35m[INF][m GID 16606, [OnBlockReceived] listener received block
+2019/09/18 18:49:29.724151 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:29.724179 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:49:29.724200 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:49:29.724216 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:29.724296 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: a08f094c3127f8f7f21c01bbd5ffa100659489ef2b7a4af154f1a3e0c9877e66
+2019/09/18 18:49:29.724317 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:49:42.411235 [1;35m[INF][m GID 16703, [OnBlockReceived] listener received block
+2019/09/18 18:49:42.411294 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:42.411331 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:42.452497 [1;35m[INF][m GID 16839, [OnConfirmReceived] listener received confirm
+2019/09/18 18:49:42.452622 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: de7e7f1757f90bd42e3edb06e5ee2afb473c006d28455a0ae0d2741444d4d909
+2019/09/18 18:49:42.452720 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:49:42.452878 [1;35m[INF][m GID 16840, [OnBlockReceived] listener received block
+2019/09/18 18:49:42.452914 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:42.452992 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:49:42.453024 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:49:42.453091 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:43.494416 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:49:57.055112 [1;35m[INF][m GID 17130, [OnBlockReceived] listener received block
+2019/09/18 18:49:57.055195 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:57.055224 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:49:57.108279 [1;35m[INF][m GID 17132, [OnConfirmReceived] listener received confirm
+2019/09/18 18:49:57.108308 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: c0c2e2f321833bd8d38ad47b4bfc5b3ea5c3456a445ead543c23eac1bc6cbe2e
+2019/09/18 18:49:57.108327 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:49:57.108344 [1;35m[INF][m GID 17133, [OnBlockReceived] listener received block
+2019/09/18 18:49:57.108361 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:49:57.108387 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:49:57.108408 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:49:57.108427 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:50:13.494522 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:50:20.670914 [1;35m[INF][m GID 17680, [OnBlockReceived] listener received block
+2019/09/18 18:50:20.671211 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:50:20.671239 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:50:20.699070 [1;35m[INF][m GID 17621, [OnConfirmReceived] listener received confirm
+2019/09/18 18:50:20.699164 [1;35m[INF][m GID 17622, [OnBlockReceived] listener received block
+2019/09/18 18:50:20.707605 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 27de3e757fcf694b63bd6bcd24bcc3a1a8f278e2528c6e59a91bd380d61f04c3
+2019/09/18 18:50:20.707780 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:50:20.707827 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:50:20.707915 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:50:20.708028 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:50:20.708087 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:50:36.088830 [1;35m[INF][m GID 17837, [OnBlockReceived] listener received block
+2019/09/18 18:50:36.088896 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:50:36.088921 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:50:36.125351 [1;35m[INF][m GID 17957, [OnConfirmReceived] listener received confirm
+2019/09/18 18:50:36.125398 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: c49549f325fdd77887674cf916b1cbdbdde71e4f0549ee2aaef1fc6d7e7bf499
+2019/09/18 18:50:36.125423 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:50:36.125504 [1;35m[INF][m GID 17958, [OnBlockReceived] listener received block
+2019/09/18 18:50:36.125600 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:50:36.125695 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:50:36.125780 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:50:36.125809 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:50:43.495232 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:51:02.941348 [1;35m[INF][m GID 18455, [OnBlockReceived] listener received block
+2019/09/18 18:51:02.941425 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:02.941448 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:03.015925 [1;35m[INF][m GID 18499, [OnBlockReceived] listener received block
+2019/09/18 18:51:03.015989 [1;35m[INF][m GID 18498, [OnConfirmReceived] listener received confirm
+2019/09/18 18:51:03.015994 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:03.016798 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:51:03.016859 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:51:03.016885 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:03.016907 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 9188c76d374929bc07bc524f9cd4a3fb54becc10596c4ed61a0cc8a112650e4e
+2019/09/18 18:51:03.016950 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:51:10.261353 [1;35m[INF][m GID 18704, [OnBlockReceived] listener received block
+2019/09/18 18:51:10.261392 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:10.261417 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:10.284678 [1;35m[INF][m GID 18706, [OnConfirmReceived] listener received confirm
+2019/09/18 18:51:10.284740 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 60c949f255618d36a468456fc7fe029a88be5c8d5291316300eb73dc6086630e
+2019/09/18 18:51:10.284850 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:51:10.284924 [1;35m[INF][m GID 18707, [OnBlockReceived] listener received block
+2019/09/18 18:51:10.284959 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:10.285200 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:51:10.285296 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:51:10.285410 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:13.496173 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:51:13.545983 [1;35m[INF][m GID 18682, [OnBlockReceived] listener received block
+2019/09/18 18:51:13.546015 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:13.546036 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:13.615493 [1;35m[INF][m GID 18640, [OnConfirmReceived] listener received confirm
+2019/09/18 18:51:13.615558 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 7ac5a644484c874760be3c245e45be36c72a43b33624847782b3b6bd7f6d65e3
+2019/09/18 18:51:13.615614 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:51:13.615758 [1;35m[INF][m GID 18641, [OnBlockReceived] listener received block
+2019/09/18 18:51:13.615833 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:13.615933 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:51:13.615963 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:51:13.616194 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:14.222443 [1;35m[INF][m GID 18684, [OnBlockReceived] listener received block
+2019/09/18 18:51:14.222521 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:14.222558 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:14.265833 [1;35m[INF][m GID 18662, [OnConfirmReceived] listener received confirm
+2019/09/18 18:51:14.265910 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: b8218fd667a7201f01a9b271f86a3e6731a713d9720ce118212cee87286185a8
+2019/09/18 18:51:14.265950 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:51:14.265886 [1;35m[INF][m GID 18663, [OnBlockReceived] listener received block
+2019/09/18 18:51:14.266006 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:14.266051 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:51:14.266077 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:51:14.266099 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:39.877896 [1;35m[INF][m GID 19201, [OnBlockReceived] listener received block
+2019/09/18 18:51:39.877976 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:39.878056 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:39.930617 [1;35m[INF][m GID 19235, [OnConfirmReceived] listener received confirm
+2019/09/18 18:51:39.930721 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 1f2d116d1c3201ccb8f476a6ce0d3e6392a8ed283a9e795776c72ba8ce033471
+2019/09/18 18:51:39.930811 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:51:39.930914 [1;35m[INF][m GID 19236, [OnBlockReceived] listener received block
+2019/09/18 18:51:39.931012 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:39.931117 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:51:39.931204 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:51:39.931307 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:43.498180 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:51:49.803432 [1;35m[INF][m GID 19447, [OnBlockReceived] listener received block
+2019/09/18 18:51:49.803494 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:49.803519 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:49.888144 [1;35m[INF][m GID 19418, [OnBlockReceived] listener received block
+2019/09/18 18:51:49.888224 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:51:49.888267 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:51:49.888305 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:51:49.888356 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:51:49.888580 [1;35m[INF][m GID 19417, [OnConfirmReceived] listener received confirm
+2019/09/18 18:51:49.888632 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 0c158d8a4b6b54d183ed47b872b3dbe86e35d8b6cae8d3821d72bda4ec534ec4
+2019/09/18 18:51:49.888674 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:52:04.440673 [1;35m[INF][m GID 19772, [OnBlockReceived] listener received block
+2019/09/18 18:52:04.440737 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:04.440789 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:52:04.534560 [1;35m[INF][m GID 19688, [OnBlockReceived] listener received block
+2019/09/18 18:52:04.554244 [1;35m[INF][m GID 19687, [OnConfirmReceived] listener received confirm
+2019/09/18 18:52:04.555037 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:04.590665 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:52:04.590748 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:52:04.590777 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:52:04.590835 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: a6b0681226af2ec9a6d38605bf70c38b0cf1f9f72f31957236ce49d17ef0848f
+2019/09/18 18:52:04.590861 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:52:13.498383 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:52:23.638378 [1;35m[INF][m GID 20112, [OnBlockReceived] listener received block
+2019/09/18 18:52:23.638417 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:23.638443 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:52:23.719314 [1;35m[INF][m GID 20120, [OnConfirmReceived] listener received confirm
+2019/09/18 18:52:23.719393 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: d187fc95ab0bae4923b747fb59460660662b46a31706d467d408a202ea305d59
+2019/09/18 18:52:23.719422 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:52:23.719475 [1;35m[INF][m GID 20121, [OnBlockReceived] listener received block
+2019/09/18 18:52:23.719503 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:23.719879 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:52:23.719907 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:52:23.719949 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:52:26.206998 [1;35m[INF][m GID 20311, [OnBlockReceived] listener received block
+2019/09/18 18:52:26.207328 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:26.207434 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:52:26.240278 [1;35m[INF][m GID 20293, [OnBlockReceived] listener received block
+2019/09/18 18:52:26.240348 [1;35m[INF][m GID 20292, [OnConfirmReceived] listener received confirm
+2019/09/18 18:52:26.240670 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:26.241477 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:52:26.241898 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:52:26.241992 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:52:26.242053 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 32da9b69533c658a2b90a4f62484b47348465393cf272beaf93baa7915c4c93b
+2019/09/18 18:52:26.242094 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:52:30.684321 [1;35m[INF][m GID 20343, [OnBlockReceived] listener received block
+2019/09/18 18:52:30.685883 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:30.688116 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:52:30.745192 [1;35m[INF][m GID 20422, [OnConfirmReceived] listener received confirm
+2019/09/18 18:52:30.745637 [1;35m[INF][m GID 20423, [OnBlockReceived] listener received block
+2019/09/18 18:52:30.746137 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: addf1d89133802eff7679e3dd6f596f300ee92252252760c3860ed6df30da862
+2019/09/18 18:52:30.746213 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:52:30.746261 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:30.746341 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:52:30.746434 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:52:30.746461 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:52:40.722135 [1;35m[INF][m GID 20639, [OnBlockReceived] listener received block
+2019/09/18 18:52:40.722248 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:40.722354 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:52:40.742049 [1;35m[INF][m GID 20541, [OnConfirmReceived] listener received confirm
+2019/09/18 18:52:40.742239 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 53eddf5ec4205290c6e82e6e43e69f8772c40a8292fe676fdae0635fa55dee59
+2019/09/18 18:52:40.742390 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:52:40.742305 [1;35m[INF][m GID 20542, [OnBlockReceived] listener received block
+2019/09/18 18:52:40.742597 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:40.742707 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:52:40.742867 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:52:40.745782 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:52:43.501207 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad
+2019/09/18 18:52:51.011803 [1;35m[INF][m GID 20718, [OnBlockReceived] listener received block
+2019/09/18 18:52:51.011828 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:51.011852 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:52:51.047693 [1;35m[INF][m GID 20720, [OnConfirmReceived] listener received confirm
+2019/09/18 18:52:51.047805 [1;35m[INF][m GID 20721, [OnBlockReceived] listener received block
+2019/09/18 18:52:51.056398 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 0fe2de1912346b5a9792aa0557e212a98bfa846cd11b4e2e3c52e6c065a30437
+2019/09/18 18:52:51.056745 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:52:51.056856 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:52:51.057008 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:52:51.057039 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:52:51.057244 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:53:00.674674 [1;35m[INF][m GID 20979, [OnBlockReceived] listener received block
+2019/09/18 18:53:00.674844 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:53:00.674868 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:53:00.742764 [1;35m[INF][m GID 20965, [OnBlockReceived] listener received block
+2019/09/18 18:53:00.742825 [1;35m[INF][m GID 59, [OnBlockReceived] start
+2019/09/18 18:53:00.742857 [1;35m[INF][m GID 59, [onDutyArbitratorChanged] not onduty
+2019/09/18 18:53:00.742878 [1;35m[INF][m GID 59, [OnBlockReceived] received confirmed block
+2019/09/18 18:53:00.743761 [1;35m[INF][m GID 20964, [OnConfirmReceived] listener received confirm
+2019/09/18 18:53:00.743777 [1;35m[INF][m GID 59, [OnBlockReceived] end
+2019/09/18 18:53:00.743796 [1;35m[INF][m GID 59, [OnConfirmReceived] started, hash: 610281ebe57fe17c5dcacbbd1a9da79f42e09102c89c6ce0d69c86b6ba3f7424
+2019/09/18 18:53:00.743843 [1;35m[INF][m GID 59, [OnConfirmReceived] end
+2019/09/18 18:53:13.518934 [1;35m[INF][m GID 59, [OnBadNetwork] found network bad

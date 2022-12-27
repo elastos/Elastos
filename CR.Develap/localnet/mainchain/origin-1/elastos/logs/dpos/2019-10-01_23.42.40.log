@@ -1,0 +1,351 @@
+2019/10/01 23:42:40.230561 [1;35m[INF][m GID 70, Loaded 0 addresses from file 'elastos/data/dpos/peers.json'
+2019/10/01 23:42:40.230702 [1;35m[INF][m GID 58, Server listening on [::]:20339
+2019/10/01 23:42:40.230802 [1;35m[INF][m GID 57, Server listening on 0.0.0.0:20339
+2019/10/01 23:42:40.379377 [1;35m[INF][m GID 1, [UpdatePeers] peers: 2  height:  500
+2019/10/01 23:42:40.379441 [1;35m[INF][m GID 1, [UpdatePeers] i am not in peers
+2019/10/01 23:42:49.742129 [1;35m[INF][m GID 364, [OnBlockReceived] listener received block
+2019/10/01 23:42:49.742159 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:42:49.742183 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:42:49.836282 [1;35m[INF][m GID 367, [OnConfirmReceived] listener received confirm
+2019/10/01 23:42:49.836364 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 6e32e00b7afd9d82f2d36bb1cedeb9167df71b1f6ef532755575adf45561de6d
+2019/10/01 23:42:49.836414 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:42:49.837284 [1;35m[INF][m GID 366, [UpdatePeers] peers: 2  height:  501
+2019/10/01 23:42:49.837400 [1;35m[INF][m GID 366, [UpdatePeers] i am not in peers
+2019/10/01 23:42:49.837449 [1;35m[INF][m GID 368, [OnBlockReceived] listener received block
+2019/10/01 23:42:49.837511 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:42:49.839040 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:42:49.839103 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:42:49.839140 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:03.249227 [1;35m[INF][m GID 510, [OnBlockReceived] listener received block
+2019/10/01 23:43:03.249349 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:03.249403 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:03.449963 [1;35m[INF][m GID 534, [OnBlockReceived] listener received block
+2019/10/01 23:43:03.450002 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:03.450788 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:43:03.450840 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:43:03.450865 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:03.449967 [1;35m[INF][m GID 533, [OnConfirmReceived] listener received confirm
+2019/10/01 23:43:03.454615 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 40dc1800c9a2bd8dcc4aa357ea4d50d6285d1bfb1c3fbf7e28e39d56c2562c23
+2019/10/01 23:43:03.454672 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:43:08.151180 [1;35m[INF][m GID 639, [OnBlockReceived] listener received block
+2019/10/01 23:43:08.151355 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:08.151487 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:08.381071 [1;35m[INF][m GID 643, [UpdatePeers] peers: 2  height:  503
+2019/10/01 23:43:08.381124 [1;35m[INF][m GID 643, [UpdatePeers] i am not in peers
+2019/10/01 23:43:08.381203 [1;35m[INF][m GID 645, [OnBlockReceived] listener received block
+2019/10/01 23:43:08.381260 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:08.381307 [1;35m[INF][m GID 644, [OnConfirmReceived] listener received confirm
+2019/10/01 23:43:08.381345 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:43:08.381368 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:43:08.381388 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:08.381485 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 89cb0f0bcf51f9d580902be38f4c2945f833cd6f77386b954fd79b456df386d6
+2019/10/01 23:43:08.381530 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:43:18.188026 [1;35m[INF][m GID 690, [OnBlockReceived] listener received block
+2019/10/01 23:43:18.188062 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:18.188087 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:18.240415 [1;35m[INF][m GID 655, [OnBlockReceived] listener received block
+2019/10/01 23:43:18.241369 [1;35m[INF][m GID 654, [OnConfirmReceived] listener received confirm
+2019/10/01 23:43:18.260086 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:18.265700 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:43:18.268483 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:43:18.268937 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:18.269476 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: afe9287abcafd5f61510222cabc1c1032fdfe2809e13bb132a580161fd72aea4
+2019/10/01 23:43:18.269554 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:43:20.787494 [1;35m[INF][m GID 689, [OnBlockReceived] listener received block
+2019/10/01 23:43:20.787528 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:20.787549 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:20.864042 [1;35m[INF][m GID 788, [UpdatePeers] peers: 2  height:  505
+2019/10/01 23:43:20.864229 [1;35m[INF][m GID 788, [UpdatePeers] i am not in peers
+2019/10/01 23:43:20.864440 [1;35m[INF][m GID 789, [OnConfirmReceived] listener received confirm
+2019/10/01 23:43:20.864503 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 928428cdddf51560da8afba6da58349c083ad30f584890e61db14514195dd29b
+2019/10/01 23:43:20.864611 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:43:20.864725 [1;35m[INF][m GID 790, [OnBlockReceived] listener received block
+2019/10/01 23:43:20.864879 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:20.865356 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:43:20.865520 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:43:20.865600 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:29.701912 [1;35m[INF][m GID 793, [OnBlockReceived] listener received block
+2019/10/01 23:43:29.701978 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:29.702003 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:29.784704 [1;35m[INF][m GID 851, [OnConfirmReceived] listener received confirm
+2019/10/01 23:43:29.784822 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 1e02f706286ce63731354ba7d11850e4036786d90c00d5988566f4f55f426cc3
+2019/10/01 23:43:29.784944 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:43:29.785053 [1;35m[INF][m GID 852, [OnBlockReceived] listener received block
+2019/10/01 23:43:29.785149 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:29.785414 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:43:29.785517 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:43:29.785593 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:50.375682 [1;35m[INF][m GID 1032, [UpdatePeers] peers: 2  height:  507
+2019/10/01 23:43:50.375871 [1;35m[INF][m GID 1032, [UpdatePeers] i am not in peers
+2019/10/01 23:43:50.379606 [1;35m[INF][m GID 1034, [OnBlockReceived] listener received block
+2019/10/01 23:43:50.379679 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:50.379715 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:43:50.379739 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:43:50.379756 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:50.380662 [1;35m[INF][m GID 1033, [OnConfirmReceived] listener received confirm
+2019/10/01 23:43:50.380704 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: b026a777ccb7b8e411c3de5544af4fc3940ff2411205a10238c80723245e64fc
+2019/10/01 23:43:50.380744 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:43:55.819674 [1;35m[INF][m GID 1121, [OnBlockReceived] listener received block
+2019/10/01 23:43:55.819788 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:55.819856 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:55.848386 [1;35m[INF][m GID 1143, [OnConfirmReceived] listener received confirm
+2019/10/01 23:43:55.848456 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 768706137b58fe9f012024d3bff9c65ca6a0cfd0eb54c36e39cbd097fc93b103
+2019/10/01 23:43:55.848538 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:43:55.848605 [1;35m[INF][m GID 1144, [OnBlockReceived] listener received block
+2019/10/01 23:43:55.848638 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:55.848734 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:43:55.848792 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:43:55.848858 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:59.022739 [1;35m[INF][m GID 1283, [OnBlockReceived] listener received block
+2019/10/01 23:43:59.022873 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:59.022939 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:43:59.108419 [1;35m[INF][m GID 1260, [UpdatePeers] peers: 2  height:  509
+2019/10/01 23:43:59.108474 [1;35m[INF][m GID 1260, [UpdatePeers] i am not in peers
+2019/10/01 23:43:59.108633 [1;35m[INF][m GID 1261, [OnConfirmReceived] listener received confirm
+2019/10/01 23:43:59.108699 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 6f2051f883d1424df5d2cb0637be0e60970705e432fea56c1a0727bd24235d60
+2019/10/01 23:43:59.108727 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:43:59.109321 [1;35m[INF][m GID 1262, [OnBlockReceived] listener received block
+2019/10/01 23:43:59.109592 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:43:59.109699 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:43:59.109850 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:43:59.109928 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:15.235447 [1;35m[INF][m GID 1365, [OnBlockReceived] listener received block
+2019/10/01 23:44:15.235513 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:15.235561 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:15.284005 [1;35m[INF][m GID 1319, [OnConfirmReceived] listener received confirm
+2019/10/01 23:44:15.284045 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 509608c17a338fb82bbe571f302b5624c28fbfebb2318072427e585da0e312fc
+2019/10/01 23:44:15.284069 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:44:15.284095 [1;35m[INF][m GID 1320, [OnBlockReceived] listener received block
+2019/10/01 23:44:15.284117 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:15.284178 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:44:15.284212 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:44:15.284232 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:27.473180 [1;35m[INF][m GID 1493, [OnBlockReceived] listener received block
+2019/10/01 23:44:27.473221 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:27.473252 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:27.540728 [1;35m[INF][m GID 1488, [UpdatePeers] peers: 2  height:  511
+2019/10/01 23:44:27.540779 [1;35m[INF][m GID 1488, [UpdatePeers] i am not in peers
+2019/10/01 23:44:27.540889 [1;35m[INF][m GID 1489, [OnConfirmReceived] listener received confirm
+2019/10/01 23:44:27.540931 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 0ca44811349fb70d9fd23c0bb99b2759fb18f775df1c3ee1547b1d4f6d8fa049
+2019/10/01 23:44:27.540971 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:44:27.540992 [1;35m[INF][m GID 1522, [OnBlockReceived] listener received block
+2019/10/01 23:44:27.541009 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:27.541052 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:44:27.541076 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:44:27.541099 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:30.566555 [1;35m[INF][m GID 1513, [OnBlockReceived] listener received block
+2019/10/01 23:44:30.567085 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:30.567653 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:30.578987 [1;35m[INF][m GID 1634, [OnConfirmReceived] listener received confirm
+2019/10/01 23:44:30.579361 [1;35m[INF][m GID 1635, [OnBlockReceived] listener received block
+2019/10/01 23:44:30.582435 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 54f7222bc548cee5607b1eed2ad905b8a566b1f52aa4583364b8d6bed0010b25
+2019/10/01 23:44:30.587341 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:44:30.587501 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:30.587610 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:44:30.587721 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:44:30.589546 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:46.951086 [1;35m[INF][m GID 1678, [OnBlockReceived] listener received block
+2019/10/01 23:44:46.951108 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:46.951124 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:47.093637 [1;35m[INF][m GID 1681, [OnConfirmReceived] listener received confirm
+2019/10/01 23:44:47.093794 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: b1cafb72fd7190653d6d26336a8df751fadcb72d99f4795ee9371e6fd9d9e07f
+2019/10/01 23:44:47.093838 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:44:47.094263 [1;35m[INF][m GID 1680, [UpdatePeers] peers: 2  height:  513
+2019/10/01 23:44:47.094319 [1;35m[INF][m GID 1680, [UpdatePeers] i am not in peers
+2019/10/01 23:44:47.094368 [1;35m[INF][m GID 1682, [OnBlockReceived] listener received block
+2019/10/01 23:44:47.094774 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:47.094808 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:44:47.094863 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:44:47.094887 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:54.516648 [1;35m[INF][m GID 1632, [OnBlockReceived] listener received block
+2019/10/01 23:44:54.516684 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:54.516703 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:54.631053 [1;35m[INF][m GID 1617, [OnConfirmReceived] listener received confirm
+2019/10/01 23:44:54.631759 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 55d717a127fd4eaae1e45ee7286be5ff38565c1576b5fb1bcccfe762787b1290
+2019/10/01 23:44:54.631789 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:44:54.631502 [1;35m[INF][m GID 1794, [OnBlockReceived] listener received block
+2019/10/01 23:44:54.631818 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:54.631849 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:44:54.631872 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:44:54.631891 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:55.439703 [1;35m[INF][m GID 1889, [OnBlockReceived] listener received block
+2019/10/01 23:44:55.439794 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:55.439818 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:44:55.650598 [1;35m[INF][m GID 1910, [UpdatePeers] peers: 2  height:  515
+2019/10/01 23:44:55.650664 [1;35m[INF][m GID 1910, [UpdatePeers] i am not in peers
+2019/10/01 23:44:55.650887 [1;35m[INF][m GID 1911, [OnConfirmReceived] listener received confirm
+2019/10/01 23:44:55.650923 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 43860430889f53821546fb9db33c15acd4563b9156569d8a2388dbcfe8727db9
+2019/10/01 23:44:55.651024 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:44:55.651067 [1;35m[INF][m GID 1912, [OnBlockReceived] listener received block
+2019/10/01 23:44:55.651114 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:44:55.651167 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:44:55.651204 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:44:55.651240 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:13.810987 [1;35m[INF][m GID 1902, [OnBlockReceived] listener received block
+2019/10/01 23:45:13.811017 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:13.811035 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:13.881211 [1;35m[INF][m GID 1987, [OnBlockReceived] listener received block
+2019/10/01 23:45:13.881293 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:13.881372 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:45:13.881429 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:45:13.881462 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:13.881506 [1;35m[INF][m GID 1986, [OnConfirmReceived] listener received confirm
+2019/10/01 23:45:13.881539 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 1f5fea120cc176f284696f5b0bb6e0f259d4fb75b416dcc6bb8febd9f440d175
+2019/10/01 23:45:13.881568 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:45:16.961686 [1;35m[INF][m GID 2044, [OnBlockReceived] listener received block
+2019/10/01 23:45:16.961752 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:16.961777 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:17.067758 [1;35m[INF][m GID 2075, [OnConfirmReceived] listener received confirm
+2019/10/01 23:45:17.067987 [1;35m[INF][m GID 2076, [OnBlockReceived] listener received block
+2019/10/01 23:45:17.068176 [1;35m[INF][m GID 2074, [UpdatePeers] peers: 2  height:  517
+2019/10/01 23:45:17.068655 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: d4dc2e413d0ed3d14dc3da6df6e2c6da3ac2c12fbe9acd4c51088b5bc041ade2
+2019/10/01 23:45:17.068747 [1;35m[INF][m GID 2074, [UpdatePeers] i am not in peers
+2019/10/01 23:45:17.068781 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:45:17.068808 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:17.077604 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:45:17.080975 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:45:17.081026 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:21.363869 [1;35m[INF][m GID 2101, [OnBlockReceived] listener received block
+2019/10/01 23:45:21.363986 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:21.364043 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:21.394324 [1;35m[INF][m GID 2085, [OnConfirmReceived] listener received confirm
+2019/10/01 23:45:21.394500 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 2273978d67bbea007e9373b3e5a1259c9168f88fb9a886bd6f16dc22c245d5c7
+2019/10/01 23:45:21.394568 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:45:21.414440 [1;35m[INF][m GID 2086, [OnBlockReceived] listener received block
+2019/10/01 23:45:21.426402 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:21.426487 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:45:21.426541 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:45:21.426568 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:29.056048 [1;35m[INF][m GID 2170, [OnBlockReceived] listener received block
+2019/10/01 23:45:29.056077 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:29.056097 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:29.119009 [1;35m[INF][m GID 2240, [UpdatePeers] peers: 2  height:  519
+2019/10/01 23:45:29.119220 [1;35m[INF][m GID 2240, [UpdatePeers] i am not in peers
+2019/10/01 23:45:29.123448 [1;35m[INF][m GID 2241, [OnConfirmReceived] listener received confirm
+2019/10/01 23:45:29.123728 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 2d05f186d80474feb9644c13c684d2d9b0bcb4ac9c967f4d7f8c5de87607e50c
+2019/10/01 23:45:29.123781 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:45:29.123534 [1;35m[INF][m GID 2242, [OnBlockReceived] listener received block
+2019/10/01 23:45:29.123824 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:29.123862 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:45:29.123916 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:45:29.123943 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:34.029362 [1;35m[INF][m GID 2339, [OnBlockReceived] listener received block
+2019/10/01 23:45:34.029849 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:34.029907 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:34.071575 [1;35m[INF][m GID 2337, [OnConfirmReceived] listener received confirm
+2019/10/01 23:45:34.072483 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 0085fca1d541c95351cb501cb663845589d6528f9ed946fc6fe1d0a7e99d7a05
+2019/10/01 23:45:34.072559 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:45:34.073927 [1;35m[INF][m GID 2354, [OnBlockReceived] listener received block
+2019/10/01 23:45:34.073973 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:34.083267 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:45:34.083334 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:45:34.083369 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:42.156987 [1;35m[INF][m GID 2381, [OnBlockReceived] listener received block
+2019/10/01 23:45:42.157348 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:42.157372 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:42.172110 [1;35m[INF][m GID 2365, [UpdatePeers] peers: 2  height:  521
+2019/10/01 23:45:42.182968 [1;35m[INF][m GID 2365, [UpdatePeers] i am not in peers
+2019/10/01 23:45:42.179738 [1;35m[INF][m GID 2367, [OnBlockReceived] listener received block
+2019/10/01 23:45:42.183458 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:42.183535 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:45:42.183567 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:45:42.183587 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:42.183632 [1;35m[INF][m GID 2366, [OnConfirmReceived] listener received confirm
+2019/10/01 23:45:42.183656 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: c24c0bc4d1143babeda962c488755eef367edcbffe836ee24d6914da709568b1
+2019/10/01 23:45:42.183675 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:45:47.751622 [1;35m[INF][m GID 2410, [OnBlockReceived] listener received block
+2019/10/01 23:45:47.751671 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:47.751697 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:45:47.787071 [1;35m[INF][m GID 2525, [OnConfirmReceived] listener received confirm
+2019/10/01 23:45:47.787110 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 3da1f1ec65e3b0a5bc4795d8fa29f737cda9a2b06186dd670cbe5ca52eb909f9
+2019/10/01 23:45:47.787162 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:45:47.787190 [1;35m[INF][m GID 2526, [OnBlockReceived] listener received block
+2019/10/01 23:45:47.787231 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:45:47.787266 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:45:47.787295 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:45:47.787319 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:00.725855 [1;35m[INF][m GID 2513, [OnBlockReceived] listener received block
+2019/10/01 23:46:00.725911 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:00.726127 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:00.784895 [1;35m[INF][m GID 2675, [UpdatePeers] peers: 2  height:  523
+2019/10/01 23:46:00.784955 [1;35m[INF][m GID 2675, [UpdatePeers] i am not in peers
+2019/10/01 23:46:00.785104 [1;35m[INF][m GID 2676, [OnConfirmReceived] listener received confirm
+2019/10/01 23:46:00.785137 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: ce87c224b233e0bda2b0e39571b92c6721e5bdd0f465e114ccb78abdbbe78695
+2019/10/01 23:46:00.785167 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:46:00.785185 [1;35m[INF][m GID 2677, [OnBlockReceived] listener received block
+2019/10/01 23:46:00.785238 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:00.785338 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:46:00.785368 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:46:00.785387 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:03.715470 [1;35m[INF][m GID 2652, [OnBlockReceived] listener received block
+2019/10/01 23:46:03.715668 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:03.715699 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:03.805946 [1;35m[INF][m GID 2654, [OnConfirmReceived] listener received confirm
+2019/10/01 23:46:03.806027 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 6196e028beac2f32c3be42eba0e8df89660fb5890b38cf6c744fdc2e67fc15e8
+2019/10/01 23:46:03.806069 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:46:03.806124 [1;35m[INF][m GID 2655, [OnBlockReceived] listener received block
+2019/10/01 23:46:03.806170 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:03.806241 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:46:03.806293 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:46:03.806350 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:04.973921 [1;35m[INF][m GID 2748, [OnBlockReceived] listener received block
+2019/10/01 23:46:04.974369 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:04.974422 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:05.075126 [1;35m[INF][m GID 2752, [OnBlockReceived] listener received block
+2019/10/01 23:46:05.075168 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:05.076438 [1;35m[INF][m GID 2750, [UpdatePeers] peers: 2  height:  525
+2019/10/01 23:46:05.076502 [1;35m[INF][m GID 2750, [UpdatePeers] i am not in peers
+2019/10/01 23:46:05.076560 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:46:05.076590 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:46:05.076615 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:05.080184 [1;35m[INF][m GID 2751, [OnConfirmReceived] listener received confirm
+2019/10/01 23:46:05.080276 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 4aa03d0960ce2bb3d3f7c3ab74dbeb71e25e3fefe0355ab8b62f0df2b46966e5
+2019/10/01 23:46:05.080775 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:46:22.877086 [1;35m[INF][m GID 2809, [OnBlockReceived] listener received block
+2019/10/01 23:46:22.877200 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:22.877254 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:22.983468 [1;35m[INF][m GID 2851, [OnConfirmReceived] listener received confirm
+2019/10/01 23:46:22.986874 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: f245525bec9a9f1a827ca37b54db92c6acb7260984d854b2743749f0b1588d7a
+2019/10/01 23:46:22.986910 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:46:22.989793 [1;35m[INF][m GID 2852, [OnBlockReceived] listener received block
+2019/10/01 23:46:22.990037 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:22.990321 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:46:22.990493 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:46:22.990518 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:32.484836 [1;35m[INF][m GID 2817, [OnBlockReceived] listener received block
+2019/10/01 23:46:32.485799 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:32.485884 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:32.607595 [1;35m[INF][m GID 2980, [UpdatePeers] peers: 2  height:  527
+2019/10/01 23:46:32.607733 [1;35m[INF][m GID 2980, [UpdatePeers] i am not in peers
+2019/10/01 23:46:32.607848 [1;35m[INF][m GID 2981, [OnConfirmReceived] listener received confirm
+2019/10/01 23:46:32.607971 [1;35m[INF][m GID 2982, [OnBlockReceived] listener received block
+2019/10/01 23:46:32.608115 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: 053bce8ad0aba02cbc0a8d32af35ea5945b968c1bf3598b23c9bd321353b1b4e
+2019/10/01 23:46:32.608174 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:46:32.608228 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:32.608308 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:46:32.608379 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:46:32.608448 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:42.136801 [1;35m[INF][m GID 3097, [OnBlockReceived] listener received block
+2019/10/01 23:46:42.136843 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:42.136915 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:42.233503 [1;35m[INF][m GID 3127, [OnConfirmReceived] listener received confirm
+2019/10/01 23:46:42.233535 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: ed9a8e220665049bd05ff4543feda1baf1d9375eb6ef7e863e4352c8d8da7e4d
+2019/10/01 23:46:42.233551 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:46:42.234696 [1;35m[INF][m GID 3128, [OnBlockReceived] listener received block
+2019/10/01 23:46:42.234737 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:42.234779 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:46:42.234816 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:46:42.234842 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:55.183938 [1;35m[INF][m GID 3200, [OnBlockReceived] listener received block
+2019/10/01 23:46:55.184007 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:55.184035 [1;35m[INF][m GID 71, [OnBlockReceived] end
+2019/10/01 23:46:55.318759 [1;35m[INF][m GID 3282, [UpdatePeers] peers: 2  height:  529
+2019/10/01 23:46:55.318815 [1;35m[INF][m GID 3282, [UpdatePeers] i am not in peers
+2019/10/01 23:46:55.319209 [1;35m[INF][m GID 3283, [OnConfirmReceived] listener received confirm
+2019/10/01 23:46:55.319307 [1;35m[INF][m GID 71, [OnConfirmReceived] started, hash: c8f945f5870f594b0273c838a9b3b243650ebbf25cb5b7f85d203ab1b88e9432
+2019/10/01 23:46:55.319337 [1;35m[INF][m GID 71, [OnConfirmReceived] end
+2019/10/01 23:46:55.319451 [1;35m[INF][m GID 3284, [OnBlockReceived] listener received block
+2019/10/01 23:46:55.319476 [1;35m[INF][m GID 71, [OnBlockReceived] start
+2019/10/01 23:46:55.319501 [1;35m[INF][m GID 71, [onDutyArbitratorChanged] not onduty
+2019/10/01 23:46:55.319527 [1;35m[INF][m GID 71, [OnBlockReceived] received confirmed block
+2019/10/01 23:46:55.319547 [1;35m[INF][m GID 71, [OnBlockReceived] end

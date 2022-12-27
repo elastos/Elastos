@@ -1,0 +1,20 @@
+2019/10/01 01:38:39.907718 [1;35m[INF][m GID 1, Init wallet.
+2019/10/01 01:38:40.016217 [1;35m[INF][m GID 1, Arbiter version:  
+2019/10/01 01:38:40.036755 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/10/01 01:38:40.089612 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/10/01 01:38:40.107775 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/10/01 01:38:40.109070 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/10/01 01:38:40.137186 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/10/01 01:38:40.411449 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG
+2019/10/01 01:38:40.411615 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/10/01 01:38:40.411756 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J
+2019/10/01 01:38:40.411850 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+2019/10/01 01:38:40.411943 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XDUhwtY9e1qMsM7sei7kJf53KDE2J8MQEd
+2019/10/01 01:38:40.412051 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/10/01 01:38:40.412111 [1;35m[INF][m GID 1, 7. Start servers.
+2019/10/01 01:38:40.412146 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/10/01 01:38:40.412200 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/10/01 01:38:40.412901 [1;33m[WRN][m GID 105, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/10/01 01:38:40.413312 [1;35m[INF][m GID 105, Check and remove cross chain transactions from dbcache finished
+2019/10/01 01:39:00.778636 [1;35m[INF][m GID 103, [SyncFromMainNode] rpc get current height failed
+2019/10/01 01:39:00.778701 [1;31m[ERR][m GID 103, Arbitrator group sync error:  Post http://privnet-mainchain-dpos-1:20336: dial tcp 172.27.0.10:20336: connect: connection refused

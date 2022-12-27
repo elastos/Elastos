@@ -1,0 +1,917 @@
+2019/09/18 20:45:26.615510 [1;35m[INF][m GID 1, Init wallet.
+2019/09/18 20:45:26.638431 [1;35m[INF][m GID 1, Arbiter version:  
+2019/09/18 20:45:26.638524 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/09/18 20:45:26.639768 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/09/18 20:45:26.640084 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/09/18 20:45:26.641213 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/09/18 20:45:26.652272 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/09/18 20:45:26.681921 [1;35m[INF][m GID 52, currentHeight: 214  chainHeight: 215
+2019/09/18 20:45:26.739622 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  215
+2019/09/18 20:45:26.741571 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw
+2019/09/18 20:45:26.741940 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/09/18 20:45:26.742084 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EamRAVSKik9XTfC485KZpxcmk4KhmPZCea
+2019/09/18 20:45:26.742279 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+2019/09/18 20:45:26.742441 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XZyAtNipJ7fdgBRhdzCoyS7A3PDSzR7u98
+2019/09/18 20:45:26.742602 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/09/18 20:45:26.742624 [1;35m[INF][m GID 1, 7. Start servers.
+2019/09/18 20:45:26.742646 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/09/18 20:45:26.746953 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/09/18 20:45:26.747995 [1;35m[INF][m GID 121, Check and remove cross chain transactions from dbcache finished
+2019/09/18 20:45:29.800079 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  422
+2019/09/18 20:45:29.803515 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:45:29.803606 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:45:29.803812 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:45:29.803925 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:45:29.804003 [1;35m[INF][m GID 198, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:45:29.804052 [1;35m[INF][m GID 198, [sideChainPowTransfer] start
+2019/09/18 20:45:29.804394 [1;35m[INF][m GID 193, [SendCachedWithdrawTxs] start
+2019/09/18 20:45:29.804642 [1;35m[INF][m GID 193, No cached withdraw transaction need to send
+2019/09/18 20:45:29.804795 [1;35m[INF][m GID 193, [SendCachedWithdrawTxs] end
+2019/09/18 20:45:29.804840 [1;35m[INF][m GID 194, [SendCachedWithdrawTxs] start
+2019/09/18 20:45:29.805111 [1;35m[INF][m GID 194, No cached withdraw transaction need to send
+2019/09/18 20:45:29.805169 [1;35m[INF][m GID 194, [SendCachedWithdrawTxs] end
+2019/09/18 20:45:29.805226 [1;35m[INF][m GID 195, [SendCachedWithdrawTxs] start
+2019/09/18 20:45:29.805702 [1;35m[INF][m GID 195, No cached withdraw transaction need to send
+2019/09/18 20:45:29.805728 [1;35m[INF][m GID 195, [SendCachedWithdrawTxs] end
+2019/09/18 20:45:29.805351 [1;35m[INF][m GID 196, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:45:29.805926 [1;35m[INF][m GID 196, [sideChainPowTransfer] start
+2019/09/18 20:45:29.824995 [1;35m[INF][m GID 198, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 0b64971316626fbef1fb62dd69f9f85244be4b5e6e0def6b37cbdf70b37600b6
+2019/09/18 20:45:29.830224 [1;35m[INF][m GID 196, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: bce94c2197bc20a62f2d429e5916773ed7d6d8e75220c1ad95c54bb47f84ed40
+2019/09/18 20:45:29.831469 [1;33m[WRN][m GID 196, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:45:29.832291 [1;33m[WRN][m GID 198, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:45:33.733428 [1;35m[INF][m GID 53, currentHeight: 264  chainHeight: 265
+2019/09/18 20:45:33.736269 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  265
+2019/09/18 20:45:33.736307 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:45:33.736351 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:45:33.739983 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 73b39cdf5e3a55d74bfa84e5f150d5da29745a22afb5a3d9d96633bc4138ea45
+2019/09/18 20:45:33.740668 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:45:33.740698 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:45:40.783196 [1;35m[INF][m GID 52, currentHeight: 215  chainHeight: 216
+2019/09/18 20:45:40.785825 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  216
+2019/09/18 20:45:40.785903 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:45:40.785930 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:45:40.788416 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 9834a69c88e72060c8ba63b5e3337d351c1b564ffd9de50cf21fdb5f52ac37c2
+2019/09/18 20:45:40.793051 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:45:40.793095 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:45:43.821702 [1;35m[INF][m GID 53, currentHeight: 265  chainHeight: 266
+2019/09/18 20:45:43.843686 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  266
+2019/09/18 20:45:43.843743 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:45:43.843768 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:45:43.844246 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: cd2d6297769c9b556fe789a5fdb42e515f23281e12852bd5927412e0a14179c4
+2019/09/18 20:45:43.844715 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:45:43.844743 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:45:44.841999 [1;35m[INF][m GID 52, currentHeight: 216  chainHeight: 217
+2019/09/18 20:45:44.855115 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  217
+2019/09/18 20:45:44.855202 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:45:44.855242 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:45:44.857983 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: d61643bd49c1478e8b71ca601797004d9430a746953fef27dc3ff0407ae15ef9
+2019/09/18 20:45:44.870130 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:45:44.870181 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:45:45.850622 [1;35m[INF][m GID 53, currentHeight: 266  chainHeight: 267
+2019/09/18 20:45:45.853919 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  267
+2019/09/18 20:45:45.853985 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:45:45.854024 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:45:45.854642 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 002c5372a3c660955cae5c674582f4991c5a0de4724885408bfa28d0582d5c8a
+2019/09/18 20:45:45.855164 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:45:45.855218 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:45:46.873546 [1;35m[INF][m GID 52, currentHeight: 217  chainHeight: 218
+2019/09/18 20:45:46.904929 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  218
+2019/09/18 20:45:46.905022 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:45:46.905057 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:45:46.905697 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: f130a8cb9c1ed33cd27df2fe00c8dbd44c5fa14f55367c690d6fba9c46b75332
+2019/09/18 20:45:46.906196 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:45:46.906261 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:45:51.971862 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  423
+2019/09/18 20:45:51.975020 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:45:57.945356 [1;35m[INF][m GID 52, currentHeight: 218  chainHeight: 220
+2019/09/18 20:45:57.953830 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  220
+2019/09/18 20:46:01.014742 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  424
+2019/09/18 20:46:01.018027 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:46:01.018498 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:46:01.018672 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:46:01.018757 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:46:01.018815 [1;35m[INF][m GID 424, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:01.018890 [1;35m[INF][m GID 426, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:01.019014 [1;35m[INF][m GID 428, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:46:01.019043 [1;35m[INF][m GID 428, [sideChainPowTransfer] start
+2019/09/18 20:46:01.019203 [1;35m[INF][m GID 427, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:46:01.019233 [1;35m[INF][m GID 427, [sideChainPowTransfer] start
+2019/09/18 20:46:01.019848 [1;35m[INF][m GID 425, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:01.019992 [1;31m[ERR][m GID 427, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:46:01.020104 [1;33m[WRN][m GID 427, Unknown Block
+2019/09/18 20:46:01.020316 [1;35m[INF][m GID 428, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 0a66e6ec48cb78a34c76414455c993048b2269915b3ae222d220312c9d167437
+2019/09/18 20:46:01.020566 [1;35m[INF][m GID 424, No cached withdraw transaction need to send
+2019/09/18 20:46:01.021884 [1;35m[INF][m GID 425, No cached withdraw transaction need to send
+2019/09/18 20:46:01.022028 [1;35m[INF][m GID 425, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:01.022094 [1;35m[INF][m GID 426, No cached withdraw transaction need to send
+2019/09/18 20:46:01.022112 [1;35m[INF][m GID 426, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:01.022185 [1;35m[INF][m GID 424, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:01.025333 [1;33m[WRN][m GID 428, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:46:08.992263 [1;35m[INF][m GID 52, currentHeight: 220  chainHeight: 221
+2019/09/18 20:46:08.996414 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  221
+2019/09/18 20:46:08.996455 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:46:08.996522 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:46:09.003796 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 7642e93b39c573add2c67465d3a4730c51398520e613238dade4d75177a663bd
+2019/09/18 20:46:09.018673 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:46:09.018714 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:46:15.196133 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  425
+2019/09/18 20:46:15.206798 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:46:20.248176 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  426
+2019/09/18 20:46:20.265877 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:46:20.265928 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:46:20.266030 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:46:20.266068 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:46:20.266091 [1;35m[INF][m GID 551, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:20.266102 [1;35m[INF][m GID 553, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:20.266147 [1;35m[INF][m GID 552, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:20.266165 [1;35m[INF][m GID 554, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:46:20.266184 [1;35m[INF][m GID 554, [sideChainPowTransfer] start
+2019/09/18 20:46:20.266340 [1;35m[INF][m GID 555, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:46:20.266370 [1;35m[INF][m GID 555, [sideChainPowTransfer] start
+2019/09/18 20:46:20.266599 [1;35m[INF][m GID 551, No cached withdraw transaction need to send
+2019/09/18 20:46:20.266620 [1;35m[INF][m GID 551, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:20.266684 [1;31m[ERR][m GID 554, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:46:20.266716 [1;33m[WRN][m GID 554, Unknown Block
+2019/09/18 20:46:20.266748 [1;35m[INF][m GID 553, No cached withdraw transaction need to send
+2019/09/18 20:46:20.266770 [1;35m[INF][m GID 553, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:20.266831 [1;35m[INF][m GID 552, No cached withdraw transaction need to send
+2019/09/18 20:46:20.266851 [1;35m[INF][m GID 552, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:20.266934 [1;31m[ERR][m GID 555, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:46:20.266954 [1;33m[WRN][m GID 555, Unknown Block
+2019/09/18 20:46:25.069532 [1;35m[INF][m GID 53, currentHeight: 267  chainHeight: 268
+2019/09/18 20:46:25.082027 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  268
+2019/09/18 20:46:25.082063 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:46:25.082080 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:46:25.087675 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: cedafd2c01bf1e8fec28bb079ad5179dc479e220a870c10afa2d312dcd057577
+2019/09/18 20:46:25.088521 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:46:25.088647 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:46:26.748343 [1;35m[INF][m GID 121, Check and remove cross chain transactions from dbcache finished
+2019/09/18 20:46:26.749758 [1;35m[INF][m GID 105, Warning side chain mining account:  EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw: 0 EamRAVSKik9XTfC485KZpxcmk4KhmPZCea: 0 EQDEN2Eg7EacPenfyBcaTA96PD5CBpKNTM: 0 
+2019/09/18 20:46:31.369836 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  427
+2019/09/18 20:46:31.373201 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:46:33.157829 [1;35m[INF][m GID 53, currentHeight: 268  chainHeight: 269
+2019/09/18 20:46:33.174438 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  269
+2019/09/18 20:46:34.187988 [1;35m[INF][m GID 53, currentHeight: 269  chainHeight: 270
+2019/09/18 20:46:34.199196 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  270
+2019/09/18 20:46:36.454006 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  428
+2019/09/18 20:46:36.457771 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:46:36.457810 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:46:36.457890 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:46:36.457929 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:46:36.457950 [1;35m[INF][m GID 643, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:36.457961 [1;35m[INF][m GID 645, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:36.458047 [1;35m[INF][m GID 644, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:36.458022 [1;35m[INF][m GID 643, No cached withdraw transaction need to send
+2019/09/18 20:46:36.458137 [1;35m[INF][m GID 643, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:36.458030 [1;35m[INF][m GID 646, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:46:36.458163 [1;35m[INF][m GID 646, [sideChainPowTransfer] start
+2019/09/18 20:46:36.458211 [1;35m[INF][m GID 645, No cached withdraw transaction need to send
+2019/09/18 20:46:36.458232 [1;35m[INF][m GID 645, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:36.458036 [1;35m[INF][m GID 647, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:46:36.458305 [1;35m[INF][m GID 647, [sideChainPowTransfer] start
+2019/09/18 20:46:36.458337 [1;35m[INF][m GID 644, No cached withdraw transaction need to send
+2019/09/18 20:46:36.458356 [1;35m[INF][m GID 644, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:36.461053 [1;31m[ERR][m GID 647, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:46:36.461084 [1;33m[WRN][m GID 647, Unknown Block
+2019/09/18 20:46:36.470270 [1;31m[ERR][m GID 646, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:46:36.470320 [1;33m[WRN][m GID 646, Unknown Block
+2019/09/18 20:46:41.242061 [1;35m[INF][m GID 53, currentHeight: 270  chainHeight: 271
+2019/09/18 20:46:41.269379 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  271
+2019/09/18 20:46:41.269417 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:46:41.269437 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:46:41.270032 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: be18d63b74a7cb84f345c5eb2e819450d6ee230edb1a8854be0c7349d4c70bb1
+2019/09/18 20:46:41.272620 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:46:41.272768 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:46:44.297590 [1;35m[INF][m GID 53, currentHeight: 271  chainHeight: 272
+2019/09/18 20:46:44.326361 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  272
+2019/09/18 20:46:44.327153 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:46:44.327291 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:46:44.331928 [1;31m[ERR][m GID 53, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:46:44.332237 [1;33m[WRN][m GID 53, Unknown Block
+2019/09/18 20:46:44.332267 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:46:44.540582 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  429
+2019/09/18 20:46:44.542900 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:46:47.348786 [1;35m[INF][m GID 53, currentHeight: 272  chainHeight: 273
+2019/09/18 20:46:47.357033 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  273
+2019/09/18 20:46:53.343807 [1;35m[INF][m GID 52, currentHeight: 221  chainHeight: 222
+2019/09/18 20:46:53.375650 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  222
+2019/09/18 20:46:53.650012 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  430
+2019/09/18 20:46:53.661163 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:46:53.661245 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:46:53.661450 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:46:53.661494 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:46:53.661517 [1;35m[INF][m GID 811, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:46:53.661540 [1;35m[INF][m GID 811, [sideChainPowTransfer] start
+2019/09/18 20:46:53.661650 [1;35m[INF][m GID 806, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:53.661728 [1;35m[INF][m GID 806, No cached withdraw transaction need to send
+2019/09/18 20:46:53.661747 [1;35m[INF][m GID 806, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:53.661757 [1;35m[INF][m GID 807, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:53.661811 [1;35m[INF][m GID 807, No cached withdraw transaction need to send
+2019/09/18 20:46:53.661829 [1;35m[INF][m GID 807, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:53.661843 [1;35m[INF][m GID 808, [SendCachedWithdrawTxs] start
+2019/09/18 20:46:53.661894 [1;35m[INF][m GID 808, No cached withdraw transaction need to send
+2019/09/18 20:46:53.661912 [1;35m[INF][m GID 808, [SendCachedWithdrawTxs] end
+2019/09/18 20:46:53.661922 [1;35m[INF][m GID 809, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:46:53.661937 [1;35m[INF][m GID 809, [sideChainPowTransfer] start
+2019/09/18 20:46:53.670231 [1;35m[INF][m GID 809, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 41724ce1514dc249fea4064e5b52a6445c9002e039bddbcc27849d98b6129d01
+2019/09/18 20:46:53.670520 [1;35m[INF][m GID 811, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 0eb4b4ae50fb3961f796431e74a8afea6bb0d979041904795ad38006a5939a21
+2019/09/18 20:46:53.670802 [1;33m[WRN][m GID 809, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:46:53.672606 [1;33m[WRN][m GID 811, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:46:55.399511 [1;35m[INF][m GID 52, currentHeight: 222  chainHeight: 223
+2019/09/18 20:46:55.406081 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  223
+2019/09/18 20:46:55.406124 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:46:55.406145 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:46:55.408902 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 42a51eca51300beac5861f8d1867bc32034fc4ca6ca9b5e9815b37edfe608645
+2019/09/18 20:46:55.410604 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:46:55.410640 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:46:58.436091 [1;35m[INF][m GID 52, currentHeight: 223  chainHeight: 224
+2019/09/18 20:46:58.475297 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  224
+2019/09/18 20:46:58.475336 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:46:58.475362 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:46:58.480601 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 8901d0f82c983263670027b86e07ad5033ccfb3191e587f34955bf416a246a40
+2019/09/18 20:46:58.484412 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:46:58.486728 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:47:02.559074 [1;35m[INF][m GID 52, currentHeight: 224  chainHeight: 225
+2019/09/18 20:47:02.562514 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  225
+2019/09/18 20:47:02.562552 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:47:02.562573 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:47:02.579771 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: d9b4753745173f9ac5e5b46643c0b895840f2b46de7d12e3e26a1fef7874ce1b
+2019/09/18 20:47:02.585966 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:47:02.586137 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:47:08.682873 [1;35m[INF][m GID 52, currentHeight: 225  chainHeight: 228
+2019/09/18 20:47:08.693138 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  228
+2019/09/18 20:47:08.693247 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:47:08.693426 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:47:08.696131 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 452f1725892ef1ad46316ad3d01d44dcb4252a6599af7ccc0299613f49fc097c
+2019/09/18 20:47:08.700937 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:47:08.701000 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:47:09.925172 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  431
+2019/09/18 20:47:09.928235 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:47:16.986735 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  432
+2019/09/18 20:47:16.989352 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:47:16.989406 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:47:16.989570 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:47:16.989634 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:47:16.989672 [1;35m[INF][m GID 968, [SendCachedWithdrawTxs] start
+2019/09/18 20:47:16.989713 [1;35m[INF][m GID 967, [SendCachedWithdrawTxs] start
+2019/09/18 20:47:16.989738 [1;35m[INF][m GID 969, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:47:17.002494 [1;35m[INF][m GID 970, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:47:17.002604 [1;35m[INF][m GID 970, [sideChainPowTransfer] start
+2019/09/18 20:47:17.002504 [1;35m[INF][m GID 969, [sideChainPowTransfer] start
+2019/09/18 20:47:17.003408 [1;35m[INF][m GID 970, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 5d970b8a925dbb33605d72f2772e300134a8cec3ad7aae5ff094d334b33d1150
+2019/09/18 20:47:17.002519 [1;35m[INF][m GID 966, [SendCachedWithdrawTxs] start
+2019/09/18 20:47:17.003555 [1;35m[INF][m GID 966, No cached withdraw transaction need to send
+2019/09/18 20:47:17.003622 [1;35m[INF][m GID 966, [SendCachedWithdrawTxs] end
+2019/09/18 20:47:17.002746 [1;35m[INF][m GID 968, No cached withdraw transaction need to send
+2019/09/18 20:47:17.003646 [1;35m[INF][m GID 968, [SendCachedWithdrawTxs] end
+2019/09/18 20:47:17.002840 [1;35m[INF][m GID 967, No cached withdraw transaction need to send
+2019/09/18 20:47:17.003669 [1;35m[INF][m GID 967, [SendCachedWithdrawTxs] end
+2019/09/18 20:47:17.025427 [1;33m[WRN][m GID 970, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:47:17.025716 [1;35m[INF][m GID 969, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 1d9264ad6c21f4cf0f1b82556331761bb73340676d75450a0344f4d8910d1230
+2019/09/18 20:47:17.032142 [1;33m[WRN][m GID 969, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:47:22.057987 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  433
+2019/09/18 20:47:22.061859 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:47:25.102006 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  434
+2019/09/18 20:47:25.104298 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:47:25.104338 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:47:25.104411 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:47:25.104435 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:47:25.104477 [1;35m[INF][m GID 1035, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:47:25.104498 [1;35m[INF][m GID 1035, [sideChainPowTransfer] start
+2019/09/18 20:47:25.104577 [1;35m[INF][m GID 1030, [SendCachedWithdrawTxs] start
+2019/09/18 20:47:25.104665 [1;35m[INF][m GID 1030, No cached withdraw transaction need to send
+2019/09/18 20:47:25.104684 [1;35m[INF][m GID 1030, [SendCachedWithdrawTxs] end
+2019/09/18 20:47:25.104695 [1;35m[INF][m GID 1031, [SendCachedWithdrawTxs] start
+2019/09/18 20:47:25.104767 [1;35m[INF][m GID 1031, No cached withdraw transaction need to send
+2019/09/18 20:47:25.104787 [1;35m[INF][m GID 1031, [SendCachedWithdrawTxs] end
+2019/09/18 20:47:25.104797 [1;35m[INF][m GID 1032, [SendCachedWithdrawTxs] start
+2019/09/18 20:47:25.104851 [1;35m[INF][m GID 1032, No cached withdraw transaction need to send
+2019/09/18 20:47:25.104869 [1;35m[INF][m GID 1032, [SendCachedWithdrawTxs] end
+2019/09/18 20:47:25.104880 [1;35m[INF][m GID 1034, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:47:25.104898 [1;35m[INF][m GID 1034, [sideChainPowTransfer] start
+2019/09/18 20:47:25.105475 [1;35m[INF][m GID 1034, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 34f8664fb7b8dfaefabda5208e99bb5f40d8887ecdde9b5b6b52c7ef9e27ba5d
+2019/09/18 20:47:25.105478 [1;35m[INF][m GID 1035, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: f6e37afae249c2c9b3fb550c38c7ae40f3c747f114d755ab0ea04d41bb321fb8
+2019/09/18 20:47:25.106006 [1;33m[WRN][m GID 1034, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:47:25.106367 [1;33m[WRN][m GID 1035, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:47:26.749095 [1;35m[INF][m GID 121, Check and remove cross chain transactions from dbcache finished
+2019/09/18 20:47:26.820134 [1;35m[INF][m GID 105, Warning side chain mining account:  EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw: 0 EamRAVSKik9XTfC485KZpxcmk4KhmPZCea: 0 EQDEN2Eg7EacPenfyBcaTA96PD5CBpKNTM: 0 
+2019/09/18 20:47:33.793359 [1;35m[INF][m GID 53, currentHeight: 273  chainHeight: 274
+2019/09/18 20:47:33.818152 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  274
+2019/09/18 20:47:33.818208 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:47:33.818231 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:47:33.818845 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 1f0eb649326975d9a1bf123dd54642acfde42986d4588ff9fe5e60b890a8a8b3
+2019/09/18 20:47:33.819310 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:47:33.819337 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:47:37.176051 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  435
+2019/09/18 20:47:37.178388 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:47:41.211707 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  436
+2019/09/18 20:47:41.214574 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:47:41.214657 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:47:41.215081 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:47:41.215113 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:47:41.215136 [1;35m[INF][m GID 1135, [SendCachedWithdrawTxs] start
+2019/09/18 20:47:41.215272 [1;35m[INF][m GID 1135, No cached withdraw transaction need to send
+2019/09/18 20:47:41.215316 [1;35m[INF][m GID 1135, [SendCachedWithdrawTxs] end
+2019/09/18 20:47:41.215365 [1;35m[INF][m GID 1136, [SendCachedWithdrawTxs] start
+2019/09/18 20:47:41.215585 [1;35m[INF][m GID 1136, No cached withdraw transaction need to send
+2019/09/18 20:47:41.215724 [1;35m[INF][m GID 1136, [SendCachedWithdrawTxs] end
+2019/09/18 20:47:41.215789 [1;35m[INF][m GID 1137, [SendCachedWithdrawTxs] start
+2019/09/18 20:47:41.215910 [1;35m[INF][m GID 1137, No cached withdraw transaction need to send
+2019/09/18 20:47:41.215953 [1;35m[INF][m GID 1137, [SendCachedWithdrawTxs] end
+2019/09/18 20:47:41.216016 [1;35m[INF][m GID 1154, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:47:41.216108 [1;35m[INF][m GID 1154, [sideChainPowTransfer] start
+2019/09/18 20:47:41.216286 [1;35m[INF][m GID 1155, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:47:41.216361 [1;35m[INF][m GID 1155, [sideChainPowTransfer] start
+2019/09/18 20:47:41.217662 [1;35m[INF][m GID 1155, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: a9b4f43af03733b4b75c06fdd32243c8235c3fa740f340b0fe5bd875ab8331f6
+2019/09/18 20:47:41.218697 [1;33m[WRN][m GID 1155, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:47:41.228200 [1;31m[ERR][m GID 1154, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:47:41.228270 [1;33m[WRN][m GID 1154, Unknown Block
+2019/09/18 20:47:53.962103 [1;35m[INF][m GID 52, currentHeight: 228  chainHeight: 229
+2019/09/18 20:47:53.970166 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  229
+2019/09/18 20:47:53.970230 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:47:53.970256 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:47:53.988899 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: ff5096eb65e988dc48cf35154df47a4cbaf065e95caec23ccd1db36218f4b5da
+2019/09/18 20:47:53.989492 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:47:53.989565 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:47:54.993346 [1;35m[INF][m GID 52, currentHeight: 229  chainHeight: 230
+2019/09/18 20:47:54.998116 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  230
+2019/09/18 20:47:54.998188 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:47:54.998213 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:47:55.001906 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: ecafbdec9568a47c5ccd91f4ef86a735496ad80c3e8c6ea3ca345e5fbc2d0a10
+2019/09/18 20:47:55.002463 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:47:55.002508 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:48:06.444459 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  437
+2019/09/18 20:48:06.448507 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:48:08.121545 [1;35m[INF][m GID 52, currentHeight: 230  chainHeight: 231
+2019/09/18 20:48:08.135964 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  231
+2019/09/18 20:48:17.179828 [1;35m[INF][m GID 52, currentHeight: 231  chainHeight: 232
+2019/09/18 20:48:17.188503 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  232
+2019/09/18 20:48:22.551501 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  438
+2019/09/18 20:48:22.553535 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:48:22.553566 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:48:22.553668 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:48:22.553704 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:48:22.553736 [1;35m[INF][m GID 1360, [SendCachedWithdrawTxs] start
+2019/09/18 20:48:22.553789 [1;35m[INF][m GID 1361, [SendCachedWithdrawTxs] start
+2019/09/18 20:48:22.553751 [1;35m[INF][m GID 1442, [SendCachedWithdrawTxs] start
+2019/09/18 20:48:22.553768 [1;35m[INF][m GID 1443, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:48:22.553831 [1;35m[INF][m GID 1443, [sideChainPowTransfer] start
+2019/09/18 20:48:22.553916 [1;35m[INF][m GID 1360, No cached withdraw transaction need to send
+2019/09/18 20:48:22.553778 [1;35m[INF][m GID 1444, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:48:22.554038 [1;35m[INF][m GID 1444, [sideChainPowTransfer] start
+2019/09/18 20:48:22.554052 [1;35m[INF][m GID 1442, No cached withdraw transaction need to send
+2019/09/18 20:48:22.554072 [1;35m[INF][m GID 1442, [SendCachedWithdrawTxs] end
+2019/09/18 20:48:22.553955 [1;35m[INF][m GID 1360, [SendCachedWithdrawTxs] end
+2019/09/18 20:48:22.554011 [1;35m[INF][m GID 1361, No cached withdraw transaction need to send
+2019/09/18 20:48:22.554091 [1;35m[INF][m GID 1361, [SendCachedWithdrawTxs] end
+2019/09/18 20:48:22.555258 [1;35m[INF][m GID 1444, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: b5432d04847b87043319a3ca25b7aa2e51f1b74c1caf2be95d790e6c34754b11
+2019/09/18 20:48:22.555807 [1;33m[WRN][m GID 1444, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:48:22.558609 [1;31m[ERR][m GID 1443, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:48:22.558660 [1;33m[WRN][m GID 1443, Unknown Block
+2019/09/18 20:48:23.225676 [1;35m[INF][m GID 53, currentHeight: 274  chainHeight: 275
+2019/09/18 20:48:23.263315 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  275
+2019/09/18 20:48:23.263359 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:48:23.263380 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:48:23.269836 [1;31m[ERR][m GID 53, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:48:23.269889 [1;33m[WRN][m GID 53, Unknown Block
+2019/09/18 20:48:23.269920 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:48:24.566275 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  439
+2019/09/18 20:48:24.569194 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:48:26.749625 [1;35m[INF][m GID 121, Check and remove cross chain transactions from dbcache finished
+2019/09/18 20:48:26.857950 [1;35m[INF][m GID 105, Warning side chain mining account:  EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw: 0 EamRAVSKik9XTfC485KZpxcmk4KhmPZCea: 0 EQDEN2Eg7EacPenfyBcaTA96PD5CBpKNTM: 0 
+2019/09/18 20:48:32.298264 [1;35m[INF][m GID 52, currentHeight: 232  chainHeight: 233
+2019/09/18 20:48:32.325540 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  233
+2019/09/18 20:48:34.314866 [1;35m[INF][m GID 53, currentHeight: 275  chainHeight: 276
+2019/09/18 20:48:34.321414 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  276
+2019/09/18 20:48:35.632596 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  440
+2019/09/18 20:48:35.636608 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:48:35.636703 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:48:35.636825 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:48:35.636858 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:48:35.636893 [1;35m[INF][m GID 1508, [SendCachedWithdrawTxs] start
+2019/09/18 20:48:35.637001 [1;35m[INF][m GID 1508, No cached withdraw transaction need to send
+2019/09/18 20:48:35.637030 [1;35m[INF][m GID 1508, [SendCachedWithdrawTxs] end
+2019/09/18 20:48:35.637053 [1;35m[INF][m GID 1509, [SendCachedWithdrawTxs] start
+2019/09/18 20:48:35.637121 [1;35m[INF][m GID 1509, No cached withdraw transaction need to send
+2019/09/18 20:48:35.637149 [1;35m[INF][m GID 1509, [SendCachedWithdrawTxs] end
+2019/09/18 20:48:35.637171 [1;35m[INF][m GID 1510, [SendCachedWithdrawTxs] start
+2019/09/18 20:48:35.637236 [1;35m[INF][m GID 1510, No cached withdraw transaction need to send
+2019/09/18 20:48:35.637264 [1;35m[INF][m GID 1510, [SendCachedWithdrawTxs] end
+2019/09/18 20:48:35.637287 [1;35m[INF][m GID 1511, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:48:35.637321 [1;35m[INF][m GID 1511, [sideChainPowTransfer] start
+2019/09/18 20:48:35.637465 [1;35m[INF][m GID 1512, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:48:35.637492 [1;35m[INF][m GID 1512, [sideChainPowTransfer] start
+2019/09/18 20:48:35.640689 [1;31m[ERR][m GID 1511, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:48:35.640720 [1;33m[WRN][m GID 1511, Unknown Block
+2019/09/18 20:48:35.640825 [1;31m[ERR][m GID 1512, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:48:35.640884 [1;33m[WRN][m GID 1512, Unknown Block
+2019/09/18 20:48:42.721379 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  441
+2019/09/18 20:48:42.724434 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:48:49.397479 [1;35m[INF][m GID 53, currentHeight: 276  chainHeight: 277
+2019/09/18 20:48:49.432408 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  277
+2019/09/18 20:48:55.829283 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  442
+2019/09/18 20:48:55.831640 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:48:55.831676 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:48:55.831845 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:48:55.831881 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:48:55.831909 [1;35m[INF][m GID 1614, [SendCachedWithdrawTxs] start
+2019/09/18 20:48:55.831934 [1;35m[INF][m GID 1616, [SendCachedWithdrawTxs] start
+2019/09/18 20:48:55.831958 [1;35m[INF][m GID 1615, [SendCachedWithdrawTxs] start
+2019/09/18 20:48:55.831979 [1;35m[INF][m GID 1617, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:48:55.832000 [1;35m[INF][m GID 1617, [sideChainPowTransfer] start
+2019/09/18 20:48:55.832046 [1;35m[INF][m GID 1614, No cached withdraw transaction need to send
+2019/09/18 20:48:55.832066 [1;35m[INF][m GID 1614, [SendCachedWithdrawTxs] end
+2019/09/18 20:48:55.832081 [1;35m[INF][m GID 1666, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:48:55.832101 [1;35m[INF][m GID 1666, [sideChainPowTransfer] start
+2019/09/18 20:48:55.832174 [1;35m[INF][m GID 1616, No cached withdraw transaction need to send
+2019/09/18 20:48:55.832193 [1;35m[INF][m GID 1616, [SendCachedWithdrawTxs] end
+2019/09/18 20:48:55.832248 [1;35m[INF][m GID 1615, No cached withdraw transaction need to send
+2019/09/18 20:48:55.832266 [1;35m[INF][m GID 1615, [SendCachedWithdrawTxs] end
+2019/09/18 20:48:55.834383 [1;35m[INF][m GID 1617, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 728ce4ecd1427f776b870f32a7ab8c56d3a5f2ac5b73070c8f1e42df277841d1
+2019/09/18 20:48:55.839873 [1;33m[WRN][m GID 1617, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:48:55.851209 [1;31m[ERR][m GID 1666, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:48:55.851259 [1;33m[WRN][m GID 1666, Unknown Block
+2019/09/18 20:49:01.886663 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  443
+2019/09/18 20:49:01.892084 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:49:13.930540 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  444
+2019/09/18 20:49:13.933811 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:49:13.933872 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:49:13.933963 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:49:13.933986 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:49:13.934006 [1;35m[INF][m GID 1817, [SendCachedWithdrawTxs] start
+2019/09/18 20:49:13.934070 [1;35m[INF][m GID 1817, No cached withdraw transaction need to send
+2019/09/18 20:49:13.934106 [1;35m[INF][m GID 1817, [SendCachedWithdrawTxs] end
+2019/09/18 20:49:13.934121 [1;35m[INF][m GID 1818, [SendCachedWithdrawTxs] start
+2019/09/18 20:49:13.934181 [1;35m[INF][m GID 1818, No cached withdraw transaction need to send
+2019/09/18 20:49:13.934198 [1;35m[INF][m GID 1818, [SendCachedWithdrawTxs] end
+2019/09/18 20:49:13.934208 [1;35m[INF][m GID 1819, [SendCachedWithdrawTxs] start
+2019/09/18 20:49:13.934280 [1;35m[INF][m GID 1819, No cached withdraw transaction need to send
+2019/09/18 20:49:13.934297 [1;35m[INF][m GID 1819, [SendCachedWithdrawTxs] end
+2019/09/18 20:49:13.934311 [1;35m[INF][m GID 1820, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:49:13.934332 [1;35m[INF][m GID 1820, [sideChainPowTransfer] start
+2019/09/18 20:49:13.934455 [1;35m[INF][m GID 1821, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:49:13.934476 [1;35m[INF][m GID 1821, [sideChainPowTransfer] start
+2019/09/18 20:49:13.935012 [1;35m[INF][m GID 1820, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 44d31da8879b9eee313b196b5bb275f7f96b45f1b6d041d80275726fae7da2d5
+2019/09/18 20:49:13.945435 [1;33m[WRN][m GID 1820, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:49:13.958986 [1;35m[INF][m GID 1821, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: b37723e035347c046411ae5870578f94512dedffcd5f19c7bcef236603e204f1
+2019/09/18 20:49:13.961456 [1;33m[WRN][m GID 1821, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:49:18.981268 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  445
+2019/09/18 20:49:18.986375 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:49:21.611117 [1;35m[INF][m GID 52, currentHeight: 233  chainHeight: 234
+2019/09/18 20:49:21.618002 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  234
+2019/09/18 20:49:26.750491 [1;35m[INF][m GID 121, Check and remove cross chain transactions from dbcache finished
+2019/09/18 20:49:26.918367 [1;35m[INF][m GID 105, Warning side chain mining account:  EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw: 0 EamRAVSKik9XTfC485KZpxcmk4KhmPZCea: 0 EQDEN2Eg7EacPenfyBcaTA96PD5CBpKNTM: 0 
+2019/09/18 20:49:27.041897 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  446
+2019/09/18 20:49:27.045729 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:49:27.045904 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:49:27.046027 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:49:27.046052 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:49:27.046075 [1;35m[INF][m GID 1860, [SendCachedWithdrawTxs] start
+2019/09/18 20:49:27.046140 [1;35m[INF][m GID 1860, No cached withdraw transaction need to send
+2019/09/18 20:49:27.046154 [1;35m[INF][m GID 1860, [SendCachedWithdrawTxs] end
+2019/09/18 20:49:27.046164 [1;35m[INF][m GID 1861, [SendCachedWithdrawTxs] start
+2019/09/18 20:49:27.046215 [1;35m[INF][m GID 1861, No cached withdraw transaction need to send
+2019/09/18 20:49:27.046228 [1;35m[INF][m GID 1861, [SendCachedWithdrawTxs] end
+2019/09/18 20:49:27.046238 [1;35m[INF][m GID 1862, [SendCachedWithdrawTxs] start
+2019/09/18 20:49:27.046287 [1;35m[INF][m GID 1862, No cached withdraw transaction need to send
+2019/09/18 20:49:27.046301 [1;35m[INF][m GID 1862, [SendCachedWithdrawTxs] end
+2019/09/18 20:49:27.046311 [1;35m[INF][m GID 1863, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:49:27.046327 [1;35m[INF][m GID 1863, [sideChainPowTransfer] start
+2019/09/18 20:49:27.046459 [1;35m[INF][m GID 1864, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:49:27.046485 [1;35m[INF][m GID 1864, [sideChainPowTransfer] start
+2019/09/18 20:49:27.046861 [1;35m[INF][m GID 1863, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 902e21f9801d471d1df363b9f7b651d0bba9926bedf5dbbcff5c0b6174901719
+2019/09/18 20:49:27.047701 [1;35m[INF][m GID 1864, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 448e38b940d70f8ee83c8cb01867467f44f015e274a5180af0aac395142feb4e
+2019/09/18 20:49:27.050049 [1;33m[WRN][m GID 1863, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:49:27.071977 [1;33m[WRN][m GID 1864, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:49:35.121195 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  447
+2019/09/18 20:49:35.123519 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:49:35.754847 [1;35m[INF][m GID 52, currentHeight: 234  chainHeight: 235
+2019/09/18 20:49:35.791174 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  235
+2019/09/18 20:49:36.802763 [1;35m[INF][m GID 52, currentHeight: 235  chainHeight: 236
+2019/09/18 20:49:36.808781 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  236
+2019/09/18 20:49:38.142338 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  448
+2019/09/18 20:49:38.145719 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:49:38.146095 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:49:38.146803 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:49:38.146868 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:49:38.146906 [1;35m[INF][m GID 1976, [SendCachedWithdrawTxs] start
+2019/09/18 20:49:38.147090 [1;35m[INF][m GID 1977, [SendCachedWithdrawTxs] start
+2019/09/18 20:49:38.147106 [1;35m[INF][m GID 1980, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:49:38.147188 [1;35m[INF][m GID 1980, [sideChainPowTransfer] start
+2019/09/18 20:49:38.147094 [1;35m[INF][m GID 1976, No cached withdraw transaction need to send
+2019/09/18 20:49:38.147323 [1;35m[INF][m GID 1976, [SendCachedWithdrawTxs] end
+2019/09/18 20:49:38.147137 [1;35m[INF][m GID 1979, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:49:38.147399 [1;35m[INF][m GID 1979, [sideChainPowTransfer] start
+2019/09/18 20:49:38.147504 [1;35m[INF][m GID 1977, No cached withdraw transaction need to send
+2019/09/18 20:49:38.147639 [1;35m[INF][m GID 1977, [SendCachedWithdrawTxs] end
+2019/09/18 20:49:38.147667 [1;35m[INF][m GID 1978, [SendCachedWithdrawTxs] start
+2019/09/18 20:49:38.147907 [1;35m[INF][m GID 1978, No cached withdraw transaction need to send
+2019/09/18 20:49:38.147935 [1;35m[INF][m GID 1978, [SendCachedWithdrawTxs] end
+2019/09/18 20:49:38.148149 [1;31m[ERR][m GID 1979, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:49:38.148299 [1;33m[WRN][m GID 1979, Unknown Block
+2019/09/18 20:49:38.148446 [1;31m[ERR][m GID 1980, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:49:38.148535 [1;33m[WRN][m GID 1980, Unknown Block
+2019/09/18 20:49:38.847210 [1;35m[INF][m GID 52, currentHeight: 236  chainHeight: 237
+2019/09/18 20:49:38.860558 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  237
+2019/09/18 20:49:38.860710 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:49:38.860819 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:49:38.861518 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: e80d83421c4c02fdf011dfa4cbc60860b3d552d4863c4149f74ed5396be4d515
+2019/09/18 20:49:38.862533 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:49:38.862805 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:49:39.864137 [1;35m[INF][m GID 52, currentHeight: 237  chainHeight: 238
+2019/09/18 20:49:39.878159 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  238
+2019/09/18 20:49:39.878196 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:49:39.878250 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:49:39.885783 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 48b69b0f19546b0e6a4ba79d1bfc96d44079a1a258a88def6c19622afce5d1c6
+2019/09/18 20:49:39.895259 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:49:39.895295 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:49:41.904714 [1;35m[INF][m GID 52, currentHeight: 238  chainHeight: 239
+2019/09/18 20:49:41.918627 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  239
+2019/09/18 20:49:41.918687 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:49:41.918704 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:49:41.919274 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 5a333d6b2a0bf65a708d565fd38759a2fcf1a737223a1144a2c077371c45aa80
+2019/09/18 20:49:41.919664 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:49:41.919685 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:49:48.214563 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  449
+2019/09/18 20:49:48.217192 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:49:48.745705 [1;35m[INF][m GID 53, currentHeight: 277  chainHeight: 278
+2019/09/18 20:49:48.758653 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  278
+2019/09/18 20:49:50.769894 [1;35m[INF][m GID 53, currentHeight: 278  chainHeight: 279
+2019/09/18 20:49:50.788265 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  279
+2019/09/18 20:49:54.851562 [1;35m[INF][m GID 53, currentHeight: 279  chainHeight: 280
+2019/09/18 20:49:54.858853 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  280
+2019/09/18 20:50:02.010297 [1;35m[INF][m GID 52, currentHeight: 239  chainHeight: 240
+2019/09/18 20:50:02.019315 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  240
+2019/09/18 20:50:05.367375 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  450
+2019/09/18 20:50:05.374464 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:50:05.374740 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:50:05.374990 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:50:05.375566 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:50:05.375617 [1;35m[INF][m GID 2060, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:05.375906 [1;35m[INF][m GID 2060, No cached withdraw transaction need to send
+2019/09/18 20:50:05.376017 [1;35m[INF][m GID 2060, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:05.375811 [1;35m[INF][m GID 2061, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:05.377158 [1;35m[INF][m GID 2061, No cached withdraw transaction need to send
+2019/09/18 20:50:05.375818 [1;35m[INF][m GID 2062, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:05.375825 [1;35m[INF][m GID 2063, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:50:05.375831 [1;35m[INF][m GID 2064, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:05.378117 [1;35m[INF][m GID 2061, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:05.378601 [1;35m[INF][m GID 2062, No cached withdraw transaction need to send
+2019/09/18 20:50:05.378808 [1;35m[INF][m GID 2063, [sideChainPowTransfer] start
+2019/09/18 20:50:05.379770 [1;35m[INF][m GID 2064, [sideChainPowTransfer] start
+2019/09/18 20:50:05.379804 [1;35m[INF][m GID 2062, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:05.385154 [1;31m[ERR][m GID 2063, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:50:05.385201 [1;33m[WRN][m GID 2063, Unknown Block
+2019/09/18 20:50:05.388909 [1;35m[INF][m GID 2064, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: dfc8614449b407b9ed449145cc70b2bc9af3123996b61aedc2faf3d13e7e8691
+2019/09/18 20:50:05.391658 [1;33m[WRN][m GID 2064, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:50:08.967925 [1;35m[INF][m GID 53, currentHeight: 280  chainHeight: 281
+2019/09/18 20:50:08.972590 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  281
+2019/09/18 20:50:08.972644 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:08.972669 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:50:08.977359 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: c7f49ab6b3734bf15a0bb864eaccd535d7e29db80abdc6bb68983013fdb10534
+2019/09/18 20:50:08.984235 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:50:08.984303 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:14.418428 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  451
+2019/09/18 20:50:14.421989 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:50:26.751069 [1;35m[INF][m GID 121, Check and remove cross chain transactions from dbcache finished
+2019/09/18 20:50:26.928094 [1;35m[INF][m GID 105, Warning side chain mining account:  EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw: 0 EamRAVSKik9XTfC485KZpxcmk4KhmPZCea: 0 EQDEN2Eg7EacPenfyBcaTA96PD5CBpKNTM: 0 
+2019/09/18 20:50:28.533947 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  452
+2019/09/18 20:50:28.541045 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:50:28.541112 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:50:28.541403 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:50:28.541433 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:50:28.541546 [1;35m[INF][m GID 2327, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:28.541578 [1;35m[INF][m GID 2324, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:28.541595 [1;35m[INF][m GID 2326, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:50:28.541667 [1;35m[INF][m GID 2326, [sideChainPowTransfer] start
+2019/09/18 20:50:28.541707 [1;35m[INF][m GID 2324, No cached withdraw transaction need to send
+2019/09/18 20:50:28.541761 [1;35m[INF][m GID 2324, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:28.541582 [1;35m[INF][m GID 2322, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:28.541887 [1;35m[INF][m GID 2322, No cached withdraw transaction need to send
+2019/09/18 20:50:28.541907 [1;35m[INF][m GID 2322, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:28.541942 [1;35m[INF][m GID 2323, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:28.542174 [1;35m[INF][m GID 2323, No cached withdraw transaction need to send
+2019/09/18 20:50:28.542215 [1;35m[INF][m GID 2323, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:28.542292 [1;35m[INF][m GID 2327, [sideChainPowTransfer] start
+2019/09/18 20:50:28.543296 [1;35m[INF][m GID 2327, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: e9da6faa53fe28023d41ba643752fa7998ab0030b3aee2370c5bcc37b43acd67
+2019/09/18 20:50:28.543779 [1;33m[WRN][m GID 2327, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:50:28.545650 [1;35m[INF][m GID 2326, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: b08b8c41d6eca1487b63a79972077784554498409b4c0d6a6c248590c1d6666c
+2019/09/18 20:50:28.547329 [1;33m[WRN][m GID 2326, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:50:29.109496 [1;35m[INF][m GID 53, currentHeight: 281  chainHeight: 282
+2019/09/18 20:50:29.115349 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  282
+2019/09/18 20:50:29.115397 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:29.115423 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:50:29.119620 [1;31m[ERR][m GID 53, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:50:29.119652 [1;33m[WRN][m GID 53, Unknown Block
+2019/09/18 20:50:29.119671 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:30.549166 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  453
+2019/09/18 20:50:30.558245 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:50:35.181878 [1;35m[INF][m GID 53, currentHeight: 282  chainHeight: 283
+2019/09/18 20:50:35.188013 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  283
+2019/09/18 20:50:35.605757 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  454
+2019/09/18 20:50:35.608908 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:50:35.609006 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:50:35.609118 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:50:35.609160 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:50:35.609182 [1;35m[INF][m GID 2362, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:35.609290 [1;35m[INF][m GID 2362, No cached withdraw transaction need to send
+2019/09/18 20:50:35.609309 [1;35m[INF][m GID 2362, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:35.609319 [1;35m[INF][m GID 2363, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:35.609370 [1;35m[INF][m GID 2363, No cached withdraw transaction need to send
+2019/09/18 20:50:35.609401 [1;35m[INF][m GID 2363, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:35.609412 [1;35m[INF][m GID 2364, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:35.609470 [1;35m[INF][m GID 2364, No cached withdraw transaction need to send
+2019/09/18 20:50:35.609500 [1;35m[INF][m GID 2364, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:35.609516 [1;35m[INF][m GID 2365, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:50:35.609533 [1;35m[INF][m GID 2365, [sideChainPowTransfer] start
+2019/09/18 20:50:35.609671 [1;35m[INF][m GID 2366, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:35.609711 [1;35m[INF][m GID 2366, [sideChainPowTransfer] start
+2019/09/18 20:50:35.610314 [1;35m[INF][m GID 2365, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: f6560bfe4513ef2ef352c43e060e747574e255e85fe39475cd69b78a5af6365b
+2019/09/18 20:50:35.612213 [1;33m[WRN][m GID 2365, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:50:35.619980 [1;31m[ERR][m GID 2366, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:50:35.620038 [1;33m[WRN][m GID 2366, Unknown Block
+2019/09/18 20:50:41.200569 [1;35m[INF][m GID 53, currentHeight: 283  chainHeight: 284
+2019/09/18 20:50:41.207274 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  284
+2019/09/18 20:50:41.207338 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:41.207361 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:50:41.211805 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 220fef5defa4bcefc1710cf30cbb8c0386e1a3de2fe57a66cbf7d739a82b4a15
+2019/09/18 20:50:41.218712 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:50:41.218751 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:42.221985 [1;35m[INF][m GID 53, currentHeight: 284  chainHeight: 285
+2019/09/18 20:50:42.225847 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  285
+2019/09/18 20:50:42.226013 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:42.226043 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:50:42.226667 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: d69d55e1e06108183b5da8bfb9a5c34aab1bfab78d78d97d0d5a4d7ac17c1109
+2019/09/18 20:50:42.227261 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:50:42.227325 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:43.708255 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  455
+2019/09/18 20:50:43.712351 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:50:51.763667 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  456
+2019/09/18 20:50:51.793423 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:50:51.793492 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:50:51.793626 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:50:51.793677 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:50:51.793715 [1;35m[INF][m GID 2495, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:50:51.793731 [1;35m[INF][m GID 2492, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:51.793743 [1;35m[INF][m GID 2496, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:51.793775 [1;35m[INF][m GID 2496, [sideChainPowTransfer] start
+2019/09/18 20:50:51.793805 [1;35m[INF][m GID 2495, [sideChainPowTransfer] start
+2019/09/18 20:50:51.793838 [1;35m[INF][m GID 2492, No cached withdraw transaction need to send
+2019/09/18 20:50:51.793859 [1;35m[INF][m GID 2492, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:51.793869 [1;35m[INF][m GID 2493, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:51.793723 [1;35m[INF][m GID 2494, [SendCachedWithdrawTxs] start
+2019/09/18 20:50:51.793945 [1;35m[INF][m GID 2493, No cached withdraw transaction need to send
+2019/09/18 20:50:51.793964 [1;35m[INF][m GID 2493, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:51.794023 [1;35m[INF][m GID 2494, No cached withdraw transaction need to send
+2019/09/18 20:50:51.794051 [1;35m[INF][m GID 2494, [SendCachedWithdrawTxs] end
+2019/09/18 20:50:51.795339 [1;31m[ERR][m GID 2495, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:50:51.795360 [1;33m[WRN][m GID 2495, Unknown Block
+2019/09/18 20:50:51.801947 [1;35m[INF][m GID 2496, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: a2df5910ca272a88cc9f587c4d04e862d730a7f0cdd1488c8d506eeceee4ddd6
+2019/09/18 20:50:51.802676 [1;33m[WRN][m GID 2496, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:50:52.319629 [1;35m[INF][m GID 52, currentHeight: 240  chainHeight: 241
+2019/09/18 20:50:52.329461 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  241
+2019/09/18 20:50:52.329537 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:50:52.329589 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:50:52.337458 [1;31m[ERR][m GID 52, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:50:52.337532 [1;33m[WRN][m GID 52, Unknown Block
+2019/09/18 20:50:52.337561 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:50:54.305596 [1;35m[INF][m GID 53, currentHeight: 285  chainHeight: 286
+2019/09/18 20:50:54.330924 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  286
+2019/09/18 20:50:54.330993 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:54.331019 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:50:54.334878 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 6ba37204126568cb647dd4e4eae025d57df7dd28807af86c63c1faa3c68b256c
+2019/09/18 20:50:54.336103 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:50:54.336137 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:50:55.353553 [1;35m[INF][m GID 52, currentHeight: 241  chainHeight: 242
+2019/09/18 20:50:55.402899 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  242
+2019/09/18 20:50:55.402957 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:50:55.402979 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:50:55.403599 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: aabf7f9c90cc965805c95a5e93483be25602ef5e0b159dc44b38164dde188fa8
+2019/09/18 20:50:55.405410 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:50:55.405460 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:50:58.828185 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  457
+2019/09/18 20:50:58.832420 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:51:00.860935 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  458
+2019/09/18 20:51:00.869059 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:51:00.869130 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:51:00.869244 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:51:00.869275 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:51:00.869299 [1;35m[INF][m GID 2566, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:51:00.869321 [1;35m[INF][m GID 2566, [sideChainPowTransfer] start
+2019/09/18 20:51:00.869464 [1;35m[INF][m GID 2481, [SendCachedWithdrawTxs] start
+2019/09/18 20:51:00.869596 [1;35m[INF][m GID 2481, No cached withdraw transaction need to send
+2019/09/18 20:51:00.869616 [1;35m[INF][m GID 2481, [SendCachedWithdrawTxs] end
+2019/09/18 20:51:00.869627 [1;35m[INF][m GID 2562, [SendCachedWithdrawTxs] start
+2019/09/18 20:51:00.869680 [1;35m[INF][m GID 2562, No cached withdraw transaction need to send
+2019/09/18 20:51:00.869694 [1;35m[INF][m GID 2562, [SendCachedWithdrawTxs] end
+2019/09/18 20:51:00.869722 [1;35m[INF][m GID 2563, [SendCachedWithdrawTxs] start
+2019/09/18 20:51:00.869795 [1;35m[INF][m GID 2563, No cached withdraw transaction need to send
+2019/09/18 20:51:00.869814 [1;35m[INF][m GID 2563, [SendCachedWithdrawTxs] end
+2019/09/18 20:51:00.869828 [1;35m[INF][m GID 2564, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:51:00.869842 [1;35m[INF][m GID 2564, [sideChainPowTransfer] start
+2019/09/18 20:51:00.869872 [1;31m[ERR][m GID 2566, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:51:00.869945 [1;33m[WRN][m GID 2566, Unknown Block
+2019/09/18 20:51:00.870540 [1;35m[INF][m GID 2564, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 4573f14c0164d54928fd7393caa4caa0c0aa8bd1ffd8072295bc0b65e733b427
+2019/09/18 20:51:00.870925 [1;33m[WRN][m GID 2564, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:51:01.364409 [1;35m[INF][m GID 53, currentHeight: 286  chainHeight: 287
+2019/09/18 20:51:01.369185 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  287
+2019/09/18 20:51:01.369239 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:51:01.369264 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:51:01.369876 [1;31m[ERR][m GID 53, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:51:01.369902 [1;33m[WRN][m GID 53, Unknown Block
+2019/09/18 20:51:01.369923 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:51:06.476139 [1;35m[INF][m GID 52, currentHeight: 242  chainHeight: 243
+2019/09/18 20:51:06.502799 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  243
+2019/09/18 20:51:06.502832 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:51:06.502978 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:51:06.504369 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: ca9ff23815e21bd0df813bc929f7548e19395e3cc5b5b49897ee78b2e593006e
+2019/09/18 20:51:06.504887 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:51:06.504914 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:51:09.449855 [1;35m[INF][m GID 53, currentHeight: 287  chainHeight: 288
+2019/09/18 20:51:09.458392 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  288
+2019/09/18 20:51:09.458431 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:51:09.458457 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:51:09.459704 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 433f0dcfceaf8a1a5574dd4907fb1c8d55c7dddc98f3c5e5ac88f365f1f40502
+2019/09/18 20:51:09.467802 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:51:09.467843 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:51:20.994612 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  459
+2019/09/18 20:51:20.999982 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:51:23.514057 [1;35m[INF][m GID 53, currentHeight: 288  chainHeight: 289
+2019/09/18 20:51:23.538546 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  289
+2019/09/18 20:51:25.040863 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  460
+2019/09/18 20:51:25.045403 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:51:25.045469 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:51:25.045567 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:51:25.045590 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:51:25.045607 [1;35m[INF][m GID 2589, [SendCachedWithdrawTxs] start
+2019/09/18 20:51:25.045674 [1;35m[INF][m GID 2589, No cached withdraw transaction need to send
+2019/09/18 20:51:25.045694 [1;35m[INF][m GID 2589, [SendCachedWithdrawTxs] end
+2019/09/18 20:51:25.045704 [1;35m[INF][m GID 2590, [SendCachedWithdrawTxs] start
+2019/09/18 20:51:25.045864 [1;35m[INF][m GID 2590, No cached withdraw transaction need to send
+2019/09/18 20:51:25.045939 [1;35m[INF][m GID 2590, [SendCachedWithdrawTxs] end
+2019/09/18 20:51:25.045968 [1;35m[INF][m GID 2591, [SendCachedWithdrawTxs] start
+2019/09/18 20:51:25.045960 [1;35m[INF][m GID 2592, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:51:25.046057 [1;35m[INF][m GID 2593, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:51:25.046141 [1;35m[INF][m GID 2593, [sideChainPowTransfer] start
+2019/09/18 20:51:25.046323 [1;35m[INF][m GID 2592, [sideChainPowTransfer] start
+2019/09/18 20:51:25.047365 [1;31m[ERR][m GID 2593, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:51:25.047400 [1;33m[WRN][m GID 2593, Unknown Block
+2019/09/18 20:51:25.048264 [1;35m[INF][m GID 2591, No cached withdraw transaction need to send
+2019/09/18 20:51:25.048310 [1;35m[INF][m GID 2591, [SendCachedWithdrawTxs] end
+2019/09/18 20:51:25.048391 [1;31m[ERR][m GID 2592, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:51:25.048486 [1;33m[WRN][m GID 2592, Unknown Block
+2019/09/18 20:51:26.751329 [1;35m[INF][m GID 121, Check and remove cross chain transactions from dbcache finished
+2019/09/18 20:51:26.959733 [1;35m[INF][m GID 105, Warning side chain mining account:  EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw: 0 EamRAVSKik9XTfC485KZpxcmk4KhmPZCea: 0 EQDEN2Eg7EacPenfyBcaTA96PD5CBpKNTM: 0 
+2019/09/18 20:51:30.136611 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  461
+2019/09/18 20:51:30.157283 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:51:32.630076 [1;35m[INF][m GID 52, currentHeight: 243  chainHeight: 244
+2019/09/18 20:51:32.686297 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  244
+2019/09/18 20:51:38.183485 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  462
+2019/09/18 20:51:38.194533 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:51:38.194568 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:51:38.194717 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:51:38.194755 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:51:38.194784 [1;35m[INF][m GID 2799, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:51:38.194799 [1;35m[INF][m GID 2796, [SendCachedWithdrawTxs] start
+2019/09/18 20:51:38.194831 [1;35m[INF][m GID 2798, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:51:38.194853 [1;35m[INF][m GID 2798, [sideChainPowTransfer] start
+2019/09/18 20:51:38.194903 [1;35m[INF][m GID 2796, No cached withdraw transaction need to send
+2019/09/18 20:51:38.194924 [1;35m[INF][m GID 2796, [SendCachedWithdrawTxs] end
+2019/09/18 20:51:38.194934 [1;35m[INF][m GID 2794, [SendCachedWithdrawTxs] start
+2019/09/18 20:51:38.195013 [1;35m[INF][m GID 2795, [SendCachedWithdrawTxs] start
+2019/09/18 20:51:38.194823 [1;35m[INF][m GID 2799, [sideChainPowTransfer] start
+2019/09/18 20:51:38.195100 [1;35m[INF][m GID 2794, No cached withdraw transaction need to send
+2019/09/18 20:51:38.195121 [1;35m[INF][m GID 2794, [SendCachedWithdrawTxs] end
+2019/09/18 20:51:38.195199 [1;35m[INF][m GID 2795, No cached withdraw transaction need to send
+2019/09/18 20:51:38.195225 [1;35m[INF][m GID 2795, [SendCachedWithdrawTxs] end
+2019/09/18 20:51:38.198978 [1;31m[ERR][m GID 2798, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:51:38.199004 [1;33m[WRN][m GID 2798, Unknown Block
+2019/09/18 20:51:38.199031 [1;35m[INF][m GID 2799, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 0c9f86a3ebdc824b1c1695757a30339383f8437d1e0f44d7033b98d5ece07c00
+2019/09/18 20:51:38.201444 [1;33m[WRN][m GID 2799, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:51:51.421916 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  463
+2019/09/18 20:51:51.424596 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:51:56.741873 [1;35m[INF][m GID 53, currentHeight: 289  chainHeight: 290
+2019/09/18 20:51:56.757496 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  290
+2019/09/18 20:52:01.492188 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  464
+2019/09/18 20:52:01.494396 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:52:01.494541 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:52:01.494725 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:52:01.494850 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:52:01.494969 [1;35m[INF][m GID 2972, [SendCachedWithdrawTxs] start
+2019/09/18 20:52:01.495211 [1;35m[INF][m GID 2972, No cached withdraw transaction need to send
+2019/09/18 20:52:01.495362 [1;35m[INF][m GID 2972, [SendCachedWithdrawTxs] end
+2019/09/18 20:52:01.495036 [1;35m[INF][m GID 2974, [SendCachedWithdrawTxs] start
+2019/09/18 20:52:01.495661 [1;35m[INF][m GID 2974, No cached withdraw transaction need to send
+2019/09/18 20:52:01.495792 [1;35m[INF][m GID 2974, [SendCachedWithdrawTxs] end
+2019/09/18 20:52:01.495043 [1;35m[INF][m GID 2973, [SendCachedWithdrawTxs] start
+2019/09/18 20:52:01.496061 [1;35m[INF][m GID 2973, No cached withdraw transaction need to send
+2019/09/18 20:52:01.495055 [1;35m[INF][m GID 2975, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:52:01.495088 [1;35m[INF][m GID 2976, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:52:01.496208 [1;35m[INF][m GID 2973, [SendCachedWithdrawTxs] end
+2019/09/18 20:52:01.496359 [1;35m[INF][m GID 2975, [sideChainPowTransfer] start
+2019/09/18 20:52:01.496477 [1;35m[INF][m GID 2976, [sideChainPowTransfer] start
+2019/09/18 20:52:01.497155 [1;31m[ERR][m GID 2976, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:52:01.497966 [1;33m[WRN][m GID 2976, Unknown Block
+2019/09/18 20:52:01.510665 [1;35m[INF][m GID 2975, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 436262960a817933cedf742b39b44f1a5833b9c858126ecca2b560cc63449570
+2019/09/18 20:52:01.516471 [1;33m[WRN][m GID 2975, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:52:17.678837 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  465
+2019/09/18 20:52:17.683613 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:52:20.923147 [1;35m[INF][m GID 52, currentHeight: 244  chainHeight: 245
+2019/09/18 20:52:20.946885 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  245
+2019/09/18 20:52:26.752272 [1;35m[INF][m GID 121, Check and remove cross chain transactions from dbcache finished
+2019/09/18 20:52:26.995651 [1;35m[INF][m GID 105, Warning side chain mining account:  EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw: 0 EamRAVSKik9XTfC485KZpxcmk4KhmPZCea: 0 EQDEN2Eg7EacPenfyBcaTA96PD5CBpKNTM: 0 
+2019/09/18 20:52:29.741189 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  466
+2019/09/18 20:52:29.744663 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:52:29.744699 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:52:29.744782 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:52:29.744806 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:52:29.744827 [1;35m[INF][m GID 3182, [SendCachedWithdrawTxs] start
+2019/09/18 20:52:29.744908 [1;35m[INF][m GID 3182, No cached withdraw transaction need to send
+2019/09/18 20:52:29.744928 [1;35m[INF][m GID 3182, [SendCachedWithdrawTxs] end
+2019/09/18 20:52:29.744938 [1;35m[INF][m GID 3183, [SendCachedWithdrawTxs] start
+2019/09/18 20:52:29.746551 [1;35m[INF][m GID 3183, No cached withdraw transaction need to send
+2019/09/18 20:52:29.746584 [1;35m[INF][m GID 3183, [SendCachedWithdrawTxs] end
+2019/09/18 20:52:29.746600 [1;35m[INF][m GID 3184, [SendCachedWithdrawTxs] start
+2019/09/18 20:52:29.746664 [1;35m[INF][m GID 3184, No cached withdraw transaction need to send
+2019/09/18 20:52:29.746684 [1;35m[INF][m GID 3184, [SendCachedWithdrawTxs] end
+2019/09/18 20:52:29.746700 [1;35m[INF][m GID 3185, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:52:29.746721 [1;35m[INF][m GID 3185, [sideChainPowTransfer] start
+2019/09/18 20:52:29.746834 [1;35m[INF][m GID 3186, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:52:29.746992 [1;35m[INF][m GID 3186, [sideChainPowTransfer] start
+2019/09/18 20:52:29.748342 [1;35m[INF][m GID 3185, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: fd9f31fce8ad404f908bae273d1f5746b7ed4e065d441864cb6a288b8d4c24ee
+2019/09/18 20:52:29.750830 [1;35m[INF][m GID 3186, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 6ae02ff08efcae88635bf6c61df77d6ccd3ddd47be87d7ee8e0d30704d7a0efb
+2019/09/18 20:52:29.795126 [1;33m[WRN][m GID 3186, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:52:29.795245 [1;33m[WRN][m GID 3185, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:52:38.017643 [1;35m[INF][m GID 53, currentHeight: 290  chainHeight: 291
+2019/09/18 20:52:38.023133 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  291
+2019/09/18 20:52:38.023519 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:52:38.023589 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:52:38.026107 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 4be015ee612fd8fbf2cd4526419cd9729c3cf4c44bdc3c2c356fe7d7b148b7dc
+2019/09/18 20:52:38.029367 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:52:38.029424 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:52:42.076176 [1;35m[INF][m GID 52, currentHeight: 245  chainHeight: 247
+2019/09/18 20:52:42.090274 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  247
+2019/09/18 20:52:42.090327 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:52:42.090352 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:52:42.092404 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 15ed31ac05df59c7e28ffd603df3bd1bc4def554ffee685653eb3b072a432bfe
+2019/09/18 20:52:42.093085 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:52:42.093130 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:52:45.090295 [1;35m[INF][m GID 53, currentHeight: 291  chainHeight: 292
+2019/09/18 20:52:45.094174 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  292
+2019/09/18 20:52:45.094273 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:52:45.094316 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:52:45.095066 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 96502539fd998d73ba811ae95833a934e5431bb5f0dd4310821a13079636de7e
+2019/09/18 20:52:45.096941 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:52:45.097033 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:52:46.885462 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  467
+2019/09/18 20:52:46.887947 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:52:48.129423 [1;35m[INF][m GID 52, currentHeight: 247  chainHeight: 248
+2019/09/18 20:52:48.143273 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  248
+2019/09/18 20:52:51.187970 [1;35m[INF][m GID 52, currentHeight: 248  chainHeight: 249
+2019/09/18 20:52:51.192135 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  249
+2019/09/18 20:52:51.986218 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  468
+2019/09/18 20:52:51.990001 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I am on duty of main
+2019/09/18 20:52:51.990173 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] start
+2019/09/18 20:52:51.990368 [1;35m[INF][m GID 119, [SyncMainChainCachedTxs] end
+2019/09/18 20:52:51.990570 [1;33m[WRN][m GID 119, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/09/18 20:52:51.991100 [1;35m[INF][m GID 3323, [SendCachedWithdrawTxs] start
+2019/09/18 20:52:51.991118 [1;35m[INF][m GID 3324, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:52:51.991192 [1;35m[INF][m GID 3324, [sideChainPowTransfer] start
+2019/09/18 20:52:51.991456 [1;35m[INF][m GID 3325, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:52:51.991479 [1;35m[INF][m GID 3325, [sideChainPowTransfer] start
+2019/09/18 20:52:51.991585 [1;35m[INF][m GID 3323, No cached withdraw transaction need to send
+2019/09/18 20:52:51.991637 [1;35m[INF][m GID 3322, [SendCachedWithdrawTxs] start
+2019/09/18 20:52:51.991698 [1;35m[INF][m GID 3323, [SendCachedWithdrawTxs] end
+2019/09/18 20:52:51.991836 [1;35m[INF][m GID 3322, No cached withdraw transaction need to send
+2019/09/18 20:52:51.991895 [1;35m[INF][m GID 3322, [SendCachedWithdrawTxs] end
+2019/09/18 20:52:51.992084 [1;35m[INF][m GID 3321, [SendCachedWithdrawTxs] start
+2019/09/18 20:52:51.992260 [1;35m[INF][m GID 3321, No cached withdraw transaction need to send
+2019/09/18 20:52:51.992359 [1;35m[INF][m GID 3321, [SendCachedWithdrawTxs] end
+2019/09/18 20:52:51.993197 [1;31m[ERR][m GID 3324, [sideChainPowTransfer] create aux block failed: Unknown Block
+2019/09/18 20:52:51.993310 [1;33m[WRN][m GID 3324, Unknown Block
+2019/09/18 20:52:52.026851 [1;35m[INF][m GID 3325, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 3cae82a11d0a1da3f28d598090b3e0dab2af6f847ff0f0819de7c5b84228da6f
+2019/09/18 20:52:52.027396 [1;33m[WRN][m GID 3325, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:52:57.212575 [1;35m[INF][m GID 52, currentHeight: 249  chainHeight: 250
+2019/09/18 20:52:57.217511 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  250
+2019/09/18 20:52:57.217635 [1;35m[INF][m GID 52, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:52:57.217678 [1;35m[INF][m GID 52, [sideChainPowTransfer] start
+2019/09/18 20:52:57.218822 [1;35m[INF][m GID 52, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 3b1fedfabceb1d507b375f4f646a249393a8a1e4caa6dd000f031bcb555349b2
+2019/09/18 20:52:57.219578 [1;33m[WRN][m GID 52, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:52:57.219693 [1;35m[INF][m GID 52, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/09/18 20:52:59.155039 [1;35m[INF][m GID 53, currentHeight: 292  chainHeight: 293
+2019/09/18 20:52:59.158479 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  293
+2019/09/18 20:52:59.158554 [1;35m[INF][m GID 53, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:52:59.158586 [1;35m[INF][m GID 53, [sideChainPowTransfer] start
+2019/09/18 20:52:59.162120 [1;35m[INF][m GID 53, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 0c02b882517dc91988ec3ecf20ea05133d5c4c290438fe705aa15715d3cb1ec5
+2019/09/18 20:52:59.162605 [1;33m[WRN][m GID 53, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/09/18 20:52:59.162638 [1;35m[INF][m GID 53, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/09/18 20:53:00.067446 [1;35m[INF][m GID 119, [arbitrator] Main chain height:  469
+2019/09/18 20:53:00.070849 [1;35m[INF][m GID 119, [OnDutyArbitratorChanged] I became not on duty of main
+2019/09/18 20:53:01.164631 [1;35m[INF][m GID 53, currentHeight: 293  chainHeight: 294
+2019/09/18 20:53:01.167965 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  294
+2019/09/18 20:53:03.192892 [1;35m[INF][m GID 53, currentHeight: 294  chainHeight: 295
+2019/09/18 20:53:03.204739 [1;35m[INF][m GID 53,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  295
+2019/09/18 20:53:05.309929 [1;35m[INF][m GID 52, currentHeight: 250  chainHeight: 251
+2019/09/18 20:53:05.315999 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  251
+2019/09/18 20:53:22.400283 [1;35m[INF][m GID 52, currentHeight: 251  chainHeight: 252
+2019/09/18 20:53:22.418067 [1;35m[INF][m GID 52,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  252

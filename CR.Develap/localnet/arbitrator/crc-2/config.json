@@ -1,0 +1,88 @@
+{
+    "Configuration": {
+        "Magic": 7630403,
+        "Version": 0,
+        "PrintLevel": 1,
+        "SpvPrintLevel": 1,
+        "MaxLogsSize": 0,
+        "MaxPerLogSize": 0,
+        "MainNode": {
+            "Rpc": {
+                "IpAddress": "develap-localnet-mainchain-crc-2",
+                "HttpJsonPort": 20336,
+                "User": "",
+                "Pass": ""
+            },
+            "SpvSeedList": [
+                "develap-localnet-mainchain-crc-2:20338"
+            ],
+            "Magic": 7630401,
+            "FoundationAddress": "Ee2LLZCw3JV4pH12LSkbQJZY5DNqevyQTa"
+        },
+        "SideNodeList": [
+            {
+                "Rpc": {
+                    "IpAddress": "develap-localnet-did-node",
+                    "HttpJsonPort": 20606,
+                    "User": "",
+                    "Pass": ""
+                },
+                "ExchangeRate": 1.0,
+                "GenesisBlock": "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3",
+                "MiningAddr": "ESYtZyv2Gs34hKhweqEmP94jyNKLksAZYS",
+                "PayToAddr": "ETCkrXyyK4Gq3CePy5xdtVDJWkFJr3mMqJ",
+                "PowChain": true
+            },
+            {
+                "Rpc":{
+                    "IpAddress":"develap-localnet-token-node",
+                    "HttpJsonPort": 20616,
+                    "Pass":"",
+                    "User":""
+                },
+                "ExchangeRate": 1.0,
+                "GenesisBlock":"b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e",
+                "MiningAddr":"EaL4bVNu41k5jzNHmRSdaLPhR7naTHMM5g",
+                "PayToAddr":"ETCkrXyyK4Gq3CePy5xdtVDJWkFJr3mMqJ",
+                "PowChain":true
+            },
+            {
+                "Rpc":{
+                    "IpAddress":"develap-localnet-eth-oracle-node",
+                    "HttpJsonPort": 20632,
+                    "Pass":"",
+                    "User":""
+                },
+                "ExchangeRate": 1.0,
+                "GenesisBlock":"d73750fe6943983f7844b6b951318ff0540adf74ff513fcd69a1bbd458a5b286",
+                "MiningAddr":"EdzSp5NCHs98cN7SWZBsopcrUMkmStHgYP",
+                "PayToAddr":"ETCkrXyyK4Gq3CePy5xdtVDJWkFJr3mMqJ",
+                "PowChain":false
+            }
+        ],
+        "OriginCrossChainArbiters": [
+            "02677bd3dc8ea4a9ab22f8ba5c5348fc1ce4ba5f1810e8ec8603d5bd927b630b3e",
+            "0232d3172b7fc139b7605b83cd27e3c6f64fde1e71da2489764723639a6d40b5b9"
+        ],
+        "CRCCrossChainArbiters": [
+            "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
+            "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08"
+        ],
+        "DPoSNetAddress": "develap-localnet-mainchain-crc-2:20339",
+        "CRCOnlyDPOSHeight": 200,
+        "SyncInterval": 1000,
+        "SideChainMonitorScanInterval": 1000,
+        "ClearTransactionInterval": 60000,
+        "MinOutbound": 3,
+        "MaxConnections": 8,
+        "SideAuxPowFee": 50000,
+        "MaxTxsPerWithdrawTx": 1000,
+        "RpcConfiguration": {
+            "User": "",
+            "Pass": "",
+            "WhiteIPList": [
+                "0.0.0.0"
+            ]
+        }
+    }
+}

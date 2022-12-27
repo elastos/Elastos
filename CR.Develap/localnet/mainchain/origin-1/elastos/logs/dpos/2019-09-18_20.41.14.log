@@ -1,0 +1,40 @@
+2019/09/18 20:41:14.948627 [1;35m[INF][m GID 31, Loaded 0 addresses from file 'elastos/data/dpos/peers.json'
+2019/09/18 20:41:14.960539 [1;35m[INF][m GID 82, Server listening on [::]:20339
+2019/09/18 20:41:14.960694 [1;35m[INF][m GID 65, Server listening on 0.0.0.0:20339
+2019/09/18 20:41:15.001776 [1;35m[INF][m GID 1, [UpdatePeers] peers: 2  height:  418
+2019/09/18 20:41:15.001851 [1;35m[INF][m GID 1, [UpdatePeers] i am not in peers
+2019/09/18 20:41:22.528853 [1;35m[INF][m GID 301, [OnBlockReceived] listener received block
+2019/09/18 20:41:22.528885 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/09/18 20:41:22.528993 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/09/18 20:41:22.633809 [1;35m[INF][m GID 304, [OnBlockReceived] listener received block
+2019/09/18 20:41:22.654273 [1;35m[INF][m GID 303, [OnConfirmReceived] listener received confirm
+2019/09/18 20:41:22.654976 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/09/18 20:41:22.655022 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/09/18 20:41:22.655046 [1;35m[INF][m GID 32, [OnBlockReceived] received confirmed block
+2019/09/18 20:41:22.655066 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/09/18 20:41:22.655115 [1;35m[INF][m GID 32, [OnConfirmReceived] started, hash: 3b822d0bf0a9f1198a6474342136fba54bd0ca5a9ed5e7cb392a7d3a588b9e9a
+2019/09/18 20:41:22.655154 [1;35m[INF][m GID 32, [OnConfirmReceived] end
+2019/09/18 20:41:45.002383 [1;35m[INF][m GID 32, [OnBadNetwork] found network bad
+2019/09/18 20:41:49.037889 [1;35m[INF][m GID 391, [OnBlockReceived] listener received block
+2019/09/18 20:41:49.038031 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/09/18 20:41:49.038055 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/09/18 20:41:49.165640 [1;35m[INF][m GID 406, [OnConfirmReceived] listener received confirm
+2019/09/18 20:41:49.165695 [1;35m[INF][m GID 32, [OnConfirmReceived] started, hash: 58b069bf77890d601d409d914dca7faab88190ddbc5e8304956b4007a424e99c
+2019/09/18 20:41:49.165729 [1;35m[INF][m GID 32, [OnConfirmReceived] end
+2019/09/18 20:41:49.165786 [1;35m[INF][m GID 407, [OnBlockReceived] listener received block
+2019/09/18 20:41:49.165826 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/09/18 20:41:49.165878 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/09/18 20:41:49.165903 [1;35m[INF][m GID 32, [OnBlockReceived] received confirmed block
+2019/09/18 20:41:49.165927 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/09/18 20:42:04.728600 [1;35m[INF][m GID 417, [OnBlockReceived] listener received block
+2019/09/18 20:42:04.728648 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/09/18 20:42:04.728890 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/09/18 20:42:04.767527 [1;35m[INF][m GID 436, [OnConfirmReceived] listener received confirm
+2019/09/18 20:42:04.767577 [1;35m[INF][m GID 32, [OnConfirmReceived] started, hash: 32ec8a3b371252513951763fa8a100a62e80325d543d6ed21f50ec4f3efccb84
+2019/09/18 20:42:04.767600 [1;35m[INF][m GID 32, [OnConfirmReceived] end
+2019/09/18 20:42:04.767624 [1;35m[INF][m GID 437, [OnBlockReceived] listener received block
+2019/09/18 20:42:04.767647 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/09/18 20:42:04.767672 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/09/18 20:42:04.767713 [1;35m[INF][m GID 32, [OnBlockReceived] received confirmed block
+2019/09/18 20:42:04.767734 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/09/18 20:42:15.013718 [1;35m[INF][m GID 32, [OnBadNetwork] found network bad

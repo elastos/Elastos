@@ -1,0 +1,114 @@
+2019/09/18 17:43:48.581013 [1;35m[INF][m GID 41, Loaded 0 addresses from file 'elastos/data/dpos/peers.json'
+2019/09/18 17:43:48.581083 [1;35m[INF][m GID 74, Server listening on [::]:20339
+2019/09/18 17:43:48.581113 [1;35m[INF][m GID 73, Server listening on 0.0.0.0:20339
+2019/09/18 17:43:48.592255 [1;35m[INF][m GID 1, [UpdatePeers] peers: 0  height:  167
+2019/09/18 17:43:48.592312 [1;35m[INF][m GID 1, [UpdatePeers] i am not in peers
+2019/09/18 17:44:18.600639 [1;35m[INF][m GID 42, [OnBadNetwork] found network bad
+2019/09/18 17:44:48.602765 [1;35m[INF][m GID 42, [OnBadNetwork] found network bad
+2019/09/18 17:45:18.603103 [1;35m[INF][m GID 42, [OnBadNetwork] found network bad
+2019/09/18 17:45:33.907598 [1;35m[INF][m GID 1578, [UpdatePeers] peers: 4  height:  179
+2019/09/18 17:45:33.907778 [1;35m[INF][m GID 1578, [UpdatePeers] i am not in peers
+2019/09/18 17:46:03.909313 [1;35m[INF][m GID 42, [OnBadNetwork] found network bad
+2019/09/18 17:46:33.910467 [1;35m[INF][m GID 42, [OnBadNetwork] found network bad
+2019/09/18 17:47:03.910948 [1;35m[INF][m GID 42, [OnBadNetwork] found network bad
+2019/09/18 17:47:33.918107 [1;35m[INF][m GID 42, [OnBadNetwork] found network bad
+2019/09/18 17:48:03.918715 [1;35m[INF][m GID 42, [OnBadNetwork] found network bad
+2019/09/18 17:48:10.966589 [1;35m[INF][m GID 3542, [UpdatePeers] peers: 2  height:  199
+2019/09/18 17:48:10.971975 [1;35m[INF][m GID 3542, [UpdatePeers] i am not in peers
+2019/09/18 17:48:10.972149 [1;35m[INF][m GID 3489, [OnBlockReceived] listener received block
+2019/09/18 17:48:10.972275 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:48:10.972412 [1;35m[INF][m GID 42, [onDutyArbitratorChanged] not onduty
+2019/09/18 17:48:10.972518 [1;35m[INF][m GID 42, [OnBlockReceived] received confirmed block
+2019/09/18 17:48:10.972643 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:48:11.545899 [1;35m[INF][m GID 41, New peer 172.18.0.16:46840 (inbound) ignored - not in connect list
+2019/09/18 17:48:11.546188 [1;35m[INF][m GID 41, New peer 172.18.0.16:46838 (inbound) ignored - not in connect list
+2019/09/18 17:48:16.575445 [1;35m[INF][m GID 41, New peer 172.18.0.16:46902 (inbound) ignored - not in connect list
+2019/09/18 17:48:16.576943 [1;35m[INF][m GID 41, New peer 172.18.0.16:46900 (inbound) ignored - not in connect list
+2019/09/18 17:48:17.258611 [1;35m[INF][m GID 3552, [OnBlockReceived] listener received block
+2019/09/18 17:48:17.259884 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:48:17.259929 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:48:17.419819 [1;35m[INF][m GID 3653, [OnBlockReceived] listener received block
+2019/09/18 17:48:17.420027 [1;35m[INF][m GID 3652, [OnConfirmReceived] listener received confirm
+2019/09/18 17:48:17.420037 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:48:17.420080 [1;35m[INF][m GID 42, [onDutyArbitratorChanged] not onduty
+2019/09/18 17:48:17.420250 [1;35m[INF][m GID 42, [OnBlockReceived] received confirmed block
+2019/09/18 17:48:17.420310 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:48:17.420447 [1;35m[INF][m GID 42, [OnConfirmReceived] started, hash: 32fdd0c520f9183a499388f26ce2a64e2be5c56c38313f9f49225a0eef4d4f74
+2019/09/18 17:48:17.420576 [1;35m[INF][m GID 42, [OnConfirmReceived] end
+2019/09/18 17:48:21.577808 [1;35m[INF][m GID 41, New peer 172.18.0.16:46968 (inbound) ignored - not in connect list
+2019/09/18 17:48:21.580503 [1;35m[INF][m GID 41, New peer 172.18.0.16:46970 (inbound) ignored - not in connect list
+2019/09/18 17:48:26.587487 [1;35m[INF][m GID 41, New peer 172.18.0.16:47036 (inbound) ignored - not in connect list
+2019/09/18 17:48:26.587875 [1;35m[INF][m GID 41, New peer 172.18.0.16:47034 (inbound) ignored - not in connect list
+2019/09/18 17:48:26.940797 [1;35m[INF][m GID 3721, [OnBlockReceived] listener received block
+2019/09/18 17:48:26.940833 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:48:26.940859 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:48:27.055089 [1;35m[INF][m GID 3783, [OnConfirmReceived] listener received confirm
+2019/09/18 17:48:27.055312 [1;35m[INF][m GID 42, [OnConfirmReceived] started, hash: 415a7d6932f51b6577c22eaf2f496fdd66bdd89a3eced68f362a486d7a3f400c
+2019/09/18 17:48:27.055336 [1;35m[INF][m GID 42, [OnConfirmReceived] end
+2019/09/18 17:48:27.055404 [1;35m[INF][m GID 3784, [OnBlockReceived] listener received block
+2019/09/18 17:48:27.055429 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:48:27.055481 [1;35m[INF][m GID 42, [onDutyArbitratorChanged] not onduty
+2019/09/18 17:48:27.055512 [1;35m[INF][m GID 42, [OnBlockReceived] received confirmed block
+2019/09/18 17:48:27.055555 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:48:31.591332 [1;35m[INF][m GID 41, New peer 172.18.0.16:47102 (inbound) ignored - not in connect list
+2019/09/18 17:48:31.598010 [1;35m[INF][m GID 41, New peer 172.18.0.16:47104 (inbound) ignored - not in connect list
+2019/09/18 17:48:36.598830 [1;35m[INF][m GID 41, New peer 172.18.0.16:47178 (inbound) ignored - not in connect list
+2019/09/18 17:48:36.604486 [1;35m[INF][m GID 41, New peer 172.18.0.16:47180 (inbound) ignored - not in connect list
+2019/09/18 17:48:40.972994 [1;35m[INF][m GID 42, [OnBadNetwork] found network bad
+2019/09/18 17:48:41.602454 [1;35m[INF][m GID 41, New peer 172.18.0.16:47248 (inbound) ignored - not in connect list
+2019/09/18 17:48:41.605191 [1;35m[INF][m GID 41, New peer 172.18.0.16:47250 (inbound) ignored - not in connect list
+2019/09/18 17:48:46.608308 [1;35m[INF][m GID 41, New peer 172.18.0.16:47316 (inbound) ignored - not in connect list
+2019/09/18 17:48:46.609362 [1;35m[INF][m GID 41, New peer 172.18.0.16:47318 (inbound) ignored - not in connect list
+2019/09/18 17:48:47.582724 [1;35m[INF][m GID 4060, [OnBlockReceived] listener received block
+2019/09/18 17:48:47.583545 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:48:47.584814 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:48:47.616520 [1;35m[INF][m GID 4073, [OnConfirmReceived] listener received confirm
+2019/09/18 17:48:47.616589 [1;35m[INF][m GID 42, [OnConfirmReceived] started, hash: 3a6c05baf9f1fce246725f0c69b76689b88b3008403614f5d83fca60af63ecf0
+2019/09/18 17:48:47.616629 [1;35m[INF][m GID 42, [OnConfirmReceived] end
+2019/09/18 17:48:47.616678 [1;35m[INF][m GID 4074, [OnBlockReceived] listener received block
+2019/09/18 17:48:47.616731 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:48:47.616773 [1;35m[INF][m GID 42, [onDutyArbitratorChanged] not onduty
+2019/09/18 17:48:47.616831 [1;35m[INF][m GID 42, [OnBlockReceived] received confirmed block
+2019/09/18 17:48:47.616879 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:48:51.618093 [1;35m[INF][m GID 41, New peer 172.18.0.16:47386 (inbound) ignored - not in connect list
+2019/09/18 17:48:51.618302 [1;35m[INF][m GID 41, New peer 172.18.0.16:47388 (inbound) ignored - not in connect list
+2019/09/18 17:48:56.628023 [1;35m[INF][m GID 41, New peer 172.18.0.16:47450 (inbound) ignored - not in connect list
+2019/09/18 17:48:56.678573 [1;35m[INF][m GID 41, New peer 172.18.0.16:47452 (inbound) ignored - not in connect list
+2019/09/18 17:48:57.949735 [1;35m[INF][m GID 4237, [OnBlockReceived] listener received block
+2019/09/18 17:48:57.949815 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:48:57.949847 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:48:57.992631 [1;35m[INF][m GID 4276, [OnBlockReceived] listener received block
+2019/09/18 17:48:57.992669 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:48:57.992713 [1;35m[INF][m GID 42, [onDutyArbitratorChanged] not onduty
+2019/09/18 17:48:57.992741 [1;35m[INF][m GID 42, [OnBlockReceived] received confirmed block
+2019/09/18 17:48:57.992762 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:48:57.992778 [1;35m[INF][m GID 4275, [OnConfirmReceived] listener received confirm
+2019/09/18 17:48:57.992817 [1;35m[INF][m GID 42, [OnConfirmReceived] started, hash: 1a850532acad1148fc4082355b170e84ffad4a6402399359ba3a3f3d118cf0b7
+2019/09/18 17:48:57.992845 [1;35m[INF][m GID 42, [OnConfirmReceived] end
+2019/09/18 17:49:01.630028 [1;35m[INF][m GID 41, New peer 172.18.0.16:47522 (inbound) ignored - not in connect list
+2019/09/18 17:49:01.685452 [1;35m[INF][m GID 41, New peer 172.18.0.16:47524 (inbound) ignored - not in connect list
+2019/09/18 17:49:06.630846 [1;35m[INF][m GID 41, New peer 172.18.0.16:47594 (inbound) ignored - not in connect list
+2019/09/18 17:49:06.687445 [1;35m[INF][m GID 41, New peer 172.18.0.16:47596 (inbound) ignored - not in connect list
+2019/09/18 17:49:07.160639 [1;35m[INF][m GID 4401, [OnBlockReceived] listener received block
+2019/09/18 17:49:07.160734 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:49:07.160766 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:49:07.217762 [1;35m[INF][m GID 4435, [OnConfirmReceived] listener received confirm
+2019/09/18 17:49:07.217931 [1;35m[INF][m GID 42, [OnConfirmReceived] started, hash: b06c212f40d18b01d29f043e4f3db27ef4d144604632ff455487126adca5c393
+2019/09/18 17:49:07.218214 [1;35m[INF][m GID 42, [OnConfirmReceived] end
+2019/09/18 17:49:07.219050 [1;35m[INF][m GID 4436, [OnBlockReceived] listener received block
+2019/09/18 17:49:07.219085 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:49:07.219128 [1;35m[INF][m GID 42, [onDutyArbitratorChanged] not onduty
+2019/09/18 17:49:07.219159 [1;35m[INF][m GID 42, [OnBlockReceived] received confirmed block
+2019/09/18 17:49:07.219176 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:49:08.633893 [1;35m[INF][m GID 4432, [OnBlockReceived] listener received block
+2019/09/18 17:49:08.633941 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:49:08.633967 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:49:08.780834 [1;35m[INF][m GID 4462, [OnConfirmReceived] listener received confirm
+2019/09/18 17:49:08.780942 [1;35m[INF][m GID 4463, [OnBlockReceived] listener received block
+2019/09/18 17:49:08.780946 [1;35m[INF][m GID 42, [OnConfirmReceived] started, hash: 17e5b63774b9b22286e13c6c6a25a1945445a48cef0797de9e3e44125aeda9b1
+2019/09/18 17:49:08.781012 [1;35m[INF][m GID 42, [OnConfirmReceived] end
+2019/09/18 17:49:08.781035 [1;35m[INF][m GID 42, [OnBlockReceived] start
+2019/09/18 17:49:08.782735 [1;35m[INF][m GID 42, [onDutyArbitratorChanged] not onduty
+2019/09/18 17:49:08.782767 [1;35m[INF][m GID 42, [OnBlockReceived] received confirmed block
+2019/09/18 17:49:08.782805 [1;35m[INF][m GID 42, [OnBlockReceived] end
+2019/09/18 17:49:10.981590 [1;35m[INF][m GID 42, [OnBadNetwork] found network bad
